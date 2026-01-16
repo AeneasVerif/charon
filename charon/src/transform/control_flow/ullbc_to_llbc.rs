@@ -132,6 +132,37 @@ struct BlockData<'a> {
     /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
     /// id first.
     pub immediately_dominates: SmallVec<[BlockId; 2]>,
+    /// List of loops inside of which this node is (loops are identified by their header). A node
+    /// is considered inside a loop if it is reachable from the loop header and if it can reach the
+    /// loop header using only the backwards edges into it (i.e. we don't count a path that enters
+    /// the loop header through a forward edge).
+    ///
+    /// Note that we might have to take a backward edge to reach the loop header, e.g.:
+    ///   'a: loop {
+    ///       // ...
+    ///       'b: loop {
+    ///           // ...
+    ///           if true {
+    ///               continue 'a;
+    ///           } else {
+    ///               if true {
+    ///                   break 'a;
+    ///               }
+    ///               // This node has to take two backward edges in order to reach the start of `'a`.
+    ///           }
+    ///       }
+    ///   }
+    ///
+    /// The restriction on backwards edges is for the following case:
+    ///   loop {
+    ///     loop {
+    ///       ..
+    ///     }
+    ///     // Not in inner loop
+    ///   }
+    ///
+    /// This is sorted by path order from the graph root.
+    pub within_loops: SmallVec<[BlockId; 2]>,
     /// Node from where we can only reach error nodes (panic, etc.)
     pub only_reach_error: bool,
     /// List of reachable nodes, with the length of shortest path to them. Includes the current
@@ -164,9 +195,11 @@ struct ExitInfo {
 struct Irreducible(BlockId);
 
 impl<'a> CfgInfo<'a> {
-    /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
-    /// compute some information like the loop entries and the switch blocks.
+    /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and precompute a
+    /// bunch of graph information about the CFG.
     fn build(body: &'a src::BodyContents) -> Result<Self, Irreducible> {
+        // The steps in this function follow a precise order, as each step typically requires the
+        // previous one.
         let start_block = BlockId::ZERO;
 
         let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
@@ -179,6 +212,7 @@ impl<'a> CfgInfo<'a> {
                 is_merge_target: false,
                 reverse_postorder: None,
                 immediately_dominates: Default::default(),
+                within_loops: Default::default(),
                 only_reach_error: false,
                 shortest_paths: Default::default(),
                 flow: empty_flow.clone(),
@@ -217,39 +251,39 @@ impl<'a> CfgInfo<'a> {
             }
         }
 
-        // Compute the forward graph (without backward edges).
+        // Compute the forward graph (without backward edges). We do a dfs while keeping track of
+        // the path from the start node.
         let mut fwd_cfg = Cfg::new();
         let mut loop_entries = HashSet::new();
         let mut switch_blocks = HashSet::new();
-        for src in cfg.nodes() {
-            if block_data[src].reverse_postorder.is_none() {
-                // Unreachable block
-                continue;
-            }
-            fwd_cfg.add_node(src);
+        for block_id in Dfs::new(&cfg, start_block).iter(&cfg) {
+            fwd_cfg.add_node(block_id);
 
-            if body[src].terminator.kind.is_switch() {
-                switch_blocks.insert(src);
-                block_data[src].is_switch = true;
+            if body[block_id].terminator.kind.is_switch() {
+                switch_blocks.insert(block_id);
+                block_data[block_id].is_switch = true;
             }
 
-            for tgt in cfg.neighbors(src) {
+            // Iterate over edges into this node (so that we can determine whether this node is a
+            // loop header).
+            for from in cfg.neighbors_directed(block_id, petgraph::Direction::Incoming) {
                 // Check if the edge is a backward edge.
-                if block_data[src].reverse_postorder >= block_data[tgt].reverse_postorder {
+                if block_data[from].reverse_postorder >= block_data[block_id].reverse_postorder {
                     // This is a backward edge
-                    block_data[tgt].is_loop_header = true;
-                    loop_entries.insert(tgt);
+                    block_data[block_id].is_loop_header = true;
+                    loop_entries.insert(block_id);
                     // A cfg is reducible iff the target of every back edge dominates the
                     // edge's source.
-                    if !dominator_tree.dominators(src).unwrap().contains(&tgt) {
-                        return Err(Irreducible(src));
+                    if !dominator_tree.dominators(from).unwrap().contains(&block_id) {
+                        return Err(Irreducible(from));
                     }
                 } else {
-                    fwd_cfg.add_edge(src, tgt, ());
+                    fwd_cfg.add_edge(from, block_id, ());
                 }
             }
         }
 
+        // Finish filling in information.
         for block_id in DfsPostOrder::new(&fwd_cfg, start_block).iter(&fwd_cfg) {
             let block = &body[block_id];
             let targets = cfg.neighbors(block_id).collect_vec();
@@ -303,6 +337,39 @@ impl<'a> CfgInfo<'a> {
             block_data[block_id].immediately_dominates = dominatees;
         }
 
+        // Fill in the within_loop information. See the docs of `within_loops` to understand what
+        // we're computing.
+        let mut path_dfs = DfsWithPath::new(&cfg, start_block);
+        while let Some(block_id) = path_dfs.next(&cfg) {
+            // Store all the loops on the path to this
+            // node.
+            let mut within_loops: SmallVec<_> = path_dfs
+                .path
+                .iter()
+                .copied()
+                .filter(|&loop_id| block_data[loop_id].is_loop_header)
+                .collect();
+            // The loops that we can reach by taking a single backward edge.
+            let loops_directly_within = within_loops
+                .iter()
+                .copied()
+                .filter(|&loop_header| {
+                    cfg.neighbors_directed(loop_header, petgraph::Direction::Incoming)
+                        .any(|bid| block_data[block_id].shortest_paths.contains_key(&bid))
+                })
+                .collect_vec();
+            // The loops that we can reach by taking any number of backward edges.
+            let loops_indirectly_within: HashSet<_> = loops_directly_within
+                .iter()
+                .copied()
+                .flat_map(|loop_header| &block_data[loop_header].within_loops)
+                .chain(&loops_directly_within)
+                .copied()
+                .collect();
+            within_loops.retain(|id| loops_indirectly_within.contains(id));
+            block_data[block_id].within_loops = within_loops;
+        }
+
         Ok(CfgInfo {
             cfg,
             fwd_cfg,
@@ -328,48 +395,11 @@ impl<'a> CfgInfo<'a> {
             && self.cfg.contains_edge(src, tgt)
     }
 
-    /// Check if the node is within the given loop. The starting node should be reachable from the
-    /// loop header.
-    ///
-    /// It is better explained on the following example:
-    /// ```text
-    /// 'outer: while i < max {
-    ///     'inner: while j < max {
-    ///        j += 1;
-    ///     }
-    ///     // (i)
-    ///     i += 1;
-    /// }
-    /// ```
-    /// If we enter the inner loop then go to (i) from the inner loop, we consider
-    /// that we exited the inner loop because:
-    /// - we can reach the entry of the inner loop from (i) (by finishing then
-    ///   starting again an iteration of the outer loop)
-    /// - but doing this requires taking a backward edge which goes to the outer loop
+    /// Check if the node is within the given loop.
     fn is_within_loop(&self, loop_header: src::BlockId, block_id: src::BlockId) -> bool {
-        // The node is reachable from the loop header. The criterion for being part of the loop is
-        // not whether the loop header is reachable from the node, because this would consider all
-        // the other inner loops present in this one.
-        // Instead, the criterion is whether the loop header is reachable by going through the
-        // forward graph then taking a single backward edge.
-        //
-        // A fun example is an interleaving such as the following. The interesting node is
-        // considered part of the outer loop only.
-        //   loop {
-        //     loop {
-        //       if foo() {
-        //          continue 1
-        //       }
-        //       interesting_node();
-        //       if bar() {
-        //          continue 0
-        //       }
-        //       break 1
-        //     }
-        //   }
-        Dfs::new(&self.fwd_cfg, block_id)
-            .iter(&self.fwd_cfg)
-            .any(|bid| self.cfg.contains_edge(bid, loop_header))
+        self.block_data[block_id]
+            .within_loops
+            .contains(&loop_header)
     }
 
     /// Check if all paths from `src` to nodes in `target_set` go through `through_node`. If `src`
@@ -420,16 +450,14 @@ impl ExitInfo {
         let mut loop_exits = Vec::new();
         // Do a dfs from the loop header while keeping track of the path from the loop header to
         // the current node.
-        let mut path_dfs = DfsWithPath::new(&cfg.fwd_cfg, loop_header);
-        while let Some(block_id) = path_dfs.next(&cfg.fwd_cfg) {
+        let mut dfs = Dfs::new(&cfg.fwd_cfg, loop_header);
+        while let Some(block_id) = dfs.next(&cfg.fwd_cfg) {
             // If we've exited all the loops after and including the target one, this node is an
             // exit node for the target loop.
-            if !path_dfs.path.iter().any(|&loop_id| {
-                cfg.block_data[loop_id].is_loop_header && cfg.is_within_loop(loop_id, block_id)
-            }) {
+            if !cfg.is_within_loop(loop_header, block_id) {
                 loop_exits.push(block_id);
                 // Don't explore any more paths from this node.
-                path_dfs.discovered.extend(cfg.fwd_cfg.neighbors(block_id));
+                dfs.discovered.extend(cfg.fwd_cfg.neighbors(block_id));
             }
         }
         loop_exits
@@ -503,13 +531,8 @@ impl ExitInfo {
     /// ...
     /// ```
     ///
-    /// Once we listed all the exit candidates, we find the "best" one for every
-    /// loop, starting with the outer loops. We start with outer loops because
-    /// inner loops might use breaks to exit to the exit of outer loops: if we
-    /// start with the inner loops, the exit which is "natural" for the outer loop
-    /// might end up being used for one of the inner loops...
-    ///
-    /// The best exit is the following one:
+    /// Once we listed all the exit candidates, we find the "best" one for every loop. The best
+    /// exit is the following one:
     /// - it is the one which is used the most times (note that there can be
     ///   several candidates which are referenced strictly more than once: see the
     ///   comment below)
@@ -586,87 +609,64 @@ impl ExitInfo {
         ctx: &TransformCtx,
         cfg: &CfgInfo,
     ) -> HashMap<src::BlockId, src::BlockId> {
-        let mut exits: HashSet<src::BlockId> = HashSet::new();
         let mut chosen_loop_exits: HashMap<src::BlockId, src::BlockId> = HashMap::new();
-        // For every loop in topological order.
-        for loop_id in cfg
-            .loop_entries
-            .iter()
-            .copied()
-            .sorted_by_key(|&id| cfg.topo_rank(id))
-        {
+        for &loop_id in &cfg.loop_entries {
             // Compute the candidates.
-            let loop_exits = Self::compute_loop_exit_ranks(cfg, loop_id);
-            // Check the candidates.
-            // Ignore the candidates which have already been chosen as exits for other
-            // loops (which should be outer loops).
+            let loop_exits: SeqHashMap<BlockId, LoopExitRank> =
+                Self::compute_loop_exit_ranks(cfg, loop_id);
             // We choose the exit with:
             // - the most occurrences
             // - the least total distance (if there are several possibilities)
             // - doesn't necessarily lead to an error (panic, unreachable)
-
-            // We find the exits with the highest occurrence and the smallest combined distance
-            // from the entry of the loop (note that we take care of listing the exit
-            // candidates in a deterministic order).
-            let best_exits: Vec<(BlockId, LoopExitRank)> = loop_exits
-                .into_iter()
-                // If candidate already selected for another loop: ignore
-                .filter(|(candidate_id, _)| !exits.contains(candidate_id))
-                .max_set_by_key(|&(_, rank)| rank);
-            let chosen_exit = if best_exits.is_empty() {
-                None
-            } else {
-                // If there is exactly one best candidate, use it. Otherwise we need to split
-                // further.
-                let best_exits = best_exits.into_iter().map(|(bid, _)| bid);
-                match best_exits.exactly_one() {
-                    Ok(best_exit) => Some(best_exit),
-                    Err(best_exits) => {
-                        // Remove the candidates which only lead to errors (panic or unreachable).
-                        // If there is exactly one candidate we select it, otherwise we do not select any
-                        // exit.
-                        // We don't want to select any exit if we are in the below situation
-                        // (all paths lead to errors). We added a sanity check below to
-                        // catch the situations where there are several exits which don't
-                        // lead to errors.
-                        //
-                        // Example:
-                        // ========
-                        // ```
-                        // loop {
-                        //     match ls {
-                        //         List::Nil => {
-                        //             panic!() // <-- best candidate
-                        //         }
-                        //         List::Cons(x, tl) => {
-                        //             if i == 0 {
-                        //                 return x;
-                        //             } else {
-                        //                 ls = tl;
-                        //                 i -= 1;
-                        //             }
-                        //         }
-                        //         _ => {
-                        //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
-                        //         }
-                        //     }
-                        // }
-                        // ```
-                        best_exits
-                            .filter(|&bid| !cfg.block_data[bid].only_reach_error)
-                            .exactly_one()
-                            .map_err(|mut candidates| {
-                                // Adding this sanity check so that we can see when there are several
-                                // candidates.
-                                let span = cfg.block_data[loop_id].contents.terminator.span;
-                                sanity_check!(ctx, span, candidates.next().is_none());
-                            })
-                            .ok()
-                    }
+            let best_exits: Vec<(BlockId, LoopExitRank)> =
+                loop_exits.into_iter().max_set_by_key(|&(_, rank)| rank);
+            // If there is exactly one best candidate, use it. Otherwise we need to split further.
+            let chosen_exit = match best_exits.into_iter().map(|(bid, _)| bid).exactly_one() {
+                Ok(best_exit) => Some(best_exit),
+                Err(best_exits) => {
+                    // Remove the candidates which only lead to errors (panic or unreachable).
+                    // If there is exactly one candidate we select it, otherwise we do not select any
+                    // exit.
+                    // We don't want to select any exit if we are in the below situation
+                    // (all paths lead to errors). We added a sanity check below to
+                    // catch the situations where there are several exits which don't
+                    // lead to errors.
+                    //
+                    // Example:
+                    // ========
+                    // ```
+                    // loop {
+                    //     match ls {
+                    //         List::Nil => {
+                    //             panic!() // <-- best candidate
+                    //         }
+                    //         List::Cons(x, tl) => {
+                    //             if i == 0 {
+                    //                 return x;
+                    //             } else {
+                    //                 ls = tl;
+                    //                 i -= 1;
+                    //             }
+                    //         }
+                    //         _ => {
+                    //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
+                    //         }
+                    //     }
+                    // }
+                    // ```
+                    best_exits
+                        .filter(|&bid| !cfg.block_data[bid].only_reach_error)
+                        .exactly_one()
+                        .map_err(|mut candidates| {
+                            // Adding this sanity check so that we can see when there are several
+                            // candidates.
+                            let span = cfg.block_data[loop_id].contents.terminator.span;
+                            sanity_check!(ctx, span, candidates.next().is_none());
+                        })
+                        .ok()
                 }
             };
             if let Some(exit_id) = chosen_exit {
-                exits.insert(exit_id);
                 chosen_loop_exits.insert(loop_id, exit_id);
             }
         }
