@@ -618,62 +618,52 @@ impl ExitInfo {
             // - the most occurrences
             // - the least total distance (if there are several possibilities)
             // - doesn't necessarily lead to an error (panic, unreachable)
-
-            // We find the exits with the highest occurrence and the smallest combined distance
-            // from the entry of the loop (note that we take care of listing the exit
-            // candidates in a deterministic order).
             let best_exits: Vec<(BlockId, LoopExitRank)> =
                 loop_exits.into_iter().max_set_by_key(|&(_, rank)| rank);
-            let chosen_exit = if best_exits.is_empty() {
-                None
-            } else {
-                // If there is exactly one best candidate, use it. Otherwise we need to split
-                // further.
-                let best_exits = best_exits.into_iter().map(|(bid, _)| bid);
-                match best_exits.exactly_one() {
-                    Ok(best_exit) => Some(best_exit),
-                    Err(best_exits) => {
-                        // Remove the candidates which only lead to errors (panic or unreachable).
-                        // If there is exactly one candidate we select it, otherwise we do not select any
-                        // exit.
-                        // We don't want to select any exit if we are in the below situation
-                        // (all paths lead to errors). We added a sanity check below to
-                        // catch the situations where there are several exits which don't
-                        // lead to errors.
-                        //
-                        // Example:
-                        // ========
-                        // ```
-                        // loop {
-                        //     match ls {
-                        //         List::Nil => {
-                        //             panic!() // <-- best candidate
-                        //         }
-                        //         List::Cons(x, tl) => {
-                        //             if i == 0 {
-                        //                 return x;
-                        //             } else {
-                        //                 ls = tl;
-                        //                 i -= 1;
-                        //             }
-                        //         }
-                        //         _ => {
-                        //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
-                        //         }
-                        //     }
-                        // }
-                        // ```
-                        best_exits
-                            .filter(|&bid| !cfg.block_data[bid].only_reach_error)
-                            .exactly_one()
-                            .map_err(|mut candidates| {
-                                // Adding this sanity check so that we can see when there are several
-                                // candidates.
-                                let span = cfg.block_data[loop_id].contents.terminator.span;
-                                sanity_check!(ctx, span, candidates.next().is_none());
-                            })
-                            .ok()
-                    }
+            // If there is exactly one best candidate, use it. Otherwise we need to split further.
+            let chosen_exit = match best_exits.into_iter().map(|(bid, _)| bid).exactly_one() {
+                Ok(best_exit) => Some(best_exit),
+                Err(best_exits) => {
+                    // Remove the candidates which only lead to errors (panic or unreachable).
+                    // If there is exactly one candidate we select it, otherwise we do not select any
+                    // exit.
+                    // We don't want to select any exit if we are in the below situation
+                    // (all paths lead to errors). We added a sanity check below to
+                    // catch the situations where there are several exits which don't
+                    // lead to errors.
+                    //
+                    // Example:
+                    // ========
+                    // ```
+                    // loop {
+                    //     match ls {
+                    //         List::Nil => {
+                    //             panic!() // <-- best candidate
+                    //         }
+                    //         List::Cons(x, tl) => {
+                    //             if i == 0 {
+                    //                 return x;
+                    //             } else {
+                    //                 ls = tl;
+                    //                 i -= 1;
+                    //             }
+                    //         }
+                    //         _ => {
+                    //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
+                    //         }
+                    //     }
+                    // }
+                    // ```
+                    best_exits
+                        .filter(|&bid| !cfg.block_data[bid].only_reach_error)
+                        .exactly_one()
+                        .map_err(|mut candidates| {
+                            // Adding this sanity check so that we can see when there are several
+                            // candidates.
+                            let span = cfg.block_data[loop_id].contents.terminator.span;
+                            sanity_check!(ctx, span, candidates.next().is_none());
+                        })
+                        .ok()
                 }
             };
             if let Some(exit_id) = chosen_exit {
