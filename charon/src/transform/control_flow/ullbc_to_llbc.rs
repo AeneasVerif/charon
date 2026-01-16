@@ -531,13 +531,8 @@ impl ExitInfo {
     /// ...
     /// ```
     ///
-    /// Once we listed all the exit candidates, we find the "best" one for every
-    /// loop, starting with the outer loops. We start with outer loops because
-    /// inner loops might use breaks to exit to the exit of outer loops: if we
-    /// start with the inner loops, the exit which is "natural" for the outer loop
-    /// might end up being used for one of the inner loops...
-    ///
-    /// The best exit is the following one:
+    /// Once we listed all the exit candidates, we find the "best" one for every loop. The best
+    /// exit is the following one:
     /// - it is the one which is used the most times (note that there can be
     ///   several candidates which are referenced strictly more than once: see the
     ///   comment below)
@@ -614,20 +609,11 @@ impl ExitInfo {
         ctx: &TransformCtx,
         cfg: &CfgInfo,
     ) -> HashMap<src::BlockId, src::BlockId> {
-        let mut exits: HashSet<src::BlockId> = HashSet::new();
         let mut chosen_loop_exits: HashMap<src::BlockId, src::BlockId> = HashMap::new();
-        // For every loop in topological order.
-        for loop_id in cfg
-            .loop_entries
-            .iter()
-            .copied()
-            .sorted_by_key(|&id| cfg.topo_rank(id))
-        {
+        for &loop_id in &cfg.loop_entries {
             // Compute the candidates.
-            let loop_exits = Self::compute_loop_exit_ranks(cfg, loop_id);
-            // Check the candidates.
-            // Ignore the candidates which have already been chosen as exits for other
-            // loops (which should be outer loops).
+            let loop_exits: SeqHashMap<BlockId, LoopExitRank> =
+                Self::compute_loop_exit_ranks(cfg, loop_id);
             // We choose the exit with:
             // - the most occurrences
             // - the least total distance (if there are several possibilities)
@@ -636,11 +622,8 @@ impl ExitInfo {
             // We find the exits with the highest occurrence and the smallest combined distance
             // from the entry of the loop (note that we take care of listing the exit
             // candidates in a deterministic order).
-            let best_exits: Vec<(BlockId, LoopExitRank)> = loop_exits
-                .into_iter()
-                // If candidate already selected for another loop: ignore
-                .filter(|(candidate_id, _)| !exits.contains(candidate_id))
-                .max_set_by_key(|&(_, rank)| rank);
+            let best_exits: Vec<(BlockId, LoopExitRank)> =
+                loop_exits.into_iter().max_set_by_key(|&(_, rank)| rank);
             let chosen_exit = if best_exits.is_empty() {
                 None
             } else {
@@ -694,7 +677,6 @@ impl ExitInfo {
                 }
             };
             if let Some(exit_id) = chosen_exit {
-                exits.insert(exit_id);
                 chosen_loop_exits.insert(loop_id, exit_id);
             }
         }
