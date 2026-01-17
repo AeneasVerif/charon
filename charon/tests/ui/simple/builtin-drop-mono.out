@@ -116,7 +116,7 @@ unsafe fn {impl Destruct::<[String]>}::drop_in_place::<String>(@1: *mut [String]
     loop {
         _6 = copy _4 == copy _3
         if move _6 {
-            return
+            break 0
         } else {
             storage_live(_7)
             _7 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -127,6 +127,7 @@ unsafe fn {impl Destruct::<[String]>}::drop_in_place::<String>(@1: *mut [String]
             drop[{impl Destruct::<String>}] (*_5)
         }
     }
+    return
 }
 
 // Full name: test_crate::<slice>::{impl Destruct::<[String]>}::<String>
@@ -223,7 +224,7 @@ unsafe fn {impl Destruct::<[String; 4 : usize]>}::drop_in_place::<String, 4 : us
     loop {
         _8 = copy _6 == copy _5
         if move _8 {
-            return
+            break 0
         } else {
             storage_live(_9)
             _9 = &mut (*_4) with_metadata(copy _4.metadata)
@@ -234,6 +235,7 @@ unsafe fn {impl Destruct::<[String; 4 : usize]>}::drop_in_place::<String, 4 : us
             drop[{impl Destruct::<String>}] (*_7)
         }
     }
+    return
 }
 
 // Full name: test_crate::<array>::{impl Destruct::<[String; 4 : usize]>}::<String, 4 : usize>

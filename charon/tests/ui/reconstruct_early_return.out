@@ -78,14 +78,15 @@ fn f() -> usize
             i_1 = move _10
             storage_dead(_3)
         } else {
-            storage_dead(_4)
-            storage_dead(_3)
-            _0 = const 0 : usize
-            storage_dead(j_2)
-            storage_dead(i_1)
-            return
+            break 0
         }
     }
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = const 0 : usize
+    storage_dead(j_2)
+    storage_dead(i_1)
+    return
 }
 
 

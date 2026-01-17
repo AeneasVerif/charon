@@ -1082,9 +1082,7 @@ impl<'a> ReconstructCtx<'a> {
         // Catch jumps to the loop header or loop exit.
         if block_data.is_loop_header {
             self.break_context_depth += 1;
-            if let ReconstructMode::Flow = self.mode
-                && let Some(exit_id) = block_data.exit_info.loop_exit
-            {
+            if let Some(exit_id) = block_data.exit_info.loop_exit {
                 self.special_jump_stack
                     .push((exit_id, SpecialJump::LoopBreak(self.break_context_depth)));
             }

@@ -119,7 +119,7 @@ where
     loop {
         _8 = copy _6 == copy _5
         if move _8 {
-            return
+            break 0
         } else {
             storage_live(_9)
             _9 = &mut (*_4) with_metadata(copy _4.metadata)
@@ -130,6 +130,7 @@ where
             drop[@TraitClause1] (*_7)
         }
     }
+    return
 }
 
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}
@@ -173,7 +174,7 @@ where
     loop {
         _6 = copy _4 == copy _3
         if move _6 {
-            return
+            break 0
         } else {
             storage_live(_7)
             _7 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -184,6 +185,7 @@ where
             drop[@TraitClause1] (*_5)
         }
     }
+    return
 }
 
 // Full name: test_crate::<slice>::{impl Destruct for [T]}

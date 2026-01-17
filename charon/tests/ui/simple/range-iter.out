@@ -467,12 +467,7 @@ fn iter(@1: usize)
         storage_dead(_7)
         match _6 {
             Option::None => {
-                _0 = ()
-                storage_dead(_8)
-                storage_dead(_6)
-                storage_dead(iter_5)
-                storage_dead(_2)
-                return
+                break 0
             },
             Option::Some => {
                 storage_live(i_9)
@@ -483,6 +478,12 @@ fn iter(@1: usize)
             },
         }
     }
+    _0 = ()
+    storage_dead(_8)
+    storage_dead(_6)
+    storage_dead(iter_5)
+    storage_dead(_2)
+    return
 }
 
 

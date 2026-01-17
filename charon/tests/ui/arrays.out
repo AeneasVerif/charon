@@ -330,7 +330,7 @@ where
     loop {
         _8 = copy _6 == copy _5
         if move _8 {
-            return
+            break 0
         } else {
             storage_live(_9)
             _9 = &mut (*_4) with_metadata(copy _4.metadata)
@@ -341,6 +341,7 @@ where
             drop[{built_in impl Destruct for T}] (*_7)
         }
     }
+    return
 }
 
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}
@@ -1672,15 +1673,16 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
             i_3 = move _11
             storage_dead(_4)
         } else {
-            storage_dead(_6)
-            storage_dead(_5)
-            storage_dead(_4)
-            _0 = copy sum_2
-            storage_dead(i_3)
-            storage_dead(sum_2)
-            return
+            break 0
         }
     }
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = copy sum_2
+    storage_dead(i_3)
+    storage_dead(sum_2)
+    return
 }
 
 // Full name: test_crate::sum2
@@ -1782,15 +1784,16 @@ pub fn sum2<'_0, '_1>(@1: &'_0 [u32], @2: &'_1 [u32]) -> u32
                 i_9 = move _21
                 storage_dead(_10)
             } else {
-                storage_dead(_12)
-                storage_dead(_11)
-                storage_dead(_10)
-                _0 = copy sum_3
-                storage_dead(i_9)
-                storage_dead(sum_3)
-                return
+                break 0
             }
         }
+        storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(_10)
+        _0 = copy sum_3
+        storage_dead(i_9)
+        storage_dead(sum_3)
+        return
     } else {
         storage_dead(_7)
         storage_dead(_5)
@@ -2113,15 +2116,16 @@ pub fn zero_slice<'_0>(@1: &'_0 mut [u8])
             i_2 = move _9
             storage_dead(_5)
         } else {
-            storage_dead(_7)
-            storage_dead(_6)
-            _0 = ()
-            storage_dead(_5)
-            storage_dead(len_3)
-            storage_dead(i_2)
-            return
+            break 0
         }
     }
+    storage_dead(_7)
+    storage_dead(_6)
+    _0 = ()
+    storage_dead(_5)
+    storage_dead(len_3)
+    storage_dead(i_2)
+    return
 }
 
 // Full name: test_crate::iter_mut_slice
@@ -2163,15 +2167,16 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut [u8])
             i_4 = move _8
             storage_dead(_5)
         } else {
-            storage_dead(_7)
-            storage_dead(_6)
-            _0 = ()
-            storage_dead(_5)
-            storage_dead(i_4)
-            storage_dead(len_2)
-            return
+            break 0
         }
     }
+    storage_dead(_7)
+    storage_dead(_6)
+    _0 = ()
+    storage_dead(_5)
+    storage_dead(i_4)
+    storage_dead(len_2)
+    return
 }
 
 // Full name: test_crate::sum_mut_slice
@@ -2230,15 +2235,16 @@ pub fn sum_mut_slice<'_0>(@1: &'_0 mut [u32]) -> u32
             i_2 = move _11
             storage_dead(_4)
         } else {
-            storage_dead(_6)
-            storage_dead(_5)
-            storage_dead(_4)
-            _0 = copy s_3
-            storage_dead(s_3)
-            storage_dead(i_2)
-            return
+            break 0
         }
     }
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = copy s_3
+    storage_dead(s_3)
+    storage_dead(i_2)
+    return
 }
 
 // Full name: test_crate::slice_pattern_1

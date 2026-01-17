@@ -632,13 +632,7 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
         storage_dead(_9)
         match _8 {
             Option::None => {
-                storage_dead(_10)
-                storage_dead(_8)
-                storage_dead(iter_7)
-                storage_dead(_4)
-                _0 = copy sampled_3
-                storage_dead(sampled_3)
-                return
+                break 0
             },
             Option::Some => {
                 loop {
@@ -798,6 +792,13 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
             },
         }
     }
+    storage_dead(_10)
+    storage_dead(_8)
+    storage_dead(iter_7)
+    storage_dead(_4)
+    _0 = copy sampled_3
+    storage_dead(sampled_3)
+    return
 }
 
 

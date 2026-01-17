@@ -90,10 +90,10 @@ fn main()
                 }
                 break 0
             }
-            storage_dead(_4)
-            storage_dead(_3)
-            break 1
+            break 0
         }
+        storage_dead(_4)
+        storage_dead(_3)
         break 0
     }
     storage_dead(_1)
