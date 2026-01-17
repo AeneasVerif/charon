@@ -303,14 +303,6 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
     _6 = copy len_3
     _4 = move _5 > move _6
     if move _4 {
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_live(_7)
-        storage_live(_8)
-        _8 = copy start_1
-        storage_live(_9)
-        _9 = copy len_3
-        _7 = core::slice::index::slice_index_fail::do_panic(move _8, move _9)
     } else {
         storage_dead(_6)
         storage_dead(_5)
@@ -322,14 +314,6 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
         _12 = copy len_3
         _10 = move _11 > move _12
         if move _10 {
-            storage_dead(_12)
-            storage_dead(_11)
-            storage_live(_13)
-            storage_live(_14)
-            _14 = copy end_2
-            storage_live(_15)
-            _15 = copy len_3
-            _13 = core::slice::index::slice_index_fail::do_panic#1(move _14, move _15)
         } else {
             storage_dead(_12)
             storage_dead(_11)
@@ -341,14 +325,6 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
             _18 = copy end_2
             _16 = move _17 > move _18
             if move _16 {
-                storage_dead(_18)
-                storage_dead(_17)
-                storage_live(_19)
-                storage_live(_20)
-                _20 = copy start_1
-                storage_live(_21)
-                _21 = copy end_2
-                _19 = core::slice::index::slice_index_fail::do_panic#2(move _20, move _21)
             } else {
                 storage_dead(_18)
                 storage_dead(_17)
@@ -359,8 +335,32 @@ fn slice_index_fail(@1: usize, @2: usize, @3: usize) -> !
                 _23 = copy len_3
                 _0 = core::slice::index::slice_index_fail::do_panic#3(move _22, move _23)
             }
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_live(_19)
+            storage_live(_20)
+            _20 = copy start_1
+            storage_live(_21)
+            _21 = copy end_2
+            _19 = core::slice::index::slice_index_fail::do_panic#2(move _20, move _21)
         }
+        storage_dead(_12)
+        storage_dead(_11)
+        storage_live(_13)
+        storage_live(_14)
+        _14 = copy end_2
+        storage_live(_15)
+        _15 = copy len_3
+        _13 = core::slice::index::slice_index_fail::do_panic#1(move _14, move _15)
     }
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy start_1
+    storage_live(_9)
+    _9 = copy len_3
+    _7 = core::slice::index::slice_index_fail::do_panic(move _8, move _9)
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[{built_in impl Sized for usize}]}
@@ -436,6 +436,7 @@ where
             _12 = copy self_4 < copy rhs_5
             if move _12 {
                 storage_dead(_12)
+                break 0
             } else {
                 storage_live(_13)
                 _13 = copy self_4 ub.- copy rhs_5
@@ -464,11 +465,12 @@ where
                     _0 = Option::Some { 0: copy _9 }
                     storage_dead(_10)
                     storage_dead(_3)
-                    break 1
                 } else {
                     storage_dead(_8)
+                    break 0
                 }
             }
+            break 1
             break 0
         }
         storage_dead(_3)
@@ -517,6 +519,7 @@ where
             _12 = copy self_4 < copy rhs_5
             if move _12 {
                 storage_dead(_12)
+                break 0
             } else {
                 storage_live(_13)
                 _13 = copy self_4 ub.- copy rhs_5
@@ -545,11 +548,12 @@ where
                     _0 = Option::Some { 0: copy _9 }
                     storage_dead(_10)
                     storage_dead(_3)
-                    break 1
                 } else {
                     storage_dead(_8)
+                    break 0
                 }
             }
+            break 1
             break 0
         }
         storage_dead(_3)
@@ -1041,6 +1045,7 @@ where
                     _11 = copy exclusive_end_5 < copy self_15
                     if move _11 {
                         storage_dead(_11)
+                        break 0
                     } else {
                         new_len_12 = copy exclusive_end_5 ub.- copy self_15
                         storage_dead(_11)
@@ -1064,11 +1069,12 @@ where
                             _8 = &(*_9) with_metadata(copy _9.metadata)
                             _0 = Option::Some { 0: copy _8 }
                             storage_dead(_9)
-                            break 1
                         } else {
                             storage_dead(_7)
+                            break 0
                         }
                     }
+                    break 1
                     break 0
                 }
                 storage_live(_18)
@@ -1141,6 +1147,7 @@ where
                     _11 = copy exclusive_end_5 < copy self_15
                     if move _11 {
                         storage_dead(_11)
+                        break 0
                     } else {
                         new_len_12 = copy exclusive_end_5 ub.- copy self_15
                         storage_dead(_11)
@@ -1164,11 +1171,12 @@ where
                             _8 = &mut (*_9) with_metadata(copy _9.metadata)
                             _0 = Option::Some { 0: copy _8 }
                             storage_dead(_9)
-                            break 1
                         } else {
                             storage_dead(_7)
+                            break 0
                         }
                     }
+                    break 1
                     break 0
                 }
                 storage_live(_18)
@@ -1370,10 +1378,6 @@ where
             storage_live(_17)
             _17 = copy self_11 < copy rhs_12
             if move _17 {
-                storage_dead(_17)
-                storage_dead(rhs_12)
-                storage_dead(self_11)
-                storage_dead(_10)
             } else {
                 storage_live(_18)
                 _18 = copy self_11 ub.- copy rhs_12
@@ -1400,6 +1404,10 @@ where
                 storage_dead(_7)
                 return
             }
+            storage_dead(_17)
+            storage_dead(rhs_12)
+            storage_dead(self_11)
+            storage_dead(_10)
         } else {
             storage_dead(_8)
         }
@@ -1472,10 +1480,6 @@ where
             storage_live(_17)
             _17 = copy self_11 < copy rhs_12
             if move _17 {
-                storage_dead(_17)
-                storage_dead(rhs_12)
-                storage_dead(self_11)
-                storage_dead(_10)
             } else {
                 storage_live(_18)
                 _18 = copy self_11 ub.- copy rhs_12
@@ -1502,6 +1506,10 @@ where
                 storage_dead(_7)
                 return
             }
+            storage_dead(_17)
+            storage_dead(rhs_12)
+            storage_dead(self_11)
+            storage_dead(_10)
         } else {
             storage_dead(_8)
         }

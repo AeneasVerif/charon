@@ -103,13 +103,13 @@ where
     _2 = &mut (*_1)
     match (*_2) {
         Cow::Borrowed => {
-            return
         },
         _ => {
             drop[@TraitClause1::parent_clause4] ((*_2) as variant Cow::Owned).0
             return
         },
     }
+    return
 }
 
 // Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}

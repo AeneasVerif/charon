@@ -296,15 +296,17 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 Enum, @2: &'_1 Enu
                                     storage_dead(_15)
                                     storage_dead(__arg1_0_14)
                                     storage_dead(__self_0_13)
-                                    break 1
                                 },
                                 _ => {
+                                    break 0
                                 },
                             }
                         },
                         _ => {
+                            break 0
                         },
                     }
+                    break 1
                     break 0
                 }
                 _0 = const true

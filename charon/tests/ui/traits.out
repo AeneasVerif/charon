@@ -252,14 +252,14 @@ where
 
     match (*self_1) {
         Option::None => {
-            _0 = const false
-            return
         },
         Option::Some => {
             _0 = const true
             return
         },
     }
+    _0 = const false
+    return
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true

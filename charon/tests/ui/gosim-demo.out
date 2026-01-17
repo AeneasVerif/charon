@@ -580,50 +580,50 @@ where
                 break 0
             },
             Option::Some => {
-                storage_live(x_8)
-                x_8 = copy (_5 as variant Option::Some).0
-                storage_live(_9)
-                storage_live(_10)
-                storage_live(args_11)
-                storage_live(_12)
-                _12 = &x_8
-                args_11 = (move _12)
-                storage_dead(_12)
-                storage_live(args_13)
-                storage_live(_14)
-                storage_live(_15)
-                _15 = &(*args_11.0)
-                _14 = new_debug<'13, '_, &'2 T>[{built_in impl Sized for &'2 T}, {impl Debug for &'_0 T}<'2, T>[@TraitClause1]](move _15)
-                storage_dead(_15)
-                args_13 = [move _14]
-                storage_dead(_14)
-                storage_live(_16)
-                storage_live(_17)
-                storage_live(_20)
-                _20 = [const 2 : u8, const 45 : u8, const 32 : u8, const 192 : u8, const 1 : u8, const 10 : u8, const 0 : u8]
-                storage_live(_21)
-                _21 = &_20
-                _17 = move _21
-                _16 = &(*_17)
-                storage_live(_18)
-                storage_live(_19)
-                _19 = &args_13
-                _18 = &(*_19)
-                _10 = new<'18, 7 : usize, 1 : usize>(move _16, move _18)
-                storage_dead(_19)
-                storage_dead(_18)
-                storage_dead(_17)
-                storage_dead(_16)
-                _9 = _eprint<'_>(move _10)
-                storage_dead(_10)
-                storage_dead(args_13)
-                storage_dead(args_11)
-                storage_dead(_9)
-                storage_dead(x_8)
-                storage_dead(_7)
-                storage_dead(_5)
             },
         }
+        storage_live(x_8)
+        x_8 = copy (_5 as variant Option::Some).0
+        storage_live(_9)
+        storage_live(_10)
+        storage_live(args_11)
+        storage_live(_12)
+        _12 = &x_8
+        args_11 = (move _12)
+        storage_dead(_12)
+        storage_live(args_13)
+        storage_live(_14)
+        storage_live(_15)
+        _15 = &(*args_11.0)
+        _14 = new_debug<'13, '_, &'2 T>[{built_in impl Sized for &'2 T}, {impl Debug for &'_0 T}<'2, T>[@TraitClause1]](move _15)
+        storage_dead(_15)
+        args_13 = [move _14]
+        storage_dead(_14)
+        storage_live(_16)
+        storage_live(_17)
+        storage_live(_20)
+        _20 = [const 2 : u8, const 45 : u8, const 32 : u8, const 192 : u8, const 1 : u8, const 10 : u8, const 0 : u8]
+        storage_live(_21)
+        _21 = &_20
+        _17 = move _21
+        _16 = &(*_17)
+        storage_live(_18)
+        storage_live(_19)
+        _19 = &args_13
+        _18 = &(*_19)
+        _10 = new<'18, 7 : usize, 1 : usize>(move _16, move _18)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        _9 = _eprint<'_>(move _10)
+        storage_dead(_10)
+        storage_dead(args_13)
+        storage_dead(args_11)
+        storage_dead(_9)
+        storage_dead(x_8)
+        storage_dead(_7)
+        storage_dead(_5)
     }
     _0 = ()
     storage_dead(_7)

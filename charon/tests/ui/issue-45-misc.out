@@ -693,24 +693,24 @@ fn cbd(@1: [u8; 33 : usize])
                 break 0
             },
             Option::Some => {
-                storage_live(i_8)
-                i_8 = copy (_5 as variant Option::Some).0
-                storage_live(_9)
-                _9 = copy i_8
-                storage_live(_10)
-                _10 = const 0 : usize
-                storage_live(_11)
-                _11 = &mut prf_input_1
-                storage_live(_12)
-                _12 = @ArrayIndexMut<'_, u8, 33 : usize>(move _11, copy _10)
-                (*_12) = move _9
-                storage_dead(_9)
-                storage_dead(_10)
-                storage_dead(i_8)
-                storage_dead(_7)
-                storage_dead(_5)
             },
         }
+        storage_live(i_8)
+        i_8 = copy (_5 as variant Option::Some).0
+        storage_live(_9)
+        _9 = copy i_8
+        storage_live(_10)
+        _10 = const 0 : usize
+        storage_live(_11)
+        _11 = &mut prf_input_1
+        storage_live(_12)
+        _12 = @ArrayIndexMut<'_, u8, 33 : usize>(move _11, copy _10)
+        (*_12) = move _9
+        storage_dead(_9)
+        storage_dead(_10)
+        storage_dead(i_8)
+        storage_dead(_7)
+        storage_dead(_5)
     }
     _0 = ()
     storage_dead(_7)
@@ -781,14 +781,6 @@ fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
             _15 = copy (*right_val_12)
             _13 = move _14 == move _15
             if move _13 {
-                storage_dead(_15)
-                storage_dead(_14)
-                storage_dead(_13)
-                storage_dead(right_val_12)
-                storage_dead(left_val_11)
-                storage_dead(_9)
-                storage_dead(_6)
-                storage_dead(_4)
             } else {
                 storage_dead(_15)
                 storage_dead(_14)
@@ -808,6 +800,14 @@ fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
                 _22 = Option::None {  }
                 panic(core::panicking::assert_failed)
             }
+            storage_dead(_15)
+            storage_dead(_14)
+            storage_dead(_13)
+            storage_dead(right_val_12)
+            storage_dead(left_val_11)
+            storage_dead(_9)
+            storage_dead(_6)
+            storage_dead(_4)
         } else {
         }
         break 0

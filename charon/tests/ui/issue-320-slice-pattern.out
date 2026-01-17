@@ -232,19 +232,19 @@ fn slice_pat4<'_0>(@1: &'_0 [u32])
     _4 = const 1 : usize
     _5 = move _2 == move _4
     if move _5 {
-        storage_live(_y_6)
-        storage_live(_7)
-        _7 = &(*x_1) with_metadata(copy x_1.metadata)
-        storage_live(_8)
-        _8 = @SliceIndexShared<'_, u32>(move _7, const 0 : usize)
-        _y_6 = &(*_8)
-        _0 = ()
-        storage_dead(_y_6)
-        return
     } else {
         _0 = ()
         return
     }
+    storage_live(_y_6)
+    storage_live(_7)
+    _7 = &(*x_1) with_metadata(copy x_1.metadata)
+    storage_live(_8)
+    _8 = @SliceIndexShared<'_, u32>(move _7, const 0 : usize)
+    _y_6 = &(*_8)
+    _0 = ()
+    storage_dead(_y_6)
+    return
 }
 
 // Full name: test_crate::Unsized
@@ -278,19 +278,19 @@ fn slice_pat5<'_0>(@1: &'_0 Unsized)
     _5 = const 1 : usize
     _6 = move _2 == move _5
     if move _6 {
-        storage_live(_y_7)
-        storage_live(_8)
-        _8 = &((*x_1)).0 with_metadata(copy x_1.metadata)
-        storage_live(_9)
-        _9 = @SliceIndexShared<'_, u32>(move _8, const 0 : usize)
-        _y_7 = copy (*_9)
-        _0 = ()
-        storage_dead(_y_7)
-        return
     } else {
         _0 = ()
         return
     }
+    storage_live(_y_7)
+    storage_live(_8)
+    _8 = &((*x_1)).0 with_metadata(copy x_1.metadata)
+    storage_live(_9)
+    _9 = @SliceIndexShared<'_, u32>(move _8, const 0 : usize)
+    _y_7 = copy (*_9)
+    _0 = ()
+    storage_dead(_y_7)
+    return
 }
 
 

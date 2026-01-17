@@ -336,18 +336,18 @@ fn main()
     _6 = copy (*_7)
     _5 = move _6 == const 42 : i32
     if move _5 {
-        storage_dead(_6)
-        storage_dead(_7)
-        storage_dead(_5)
-        _0 = ()
-        storage_dead(ptr_2)
-        storage_dead(s_1)
-        return
     } else {
         storage_dead(_6)
         storage_dead(_7)
         panic(core::panicking::panic)
     }
+    storage_dead(_6)
+    storage_dead(_7)
+    storage_dead(_5)
+    _0 = ()
+    storage_dead(ptr_2)
+    storage_dead(s_1)
+    return
 }
 
 

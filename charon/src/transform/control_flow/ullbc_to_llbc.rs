@@ -1094,29 +1094,27 @@ impl<'a> ReconstructCtx<'a> {
         }
 
         // Catch jumps to a merge node.
-        match self.mode {
-            ReconstructMode::Flow => {
-                // We only support next-block jumps to merge nodes.
-                if let Some(bid) = block_data.exit_info.switch_exit
-                    && !block_data.is_loop_header
-                {
-                    self.special_jump_stack.push((bid, SpecialJump::NextBlock));
-                }
+        if let ReconstructMode::Reloop = self.mode {
+            // We support forward-jumps using `break`
+            // The child with highest postorder numbering is nested outermost in this scheme.
+            let merge_children = block_data
+                .immediately_dominates
+                .iter()
+                .copied()
+                .filter(|&child| self.cfg.block_data[child].is_merge_target);
+            for child in merge_children {
+                self.break_context_depth += 1;
+                self.special_jump_stack
+                    .push((child, SpecialJump::ForwardBreak(self.break_context_depth)));
             }
-            ReconstructMode::Reloop => {
-                // We support forward-jumps using `break`
-                // The child with highest postorder numbering is nested outermost in this scheme.
-                let merge_children = block_data
-                    .immediately_dominates
-                    .iter()
-                    .copied()
-                    .filter(|&child| self.cfg.block_data[child].is_merge_target);
-                for child in merge_children {
-                    self.break_context_depth += 1;
-                    self.special_jump_stack
-                        .push((child, SpecialJump::ForwardBreak(self.break_context_depth)));
-                }
-            }
+        }
+
+        // Move some code that would be inside one or several switch branches to be after the
+        // switch intead.
+        if let Some(bid) = block_data.exit_info.switch_exit
+            && !block_data.is_loop_header
+        {
+            self.special_jump_stack.push((bid, SpecialJump::NextBlock));
         }
 
         // Translate this block. Any jumps to a loop header or a merge node will be replaced with

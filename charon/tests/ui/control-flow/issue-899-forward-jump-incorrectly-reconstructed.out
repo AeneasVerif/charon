@@ -84,15 +84,16 @@ fn absorb_full()
         // bb6
         _4 = condition(const 3 : u32)
         if move _4 {
+        } else {
             // bb12
-            _0 = ()
             storage_dead(_4)
             // unconditional break, the `loop` is only for fwd jumping
-            // bb13
-            return
-        } else {
-            storage_dead(_4)
+            break 0
         }
+        _0 = ()
+        storage_dead(_4)
+        // bb13
+        return
         break 0
     }
     _0 = bar()

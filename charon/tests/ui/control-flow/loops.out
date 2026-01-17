@@ -966,19 +966,20 @@ pub fn test_loop2(@1: u32) -> u32
                 if move _7 {
                     storage_dead(_8)
                     storage_dead(_7)
+                    break 0
                 } else {
-                    storage_dead(_8)
-                    storage_dead(_7)
-                    storage_live(_9)
-                    _9 = copy i_2
-                    _10 = copy s_3 panic.+ copy _9
-                    s_3 = move _10
-                    storage_dead(_9)
-                    _11 = copy i_2 panic.+ const 1 : u32
-                    i_2 = move _11
-                    storage_dead(_4)
-                    continue 1
                 }
+                storage_dead(_8)
+                storage_dead(_7)
+                storage_live(_9)
+                _9 = copy i_2
+                _10 = copy s_3 panic.+ copy _9
+                s_3 = move _10
+                storage_dead(_9)
+                _11 = copy i_2 panic.+ const 1 : u32
+                i_2 = move _11
+                storage_dead(_4)
+                continue 1
             } else {
                 storage_dead(_6)
                 storage_dead(_5)
@@ -1069,9 +1070,6 @@ pub fn test_loop3(@1: u32) -> u32
                     storage_dead(_13)
                     _11 = move _12 == const 17 : u32
                     if move _11 {
-                        storage_dead(_12)
-                        storage_dead(_11)
-                        storage_dead(_8)
                     } else {
                         storage_dead(_12)
                         storage_dead(_11)
@@ -1086,6 +1084,9 @@ pub fn test_loop3(@1: u32) -> u32
                         storage_dead(_5)
                         continue 1
                     }
+                    storage_dead(_12)
+                    storage_dead(_11)
+                    storage_dead(_8)
                 } else {
                     break 0
                 }
@@ -1192,9 +1193,6 @@ pub fn test_loop4(@1: u32) -> u32
                         storage_dead(_13)
                         _11 = move _12 == const 17 : u32
                         if move _11 {
-                            storage_dead(_12)
-                            storage_dead(_11)
-                            storage_dead(_8)
                         } else {
                             storage_dead(_12)
                             storage_dead(_11)
@@ -1208,6 +1206,9 @@ pub fn test_loop4(@1: u32) -> u32
                             storage_dead(_8)
                             break 1
                         }
+                        storage_dead(_12)
+                        storage_dead(_11)
+                        storage_dead(_8)
                     } else {
                         break 0
                     }
@@ -1380,19 +1381,20 @@ pub fn test_loop6(@1: u32) -> u32
                 if move _7 {
                     storage_dead(_8)
                     storage_dead(_7)
+                    break 0
                 } else {
-                    storage_dead(_8)
-                    storage_dead(_7)
-                    storage_live(_9)
-                    _9 = copy i_2
-                    _10 = copy s_3 panic.+ copy _9
-                    s_3 = move _10
-                    storage_dead(_9)
-                    _11 = copy i_2 panic.+ const 1 : u32
-                    i_2 = move _11
-                    storage_dead(_4)
-                    continue 1
                 }
+                storage_dead(_8)
+                storage_dead(_7)
+                storage_live(_9)
+                _9 = copy i_2
+                _10 = copy s_3 panic.+ copy _9
+                s_3 = move _10
+                storage_dead(_9)
+                _11 = copy i_2 panic.+ const 1 : u32
+                i_2 = move _11
+                storage_dead(_4)
+                continue 1
             } else {
                 storage_dead(_6)
                 storage_dead(_5)
@@ -1538,85 +1540,85 @@ pub fn test_loops()
     _3 = copy x_1
     _2 = move _3 == const 2 : u32
     if move _2 {
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_live(x_4)
-        x_4 = test_loop2(const 2 : u32)
-        storage_live(_5)
-        storage_live(_6)
-        _6 = copy x_4
-        _5 = move _6 == const 1 : u32
-        if move _5 {
-            storage_dead(_6)
-            storage_dead(_5)
-            storage_live(x_7)
-            x_7 = test_loop3(const 2 : u32)
-            storage_live(_8)
-            storage_live(_9)
-            _9 = copy x_7
-            _8 = move _9 == const 3 : u32
-            if move _8 {
-                storage_dead(_9)
-                storage_dead(_8)
-                storage_live(x_10)
-                x_10 = test_loop4(const 20 : u32)
-                storage_live(_11)
-                storage_live(_12)
-                _12 = copy x_10
-                _11 = move _12 == const 1 : u32
-                if move _11 {
-                    storage_dead(_12)
-                    storage_dead(_11)
-                    storage_live(x_13)
-                    x_13 = test_loop5(const 2 : u32)
-                    storage_live(_14)
-                    storage_live(_15)
-                    _15 = copy x_13
-                    _14 = move _15 == const 2 : u32
-                    if move _14 {
-                        storage_dead(_15)
-                        storage_dead(_14)
-                        storage_live(x_16)
-                        x_16 = test_loop6(const 2 : u32)
-                        storage_live(_17)
-                        storage_live(_18)
-                        _18 = copy x_16
-                        _17 = move _18 == const 2 : u32
-                        if move _17 {
-                            storage_dead(_18)
-                            storage_dead(_17)
-                            _0 = ()
-                            storage_dead(x_16)
-                            storage_dead(x_13)
-                            storage_dead(x_10)
-                            storage_dead(x_7)
-                            storage_dead(x_4)
-                            storage_dead(x_1)
-                            return
-                        } else {
-                            storage_dead(_18)
-                            panic(core::panicking::panic)
-                        }
-                    } else {
-                        storage_dead(_15)
-                        panic(core::panicking::panic)
-                    }
-                } else {
-                    storage_dead(_12)
-                    panic(core::panicking::panic)
-                }
-            } else {
-                storage_dead(_9)
-                panic(core::panicking::panic)
-            }
-        } else {
-            storage_dead(_6)
-            panic(core::panicking::panic)
-        }
     } else {
         storage_dead(_3)
         panic(core::panicking::panic)
     }
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_live(x_4)
+    x_4 = test_loop2(const 2 : u32)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy x_4
+    _5 = move _6 == const 1 : u32
+    if move _5 {
+    } else {
+        storage_dead(_6)
+        panic(core::panicking::panic)
+    }
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_live(x_7)
+    x_7 = test_loop3(const 2 : u32)
+    storage_live(_8)
+    storage_live(_9)
+    _9 = copy x_7
+    _8 = move _9 == const 3 : u32
+    if move _8 {
+    } else {
+        storage_dead(_9)
+        panic(core::panicking::panic)
+    }
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_live(x_10)
+    x_10 = test_loop4(const 20 : u32)
+    storage_live(_11)
+    storage_live(_12)
+    _12 = copy x_10
+    _11 = move _12 == const 1 : u32
+    if move _11 {
+    } else {
+        storage_dead(_12)
+        panic(core::panicking::panic)
+    }
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_live(x_13)
+    x_13 = test_loop5(const 2 : u32)
+    storage_live(_14)
+    storage_live(_15)
+    _15 = copy x_13
+    _14 = move _15 == const 2 : u32
+    if move _14 {
+    } else {
+        storage_dead(_15)
+        panic(core::panicking::panic)
+    }
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_live(x_16)
+    x_16 = test_loop6(const 2 : u32)
+    storage_live(_17)
+    storage_live(_18)
+    _18 = copy x_16
+    _17 = move _18 == const 2 : u32
+    if move _17 {
+    } else {
+        storage_dead(_18)
+        panic(core::panicking::panic)
+    }
+    storage_dead(_18)
+    storage_dead(_17)
+    _0 = ()
+    storage_dead(x_16)
+    storage_dead(x_13)
+    storage_dead(x_10)
+    storage_dead(x_7)
+    storage_dead(x_4)
+    storage_dead(x_1)
+    return
 }
 
 // Full name: test_crate::nested_loops_enum
@@ -1676,12 +1678,12 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                 break 0
             },
             Option::Some => {
-                _10 = copy s_3 panic.+ const 1 : usize
-                s_3 = move _10
-                storage_dead(_9)
-                storage_dead(_7)
             },
         }
+        _10 = copy s_3 panic.+ const 1 : usize
+        s_3 = move _10
+        storage_dead(_9)
+        storage_dead(_7)
     }
     storage_dead(_9)
     storage_dead(_7)
@@ -1713,47 +1715,47 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
                 break 0
             },
             Option::Some => {
-                storage_live(_18)
-                storage_live(_19)
-                storage_live(_20)
-                _20 = copy step_in_2
-                _19 = Range { start: const 0 : usize, end: move _20 }
-                storage_dead(_20)
-                _18 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _19)
-                loop {
-                    storage_dead(_19)
-                    storage_live(iter_21)
-                    iter_21 = move _18
-                    break 0
-                }
-                loop {
-                    storage_live(_22)
-                    storage_live(_23)
-                    storage_live(_24)
-                    _24 = &mut iter_21
-                    _23 = &two-phase-mut (*_24)
-                    _22 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _23)
-                    storage_dead(_23)
-                    match _22 {
-                        Option::None => {
-                            break 0
-                        },
-                        Option::Some => {
-                            _25 = copy s_3 panic.+ const 1 : usize
-                            s_3 = move _25
-                            storage_dead(_24)
-                            storage_dead(_22)
-                        },
-                    }
-                }
-                storage_dead(_24)
-                storage_dead(_22)
-                storage_dead(iter_21)
-                storage_dead(_18)
-                storage_dead(_17)
-                storage_dead(_15)
             },
         }
+        storage_live(_18)
+        storage_live(_19)
+        storage_live(_20)
+        _20 = copy step_in_2
+        _19 = Range { start: const 0 : usize, end: move _20 }
+        storage_dead(_20)
+        _18 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _19)
+        loop {
+            storage_dead(_19)
+            storage_live(iter_21)
+            iter_21 = move _18
+            break 0
+        }
+        loop {
+            storage_live(_22)
+            storage_live(_23)
+            storage_live(_24)
+            _24 = &mut iter_21
+            _23 = &two-phase-mut (*_24)
+            _22 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _23)
+            storage_dead(_23)
+            match _22 {
+                Option::None => {
+                    break 0
+                },
+                Option::Some => {
+                },
+            }
+            _25 = copy s_3 panic.+ const 1 : usize
+            s_3 = move _25
+            storage_dead(_24)
+            storage_dead(_22)
+        }
+        storage_dead(_24)
+        storage_dead(_22)
+        storage_dead(iter_21)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_15)
     }
     storage_dead(_17)
     storage_dead(_15)
@@ -1993,24 +1995,24 @@ pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in
         storage_dead(_6)
         _3 = move _4 < move _5
         if move _3 {
-            storage_dead(_5)
-            storage_dead(_4)
-            storage_live(_7)
-            storage_live(_8)
-            _8 = &mut (*v_1)
-            storage_live(_9)
-            _9 = copy i_2
-            _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
-            storage_dead(_9)
-            storage_dead(_8)
-            (*_7) = const 0 : u32
-            storage_dead(_7)
-            _10 = copy i_2 panic.+ const 1 : usize
-            i_2 = move _10
-            storage_dead(_3)
         } else {
             break 0
         }
+        storage_dead(_5)
+        storage_dead(_4)
+        storage_live(_7)
+        storage_live(_8)
+        _8 = &mut (*v_1)
+        storage_live(_9)
+        _9 = copy i_2
+        _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
+        storage_dead(_9)
+        storage_dead(_8)
+        (*_7) = const 0 : u32
+        storage_dead(_7)
+        _10 = copy i_2 panic.+ const 1 : usize
+        i_2 = move _10
+        storage_dead(_3)
     }
     storage_dead(_5)
     storage_dead(_4)
@@ -2067,16 +2069,16 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut List<usize>[{built_in impl Sized for usize
                     storage_dead(y_3)
                     return
                 } else {
-                    storage_dead(_7)
-                    storage_dead(_6)
-                    storage_live(_8)
-                    _8 = &mut (*(*tl_4))
-                    ls_1 = move _8
-                    storage_dead(_8)
-                    storage_dead(_5)
-                    storage_dead(tl_4)
-                    storage_dead(y_3)
                 }
+                storage_dead(_7)
+                storage_dead(_6)
+                storage_live(_8)
+                _8 = &mut (*(*tl_4))
+                ls_1 = move _8
+                storage_dead(_8)
+                storage_dead(_5)
+                storage_dead(tl_4)
+                storage_dead(y_3)
             },
             List::Nil => {
                 panic(core::panicking::panic)
@@ -2123,17 +2125,17 @@ where
                     storage_dead(x_3)
                     return
                 } else {
-                    storage_dead(_6)
-                    storage_live(_7)
-                    _7 = &mut (*(*tl_4))
-                    ls_1 = move _7
-                    storage_dead(_7)
-                    _8 = copy i_2 panic.- const 1 : u32
-                    i_2 = move _8
-                    storage_dead(_5)
-                    storage_dead(tl_4)
-                    storage_dead(x_3)
                 }
+                storage_dead(_6)
+                storage_live(_7)
+                _7 = &mut (*(*tl_4))
+                ls_1 = move _7
+                storage_dead(_7)
+                _8 = copy i_2 panic.- const 1 : u32
+                i_2 = move _8
+                storage_dead(_5)
+                storage_dead(tl_4)
+                storage_dead(x_3)
             },
             _ => {
                 break 0
@@ -2238,11 +2240,11 @@ pub fn interleaved_loops()
                 storage_live(_3)
                 _3 = const true
                 if move _3 {
-                    x_1 = const 5 : i32
-                    storage_dead(_3)
                 } else {
                     break 1
                 }
+                x_1 = const 5 : i32
+                storage_dead(_3)
             }
         }
         x_1 = const 3 : i32
@@ -2291,10 +2293,10 @@ pub fn interleaved_loops2()
                 if move _3 {
                     break 1
                 } else {
-                    storage_dead(_3)
-                    storage_dead(_2)
-                    x_1 = const 5 : i32
                 }
+                storage_dead(_3)
+                storage_dead(_2)
+                x_1 = const 5 : i32
             }
         }
         x_1 = const 3 : i32

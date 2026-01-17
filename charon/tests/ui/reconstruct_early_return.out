@@ -67,9 +67,9 @@ fn f() -> usize
                         storage_dead(i_1)
                         return
                     } else {
-                        storage_dead(_9)
-                        storage_dead(_8)
                     }
+                    storage_dead(_9)
+                    storage_dead(_8)
                 }
                 break 0
             }

@@ -65,9 +65,10 @@ fn main()
     loop {
         loop {
             if move _1 {
+                break 0
             } else {
-                break 1
             }
+            break 1
             break 0
         }
         loop {

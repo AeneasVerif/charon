@@ -492,18 +492,18 @@ pub fn test_box1()
     _7 = copy (*x_4)
     _6 = move _7 == const 1 : i32
     if move _6 {
-        storage_dead(_7)
-        storage_dead(_6)
-        _0 = ()
-        storage_dead(x_4)
-        storage_dead(x_2)
-        conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b_1
-        storage_dead(b_1)
-        return
     } else {
         storage_dead(_7)
         panic(core::panicking::panic)
     }
+    storage_dead(_7)
+    storage_dead(_6)
+    _0 = ()
+    storage_dead(x_4)
+    storage_dead(x_2)
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b_1
+    storage_dead(b_1)
+    return
 }
 
 // Full name: test_crate::copy_int
@@ -542,14 +542,14 @@ where
 
     match (*l_1) {
         List::Cons => {
-            _0 = const true
-            return
         },
         List::Nil => {
             _0 = const false
             return
         },
     }
+    _0 = const true
+    return
 }
 
 // Full name: test_crate::split_list
@@ -566,30 +566,30 @@ where
 
     match l_1 {
         List::Cons => {
-            storage_live(hd_2)
-            hd_2 = move (l_1 as variant List::Cons).0
-            storage_live(tl_3)
-            tl_3 = move (l_1 as variant List::Cons).1
-            storage_live(_4)
-            _4 = move hd_2
-            storage_live(_5)
-            _5 = move (*tl_3)
-            _0 = (move _4, move _5)
-            conditional_drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] _5
-            storage_dead(_5)
-            conditional_drop[{built_in impl Destruct for T}] _4
-            storage_dead(_4)
-            conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<T>[@TraitClause0], Global>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]] tl_3
-            storage_dead(tl_3)
-            conditional_drop[{built_in impl Destruct for T}] hd_2
-            storage_dead(hd_2)
-            conditional_drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] l_1
-            return
         },
         _ => {
             panic(core::panicking::panic)
         },
     }
+    storage_live(hd_2)
+    hd_2 = move (l_1 as variant List::Cons).0
+    storage_live(tl_3)
+    tl_3 = move (l_1 as variant List::Cons).1
+    storage_live(_4)
+    _4 = move hd_2
+    storage_live(_5)
+    _5 = move (*tl_3)
+    _0 = (move _4, move _5)
+    conditional_drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] _5
+    storage_dead(_5)
+    conditional_drop[{built_in impl Destruct for T}] _4
+    storage_dead(_4)
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<List<T>[@TraitClause0], Global>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]] tl_3
+    storage_dead(tl_3)
+    conditional_drop[{built_in impl Destruct for T}] hd_2
+    storage_dead(hd_2)
+    conditional_drop[{impl Destruct for List<T>[@TraitClause0]}<T>[@TraitClause0]] l_1
+    return
 }
 
 // Full name: test_crate::test_char

@@ -255,8 +255,6 @@ where
 
     match (*x_1) {
         Option::None => {
-            _0 = Option::None {  }
-            return
         },
         Option::Some => {
             storage_live(x_3)
@@ -276,6 +274,8 @@ where
             return
         },
     }
+    _0 = Option::None {  }
+    return
 }
 
 // Full name: test_crate::test_map_option1

@@ -79,11 +79,13 @@ fn main()
                 _3 = bar()
                 if move _3 {
                     _1 = do_something()
-                    break 1
                 } else {
+                    break 0
                 }
             } else {
+                break 0
             }
+            break 1
             break 0
         }
         _1 = do_something_else()

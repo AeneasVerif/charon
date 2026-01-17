@@ -5259,18 +5259,18 @@ fn main()
                 break 0
             },
             Option::Some => {
-                storage_live(v_10)
-                v_10 = copy (_7 as variant Option::Some).0
-                storage_live(_11)
-                _11 = copy v_10
-                _12 = copy i_2 panic.+ copy _11
-                i_2 = move _12
-                storage_dead(_11)
-                storage_dead(v_10)
-                storage_dead(_9)
-                storage_dead(_7)
             },
         }
+        storage_live(v_10)
+        v_10 = copy (_7 as variant Option::Some).0
+        storage_live(_11)
+        _11 = copy v_10
+        _12 = copy i_2 panic.+ copy _11
+        i_2 = move _12
+        storage_dead(_11)
+        storage_dead(v_10)
+        storage_dead(_9)
+        storage_dead(_7)
     }
     storage_dead(_9)
     storage_dead(_7)
@@ -5307,22 +5307,22 @@ fn main()
                 break 0
             },
             Option::Some => {
-                storage_live(v_21)
-                v_21 = copy (_18 as variant Option::Some).0
-                storage_live(_22)
-                storage_live(_23)
-                _23 = &two-phase-mut i_2
-                storage_live(_24)
-                _24 = copy v_21
-                _22 = {impl AddAssign<&'_0 i32> for i32}::add_assign<'23, '_>(move _23, move _24)
-                storage_dead(_24)
-                storage_dead(_23)
-                storage_dead(_22)
-                storage_dead(v_21)
-                storage_dead(_20)
-                storage_dead(_18)
             },
         }
+        storage_live(v_21)
+        v_21 = copy (_18 as variant Option::Some).0
+        storage_live(_22)
+        storage_live(_23)
+        _23 = &two-phase-mut i_2
+        storage_live(_24)
+        _24 = copy v_21
+        _22 = {impl AddAssign<&'_0 i32> for i32}::add_assign<'23, '_>(move _23, move _24)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(v_21)
+        storage_dead(_20)
+        storage_dead(_18)
     }
     storage_dead(_20)
     storage_dead(_18)
@@ -5357,12 +5357,12 @@ fn main()
                 break 0
             },
             Option::Some => {
-                _33 = copy i_2 panic.+ const 1 : i32
-                i_2 = move _33
-                storage_dead(_32)
-                storage_dead(_30)
             },
         }
+        _33 = copy i_2 panic.+ const 1 : i32
+        i_2 = move _33
+        storage_dead(_32)
+        storage_dead(_30)
     }
     storage_dead(_32)
     storage_dead(_30)
@@ -5397,12 +5397,12 @@ fn main()
                 break 0
             },
             Option::Some => {
-                _42 = copy i_2 panic.+ const 1 : i32
-                i_2 = move _42
-                storage_dead(_41)
-                storage_dead(_39)
             },
         }
+        _42 = copy i_2 panic.+ const 1 : i32
+        i_2 = move _42
+        storage_dead(_41)
+        storage_dead(_39)
     }
     storage_dead(_41)
     storage_dead(_39)
@@ -5429,17 +5429,6 @@ fn main()
     _51 = copy (*right_val_48)
     _49 = move _50 == move _51
     if move _49 {
-        storage_dead(_51)
-        storage_dead(_50)
-        storage_dead(_49)
-        storage_dead(right_val_48)
-        storage_dead(left_val_47)
-        storage_dead(_44)
-        _0 = ()
-        storage_dead(expected_43)
-        storage_dead(i_2)
-        storage_dead(a_1)
-        return
     } else {
         storage_dead(_51)
         storage_dead(_50)
@@ -5459,6 +5448,17 @@ fn main()
         _58 = Option::None {  }
         panic(core::panicking::assert_failed)
     }
+    storage_dead(_51)
+    storage_dead(_50)
+    storage_dead(_49)
+    storage_dead(right_val_48)
+    storage_dead(left_val_47)
+    storage_dead(_44)
+    _0 = ()
+    storage_dead(expected_43)
+    storage_dead(i_2)
+    storage_dead(a_1)
+    return
 }
 
 

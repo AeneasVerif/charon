@@ -81,14 +81,14 @@ fn panic5()
     storage_live(_1)
     _1 = const false
     if move _1 {
-        storage_dead(_1)
-        _0 = ()
-        return
     } else {
         storage_live(_2)
         _2 = from_str<'1>(const "assert failed")
         panic(core::panicking::panic_fmt)
     }
+    storage_dead(_1)
+    _0 = ()
+    return
 }
 
 // Full name: test_crate::panic6
