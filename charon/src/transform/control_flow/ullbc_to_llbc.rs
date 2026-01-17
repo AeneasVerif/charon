@@ -20,7 +20,7 @@ use petgraph::visit::{
 };
 use smallvec::SmallVec;
 use std::cmp::Reverse;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::mem;
 
 use crate::common::ensure_sufficient_stack;
@@ -197,7 +197,7 @@ struct Irreducible(BlockId);
 impl<'a> CfgInfo<'a> {
     /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and precompute a
     /// bunch of graph information about the CFG.
-    fn build(body: &'a src::BodyContents) -> Result<Self, Irreducible> {
+    fn build(ctx: &TransformCtx, body: &'a src::BodyContents) -> Result<Self, Irreducible> {
         // The steps in this function follow a precise order, as each step typically requires the
         // previous one.
         let start_block = BlockId::ZERO;
@@ -370,14 +370,22 @@ impl<'a> CfgInfo<'a> {
             block_data[block_id].within_loops = within_loops;
         }
 
-        Ok(CfgInfo {
+        let mut cfg = CfgInfo {
             cfg,
             fwd_cfg,
             loop_entries,
             switch_blocks,
             dominator_tree,
             block_data,
-        })
+        };
+
+        // Pick an exit block for each loop, if we find one.
+        ExitInfo::compute_loop_exits(ctx, &mut cfg);
+
+        // Pick an exit block for each switch, if we find one.
+        ExitInfo::compute_switch_exits(&mut cfg);
+
+        Ok(cfg)
     }
 
     fn block_data(&self, block_id: BlockId) -> &BlockData<'a> {
@@ -432,6 +440,10 @@ impl BlockData<'_> {
     fn reachable_excluding_self(&self) -> impl Iterator<Item = BlockId> {
         self.shortest_paths_excluding_self().map(|(bid, _)| bid)
     }
+    #[expect(unused)]
+    fn can_reach_excluding_self(&self, other: BlockId) -> bool {
+        self.shortest_paths.contains_key(&other) && self.id != other
+    }
 }
 
 /// See [`ExitInfo::compute_loop_exit_ranks`].
@@ -444,9 +456,11 @@ struct LoopExitRank {
 }
 
 impl ExitInfo {
-    /// Compute the nodes that exit the given loop header. These are the first node on each path
-    /// that we find that exits the loop.
-    fn compute_loop_exit_candidates(cfg: &CfgInfo, loop_header: src::BlockId) -> Vec<src::BlockId> {
+    /// Compute the first node on each path that exits the loop.
+    fn compute_loop_exit_starting_points(
+        cfg: &CfgInfo,
+        loop_header: src::BlockId,
+    ) -> Vec<src::BlockId> {
         let mut loop_exits = Vec::new();
         // Do a dfs from the loop header while keeping track of the path from the loop header to
         // the current node.
@@ -496,7 +510,7 @@ impl ExitInfo {
         loop_header: src::BlockId,
     ) -> SeqHashMap<src::BlockId, LoopExitRank> {
         let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> = SeqHashMap::new();
-        for block_id in Self::compute_loop_exit_candidates(cfg, loop_header) {
+        for block_id in Self::compute_loop_exit_starting_points(cfg, loop_header) {
             for bid in cfg.block_data(block_id).reachable_including_self() {
                 loop_exits
                     .entry(bid)
@@ -605,11 +619,7 @@ impl ExitInfo {
     ///     s
     /// }
     /// ```
-    fn compute_loop_exits(
-        ctx: &TransformCtx,
-        cfg: &CfgInfo,
-    ) -> HashMap<src::BlockId, src::BlockId> {
-        let mut chosen_loop_exits: HashMap<src::BlockId, src::BlockId> = HashMap::new();
+    fn compute_loop_exits(ctx: &TransformCtx, cfg: &mut CfgInfo) {
         for &loop_id in &cfg.loop_entries {
             // Compute the candidates.
             let loop_exits: SeqHashMap<BlockId, LoopExitRank> =
@@ -666,164 +676,10 @@ impl ExitInfo {
                         .ok()
                 }
             };
-            if let Some(exit_id) = chosen_exit {
-                chosen_loop_exits.insert(loop_id, exit_id);
-            }
+            cfg.block_data[loop_id].exit_info.loop_exit = chosen_exit;
         }
-
-        // Return the chosen exits
-        trace!("Chosen loop exits: {:?}", chosen_loop_exits);
-        chosen_loop_exits
     }
 
-    /// See [`Self::compute`] for explanations about what "exits" are.
-    ///
-    /// In order to compute the switch exits, we simply recursively compute a
-    /// topologically ordered set of "filtered successors" as follows (note
-    /// that we work in the CFG *without* back edges):
-    /// - for a block which doesn't branch (only one successor), the filtered
-    ///   successors is the set of reachable nodes.
-    /// - for a block which branches, we compute the nodes reachable from all
-    ///   the children, and find the "best" intersection between those.
-    ///   Note that we find the "best" intersection (a pair of branches which
-    ///   maximize the intersection of filtered successors) because some branches
-    ///   might never join the control-flow of the other branches, if they contain
-    ///   a `break`, `return`, `panic`, etc., like here:
-    ///   ```text
-    ///   if b { x = 3; } { return; }
-    ///   y += x;
-    ///   ...
-    ///   ```
-    /// Note that with nested switches, the branches of the inner switches might
-    /// goto the exits of the outer switches: for this reason, we give precedence
-    /// to the outer switches.
-    fn compute_switch_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, src::BlockId> {
-        // Compute the successors info map, starting at the root node
-        trace!(
-            "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
-            cfg.cfg, cfg.fwd_cfg, cfg.switch_blocks
-        );
-
-        // Debugging: print all the successors
-        {
-            trace!("Successors info:\n{}\n", {
-                let mut out = vec![];
-                for (bid, info) in cfg.block_data.iter_indexed() {
-                    out.push(format!("{} -> {{flow: {:?}}}", bid, &info.flow).to_string());
-                }
-                out.join("\n")
-            });
-        }
-
-        // We need to give precedence to the outer switches: we thus iterate
-        // over the switch blocks in topological order.
-        let sorted_switch_blocks = cfg
-            .switch_blocks
-            .iter()
-            .copied()
-            .sorted_unstable_by_key(|&bid| (cfg.topo_rank(bid), bid));
-
-        // For every node which is a switch, retrieve the exit.
-        // As the set of intersection of successors is topologically sorted, the
-        // exit should be the first node in the set (if the set is non empty).
-        // Also, we need to explore the nodes in topological order, to give
-        // precedence to the outer switches.
-        let mut exits_set = HashSet::new();
-        let mut exits = HashMap::new();
-        for bid in sorted_switch_blocks {
-            trace!("Finding exit candidate for: {bid:?}");
-            let block_data = &cfg.block_data[bid];
-            // Find the best successor: this is the node with the highest flow, and the
-            // highest reverse topological rank.
-            //
-            // Remark: in order to rank the nodes, we also use the negation of the
-            // rank given by the topological order. The last elements of the set
-            // have the highest flow, that is they are the nodes to which the maximum
-            // number of paths converge. If several nodes have the same flow, we want
-            // to take the highest one in the hierarchy: hence the use of the inverse
-            // of the topological rank.
-            //
-            // Ex.:
-            // ```text
-            // A  -- we start here
-            // |
-            // |---------------------------------------
-            // |            |            |            |
-            // B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
-            // |            |            |
-            // |--------------------------
-            // |
-            // F:(0.75,-5)
-            // |
-            // |
-            // G:(0.75,-6)
-            // ```
-            // The "best" node (with the highest (flow, rank) in the graph above is F.
-            let best_exit: Option<BlockId> =
-                block_data.reachable_excluding_self().max_by_key(|&id| {
-                    let flow = &block_data.flow[id];
-                    let rank = Reverse(cfg.topo_rank(id));
-                    ((flow, rank), id)
-                });
-            let exit_candidate: Option<_> =
-                best_exit.filter(|exit_id| !exits_set.contains(exit_id));
-            if let Some(exit_id) = exit_candidate {
-                // We have an exit candidate: check that it was not already
-                // taken by an external switch
-                trace!("{bid:?} has an exit candidate: {exit_id:?}");
-                // It was not taken by an external switch.
-                //
-                // We must check that we can't reach the exit of an external switch from one of the
-                // branches, without going through the exit candidate.
-                // We do this by simply checking that we can't reach any exits (and use the fact
-                // that we explore the switch by using a topological order to not discard valid
-                // exit candidates).
-                //
-                // The reason is that it can lead to code like the following:
-                // ```
-                // if ... { // if #1
-                //   if ... { // if #2
-                //     ...
-                //     // here, we have a `goto b1`, where b1 is the exit
-                //     // of if #2: we thus stop translating the blocks.
-                //   }
-                //   else {
-                //     ...
-                //     // here, we have a `goto b2`, where b2 is the exit
-                //     // of if #1: we thus stop translating the blocks.
-                //   }
-                //   // We insert code for the block b1 here (which is the exit of
-                //   // the exit of if #2). However, this block should only
-                //   // be executed in the branch "then" of the if #2, not in
-                //   // the branch "else".
-                //   ...
-                // }
-                // else {
-                //   ...
-                // }
-                // ```
-                if cfg.all_paths_go_through(bid, exit_id, &exits_set) {
-                    trace!("Keeping the exit candidate");
-                    // No intersection: ok
-                    exits_set.insert(exit_id);
-                    exits.insert(bid, exit_id);
-                } else {
-                    trace!(
-                        "Ignoring the exit candidate because of an intersection with external switches"
-                    );
-                }
-            } else {
-                trace!("{bid:?} has no successors");
-            };
-        }
-
-        exits
-    }
-
-    /// Compute the exits for the loops and the switches (switch on integer and
-    /// if ... then ... else ...). We need to do this because control-flow in MIR
-    /// is destructured: we have gotos everywhere.
-    ///
     /// Let's consider the following piece of code:
     /// ```text
     /// if cond1 { ... } else { ... };
@@ -846,109 +702,112 @@ impl ExitInfo {
     /// it is very different from the original program (making it less clean and
     /// clear), more bloated, and might involve duplicating the proof effort.
     ///
-    /// For this reason, we need to find the "exit" of the first loop, which is
+    /// For this reason, we need to find the "exit" of the first switch, which is
     /// the point where the two branches join. Note that this can be a bit tricky,
     /// because there may be more than two branches (if we do `switch(x) { ... }`),
     /// and some of them might not join (if they contain a `break`, `panic`,
     /// `return`, etc.).
     ///
-    /// Finally, some similar issues arise for loops. For instance, let's consider
-    /// the following piece of code:
-    /// ```text
-    /// while cond1 {
-    ///   e1;
-    ///   if cond2 {
-    ///     break;
-    ///   }
-    ///   e2;
-    /// }
-    /// e3;
-    /// return;
-    /// ```
-    ///
-    /// Note that in MIR, the loop gets desugared to an if ... then ... else ....
-    /// From the MIR, We want to generate something like this:
-    /// ```text
-    /// loop {
-    ///   if cond1 {
-    ///     e1;
-    ///     if cond2 {
-    ///       break;
-    ///     }
-    ///     e2;
-    ///     continue;
-    ///   }
-    ///   else {
-    ///     break;
-    ///   }
-    /// };
-    /// e3;
-    /// return;
-    /// ```
-    ///
-    /// But if we don't pay attention, we might end up with that, once again with
-    /// duplications:
-    /// ```text
-    /// loop {
-    ///   if cond1 {
-    ///     e1;
-    ///     if cond2 {
-    ///       e3;
-    ///       return;
-    ///     }
-    ///     e2;
-    ///     continue;
-    ///   }
-    ///   else {
-    ///     e3;
-    ///     return;
-    ///   }
-    /// }
-    /// ```
-    /// We thus have to notice that if the loop condition is false, we goto the same
-    /// block as when following the goto introduced by the break inside the loop, and
-    /// this block is dubbed the "loop exit".
-    ///
-    /// The following function thus computes the "exits" for loops and switches, which
-    /// are basically the points where control-flow joins.
-    fn compute(ctx: &TransformCtx, cfg_info: &mut CfgInfo) {
-        // Compute the loop exits
-        let loop_exits: HashMap<BlockId, BlockId> = Self::compute_loop_exits(ctx, cfg_info);
-        trace!("loop_exits:\n{:?}", loop_exits);
-
-        // Compute the switch exits
-        let switch_exits: HashMap<BlockId, BlockId> = Self::compute_switch_exits(cfg_info);
-        trace!("switch_exits:\n{:?}", switch_exits);
-
-        // Keep track of the exits which were already attributed
-        let mut all_exits = HashSet::new();
-
-        // We need to give precedence to the outer switches and loops: we thus iterate
-        // over the blocks in topological order.
-        let sorted_blocks = cfg_info
-            .loop_entries
+    /// In order to compute the switch exits, we simply recursively compute a
+    /// topologically ordered set of "filtered successors" as follows (note
+    /// that we work in the CFG *without* back edges):
+    /// - for a block which doesn't branch (only one successor), the filtered
+    ///   successors is the set of reachable nodes.
+    /// - for a block which branches, we compute the nodes reachable from all
+    ///   the children, and find the "best" intersection between those.
+    ///   Note that we find the "best" intersection (a pair of branches which
+    ///   maximize the intersection of filtered successors) because some branches
+    ///   might never join the control-flow of the other branches, if they contain
+    ///   a `break`, `return`, `panic`, etc., like here:
+    ///   ```text
+    ///   if b { x = 3; } { return; }
+    ///   y += x;
+    ///   ...
+    ///   ```
+    /// Note that with nested switches, the branches of the inner switches might
+    /// goto the exits of the outer switches: for this reason, we give precedence
+    /// to the outer switches.
+    fn compute_switch_exits(cfg: &mut CfgInfo) {
+        // We need to give precedence to the outer switches: we thus iterate
+        // over the switch blocks in topological order.
+        let mut exits_set = HashSet::new();
+        for bid in cfg
+            .switch_blocks
             .iter()
-            .chain(cfg_info.switch_blocks.iter())
             .copied()
-            .sorted_unstable_by_key(|&bid| (cfg_info.topo_rank(bid), bid));
-        for bid in sorted_blocks {
-            let block_data = &mut cfg_info.block_data[bid];
-            let exit_info = &mut block_data.exit_info;
-            if block_data.is_loop_header {
-                // For loops, we always register the exit (if there is one).
-                // However, the exit may be owned by an outer switch (note that we already took
-                // care of spreading the exits between the inner/outer loops)
-                if let Some(&exit_id) = loop_exits.get(&bid) {
-                    exit_info.loop_exit = Some(exit_id);
-                    all_exits.insert(exit_id);
-                }
-            } else {
-                // For switches: check that the exit was not already given to a loop
-                if let Some(&exit_id) = switch_exits.get(&bid)
-                    && all_exits.insert(exit_id)
-                {
-                    exit_info.switch_exit = Some(exit_id);
-                }
+            .sorted_unstable_by_key(|&bid| (cfg.topo_rank(bid), bid))
+        {
+            let block_data = &cfg.block_data[bid];
+            // Find the best successor: this is the node with the highest flow, and the lowest
+            // topological rank. If several nodes have the same flow, we want to take the highest
+            // one in the hierarchy: hence the use of the topological rank.
+            //
+            // Ex.:
+            // ```text
+            // A  -- we start here
+            // |
+            // |---------------------------------------
+            // |            |            |            |
+            // B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
+            // |            |            |
+            // |--------------------------
+            // |
+            // F:(0.75,-5)
+            // |
+            // |
+            // G:(0.75,-6)
+            // ```
+            // The "best" node (with the highest (flow, rank) in the graph above is F.
+            // If the switch is inside a loop, we also only consider exists that are inside that
+            // same loop. There must be one, otherwise the switch entry would not be inside the
+            // loop.
+            let current_loop = block_data.within_loops.last().copied();
+            let best_exit: Option<BlockId> = block_data
+                .reachable_excluding_self()
+                .filter(|&b| {
+                    current_loop.is_none_or(|current_loop| cfg.is_within_loop(current_loop, b))
+                })
+                .max_by_key(|&id| {
+                    let flow = &block_data.flow[id];
+                    let rank = Reverse(cfg.topo_rank(id));
+                    ((flow, rank), id)
+                });
+            // We have an exit candidate: we first check that it was not already taken by an
+            // external switch.
+            //
+            // We then check that we can't reach the exit of an external switch from one of the
+            // branches, without going through the exit candidate. We do this by simply checking
+            // that we can't reach any of the exits of outer switches.
+            //
+            // The reason is that it can lead to code like the following:
+            // ```
+            // if ... { // if #1
+            //   if ... { // if #2
+            //     ...
+            //     // here, we have a `goto b1`, where b1 is the exit
+            //     // of if #2: we thus stop translating the blocks.
+            //   }
+            //   else {
+            //     ...
+            //     // here, we have a `goto b2`, where b2 is the exit
+            //     // of if #1: we thus stop translating the blocks.
+            //   }
+            //   // We insert code for the block b1 here (which is the exit of
+            //   // the exit of if #2). However, this block should only
+            //   // be executed in the branch "then" of the if #2, not in
+            //   // the branch "else".
+            //   ...
+            // }
+            // else {
+            //   ...
+            // }
+            // ```
+            if let Some(exit_id) = best_exit
+                && !exits_set.contains(&exit_id)
+                && cfg.all_paths_go_through(bid, exit_id, &exits_set)
+            {
+                exits_set.insert(exit_id);
+                cfg.block_data[bid].exit_info.switch_exit = Some(exit_id);
             }
         }
     }
@@ -1000,12 +859,9 @@ struct ReconstructCtx<'a> {
 
 impl<'a> ReconstructCtx<'a> {
     fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
-        // Explore the function body to create the control-flow graph without backward
-        // edges, and identify the loop entries (which are destinations of backward edges).
-        let mut cfg = CfgInfo::build(&src_body.body)?;
-
-        // Find the exit block for all the loops and switches, if such an exit point exists.
-        ExitInfo::compute(ctx, &mut cfg);
+        // Compute all sorts of graph-related information about the control-flow graph, including
+        // reachability, the dominator tree, loop entries, and loop/switch exits.
+        let cfg = CfgInfo::build(ctx, &src_body.body)?;
 
         // Translate the body by reconstructing the loops and the
         // conditional branchings.
@@ -1250,7 +1106,9 @@ impl<'a> ReconstructCtx<'a> {
         match self.mode {
             ReconstructMode::Flow => {
                 // We only support next-block jumps to merge nodes.
-                if let Some(bid) = block_data.exit_info.switch_exit {
+                if let Some(bid) = block_data.exit_info.switch_exit
+                    && !block_data.is_loop_header
+                {
                     self.special_jump_stack.push((bid, SpecialJump::NextBlock));
                 }
             }
