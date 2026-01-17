@@ -101,18 +101,15 @@ unsafe fn {impl Destruct::<[String]>}::drop_in_place::<String>(@1: *mut [String]
     let _7: &'_ mut [String]; // anonymous local
     let _8: &'_ mut String; // anonymous local
 
-    loop {
-        storage_live(_2)
-        storage_live(_3)
-        storage_live(_4)
-        storage_live(_5)
-        storage_live(_6)
-        _0 = ()
-        _2 = &mut (*_1) with_metadata(copy _1.metadata)
-        _3 = copy _2.metadata
-        _4 = const 0 : usize
-        break 0
-    }
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _0 = ()
+    _2 = &mut (*_1) with_metadata(copy _1.metadata)
+    _3 = copy _2.metadata
+    _4 = const 0 : usize
     loop {
         _6 = copy _4 == copy _3
         if move _6 {
@@ -205,22 +202,19 @@ unsafe fn {impl Destruct::<[String; 4 : usize]>}::drop_in_place::<String, 4 : us
     let _9: &'_ mut [String]; // anonymous local
     let _10: &'_ mut String; // anonymous local
 
-    loop {
-        storage_live(_2)
-        storage_live(_3)
-        storage_live(_4)
-        storage_live(_5)
-        storage_live(_6)
-        storage_live(_7)
-        storage_live(_8)
-        _0 = ()
-        _2 = &mut (*_1)
-        _3 = &raw mut (*_2)
-        _4 = unsize_cast<*mut [String; 4 : usize], *mut [String], 4 : usize>(move _3)
-        _5 = copy _4.metadata
-        _6 = const 0 : usize
-        break 0
-    }
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = &raw mut (*_2)
+    _4 = unsize_cast<*mut [String; 4 : usize], *mut [String], 4 : usize>(move _3)
+    _5 = copy _4.metadata
+    _6 = const 0 : usize
     loop {
         _8 = copy _6 == copy _5
         if move _8 {

@@ -618,12 +618,9 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
     _5 = chunks<'_, u8>[{built_in impl Sized for u8}](move _6, const 3 : usize)
     storage_dead(_6)
     _4 = {impl IntoIterator for I}::into_iter<Chunks<'2, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'2, u8>[{built_in impl Sized for u8}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'2, u8>[{built_in impl Sized for u8}]](move _5)
-    loop {
-        storage_dead(_5)
-        storage_live(iter_7)
-        iter_7 = move _4
-        break 0
-    }
+    storage_dead(_5)
+    storage_live(iter_7)
+    iter_7 = move _4
     loop {
         storage_live(_8)
         storage_live(_9)

@@ -73,14 +73,11 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
     let _10: i32; // anonymous local
     let x_11: u8; // local
 
-    loop {
-        _0 = ()
-        storage_live(previous_true_hints_seen_2)
-        previous_true_hints_seen_2 = const 0 : usize
-        storage_live(i_3)
-        i_3 = const 0 : i32
-        break 0
-    }
+    _0 = ()
+    storage_live(previous_true_hints_seen_2)
+    previous_true_hints_seen_2 = const 0 : usize
+    storage_live(i_3)
+    i_3 = const 0 : i32
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -107,13 +104,10 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
                 }
                 break 0
             }
-            loop {
-                storage_dead(_7)
-                storage_dead(_6)
-                storage_live(j_8)
-                j_8 = const 0 : i32
-                break 0
-            }
+            storage_dead(_7)
+            storage_dead(_6)
+            storage_live(j_8)
+            j_8 = const 0 : i32
             loop {
                 storage_live(_9)
                 storage_live(_10)

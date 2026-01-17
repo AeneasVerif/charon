@@ -561,12 +561,9 @@ where
     storage_live(_3)
     _3 = copy slice_1
     _2 = {impl IntoIterator for &'a [T]}::into_iter<'11, T>[@TraitClause0](move _3)
-    loop {
-        storage_dead(_3)
-        storage_live(iter_4)
-        iter_4 = move _2
-        break 0
-    }
+    storage_dead(_3)
+    storage_live(iter_4)
+    iter_4 = move _2
     loop {
         storage_live(_5)
         storage_live(_6)

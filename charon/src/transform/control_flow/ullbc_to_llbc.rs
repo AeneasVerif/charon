@@ -125,7 +125,7 @@ struct BlockData<'a> {
     pub is_loop_header: bool,
     /// Whether this block is a switch.
     pub is_switch: bool,
-    /// Blocks that have multiple incoming control-flow edges.
+    /// Whether this block has multiple incoming control-flow edges in the forward graph.
     pub is_merge_target: bool,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
     pub reverse_postorder: Option<u32>,
@@ -240,15 +240,6 @@ impl<'a> CfgInfo<'a> {
             if let Some(dominator) = dominator_tree.immediate_dominator(block_id) {
                 block_data[dominator].immediately_dominates.push(block_id);
             }
-
-            // Detect merge targets.
-            if cfg
-                .neighbors_directed(block_id, petgraph::Direction::Incoming)
-                .count()
-                >= 2
-            {
-                block_data[block_id].is_merge_target = true;
-            }
         }
 
         // Compute the forward graph (without backward edges). We do a dfs while keeping track of
@@ -266,6 +257,7 @@ impl<'a> CfgInfo<'a> {
 
             // Iterate over edges into this node (so that we can determine whether this node is a
             // loop header).
+            let mut incoming_fwd_edges = 0;
             for from in cfg.neighbors_directed(block_id, petgraph::Direction::Incoming) {
                 // Check if the edge is a backward edge.
                 if block_data[from].reverse_postorder >= block_data[block_id].reverse_postorder {
@@ -278,8 +270,14 @@ impl<'a> CfgInfo<'a> {
                         return Err(Irreducible(from));
                     }
                 } else {
+                    incoming_fwd_edges += 1;
                     fwd_cfg.add_edge(from, block_id, ());
                 }
+            }
+
+            // Detect merge targets.
+            if incoming_fwd_edges >= 2 {
+                block_data[block_id].is_merge_target = true;
             }
         }
 

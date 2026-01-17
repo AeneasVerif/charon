@@ -63,38 +63,33 @@ fn main()
     // inside the loop.
     _1 = foo()
     loop {
-        loop {
-            if move _1 {
-                break 0
-            } else {
-            }
-            break 1
-            break 0
-        }
-        loop {
-            storage_live(_2)
-            _2 = do_something()
-            storage_dead(_2)
-            storage_live(_3)
-            _3 = foo()
+        if move _1 {
             loop {
-                if move _3 {
-                } else {
-                    storage_live(_4)
-                    _4 = bar()
-                    if move _4 {
+                storage_live(_2)
+                _2 = do_something()
+                storage_dead(_2)
+                storage_live(_3)
+                _3 = foo()
+                loop {
+                    if move _3 {
                     } else {
-                        storage_dead(_4)
-                        storage_dead(_3)
-                        continue 1
+                        storage_live(_4)
+                        _4 = bar()
+                        if move _4 {
+                        } else {
+                            storage_dead(_4)
+                            storage_dead(_3)
+                            continue 1
+                        }
                     }
+                    break 0
                 }
                 break 0
             }
-            break 0
+            storage_dead(_4)
+            storage_dead(_3)
+        } else {
         }
-        storage_dead(_4)
-        storage_dead(_3)
         break 0
     }
     storage_dead(_1)

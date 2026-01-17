@@ -351,10 +351,7 @@ where
     let _7: u32; // anonymous local
     let _8: &'1 mut CList<T>[@TraitClause0]; // anonymous local
 
-    loop {
-        storage_live(_7)
-        break 0
-    }
+    storage_live(_7)
     loop {
         match (*l_1) {
             CList::CCons => {

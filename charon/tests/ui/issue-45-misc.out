@@ -674,12 +674,9 @@ fn cbd(@1: [u8; 33 : usize])
     storage_live(_3)
     _3 = Range { start: const 0 : u8, end: const 3 : u8 }
     _2 = {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move _3)
-    loop {
-        storage_dead(_3)
-        storage_live(iter_4)
-        iter_4 = move _2
-        break 0
-    }
+    storage_dead(_3)
+    storage_live(iter_4)
+    iter_4 = move _2
     loop {
         storage_live(_5)
         storage_live(_6)

@@ -311,22 +311,19 @@ where
     let _9: &'_ mut [T]; // anonymous local
     let _10: &'_ mut T; // anonymous local
 
-    loop {
-        storage_live(_2)
-        storage_live(_3)
-        storage_live(_4)
-        storage_live(_5)
-        storage_live(_6)
-        storage_live(_7)
-        storage_live(_8)
-        _0 = ()
-        _2 = &mut (*_1)
-        _3 = &raw mut (*_2)
-        _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
-        _5 = copy _4.metadata
-        _6 = const 0 : usize
-        break 0
-    }
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = &raw mut (*_2)
+    _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
+    _5 = copy _4.metadata
+    _6 = const 0 : usize
     loop {
         _8 = copy _6 == copy _5
         if move _8 {
@@ -1635,15 +1632,12 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
     let _12: &'_ [u32]; // anonymous local
     let _13: &'_ u32; // anonymous local
 
-    loop {
-        storage_live(_10)
-        storage_live(_11)
-        storage_live(sum_2)
-        sum_2 = const 0 : u32
-        storage_live(i_3)
-        i_3 = const 0 : usize
-        break 0
-    }
+    storage_live(_10)
+    storage_live(_11)
+    storage_live(sum_2)
+    sum_2 = const 0 : u32
+    storage_live(i_3)
+    i_3 = const 0 : usize
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -1738,14 +1732,11 @@ pub fn sum2<'_0, '_1>(@1: &'_0 [u32], @2: &'_1 [u32]) -> u32
         storage_dead(_5)
         panic(core::panicking::panic)
     }
-    loop {
-        storage_dead(_7)
-        storage_dead(_5)
-        storage_dead(_4)
-        storage_live(i_9)
-        i_9 = const 0 : usize
-        break 0
-    }
+    storage_dead(_7)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_live(i_9)
+    i_9 = const 0 : usize
     loop {
         storage_live(_10)
         storage_live(_11)
@@ -2090,10 +2081,7 @@ pub fn zero_slice<'_0>(@1: &'_0 mut [u8])
     storage_live(_4)
     _4 = &(*a_1) with_metadata(copy a_1.metadata)
     len_3 = len<'_, u8>[{built_in impl Sized for u8}](move _4)
-    loop {
-        storage_dead(_4)
-        break 0
-    }
+    storage_dead(_4)
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -2147,12 +2135,9 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut [u8])
     storage_live(_3)
     _3 = &(*a_1) with_metadata(copy a_1.metadata)
     len_2 = len<'_, u8>[{built_in impl Sized for u8}](move _3)
-    loop {
-        storage_dead(_3)
-        storage_live(i_4)
-        i_4 = const 0 : usize
-        break 0
-    }
+    storage_dead(_3)
+    storage_live(i_4)
+    i_4 = const 0 : usize
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -2197,15 +2182,12 @@ pub fn sum_mut_slice<'_0>(@1: &'_0 mut [u32]) -> u32
     let _12: &'_ [u32]; // anonymous local
     let _13: &'_ u32; // anonymous local
 
-    loop {
-        storage_live(_10)
-        storage_live(_11)
-        storage_live(i_2)
-        i_2 = const 0 : usize
-        storage_live(s_3)
-        s_3 = const 0 : u32
-        break 0
-    }
+    storage_live(_10)
+    storage_live(_11)
+    storage_live(i_2)
+    i_2 = const 0 : usize
+    storage_live(s_3)
+    s_3 = const 0 : u32
     loop {
         storage_live(_4)
         storage_live(_5)

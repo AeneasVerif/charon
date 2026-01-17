@@ -25,15 +25,12 @@ fn f() -> usize
     let _9: i32; // anonymous local
     let _10: i32; // anonymous local
 
-    loop {
-        storage_live(_5)
-        storage_live(_10)
-        storage_live(i_1)
-        i_1 = const 0 : i32
-        storage_live(j_2)
-        j_2 = const 0 : i32
-        break 0
-    }
+    storage_live(_5)
+    storage_live(_10)
+    storage_live(i_1)
+    i_1 = const 0 : i32
+    storage_live(j_2)
+    j_2 = const 0 : i32
     loop {
         storage_live(_3)
         storage_live(_4)
