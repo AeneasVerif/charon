@@ -163,24 +163,21 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Forma
             return
         },
     }
-    loop {
-        storage_dead(_3)
-        storage_live(_5)
-        storage_live(_6)
-        _6 = copy (((*f_2)).0).flags
-        _5 = move _6 & copy DEBUG_UPPER_HEX_FLAG
-        storage_dead(_6)
-        switch move _5 {
-            0 : u32 => {
-                storage_dead(_5)
-                _0 = {impl Display for u32}::fmt<'_, '_, '_>(move self_1, move f_2)
-            },
-            _ => {
-                storage_dead(_5)
-                _0 = {impl UpperHex for u32}::fmt<'_, '_, '_>(move self_1, move f_2)
-            },
-        }
-        break 0
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy (((*f_2)).0).flags
+    _5 = move _6 & copy DEBUG_UPPER_HEX_FLAG
+    storage_dead(_6)
+    switch move _5 {
+        0 : u32 => {
+            storage_dead(_5)
+            _0 = {impl Display for u32}::fmt<'_, '_, '_>(move self_1, move f_2)
+        },
+        _ => {
+            storage_dead(_5)
+            _0 = {impl UpperHex for u32}::fmt<'_, '_, '_>(move self_1, move f_2)
+        },
     }
     return
 }

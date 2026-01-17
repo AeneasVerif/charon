@@ -30,28 +30,22 @@ fn f0()
     let _2: bool; // anonymous local
     let x_3: u8; // local
 
-    loop {
-        _0 = ()
-        storage_live(_1)
-        _1 = const 0 : i32 < const 1 : i32
-        if move _1 {
-            loop {
-                storage_live(_2)
-                _2 = const 0 : i32 < const 1 : i32
-                if move _2 {
-                } else {
-                }
-                break 0
-            }
-            storage_dead(_2)
-            storage_live(x_3)
-            x_3 = copy CONST
-            _0 = ()
-            storage_dead(x_3)
+    _0 = ()
+    storage_live(_1)
+    _1 = const 0 : i32 < const 1 : i32
+    if move _1 {
+        storage_live(_2)
+        _2 = const 0 : i32 < const 1 : i32
+        if move _2 {
         } else {
-            _0 = ()
         }
-        break 0
+        storage_dead(_2)
+        storage_live(x_3)
+        x_3 = copy CONST
+        _0 = ()
+        storage_dead(x_3)
+    } else {
+        _0 = ()
     }
     storage_dead(_1)
     return
@@ -85,22 +79,17 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
         _4 = move _5 < const 1 : i32
         if move _4 {
             loop {
-                loop {
-                    storage_dead(_5)
-                    storage_live(_6)
-                    _6 = const 0 : i32 < const 1 : i32
-                    if move _6 {
-                        break 0
+                storage_dead(_5)
+                storage_live(_6)
+                _6 = const 0 : i32 < const 1 : i32
+                if move _6 {
+                } else {
+                    storage_live(_7)
+                    _7 = const 1 : i32 > const 1 : i32
+                    if move _7 {
                     } else {
-                        storage_live(_7)
-                        _7 = const 1 : i32 > const 1 : i32
-                        if move _7 {
-                            break 0
-                        } else {
-                        }
+                        break 0
                     }
-                    break 1
-                    break 0
                 }
                 break 0
             }

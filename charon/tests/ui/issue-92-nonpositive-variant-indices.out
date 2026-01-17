@@ -23,22 +23,19 @@ fn main()
     let _0: (); // return
     let _1: Ordering; // anonymous local
 
-    loop {
-        _0 = ()
-        storage_live(_1)
-        _1 = Ordering::Less {  }
-        match _1 {
-            Ordering::Less => {
-                _0 = ()
-            },
-            Ordering::Equal => {
-                _0 = ()
-            },
-            Ordering::Greater => {
-                _0 = ()
-            },
-        }
-        break 0
+    _0 = ()
+    storage_live(_1)
+    _1 = Ordering::Less {  }
+    match _1 {
+        Ordering::Less => {
+            _0 = ()
+        },
+        Ordering::Equal => {
+            _0 = ()
+        },
+        Ordering::Greater => {
+            _0 = ()
+        },
     }
     storage_dead(_1)
     return

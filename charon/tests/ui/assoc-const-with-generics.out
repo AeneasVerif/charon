@@ -171,15 +171,12 @@ pub fn {impl HasDefaultLen<N> for [bool; N]}::LEN<const N : usize>() -> usize
     let _0: usize; // return
     let _1: bool; // anonymous local
 
-    loop {
-        storage_live(_1)
-        _1 = const true
-        if move _1 {
-            _0 = const N
-        } else {
-            _0 = copy {impl HasDefaultLen<N> for [bool; N]}::LEN<N>
-        }
-        break 0
+    storage_live(_1)
+    _1 = const true
+    if move _1 {
+        _0 = const N
+    } else {
+        _0 = copy {impl HasDefaultLen<N> for [bool; N]}::LEN<N>
     }
     storage_dead(_1)
     return

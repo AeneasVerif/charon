@@ -744,70 +744,67 @@ fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
     let _21: &'1 usize; // anonymous local
     let _22: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
 
-    loop {
-        _0 = ()
-        storage_live(_3)
-        _3 = const true
-        if move _3 {
-            storage_live(_4)
-            storage_live(_5)
-            storage_live(_6)
-            storage_live(_7)
-            _7 = &(*lhs_1) with_metadata(copy lhs_1.metadata)
-            _6 = core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move _7)
-            storage_dead(_7)
-            _5 = &_6
-            storage_live(_8)
-            storage_live(_9)
-            storage_live(_10)
-            _10 = &(*rhs_2) with_metadata(copy rhs_2.metadata)
-            _9 = core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move _10)
-            storage_dead(_10)
-            _8 = &_9
-            _4 = (move _5, move _8)
-            storage_dead(_8)
-            storage_dead(_5)
-            storage_live(left_val_11)
-            left_val_11 = copy _4.0
-            storage_live(right_val_12)
-            right_val_12 = copy _4.1
-            storage_live(_13)
-            storage_live(_14)
-            _14 = copy (*left_val_11)
-            storage_live(_15)
-            _15 = copy (*right_val_12)
-            _13 = move _14 == move _15
-            if move _13 {
-            } else {
-                storage_dead(_15)
-                storage_dead(_14)
-                storage_live(kind_16)
-                kind_16 = AssertKind::Eq {  }
-                storage_live(_17)
-                _17 = move kind_16
-                storage_live(_18)
-                storage_live(_19)
-                _19 = &(*left_val_11)
-                _18 = &(*_19)
-                storage_live(_20)
-                storage_live(_21)
-                _21 = &(*right_val_12)
-                _20 = &(*_21)
-                storage_live(_22)
-                _22 = Option::None {  }
-                panic(core::panicking::assert_failed)
-            }
+    _0 = ()
+    storage_live(_3)
+    _3 = const true
+    if move _3 {
+        storage_live(_4)
+        storage_live(_5)
+        storage_live(_6)
+        storage_live(_7)
+        _7 = &(*lhs_1) with_metadata(copy lhs_1.metadata)
+        _6 = core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move _7)
+        storage_dead(_7)
+        _5 = &_6
+        storage_live(_8)
+        storage_live(_9)
+        storage_live(_10)
+        _10 = &(*rhs_2) with_metadata(copy rhs_2.metadata)
+        _9 = core::slice::{[T]}::len<'_, u8>[{built_in impl Sized for u8}](move _10)
+        storage_dead(_10)
+        _8 = &_9
+        _4 = (move _5, move _8)
+        storage_dead(_8)
+        storage_dead(_5)
+        storage_live(left_val_11)
+        left_val_11 = copy _4.0
+        storage_live(right_val_12)
+        right_val_12 = copy _4.1
+        storage_live(_13)
+        storage_live(_14)
+        _14 = copy (*left_val_11)
+        storage_live(_15)
+        _15 = copy (*right_val_12)
+        _13 = move _14 == move _15
+        if move _13 {
+        } else {
             storage_dead(_15)
             storage_dead(_14)
-            storage_dead(_13)
-            storage_dead(right_val_12)
-            storage_dead(left_val_11)
-            storage_dead(_9)
-            storage_dead(_6)
-            storage_dead(_4)
-        } else {
+            storage_live(kind_16)
+            kind_16 = AssertKind::Eq {  }
+            storage_live(_17)
+            _17 = move kind_16
+            storage_live(_18)
+            storage_live(_19)
+            _19 = &(*left_val_11)
+            _18 = &(*_19)
+            storage_live(_20)
+            storage_live(_21)
+            _21 = &(*right_val_12)
+            _20 = &(*_21)
+            storage_live(_22)
+            _22 = Option::None {  }
+            panic(core::panicking::assert_failed)
         }
-        break 0
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(right_val_12)
+        storage_dead(left_val_11)
+        storage_dead(_9)
+        storage_dead(_6)
+        storage_dead(_4)
+    } else {
     }
     storage_dead(_3)
     _0 = ()

@@ -18,24 +18,21 @@ fn main()
     let _2: bool; // anonymous local
     let _3: bool; // anonymous local
 
-    loop {
-        storage_live(_2)
-        storage_live(_3)
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    storage_live(_1)
+    _1 = const 0.5 : f64
+    _3 = const 0.10000000000000001 : f64 == copy _1
+    if move _3 {
         _0 = ()
-        storage_live(_1)
-        _1 = const 0.5 : f64
-        _3 = const 0.10000000000000001 : f64 == copy _1
-        if move _3 {
+    } else {
+        _2 = const 0.20000000000000001 : f64 == copy _1
+        if move _2 {
             _0 = ()
         } else {
-            _2 = const 0.20000000000000001 : f64 == copy _1
-            if move _2 {
-                _0 = ()
-            } else {
-                _0 = ()
-            }
+            _0 = ()
         }
-        break 0
     }
     storage_dead(_1)
     return

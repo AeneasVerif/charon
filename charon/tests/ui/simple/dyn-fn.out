@@ -120,21 +120,18 @@ fn takes_fn<'_0>(@1: &'_0 (dyn for<'a> Fn<(&'a mut u32), parent_clause1::parent_
     _6 = &two-phase-mut (*_7)
     _5 = (move _6)
     _3 = Fn<(dyn for<'a> Fn<(&'a mut u32), parent_clause1::parent_clause1::Output = bool> + '5), (&'8 mut u32)>::call<'_>(move _4, move _5)
-    loop {
-        if move _3 {
-            storage_dead(_7)
-            storage_dead(_6)
-            storage_dead(_5)
-            storage_dead(_4)
-            _0 = ()
-        } else {
-            storage_dead(_7)
-            storage_dead(_6)
-            storage_dead(_5)
-            storage_dead(_4)
-            _0 = ()
-        }
-        break 0
+    if move _3 {
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = ()
+    } else {
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = ()
     }
     storage_dead(_3)
     storage_dead(counter_2)

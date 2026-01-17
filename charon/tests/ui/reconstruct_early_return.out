@@ -37,38 +37,35 @@ fn f() -> usize
         _4 = copy i_1
         _3 = move _4 < const 32 : i32
         if move _3 {
-            loop {
-                storage_dead(_4)
-                _5 = copy j_2 panic.+ const 1 : i32
-                j_2 = move _5
-                storage_live(_6)
-                storage_live(_7)
-                _7 = copy j_2
-                _6 = move _7 > const 16 : i32
-                if move _6 {
-                    storage_dead(_7)
-                    j_2 = copy j_2 panic./ const 2 : i32
-                } else {
-                    storage_dead(_7)
-                    storage_live(_8)
-                    storage_live(_9)
-                    _9 = copy j_2
-                    _8 = move _9 > const 32 : i32
-                    if move _8 {
-                        storage_dead(_9)
-                        _0 = const 1 : usize
-                        storage_dead(_8)
-                        storage_dead(_6)
-                        storage_dead(_3)
-                        storage_dead(j_2)
-                        storage_dead(i_1)
-                        return
-                    } else {
-                    }
+            storage_dead(_4)
+            _5 = copy j_2 panic.+ const 1 : i32
+            j_2 = move _5
+            storage_live(_6)
+            storage_live(_7)
+            _7 = copy j_2
+            _6 = move _7 > const 16 : i32
+            if move _6 {
+                storage_dead(_7)
+                j_2 = copy j_2 panic./ const 2 : i32
+            } else {
+                storage_dead(_7)
+                storage_live(_8)
+                storage_live(_9)
+                _9 = copy j_2
+                _8 = move _9 > const 32 : i32
+                if move _8 {
                     storage_dead(_9)
+                    _0 = const 1 : usize
                     storage_dead(_8)
+                    storage_dead(_6)
+                    storage_dead(_3)
+                    storage_dead(j_2)
+                    storage_dead(i_1)
+                    return
+                } else {
                 }
-                break 0
+                storage_dead(_9)
+                storage_dead(_8)
             }
             storage_dead(_6)
             _10 = copy i_1 panic.+ const 1 : i32

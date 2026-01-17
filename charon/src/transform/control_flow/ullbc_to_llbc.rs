@@ -114,7 +114,7 @@ struct CfgInfo<'a> {
     #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
-    pub block_data: IndexVec<BlockId, BlockData<'a>>,
+    pub block_data: IndexVec<BlockId, Box<BlockData<'a>>>,
 }
 
 #[derive(Debug)]
@@ -132,6 +132,9 @@ struct BlockData<'a> {
     /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
     /// id first.
     pub immediately_dominates: SmallVec<[BlockId; 2]>,
+    /// The nodes from `immediately_dominates` that are also merge targets. Sorted in the same
+    /// order.
+    pub immediately_dominated_merge_targets: SmallVec<[BlockId; 2]>,
     /// List of loops inside of which this node is (loops are identified by their header). A node
     /// is considered inside a loop if it is reachable from the loop header and if it can reach the
     /// loop header using only the backwards edges into it (i.e. we don't count a path that enters
@@ -164,6 +167,8 @@ struct BlockData<'a> {
     /// This is sorted by path order from the graph root.
     pub within_loops: SmallVec<[BlockId; 2]>,
     /// Node from where we can only reach error nodes (panic, etc.)
+    // TODO: track more nicely the set of targets reachable from a node: panic, return, exit loop,
+    // continue loop (this is a partial order).
     pub only_reach_error: bool,
     /// List of reachable nodes, with the length of shortest path to them. Includes the current
     /// node.
@@ -203,8 +208,8 @@ impl<'a> CfgInfo<'a> {
         let start_block = BlockId::ZERO;
 
         let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
-        let mut block_data: IndexVec<BlockId, BlockData> =
-            body.map_ref_indexed(|id, contents| BlockData {
+        let mut block_data: IndexVec<BlockId, _> = body.map_ref_indexed(|id, contents| {
+            Box::new(BlockData {
                 id,
                 contents,
                 is_loop_header: false,
@@ -212,12 +217,14 @@ impl<'a> CfgInfo<'a> {
                 is_merge_target: false,
                 reverse_postorder: None,
                 immediately_dominates: Default::default(),
+                immediately_dominated_merge_targets: Default::default(),
                 within_loops: Default::default(),
                 only_reach_error: false,
                 shortest_paths: Default::default(),
                 flow: empty_flow.clone(),
                 exit_info: Default::default(),
-            });
+            })
+        });
 
         // Build the node graph (we ignore unwind paths for now).
         let mut cfg = Cfg::new();
@@ -326,6 +333,12 @@ impl<'a> CfgInfo<'a> {
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder);
             dominatees.reverse();
             block_data[block_id].immediately_dominates = dominatees;
+            block_data[block_id].immediately_dominated_merge_targets = block_data[block_id]
+                .immediately_dominates
+                .iter()
+                .copied()
+                .filter(|&child| block_data[child].is_merge_target)
+                .collect();
         }
 
         // Fill in the within_loop information. See the docs of `within_loops` to understand what
@@ -848,6 +861,8 @@ struct ReconstructCtx<'a> {
     mode: ReconstructMode,
 }
 
+struct FoundIt;
+
 impl<'a> ReconstructCtx<'a> {
     fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
         // Compute all sorts of graph-related information about the control-flow graph, including
@@ -1062,6 +1077,54 @@ impl<'a> ReconstructCtx<'a> {
         }
     }
 
+    /// Compute whether starting from `from` would lead to a forward break to `to`. This is rather
+    /// hacky in that it basically traverses the blocks just like the reconstruction algorithm
+    /// would, while keeping track of the item after `to` in the `special_jump_stack`. Eventually a
+    /// more clever algorithm should be found.
+    fn has_fwd_break(&self, from: src::BlockId, to: BlockId) -> bool {
+        let mut exit_blocks = self
+            .special_jump_stack
+            .iter()
+            .map(|(bid, _)| *bid)
+            .collect();
+        self.has_fwd_break_inner(&mut exit_blocks, None, to, from)
+            .is_break()
+    }
+    fn has_fwd_break_inner(
+        &self,
+        visited: &mut HashSet<BlockId>,
+        stack_first: Option<BlockId>,
+        to: BlockId,
+        block_id: src::BlockId,
+    ) -> ControlFlow<FoundIt> {
+        if stack_first.is_some() && self.cfg.fwd_cfg.neighbors(block_id).contains(&to) {
+            return ControlFlow::Break(FoundIt);
+        }
+        for target_block in self.cfg.fwd_cfg.neighbors(block_id) {
+            if !visited.insert(target_block) {
+                continue;
+            }
+
+            let mut stack_first = stack_first.clone();
+            if stack_first == Some(target_block) {
+                stack_first = None;
+            }
+
+            let block_data = &self.cfg.block_data[target_block];
+            if block_data.is_loop_header {
+                stack_first = stack_first.or(Some(target_block));
+            }
+
+            let merge_children = &block_data.immediately_dominated_merge_targets;
+            stack_first = stack_first.or(merge_children.first().copied());
+
+            stack_first = stack_first.or(block_data.exit_info.switch_exit);
+
+            self.has_fwd_break_inner(visited, stack_first, to, target_block)?;
+        }
+        ControlFlow::Continue(())
+    }
+
     /// Translate a block including surrounding control-flow like looping.
     fn translate_block(&mut self, block_id: src::BlockId) -> tgt::Block {
         ensure_sufficient_stack(|| self.translate_block_inner(block_id))
@@ -1092,26 +1155,33 @@ impl<'a> ReconstructCtx<'a> {
         }
 
         // Catch jumps to a merge node.
+        let mut insert_switch_exit = true;
         if let ReconstructMode::Reloop = self.mode {
             // We support forward-jumps using `break`
             // The child with highest postorder numbering is nested outermost in this scheme.
-            let merge_children = block_data
-                .immediately_dominates
-                .iter()
-                .copied()
-                .filter(|&child| self.cfg.block_data[child].is_merge_target);
-            for child in merge_children {
+            let merge_children = &block_data.immediately_dominated_merge_targets;
+            for &child in merge_children {
                 self.break_context_depth += 1;
                 self.special_jump_stack
                     .push((child, SpecialJump::ForwardBreak(self.break_context_depth)));
             }
+            // Avoid a forward-break block if it would not actually entail any forward breaks.
+            if let [.., last_child] = merge_children.as_slice()
+                && !self.has_fwd_break(block_id, *last_child)
+            {
+                self.break_context_depth -= 1;
+                self.special_jump_stack.last_mut().unwrap().1 = SpecialJump::NextBlock;
+                // Don't insert a switch exit because that changes which block comes next.
+                insert_switch_exit = false;
+            }
         }
 
-        // Move some code that would be inside one or several switch branches to be after the
-        // switch intead.
-        if let Some(bid) = block_data.exit_info.switch_exit
+        if insert_switch_exit
+            && let Some(bid) = block_data.exit_info.switch_exit
             && !block_data.is_loop_header
         {
+            // Move some code that would be inside one or several switch branches to be after the
+            // switch intead.
             self.special_jump_stack.push((bid, SpecialJump::NextBlock));
         }
 

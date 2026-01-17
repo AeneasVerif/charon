@@ -1274,25 +1274,22 @@ pub fn index_all() -> u32
     let _25: &'3 mut [u32; 2 : usize]; // anonymous local
     let _26: u32; // anonymous local
 
-    loop {
-        storage_live(_12)
-        storage_live(_16)
-        storage_live(_21)
-        storage_live(_26)
-        storage_live(x_1)
-        x_1 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
-        storage_live(_2)
-        _2 = const true
-        if move _2 {
-            storage_live(_y_3)
-            _y_3 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
-            storage_dead(_y_3)
-        } else {
-            storage_live(_z_4)
-            _z_4 = [const 0 : u32]
-            storage_dead(_z_4)
-        }
-        break 0
+    storage_live(_12)
+    storage_live(_16)
+    storage_live(_21)
+    storage_live(_26)
+    storage_live(x_1)
+    x_1 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
+    storage_live(_2)
+    _2 = const true
+    if move _2 {
+        storage_live(_y_3)
+        _y_3 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
+        storage_dead(_y_3)
+    } else {
+        storage_live(_z_4)
+        _z_4 = [const 0 : u32]
+        storage_dead(_z_4)
     }
     storage_dead(_2)
     storage_live(_5)
@@ -2012,45 +2009,42 @@ pub fn ite()
     let _10: &'1 mut [u32; 2 : usize]; // anonymous local
     let _11: &'1 mut [u32; 2 : usize]; // anonymous local
 
-    loop {
+    _0 = ()
+    storage_live(x_1)
+    x_1 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
+    storage_live(_2)
+    _2 = const true
+    if move _2 {
+        storage_live(y_3)
+        y_3 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
+        storage_live(_4)
+        storage_live(_5)
+        storage_live(_6)
+        storage_live(_7)
+        _7 = &mut x_1
+        _6 = &mut (*_7)
+        _5 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _6)
+        storage_dead(_6)
+        _4 = index_mut_slice_u32_0<'_>(move _5)
+        storage_dead(_5)
+        storage_dead(_7)
+        storage_dead(_4)
+        storage_live(_8)
+        storage_live(_9)
+        storage_live(_10)
+        storage_live(_11)
+        _11 = &mut y_3
+        _10 = &mut (*_11)
+        _9 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _10)
+        storage_dead(_10)
+        _8 = index_mut_slice_u32_0<'_>(move _9)
+        storage_dead(_9)
+        storage_dead(_11)
+        storage_dead(_8)
         _0 = ()
-        storage_live(x_1)
-        x_1 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
-        storage_live(_2)
-        _2 = const true
-        if move _2 {
-            storage_live(y_3)
-            y_3 = @ArrayRepeat<u32, 2 : usize>(const 0 : u32)
-            storage_live(_4)
-            storage_live(_5)
-            storage_live(_6)
-            storage_live(_7)
-            _7 = &mut x_1
-            _6 = &mut (*_7)
-            _5 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _6)
-            storage_dead(_6)
-            _4 = index_mut_slice_u32_0<'_>(move _5)
-            storage_dead(_5)
-            storage_dead(_7)
-            storage_dead(_4)
-            storage_live(_8)
-            storage_live(_9)
-            storage_live(_10)
-            storage_live(_11)
-            _11 = &mut y_3
-            _10 = &mut (*_11)
-            _9 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _10)
-            storage_dead(_10)
-            _8 = index_mut_slice_u32_0<'_>(move _9)
-            storage_dead(_9)
-            storage_dead(_11)
-            storage_dead(_8)
-            _0 = ()
-            storage_dead(y_3)
-        } else {
-            _0 = ()
-        }
-        break 0
+        storage_dead(y_3)
+    } else {
+        _0 = ()
     }
     storage_dead(_2)
     storage_dead(x_1)

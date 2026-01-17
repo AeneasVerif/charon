@@ -86,22 +86,19 @@ pub fn test2(@1: E2) -> u32
     let x_1: E2; // arg #1
     let n_2: u32; // local
 
-    loop {
-        match x_1 {
-            E2::V1 => {
-                storage_live(n_2)
-                n_2 = copy (x_1 as variant E2::V1).0
-            },
-            E2::V2 => {
-                storage_live(n_2)
-                n_2 = copy (x_1 as variant E2::V2).0
-            },
-            E2::V3 => {
-                _0 = const 0 : u32
-                return
-            },
-        }
-        break 0
+    match x_1 {
+        E2::V1 => {
+            storage_live(n_2)
+            n_2 = copy (x_1 as variant E2::V1).0
+        },
+        E2::V2 => {
+            storage_live(n_2)
+            n_2 = copy (x_1 as variant E2::V2).0
+        },
+        E2::V3 => {
+            _0 = const 0 : u32
+            return
+        },
     }
     _0 = copy n_2
     storage_dead(n_2)
@@ -121,26 +118,21 @@ pub fn test3(@1: E2) -> u32
     let _7: u32; // anonymous local
 
     loop {
-        loop {
-            storage_live(_7)
-            storage_live(y_2)
-            match x_1 {
-                E2::V1 => {
-                    storage_live(n_3)
-                    n_3 = copy (x_1 as variant E2::V1).0
-                    break 0
-                },
-                E2::V2 => {
-                    storage_live(n_3)
-                    n_3 = copy (x_1 as variant E2::V2).0
-                    break 0
-                },
-                E2::V3 => {
-                    y_2 = const 0 : u32
-                },
-            }
-            break 1
-            break 0
+        storage_live(_7)
+        storage_live(y_2)
+        match x_1 {
+            E2::V1 => {
+                storage_live(n_3)
+                n_3 = copy (x_1 as variant E2::V1).0
+            },
+            E2::V2 => {
+                storage_live(n_3)
+                n_3 = copy (x_1 as variant E2::V2).0
+            },
+            E2::V3 => {
+                y_2 = const 0 : u32
+                break 0
+            },
         }
         y_2 = copy n_3
         storage_dead(n_3)

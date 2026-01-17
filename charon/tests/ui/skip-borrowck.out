@@ -36,20 +36,17 @@ where
     let _6: bool; // anonymous local
     let _7: &'0 mut T; // anonymous local
 
-    loop {
-        storage_live(_4)
-        storage_live(_5)
-        storage_live(_6)
-        _6 = copy b_1
-        if move _6 {
-            storage_live(_7)
-            _7 = &mut (*x_2)
-            _5 = &mut (*_7)
-            storage_dead(_7)
-        } else {
-            _5 = &mut (*y_3)
-        }
-        break 0
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy b_1
+    if move _6 {
+        storage_live(_7)
+        _7 = &mut (*x_2)
+        _5 = &mut (*_7)
+        storage_dead(_7)
+    } else {
+        _5 = &mut (*y_3)
     }
     _4 = &mut (*_5)
     storage_dead(_6)

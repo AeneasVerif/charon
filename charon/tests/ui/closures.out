@@ -205,34 +205,31 @@ where
     let _6: (T); // anonymous local
     let _7: T; // anonymous local
 
-    loop {
-        match x_1 {
-            Option::None => {
-                _0 = Option::None {  }
-            },
-            Option::Some => {
-                storage_live(x_3)
-                x_3 = move (x_1 as variant Option::Some).0
-                storage_live(_4)
-                storage_live(_5)
-                _5 = &f_2
-                storage_live(_6)
-                storage_live(_7)
-                _7 = move x_3
-                _6 = (move _7)
-                _4 = @TraitClause2::call<'_>(move _5, move _6)
-                conditional_drop[{built_in impl Destruct for T}] _7
-                storage_dead(_7)
-                storage_dead(_6)
-                storage_dead(_5)
-                _0 = Option::Some { 0: move _4 }
-                conditional_drop[{built_in impl Destruct for T}] _4
-                storage_dead(_4)
-                conditional_drop[{built_in impl Destruct for T}] x_3
-                storage_dead(x_3)
-            },
-        }
-        break 0
+    match x_1 {
+        Option::None => {
+            _0 = Option::None {  }
+        },
+        Option::Some => {
+            storage_live(x_3)
+            x_3 = move (x_1 as variant Option::Some).0
+            storage_live(_4)
+            storage_live(_5)
+            _5 = &f_2
+            storage_live(_6)
+            storage_live(_7)
+            _7 = move x_3
+            _6 = (move _7)
+            _4 = @TraitClause2::call<'_>(move _5, move _6)
+            conditional_drop[{built_in impl Destruct for T}] _7
+            storage_dead(_7)
+            storage_dead(_6)
+            storage_dead(_5)
+            _0 = Option::Some { 0: move _4 }
+            conditional_drop[{built_in impl Destruct for T}] _4
+            storage_dead(_4)
+            conditional_drop[{built_in impl Destruct for T}] x_3
+            storage_dead(x_3)
+        },
     }
     conditional_drop[{built_in impl Destruct for F}] f_2
     conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x_1

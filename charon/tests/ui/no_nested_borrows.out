@@ -415,23 +415,20 @@ pub fn get_max(@1: u32, @2: u32) -> u32
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
 
-    loop {
-        storage_live(_3)
-        storage_live(_4)
-        _4 = copy x_1
-        storage_live(_5)
-        _5 = copy y_2
-        _3 = move _4 >= move _5
-        if move _3 {
-            storage_dead(_5)
-            storage_dead(_4)
-            _0 = copy x_1
-        } else {
-            storage_dead(_5)
-            storage_dead(_4)
-            _0 = copy y_2
-        }
-        break 0
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy x_1
+    storage_live(_5)
+    _5 = copy y_2
+    _3 = move _4 >= move _5
+    if move _3 {
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = copy x_1
+    } else {
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = copy y_2
     }
     storage_dead(_3)
     return
@@ -630,27 +627,24 @@ pub fn even(@1: u32) -> bool
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
 
-    loop {
-        storage_live(_6)
-        storage_live(_2)
-        storage_live(_3)
-        _3 = copy x_1
-        _2 = move _3 == const 0 : u32
-        if move _2 {
-            storage_dead(_3)
-            _0 = const true
-        } else {
-            storage_dead(_3)
-            storage_live(_4)
-            storage_live(_5)
-            _5 = copy x_1
-            _6 = copy _5 panic.- const 1 : u32
-            _4 = move _6
-            storage_dead(_5)
-            _0 = odd(move _4)
-            storage_dead(_4)
-        }
-        break 0
+    storage_live(_6)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy x_1
+    _2 = move _3 == const 0 : u32
+    if move _2 {
+        storage_dead(_3)
+        _0 = const true
+    } else {
+        storage_dead(_3)
+        storage_live(_4)
+        storage_live(_5)
+        _5 = copy x_1
+        _6 = copy _5 panic.- const 1 : u32
+        _4 = move _6
+        storage_dead(_5)
+        _0 = odd(move _4)
+        storage_dead(_4)
     }
     storage_dead(_2)
     return
@@ -667,27 +661,24 @@ pub fn odd(@1: u32) -> bool
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
 
-    loop {
-        storage_live(_6)
-        storage_live(_2)
-        storage_live(_3)
-        _3 = copy x_1
-        _2 = move _3 == const 0 : u32
-        if move _2 {
-            storage_dead(_3)
-            _0 = const false
-        } else {
-            storage_dead(_3)
-            storage_live(_4)
-            storage_live(_5)
-            _5 = copy x_1
-            _6 = copy _5 panic.- const 1 : u32
-            _4 = move _6
-            storage_dead(_5)
-            _0 = even(move _4)
-            storage_dead(_4)
-        }
-        break 0
+    storage_live(_6)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy x_1
+    _2 = move _3 == const 0 : u32
+    if move _2 {
+        storage_dead(_3)
+        _0 = const false
+    } else {
+        storage_dead(_3)
+        storage_live(_4)
+        storage_live(_5)
+        _5 = copy x_1
+        _6 = copy _5 panic.- const 1 : u32
+        _4 = move _6
+        storage_dead(_5)
+        _0 = even(move _4)
+        storage_dead(_4)
     }
     storage_dead(_2)
     return

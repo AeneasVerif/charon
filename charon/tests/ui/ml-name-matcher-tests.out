@@ -381,15 +381,12 @@ fn funs_with_disambiguator(@1: bool) -> u32
     let b_1: bool; // arg #1
     let _2: bool; // anonymous local
 
-    loop {
-        storage_live(_2)
-        _2 = copy b_1
-        if move _2 {
-            _0 = test_crate::funs_with_disambiguator::f()
-        } else {
-            _0 = test_crate::funs_with_disambiguator::f#1()
-        }
-        break 0
+    storage_live(_2)
+    _2 = copy b_1
+    if move _2 {
+        _0 = test_crate::funs_with_disambiguator::f()
+    } else {
+        _0 = test_crate::funs_with_disambiguator::f#1()
     }
     storage_dead(_2)
     return

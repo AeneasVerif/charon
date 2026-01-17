@@ -40,20 +40,17 @@ where
     let _6: bool; // anonymous local
     let _7: &'0 mut T; // anonymous local
 
-    loop {
-        storage_live(_4)
-        storage_live(_5)
-        storage_live(_6)
-        _6 = copy b_1
-        if move _6 {
-            storage_live(_7)
-            _7 = &mut (*x_2)
-            _5 = &mut (*_7)
-            storage_dead(_7)
-        } else {
-            _5 = &mut (*y_3)
-        }
-        break 0
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy b_1
+    if move _6 {
+        storage_live(_7)
+        _7 = &mut (*x_2)
+        _5 = &mut (*_7)
+        storage_dead(_7)
+    } else {
+        _5 = &mut (*y_3)
     }
     _4 = &mut (*_5)
     storage_dead(_6)
@@ -216,36 +213,33 @@ where
             panic(core::panicking::panic)
         },
     }
-    loop {
-        storage_live(x_3)
-        x_3 = &((*l_1) as variant CList::CCons).0
-        storage_live(tl_4)
-        tl_4 = &((*l_1) as variant CList::CCons).1
-        storage_live(_5)
-        storage_live(_6)
-        _6 = copy i_2
-        _5 = move _6 == const 0 : u32
-        if move _5 {
-            storage_dead(_6)
-            _0 = &(*x_3)
-        } else {
-            storage_dead(_6)
-            storage_live(_7)
-            storage_live(_8)
-            _8 = &(*(*tl_4))
-            storage_live(_9)
-            storage_live(_10)
-            _10 = copy i_2
-            _11 = copy _10 panic.- const 1 : u32
-            _9 = move _11
-            storage_dead(_10)
-            _7 = list_nth<'_, T>[@TraitClause0](move _8, move _9)
-            _0 = &(*_7)
-            storage_dead(_9)
-            storage_dead(_8)
-            storage_dead(_7)
-        }
-        break 0
+    storage_live(x_3)
+    x_3 = &((*l_1) as variant CList::CCons).0
+    storage_live(tl_4)
+    tl_4 = &((*l_1) as variant CList::CCons).1
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy i_2
+    _5 = move _6 == const 0 : u32
+    if move _5 {
+        storage_dead(_6)
+        _0 = &(*x_3)
+    } else {
+        storage_dead(_6)
+        storage_live(_7)
+        storage_live(_8)
+        _8 = &(*(*tl_4))
+        storage_live(_9)
+        storage_live(_10)
+        _10 = copy i_2
+        _11 = copy _10 panic.- const 1 : u32
+        _9 = move _11
+        storage_dead(_10)
+        _7 = list_nth<'_, T>[@TraitClause0](move _8, move _9)
+        _0 = &(*_7)
+        storage_dead(_9)
+        storage_dead(_8)
+        storage_dead(_7)
     }
     storage_dead(_5)
     storage_dead(tl_4)
@@ -286,41 +280,38 @@ where
             panic(core::panicking::panic)
         },
     }
-    loop {
-        storage_live(x_5)
-        x_5 = &mut ((*l_1) as variant CList::CCons).0
-        storage_live(tl_6)
-        tl_6 = &mut ((*l_1) as variant CList::CCons).1
-        storage_live(_7)
-        storage_live(_8)
-        storage_live(_9)
-        storage_live(_10)
-        _10 = copy i_2
-        _9 = move _10 == const 0 : u32
-        if move _9 {
-            storage_dead(_10)
-            storage_live(_11)
-            _11 = &mut (*x_5)
-            _8 = &mut (*_11)
-            storage_dead(_11)
-        } else {
-            storage_dead(_10)
-            storage_live(_12)
-            storage_live(_13)
-            _13 = &two-phase-mut (*(*tl_6))
-            storage_live(_14)
-            storage_live(_15)
-            _15 = copy i_2
-            _16 = copy _15 panic.- const 1 : u32
-            _14 = move _16
-            storage_dead(_15)
-            _12 = list_nth_mut<'_, T>[@TraitClause0](move _13, move _14)
-            _8 = &mut (*_12)
-            storage_dead(_14)
-            storage_dead(_13)
-            storage_dead(_12)
-        }
-        break 0
+    storage_live(x_5)
+    x_5 = &mut ((*l_1) as variant CList::CCons).0
+    storage_live(tl_6)
+    tl_6 = &mut ((*l_1) as variant CList::CCons).1
+    storage_live(_7)
+    storage_live(_8)
+    storage_live(_9)
+    storage_live(_10)
+    _10 = copy i_2
+    _9 = move _10 == const 0 : u32
+    if move _9 {
+        storage_dead(_10)
+        storage_live(_11)
+        _11 = &mut (*x_5)
+        _8 = &mut (*_11)
+        storage_dead(_11)
+    } else {
+        storage_dead(_10)
+        storage_live(_12)
+        storage_live(_13)
+        _13 = &two-phase-mut (*(*tl_6))
+        storage_live(_14)
+        storage_live(_15)
+        _15 = copy i_2
+        _16 = copy _15 panic.- const 1 : u32
+        _14 = move _16
+        storage_dead(_15)
+        _12 = list_nth_mut<'_, T>[@TraitClause0](move _13, move _14)
+        _8 = &mut (*_12)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
     }
     _7 = &mut (*_8)
     storage_dead(_9)
@@ -404,32 +395,29 @@ pub fn i32_id(@1: i32) -> i32
     let _7: i32; // anonymous local
     let _8: i32; // anonymous local
 
-    loop {
-        storage_live(_7)
-        storage_live(_8)
-        storage_live(_2)
-        storage_live(_3)
-        _3 = copy i_1
-        _2 = move _3 == const 0 : i32
-        if move _2 {
-            storage_dead(_3)
-            _0 = const 0 : i32
-        } else {
-            storage_dead(_3)
-            storage_live(_4)
-            storage_live(_5)
-            storage_live(_6)
-            _6 = copy i_1
-            _7 = copy _6 panic.- const 1 : i32
-            _5 = move _7
-            storage_dead(_6)
-            _4 = i32_id(move _5)
-            storage_dead(_5)
-            _8 = copy _4 panic.+ const 1 : i32
-            _0 = move _8
-            storage_dead(_4)
-        }
-        break 0
+    storage_live(_7)
+    storage_live(_8)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy i_1
+    _2 = move _3 == const 0 : i32
+    if move _2 {
+        storage_dead(_3)
+        _0 = const 0 : i32
+    } else {
+        storage_dead(_3)
+        storage_live(_4)
+        storage_live(_5)
+        storage_live(_6)
+        _6 = copy i_1
+        _7 = copy _6 panic.- const 1 : i32
+        _5 = move _7
+        storage_dead(_6)
+        _4 = i32_id(move _5)
+        storage_dead(_5)
+        _8 = copy _4 panic.+ const 1 : i32
+        _0 = move _8
+        storage_dead(_4)
     }
     storage_dead(_2)
     return
@@ -448,27 +436,24 @@ where
     let _5: &'0 mut CList<T>[@TraitClause0]; // anonymous local
     let _6: &'0 mut CList<T>[@TraitClause0]; // anonymous local
 
-    loop {
-        storage_live(_2)
-        storage_live(_3)
-        match (*l_1) {
-            CList::CCons => {
-                storage_live(tl_4)
-                tl_4 = &mut ((*l_1) as variant CList::CCons).1
-                storage_live(_5)
-                storage_live(_6)
-                _6 = &two-phase-mut (*(*tl_4))
-                _5 = list_tail<'_, T>[@TraitClause0](move _6)
-                _3 = &mut (*_5)
-                storage_dead(_6)
-                storage_dead(_5)
-                storage_dead(tl_4)
-            },
-            CList::CNil => {
-                _3 = move l_1
-            },
-        }
-        break 0
+    storage_live(_2)
+    storage_live(_3)
+    match (*l_1) {
+        CList::CCons => {
+            storage_live(tl_4)
+            tl_4 = &mut ((*l_1) as variant CList::CCons).1
+            storage_live(_5)
+            storage_live(_6)
+            _6 = &two-phase-mut (*(*tl_4))
+            _5 = list_tail<'_, T>[@TraitClause0](move _6)
+            _3 = &mut (*_5)
+            storage_dead(_6)
+            storage_dead(_5)
+            storage_dead(tl_4)
+        },
+        CList::CNil => {
+            _3 = move l_1
+        },
     }
     _2 = &mut (*_3)
     _0 = &mut (*_2)
