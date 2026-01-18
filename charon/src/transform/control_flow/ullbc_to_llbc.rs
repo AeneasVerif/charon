@@ -306,23 +306,16 @@ impl<'a> CfgInfo<'a> {
             // Compute the flows between each pair of nodes.
             let mut flow: IndexVec<src::BlockId, BigRational> =
                 mem::take(&mut block_data[block_id].flow);
-            if !fwd_targets.is_empty() {
-                // We need to divide the initial flow equally between the children
-                let factor = BigRational::new(1u64.into(), fwd_targets.len().into());
-
-                // For each child, multiply the flows of its own children by the ratio,
-                // and add.
-                for &child_id in &fwd_targets {
-                    // First, add the child itself
-                    flow[child_id] += factor.clone();
-
-                    // Then add its successors
-                    let child = &block_data[child_id];
-                    for grandchild in child.reachable_excluding_self() {
-                        // Flow from `child` to `grandchild`
-                        let child_flow = child.flow[grandchild].clone();
-                        flow[grandchild] += factor.clone() * child_flow;
-                    }
+            // The flow to self is 1.
+            flow[block_id] = BigRational::new(1u64.into(), 1u64.into());
+            // Divide the flow from each child to a given target block by the number of children.
+            // This is a sparse matrix multiplication and could be implemented using a linalg
+            // library.
+            let num_children: BigUint = fwd_targets.len().into();
+            for &child in &fwd_targets {
+                for grandchild in block_data[child].reachable_including_self() {
+                    // Flow from `child` to `grandchild`
+                    flow[grandchild] += &block_data[child].flow[grandchild] / &num_children;
                 }
             }
             block_data[block_id].flow = flow;
