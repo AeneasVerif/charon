@@ -114,7 +114,7 @@ struct CfgInfo<'a> {
     #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
-    pub block_data: IndexVec<BlockId, BlockData<'a>>,
+    pub block_data: IndexVec<BlockId, Box<BlockData<'a>>>,
 }
 
 #[derive(Debug)]
@@ -125,13 +125,16 @@ struct BlockData<'a> {
     pub is_loop_header: bool,
     /// Whether this block is a switch.
     pub is_switch: bool,
-    /// Blocks that have multiple incoming control-flow edges.
+    /// Whether this block has multiple incoming control-flow edges in the forward graph.
     pub is_merge_target: bool,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
     pub reverse_postorder: Option<u32>,
     /// Nodes that this block immediately dominates. Sorted by reverse_postorder_id, with largest
     /// id first.
     pub immediately_dominates: SmallVec<[BlockId; 2]>,
+    /// The nodes from `immediately_dominates` that are also merge targets. Sorted in the same
+    /// order.
+    pub immediately_dominated_merge_targets: SmallVec<[BlockId; 2]>,
     /// List of loops inside of which this node is (loops are identified by their header). A node
     /// is considered inside a loop if it is reachable from the loop header and if it can reach the
     /// loop header using only the backwards edges into it (i.e. we don't count a path that enters
@@ -164,6 +167,8 @@ struct BlockData<'a> {
     /// This is sorted by path order from the graph root.
     pub within_loops: SmallVec<[BlockId; 2]>,
     /// Node from where we can only reach error nodes (panic, etc.)
+    // TODO: track more nicely the set of targets reachable from a node: panic, return, exit loop,
+    // continue loop (this is a partial order).
     pub only_reach_error: bool,
     /// List of reachable nodes, with the length of shortest path to them. Includes the current
     /// node.
@@ -203,8 +208,8 @@ impl<'a> CfgInfo<'a> {
         let start_block = BlockId::ZERO;
 
         let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
-        let mut block_data: IndexVec<BlockId, BlockData> =
-            body.map_ref_indexed(|id, contents| BlockData {
+        let mut block_data: IndexVec<BlockId, _> = body.map_ref_indexed(|id, contents| {
+            Box::new(BlockData {
                 id,
                 contents,
                 is_loop_header: false,
@@ -212,12 +217,14 @@ impl<'a> CfgInfo<'a> {
                 is_merge_target: false,
                 reverse_postorder: None,
                 immediately_dominates: Default::default(),
+                immediately_dominated_merge_targets: Default::default(),
                 within_loops: Default::default(),
                 only_reach_error: false,
                 shortest_paths: Default::default(),
                 flow: empty_flow.clone(),
                 exit_info: Default::default(),
-            });
+            })
+        });
 
         // Build the node graph (we ignore unwind paths for now).
         let mut cfg = Cfg::new();
@@ -240,15 +247,6 @@ impl<'a> CfgInfo<'a> {
             if let Some(dominator) = dominator_tree.immediate_dominator(block_id) {
                 block_data[dominator].immediately_dominates.push(block_id);
             }
-
-            // Detect merge targets.
-            if cfg
-                .neighbors_directed(block_id, petgraph::Direction::Incoming)
-                .count()
-                >= 2
-            {
-                block_data[block_id].is_merge_target = true;
-            }
         }
 
         // Compute the forward graph (without backward edges). We do a dfs while keeping track of
@@ -266,6 +264,7 @@ impl<'a> CfgInfo<'a> {
 
             // Iterate over edges into this node (so that we can determine whether this node is a
             // loop header).
+            let mut incoming_fwd_edges = 0;
             for from in cfg.neighbors_directed(block_id, petgraph::Direction::Incoming) {
                 // Check if the edge is a backward edge.
                 if block_data[from].reverse_postorder >= block_data[block_id].reverse_postorder {
@@ -278,8 +277,14 @@ impl<'a> CfgInfo<'a> {
                         return Err(Irreducible(from));
                     }
                 } else {
+                    incoming_fwd_edges += 1;
                     fwd_cfg.add_edge(from, block_id, ());
                 }
+            }
+
+            // Detect merge targets.
+            if incoming_fwd_edges >= 2 {
+                block_data[block_id].is_merge_target = true;
             }
         }
 
@@ -306,23 +311,16 @@ impl<'a> CfgInfo<'a> {
             // Compute the flows between each pair of nodes.
             let mut flow: IndexVec<src::BlockId, BigRational> =
                 mem::take(&mut block_data[block_id].flow);
-            if !fwd_targets.is_empty() {
-                // We need to divide the initial flow equally between the children
-                let factor = BigRational::new(1u64.into(), fwd_targets.len().into());
-
-                // For each child, multiply the flows of its own children by the ratio,
-                // and add.
-                for &child_id in &fwd_targets {
-                    // First, add the child itself
-                    flow[child_id] += factor.clone();
-
-                    // Then add its successors
-                    let child = &block_data[child_id];
-                    for grandchild in child.reachable_excluding_self() {
-                        // Flow from `child` to `grandchild`
-                        let child_flow = child.flow[grandchild].clone();
-                        flow[grandchild] += factor.clone() * child_flow;
-                    }
+            // The flow to self is 1.
+            flow[block_id] = BigRational::new(1u64.into(), 1u64.into());
+            // Divide the flow from each child to a given target block by the number of children.
+            // This is a sparse matrix multiplication and could be implemented using a linalg
+            // library.
+            let num_children: BigUint = fwd_targets.len().into();
+            for &child in &fwd_targets {
+                for grandchild in block_data[child].reachable_including_self() {
+                    // Flow from `child` to `grandchild`
+                    flow[grandchild] += &block_data[child].flow[grandchild] / &num_children;
                 }
             }
             block_data[block_id].flow = flow;
@@ -335,6 +333,12 @@ impl<'a> CfgInfo<'a> {
             dominatees.sort_by_key(|&child| block_data[child].reverse_postorder);
             dominatees.reverse();
             block_data[block_id].immediately_dominates = dominatees;
+            block_data[block_id].immediately_dominated_merge_targets = block_data[block_id]
+                .immediately_dominates
+                .iter()
+                .copied()
+                .filter(|&child| block_data[child].is_merge_target)
+                .collect();
         }
 
         // Fill in the within_loop information. See the docs of `within_loops` to understand what
@@ -813,6 +817,7 @@ impl ExitInfo {
     }
 }
 
+#[derive(Debug)]
 enum GotoKind {
     Break(usize),
     Continue(usize),
@@ -823,7 +828,7 @@ enum GotoKind {
 type Depth = usize;
 
 #[derive(Debug, Clone, Copy)]
-enum SpecialJump {
+enum SpecialJumpKind {
     /// When encountering this block, `continue` to the given depth.
     LoopContinue(Depth),
     /// When encountering this block, `break` to the given depth. This comes from a loop.
@@ -834,6 +839,26 @@ enum SpecialJump {
     /// When encountering this block, do nothing, as this is the next block that will be
     /// translated.
     NextBlock,
+}
+
+#[derive(Clone, Copy)]
+struct SpecialJump {
+    /// The relevant block.
+    target_block: BlockId,
+    /// How to translate a jump to the target block.
+    kind: SpecialJumpKind,
+}
+
+impl SpecialJump {
+    fn new(target_block: BlockId, kind: SpecialJumpKind) -> Self {
+        Self { target_block, kind }
+    }
+}
+
+impl std::fmt::Debug for SpecialJump {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "SpecialJump({}, {:?})", self.target_block, self.kind)
+    }
 }
 
 enum ReconstructMode {
@@ -853,9 +878,11 @@ struct ReconstructCtx<'a> {
     /// nothing) in the current context.
     /// The block where control-flow continues naturally after this block is kept at the top of the
     /// stack.
-    special_jump_stack: Vec<(BlockId, SpecialJump)>,
+    special_jump_stack: Vec<SpecialJump>,
     mode: ReconstructMode,
 }
+
+struct FoundIt;
 
 impl<'a> ReconstructCtx<'a> {
     fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
@@ -897,29 +924,30 @@ impl<'a> ReconstructCtx<'a> {
         tgt::Statement::new(src_span, st)
     }
 
-    fn get_goto_kind(&self, target_block: src::BlockId) -> GotoKind {
+    #[tracing::instrument(skip(self), ret, fields(stack = ?self.special_jump_stack))]
+    fn get_goto_kind(&mut self, target_block: src::BlockId) -> GotoKind {
         match self
             .special_jump_stack
-            .iter()
+            .iter_mut()
             .rev()
             .enumerate()
-            .find(|(_, (b, _))| *b == target_block)
+            .find(|(_, j)| j.target_block == target_block)
         {
-            Some((i, (_, jump_target))) => match jump_target {
+            Some((i, jump_target)) => match jump_target.kind {
                 // The top of the stack is where control-flow goes naturally, no need to add a
                 // `break`/`continue`.
-                SpecialJump::LoopContinue(_) | SpecialJump::ForwardBreak(_)
+                SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
                     if i == 0 && matches!(self.mode, ReconstructMode::Reloop) =>
                 {
                     GotoKind::NextBlock
                 }
-                SpecialJump::LoopContinue(depth) => {
+                SpecialJumpKind::LoopContinue(depth) => {
                     GotoKind::Continue(self.break_context_depth - depth)
                 }
-                SpecialJump::ForwardBreak(depth) | SpecialJump::LoopBreak(depth) => {
+                SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
                     GotoKind::Break(self.break_context_depth - depth)
                 }
-                SpecialJump::NextBlock => GotoKind::NextBlock,
+                SpecialJumpKind::NextBlock => GotoKind::NextBlock,
             },
             // Translate the block without a jump.
             None => GotoKind::Goto,
@@ -1071,7 +1099,56 @@ impl<'a> ReconstructCtx<'a> {
         }
     }
 
+    /// Compute whether starting from `from` would lead to a forward break to `to`. This is rather
+    /// hacky in that it basically traverses the blocks just like the reconstruction algorithm
+    /// would, while keeping track of the item after `to` in the `special_jump_stack`. Eventually a
+    /// more clever algorithm should be found.
+    fn has_fwd_break(&self, from: src::BlockId, to: BlockId) -> bool {
+        let mut exit_blocks = self
+            .special_jump_stack
+            .iter()
+            .map(|j| j.target_block)
+            .collect();
+        self.has_fwd_break_inner(&mut exit_blocks, None, to, from)
+            .is_break()
+    }
+    fn has_fwd_break_inner(
+        &self,
+        visited: &mut HashSet<BlockId>,
+        stack_first: Option<BlockId>,
+        to: BlockId,
+        block_id: src::BlockId,
+    ) -> ControlFlow<FoundIt> {
+        if stack_first.is_some() && self.cfg.fwd_cfg.neighbors(block_id).contains(&to) {
+            return ControlFlow::Break(FoundIt);
+        }
+        for target_block in self.cfg.fwd_cfg.neighbors(block_id) {
+            if !visited.insert(target_block) {
+                continue;
+            }
+
+            let mut stack_first = stack_first.clone();
+            if stack_first == Some(target_block) {
+                stack_first = None;
+            }
+
+            let block_data = &self.cfg.block_data[target_block];
+            if block_data.is_loop_header {
+                stack_first = stack_first.or(Some(target_block));
+            }
+
+            let merge_children = &block_data.immediately_dominated_merge_targets;
+            stack_first = stack_first.or(merge_children.first().copied());
+
+            stack_first = stack_first.or(block_data.exit_info.switch_exit);
+
+            self.has_fwd_break_inner(visited, stack_first, to, target_block)?;
+        }
+        ControlFlow::Continue(())
+    }
+
     /// Translate a block including surrounding control-flow like looping.
+    #[tracing::instrument(skip(self), fields(stack = ?self.special_jump_stack))]
     fn translate_block(&mut self, block_id: src::BlockId) -> tgt::Block {
         ensure_sufficient_stack(|| self.translate_block_inner(block_id))
     }
@@ -1089,43 +1166,51 @@ impl<'a> ReconstructCtx<'a> {
         // Catch jumps to the loop header or loop exit.
         if block_data.is_loop_header {
             self.break_context_depth += 1;
-            if let ReconstructMode::Flow = self.mode
-                && let Some(exit_id) = block_data.exit_info.loop_exit
-            {
-                self.special_jump_stack
-                    .push((exit_id, SpecialJump::LoopBreak(self.break_context_depth)));
+            if let Some(exit_id) = block_data.exit_info.loop_exit {
+                self.special_jump_stack.push(SpecialJump::new(
+                    exit_id,
+                    SpecialJumpKind::LoopBreak(self.break_context_depth),
+                ));
             }
             // Put the next block at the top of the stack.
-            self.special_jump_stack.push((
+            self.special_jump_stack.push(SpecialJump::new(
                 block_id,
-                SpecialJump::LoopContinue(self.break_context_depth),
+                SpecialJumpKind::LoopContinue(self.break_context_depth),
             ));
         }
 
         // Catch jumps to a merge node.
-        match self.mode {
-            ReconstructMode::Flow => {
-                // We only support next-block jumps to merge nodes.
-                if let Some(bid) = block_data.exit_info.switch_exit
-                    && !block_data.is_loop_header
-                {
-                    self.special_jump_stack.push((bid, SpecialJump::NextBlock));
-                }
+        let mut insert_switch_exit = true;
+        if let ReconstructMode::Reloop = self.mode {
+            // We support forward-jumps using `break`
+            // The child with highest postorder numbering is nested outermost in this scheme.
+            let merge_children = &block_data.immediately_dominated_merge_targets;
+            for &child in merge_children {
+                self.break_context_depth += 1;
+                self.special_jump_stack.push(SpecialJump::new(
+                    child,
+                    SpecialJumpKind::ForwardBreak(self.break_context_depth),
+                ));
             }
-            ReconstructMode::Reloop => {
-                // We support forward-jumps using `break`
-                // The child with highest postorder numbering is nested outermost in this scheme.
-                let merge_children = block_data
-                    .immediately_dominates
-                    .iter()
-                    .copied()
-                    .filter(|&child| self.cfg.block_data[child].is_merge_target);
-                for child in merge_children {
-                    self.break_context_depth += 1;
-                    self.special_jump_stack
-                        .push((child, SpecialJump::ForwardBreak(self.break_context_depth)));
-                }
+            // Avoid a forward-break block if it would not actually entail any forward breaks.
+            if let [.., last_child] = merge_children.as_slice()
+                && !self.has_fwd_break(block_id, *last_child)
+            {
+                self.break_context_depth -= 1;
+                self.special_jump_stack.last_mut().unwrap().kind = SpecialJumpKind::NextBlock;
+                // Don't insert a switch exit because that changes which block comes next.
+                insert_switch_exit = false;
             }
+        }
+
+        if insert_switch_exit
+            && let Some(bid) = block_data.exit_info.switch_exit
+            && !block_data.is_loop_header
+        {
+            // Move some code that would be inside one or several switch branches to be after the
+            // switch intead.
+            self.special_jump_stack
+                .push(SpecialJump::new(bid, SpecialJumpKind::NextBlock));
         }
 
         // Translate this block. Any jumps to a loop header or a merge node will be replaced with
@@ -1136,22 +1221,33 @@ impl<'a> ReconstructCtx<'a> {
         let new_block = move |kind| tgt::Statement::new(block.span, kind).into_block();
         while self.special_jump_stack.len() > old_context_depth {
             match self.special_jump_stack.pop().unwrap() {
-                (_loop_header, SpecialJump::LoopContinue(_)) => {
+                SpecialJump {
+                    kind: SpecialJumpKind::LoopContinue(_),
+                    ..
+                } => {
                     self.break_context_depth -= 1;
                     block = new_block(tgt::StatementKind::Loop(block));
                 }
-                (next_block, SpecialJump::ForwardBreak(_)) => {
+                SpecialJump {
+                    target_block,
+                    kind: SpecialJumpKind::ForwardBreak(_),
+                    ..
+                } => {
                     self.break_context_depth -= 1;
                     // We add a `loop { ...; break }` so that we can use `break` to jump forward.
                     block = block.merge(new_block(tgt::StatementKind::Break(0)));
                     block = new_block(tgt::StatementKind::Loop(block));
                     // We must translate the merge nodes after the block used for forward jumps to
                     // them.
-                    let next_block = self.translate_jump(span, next_block);
+                    let next_block = self.translate_jump(span, target_block);
                     block = block.merge(next_block);
                 }
-                (next_block, SpecialJump::NextBlock) | (next_block, SpecialJump::LoopBreak(..)) => {
-                    let next_block = self.translate_jump(span, next_block);
+                SpecialJump {
+                    target_block,
+                    kind: SpecialJumpKind::NextBlock | SpecialJumpKind::LoopBreak(..),
+                    ..
+                } => {
+                    let next_block = self.translate_jump(span, target_block);
                     block = block.merge(next_block);
                 }
             }
