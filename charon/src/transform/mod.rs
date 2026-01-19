@@ -158,8 +158,12 @@ pub static ULLBC_PASSES: &[Pass] = &[
     UnstructuredBody(&simplify_output::remove_unit_locals::Transform),
     // # Micro-pass: duplicate the return blocks
     UnstructuredBody(&control_flow::duplicate_return::Transform),
+    // Remove the locals which are never used.
+    NonBody(&simplify_output::remove_unused_locals::Transform),
+    // Another round.
+    UnstructuredBody(&control_flow::merge_goto_chains::Transform),
     // # Micro-pass: filter the "dangling" blocks. Those might have been introduced by,
-    // for instance, [`reconstruct_asserts`].
+    // for instance, [`merge_goto_chains`].
     UnstructuredBody(&normalize::filter_unreachable_blocks::Transform),
     // # Micro-pass: make sure the block ids used in the ULLBC are consecutive
     UnstructuredBody(&simplify_output::update_block_indices::Transform),

@@ -2291,5 +2291,65 @@ pub fn loop_after_loop()
     return
 }
 
+// Full name: test_crate::trick_exit_computation
+pub fn trick_exit_computation()
+{
+    let _0: (); // return
+    let x_1: i32; // local
+
+    _0 = ()
+    storage_live(x_1)
+    x_1 = const 0 : i32
+    loop {
+        x_1 = const 1 : i32
+        loop {
+            x_1 = const 2 : i32
+            switch copy x_1 {
+                0 : i32 => {
+                    // This makes the algorithm pick the outer break as loop exit, making the reconstructed
+                    // cfg much worse than with fewer branches.
+                    x_1 = const 3 : i32
+                    break 0
+                },
+                1 : i32 => {
+                    x_1 = const 4 : i32
+                    break 0
+                },
+                2 : i32 => {
+                    x_1 = const 5 : i32
+                    break 0
+                },
+                3 : i32 => {
+                    x_1 = const 6 : i32
+                    break 0
+                },
+                4 : i32 => {
+                    x_1 = const 7 : i32
+                    break 0
+                },
+                5 : i32 => {
+                    x_1 = const 8 : i32
+                    x_1 = const 11 : i32
+                    continue 1
+                },
+                6 : i32 => {
+                    x_1 = const 9 : i32
+                    x_1 = const 11 : i32
+                    continue 1
+                },
+                _ => {
+                    x_1 = const 10 : i32
+                    continue 0
+                },
+            }
+        }
+        break 0
+    }
+    x_1 = const 12 : i32
+    _0 = ()
+    storage_dead(x_1)
+    return
+}
+
 
 

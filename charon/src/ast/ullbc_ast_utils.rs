@@ -1,23 +1,35 @@
 //! Implementations for [crate::ullbc_ast]
+use smallvec::{SmallVec, smallvec};
+
 use crate::ids::IndexVec;
 use crate::meta::Span;
 use crate::ullbc_ast::*;
 use std::mem;
 
 impl SwitchTargets {
-    pub fn get_targets(&self) -> Vec<BlockId> {
+    pub fn targets(&self) -> SmallVec<[BlockId; 2]> {
         match self {
             SwitchTargets::If(then_tgt, else_tgt) => {
-                vec![*then_tgt, *else_tgt]
+                smallvec![*then_tgt, *else_tgt]
             }
-            SwitchTargets::SwitchInt(_, targets, otherwise) => {
-                let mut all_targets = vec![];
-                for (_, target) in targets {
-                    all_targets.push(*target);
-                }
-                all_targets.push(*otherwise);
-                all_targets
+            SwitchTargets::SwitchInt(_, targets, otherwise) => targets
+                .iter()
+                .map(|(_, t)| t)
+                .chain([otherwise])
+                .copied()
+                .collect(),
+        }
+    }
+    pub fn targets_mut(&mut self) -> SmallVec<[&mut BlockId; 2]> {
+        match self {
+            SwitchTargets::If(then_tgt, else_tgt) => {
+                smallvec![then_tgt, else_tgt]
             }
+            SwitchTargets::SwitchInt(_, targets, otherwise) => targets
+                .iter_mut()
+                .map(|(_, t)| t)
+                .chain([otherwise])
+                .collect(),
         }
     }
 }
@@ -60,6 +72,41 @@ impl Terminator {
             terminator: self,
         }
     }
+
+    pub fn targets(&self) -> SmallVec<[BlockId; 2]> {
+        match &self.kind {
+            TerminatorKind::Goto { target } => {
+                smallvec![*target]
+            }
+            TerminatorKind::Switch { targets, .. } => targets.targets(),
+            TerminatorKind::Call {
+                target, on_unwind, ..
+            }
+            | TerminatorKind::Drop {
+                target, on_unwind, ..
+            } => smallvec![*target, *on_unwind],
+            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
+                smallvec![]
+            }
+        }
+    }
+    pub fn targets_mut(&mut self) -> SmallVec<[&mut BlockId; 2]> {
+        match &mut self.kind {
+            TerminatorKind::Goto { target } => {
+                smallvec![target]
+            }
+            TerminatorKind::Switch { targets, .. } => targets.targets_mut(),
+            TerminatorKind::Call {
+                target, on_unwind, ..
+            }
+            | TerminatorKind::Drop {
+                target, on_unwind, ..
+            } => smallvec![target, on_unwind],
+            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
+                smallvec![]
+            }
+        }
+    }
 }
 
 impl BlockData {
@@ -69,6 +116,20 @@ impl BlockData {
             statements: vec![],
             terminator: Terminator::goto(span, target),
         }
+    }
+    pub fn as_goto(&self) -> Option<BlockId> {
+        if let TerminatorKind::Goto { target } = self.terminator.kind {
+            Some(target)
+        } else {
+            None
+        }
+    }
+    pub fn as_trivial_goto(&self) -> Option<BlockId> {
+        self.as_goto().filter(|_| {
+            self.statements
+                .iter()
+                .all(|st| matches!(st.kind, StatementKind::Nop))
+        })
     }
 
     /// Build a block that's UB to reach.
@@ -80,35 +141,21 @@ impl BlockData {
         .into_block()
     }
 
-    pub fn targets(&self) -> Vec<BlockId> {
-        match &self.terminator.kind {
-            TerminatorKind::Goto { target } => {
-                vec![*target]
-            }
-            TerminatorKind::Switch { targets, .. } => targets.get_targets(),
-            TerminatorKind::Call {
-                target, on_unwind, ..
-            }
-            | TerminatorKind::Drop {
-                target, on_unwind, ..
-            } => vec![*target, *on_unwind],
-            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
-                vec![]
-            }
-        }
+    pub fn targets(&self) -> SmallVec<[BlockId; 2]> {
+        self.terminator.targets()
     }
 
-    pub fn targets_ignoring_unwind(&self) -> Vec<BlockId> {
+    pub fn targets_ignoring_unwind(&self) -> SmallVec<[BlockId; 2]> {
         match &self.terminator.kind {
             TerminatorKind::Goto { target } => {
-                vec![*target]
+                smallvec![*target]
             }
-            TerminatorKind::Switch { targets, .. } => targets.get_targets(),
+            TerminatorKind::Switch { targets, .. } => targets.targets(),
             TerminatorKind::Call { target, .. } | TerminatorKind::Drop { target, .. } => {
-                vec![*target]
+                smallvec![*target]
             }
             TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
-                vec![]
+                smallvec![]
             }
         }
     }
