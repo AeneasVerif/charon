@@ -189,7 +189,6 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
         i_3 = move _15
         // Before end of loop
         storage_dead(_8)
-        continue 0
     }
     storage_dead(_10)
     storage_dead(_9)

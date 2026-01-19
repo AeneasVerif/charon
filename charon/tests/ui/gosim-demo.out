@@ -621,7 +621,6 @@ where
         storage_dead(x_8)
         storage_dead(_7)
         storage_dead(_5)
-        continue 0
     }
     _0 = ()
     storage_dead(_7)

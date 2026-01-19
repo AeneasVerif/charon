@@ -78,16 +78,20 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
         _5 = copy i_3
         _4 = move _5 < const 1 : i32
         if move _4 {
-            storage_dead(_5)
-            storage_live(_6)
-            _6 = const 0 : i32 < const 1 : i32
-            if move _6 {
-            } else {
-                storage_live(_7)
-                _7 = const 1 : i32 > const 1 : i32
-                if move _7 {
+            loop {
+                storage_dead(_5)
+                storage_live(_6)
+                _6 = const 0 : i32 < const 1 : i32
+                if move _6 {
                 } else {
+                    storage_live(_7)
+                    _7 = const 1 : i32 > const 1 : i32
+                    if move _7 {
+                    } else {
+                        break 0
+                    }
                 }
+                break 0
             }
             storage_dead(_7)
             storage_dead(_6)
@@ -104,7 +108,6 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
                     x_11 = copy CONST
                     storage_dead(x_11)
                     storage_dead(_9)
-                    continue 0
                 } else {
                     break 0
                 }
@@ -113,7 +116,6 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
             storage_dead(_9)
             storage_dead(j_8)
             storage_dead(_4)
-            continue 0
         } else {
             break 0
         }

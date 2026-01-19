@@ -117,24 +117,26 @@ pub fn test3(@1: E2) -> u32
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
 
-    storage_live(_7)
-    storage_live(y_2)
-    match x_1 {
-        E2::V1 => {
-            storage_live(n_3)
-            n_3 = copy (x_1 as variant E2::V1).0
-            y_2 = copy n_3
-            storage_dead(n_3)
-        },
-        E2::V2 => {
-            storage_live(n_3)
-            n_3 = copy (x_1 as variant E2::V2).0
-            y_2 = copy n_3
-            storage_dead(n_3)
-        },
-        E2::V3 => {
-            y_2 = const 0 : u32
-        },
+    loop {
+        storage_live(_7)
+        storage_live(y_2)
+        match x_1 {
+            E2::V1 => {
+                storage_live(n_3)
+                n_3 = copy (x_1 as variant E2::V1).0
+            },
+            E2::V2 => {
+                storage_live(n_3)
+                n_3 = copy (x_1 as variant E2::V2).0
+            },
+            E2::V3 => {
+                y_2 = const 0 : u32
+                break 0
+            },
+        }
+        y_2 = copy n_3
+        storage_dead(n_3)
+        break 0
     }
     storage_live(z_4)
     z_4 = id<u32>[{built_in impl Sized for u32}](const 3 : u32)

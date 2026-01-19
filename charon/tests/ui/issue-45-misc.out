@@ -708,7 +708,6 @@ fn cbd(@1: [u8; 33 : usize])
         storage_dead(i_8)
         storage_dead(_7)
         storage_dead(_5)
-        continue 0
     }
     _0 = ()
     storage_dead(_7)
