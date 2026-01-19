@@ -17,6 +17,7 @@ fn main()
 
     _0 = ()
     loop {
+        continue 0
     }
 }
 

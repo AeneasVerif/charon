@@ -892,7 +892,7 @@ impl<'a> ReconstructCtx<'a> {
 
         // Translate the body by reconstructing the loops and the
         // conditional branchings.
-        let use_relooper = true;
+        let use_relooper = false;
         Ok(ReconstructCtx {
             cfg,
             break_context_depth: 0,

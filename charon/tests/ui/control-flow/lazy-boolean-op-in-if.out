@@ -72,19 +72,16 @@ fn main()
     // `&&` inside `if` is treated specially by Rust: must like for `if let && let`, it is
     // considered as directly being control-flow, instead of computing a boolean first.
     _2 = foo()
-    loop {
-        if move _2 {
-            storage_live(_3)
-            _3 = bar()
-            if move _3 {
-                _1 = do_something()
-                break 0
-            } else {
-            }
+    if move _2 {
+        storage_live(_3)
+        _3 = bar()
+        if move _3 {
+            _1 = do_something()
         } else {
+            _1 = do_something_else()
         }
+    } else {
         _1 = do_something_else()
-        break 0
     }
     storage_dead(_3)
     storage_dead(_2)
@@ -107,48 +104,56 @@ fn main2()
     let _8: bool; // anonymous local
     let _9: bool; // anonymous local
 
-    loop {
-        _0 = ()
-        storage_live(x_1)
-        x_1 = const 0 : i32
-        storage_live(a_2)
-        a_2 = const true
-        storage_live(b_3)
-        b_3 = const true
-        storage_live(c_4)
-        c_4 = const true
-        storage_live(d_5)
-        d_5 = const true
-        storage_live(_6)
-        _6 = copy a_2
-        if move _6 {
-        } else {
-            storage_live(_7)
-            _7 = copy b_3
-            if move _7 {
-            } else {
-                break 0
-            }
-        }
-        loop {
-            storage_live(_8)
-            _8 = copy c_4
-            if move _8 {
-            } else {
-                storage_live(_9)
-                _9 = copy d_5
-                if move _9 {
-                } else {
-                    break 0
-                }
-            }
+    _0 = ()
+    storage_live(x_1)
+    x_1 = const 0 : i32
+    storage_live(a_2)
+    a_2 = const true
+    storage_live(b_3)
+    b_3 = const true
+    storage_live(c_4)
+    c_4 = const true
+    storage_live(d_5)
+    d_5 = const true
+    storage_live(_6)
+    _6 = copy a_2
+    if move _6 {
+        storage_live(_8)
+        _8 = copy c_4
+        if move _8 {
             x_1 = const 1 : i32
-            break 0
+        } else {
+            storage_live(_9)
+            _9 = copy d_5
+            if move _9 {
+                x_1 = const 1 : i32
+            } else {
+            }
         }
         storage_dead(_9)
         storage_dead(_8)
         x_1 = const 2 : i32
-        break 0
+    } else {
+        storage_live(_7)
+        _7 = copy b_3
+        if move _7 {
+            storage_live(_8)
+            _8 = copy c_4
+            if move _8 {
+                x_1 = const 1 : i32
+            } else {
+                storage_live(_9)
+                _9 = copy d_5
+                if move _9 {
+                    x_1 = const 1 : i32
+                } else {
+                }
+            }
+            storage_dead(_9)
+            storage_dead(_8)
+            x_1 = const 2 : i32
+        } else {
+        }
     }
     storage_dead(_7)
     storage_dead(_6)
