@@ -19,3 +19,18 @@ fn main() {
     }
     do_something_at_the_end()
 }
+
+fn main2() {
+    let mut x = 0;
+    let a = true;
+    let b = true;
+    let c = true;
+    let d = true;
+    if a || b {
+        if c || d {
+            x = 1;
+        }
+        x = 2;
+    }
+    x = 3;
+}

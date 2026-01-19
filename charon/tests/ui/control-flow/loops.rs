@@ -331,3 +331,50 @@ pub fn loop_after_loop() {
     }
     x = 4;
 }
+
+/// This tricks the loop exit computation into picking a suboptimal exit block.
+pub fn trick_exit_computation() {
+    let mut x = 0;
+    'a: loop {
+        x = 1;
+        'b: loop {
+            x = 2;
+            // This makes the algorithm pick the outer break as loop exit, making the reconstructed
+            // cfg much worse than with fewer branches.
+            match x {
+                0 => {
+                    x = 3;
+                    break 'a;
+                }
+                1 => {
+                    x = 4;
+                    break 'a;
+                }
+                2 => {
+                    x = 5;
+                    break 'a;
+                }
+                3 => {
+                    x = 6;
+                    break 'a;
+                }
+                4 => {
+                    x = 7;
+                    break 'a;
+                }
+                5 => {
+                    x = 8;
+                    break;
+                }
+                6 => {
+                    x = 9;
+                    break;
+                }
+                _ => {}
+            }
+            x = 10;
+        }
+        x = 11;
+    }
+    x = 12;
+}
