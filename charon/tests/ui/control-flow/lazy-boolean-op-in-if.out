@@ -72,19 +72,16 @@ fn main()
     // `&&` inside `if` is treated specially by Rust: must like for `if let && let`, it is
     // considered as directly being control-flow, instead of computing a boolean first.
     _2 = foo()
-    loop {
-        if move _2 {
-            storage_live(_3)
-            _3 = bar()
-            if move _3 {
-                _1 = do_something()
-                break 0
-            } else {
-            }
+    if move _2 {
+        storage_live(_3)
+        _3 = bar()
+        if move _3 {
+            _1 = do_something()
         } else {
+            _1 = do_something_else()
         }
+    } else {
         _1 = do_something_else()
-        break 0
     }
     storage_dead(_3)
     storage_dead(_2)

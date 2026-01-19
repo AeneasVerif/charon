@@ -373,6 +373,7 @@ where
                 storage_dead(_8)
                 storage_dead(tl_4)
                 storage_dead(x_3)
+                continue 0
             },
             _ => {
                 break 0

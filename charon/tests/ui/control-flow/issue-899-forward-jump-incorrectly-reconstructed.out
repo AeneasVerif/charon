@@ -55,45 +55,42 @@ fn absorb_full()
     // bb0
     // bb1
     _2 = condition(const 1 : u32)
-    loop {
-        if move _2 {
-            storage_live(_3)
-            // bb3
-            _3 = condition(const 2 : u32)
-            if move _3 {
-                // bb7
-                _1 = foo()
-                // bb8
-                storage_dead(_3)
-            } else {
-                storage_dead(_3)
-                // bb10
-                storage_dead(_2)
-                storage_dead(_1)
-                break 0
-            }
+    if move _2 {
+        storage_live(_3)
+        // bb3
+        _3 = condition(const 2 : u32)
+        if move _3 {
+            // bb7
+            _1 = foo()
+            // bb8
+            storage_dead(_3)
         } else {
-            _1 = ()
-        }
-        storage_dead(_2)
-        storage_dead(_1)
-        storage_live(_4)
-        // bb6
-        _4 = condition(const 3 : u32)
-        if move _4 {
-        } else {
+            storage_dead(_3)
+            // bb10
+            storage_dead(_2)
+            storage_dead(_1)
+            // bb6
             // bb12
-            storage_dead(_4)
             // unconditional break, the `loop` is only for fwd jumping
-            break 0
+            // bb13
+            _0 = bar()
+            return
         }
-        _0 = ()
-        storage_dead(_4)
-        // bb13
-        return
-        break 0
+    } else {
+        _1 = ()
     }
-    _0 = bar()
+    storage_dead(_2)
+    storage_dead(_1)
+    storage_live(_4)
+    _4 = condition(const 3 : u32)
+    if move _4 {
+    } else {
+        storage_dead(_4)
+        _0 = bar()
+        return
+    }
+    _0 = ()
+    storage_dead(_4)
     return
 }
 

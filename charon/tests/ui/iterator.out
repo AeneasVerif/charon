@@ -5268,6 +5268,7 @@ fn main()
         storage_dead(v_10)
         storage_dead(_9)
         storage_dead(_7)
+        continue 0
     }
     storage_dead(_9)
     storage_dead(_7)
@@ -5317,6 +5318,7 @@ fn main()
         storage_dead(v_21)
         storage_dead(_20)
         storage_dead(_18)
+        continue 0
     }
     storage_dead(_20)
     storage_dead(_18)
@@ -5354,6 +5356,7 @@ fn main()
         i_2 = move _33
         storage_dead(_32)
         storage_dead(_30)
+        continue 0
     }
     storage_dead(_32)
     storage_dead(_30)
@@ -5391,6 +5394,7 @@ fn main()
         i_2 = move _42
         storage_dead(_41)
         storage_dead(_39)
+        continue 0
     }
     storage_dead(_41)
     storage_dead(_39)
