@@ -817,6 +817,7 @@ impl ExitInfo {
     }
 }
 
+#[derive(Debug)]
 enum GotoKind {
     Break(usize),
     Continue(usize),
@@ -827,7 +828,7 @@ enum GotoKind {
 type Depth = usize;
 
 #[derive(Debug, Clone, Copy)]
-enum SpecialJump {
+enum SpecialJumpKind {
     /// When encountering this block, `continue` to the given depth.
     LoopContinue(Depth),
     /// When encountering this block, `break` to the given depth. This comes from a loop.
@@ -838,6 +839,26 @@ enum SpecialJump {
     /// When encountering this block, do nothing, as this is the next block that will be
     /// translated.
     NextBlock,
+}
+
+#[derive(Clone, Copy)]
+struct SpecialJump {
+    /// The relevant block.
+    target_block: BlockId,
+    /// How to translate a jump to the target block.
+    kind: SpecialJumpKind,
+}
+
+impl SpecialJump {
+    fn new(target_block: BlockId, kind: SpecialJumpKind) -> Self {
+        Self { target_block, kind }
+    }
+}
+
+impl std::fmt::Debug for SpecialJump {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "SpecialJump({}, {:?})", self.target_block, self.kind)
+    }
 }
 
 enum ReconstructMode {
@@ -857,7 +878,7 @@ struct ReconstructCtx<'a> {
     /// nothing) in the current context.
     /// The block where control-flow continues naturally after this block is kept at the top of the
     /// stack.
-    special_jump_stack: Vec<(BlockId, SpecialJump)>,
+    special_jump_stack: Vec<SpecialJump>,
     mode: ReconstructMode,
 }
 
@@ -903,29 +924,30 @@ impl<'a> ReconstructCtx<'a> {
         tgt::Statement::new(src_span, st)
     }
 
-    fn get_goto_kind(&self, target_block: src::BlockId) -> GotoKind {
+    #[tracing::instrument(skip(self), ret, fields(stack = ?self.special_jump_stack))]
+    fn get_goto_kind(&mut self, target_block: src::BlockId) -> GotoKind {
         match self
             .special_jump_stack
-            .iter()
+            .iter_mut()
             .rev()
             .enumerate()
-            .find(|(_, (b, _))| *b == target_block)
+            .find(|(_, j)| j.target_block == target_block)
         {
-            Some((i, (_, jump_target))) => match jump_target {
+            Some((i, jump_target)) => match jump_target.kind {
                 // The top of the stack is where control-flow goes naturally, no need to add a
                 // `break`/`continue`.
-                SpecialJump::LoopContinue(_) | SpecialJump::ForwardBreak(_)
+                SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
                     if i == 0 && matches!(self.mode, ReconstructMode::Reloop) =>
                 {
                     GotoKind::NextBlock
                 }
-                SpecialJump::LoopContinue(depth) => {
+                SpecialJumpKind::LoopContinue(depth) => {
                     GotoKind::Continue(self.break_context_depth - depth)
                 }
-                SpecialJump::ForwardBreak(depth) | SpecialJump::LoopBreak(depth) => {
+                SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
                     GotoKind::Break(self.break_context_depth - depth)
                 }
-                SpecialJump::NextBlock => GotoKind::NextBlock,
+                SpecialJumpKind::NextBlock => GotoKind::NextBlock,
             },
             // Translate the block without a jump.
             None => GotoKind::Goto,
@@ -1085,7 +1107,7 @@ impl<'a> ReconstructCtx<'a> {
         let mut exit_blocks = self
             .special_jump_stack
             .iter()
-            .map(|(bid, _)| *bid)
+            .map(|j| j.target_block)
             .collect();
         self.has_fwd_break_inner(&mut exit_blocks, None, to, from)
             .is_break()
@@ -1126,6 +1148,7 @@ impl<'a> ReconstructCtx<'a> {
     }
 
     /// Translate a block including surrounding control-flow like looping.
+    #[tracing::instrument(skip(self), fields(stack = ?self.special_jump_stack))]
     fn translate_block(&mut self, block_id: src::BlockId) -> tgt::Block {
         ensure_sufficient_stack(|| self.translate_block_inner(block_id))
     }
@@ -1144,13 +1167,15 @@ impl<'a> ReconstructCtx<'a> {
         if block_data.is_loop_header {
             self.break_context_depth += 1;
             if let Some(exit_id) = block_data.exit_info.loop_exit {
-                self.special_jump_stack
-                    .push((exit_id, SpecialJump::LoopBreak(self.break_context_depth)));
+                self.special_jump_stack.push(SpecialJump::new(
+                    exit_id,
+                    SpecialJumpKind::LoopBreak(self.break_context_depth),
+                ));
             }
             // Put the next block at the top of the stack.
-            self.special_jump_stack.push((
+            self.special_jump_stack.push(SpecialJump::new(
                 block_id,
-                SpecialJump::LoopContinue(self.break_context_depth),
+                SpecialJumpKind::LoopContinue(self.break_context_depth),
             ));
         }
 
@@ -1162,15 +1187,17 @@ impl<'a> ReconstructCtx<'a> {
             let merge_children = &block_data.immediately_dominated_merge_targets;
             for &child in merge_children {
                 self.break_context_depth += 1;
-                self.special_jump_stack
-                    .push((child, SpecialJump::ForwardBreak(self.break_context_depth)));
+                self.special_jump_stack.push(SpecialJump::new(
+                    child,
+                    SpecialJumpKind::ForwardBreak(self.break_context_depth),
+                ));
             }
             // Avoid a forward-break block if it would not actually entail any forward breaks.
             if let [.., last_child] = merge_children.as_slice()
                 && !self.has_fwd_break(block_id, *last_child)
             {
                 self.break_context_depth -= 1;
-                self.special_jump_stack.last_mut().unwrap().1 = SpecialJump::NextBlock;
+                self.special_jump_stack.last_mut().unwrap().kind = SpecialJumpKind::NextBlock;
                 // Don't insert a switch exit because that changes which block comes next.
                 insert_switch_exit = false;
             }
@@ -1182,7 +1209,8 @@ impl<'a> ReconstructCtx<'a> {
         {
             // Move some code that would be inside one or several switch branches to be after the
             // switch intead.
-            self.special_jump_stack.push((bid, SpecialJump::NextBlock));
+            self.special_jump_stack
+                .push(SpecialJump::new(bid, SpecialJumpKind::NextBlock));
         }
 
         // Translate this block. Any jumps to a loop header or a merge node will be replaced with
@@ -1193,22 +1221,33 @@ impl<'a> ReconstructCtx<'a> {
         let new_block = move |kind| tgt::Statement::new(block.span, kind).into_block();
         while self.special_jump_stack.len() > old_context_depth {
             match self.special_jump_stack.pop().unwrap() {
-                (_loop_header, SpecialJump::LoopContinue(_)) => {
+                SpecialJump {
+                    kind: SpecialJumpKind::LoopContinue(_),
+                    ..
+                } => {
                     self.break_context_depth -= 1;
                     block = new_block(tgt::StatementKind::Loop(block));
                 }
-                (next_block, SpecialJump::ForwardBreak(_)) => {
+                SpecialJump {
+                    target_block,
+                    kind: SpecialJumpKind::ForwardBreak(_),
+                    ..
+                } => {
                     self.break_context_depth -= 1;
                     // We add a `loop { ...; break }` so that we can use `break` to jump forward.
                     block = block.merge(new_block(tgt::StatementKind::Break(0)));
                     block = new_block(tgt::StatementKind::Loop(block));
                     // We must translate the merge nodes after the block used for forward jumps to
                     // them.
-                    let next_block = self.translate_jump(span, next_block);
+                    let next_block = self.translate_jump(span, target_block);
                     block = block.merge(next_block);
                 }
-                (next_block, SpecialJump::NextBlock) | (next_block, SpecialJump::LoopBreak(..)) => {
-                    let next_block = self.translate_jump(span, next_block);
+                SpecialJump {
+                    target_block,
+                    kind: SpecialJumpKind::NextBlock | SpecialJumpKind::LoopBreak(..),
+                    ..
+                } => {
+                    let next_block = self.translate_jump(span, target_block);
                     block = block.merge(next_block);
                 }
             }
