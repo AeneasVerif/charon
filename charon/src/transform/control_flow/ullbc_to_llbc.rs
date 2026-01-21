@@ -861,13 +861,14 @@ impl std::fmt::Debug for SpecialJump {
     }
 }
 
+/// How to handle blocks reachable from multiple branches.
 enum ReconstructMode {
-    /// Reconstruct using flow heuristics.
-    Flow,
-    /// Reconstruct using the algorithm from "Beyond Relooper" (https://dl.acm.org/doi/10.1145/3547621).
-    /// A useful invariant is that the block at the top of the jump stack is the block where
-    /// control-flow will jump naturally at the end of the current block.
-    Reloop,
+    /// Duplicate blocks reachable from multiple branches.
+    Duplicate,
+    /// Insert loops for the purpose of breaking forward to them to implement DAG-like control-flow
+    /// without duplicating blocks.
+    /// Based on the algorithm from "Beyond Relooper" (https://dl.acm.org/doi/10.1145/3547621).
+    ForwardBreak,
 }
 
 struct ReconstructCtx<'a> {
@@ -892,15 +893,15 @@ impl<'a> ReconstructCtx<'a> {
 
         // Translate the body by reconstructing the loops and the
         // conditional branchings.
-        let use_relooper = false;
+        let allow_duplication = true;
         Ok(ReconstructCtx {
             cfg,
             break_context_depth: 0,
             special_jump_stack: Vec::new(),
-            mode: if use_relooper {
-                ReconstructMode::Reloop
+            mode: if allow_duplication {
+                ReconstructMode::Duplicate
             } else {
-                ReconstructMode::Flow
+                ReconstructMode::ForwardBreak
             },
         })
     }
@@ -937,7 +938,7 @@ impl<'a> ReconstructCtx<'a> {
                 // The top of the stack is where control-flow goes naturally, no need to add a
                 // `break`/`continue`.
                 SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
-                    if i == 0 && matches!(self.mode, ReconstructMode::Reloop) =>
+                    if i == 0 && matches!(self.mode, ReconstructMode::ForwardBreak) =>
                 {
                     GotoKind::NextBlock
                 }
@@ -1181,7 +1182,7 @@ impl<'a> ReconstructCtx<'a> {
 
         // Catch jumps to a merge node.
         let mut insert_switch_exit = true;
-        if let ReconstructMode::Reloop = self.mode {
+        if let ReconstructMode::ForwardBreak = self.mode {
             // We support forward-jumps using `break`
             // The child with highest postorder numbering is nested outermost in this scheme.
             let merge_children = &block_data.immediately_dominated_merge_targets;
