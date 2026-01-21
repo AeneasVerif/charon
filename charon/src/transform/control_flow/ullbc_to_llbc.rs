@@ -817,14 +817,6 @@ impl ExitInfo {
     }
 }
 
-#[derive(Debug)]
-enum GotoKind {
-    Break(usize),
-    Continue(usize),
-    NextBlock,
-    Goto,
-}
-
 type Depth = usize;
 
 #[derive(Debug, Clone, Copy)]
@@ -925,8 +917,9 @@ impl<'a> ReconstructCtx<'a> {
         tgt::Statement::new(src_span, st)
     }
 
+    /// Translate a jump to the given block. The span is used to create the jump statement, if any.
     #[tracing::instrument(skip(self), ret, fields(stack = ?self.special_jump_stack))]
-    fn get_goto_kind(&mut self, target_block: src::BlockId) -> GotoKind {
+    fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
         match self
             .special_jump_stack
             .iter_mut()
@@ -934,37 +927,28 @@ impl<'a> ReconstructCtx<'a> {
             .enumerate()
             .find(|(_, j)| j.target_block == target_block)
         {
-            Some((i, jump_target)) => match jump_target.kind {
-                // The top of the stack is where control-flow goes naturally, no need to add a
-                // `break`/`continue`.
-                SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
-                    if i == 0 && matches!(self.mode, ReconstructMode::ForwardBreak) =>
-                {
-                    GotoKind::NextBlock
+            Some((i, jump_target)) => {
+                let mk_block = |kind| tgt::Statement::new(span, kind).into_block();
+                match jump_target.kind {
+                    // The top of the stack is where control-flow goes naturally, no need to add a
+                    // `break`/`continue`.
+                    SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
+                        if i == 0 && matches!(self.mode, ReconstructMode::ForwardBreak) =>
+                    {
+                        mk_block(tgt::StatementKind::Nop)
+                    }
+                    SpecialJumpKind::LoopContinue(depth) => mk_block(tgt::StatementKind::Continue(
+                        self.break_context_depth - depth,
+                    )),
+                    SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
+                        mk_block(tgt::StatementKind::Break(self.break_context_depth - depth))
+                    }
+                    SpecialJumpKind::NextBlock => mk_block(tgt::StatementKind::Nop),
                 }
-                SpecialJumpKind::LoopContinue(depth) => {
-                    GotoKind::Continue(self.break_context_depth - depth)
-                }
-                SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
-                    GotoKind::Break(self.break_context_depth - depth)
-                }
-                SpecialJumpKind::NextBlock => GotoKind::NextBlock,
-            },
+            }
             // Translate the block without a jump.
-            None => GotoKind::Goto,
+            None => return self.translate_block(target_block),
         }
-    }
-
-    /// Translate a jump to the given block. The span is used to create the jump statement, if any.
-    fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
-        let st = match self.get_goto_kind(target_block) {
-            GotoKind::Break(index) => tgt::StatementKind::Break(index),
-            GotoKind::Continue(index) => tgt::StatementKind::Continue(index),
-            GotoKind::NextBlock => tgt::StatementKind::Nop,
-            // "Standard" goto: we recursively translate the block.
-            GotoKind::Goto => return self.translate_block(target_block),
-        };
-        tgt::Statement::new(span, st).into_block()
     }
 
     fn translate_terminator(&mut self, terminator: &src::Terminator) -> tgt::Block {
@@ -1221,34 +1205,24 @@ impl<'a> ReconstructCtx<'a> {
         // Reset the state to what it was previously, and translate what remains.
         let new_block = move |kind| tgt::Statement::new(block.span, kind).into_block();
         while self.special_jump_stack.len() > old_context_depth {
-            match self.special_jump_stack.pop().unwrap() {
-                SpecialJump {
-                    kind: SpecialJumpKind::LoopContinue(_),
-                    ..
-                } => {
+            let special_jump = self.special_jump_stack.pop().unwrap();
+            match &special_jump.kind {
+                SpecialJumpKind::LoopContinue(_) => {
                     self.break_context_depth -= 1;
                     block = new_block(tgt::StatementKind::Loop(block));
                 }
-                SpecialJump {
-                    target_block,
-                    kind: SpecialJumpKind::ForwardBreak(_),
-                    ..
-                } => {
+                SpecialJumpKind::ForwardBreak(_) => {
                     self.break_context_depth -= 1;
                     // We add a `loop { ...; break }` so that we can use `break` to jump forward.
                     block = block.merge(new_block(tgt::StatementKind::Break(0)));
                     block = new_block(tgt::StatementKind::Loop(block));
                     // We must translate the merge nodes after the block used for forward jumps to
                     // them.
-                    let next_block = self.translate_jump(span, target_block);
+                    let next_block = self.translate_jump(span, special_jump.target_block);
                     block = block.merge(next_block);
                 }
-                SpecialJump {
-                    target_block,
-                    kind: SpecialJumpKind::NextBlock | SpecialJumpKind::LoopBreak(..),
-                    ..
-                } => {
-                    let next_block = self.translate_jump(span, target_block);
+                SpecialJumpKind::NextBlock | SpecialJumpKind::LoopBreak(..) => {
+                    let next_block = self.translate_jump(span, special_jump.target_block);
                     block = block.merge(next_block);
                 }
             }
