@@ -126,6 +126,7 @@ where
             _6 = move _6 wrap.+ const 1 : usize
             drop[@TraitClause1] (*_7)
         }
+        continue 0
     }
     return
 }
@@ -178,6 +179,7 @@ where
             _4 = move _4 wrap.+ const 1 : usize
             drop[@TraitClause1] (*_5)
         }
+        continue 0
     }
     return
 }

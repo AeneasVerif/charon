@@ -378,6 +378,7 @@ where
                 break 0
             },
         }
+        continue 0
     }
     panic(core::panicking::panic)
 }

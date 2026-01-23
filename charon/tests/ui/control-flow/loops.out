@@ -908,6 +908,7 @@ pub fn test_loop1(@1: u32) -> u32
         } else {
             break 0
         }
+        continue 0
     }
     storage_dead(_6)
     storage_dead(_5)
@@ -981,6 +982,7 @@ pub fn test_loop2(@1: u32) -> u32
             break 0
         }
         break 0
+        continue 0
     }
     storage_dead(_4)
     _0 = copy s_3
@@ -1078,6 +1080,7 @@ pub fn test_loop3(@1: u32) -> u32
                 } else {
                     break 0
                 }
+                continue 0
             }
             storage_dead(_10)
             storage_dead(_9)
@@ -1094,6 +1097,7 @@ pub fn test_loop3(@1: u32) -> u32
         } else {
             break 0
         }
+        continue 0
     }
     storage_dead(_7)
     storage_dead(_6)
@@ -1194,6 +1198,7 @@ pub fn test_loop4(@1: u32) -> u32
                     } else {
                         break 0
                     }
+                    continue 0
                 }
                 storage_dead(_10)
                 storage_dead(_9)
@@ -1215,6 +1220,7 @@ pub fn test_loop4(@1: u32) -> u32
             break 0
         }
         break 0
+        continue 0
     }
     storage_dead(_5)
     _0 = copy s_4
@@ -1286,6 +1292,7 @@ pub fn test_loop5(@1: u32) -> u32
                 } else {
                     break 0
                 }
+                continue 0
             }
             storage_dead(_10)
             storage_dead(_9)
@@ -1301,6 +1308,7 @@ pub fn test_loop5(@1: u32) -> u32
         } else {
             break 0
         }
+        continue 0
     }
     storage_dead(_7)
     storage_dead(_6)
@@ -1375,6 +1383,7 @@ pub fn test_loop6(@1: u32) -> u32
             break 0
         }
         break 0
+        continue 0
     }
     storage_dead(_4)
     // All the below nodes are exit candidates (each of them is referenced twice)
@@ -1458,6 +1467,7 @@ pub fn test_loop7(@1: u32) -> u32
                     storage_dead(_8)
                 }
                 break 0
+                continue 0
             }
             storage_dead(_7)
         } else {
@@ -1648,6 +1658,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         s_3 = move _10
         storage_dead(_9)
         storage_dead(_7)
+        continue 0
     }
     storage_dead(_9)
     storage_dead(_7)
@@ -1707,6 +1718,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
             s_3 = move _25
             storage_dead(_24)
             storage_dead(_22)
+            continue 0
         }
         storage_dead(_24)
         storage_dead(_22)
@@ -1714,6 +1726,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_15)
+        continue 0
     }
     storage_dead(_17)
     storage_dead(_15)
@@ -1785,6 +1798,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
                         storage_dead(_9)
                     },
                 }
+                continue 0
             }
             storage_dead(_11)
             storage_dead(_9)
@@ -1843,6 +1857,7 @@ pub fn test_crate::sum(@1: u32) -> u32
         } else {
             break 0
         }
+        continue 0
     }
     storage_dead(_6)
     storage_dead(_5)
@@ -1902,6 +1917,7 @@ pub fn sum_array<const N : usize>(@1: [u32; N]) -> u32
         } else {
             break 0
         }
+        continue 0
     }
     storage_dead(_5)
     storage_dead(_4)
@@ -1959,6 +1975,7 @@ pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in
         _10 = copy i_2 panic.+ const 1 : usize
         i_2 = move _10
         storage_dead(_3)
+        continue 0
     }
     storage_dead(_5)
     storage_dead(_4)
@@ -2027,6 +2044,7 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut List<usize>[{built_in impl Sized for usize
                 panic(core::panicking::panic)
             },
         }
+        continue 0
     }
 }
 
@@ -2081,6 +2099,7 @@ where
                 break 0
             },
         }
+        continue 0
     }
     panic(core::panicking::panic)
 }
@@ -2105,6 +2124,7 @@ pub fn loop_break_1()
             storage_dead(_2)
             x_1 = const 3 : i32
         }
+        continue 0
     }
     x_1 = const 2 : i32
     storage_dead(_2)
@@ -2134,6 +2154,7 @@ pub fn loop_break_2()
             storage_dead(_2)
             x_1 = const 3 : i32
         }
+        continue 0
     }
     storage_dead(_2)
     x_1 = const 2 : i32
@@ -2174,9 +2195,11 @@ pub fn interleaved_loops()
                 x_1 = const 5 : i32
                 storage_dead(_3)
             }
+            continue 0
         }
         x_1 = const 3 : i32
         storage_dead(_2)
+        continue 0
     }
     storage_dead(_3)
     x_1 = const 6 : i32
@@ -2220,9 +2243,11 @@ pub fn interleaved_loops2()
                 storage_dead(_2)
                 x_1 = const 5 : i32
             }
+            continue 0
         }
         x_1 = const 3 : i32
         storage_dead(_2)
+        continue 0
     }
     storage_dead(_3)
     storage_dead(_2)
@@ -2257,6 +2282,7 @@ pub fn loop_after_loop()
         } else {
             break 0
         }
+        continue 0
     }
     storage_dead(_3)
     storage_dead(_2)
@@ -2273,6 +2299,7 @@ pub fn loop_after_loop()
         } else {
             break 0
         }
+        continue 0
     }
     storage_dead(_5)
     storage_dead(_4)
@@ -2332,8 +2359,10 @@ pub fn trick_exit_computation()
             }
             x_1 = const 11 : i32
             continue 1
+            continue 0
         }
         break 0
+        continue 0
     }
     x_1 = const 12 : i32
     _0 = ()

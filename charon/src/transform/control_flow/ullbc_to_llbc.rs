@@ -1211,6 +1211,13 @@ impl<'a> ReconstructCtx<'a> {
             match &special_jump.kind {
                 SpecialJumpKind::LoopContinue(_) => {
                     self.break_context_depth -= 1;
+                    if let ReconstructMode::ForwardBreak = self.mode {
+                        // We add `continue` at the end for users that don't know that the default
+                        // behavior at the end of a loop block is `continue`. Not needed for
+                        // `Duplicate` mode because we use explicit `continue`s there. TODO: clean
+                        // that up.
+                        block = block.merge(new_block(tgt::StatementKind::Continue(0)));
+                    }
                     block = new_block(tgt::StatementKind::Loop(block));
                 }
                 SpecialJumpKind::ForwardBreak(_) => {

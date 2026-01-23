@@ -74,6 +74,7 @@ fn f() -> usize
         } else {
             break 0
         }
+        continue 0
     }
     storage_dead(_4)
     storage_dead(_3)
