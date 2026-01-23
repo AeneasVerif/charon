@@ -897,8 +897,6 @@ struct ReconstructCtx<'a> {
     mode: ReconstructMode,
 }
 
-struct FoundIt;
-
 impl<'a> ReconstructCtx<'a> {
     fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
         // Compute all sorts of graph-related information about the control-flow graph, including
@@ -1107,54 +1105,6 @@ impl<'a> ReconstructCtx<'a> {
         }
     }
 
-    /// Compute whether starting from `from` would lead to a forward break to `to`. This is rather
-    /// hacky in that it basically traverses the blocks just like the reconstruction algorithm
-    /// would, while keeping track of the item after `to` in the `special_jump_stack`. Eventually a
-    /// more clever algorithm should be found.
-    fn has_fwd_break(&self, from: src::BlockId, to: BlockId) -> bool {
-        let mut exit_blocks = self
-            .special_jump_stack
-            .iter()
-            .map(|j| j.target_block)
-            .collect();
-        self.has_fwd_break_inner(&mut exit_blocks, None, to, from)
-            .is_break()
-    }
-    fn has_fwd_break_inner(
-        &self,
-        visited: &mut HashSet<BlockId>,
-        stack_first: Option<BlockId>,
-        to: BlockId,
-        block_id: BlockId,
-    ) -> ControlFlow<FoundIt> {
-        if stack_first.is_some() && self.cfg.fwd_cfg.neighbors(block_id).contains(&to) {
-            return ControlFlow::Break(FoundIt);
-        }
-        for target_block in self.cfg.fwd_cfg.neighbors(block_id) {
-            if !visited.insert(target_block) {
-                continue;
-            }
-
-            let mut stack_first = stack_first.clone();
-            if stack_first == Some(target_block) {
-                stack_first = None;
-            }
-
-            let block_data = &self.cfg.block_data[target_block];
-            if block_data.is_loop_header {
-                stack_first = stack_first.or(Some(target_block));
-            }
-
-            let merge_children = &block_data.immediately_dominated_merge_targets;
-            stack_first = stack_first.or(merge_children.first().copied());
-
-            stack_first = stack_first.or(block_data.exit_info.switch_exit);
-
-            self.has_fwd_break_inner(visited, stack_first, to, target_block)?;
-        }
-        ControlFlow::Continue(())
-    }
-
     /// Translate a block including surrounding control-flow like looping.
     #[tracing::instrument(skip(self), fields(stack = ?self.special_jump_stack))]
     fn translate_block(&mut self, block_id: src::BlockId) -> tgt::Block {
@@ -1188,11 +1138,10 @@ impl<'a> ReconstructCtx<'a> {
         }
 
         // Catch jumps to a merge node.
-        let mut insert_switch_exit = true;
+        let merge_children = &block_data.immediately_dominated_merge_targets;
         if let ReconstructMode::ForwardBreak = self.mode {
             // We support forward-jumps using `break`
             // The child with highest postorder numbering is nested outermost in this scheme.
-            let merge_children = &block_data.immediately_dominated_merge_targets;
             for &child in merge_children {
                 self.break_context_depth += 1;
                 self.special_jump_stack.push(SpecialJump::new(
@@ -1200,20 +1149,12 @@ impl<'a> ReconstructCtx<'a> {
                     SpecialJumpKind::ForwardBreak(self.break_context_depth),
                 ));
             }
-            // Avoid a forward-break block if it would not actually entail any forward breaks.
-            if let [.., last_child] = merge_children.as_slice()
-                && !self.has_fwd_break(block_id, *last_child)
-            {
-                self.break_context_depth -= 1;
-                self.special_jump_stack.last_mut().unwrap().kind = SpecialJumpKind::NextBlock;
-                // Don't insert a switch exit because that changes which block comes next.
-                insert_switch_exit = false;
-            }
         }
 
-        if insert_switch_exit
-            && let Some(bid) = block_data.exit_info.switch_exit
+        if let Some(bid) = block_data.exit_info.switch_exit
             && !block_data.is_loop_header
+            && !(matches!(self.mode, ReconstructMode::ForwardBreak)
+                && merge_children.contains(&bid))
         {
             // Move some code that would be inside one or several switch branches to be after the
             // switch intead.

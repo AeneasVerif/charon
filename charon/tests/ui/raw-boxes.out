@@ -659,26 +659,30 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(_4)
     storage_live(_8)
     _8 = is_aligned_to<()>(copy addr_1, move align_2)
-    if move _8 {
-        if copy zero_size_3 {
-            storage_dead(_8)
-        } else {
-            storage_live(_9)
-            storage_live(_10)
-            _10 = transmute<*const (), usize>(copy addr_1)
-            _9 = move _10 == const 0 : usize
-            storage_dead(_10)
-            _4 = ~(move _9)
-            storage_dead(_9)
-            storage_dead(_8)
-            if move _4 {
+    loop {
+        if move _8 {
+            if copy zero_size_3 {
+                storage_dead(_8)
             } else {
+                storage_live(_9)
+                storage_live(_10)
+                _10 = transmute<*const (), usize>(copy addr_1)
+                _9 = move _10 == const 0 : usize
+                storage_dead(_10)
+                _4 = ~(move _9)
+                storage_dead(_9)
+                storage_dead(_8)
+                if move _4 {
+                } else {
+                    break 0
+                }
             }
+            storage_dead(_4)
+            return
+        } else {
+            storage_dead(_8)
         }
-        storage_dead(_4)
-        return
-    } else {
-        storage_dead(_8)
+        break 0
     }
     msg_5 = const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
     storage_live(_7)
@@ -2583,242 +2587,245 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
         0 : usize => {
         },
         _ => {
-            storage_live(_9)
-            _31 = copy ((old_layout_3).align).0
-            _10 = @discriminant(_31)
-            storage_live(_11)
-            storage_live(_45)
-            _45 = copy ((new_layout_4).align).0
-            _11 = @discriminant(_45)
-            storage_dead(_45)
-            _9 = copy _10 == move _11
-            if move _9 {
-                loop {
+            loop {
+                storage_live(_9)
+                _31 = copy ((old_layout_3).align).0
+                _10 = @discriminant(_31)
+                storage_live(_11)
+                storage_live(_45)
+                _45 = copy ((new_layout_4).align).0
+                _11 = @discriminant(_45)
+                storage_dead(_45)
+                _9 = copy _10 == move _11
+                if move _9 {
                     loop {
                         loop {
-                            storage_dead(_11)
-                            storage_dead(_9)
-                            storage_live(cond_12)
-                            _13 = copy (old_layout_3).size
-                            cond_12 = copy new_size_5 <= copy _13
-                            _47 = ub_checks<bool>
-                            if copy _47 {
-                                _46 = core::hint::assert_unchecked::precondition_check(copy cond_12)
-                                assert(copy cond_12 == true)
-                                storage_dead(cond_12)
-                                storage_live(ptr_15)
-                                storage_live(self_16)
-                                self_16 = copy ptr_2
-                                ptr_15 = transmute<NonNull<u8>, *mut u8>(copy ptr_2)
-                                storage_dead(self_16)
-                                storage_live(new_size_17)
-                                new_size_17 = copy new_size_5
-                                raw_ptr_14 = __rust_realloc(move ptr_15, move _13, move _10, copy new_size_5)
-                                storage_dead(new_size_17)
-                                storage_dead(ptr_15)
-                                storage_live(_18)
-                                storage_live(self_19)
-                                storage_live(self_20)
-                                storage_live(ptr_21)
-                                ptr_21 = copy raw_ptr_14
-                                _49 = cast<*mut u8, *const u8>(copy raw_ptr_14)
-                                storage_live(_50)
-                                _50 = transmute<*mut u8, usize>(copy raw_ptr_14)
-                                switch move _50 {
-                                    0 : usize => {
-                                    },
-                                    _ => {
-                                        storage_dead(_50)
-                                        storage_live(_48)
-                                        break 0
-                                    },
-                                }
-                            } else {
-                                assert(copy cond_12 == true)
-                                storage_dead(cond_12)
-                                storage_live(ptr_15)
-                                storage_live(self_16)
-                                self_16 = copy ptr_2
-                                ptr_15 = transmute<NonNull<u8>, *mut u8>(copy ptr_2)
-                                storage_dead(self_16)
-                                storage_live(new_size_17)
-                                new_size_17 = copy new_size_5
-                                raw_ptr_14 = __rust_realloc(move ptr_15, move _13, move _10, copy new_size_5)
-                                storage_dead(new_size_17)
-                                storage_dead(ptr_15)
-                                storage_live(_18)
-                                storage_live(self_19)
-                                storage_live(self_20)
-                                storage_live(ptr_21)
-                                ptr_21 = copy raw_ptr_14
-                                _49 = cast<*mut u8, *const u8>(copy raw_ptr_14)
-                                storage_live(_50)
-                                _50 = transmute<*mut u8, usize>(copy raw_ptr_14)
-                                switch move _50 {
-                                    0 : usize => {
-                                    },
-                                    _ => {
-                                        storage_dead(_50)
-                                        storage_live(_48)
-                                        if copy _47 {
+                            loop {
+                                storage_dead(_11)
+                                storage_dead(_9)
+                                storage_live(cond_12)
+                                _13 = copy (old_layout_3).size
+                                cond_12 = copy new_size_5 <= copy _13
+                                _47 = ub_checks<bool>
+                                if copy _47 {
+                                    _46 = core::hint::assert_unchecked::precondition_check(copy cond_12)
+                                    assert(copy cond_12 == true)
+                                    storage_dead(cond_12)
+                                    storage_live(ptr_15)
+                                    storage_live(self_16)
+                                    self_16 = copy ptr_2
+                                    ptr_15 = transmute<NonNull<u8>, *mut u8>(copy ptr_2)
+                                    storage_dead(self_16)
+                                    storage_live(new_size_17)
+                                    new_size_17 = copy new_size_5
+                                    raw_ptr_14 = __rust_realloc(move ptr_15, move _13, move _10, copy new_size_5)
+                                    storage_dead(new_size_17)
+                                    storage_dead(ptr_15)
+                                    storage_live(_18)
+                                    storage_live(self_19)
+                                    storage_live(self_20)
+                                    storage_live(ptr_21)
+                                    ptr_21 = copy raw_ptr_14
+                                    _49 = cast<*mut u8, *const u8>(copy raw_ptr_14)
+                                    storage_live(_50)
+                                    _50 = transmute<*mut u8, usize>(copy raw_ptr_14)
+                                    switch move _50 {
+                                        0 : usize => {
+                                        },
+                                        _ => {
+                                            storage_dead(_50)
+                                            storage_live(_48)
                                             break 0
-                                        } else {
-                                        }
-                                        break 1
-                                    },
+                                        },
+                                    }
+                                } else {
+                                    assert(copy cond_12 == true)
+                                    storage_dead(cond_12)
+                                    storage_live(ptr_15)
+                                    storage_live(self_16)
+                                    self_16 = copy ptr_2
+                                    ptr_15 = transmute<NonNull<u8>, *mut u8>(copy ptr_2)
+                                    storage_dead(self_16)
+                                    storage_live(new_size_17)
+                                    new_size_17 = copy new_size_5
+                                    raw_ptr_14 = __rust_realloc(move ptr_15, move _13, move _10, copy new_size_5)
+                                    storage_dead(new_size_17)
+                                    storage_dead(ptr_15)
+                                    storage_live(_18)
+                                    storage_live(self_19)
+                                    storage_live(self_20)
+                                    storage_live(ptr_21)
+                                    ptr_21 = copy raw_ptr_14
+                                    _49 = cast<*mut u8, *const u8>(copy raw_ptr_14)
+                                    storage_live(_50)
+                                    _50 = transmute<*mut u8, usize>(copy raw_ptr_14)
+                                    switch move _50 {
+                                        0 : usize => {
+                                        },
+                                        _ => {
+                                            storage_dead(_50)
+                                            storage_live(_48)
+                                            if copy _47 {
+                                                break 0
+                                            } else {
+                                            }
+                                            break 1
+                                        },
+                                    }
                                 }
+                                storage_dead(_50)
+                                storage_live(_70)
+                                _70 = Option::None {  }
+                                self_20 = move _70
+                                break 2
+                                break 0
                             }
-                            storage_dead(_50)
-                            storage_live(_70)
-                            _70 = Option::None {  }
-                            self_20 = move _70
-                            break 2
+                            storage_live(_52)
+                            _52 = cast<*mut u8, *mut ()>(copy raw_ptr_14)
+                            _51 = core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move _52)
+                            storage_dead(_52)
                             break 0
                         }
-                        storage_live(_52)
-                        _52 = cast<*mut u8, *mut ()>(copy raw_ptr_14)
-                        _51 = core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move _52)
-                        storage_dead(_52)
+                        _48 = NonNull { pointer: copy _49 }
+                        self_20 = Option::Some { 0: move _48 }
+                        storage_dead(_48)
                         break 0
                     }
-                    _48 = NonNull { pointer: copy _49 }
-                    self_20 = Option::Some { 0: move _48 }
-                    storage_dead(_48)
-                    break 0
+                    storage_dead(ptr_21)
+                    storage_live(v_53)
+                    match self_20 {
+                        Option::None => {
+                            storage_live(_73)
+                            _73 = AllocError {  }
+                            storage_live(_74)
+                            _74 = Result::Err { 0: move _73 }
+                            self_19 = move _74
+                        },
+                        Option::Some => {
+                            v_53 = move (self_20 as variant Option::Some).0
+                            self_19 = Result::Ok { 0: copy v_53 }
+                        },
+                    }
+                    storage_dead(v_53)
+                    storage_dead(self_20)
+                    storage_live(v_54)
+                    match self_19 {
+                        Result::Ok => {
+                            v_54 = move (self_19 as variant Result::Ok).0
+                            _18 = ControlFlow::Continue { 0: copy v_54 }
+                            storage_dead(v_54)
+                            storage_dead(self_19)
+                            ptr_22 = copy (_18 as variant ControlFlow::Continue).0
+                            storage_dead(_18)
+                            storage_live(_23)
+                            storage_live(ptr_55)
+                            storage_live(data_56)
+                            data_56 = transmute<NonNull<u8>, *mut u8>(copy ptr_22)
+                            ptr_55 = *mut  (copy data_56, copy new_size_5)
+                            storage_dead(data_56)
+                            storage_live(_59)
+                            if copy _47 {
+                                storage_live(_58)
+                                _58 = transmute<NonNull<u8>, *mut ()>(copy ptr_22)
+                                _57 = core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move _58)
+                                storage_dead(_58)
+                            } else {
+                            }
+                            _59 = cast<*mut [u8], *const [u8]>(copy ptr_55)
+                            _23 = NonNull { pointer: copy _59 }
+                            storage_dead(_59)
+                            storage_dead(ptr_55)
+                            _0 = Result::Ok { 0: move _23 }
+                            storage_dead(_23)
+                            return
+                        },
+                        Result::Err => {
+                            storage_dead(v_54)
+                            storage_dead(self_19)
+                            storage_live(_75)
+                            _75 = AllocError {  }
+                            storage_live(_76)
+                            _76 = Result::Err { 0: move _75 }
+                            _0 = move _76
+                            storage_dead(_18)
+                            return
+                        },
+                    }
+                } else {
+                    storage_dead(_11)
+                    storage_dead(_9)
+                    storage_live(_24)
+                    storage_live(self_25)
+                    self_25 = alloc_impl<'_>(move self_1, move new_layout_4, const false)
+                    storage_live(v_60)
+                    match self_25 {
+                        Result::Ok => {
+                            v_60 = move (self_25 as variant Result::Ok).0
+                            _24 = ControlFlow::Continue { 0: copy v_60 }
+                        },
+                        Result::Err => {
+                            storage_live(_67)
+                            _67 = AllocError {  }
+                            storage_live(_68)
+                            _68 = Result::Err { 0: move _67 }
+                            storage_live(_69)
+                            _69 = ControlFlow::Break { 0: move _68 }
+                            _24 = move _69
+                        },
+                    }
+                    storage_dead(v_60)
+                    storage_dead(self_25)
+                    match _24 {
+                        ControlFlow::Continue => {
+                            new_ptr_26 = copy (_24 as variant ControlFlow::Continue).0
+                            storage_dead(_24)
+                            storage_live(src_27)
+                            ptr_28 = transmute<NonNull<u8>, *mut u8>(copy ptr_2)
+                            src_27 = transmute<NonNull<u8>, *const u8>(copy ptr_2)
+                            storage_live(dst_29)
+                            _61 = transmute<NonNull<[u8]>, *mut [u8]>(copy new_ptr_26)
+                            dst_29 = cast<*mut [u8], *mut u8>(copy _61)
+                            storage_live(_65)
+                            _65 = ub_checks<bool>
+                            if copy _65 {
+                                storage_live(_63)
+                                _63 = transmute<NonNull<u8>, *const ()>(copy ptr_2)
+                                storage_live(_64)
+                                _64 = cast<*mut [u8], *mut ()>(copy _61)
+                                _62 = core::ptr::copy_nonoverlapping::precondition_check(move _63, move _64, const {impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE, const {impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN, copy new_size_5)
+                                storage_dead(_64)
+                                storage_dead(_63)
+                            } else {
+                            }
+                            copy_nonoverlapping(copy src_27, copy dst_29, copy new_size_5)
+                            storage_dead(_65)
+                            storage_dead(dst_29)
+                            storage_dead(src_27)
+                            storage_live(_66)
+                            _66 = copy (old_layout_3).size
+                            switch move _66 {
+                                0 : usize => {
+                                },
+                                _ => {
+                                    _30 = __rust_dealloc(move ptr_28, move _66, move _10)
+                                },
+                            }
+                            storage_dead(_66)
+                            _0 = Result::Ok { 0: copy new_ptr_26 }
+                            return
+                        },
+                        ControlFlow::Break => {
+                            storage_live(_71)
+                            _71 = AllocError {  }
+                            storage_live(_72)
+                            _72 = Result::Err { 0: move _71 }
+                            _0 = move _72
+                            storage_dead(_24)
+                            return
+                        },
+                    }
                 }
-                storage_dead(ptr_21)
-                storage_live(v_53)
-                match self_20 {
-                    Option::None => {
-                        storage_live(_73)
-                        _73 = AllocError {  }
-                        storage_live(_74)
-                        _74 = Result::Err { 0: move _73 }
-                        self_19 = move _74
-                    },
-                    Option::Some => {
-                        v_53 = move (self_20 as variant Option::Some).0
-                        self_19 = Result::Ok { 0: copy v_53 }
-                    },
-                }
-                storage_dead(v_53)
-                storage_dead(self_20)
-                storage_live(v_54)
-                match self_19 {
-                    Result::Ok => {
-                        v_54 = move (self_19 as variant Result::Ok).0
-                        _18 = ControlFlow::Continue { 0: copy v_54 }
-                        storage_dead(v_54)
-                        storage_dead(self_19)
-                        ptr_22 = copy (_18 as variant ControlFlow::Continue).0
-                        storage_dead(_18)
-                        storage_live(_23)
-                        storage_live(ptr_55)
-                        storage_live(data_56)
-                        data_56 = transmute<NonNull<u8>, *mut u8>(copy ptr_22)
-                        ptr_55 = *mut  (copy data_56, copy new_size_5)
-                        storage_dead(data_56)
-                        storage_live(_59)
-                        if copy _47 {
-                            storage_live(_58)
-                            _58 = transmute<NonNull<u8>, *mut ()>(copy ptr_22)
-                            _57 = core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move _58)
-                            storage_dead(_58)
-                        } else {
-                        }
-                        _59 = cast<*mut [u8], *const [u8]>(copy ptr_55)
-                        _23 = NonNull { pointer: copy _59 }
-                        storage_dead(_59)
-                        storage_dead(ptr_55)
-                        _0 = Result::Ok { 0: move _23 }
-                        storage_dead(_23)
-                        return
-                    },
-                    Result::Err => {
-                        storage_dead(v_54)
-                        storage_dead(self_19)
-                        storage_live(_75)
-                        _75 = AllocError {  }
-                        storage_live(_76)
-                        _76 = Result::Err { 0: move _75 }
-                        _0 = move _76
-                        storage_dead(_18)
-                        return
-                    },
-                }
-            } else {
-                storage_dead(_11)
-                storage_dead(_9)
-                storage_live(_24)
-                storage_live(self_25)
-                self_25 = alloc_impl<'_>(move self_1, move new_layout_4, const false)
-                storage_live(v_60)
-                match self_25 {
-                    Result::Ok => {
-                        v_60 = move (self_25 as variant Result::Ok).0
-                        _24 = ControlFlow::Continue { 0: copy v_60 }
-                    },
-                    Result::Err => {
-                        storage_live(_67)
-                        _67 = AllocError {  }
-                        storage_live(_68)
-                        _68 = Result::Err { 0: move _67 }
-                        storage_live(_69)
-                        _69 = ControlFlow::Break { 0: move _68 }
-                        _24 = move _69
-                    },
-                }
-                storage_dead(v_60)
-                storage_dead(self_25)
-                match _24 {
-                    ControlFlow::Continue => {
-                        new_ptr_26 = copy (_24 as variant ControlFlow::Continue).0
-                        storage_dead(_24)
-                        storage_live(src_27)
-                        ptr_28 = transmute<NonNull<u8>, *mut u8>(copy ptr_2)
-                        src_27 = transmute<NonNull<u8>, *const u8>(copy ptr_2)
-                        storage_live(dst_29)
-                        _61 = transmute<NonNull<[u8]>, *mut [u8]>(copy new_ptr_26)
-                        dst_29 = cast<*mut [u8], *mut u8>(copy _61)
-                        storage_live(_65)
-                        _65 = ub_checks<bool>
-                        if copy _65 {
-                            storage_live(_63)
-                            _63 = transmute<NonNull<u8>, *const ()>(copy ptr_2)
-                            storage_live(_64)
-                            _64 = cast<*mut [u8], *mut ()>(copy _61)
-                            _62 = core::ptr::copy_nonoverlapping::precondition_check(move _63, move _64, const {impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE, const {impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN, copy new_size_5)
-                            storage_dead(_64)
-                            storage_dead(_63)
-                        } else {
-                        }
-                        copy_nonoverlapping(copy src_27, copy dst_29, copy new_size_5)
-                        storage_dead(_65)
-                        storage_dead(dst_29)
-                        storage_dead(src_27)
-                        storage_live(_66)
-                        _66 = copy (old_layout_3).size
-                        switch move _66 {
-                            0 : usize => {
-                            },
-                            _ => {
-                                _30 = __rust_dealloc(move ptr_28, move _66, move _10)
-                            },
-                        }
-                        storage_dead(_66)
-                        _0 = Result::Ok { 0: copy new_ptr_26 }
-                        return
-                    },
-                    ControlFlow::Break => {
-                        storage_live(_71)
-                        _71 = AllocError {  }
-                        storage_live(_72)
-                        _72 = Result::Err { 0: move _71 }
-                        _0 = move _72
-                        storage_dead(_24)
-                        return
-                    },
-                }
+                break 0
             }
             undefined_behavior
         },
