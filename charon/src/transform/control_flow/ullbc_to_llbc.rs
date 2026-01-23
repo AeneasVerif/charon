@@ -20,13 +20,13 @@ use petgraph::visit::{
 };
 use smallvec::SmallVec;
 use std::cmp::Reverse;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::mem;
 
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
 use crate::ids::IndexVec;
-use crate::llbc_ast as tgt;
+use crate::llbc_ast::{self as tgt, StatementId};
 use crate::meta::{Span, combine_span};
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
@@ -100,7 +100,7 @@ type Cfg = DiGraphMap<src::BlockId, ()>;
 
 /// Information precomputed about a function's CFG.
 #[derive(Debug)]
-struct CfgInfo<'a> {
+struct CfgInfo {
     /// The CFG
     pub cfg: Cfg,
     /// The CFG where all the backward edges have been removed. Aka "forward CFG".
@@ -114,13 +114,13 @@ struct CfgInfo<'a> {
     #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
-    pub block_data: IndexVec<BlockId, Box<BlockData<'a>>>,
+    pub block_data: IndexVec<BlockId, Box<BlockData>>,
 }
 
 #[derive(Debug)]
-struct BlockData<'a> {
+struct BlockData {
     pub id: BlockId,
-    pub contents: &'a src::BlockData,
+    pub span: Span,
     /// The (unique) entrypoints of each loop. Unique because we error on irreducible cfgs.
     pub is_loop_header: bool,
     /// Whether this block is a switch.
@@ -199,10 +199,10 @@ struct ExitInfo {
 /// block involved in an irreducible subgraph.
 struct Irreducible(BlockId);
 
-impl<'a> CfgInfo<'a> {
+impl CfgInfo {
     /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and precompute a
     /// bunch of graph information about the CFG.
-    fn build(ctx: &TransformCtx, body: &'a src::BodyContents) -> Result<Self, Irreducible> {
+    fn build(ctx: &TransformCtx, body: &src::BodyContents) -> Result<Self, Irreducible> {
         // The steps in this function follow a precise order, as each step typically requires the
         // previous one.
         let start_block = BlockId::ZERO;
@@ -211,7 +211,7 @@ impl<'a> CfgInfo<'a> {
         let mut block_data: IndexVec<BlockId, _> = body.map_ref_indexed(|id, contents| {
             Box::new(BlockData {
                 id,
-                contents,
+                span: contents.terminator.span,
                 is_loop_header: false,
                 is_switch: false,
                 is_merge_target: false,
@@ -392,7 +392,7 @@ impl<'a> CfgInfo<'a> {
         Ok(cfg)
     }
 
-    fn block_data(&self, block_id: BlockId) -> &BlockData<'a> {
+    fn block_data(&self, block_id: BlockId) -> &BlockData {
         &self.block_data[block_id]
     }
     // fn can_reach(&self, src: BlockId, tgt: BlockId) -> bool {
@@ -430,7 +430,7 @@ impl<'a> CfgInfo<'a> {
     }
 }
 
-impl BlockData<'_> {
+impl BlockData {
     fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
         self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
     }
@@ -674,7 +674,7 @@ impl ExitInfo {
                         .map_err(|mut candidates| {
                             // Adding this sanity check so that we can see when there are several
                             // candidates.
-                            let span = cfg.block_data[loop_id].contents.terminator.span;
+                            let span = cfg.block_data[loop_id].span;
                             sanity_check!(ctx, span, candidates.next().is_none());
                         })
                         .ok()
@@ -817,12 +817,25 @@ impl ExitInfo {
     }
 }
 
-#[derive(Debug)]
-enum GotoKind {
-    Break(usize),
-    Continue(usize),
-    NextBlock,
-    Goto,
+/// Iter over the last non-switch statements that may be executed on any branch of this block.
+/// Skips over `Nop`s.
+fn iter_tail_statements(block: &mut tgt::Block, f: &mut impl FnMut(&mut tgt::Statement)) {
+    let Some(st) = block
+        .statements
+        .iter_mut()
+        .rev()
+        .skip_while(|st| st.kind.is_nop())
+        .next()
+    else {
+        return;
+    };
+    if let tgt::StatementKind::Switch(switch) = &mut st.kind {
+        for block in switch.iter_targets_mut() {
+            iter_tail_statements(block, f);
+        }
+    } else {
+        f(st)
+    };
 }
 
 type Depth = usize;
@@ -861,17 +874,19 @@ impl std::fmt::Debug for SpecialJump {
     }
 }
 
+/// How to handle blocks reachable from multiple branches.
 enum ReconstructMode {
-    /// Reconstruct using flow heuristics.
-    Flow,
-    /// Reconstruct using the algorithm from "Beyond Relooper" (https://dl.acm.org/doi/10.1145/3547621).
-    /// A useful invariant is that the block at the top of the jump stack is the block where
-    /// control-flow will jump naturally at the end of the current block.
-    Reloop,
+    /// Duplicate blocks reachable from multiple branches.
+    Duplicate,
+    /// Insert loops for the purpose of breaking forward to them to implement DAG-like control-flow
+    /// without duplicating blocks.
+    /// Based on the algorithm from "Beyond Relooper" (https://dl.acm.org/doi/10.1145/3547621).
+    ForwardBreak,
 }
 
 struct ReconstructCtx<'a> {
-    cfg: CfgInfo<'a>,
+    cfg: CfgInfo,
+    body: &'a src::ExprBody,
     /// The depth of `loop` contexts we may `break`/`continue` to.
     break_context_depth: Depth,
     /// Stack of block ids that should be translated to special jumps (`break`/`continue`/do
@@ -882,8 +897,6 @@ struct ReconstructCtx<'a> {
     mode: ReconstructMode,
 }
 
-struct FoundIt;
-
 impl<'a> ReconstructCtx<'a> {
     fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
         // Compute all sorts of graph-related information about the control-flow graph, including
@@ -892,15 +905,16 @@ impl<'a> ReconstructCtx<'a> {
 
         // Translate the body by reconstructing the loops and the
         // conditional branchings.
-        let use_relooper = false;
+        let allow_duplication = true;
         Ok(ReconstructCtx {
             cfg,
+            body: src_body,
             break_context_depth: 0,
             special_jump_stack: Vec::new(),
-            mode: if use_relooper {
-                ReconstructMode::Reloop
+            mode: if allow_duplication {
+                ReconstructMode::Duplicate
             } else {
-                ReconstructMode::Flow
+                ReconstructMode::ForwardBreak
             },
         })
     }
@@ -924,8 +938,9 @@ impl<'a> ReconstructCtx<'a> {
         tgt::Statement::new(src_span, st)
     }
 
+    /// Translate a jump to the given block. The span is used to create the jump statement, if any.
     #[tracing::instrument(skip(self), ret, fields(stack = ?self.special_jump_stack))]
-    fn get_goto_kind(&mut self, target_block: src::BlockId) -> GotoKind {
+    fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
         match self
             .special_jump_stack
             .iter_mut()
@@ -933,37 +948,28 @@ impl<'a> ReconstructCtx<'a> {
             .enumerate()
             .find(|(_, j)| j.target_block == target_block)
         {
-            Some((i, jump_target)) => match jump_target.kind {
-                // The top of the stack is where control-flow goes naturally, no need to add a
-                // `break`/`continue`.
-                SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
-                    if i == 0 && matches!(self.mode, ReconstructMode::Reloop) =>
-                {
-                    GotoKind::NextBlock
+            Some((i, jump_target)) => {
+                let mk_block = |kind| tgt::Statement::new(span, kind).into_block();
+                match jump_target.kind {
+                    // The top of the stack is where control-flow goes naturally, no need to add a
+                    // `break`/`continue`.
+                    SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
+                        if i == 0 && matches!(self.mode, ReconstructMode::ForwardBreak) =>
+                    {
+                        mk_block(tgt::StatementKind::Nop)
+                    }
+                    SpecialJumpKind::LoopContinue(depth) => mk_block(tgt::StatementKind::Continue(
+                        self.break_context_depth - depth,
+                    )),
+                    SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
+                        mk_block(tgt::StatementKind::Break(self.break_context_depth - depth))
+                    }
+                    SpecialJumpKind::NextBlock => mk_block(tgt::StatementKind::Nop),
                 }
-                SpecialJumpKind::LoopContinue(depth) => {
-                    GotoKind::Continue(self.break_context_depth - depth)
-                }
-                SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
-                    GotoKind::Break(self.break_context_depth - depth)
-                }
-                SpecialJumpKind::NextBlock => GotoKind::NextBlock,
-            },
+            }
             // Translate the block without a jump.
-            None => GotoKind::Goto,
+            None => return self.translate_block(target_block),
         }
-    }
-
-    /// Translate a jump to the given block. The span is used to create the jump statement, if any.
-    fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
-        let st = match self.get_goto_kind(target_block) {
-            GotoKind::Break(index) => tgt::StatementKind::Break(index),
-            GotoKind::Continue(index) => tgt::StatementKind::Continue(index),
-            GotoKind::NextBlock => tgt::StatementKind::Nop,
-            // "Standard" goto: we recursively translate the block.
-            GotoKind::Goto => return self.translate_block(target_block),
-        };
-        tgt::Statement::new(span, st).into_block()
     }
 
     fn translate_terminator(&mut self, terminator: &src::Terminator) -> tgt::Block {
@@ -1081,8 +1087,8 @@ impl<'a> ReconstructCtx<'a> {
     }
 
     /// Translate just the block statements and terminator.
-    fn translate_block_itself(&mut self, block_id: src::BlockId) -> tgt::Block {
-        let block = self.cfg.block_data[block_id].contents;
+    fn translate_block_itself(&mut self, block_id: BlockId) -> tgt::Block {
+        let block = &self.body.body[block_id];
         // Translate the statements inside the block
         let statements = block
             .statements
@@ -1099,54 +1105,6 @@ impl<'a> ReconstructCtx<'a> {
         }
     }
 
-    /// Compute whether starting from `from` would lead to a forward break to `to`. This is rather
-    /// hacky in that it basically traverses the blocks just like the reconstruction algorithm
-    /// would, while keeping track of the item after `to` in the `special_jump_stack`. Eventually a
-    /// more clever algorithm should be found.
-    fn has_fwd_break(&self, from: src::BlockId, to: BlockId) -> bool {
-        let mut exit_blocks = self
-            .special_jump_stack
-            .iter()
-            .map(|j| j.target_block)
-            .collect();
-        self.has_fwd_break_inner(&mut exit_blocks, None, to, from)
-            .is_break()
-    }
-    fn has_fwd_break_inner(
-        &self,
-        visited: &mut HashSet<BlockId>,
-        stack_first: Option<BlockId>,
-        to: BlockId,
-        block_id: src::BlockId,
-    ) -> ControlFlow<FoundIt> {
-        if stack_first.is_some() && self.cfg.fwd_cfg.neighbors(block_id).contains(&to) {
-            return ControlFlow::Break(FoundIt);
-        }
-        for target_block in self.cfg.fwd_cfg.neighbors(block_id) {
-            if !visited.insert(target_block) {
-                continue;
-            }
-
-            let mut stack_first = stack_first.clone();
-            if stack_first == Some(target_block) {
-                stack_first = None;
-            }
-
-            let block_data = &self.cfg.block_data[target_block];
-            if block_data.is_loop_header {
-                stack_first = stack_first.or(Some(target_block));
-            }
-
-            let merge_children = &block_data.immediately_dominated_merge_targets;
-            stack_first = stack_first.or(merge_children.first().copied());
-
-            stack_first = stack_first.or(block_data.exit_info.switch_exit);
-
-            self.has_fwd_break_inner(visited, stack_first, to, target_block)?;
-        }
-        ControlFlow::Continue(())
-    }
-
     /// Translate a block including surrounding control-flow like looping.
     #[tracing::instrument(skip(self), fields(stack = ?self.special_jump_stack))]
     fn translate_block(&mut self, block_id: src::BlockId) -> tgt::Block {
@@ -1161,7 +1119,7 @@ impl<'a> ReconstructCtx<'a> {
         // function we restore the stack to its previous state.
         let old_context_depth = self.special_jump_stack.len();
         let block_data = &self.cfg.block_data[block_id];
-        let span = block_data.contents.terminator.span;
+        let span = block_data.span;
 
         // Catch jumps to the loop header or loop exit.
         if block_data.is_loop_header {
@@ -1180,11 +1138,10 @@ impl<'a> ReconstructCtx<'a> {
         }
 
         // Catch jumps to a merge node.
-        let mut insert_switch_exit = true;
-        if let ReconstructMode::Reloop = self.mode {
+        let merge_children = &block_data.immediately_dominated_merge_targets;
+        if let ReconstructMode::ForwardBreak = self.mode {
             // We support forward-jumps using `break`
             // The child with highest postorder numbering is nested outermost in this scheme.
-            let merge_children = &block_data.immediately_dominated_merge_targets;
             for &child in merge_children {
                 self.break_context_depth += 1;
                 self.special_jump_stack.push(SpecialJump::new(
@@ -1192,20 +1149,12 @@ impl<'a> ReconstructCtx<'a> {
                     SpecialJumpKind::ForwardBreak(self.break_context_depth),
                 ));
             }
-            // Avoid a forward-break block if it would not actually entail any forward breaks.
-            if let [.., last_child] = merge_children.as_slice()
-                && !self.has_fwd_break(block_id, *last_child)
-            {
-                self.break_context_depth -= 1;
-                self.special_jump_stack.last_mut().unwrap().kind = SpecialJumpKind::NextBlock;
-                // Don't insert a switch exit because that changes which block comes next.
-                insert_switch_exit = false;
-            }
         }
 
-        if insert_switch_exit
-            && let Some(bid) = block_data.exit_info.switch_exit
+        if let Some(bid) = block_data.exit_info.switch_exit
             && !block_data.is_loop_header
+            && !(matches!(self.mode, ReconstructMode::ForwardBreak)
+                && merge_children.contains(&bid))
         {
             // Move some code that would be inside one or several switch branches to be after the
             // switch intead.
@@ -1218,42 +1167,149 @@ impl<'a> ReconstructCtx<'a> {
         let mut block = self.translate_block_itself(block_id);
 
         // Reset the state to what it was previously, and translate what remains.
-        let new_block = move |kind| tgt::Statement::new(block.span, kind).into_block();
+        let new_statement = move |kind| tgt::Statement::new(block.span, kind);
         while self.special_jump_stack.len() > old_context_depth {
-            match self.special_jump_stack.pop().unwrap() {
-                SpecialJump {
-                    kind: SpecialJumpKind::LoopContinue(_),
-                    ..
-                } => {
+            let special_jump = self.special_jump_stack.pop().unwrap();
+            match &special_jump.kind {
+                SpecialJumpKind::LoopContinue(_) => {
                     self.break_context_depth -= 1;
-                    block = new_block(tgt::StatementKind::Loop(block));
+                    if let ReconstructMode::ForwardBreak = self.mode {
+                        // We add `continue` at the end for users that don't know that the default
+                        // behavior at the end of a loop block is `continue`. Not needed for
+                        // `Duplicate` mode because we use explicit `continue`s there. TODO: clean
+                        // that up.
+                        block
+                            .statements
+                            .push(new_statement(tgt::StatementKind::Continue(0)));
+                    }
+                    block = new_statement(tgt::StatementKind::Loop(block)).into_block();
                 }
-                SpecialJump {
-                    target_block,
-                    kind: SpecialJumpKind::ForwardBreak(_),
-                    ..
-                } => {
+                SpecialJumpKind::ForwardBreak(_) => {
                     self.break_context_depth -= 1;
+                    // Remove unneeded `break`s in branches leading up to that final one.
+                    iter_tail_statements(&mut block, &mut |st| {
+                        if matches!(st.kind, tgt::StatementKind::Break(0)) {
+                            st.kind = tgt::StatementKind::Nop;
+                        }
+                    });
                     // We add a `loop { ...; break }` so that we can use `break` to jump forward.
-                    block = block.merge(new_block(tgt::StatementKind::Break(0)));
-                    block = new_block(tgt::StatementKind::Loop(block));
+                    block
+                        .statements
+                        .push(new_statement(tgt::StatementKind::Break(0)));
+                    block = new_statement(tgt::StatementKind::Loop(block)).into_block();
                     // We must translate the merge nodes after the block used for forward jumps to
                     // them.
-                    let next_block = self.translate_jump(span, target_block);
+                    let next_block = self.translate_jump(span, special_jump.target_block);
                     block = block.merge(next_block);
                 }
-                SpecialJump {
-                    target_block,
-                    kind: SpecialJumpKind::NextBlock | SpecialJumpKind::LoopBreak(..),
-                    ..
-                } => {
-                    let next_block = self.translate_jump(span, target_block);
+                SpecialJumpKind::NextBlock | SpecialJumpKind::LoopBreak(..) => {
+                    let next_block = self.translate_jump(span, special_jump.target_block);
                     block = block.merge(next_block);
                 }
             }
         }
         block
     }
+}
+
+fn remove_useless_jump_blocks(body: &mut tgt::ExprBody) {
+    use tgt::StatementKind;
+    #[derive(Default)]
+    struct Count {
+        continue_count: u32,
+        break_count: u32,
+    }
+    #[derive(Default, Visitor)]
+    struct CountJumpsVisitor {
+        counts: HashMap<StatementId, Count>,
+        loop_stack: Vec<StatementId>,
+    }
+    #[derive(Visitor)]
+    struct RemoveUselessJumpsVisitor {
+        counts: HashMap<StatementId, Count>,
+        /// For every loop we encounter, whether we're keeping it or removing it.
+        loop_stack: Vec<bool>,
+    }
+
+    impl VisitBodyMut for CountJumpsVisitor {
+        fn visit_llbc_statement(&mut self, st: &mut tgt::Statement) -> ControlFlow<Self::Break> {
+            if let StatementKind::Loop(_) = &st.kind {
+                self.loop_stack.push(st.id);
+            }
+            match &st.kind {
+                StatementKind::Break(depth) => {
+                    let loop_id = self.loop_stack[self.loop_stack.len() - 1 - depth];
+                    self.counts.entry(loop_id).or_default().break_count += 1;
+                }
+                StatementKind::Continue(depth) => {
+                    let loop_id = self.loop_stack[self.loop_stack.len() - 1 - depth];
+                    self.counts.entry(loop_id).or_default().continue_count += 1;
+                }
+                _ => {}
+            }
+            self.visit_inner(st)?;
+            if let StatementKind::Loop(_) = &st.kind {
+                self.loop_stack.pop();
+            }
+            ControlFlow::Continue(())
+        }
+    }
+
+    impl VisitBodyMut for RemoveUselessJumpsVisitor {
+        fn visit_llbc_block(&mut self, block: &mut tgt::Block) -> ControlFlow<Self::Break> {
+            for mut st in mem::take(&mut block.statements) {
+                if let tgt::StatementKind::Loop(block) = &mut st.kind {
+                    let counts = &self.counts[&st.id];
+                    let remove = counts.continue_count == 0
+                        && counts.break_count == 1
+                        && matches!(
+                            block.statements.last().unwrap().kind,
+                            StatementKind::Break(0)
+                        );
+                    self.loop_stack.push(!remove);
+                }
+                self.visit(&mut st)?;
+                if st.kind.is_loop() && !self.loop_stack.pop().unwrap() {
+                    // Remove the loop.
+                    let StatementKind::Loop(mut inner_block) = st.kind else {
+                        unreachable!()
+                    };
+                    inner_block.statements.last_mut().unwrap().kind = StatementKind::Nop;
+                    block.statements.extend(inner_block.statements);
+                } else {
+                    block.statements.push(st);
+                }
+            }
+            ControlFlow::Continue(())
+        }
+        fn enter_llbc_statement(&mut self, st: &mut tgt::Statement) {
+            match &st.kind {
+                StatementKind::Break(depth) => {
+                    let new_depth = self.loop_stack[self.loop_stack.len() - depth..]
+                        .iter()
+                        .filter(|&&keep| keep)
+                        .count();
+                    st.kind = StatementKind::Break(new_depth);
+                }
+                StatementKind::Continue(depth) => {
+                    let new_depth = self.loop_stack[self.loop_stack.len() - depth..]
+                        .iter()
+                        .filter(|&&keep| keep)
+                        .count();
+                    st.kind = StatementKind::Continue(new_depth);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    let mut v = CountJumpsVisitor::default();
+    body.body.drive_body_mut(&mut v);
+    let mut v = RemoveUselessJumpsVisitor {
+        counts: v.counts,
+        loop_stack: Default::default(),
+    };
+    body.body.drive_body_mut(&mut v);
 }
 
 fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
@@ -1280,13 +1336,15 @@ fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
     // Translate the blocks using the computed data.
     let tgt_body = ctx.translate_block(start_block);
 
-    let tgt_body = tgt::ExprBody {
+    let mut tgt_body = tgt::ExprBody {
         span: src_body.span,
         locals: src_body.locals.clone(),
         bound_body_regions: src_body.bound_body_regions,
         body: tgt_body,
         comments: src_body.comments.clone(),
     };
+    remove_useless_jump_blocks(&mut tgt_body);
+
     *body = Structured(tgt_body);
 }
 
