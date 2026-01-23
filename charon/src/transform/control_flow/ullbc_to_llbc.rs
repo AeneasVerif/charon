@@ -20,13 +20,13 @@ use petgraph::visit::{
 };
 use smallvec::SmallVec;
 use std::cmp::Reverse;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::mem;
 
 use crate::common::ensure_sufficient_stack;
 use crate::errors::sanity_check;
 use crate::ids::IndexVec;
-use crate::llbc_ast as tgt;
+use crate::llbc_ast::{self as tgt, StatementId};
 use crate::meta::{Span, combine_span};
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
@@ -817,6 +817,27 @@ impl ExitInfo {
     }
 }
 
+/// Iter over the last non-switch statements that may be executed on any branch of this block.
+/// Skips over `Nop`s.
+fn iter_tail_statements(block: &mut tgt::Block, f: &mut impl FnMut(&mut tgt::Statement)) {
+    let Some(st) = block
+        .statements
+        .iter_mut()
+        .rev()
+        .skip_while(|st| st.kind.is_nop())
+        .next()
+    else {
+        return;
+    };
+    if let tgt::StatementKind::Switch(switch) = &mut st.kind {
+        for block in switch.iter_targets_mut() {
+            iter_tail_statements(block, f);
+        }
+    } else {
+        f(st)
+    };
+}
+
 type Depth = usize;
 
 #[derive(Debug, Clone, Copy)]
@@ -1205,7 +1226,7 @@ impl<'a> ReconstructCtx<'a> {
         let mut block = self.translate_block_itself(block_id);
 
         // Reset the state to what it was previously, and translate what remains.
-        let new_block = move |kind| tgt::Statement::new(block.span, kind).into_block();
+        let new_statement = move |kind| tgt::Statement::new(block.span, kind);
         while self.special_jump_stack.len() > old_context_depth {
             let special_jump = self.special_jump_stack.pop().unwrap();
             match &special_jump.kind {
@@ -1216,15 +1237,25 @@ impl<'a> ReconstructCtx<'a> {
                         // behavior at the end of a loop block is `continue`. Not needed for
                         // `Duplicate` mode because we use explicit `continue`s there. TODO: clean
                         // that up.
-                        block = block.merge(new_block(tgt::StatementKind::Continue(0)));
+                        block
+                            .statements
+                            .push(new_statement(tgt::StatementKind::Continue(0)));
                     }
-                    block = new_block(tgt::StatementKind::Loop(block));
+                    block = new_statement(tgt::StatementKind::Loop(block)).into_block();
                 }
                 SpecialJumpKind::ForwardBreak(_) => {
                     self.break_context_depth -= 1;
+                    // Remove unneeded `break`s in branches leading up to that final one.
+                    iter_tail_statements(&mut block, &mut |st| {
+                        if matches!(st.kind, tgt::StatementKind::Break(0)) {
+                            st.kind = tgt::StatementKind::Nop;
+                        }
+                    });
                     // We add a `loop { ...; break }` so that we can use `break` to jump forward.
-                    block = block.merge(new_block(tgt::StatementKind::Break(0)));
-                    block = new_block(tgt::StatementKind::Loop(block));
+                    block
+                        .statements
+                        .push(new_statement(tgt::StatementKind::Break(0)));
+                    block = new_statement(tgt::StatementKind::Loop(block)).into_block();
                     // We must translate the merge nodes after the block used for forward jumps to
                     // them.
                     let next_block = self.translate_jump(span, special_jump.target_block);
@@ -1238,6 +1269,106 @@ impl<'a> ReconstructCtx<'a> {
         }
         block
     }
+}
+
+fn remove_useless_jump_blocks(body: &mut tgt::ExprBody) {
+    use tgt::StatementKind;
+    #[derive(Default)]
+    struct Count {
+        continue_count: u32,
+        break_count: u32,
+    }
+    #[derive(Default, Visitor)]
+    struct CountJumpsVisitor {
+        counts: HashMap<StatementId, Count>,
+        loop_stack: Vec<StatementId>,
+    }
+    #[derive(Visitor)]
+    struct RemoveUselessJumpsVisitor {
+        counts: HashMap<StatementId, Count>,
+        /// For every loop we encounter, whether we're keeping it or removing it.
+        loop_stack: Vec<bool>,
+    }
+
+    impl VisitBodyMut for CountJumpsVisitor {
+        fn visit_llbc_statement(&mut self, st: &mut tgt::Statement) -> ControlFlow<Self::Break> {
+            if let StatementKind::Loop(_) = &st.kind {
+                self.loop_stack.push(st.id);
+            }
+            match &st.kind {
+                StatementKind::Break(depth) => {
+                    let loop_id = self.loop_stack[self.loop_stack.len() - 1 - depth];
+                    self.counts.entry(loop_id).or_default().break_count += 1;
+                }
+                StatementKind::Continue(depth) => {
+                    let loop_id = self.loop_stack[self.loop_stack.len() - 1 - depth];
+                    self.counts.entry(loop_id).or_default().continue_count += 1;
+                }
+                _ => {}
+            }
+            self.visit_inner(st)?;
+            if let StatementKind::Loop(_) = &st.kind {
+                self.loop_stack.pop();
+            }
+            ControlFlow::Continue(())
+        }
+    }
+
+    impl VisitBodyMut for RemoveUselessJumpsVisitor {
+        fn visit_llbc_block(&mut self, block: &mut tgt::Block) -> ControlFlow<Self::Break> {
+            for mut st in mem::take(&mut block.statements) {
+                if let tgt::StatementKind::Loop(block) = &mut st.kind {
+                    let counts = &self.counts[&st.id];
+                    let remove = counts.continue_count == 0
+                        && counts.break_count == 1
+                        && matches!(
+                            block.statements.last().unwrap().kind,
+                            StatementKind::Break(0)
+                        );
+                    self.loop_stack.push(!remove);
+                }
+                self.visit(&mut st)?;
+                if st.kind.is_loop() && !self.loop_stack.pop().unwrap() {
+                    // Remove the loop.
+                    let StatementKind::Loop(mut inner_block) = st.kind else {
+                        unreachable!()
+                    };
+                    inner_block.statements.last_mut().unwrap().kind = StatementKind::Nop;
+                    block.statements.extend(inner_block.statements);
+                } else {
+                    block.statements.push(st);
+                }
+            }
+            ControlFlow::Continue(())
+        }
+        fn enter_llbc_statement(&mut self, st: &mut tgt::Statement) {
+            match &st.kind {
+                StatementKind::Break(depth) => {
+                    let new_depth = self.loop_stack[self.loop_stack.len() - depth..]
+                        .iter()
+                        .filter(|&&keep| keep)
+                        .count();
+                    st.kind = StatementKind::Break(new_depth);
+                }
+                StatementKind::Continue(depth) => {
+                    let new_depth = self.loop_stack[self.loop_stack.len() - depth..]
+                        .iter()
+                        .filter(|&&keep| keep)
+                        .count();
+                    st.kind = StatementKind::Continue(new_depth);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    let mut v = CountJumpsVisitor::default();
+    body.body.drive_body_mut(&mut v);
+    let mut v = RemoveUselessJumpsVisitor {
+        counts: v.counts,
+        loop_stack: Default::default(),
+    };
+    body.body.drive_body_mut(&mut v);
 }
 
 fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
@@ -1264,13 +1395,15 @@ fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
     // Translate the blocks using the computed data.
     let tgt_body = ctx.translate_block(start_block);
 
-    let tgt_body = tgt::ExprBody {
+    let mut tgt_body = tgt::ExprBody {
         span: src_body.span,
         locals: src_body.locals.clone(),
         bound_body_regions: src_body.bound_body_regions,
         body: tgt_body,
         comments: src_body.comments.clone(),
     };
+    remove_useless_jump_blocks(&mut tgt_body);
+
     *body = Structured(tgt_body);
 }
 

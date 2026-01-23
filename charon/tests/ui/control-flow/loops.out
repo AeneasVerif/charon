@@ -1415,67 +1415,64 @@ pub fn test_loop7(@1: u32) -> u32
     let _14: u32; // anonymous local
     let _15: u32; // anonymous local
 
-    loop {
-        storage_live(_13)
-        storage_live(_14)
-        storage_live(_15)
-        storage_live(i_2)
-        i_2 = const 0 : u32
-        storage_live(s_3)
-        s_3 = const 0 : u32
-        storage_live(_4)
-        storage_live(_5)
-        _5 = copy i_2
-        storage_live(_6)
-        _6 = copy max_1
-        _4 = move _5 < move _6
-        if move _4 {
-            storage_dead(_6)
-            storage_dead(_5)
-            loop {
-                storage_live(_7)
-                storage_live(_8)
-                _8 = copy i_2
-                storage_live(_9)
-                _9 = copy max_1
-                _7 = move _8 < move _9
-                if move _7 {
-                    storage_dead(_9)
-                    storage_dead(_8)
-                    storage_live(_10)
-                    storage_live(_11)
-                    _11 = copy i_2
-                    _10 = move _11 > const 3 : u32
-                    if move _10 {
-                        storage_dead(_11)
-                        storage_dead(_10)
-                    } else {
-                        storage_dead(_11)
-                        storage_dead(_10)
-                        storage_live(_12)
-                        _12 = copy i_2
-                        _13 = copy s_3 panic.+ copy _12
-                        s_3 = move _13
-                        storage_dead(_12)
-                        _14 = copy i_2 panic.+ const 1 : u32
-                        i_2 = move _14
-                        storage_dead(_7)
-                        continue 0
-                    }
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_15)
+    storage_live(i_2)
+    i_2 = const 0 : u32
+    storage_live(s_3)
+    s_3 = const 0 : u32
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy i_2
+    storage_live(_6)
+    _6 = copy max_1
+    _4 = move _5 < move _6
+    if move _4 {
+        storage_dead(_6)
+        storage_dead(_5)
+        loop {
+            storage_live(_7)
+            storage_live(_8)
+            _8 = copy i_2
+            storage_live(_9)
+            _9 = copy max_1
+            _7 = move _8 < move _9
+            if move _7 {
+                storage_dead(_9)
+                storage_dead(_8)
+                storage_live(_10)
+                storage_live(_11)
+                _11 = copy i_2
+                _10 = move _11 > const 3 : u32
+                if move _10 {
+                    storage_dead(_11)
+                    storage_dead(_10)
                 } else {
-                    storage_dead(_9)
-                    storage_dead(_8)
+                    storage_dead(_11)
+                    storage_dead(_10)
+                    storage_live(_12)
+                    _12 = copy i_2
+                    _13 = copy s_3 panic.+ copy _12
+                    s_3 = move _13
+                    storage_dead(_12)
+                    _14 = copy i_2 panic.+ const 1 : u32
+                    i_2 = move _14
+                    storage_dead(_7)
+                    continue 0
                 }
-                break 0
-                continue 0
+            } else {
+                storage_dead(_9)
+                storage_dead(_8)
             }
-            storage_dead(_7)
-        } else {
-            storage_dead(_6)
-            storage_dead(_5)
-            s_3 = const 2 : u32
+            break 0
+            continue 0
         }
-        break 0
+        storage_dead(_7)
+    } else {
+        storage_dead(_6)
+        storage_dead(_5)
+        s_3 = const 2 : u32
     }
     storage_dead(_4)
     _15 = copy s_3 panic.+ const 1 : u32
@@ -1756,60 +1753,57 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
 
-    loop {
-        storage_live(_14)
-        storage_live(_3)
-        _3 = copy b_1
-        if move _3 {
-            storage_live(s_4)
-            s_4 = const 0 : u32
-            storage_live(_5)
-            storage_live(_6)
-            storage_live(_7)
-            _7 = copy n_2
-            _6 = Range { start: const 0 : u32, end: move _7 }
-            storage_dead(_7)
-            _5 = {impl IntoIterator for I}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[@TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move _6)
-            storage_dead(_6)
-            storage_live(iter_8)
-            iter_8 = move _5
-            loop {
-                storage_live(_9)
-                storage_live(_10)
-                storage_live(_11)
-                _11 = &mut iter_8
-                _10 = &two-phase-mut (*_11)
-                _9 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u32>[{built_in impl Sized for u32}, {impl Step for u32}](move _10)
-                storage_dead(_10)
-                match _9 {
-                    Option::None => {
-                        break 0
-                    },
-                    Option::Some => {
-                        storage_live(i_12)
-                        i_12 = copy (_9 as variant Option::Some).0
-                        storage_live(_13)
-                        _13 = copy i_12
-                        _14 = copy s_4 panic.+ copy _13
-                        s_4 = move _14
-                        storage_dead(_13)
-                        storage_dead(i_12)
-                        storage_dead(_11)
-                        storage_dead(_9)
-                    },
-                }
-                continue 0
+    storage_live(_14)
+    storage_live(_3)
+    _3 = copy b_1
+    if move _3 {
+        storage_live(s_4)
+        s_4 = const 0 : u32
+        storage_live(_5)
+        storage_live(_6)
+        storage_live(_7)
+        _7 = copy n_2
+        _6 = Range { start: const 0 : u32, end: move _7 }
+        storage_dead(_7)
+        _5 = {impl IntoIterator for I}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[@TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move _6)
+        storage_dead(_6)
+        storage_live(iter_8)
+        iter_8 = move _5
+        loop {
+            storage_live(_9)
+            storage_live(_10)
+            storage_live(_11)
+            _11 = &mut iter_8
+            _10 = &two-phase-mut (*_11)
+            _9 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u32>[{built_in impl Sized for u32}, {impl Step for u32}](move _10)
+            storage_dead(_10)
+            match _9 {
+                Option::None => {
+                    break 0
+                },
+                Option::Some => {
+                    storage_live(i_12)
+                    i_12 = copy (_9 as variant Option::Some).0
+                    storage_live(_13)
+                    _13 = copy i_12
+                    _14 = copy s_4 panic.+ copy _13
+                    s_4 = move _14
+                    storage_dead(_13)
+                    storage_dead(i_12)
+                    storage_dead(_11)
+                    storage_dead(_9)
+                },
             }
-            storage_dead(_11)
-            storage_dead(_9)
-            storage_dead(iter_8)
-            storage_dead(_5)
-            _0 = copy s_4
-            storage_dead(s_4)
-        } else {
-            _0 = const 0 : u32
+            continue 0
         }
-        break 0
+        storage_dead(_11)
+        storage_dead(_9)
+        storage_dead(iter_8)
+        storage_dead(_5)
+        _0 = copy s_4
+        storage_dead(s_4)
+    } else {
+        _0 = const 0 : u32
     }
     storage_dead(_3)
     return
