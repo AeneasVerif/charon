@@ -100,7 +100,7 @@ type Cfg = DiGraphMap<src::BlockId, ()>;
 
 /// Information precomputed about a function's CFG.
 #[derive(Debug)]
-struct CfgInfo<'a> {
+struct CfgInfo {
     /// The CFG
     pub cfg: Cfg,
     /// The CFG where all the backward edges have been removed. Aka "forward CFG".
@@ -114,13 +114,13 @@ struct CfgInfo<'a> {
     #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
-    pub block_data: IndexVec<BlockId, Box<BlockData<'a>>>,
+    pub block_data: IndexVec<BlockId, Box<BlockData>>,
 }
 
 #[derive(Debug)]
-struct BlockData<'a> {
+struct BlockData {
     pub id: BlockId,
-    pub contents: &'a src::BlockData,
+    pub span: Span,
     /// The (unique) entrypoints of each loop. Unique because we error on irreducible cfgs.
     pub is_loop_header: bool,
     /// Whether this block is a switch.
@@ -199,10 +199,10 @@ struct ExitInfo {
 /// block involved in an irreducible subgraph.
 struct Irreducible(BlockId);
 
-impl<'a> CfgInfo<'a> {
+impl CfgInfo {
     /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and precompute a
     /// bunch of graph information about the CFG.
-    fn build(ctx: &TransformCtx, body: &'a src::BodyContents) -> Result<Self, Irreducible> {
+    fn build(ctx: &TransformCtx, body: &src::BodyContents) -> Result<Self, Irreducible> {
         // The steps in this function follow a precise order, as each step typically requires the
         // previous one.
         let start_block = BlockId::ZERO;
@@ -211,7 +211,7 @@ impl<'a> CfgInfo<'a> {
         let mut block_data: IndexVec<BlockId, _> = body.map_ref_indexed(|id, contents| {
             Box::new(BlockData {
                 id,
-                contents,
+                span: contents.terminator.span,
                 is_loop_header: false,
                 is_switch: false,
                 is_merge_target: false,
@@ -392,7 +392,7 @@ impl<'a> CfgInfo<'a> {
         Ok(cfg)
     }
 
-    fn block_data(&self, block_id: BlockId) -> &BlockData<'a> {
+    fn block_data(&self, block_id: BlockId) -> &BlockData {
         &self.block_data[block_id]
     }
     // fn can_reach(&self, src: BlockId, tgt: BlockId) -> bool {
@@ -430,7 +430,7 @@ impl<'a> CfgInfo<'a> {
     }
 }
 
-impl BlockData<'_> {
+impl BlockData {
     fn shortest_paths_including_self(&self) -> impl Iterator<Item = (BlockId, usize)> {
         self.shortest_paths.iter().map(|(bid, d)| (*bid, *d))
     }
@@ -674,7 +674,7 @@ impl ExitInfo {
                         .map_err(|mut candidates| {
                             // Adding this sanity check so that we can see when there are several
                             // candidates.
-                            let span = cfg.block_data[loop_id].contents.terminator.span;
+                            let span = cfg.block_data[loop_id].span;
                             sanity_check!(ctx, span, candidates.next().is_none());
                         })
                         .ok()
@@ -864,7 +864,8 @@ enum ReconstructMode {
 }
 
 struct ReconstructCtx<'a> {
-    cfg: CfgInfo<'a>,
+    cfg: CfgInfo,
+    body: &'a src::ExprBody,
     /// The depth of `loop` contexts we may `break`/`continue` to.
     break_context_depth: Depth,
     /// Stack of block ids that should be translated to special jumps (`break`/`continue`/do
@@ -888,6 +889,7 @@ impl<'a> ReconstructCtx<'a> {
         let allow_duplication = true;
         Ok(ReconstructCtx {
             cfg,
+            body: src_body,
             break_context_depth: 0,
             special_jump_stack: Vec::new(),
             mode: if allow_duplication {
@@ -1066,8 +1068,8 @@ impl<'a> ReconstructCtx<'a> {
     }
 
     /// Translate just the block statements and terminator.
-    fn translate_block_itself(&mut self, block_id: src::BlockId) -> tgt::Block {
-        let block = self.cfg.block_data[block_id].contents;
+    fn translate_block_itself(&mut self, block_id: BlockId) -> tgt::Block {
+        let block = &self.body.body[block_id];
         // Translate the statements inside the block
         let statements = block
             .statements
@@ -1102,7 +1104,7 @@ impl<'a> ReconstructCtx<'a> {
         visited: &mut HashSet<BlockId>,
         stack_first: Option<BlockId>,
         to: BlockId,
-        block_id: src::BlockId,
+        block_id: BlockId,
     ) -> ControlFlow<FoundIt> {
         if stack_first.is_some() && self.cfg.fwd_cfg.neighbors(block_id).contains(&to) {
             return ControlFlow::Break(FoundIt);
@@ -1146,7 +1148,7 @@ impl<'a> ReconstructCtx<'a> {
         // function we restore the stack to its previous state.
         let old_context_depth = self.special_jump_stack.len();
         let block_data = &self.cfg.block_data[block_id];
-        let span = block_data.contents.terminator.span;
+        let span = block_data.span;
 
         // Catch jumps to the loop header or loop exit.
         if block_data.is_loop_header {
