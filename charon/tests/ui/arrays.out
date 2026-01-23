@@ -336,8 +336,8 @@ where
             _7 = &raw mut (*_10)
             _6 = move _6 wrap.+ const 1 : usize
             drop[{built_in impl Destruct for T}] (*_7)
+            continue 0
         }
-        continue 0
     }
     return
 }
@@ -2100,10 +2100,10 @@ pub fn zero_slice<'_0>(@1: &'_0 mut [u8])
             _9 = copy i_2 panic.+ const 1 : usize
             i_2 = move _9
             storage_dead(_5)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_7)
     storage_dead(_6)
@@ -2149,10 +2149,10 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut [u8])
             _8 = copy i_4 panic.+ const 1 : usize
             i_4 = move _8
             storage_dead(_5)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_7)
     storage_dead(_6)

@@ -905,10 +905,10 @@ pub fn test_loop1(@1: u32) -> u32
             _9 = copy i_2 panic.+ const 1 : u32
             i_2 = move _9
             storage_dead(_4)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_6)
     storage_dead(_5)
@@ -944,45 +944,41 @@ pub fn test_loop2(@1: u32) -> u32
     storage_live(s_3)
     s_3 = const 0 : u32
     loop {
-        loop {
-            storage_live(_4)
-            storage_live(_5)
-            _5 = copy i_2
-            storage_live(_6)
-            _6 = copy max_1
-            _4 = move _5 < move _6
-            if move _4 {
-                storage_dead(_6)
-                storage_dead(_5)
-                storage_live(_7)
-                storage_live(_8)
-                _8 = copy i_2
-                _7 = move _8 == const 17 : u32
-                if move _7 {
-                    storage_dead(_8)
-                    storage_dead(_7)
-                    break 0
-                } else {
-                }
+        storage_live(_4)
+        storage_live(_5)
+        _5 = copy i_2
+        storage_live(_6)
+        _6 = copy max_1
+        _4 = move _5 < move _6
+        if move _4 {
+            storage_dead(_6)
+            storage_dead(_5)
+            storage_live(_7)
+            storage_live(_8)
+            _8 = copy i_2
+            _7 = move _8 == const 17 : u32
+            if move _7 {
                 storage_dead(_8)
                 storage_dead(_7)
-                storage_live(_9)
-                _9 = copy i_2
-                _10 = copy s_3 panic.+ copy _9
-                s_3 = move _10
-                storage_dead(_9)
-                _11 = copy i_2 panic.+ const 1 : u32
-                i_2 = move _11
-                storage_dead(_4)
-                continue 1
+                break 0
             } else {
-                storage_dead(_6)
-                storage_dead(_5)
             }
+            storage_dead(_8)
+            storage_dead(_7)
+            storage_live(_9)
+            _9 = copy i_2
+            _10 = copy s_3 panic.+ copy _9
+            s_3 = move _10
+            storage_dead(_9)
+            _11 = copy i_2 panic.+ const 1 : u32
+            i_2 = move _11
+            storage_dead(_4)
+            continue 0
+        } else {
+            storage_dead(_6)
+            storage_dead(_5)
             break 0
         }
-        break 0
-        continue 0
     }
     storage_dead(_4)
     _0 = copy s_3
@@ -1077,10 +1073,10 @@ pub fn test_loop3(@1: u32) -> u32
                     storage_dead(_12)
                     storage_dead(_11)
                     storage_dead(_8)
+                    continue 0
                 } else {
                     break 0
                 }
-                continue 0
             }
             storage_dead(_10)
             storage_dead(_9)
@@ -1094,10 +1090,10 @@ pub fn test_loop3(@1: u32) -> u32
             _21 = copy i_2 panic.+ const 1 : u32
             i_2 = move _21
             storage_dead(_5)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_7)
     storage_dead(_6)
@@ -1147,80 +1143,76 @@ pub fn test_loop4(@1: u32) -> u32
     storage_live(s_4)
     s_4 = const 0 : u32
     loop {
-        loop {
-            storage_live(_5)
-            storage_live(_6)
-            _6 = copy i_2
-            storage_live(_7)
-            _7 = copy max_1
-            _5 = move _6 < move _7
-            if move _5 {
-                storage_dead(_7)
-                storage_dead(_6)
-                loop {
-                    storage_live(_8)
-                    storage_live(_9)
-                    _9 = copy j_3
-                    storage_live(_10)
-                    _10 = copy max_1
-                    _8 = move _9 < move _10
-                    if move _8 {
-                        storage_dead(_10)
-                        storage_dead(_9)
-                        storage_live(_11)
-                        storage_live(_12)
-                        storage_live(_13)
-                        _13 = copy i_2
-                        storage_live(_14)
-                        _14 = copy j_3
-                        _15 = copy _13 panic.+ copy _14
-                        _12 = move _15
-                        storage_dead(_14)
-                        storage_dead(_13)
-                        _11 = move _12 == const 17 : u32
-                        if move _11 {
-                        } else {
-                            storage_dead(_12)
-                            storage_dead(_11)
-                            storage_live(_16)
-                            _16 = copy i_2
-                            _17 = copy s_4 panic.+ copy _16
-                            s_4 = move _17
-                            storage_dead(_16)
-                            _18 = copy j_3 panic.+ const 1 : u32
-                            j_3 = move _18
-                            storage_dead(_8)
-                            break 1
-                        }
+        storage_live(_5)
+        storage_live(_6)
+        _6 = copy i_2
+        storage_live(_7)
+        _7 = copy max_1
+        _5 = move _6 < move _7
+        if move _5 {
+            storage_dead(_7)
+            storage_dead(_6)
+            loop {
+                storage_live(_8)
+                storage_live(_9)
+                _9 = copy j_3
+                storage_live(_10)
+                _10 = copy max_1
+                _8 = move _9 < move _10
+                if move _8 {
+                    storage_dead(_10)
+                    storage_dead(_9)
+                    storage_live(_11)
+                    storage_live(_12)
+                    storage_live(_13)
+                    _13 = copy i_2
+                    storage_live(_14)
+                    _14 = copy j_3
+                    _15 = copy _13 panic.+ copy _14
+                    _12 = move _15
+                    storage_dead(_14)
+                    storage_dead(_13)
+                    _11 = move _12 == const 17 : u32
+                    if move _11 {
+                    } else {
                         storage_dead(_12)
                         storage_dead(_11)
+                        storage_live(_16)
+                        _16 = copy i_2
+                        _17 = copy s_4 panic.+ copy _16
+                        s_4 = move _17
+                        storage_dead(_16)
+                        _18 = copy j_3 panic.+ const 1 : u32
+                        j_3 = move _18
                         storage_dead(_8)
-                    } else {
-                        break 0
+                        break 1
                     }
+                    storage_dead(_12)
+                    storage_dead(_11)
+                    storage_dead(_8)
                     continue 0
+                } else {
+                    break 0
                 }
-                storage_dead(_10)
-                storage_dead(_9)
-                storage_dead(_8)
-                j_3 = const 0 : u32
-                storage_live(_19)
-                _19 = copy i_2
-                _20 = copy s_4 panic.+ copy _19
-                s_4 = move _20
-                storage_dead(_19)
-                _21 = copy i_2 panic.+ const 1 : u32
-                i_2 = move _21
-                storage_dead(_5)
-                continue 1
-            } else {
-                storage_dead(_7)
-                storage_dead(_6)
             }
+            storage_dead(_10)
+            storage_dead(_9)
+            storage_dead(_8)
+            j_3 = const 0 : u32
+            storage_live(_19)
+            _19 = copy i_2
+            _20 = copy s_4 panic.+ copy _19
+            s_4 = move _20
+            storage_dead(_19)
+            _21 = copy i_2 panic.+ const 1 : u32
+            i_2 = move _21
+            storage_dead(_5)
+            continue 0
+        } else {
+            storage_dead(_7)
+            storage_dead(_6)
             break 0
         }
-        break 0
-        continue 0
     }
     storage_dead(_5)
     _0 = copy s_4
@@ -1289,10 +1281,10 @@ pub fn test_loop5(@1: u32) -> u32
                     _13 = copy j_3 panic.+ const 1 : u32
                     j_3 = move _13
                     storage_dead(_8)
+                    continue 0
                 } else {
                     break 0
                 }
-                continue 0
             }
             storage_dead(_10)
             storage_dead(_9)
@@ -1305,10 +1297,10 @@ pub fn test_loop5(@1: u32) -> u32
             _16 = copy i_2 panic.+ const 1 : u32
             i_2 = move _16
             storage_dead(_5)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_7)
     storage_dead(_6)
@@ -1345,45 +1337,41 @@ pub fn test_loop6(@1: u32) -> u32
     storage_live(s_3)
     s_3 = const 0 : u32
     loop {
-        loop {
-            storage_live(_4)
-            storage_live(_5)
-            _5 = copy i_2
-            storage_live(_6)
-            _6 = copy max_1
-            _4 = move _5 < move _6
-            if move _4 {
-                storage_dead(_6)
-                storage_dead(_5)
-                storage_live(_7)
-                storage_live(_8)
-                _8 = copy i_2
-                _7 = move _8 > const 3 : u32
-                if move _7 {
-                    storage_dead(_8)
-                    storage_dead(_7)
-                    break 0
-                } else {
-                }
+        storage_live(_4)
+        storage_live(_5)
+        _5 = copy i_2
+        storage_live(_6)
+        _6 = copy max_1
+        _4 = move _5 < move _6
+        if move _4 {
+            storage_dead(_6)
+            storage_dead(_5)
+            storage_live(_7)
+            storage_live(_8)
+            _8 = copy i_2
+            _7 = move _8 > const 3 : u32
+            if move _7 {
                 storage_dead(_8)
                 storage_dead(_7)
-                storage_live(_9)
-                _9 = copy i_2
-                _10 = copy s_3 panic.+ copy _9
-                s_3 = move _10
-                storage_dead(_9)
-                _11 = copy i_2 panic.+ const 1 : u32
-                i_2 = move _11
-                storage_dead(_4)
-                continue 1
+                break 0
             } else {
-                storage_dead(_6)
-                storage_dead(_5)
             }
+            storage_dead(_8)
+            storage_dead(_7)
+            storage_live(_9)
+            _9 = copy i_2
+            _10 = copy s_3 panic.+ copy _9
+            s_3 = move _10
+            storage_dead(_9)
+            _11 = copy i_2 panic.+ const 1 : u32
+            i_2 = move _11
+            storage_dead(_4)
+            continue 0
+        } else {
+            storage_dead(_6)
+            storage_dead(_5)
             break 0
         }
-        break 0
-        continue 0
     }
     storage_dead(_4)
     // All the below nodes are exit candidates (each of them is referenced twice)
@@ -1448,6 +1436,7 @@ pub fn test_loop7(@1: u32) -> u32
                 if move _10 {
                     storage_dead(_11)
                     storage_dead(_10)
+                    break 0
                 } else {
                     storage_dead(_11)
                     storage_dead(_10)
@@ -1464,9 +1453,8 @@ pub fn test_loop7(@1: u32) -> u32
             } else {
                 storage_dead(_9)
                 storage_dead(_8)
+                break 0
             }
-            break 0
-            continue 0
         }
         storage_dead(_7)
     } else {
@@ -1792,9 +1780,9 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
                     storage_dead(i_12)
                     storage_dead(_11)
                     storage_dead(_9)
+                    continue 0
                 },
             }
-            continue 0
         }
         storage_dead(_11)
         storage_dead(_9)
@@ -1848,10 +1836,10 @@ pub fn test_crate::sum(@1: u32) -> u32
             _9 = copy i_2 panic.+ const 1 : u32
             i_2 = move _9
             storage_dead(_4)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_6)
     storage_dead(_5)
@@ -1908,10 +1896,10 @@ pub fn sum_array<const N : usize>(@1: [u32; N]) -> u32
             _9 = copy i_2 panic.+ const 1 : usize
             i_2 = move _9
             storage_dead(_4)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_5)
     storage_dead(_4)
@@ -2033,12 +2021,12 @@ pub fn get_elem_mut<'_0>(@1: &'_0 mut List<usize>[{built_in impl Sized for usize
                 storage_dead(_5)
                 storage_dead(tl_4)
                 storage_dead(y_3)
+                continue 0
             },
             List::Nil => {
                 panic(core::panicking::panic)
             },
         }
-        continue 0
     }
 }
 
@@ -2088,12 +2076,12 @@ where
                 storage_dead(_5)
                 storage_dead(tl_4)
                 storage_dead(x_3)
+                continue 0
             },
             _ => {
                 break 0
             },
         }
-        continue 0
     }
     panic(core::panicking::panic)
 }
@@ -2117,8 +2105,8 @@ pub fn loop_break_1()
         } else {
             storage_dead(_2)
             x_1 = const 3 : i32
+            continue 0
         }
-        continue 0
     }
     x_1 = const 2 : i32
     storage_dead(_2)
@@ -2147,8 +2135,8 @@ pub fn loop_break_2()
         } else {
             storage_dead(_2)
             x_1 = const 3 : i32
+            continue 0
         }
-        continue 0
     }
     storage_dead(_2)
     x_1 = const 2 : i32
@@ -2188,8 +2176,8 @@ pub fn interleaved_loops()
                 }
                 x_1 = const 5 : i32
                 storage_dead(_3)
+                continue 0
             }
-            continue 0
         }
         x_1 = const 3 : i32
         storage_dead(_2)
@@ -2236,8 +2224,8 @@ pub fn interleaved_loops2()
                 storage_dead(_3)
                 storage_dead(_2)
                 x_1 = const 5 : i32
+                continue 0
             }
-            continue 0
         }
         x_1 = const 3 : i32
         storage_dead(_2)
@@ -2273,10 +2261,10 @@ pub fn loop_after_loop()
             storage_dead(_3)
             x_1 = const 1 : i32
             storage_dead(_2)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_3)
     storage_dead(_2)
@@ -2290,10 +2278,10 @@ pub fn loop_after_loop()
             storage_dead(_5)
             x_1 = const 3 : i32
             storage_dead(_4)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_5)
     storage_dead(_4)
@@ -2315,48 +2303,47 @@ pub fn trick_exit_computation()
     loop {
         x_1 = const 1 : i32
         loop {
-            loop {
-                x_1 = const 2 : i32
-                switch copy x_1 {
-                    0 : i32 => {
-                        // This makes the algorithm pick the outer break as loop exit, making the reconstructed
-                        // cfg much worse than with fewer branches.
-                        x_1 = const 3 : i32
-                    },
-                    1 : i32 => {
-                        x_1 = const 4 : i32
-                    },
-                    2 : i32 => {
-                        x_1 = const 5 : i32
-                    },
-                    3 : i32 => {
-                        x_1 = const 6 : i32
-                    },
-                    4 : i32 => {
-                        x_1 = const 7 : i32
-                    },
-                    5 : i32 => {
-                        x_1 = const 8 : i32
-                        break 0
-                    },
-                    6 : i32 => {
-                        x_1 = const 9 : i32
-                        break 0
-                    },
-                    _ => {
-                        x_1 = const 10 : i32
-                        continue 1
-                    },
-                }
-                break 1
-                break 0
+            x_1 = const 2 : i32
+            switch copy x_1 {
+                0 : i32 => {
+                    // This makes the algorithm pick the outer break as loop exit, making the reconstructed
+                    // cfg much worse than with fewer branches.
+                    x_1 = const 3 : i32
+                    break 0
+                },
+                1 : i32 => {
+                    x_1 = const 4 : i32
+                    break 0
+                },
+                2 : i32 => {
+                    x_1 = const 5 : i32
+                    break 0
+                },
+                3 : i32 => {
+                    x_1 = const 6 : i32
+                    break 0
+                },
+                4 : i32 => {
+                    x_1 = const 7 : i32
+                    break 0
+                },
+                5 : i32 => {
+                    x_1 = const 8 : i32
+                    x_1 = const 11 : i32
+                    continue 1
+                },
+                6 : i32 => {
+                    x_1 = const 9 : i32
+                    x_1 = const 11 : i32
+                    continue 1
+                },
+                _ => {
+                    x_1 = const 10 : i32
+                    continue 0
+                },
             }
-            x_1 = const 11 : i32
-            continue 1
-            continue 0
         }
         break 0
-        continue 0
     }
     x_1 = const 12 : i32
     _0 = ()

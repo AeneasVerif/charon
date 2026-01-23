@@ -905,7 +905,7 @@ impl<'a> ReconstructCtx<'a> {
 
         // Translate the body by reconstructing the loops and the
         // conditional branchings.
-        let allow_duplication = false;
+        let allow_duplication = true;
         Ok(ReconstructCtx {
             cfg,
             body: src_body,

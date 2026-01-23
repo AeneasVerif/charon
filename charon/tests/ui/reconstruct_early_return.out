@@ -71,10 +71,10 @@ fn f() -> usize
             _10 = copy i_1 panic.+ const 1 : i32
             i_1 = move _10
             storage_dead(_3)
+            continue 0
         } else {
             break 0
         }
-        continue 0
     }
     storage_dead(_4)
     storage_dead(_3)
