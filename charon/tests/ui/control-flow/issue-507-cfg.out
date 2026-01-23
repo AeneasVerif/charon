@@ -104,7 +104,6 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
                     x_11 = copy CONST
                     storage_dead(x_11)
                     storage_dead(_9)
-                    continue 0
                 } else {
                     break 0
                 }
@@ -113,7 +112,6 @@ fn f1<'_0>(@1: &'_0 [u8; 1 : usize])
             storage_dead(_9)
             storage_dead(j_8)
             storage_dead(_4)
-            continue 0
         } else {
             break 0
         }

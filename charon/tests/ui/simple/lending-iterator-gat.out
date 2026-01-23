@@ -249,7 +249,6 @@ where
         storage_dead(item_6)
         conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4
         storage_dead(_4)
-        continue 0
     }
     _0 = ()
     conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4

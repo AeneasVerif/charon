@@ -474,7 +474,6 @@ fn iter(@1: usize)
         storage_dead(i_9)
         storage_dead(_8)
         storage_dead(_6)
-        continue 0
     }
     _0 = ()
     storage_dead(_8)

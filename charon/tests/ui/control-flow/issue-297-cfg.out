@@ -767,7 +767,6 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
         storage_dead(bytes_11)
         storage_dead(_10)
         storage_dead(_8)
-        continue 0
     }
     storage_dead(_10)
     storage_dead(_8)

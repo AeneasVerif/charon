@@ -122,7 +122,6 @@ unsafe fn {impl Destruct::<[String]>}::drop_in_place::<String>(@1: *mut [String]
             _5 = &raw mut (*_8)
             _4 = move _4 wrap.+ const 1 : usize
             drop[{impl Destruct::<String>}] (*_5)
-            continue 0
         }
     }
     return
@@ -228,7 +227,6 @@ unsafe fn {impl Destruct::<[String; 4 : usize]>}::drop_in_place::<String, 4 : us
             _7 = &raw mut (*_10)
             _6 = move _6 wrap.+ const 1 : usize
             drop[{impl Destruct::<String>}] (*_7)
-            continue 0
         }
     }
     return
