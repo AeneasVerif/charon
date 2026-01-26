@@ -337,31 +337,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else if let hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) =
                     trait_data
                 {
-                    match ty.kind() {
-                        hax::TyKind::Adt(item)
-                        | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
-                        | hax::TyKind::Array(item)
-                        | hax::TyKind::Slice(item)
-                        | hax::TyKind::Tuple(item) => {
-                            let mut impl_ref = self.translate_trait_impl_ref(
-                                span,
-                                item,
-                                TraitImplSource::ImplicitDestruct,
-                            )?;
-                            if let hax::TyKind::Closure(args) = ty.kind() {
-                                // Add lifetimes for the upvar ty borrows.
-                                for _ in args.iter_upvar_borrows() {
-                                    impl_ref.generics.regions.push(Region::Erased);
-                                }
-                            }
-                            TraitRefKind::TraitImpl(impl_ref)
-                        }
-                        _ => raise_error!(
-                            self,
-                            span,
-                            "failed to translate drop glue for type {ty:?}"
-                        ),
-                    }
+                    let (hax::TyKind::Adt(item)
+                    | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
+                    | hax::TyKind::Array(item)
+                    | hax::TyKind::Slice(item)
+                    | hax::TyKind::Tuple(item)) = ty.kind()
+                    else {
+                        raise_error!(self, span, "failed to translate drop glue for type {ty:?}")
+                    };
+                    TraitRefKind::TraitImpl(self.translate_trait_impl_ref(
+                        span,
+                        item,
+                        TraitImplSource::ImplicitDestruct,
+                    )?)
                 } else {
                     let Some(builtin_data) = self.recognize_builtin_impl(trait_data, &trait_def)
                     else {

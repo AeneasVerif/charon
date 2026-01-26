@@ -533,7 +533,7 @@ fn {impl FnOnce::<test_crate::main::closure<'_>, (u8)>}::call_once<'_0>(@1: test
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut::<test_crate::main::closure<'_>, (u8)>}::call_mut<'_0, '_>(move _3, move _2)
-    drop[{impl Destruct::<test_crate::main::closure<'_>>}<'_>] _1
+    drop[{impl Destruct::<test_crate::main::closure<'_>>}<'_0>] _1
     return
 }
 
@@ -577,7 +577,7 @@ fn {impl FnOnce::<test_crate::main::closure#1<'_>, (u8)>}::call_once<'_0>(@1: te
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'_0, '_>(move _3, move _2)
-    drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'_>] _1
+    drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'_0>] _1
     return
 }
 

@@ -154,7 +154,7 @@ fn {impl FnOnce<(u8)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: (u
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_>(move _3, move _2)
-    drop[{impl Destruct for closure<'_0>}<'_>] _1
+    drop[{impl Destruct for closure<'_0>}<'_0>] _1
     return
 }
 

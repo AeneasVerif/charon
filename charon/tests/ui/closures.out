@@ -925,7 +925,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ T), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_, T>[@TraitClause0, @TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}<'8, T>[@TraitClause0, @TraitClause1]] _1
+    drop[{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[@TraitClause0, @TraitClause1]}<'a, T>[@TraitClause0, @TraitClause1]] _1
     return
 }
 
@@ -1750,7 +1750,7 @@ fn {impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}<'_, '_>] _1
+    drop[{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>] _1
     return
 }
 
@@ -2120,7 +2120,7 @@ fn {impl FnOnce<(&'_ usize), ()> for test_crate::test_fnmut_with_ref::closure<'_
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ usize), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}<'_>] _1
+    drop[{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0>] _1
     return
 }
 

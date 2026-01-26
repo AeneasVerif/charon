@@ -328,24 +328,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// Append the given late bound variables to the provided generics.
-    pub fn append_late_bound_to_generics(
-        &mut self,
-        span: Span,
-        generics: GenericArgs,
-        late_bound: Option<hax::Binder<()>>,
-    ) -> Result<RegionBinder<GenericArgs>, Error> {
-        let late_bound = late_bound.unwrap_or(hax::Binder {
-            value: (),
-            bound_vars: vec![],
-        });
-        self.translate_region_binder(span, &late_bound, |ctx, _| {
-            Ok(generics
-                .move_under_binder()
-                .concat(&ctx.innermost_binder().params.identity_args()))
-        })
-    }
-
     /// Checks whether the given id corresponds to a built-in type.
     pub(crate) fn recognize_builtin_type(
         &mut self,

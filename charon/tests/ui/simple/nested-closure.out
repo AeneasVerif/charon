@@ -337,7 +337,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<()> for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_, T>[@TraitClause0, @TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}<'4, '_, T>[@TraitClause0, @TraitClause1]] _1
+    drop[{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}<'a, '_1, T>[@TraitClause0, @TraitClause1]] _1
     return
 }
 
@@ -432,7 +432,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u32)> for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_2, '_, T>[@TraitClause0, @TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}<'5, '_, T>[@TraitClause0, @TraitClause1]] _1
+    drop[{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}<'a, '_1, T>[@TraitClause0, @TraitClause1]] _1
     return
 }
 
@@ -527,7 +527,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u32)> for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}::call_mut<'a, '_1, '_2, '_, T>[@TraitClause0, @TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}<'5, '_, T>[@TraitClause0, @TraitClause1]] _1
+    drop[{impl Destruct for test_crate::{Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[@TraitClause0, @TraitClause1]}<'a, '_1, T>[@TraitClause0, @TraitClause1]] _1
     return
 }
 

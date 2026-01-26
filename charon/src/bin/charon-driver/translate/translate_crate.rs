@@ -43,7 +43,7 @@ pub enum RustcItem {
 }
 
 /// The kind of a [`TransItemSource`].
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
 pub enum TransItemSourceKind {
     Global,
     TraitDecl,
@@ -417,16 +417,58 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         enqueue: bool,
-        item: &hax::ItemRef,
+        hax_item: &hax::ItemRef,
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
-        let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, item, kind);
-        let generics = if self.monomorphize() {
+        let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
+        let mut generics = if self.monomorphize() {
             GenericArgs::empty()
         } else {
-            self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?
+            self.translate_generic_args(span, &hax_item.generic_args, &hax_item.impl_exprs)?
         };
-        let trait_ref = item
+
+        // Add regions to make sure the item args match the params we set up in
+        // `translate_item_generics`.
+        if matches!(
+            hax_item.def_id.kind,
+            hax::DefKind::Fn { .. } | hax::DefKind::AssocFn { .. } | hax::DefKind::Closure { .. }
+        ) {
+            let def = self.hax_def(hax_item)?;
+            match def.kind() {
+                hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                    generics
+                        .regions
+                        .extend(sig.bound_vars.iter().map(|_| Region::Erased));
+                }
+                hax::FullDefKind::Closure { args, .. } => {
+                    // Hack to recover some lifetimes that are erased in `ClosureArgs`.
+                    if self.item_src.def_id() == &args.item.def_id && !self.monomorphize() {
+                        let depth = self.binding_levels.depth();
+                        // At this point `tref` contains exactly the generic arguments of the enclosing item.
+                        // Every closure item gets at least these as generics, so we can simply reuse the
+                        // in-scope generics.
+                        for (rid, r) in generics.regions.iter_mut_indexed() {
+                            *r = Region::Var(DeBruijnVar::bound(depth, rid));
+                        }
+                    }
+                    generics.regions.extend(self.by_ref_upvar_regions(args));
+                    if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
+                    | TransItemSourceKind::ClosureMethod(..)
+                    | TransItemSourceKind::ClosureAsFnCast = kind
+                    {
+                        generics.regions.extend(self.closure_late_regions(args));
+                    }
+                    if let TransItemSourceKind::ClosureMethod(target_kind) = kind {
+                        generics
+                            .regions
+                            .extend(self.closure_method_regions(args, target_kind));
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let trait_ref = hax_item
             .in_trait
             .as_ref()
             .map(|impl_expr| self.translate_trait_impl_expr(span, impl_expr))
@@ -514,14 +556,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> Result<RegionBinder<FnPtr>, Error> {
         let fun_item = self.translate_fun_item(span, item, kind)?;
-        let late_bound = match self.hax_def(item)?.kind() {
-            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
-                Some(sig.as_ref().rebind(()))
-            }
-            _ => None,
-        };
-        let bound_generics =
-            self.append_late_bound_to_generics(span, *fun_item.generics, late_bound)?;
         let fun_id = match fun_item.trait_ref {
             // Direct function call
             None => FnPtrKind::Fun(fun_item.id),
@@ -536,7 +570,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 FnPtrKind::Trait(trait_ref.move_under_binder(), name, method_decl_id)
             }
         };
-        Ok(bound_generics.map(|generics| FnPtr::new(fun_id, generics)))
+        let late_bound = match self.hax_def(item)?.kind() {
+            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                sig.as_ref().rebind(())
+            }
+            _ => hax::Binder {
+                value: (),
+                bound_vars: vec![],
+            },
+        };
+        self.translate_region_binder(span, &late_bound, |ctx, _| {
+            let mut generics = fun_item.generics.move_under_binder();
+            // The last n regions are the late-bound ones and were provided as erased regions by
+            // `translate_item`.
+            for (a, b) in generics.regions.iter_mut().rev().zip(
+                ctx.innermost_binder()
+                    .params
+                    .identity_args()
+                    .regions
+                    .into_iter()
+                    .rev(),
+            ) {
+                *a = b;
+            }
+            Ok(FnPtr::new(fun_id, generics))
+        })
     }
 
     pub(crate) fn translate_global_decl_ref(

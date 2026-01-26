@@ -309,7 +309,7 @@ fn {impl FnOnce<(&'_ i32)> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<'_
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ i32)> for closure<'_0>}::call_mut<'_0, '_1, '_>(move _3, move _2)
-    drop[{impl Destruct for closure<'_0>}<'_>] _1
+    drop[{impl Destruct for closure<'_0>}<'_0>] _1
     return
 }
 
