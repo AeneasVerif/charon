@@ -61,75 +61,6 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
 /// late-bound generics of the `call`/`call_mut` methods. One must be careful to choose the right
 /// method from these.
 impl ItemTransCtx<'_, '_> {
-    /// If we're translating a closure-related item, get the upvar regions in scope; otherwise get
-    /// erased regions.
-    pub fn by_ref_upvar_regions(&self, closure: &hax::ClosureArgs) -> IndexMap<RegionId, Region> {
-        if self.item_src.def_id() == &closure.item.def_id {
-            // We have fresh upvar regions in scope.
-            self.outermost_binder()
-                .by_ref_upvar_regions
-                .iter()
-                .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r)))
-                .collect()
-        } else {
-            closure
-                .iter_upvar_borrows()
-                .map(|_| Region::Erased)
-                .collect()
-        }
-    }
-
-    /// If we're translating a closure-related item, get the late regions in scope; otherwise get
-    /// erased regions.
-    pub fn closure_late_regions(&self, closure: &hax::ClosureArgs) -> IndexMap<RegionId, Region> {
-        if self.item_src.def_id() == &closure.item.def_id
-            && matches!(
-                self.item_src.kind,
-                TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
-                    | TransItemSourceKind::ClosureMethod(..)
-                    | TransItemSourceKind::ClosureAsFnCast
-            )
-        {
-            // We have fresh late regions in scope.
-            self.outermost_binder()
-                .bound_region_vars
-                .iter()
-                .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r)))
-                .collect()
-        } else {
-            closure
-                .fn_sig
-                .bound_vars
-                .iter()
-                .map(|_| Region::Erased)
-                .collect()
-        }
-    }
-
-    /// If we're translating a closure-related item, get the method regions in scope; otherwise get
-    /// erased regions.
-    pub fn closure_method_regions(
-        &self,
-        closure: &hax::ClosureArgs,
-        target_kind: ClosureKind,
-    ) -> IndexMap<RegionId, Region> {
-        if self.item_src.def_id() == &closure.item.def_id
-            && matches!(self.item_src.kind, TransItemSourceKind::ClosureMethod(..))
-        {
-            // We have a fresh method region in scope.
-            self.outermost_binder()
-                .closure_call_method_region
-                .iter()
-                .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r)))
-                .collect()
-        } else {
-            match target_kind {
-                ClosureKind::FnOnce => IndexMap::new(),
-                ClosureKind::FnMut | ClosureKind::Fn => [Region::Erased].into_iter().collect(),
-            }
-        }
-    }
-
     /// Translate a reference to a closure item that takes late-bound lifetimes. The binder binds
     /// the late-bound lifetimes of the closure itself, if it is higher-kinded.
     fn translate_closure_bound_ref_with_late_bound(
@@ -170,8 +101,7 @@ impl ItemTransCtx<'_, '_> {
 
     /// Translate a reference to a closure item that takes late-bound lifetimes and method
     /// lifetimes. The binder binds the late-bound lifetimes of the `call`/`call_mut` method
-    /// (specified by `target_kind`). If you want to instantiate the binder, use the lifetimes from
-    /// `self.closure_method_regions`.
+    /// (specified by `target_kind`).
     fn translate_closure_bound_ref_with_method_bound(
         &mut self,
         span: Span,
@@ -570,9 +500,15 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Translate the function signature
-        let signature = self
-            .translate_closure_method_sig(def, span, args, target_kind)?
-            .apply(self.closure_method_regions(args, target_kind));
+        let bound_sig = self.translate_closure_method_sig(def, span, args, target_kind)?;
+        // We give it the lifetime parameter we had prepared for that purpose.
+        let signature = bound_sig.apply(
+            self.the_only_binder()
+                .closure_call_method_region
+                .iter()
+                .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r)))
+                .collect(),
+        );
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque

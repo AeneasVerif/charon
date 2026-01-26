@@ -441,27 +441,36 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .extend(sig.bound_vars.iter().map(|_| Region::Erased));
                 }
                 hax::FullDefKind::Closure { args, .. } => {
-                    // Hack to recover some lifetimes that are erased in `ClosureArgs`.
-                    if self.item_src.def_id() == &args.item.def_id && !self.monomorphize() {
-                        let depth = self.binding_levels.depth();
-                        // At this point `tref` contains exactly the generic arguments of the enclosing item.
-                        // Every closure item gets at least these as generics, so we can simply reuse the
-                        // in-scope generics.
-                        for (rid, r) in generics.regions.iter_mut_indexed() {
-                            *r = Region::Var(DeBruijnVar::bound(depth, rid));
-                        }
-                    }
-                    generics.regions.extend(self.by_ref_upvar_regions(args));
+                    generics
+                        .regions
+                        .extend(args.iter_upvar_borrows().map(|_| Region::Erased));
                     if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
                     | TransItemSourceKind::ClosureMethod(..)
                     | TransItemSourceKind::ClosureAsFnCast = kind
                     {
-                        generics.regions.extend(self.closure_late_regions(args));
-                    }
-                    if let TransItemSourceKind::ClosureMethod(target_kind) = kind {
                         generics
                             .regions
-                            .extend(self.closure_method_regions(args, target_kind));
+                            .extend(args.fn_sig.bound_vars.iter().map(|_| Region::Erased));
+                    }
+                    if let TransItemSourceKind::ClosureMethod(
+                        ClosureKind::FnMut | ClosureKind::Fn,
+                    ) = kind
+                    {
+                        generics.regions.push(Region::Erased);
+                    }
+                    // If we're in the process of translating this same closure item (possibly with
+                    // a different `TransItemSourceKind`), we can reuse the generics they have in
+                    // common.
+                    if self.item_src.def_id() == &args.item.def_id {
+                        let depth = self.binding_levels.depth();
+                        for (a, b) in generics.regions.iter_mut().zip(
+                            self.outermost_binder()
+                                .params
+                                .identity_args_at_depth(depth)
+                                .regions,
+                        ) {
+                            *a = b;
+                        }
                     }
                 }
                 _ => {}

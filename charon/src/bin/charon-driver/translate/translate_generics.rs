@@ -427,16 +427,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | TransItemSourceKind::ClosureMethod(..)
             | TransItemSourceKind::ClosureAsFnCast = kind
             {
-                self.innermost_binder_mut()
+                self.the_only_binder_mut()
                     .push_params_from_binder(args.fn_sig.rebind(()))?;
             }
             if let TransItemSourceKind::ClosureMethod(ClosureKind::Fn | ClosureKind::FnMut) = kind {
                 // Add the lifetime generics coming from the method itself.
                 let rid = self
-                    .innermost_generics_mut()
+                    .the_only_binder_mut()
+                    .params
                     .regions
                     .push_with(|index| RegionParam { index, name: None });
-                self.innermost_binder_mut().closure_call_method_region = Some(rid);
+                self.the_only_binder_mut().closure_call_method_region = Some(rid);
             }
         }
 
