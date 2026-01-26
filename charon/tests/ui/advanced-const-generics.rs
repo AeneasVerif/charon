@@ -1,4 +1,3 @@
-//@ known-failure
 #![feature(generic_const_exprs)]
 #![feature(adt_const_params)]
 #![allow(incomplete_features)]

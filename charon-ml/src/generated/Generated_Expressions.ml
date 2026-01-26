@@ -41,7 +41,7 @@ type aggregate_kind =
           indicates this is an enum and the aggregate uses that variant. The
           [FieldId], if present, indicates this is a union and the aggregate
           writes into that field. Otherwise this is a struct. *)
-  | AggregatedArray of ty * const_generic
+  | AggregatedArray of ty * constant_expr
       (** We don't put this with the ADT cas because this is the only built-in
           type with aggregates, and it is a primitive type. In particular, it
           makes sense to treat it differently because it has a variable number
@@ -120,17 +120,6 @@ and borrow_kind =
           <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
       *)
 
-(** A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8
-    value, or part of a pointer with provenance (e.g. to a global or a function)
-*)
-and byte =
-  | Uninit  (** An uninitialized byte *)
-  | Value of int  (** A concrete byte value *)
-  | Provenance of provenance * int
-      (** A byte that is part of a pointer with provenance. The u8 is the offset
-          within the pointer. Note that we do not have an actual value for this
-          pointer byte, unlike MiniRust, as that is non-deterministic. *)
-
 (** For all the variants: the first type gives the source type, the second one
     gives the destination type. *)
 and cast_kind =
@@ -164,104 +153,6 @@ and cast_kind =
           re-boxed after. FIXME(ssyram): but this is not implemented yet,
           namely, there may still be something like
           [Rc<dyn Trait<...>> -> Rc<T>] in the types. *)
-
-and constant_expr = { kind : constant_expr_kind; ty : ty }
-
-(** A constant expression.
-
-    Only the [[ConstantExprKind::Literal]] and [[ConstantExprKind::Var]] cases
-    are left in the final LLBC.
-
-    The other cases come from a straight translation from the MIR:
-
-    [[ConstantExprKind::Adt]] case: It is a bit annoying, but rustc treats some
-    ADT and tuple instances as constants when generating MIR:
-    - an enumeration with one variant and no fields is a constant.
-    - a structure with no field is a constant.
-    - sometimes, Rust stores the initialization of an ADT as a constant (if all
-      the fields are constant) rather than as an aggregated value We later
-      desugar those to regular ADTs, see [regularize_constant_adts.rs].
-
-    [[ConstantExprKind::Global]] case: access to a global variable. We later
-    desugar it to a copy of a place global.
-
-    [[ConstantExprKind::Ref]] case: reference to a constant value. We later
-    desugar it to a separate statement.
-
-    [[ConstantExprKind::FnPtr]] case: a function pointer (to a top-level
-    function).
-
-    Remark: MIR seems to forbid more complex expressions like paths. For
-    instance, reading the constant [a.b] is translated to
-    [{ _1 = const a; _2 = (_1.0) }]. *)
-and constant_expr_kind =
-  | CLiteral of literal
-  | CAdt of variant_id option * constant_expr list
-      (** In most situations: Enumeration with one variant with no fields,
-          structure with no fields, unit (encoded as a 0-tuple).
-
-          Less frequently: arbitrary ADT values.
-
-          We eliminate this case in a micro-pass. *)
-  | CArray of constant_expr list
-  | CSlice of constant_expr list
-  | CGlobal of global_decl_ref
-      (** The value is a top-level constant/static.
-
-          We eliminate this case in a micro-pass.
-
-          Remark: constants can actually have generic parameters.
-          {@rust[
-            struct V<const N: usize, T> {
-              x: [T; N],
-            }
-
-            impl<const N: usize, T> V<N, T> {
-              const LEN: usize = N; // This has generics <N, T>
-            }
-
-            fn use_v<const N: usize, T>(v: V<N, T>) {
-              let l = V::<N, T>::LEN; // We need to provided a substitution here
-            }
-          ]} *)
-  | CTraitConst of trait_ref * trait_item_name
-      (** A trait constant.
-
-          Ex.:
-          {@rust[
-            impl Foo for Bar {
-              const C : usize = 32; // <-
-            }
-          ]}
-
-          Remark: trait constants can not be used in types, they are necessarily
-          values. *)
-  | CRef of constant_expr
-      (** A shared reference to a constant value.
-
-          We eliminate this case in a micro-pass. *)
-  | CPtr of ref_kind * constant_expr
-      (** A pointer to a mutable static.
-
-          We eliminate this case in a micro-pass. *)
-  | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
-  | CFnDef of fn_ptr  (** Function definition -- this is a ZST constant *)
-  | CFnPtr of fn_ptr
-      (** A function pointer to a function item; this is an actual pointer to
-          that function item.
-
-          We eliminate this case in a micro-pass. *)
-  | CPtrNoProvenance of big_int
-      (** A pointer with no provenance (e.g. 0 for the null pointer)
-
-          We eliminate this case in a micro-pass. *)
-  | CRawMemory of byte list
-      (** Raw memory value obtained from constant evaluation. Used when a more
-          structured representation isn't possible (e.g. for unions) or just
-          isn't implemented yet. *)
-  | COpaque of string
-      (** A constant expression that Charon still doesn't handle, along with the
-          reason why. *)
 
 and field_proj_kind =
   | ProjAdt of type_decl_id * variant_id option
@@ -349,11 +240,6 @@ and projection_elem =
           - [to]
           - [from_end] *)
 
-and provenance =
-  | Global of global_decl_ref
-  | Function of fun_decl_ref
-  | Unknown
-
 (** TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
     We can also factor out the unops, binops with the function calls. TODO: move
     the aggregate kind to operands TODO: we should prefix the type variants with
@@ -408,7 +294,7 @@ and rvalue =
 
           Remark: in case of closures, the aggregated value groups the closure
           id together with its state. *)
-  | Len of place * ty * const_generic option
+  | Len of place * ty * constant_expr option
       (** Length of a place of type [[T]] or [[T; N]]. This applies to the place
           itself, not to a pointer value. This is inserted by rustc in a single
           case: slice patterns.
@@ -420,7 +306,7 @@ and rvalue =
                 }
             }
           ]} *)
-  | Repeat of operand * ty * const_generic
+  | Repeat of operand * ty * constant_expr
       (** [Repeat(x, n)] creates an array where [x] is copied [n] times.
 
           We translate this to a function call for LLBC. *)
@@ -438,7 +324,7 @@ and unop =
       (** Casts are rvalues in MIR, but we treat them as unops. *)
 
 and unsizing_metadata =
-  | MetaLength of const_generic  (** Cast from [[T; N]] to [[T]]. *)
+  | MetaLength of constant_expr  (** Cast from [[T; N]] to [[T]]. *)
   | MetaVTable of trait_ref * global_decl_ref option
       (** Cast from a sized value to a [dyn Trait] value. The [TraitRef] gives
           the trait for which we're getting a vtable (this is the _principal_

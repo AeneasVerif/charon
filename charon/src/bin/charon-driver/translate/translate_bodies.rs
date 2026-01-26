@@ -120,7 +120,7 @@ impl ItemTransCtx<'_, '_> {
                 // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
                 // default value no longer has a cross-crate MIR so it's unclear how to retreive
                 // the value. See the `trait-default-const-cross-crate` test.
-                let c = self.translate_constant_expr_to_constant_expr(span, &value)?;
+                let c = self.translate_constant_expr(span, &value)?;
                 let mut bb = BodyBuilder::new(span, 0);
                 let ret = bb.new_var(None, c.ty.clone());
                 bb.push_statement(StatementKind::Assign(
@@ -441,7 +441,7 @@ impl BodyTransCtx<'_, '_, '_> {
             }
             hax::Operand::Constant(const_op) => match &const_op.kind {
                 hax::ConstOperandKind::Value(constant) => {
-                    let constant = self.translate_constant_expr_to_constant_expr(span, constant)?;
+                    let constant = self.translate_constant_expr(span, constant)?;
                     Operand::Const(Box::new(constant))
                 }
                 hax::ConstOperandKind::Promoted(item) => {
@@ -473,11 +473,11 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(Rvalue::Use(Operand::Copy(place)))
             }
             hax::Rvalue::Repeat(operand, cnst) => {
-                let c = self.translate_constant_expr_to_const_generic(span, cnst)?;
+                let c = self.translate_constant_expr(span, cnst)?;
                 let op = self.translate_operand(span, operand)?;
                 let ty = op.ty().clone();
                 // Remark: we could desugar this into a function call later.
-                Ok(Rvalue::Repeat(op, ty, c))
+                Ok(Rvalue::Repeat(op, ty, Box::new(c)))
             }
             hax::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
@@ -565,9 +565,8 @@ impl BodyTransCtx<'_, '_, '_> {
                     hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize(meta), ..) => {
                         let meta = match meta {
                             hax::UnsizingMetadata::Length(len) => {
-                                let len =
-                                    self.translate_constant_expr_to_const_generic(span, len)?;
-                                UnsizingMetadata::Length(len)
+                                let len = self.translate_constant_expr(span, len)?;
+                                UnsizingMetadata::Length(Box::new(len))
                             }
                             hax::UnsizingMetadata::DirectVTable(impl_expr) => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
@@ -718,16 +717,16 @@ impl BodyTransCtx<'_, '_, '_> {
                 match aggregate_kind {
                     hax::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_ty(span, ty)?;
-                        let cg = ConstGeneric::Value(Literal::Scalar(
+                        let c = ConstantExpr::mk_usize(
                             ScalarValue::from_uint(
                                 ptr_size,
                                 UIntTy::Usize,
                                 operands_t.len() as u128,
                             )
                             .unwrap(),
-                        ));
+                        );
                         Ok(Rvalue::Aggregate(
-                            AggregateKind::Array(t_ty, cg),
+                            AggregateKind::Array(t_ty, Box::new(c)),
                             operands_t,
                         ))
                     }

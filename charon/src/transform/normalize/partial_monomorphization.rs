@@ -250,6 +250,13 @@ impl<'pm, 'ctx> VisitAstMut for MutabilityShapeBuilder<'pm, 'ctx> {
         // them up in `exit_ty_kind` and `compute_shape`.
         ControlFlow::Continue(())
     }
+
+    fn visit_constant_expr(
+        &mut self,
+        _: &mut ConstantExpr,
+    ) -> ::std::ops::ControlFlow<Self::Break> {
+        ControlFlow::Continue(())
+    }
 }
 
 #[derive(Visitor)]

@@ -113,7 +113,7 @@ impl BindingLevel {
         var_id
     }
 
-    pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
+    pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: Ty, name: String) {
         let var_id = self
             .params
             .const_generics
@@ -317,18 +317,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // The type should be primitive, meaning it shouldn't contain variables,
                 // non-primitive adts, etc. As a result, we can use an empty context.
                 let ty = self.translate_ty(span, ty)?;
-                match ty.kind().as_literal() {
-                    Some(ty) => self.innermost_binder_mut().push_const_generic_var(
-                        param.index,
-                        *ty,
-                        param.name.clone(),
-                    ),
-                    None => raise_error!(
-                        self,
-                        span,
-                        "Constant parameters of non-literal type are not supported"
-                    ),
-                }
+                self.innermost_binder_mut().push_const_generic_var(
+                    param.index,
+                    ty,
+                    param.name.clone(),
+                );
             }
         }
 

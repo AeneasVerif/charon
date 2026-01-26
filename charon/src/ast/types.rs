@@ -220,7 +220,7 @@ pub struct TraitTypeConstraint {
 pub struct GenericArgs {
     pub regions: IndexMap<RegionId, Region>,
     pub types: IndexMap<TypeVarId, Ty>,
-    pub const_generics: IndexMap<ConstGenericVarId, ConstGeneric>,
+    pub const_generics: IndexMap<ConstGenericVarId, ConstantExpr>,
     // TODO: rename to match [GenericParams]?
     pub trait_refs: IndexMap<TraitClauseId, TraitRef>,
 }
@@ -285,13 +285,11 @@ pub struct Binder<T> {
 #[derive(
     Default, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut,
 )]
-#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct GenericParams {
     #[serde_state(stateless)]
     pub regions: IndexMap<RegionId, RegionParam>,
     #[serde_state(stateless)]
     pub types: IndexMap<TypeVarId, TypeParam>,
-    #[serde_state(stateless)]
     pub const_generics: IndexMap<ConstGenericVarId, ConstGenericParam>,
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: IndexMap<TraitClauseId, TraitParam>,
@@ -774,33 +772,6 @@ pub enum LiteralTy {
     Char,
 }
 
-/// Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    VariantName,
-    EnumIsA,
-    EnumAsGetters,
-    VariantIndexArity,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    Hash,
-)]
-#[charon::variants_prefix("Cg")]
-pub enum ConstGeneric {
-    /// A global constant
-    Global(GlobalDeclId),
-    /// A const generic variable
-    Var(ConstGenericDbVar),
-    /// A concrete value
-    #[serde_state(stateless)]
-    Value(Literal),
-}
-
 /// A type.
 ///
 /// Warning: the `DriveMut` impls of `Ty` needs to clone and re-hash the modified type to maintain
@@ -891,7 +862,7 @@ pub enum TyKind {
     /// The internal type is assumed to be a type variable
     PtrMetadata(Ty),
     /// An array type `[T; N]`
-    Array(Ty, ConstGeneric),
+    Array(Ty, Box<ConstantExpr>),
     /// A slice type `[T]`
     Slice(Ty),
     /// A type that could not be computed or was incorrect.

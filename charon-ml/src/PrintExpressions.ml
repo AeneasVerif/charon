@@ -127,56 +127,6 @@ and binop_to_string (binop : binop) : string =
   | Cmp -> "cmp"
   | Offset -> "offset"
 
-and provenance_to_string (env : 'a fmt_env) (pv : provenance) : string =
-  match pv with
-  | Global gref -> "prov_global(" ^ global_decl_ref_to_string env gref ^ ")"
-  | Function fn_ref -> "prov_fn(" ^ fun_decl_ref_to_string env fn_ref ^ ")"
-  | Unknown -> "prov_unknown"
-
-and byte_to_string (env : 'a fmt_env) (cv : byte) : string =
-  match cv with
-  | Uninit -> "uninit"
-  | Value b -> string_of_int b
-  | Provenance (p, i) ->
-      provenance_to_string env p ^ "[" ^ string_of_int i ^ "]"
-
-and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
-  match cv.kind with
-  | CLiteral lit ->
-      "(" ^ literal_to_string lit ^ " : " ^ ty_to_string env cv.ty ^ ")"
-  | CVar var -> const_generic_db_var_to_string env var
-  | CTraitConst (trait_ref, const_name) ->
-      let trait_ref = trait_ref_to_string env trait_ref in
-      trait_ref ^ const_name
-  | CFnDef fn_ptr | CFnPtr fn_ptr -> fn_ptr_to_string env fn_ptr
-  | CRawMemory bytes ->
-      "RawMemory(["
-      ^ String.concat ", " (List.map (byte_to_string env) bytes)
-      ^ "])"
-  | COpaque reason -> "Opaque(" ^ reason ^ ")"
-  | CAdt (variant_id, fields) -> begin
-      match cv.ty with
-      | TAdt tref ->
-          aggregate_to_string env
-            (AggregatedAdt (tref, variant_id, None))
-            (List.map (fun c -> Constant c) fields)
-      | _ -> "malformed constant"
-    end
-  | CArray fields | CSlice fields ->
-      "["
-      ^ String.concat ", " (List.map (constant_expr_to_string env) fields)
-      ^ "]"
-  | CGlobal gref -> global_decl_ref_to_string env gref
-  | CPtrNoProvenance n -> "(" ^ Z.to_string n ^ " as *const _)"
-  | CRef c -> "&" ^ constant_expr_to_string env c
-  | CPtr (ref_kind, c) ->
-      let ref_kind =
-        match ref_kind with
-        | RShared -> "&raw const"
-        | RMut -> "&raw mut"
-      in
-      ref_kind ^ constant_expr_to_string env c
-
 and operand_to_string (env : 'a fmt_env) (op : operand) : string =
   match op with
   | Copy p -> "copy " ^ place_to_string env p
@@ -266,11 +216,11 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
       "len<"
       ^ String.concat ", "
           (ty_to_string env ty
-          :: List.map (const_generic_to_string env) const_generics)
+          :: List.map (constant_expr_to_string env) const_generics)
       ^ ">(" ^ place_to_string env place ^ ")"
   | Repeat (v, _, len) ->
       "[" ^ operand_to_string env v ^ ";"
-      ^ const_generic_to_string env len
+      ^ constant_expr_to_string env len
       ^ "]"
   | ShallowInitBox (op, _) ->
       "shallow-init-box(" ^ operand_to_string env op ^ ")"

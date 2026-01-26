@@ -261,7 +261,7 @@ pub enum CastKind {
 #[charon::variants_prefix("Meta")]
 pub enum UnsizingMetadata {
     /// Cast from `[T; N]` to `[T]`.
-    Length(ConstGeneric),
+    Length(Box<ConstantExpr>),
     /// Cast from a sized value to a `dyn Trait` value. The `TraitRef` gives the trait for which
     /// we're getting a vtable (this is the _principal_ trait of the `dyn Trait` target). The second
     /// field is the vtable instance, if we could resolve it.
@@ -756,11 +756,11 @@ pub enum Rvalue {
     ///     }
     /// }
     /// ```
-    Len(Place, Ty, Option<ConstGeneric>),
+    Len(Place, Ty, Option<Box<ConstantExpr>>),
     /// `Repeat(x, n)` creates an array where `x` is copied `n` times.
     ///
     /// We translate this to a function call for LLBC.
-    Repeat(Operand, Ty, ConstGeneric),
+    Repeat(Operand, Ty, Box<ConstantExpr>),
     /// Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. This
     /// only appears as part of lowering `Box::new()` in some cases. We reconstruct the original
     /// `Box::new()` call, but sometimes may fail to do so, leaking the expression.
@@ -797,7 +797,7 @@ pub enum AggregateKind {
     /// We don't put this with the ADT cas because this is the only built-in type
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
-    Array(Ty, ConstGeneric),
+    Array(Ty, Box<ConstantExpr>),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
     /// We lower this to a builtin function call for LLBC in [crate::transform::simplify_output::ops_to_function_calls].

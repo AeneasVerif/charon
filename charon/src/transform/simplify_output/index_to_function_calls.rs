@@ -48,7 +48,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             // Same generics as the array/slice type, except for the extra lifetime.
             let generics = GenericArgs {
                 types: [ty.clone()].into(),
-                const_generics: len.map(|l| [l].into()).unwrap_or_default(),
+                const_generics: len.map(|l| [*l].into()).unwrap_or_default(),
                 regions: [Region::Erased].into(),
                 trait_refs: [].into(),
             };

@@ -70,7 +70,7 @@ use derive_generic_visitor::*;
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.
     override(
-        DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefContents, TraitRefKind,
+        DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
         TypeDeclRef, FunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
         GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue, Body,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
@@ -148,7 +148,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
     visitor(drive_body_mut(&mut VisitBodyMut)),
     // Types that are ignored when encountered.
     skip(
-        AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
+        AbortKind, BinOp, BorrowKind, ConstantExpr, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
         TraitRef, LiteralTy, Literal, RegionId, ()

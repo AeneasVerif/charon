@@ -1248,16 +1248,6 @@ fn generate_ml(
                     "DeBruijnVar",
                     "ItemId",
                 ]),
-                // In preparation for some changes on the aeneas side that would allow merging this
-                // and the below group.
-                (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    ancestors: &["type_vars"],
-                    name: "const_generic",
-                    reduce: true,
-                    extra_types: &[],
-                })), &[
-                    "ConstGeneric",
-                ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
@@ -1266,6 +1256,7 @@ fn generate_ml(
                     reduce: false,
                     extra_types: &["span"],
                 })), &[
+                    "ConstantExpr",
                     "TyKind",
                     "TraitImplRef",
                     "FunDeclRef",
