@@ -1239,15 +1239,24 @@ fn generate_ml(
             markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     ancestors: &["literal"],
-                    name: "const_generic",
+                    name: "type_vars",
                     reduce: true,
                     extra_types: &[],
                 })), &[
                     "TypeVarId",
-                    "ConstGeneric",
                     "TraitClauseId",
                     "DeBruijnVar",
                     "ItemId",
+                ]),
+                // In preparation for some changes on the aeneas side that would allow merging this
+                // and the below group.
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    ancestors: &["type_vars"],
+                    name: "const_generic",
+                    reduce: true,
+                    extra_types: &[],
+                })), &[
+                    "ConstGeneric",
                 ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.

@@ -47,6 +47,8 @@ type ('id, 'name) indexed_var = {
 
 (* __REPLACE0__ *)
 
+(* __REPLACE1__ *)
+
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base_base =
   object (self : 'self)
@@ -84,6 +86,6 @@ class virtual ['self] map_ty_base_base =
         { index; name }
   end
 
-(* __REPLACE1__ *)
-
 (* __REPLACE2__ *)
+
+(* __REPLACE3__ *)

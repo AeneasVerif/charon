@@ -43,18 +43,9 @@ type ('id, 'name) indexed_var = {
 }
 [@@deriving show, ord, eq]
 
-(** Const Generic Values. Either a primitive value, or a variable corresponding
-    to a primitve value *)
-type const_generic =
-  | CgGlobal of global_decl_id  (** A global constant *)
-  | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
-  | CgValue of literal  (** A concrete value *)
-
-and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
-
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
-and de_bruijn_id = int
+type de_bruijn_id = int
 
 (** Type-level variable.
 
@@ -118,7 +109,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
   ord,
   visitors
     {
-      name = "iter_const_generic";
+      name = "iter_type_vars";
       monomorphic = [ "env" ];
       variety = "iter";
       ancestors = [ "iter_literal" ];
@@ -126,7 +117,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
     },
   visitors
     {
-      name = "map_const_generic";
+      name = "map_type_vars";
       monomorphic = [ "env" ];
       variety = "map";
       ancestors = [ "map_literal" ];
@@ -134,7 +125,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
     },
   visitors
     {
-      name = "reduce_const_generic";
+      name = "reduce_type_vars";
       monomorphic = [ "env" ];
       variety = "reduce";
       ancestors = [ "reduce_literal" ];
@@ -142,10 +133,55 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
     },
   visitors
     {
-      name = "mapreduce_const_generic";
+      name = "mapreduce_type_vars";
       monomorphic = [ "env" ];
       variety = "mapreduce";
       ancestors = [ "mapreduce_literal" ];
+      nude = true (* Don't inherit VisitorsRuntime *);
+    }]
+
+(** Const Generic Values. Either a primitive value, or a variable corresponding
+    to a primitve value *)
+type const_generic =
+  | CgGlobal of global_decl_id  (** A global constant *)
+  | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
+  | CgValue of literal  (** A concrete value *)
+
+and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
+[@@deriving
+  show,
+  eq,
+  ord,
+  visitors
+    {
+      name = "iter_const_generic";
+      monomorphic = [ "env" ];
+      variety = "iter";
+      ancestors = [ "iter_type_vars" ];
+      nude = true (* Don't inherit VisitorsRuntime *);
+    },
+  visitors
+    {
+      name = "map_const_generic";
+      monomorphic = [ "env" ];
+      variety = "map";
+      ancestors = [ "map_type_vars" ];
+      nude = true (* Don't inherit VisitorsRuntime *);
+    },
+  visitors
+    {
+      name = "reduce_const_generic";
+      monomorphic = [ "env" ];
+      variety = "reduce";
+      ancestors = [ "reduce_type_vars" ];
+      nude = true (* Don't inherit VisitorsRuntime *);
+    },
+  visitors
+    {
+      name = "mapreduce_const_generic";
+      monomorphic = [ "env" ];
+      variety = "mapreduce";
+      ancestors = [ "mapreduce_type_vars" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
