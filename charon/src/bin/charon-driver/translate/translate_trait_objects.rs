@@ -699,7 +699,7 @@ impl ItemTransCtx<'_, '_> {
                         kind: ConstantExprKind::Global(vtable_instance_ref),
                         ty: fn_ptr_ty,
                     });
-                    ConstantExprKind::Ref(global)
+                    ConstantExprKind::Ref(global, None)
                 }
                 // TODO(dyn): builtin impls
                 _ => ConstantExprKind::Opaque("missing supertrait vtable".into()),

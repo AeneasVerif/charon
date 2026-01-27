@@ -257,6 +257,7 @@ pub enum CastKind {
     DeserializeState,
     Drive,
     DriveMut,
+    Hash,
 )]
 #[charon::variants_prefix("Meta")]
 pub enum UnsizingMetadata {
@@ -647,11 +648,11 @@ pub enum ConstantExprKind {
     /// A shared reference to a constant value.
     ///
     /// We eliminate this case in a micro-pass.
-    Ref(Box<ConstantExpr>),
+    Ref(Box<ConstantExpr>, Option<UnsizingMetadata>),
     /// A pointer to a mutable static.
     ///
     /// We eliminate this case in a micro-pass.
-    Ptr(RefKind, Box<ConstantExpr>),
+    Ptr(RefKind, Box<ConstantExpr>, Option<UnsizingMetadata>),
     /// A const generic var
     Var(ConstGenericDbVar),
     /// Function definition -- this is a ZST constant

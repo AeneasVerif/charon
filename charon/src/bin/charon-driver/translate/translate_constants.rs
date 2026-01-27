@@ -121,7 +121,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::ConstantExprKind::Borrow(v) => {
                 let val = self.translate_constant_expr(span, v)?;
-                ConstantExprKind::Ref(Box::new(val))
+                ConstantExprKind::Ref(Box::new(val), None)
             }
             hax::ConstantExprKind::Cast { .. } => {
                 register_error!(
@@ -134,7 +134,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr(span, arg)?;
                 let rk = RefKind::mutable(mutability.is_mut());
-                ConstantExprKind::Ptr(rk, Box::new(arg))
+                ConstantExprKind::Ptr(rk, Box::new(arg), None)
             }
             hax::ConstantExprKind::ConstRef { id } => {
                 match self.lookup_const_generic_var(span, id) {

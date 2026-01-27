@@ -294,8 +294,8 @@ and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
       ^ "]"
   | CGlobal gref -> global_decl_ref_to_string env gref
   | CPtrNoProvenance n -> "(" ^ Z.to_string n ^ " as *const _)"
-  | CRef c -> "&" ^ constant_expr_to_string env c
-  | CPtr (ref_kind, c) ->
+  | CRef (c, _) -> "&" ^ constant_expr_to_string env c
+  | CPtr (ref_kind, c, _) ->
       let ref_kind =
         match ref_kind with
         | RShared -> "&raw const"
