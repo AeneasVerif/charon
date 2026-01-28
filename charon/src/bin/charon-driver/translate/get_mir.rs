@@ -17,7 +17,7 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         item_ref: &hax::ItemRef,
         span: Span,
-    ) -> Result<Option<hax::MirBody<hax::mir_kinds::Unknown>>, Error> {
+    ) -> Result<Option<hax::MirBody>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
         let res = panic::catch_unwind(move || this.get_mir_inner(item_ref, span));
@@ -35,7 +35,7 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         item_ref: &hax::ItemRef,
         span: Span,
-    ) -> Result<Option<hax::MirBody<hax::mir_kinds::Unknown>>, Error> {
+    ) -> Result<Option<hax::MirBody>, Error> {
         let tcx = self.t_ctx.tcx;
         let mir_level = self.t_ctx.options.mir_level;
         let def_id = &item_ref.def_id;
@@ -53,8 +53,7 @@ impl ItemTransCtx<'_, '_> {
                 let body = Rc::new(body);
                 let state = s.with_mir(body.clone());
                 // Translate
-                let body: hax::MirBody<hax::mir_kinds::Unknown> =
-                    self.t_ctx.catch_sinto(&state, span, body.as_ref())?;
+                let body: hax::MirBody = self.t_ctx.catch_sinto(&state, span, body.as_ref())?;
                 Some(body)
             }
             None => None,

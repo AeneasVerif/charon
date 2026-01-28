@@ -92,12 +92,6 @@ mod types {
         pub reverse_synthetic_map: HashMap<RDefId, SyntheticItem>,
     }
 
-    /// Defines a mapping from types to types, for use with `TypeMap`.
-    pub struct FullDefMapper;
-    impl TypeMapper for FullDefMapper {
-        type Value<Body: TypeMappable> = Arc<FullDef<Body>>;
-    }
-
     /// Per-item cache
     #[derive(Default)]
     pub struct ItemCache<'tcx> {
@@ -108,7 +102,7 @@ mod types {
         /// and the base one represented by `None`. Moreover we can instantiate definitions with
         /// generic arguments.
         pub full_defs:
-            HashMap<(Option<PromotedId>, Option<ty::GenericArgsRef<'tcx>>), TypeMap<FullDefMapper>>,
+            HashMap<(Option<PromotedId>, Option<ty::GenericArgsRef<'tcx>>), Arc<FullDef>>,
         /// Cache the `Ty` translations.
         pub tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.

@@ -8,14 +8,9 @@ use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 use std::sync::Arc;
 
-/// Hack: charon used to rely on the old `()` default everywhere. To avoid big merge conflicts with
-/// in-flight PRs we're changing the default here. Eventually this should be removed.
-type DefaultFullDefBody = MirBody<mir_kinds::Unknown>;
-
 /// Gathers a lot of definition information about a [`rustc_hir::def_id::DefId`].
-
 #[derive(Clone, Debug)]
-pub struct FullDef<Body = DefaultFullDefBody> {
+pub struct FullDef {
     /// A reference to the current item. If the item was provided with generic args, they are
     /// stored here; otherwise the args are the identity_args for this item.
     pub this: ItemRef,
@@ -33,19 +28,18 @@ pub struct FullDef<Body = DefaultFullDefBody> {
     pub lang_item: Option<Symbol>,
     /// If this definition is a diagnostic item, we store the identifier, e.g. `box_new`.
     pub diagnostic_item: Option<Symbol>,
-    pub kind: FullDefKind<Body>,
+    pub kind: FullDefKind,
 }
 
 /// Construct the `FullDefKind` for this item. If `args` is `Some`, the returned `FullDef` will be
 /// instantiated with the provided generics.
-fn translate_full_def<'tcx, S, Body>(
+fn translate_full_def<'tcx, S>(
     s: &S,
     def_id: &DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> FullDef<Body>
+) -> FullDef
 where
     S: UnderOwnerState<'tcx>,
-    Body: IsBody + TypeMappable,
 {
     let tcx = s.base().tcx;
     let rust_def_id = def_id.underlying_rust_def_id();
@@ -96,7 +90,7 @@ where
             .parent
             .as_ref()
             .unwrap()
-            .full_def_maybe_instantiated::<_, Body>(s, args);
+            .full_def_maybe_instantiated(s, args);
         let parent_param_env = parent_def.param_env().unwrap();
         let param_env = ParamEnv {
             generics: TyGenerics {
@@ -110,15 +104,14 @@ where
             parent: Some(parent_def.this().clone()),
         };
         let body = get_promoted_mir(tcx, rust_def_id, promoted_id);
-        let body = substitute(tcx, s.typing_env(), args, body);
         source_span = Some(body.span);
 
-        let ty: Ty = body.local_decls[rustc_middle::mir::Local::ZERO].ty.sinto(s);
+        let ty = body.local_decls[rustc_middle::mir::Local::ZERO].ty;
+        let ty = substitute(tcx, s.typing_env(), args, ty).sinto(s);
         kind = FullDefKind::Const {
             param_env,
             ty,
             kind: ConstKind::PromotedConst,
-            body: Body::from_mir(s, body),
             value: None,
         };
 
@@ -192,39 +185,31 @@ impl DefId {
     }
 
     /// Get the full definition of this item.
-    pub fn full_def<'tcx, S, Body>(&self, s: &S) -> Arc<FullDef<Body>>
+    pub fn full_def<'tcx, S>(&self, s: &S) -> Arc<FullDef>
     where
-        Body: IsBody + TypeMappable,
         S: BaseState<'tcx>,
     {
         self.full_def_maybe_instantiated(s, None)
     }
 
     /// Get the full definition of this item, instantiated if `args` is `Some`.
-    pub fn full_def_maybe_instantiated<'tcx, S, Body>(
+    pub fn full_def_maybe_instantiated<'tcx, S>(
         &self,
         s: &S,
         args: Option<ty::GenericArgsRef<'tcx>>,
-    ) -> Arc<FullDef<Body>>
+    ) -> Arc<FullDef>
     where
-        Body: IsBody + TypeMappable,
         S: BaseState<'tcx>,
     {
         let rust_def_id = self.underlying_rust_def_id();
         let s = &s.with_owner_id(rust_def_id);
         let cache_key = (self.promoted_id(), args);
-        if let Some(def) =
-            s.with_cache(|cache| cache.full_defs.entry(cache_key).or_default().get().cloned())
-        {
+        if let Some(def) = s.with_cache(|cache| cache.full_defs.get(&cache_key).cloned()) {
             return def;
         }
         let def = Arc::new(translate_full_def(s, self, args));
         s.with_cache(|cache| {
-            cache
-                .full_defs
-                .entry(cache_key)
-                .or_default()
-                .insert(def.clone());
+            cache.full_defs.insert(cache_key, def.clone());
         });
         def
     }
@@ -232,9 +217,8 @@ impl DefId {
 
 impl ItemRef {
     /// Get the full definition of the item, instantiated with the provided generics.
-    pub fn instantiated_full_def<'tcx, S, Body>(&self, s: &S) -> Arc<FullDef<Body>>
+    pub fn instantiated_full_def<'tcx, S>(&self, s: &S) -> Arc<FullDef>
     where
-        Body: IsBody + TypeMappable,
         S: BaseState<'tcx>,
     {
         let args = self.rustc_args(s);
@@ -244,9 +228,8 @@ impl ItemRef {
     /// Get the drop glue shim for this. Panics if the `DefKind` isn't appropriate. Drop glue shims
     /// are normally translated by hax when safe to do so (i.e. for mono types). This method can be
     /// used if you know what you're doing and want drop glue for a poly type. This may cause ICEs.
-    pub fn drop_glue_shim<'tcx, S, Body>(&self, s: &S) -> Body
+    pub fn drop_glue_shim<'tcx, S>(&self, s: &S) -> MirBody
     where
-        Body: IsBody + TypeMappable,
         S: BaseState<'tcx>,
     {
         let args = self.rustc_args(s);
@@ -298,7 +281,7 @@ pub enum InlineAttr {
 /// Imbues [`rustc_hir::def::DefKind`] with a lot of extra information.
 
 #[derive(Clone, Debug)]
-pub enum FullDefKind<Body> {
+pub enum FullDefKind {
     // Types
     /// ADts (`Struct`, `Enum` and `Union` map to this variant).
     Adt {
@@ -308,7 +291,7 @@ pub enum FullDefKind<Body> {
         flags: AdtFlags,
         repr: ReprOptions,
         /// MIR body of the builtin `drop` impl.
-        drop_glue: Option<Body>,
+        drop_glue: Option<MirBody>,
         /// Info required to construct a virtual `Drop` impl for this adt.
         destruct_impl: Box<VirtualTraitImpl>,
     },
@@ -381,7 +364,6 @@ pub enum FullDefKind<Body> {
         inline: InlineAttr,
         is_const: bool,
         sig: PolyFnSig,
-        body: Option<Body>,
     },
     /// Associated function: `impl MyStruct { fn associated() {} }` or `trait Foo { fn associated()
     /// {} }`
@@ -395,7 +377,6 @@ pub enum FullDefKind<Body> {
         /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
         vtable_sig: Option<PolyFnSig>,
         sig: PolyFnSig,
-        body: Option<Body>,
     },
     /// A closure, coroutine, or coroutine-closure.
     Closure {
@@ -414,9 +395,9 @@ pub enum FullDefKind<Body> {
         fn_impl: Option<Box<VirtualTraitImpl>>,
         /// For `FnMut`&`Fn` closures: the MIR for the `call_once` method; it simply calls
         /// `call_mut`.
-        once_shim: Option<Body>,
+        once_shim: Option<MirBody>,
         /// MIR body of the builtin `drop` impl.
-        drop_glue: Option<Body>,
+        drop_glue: Option<MirBody>,
         /// Info required to construct a virtual `Drop` impl for this closure.
         destruct_impl: Box<VirtualTraitImpl>,
         /// The signature of the `call_once` method.
@@ -438,7 +419,6 @@ pub enum FullDefKind<Body> {
         param_env: ParamEnv,
         ty: Ty,
         kind: ConstKind,
-        body: Option<Body>,
         value: Option<ConstantExpr>,
     },
     /// Associated constant: `trait MyTrait { const ASSOC: usize; }`
@@ -446,7 +426,6 @@ pub enum FullDefKind<Body> {
         param_env: ParamEnv,
         associated_item: AssocItem,
         ty: Ty,
-        body: Option<Body>,
         value: Option<ConstantExpr>,
     },
     Static {
@@ -458,7 +437,6 @@ pub enum FullDefKind<Body> {
         /// Whether it's an anonymous static generated for nested allocations.
         nested: bool,
         ty: Ty,
-        body: Option<Body>,
     },
 
     // Crates and modules
@@ -620,14 +598,13 @@ fn gen_closure_sig<'tcx>(
 /// polymorphic definition.
 // Note: this is tricky to get right, we have to make sure to isntantiate every single field that
 // may contain a type/const/trait reference.
-fn translate_full_def_kind<'tcx, S, Body>(
+fn translate_full_def_kind<'tcx, S>(
     s: &S,
     def_id: RDefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> FullDefKind<Body>
+) -> FullDefKind
 where
     S: BaseState<'tcx>,
-    Body: IsBody + TypeMappable,
 {
     let s = &s.with_owner_id(def_id);
     let tcx = s.base().tcx;
@@ -853,7 +830,6 @@ where
             inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
             is_const: tcx.constness(def_id) == rustc_hir::Constness::Const,
             sig: inst_binder(tcx, s.typing_env(), args, tcx.fn_sig(def_id)).sinto(s),
-            body: get_body(s, args),
         },
         RDefKind::AssocFn { .. } => {
             let item = tcx.associated_item(def_id);
@@ -864,7 +840,6 @@ where
                 is_const: tcx.constness(def_id) == rustc_hir::Constness::Const,
                 vtable_sig: gen_vtable_sig(s, args),
                 sig: get_method_sig(tcx, s.typing_env(), def_id, args).sinto(s),
-                body: get_body(s, args),
             }
         }
         RDefKind::Closure { .. } => {
@@ -918,7 +893,6 @@ where
                 RDefKind::InlineConst { .. } => ConstKind::InlineConst,
                 _ => unreachable!(),
             };
-            let body = get_body(s, args);
 
             let self_ty = if matches!(kind, ConstKind::InlineConst)
                 && let get_ret_ty = (|body: &mir::Body<'tcx>| body.local_decls[mir::Local::ZERO].ty)
@@ -936,7 +910,6 @@ where
                 param_env: get_param_env(s, args),
                 ty: self_ty.sinto(s),
                 kind,
-                body,
                 value: const_value(s, def_id, args_or_default()),
             }
         }
@@ -944,7 +917,6 @@ where
             param_env: get_param_env(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             ty: type_of_self().sinto(s),
-            body: get_body(s, args),
             value: const_value(s, def_id, args_or_default()),
         },
         RDefKind::Static {
@@ -958,7 +930,6 @@ where
             mutability: mutability.sinto(s),
             nested: nested.sinto(s),
             ty: type_of_self().sinto(s),
-            body: get_body(s, args),
         },
         RDefKind::ExternCrate => FullDefKind::ExternCrate,
         RDefKind::Use => FullDefKind::Use,
@@ -1072,7 +1043,7 @@ pub struct VirtualTraitImpl {
     pub types: Vec<(Ty, Vec<ImplExpr>)>,
 }
 
-impl<Body> FullDef<Body> {
+impl FullDef {
     pub fn def_id(&self) -> &DefId {
         &self.this.def_id
     }
@@ -1082,7 +1053,7 @@ impl<Body> FullDef<Body> {
         &self.this
     }
 
-    pub fn kind(&self) -> &FullDefKind<Body> {
+    pub fn kind(&self) -> &FullDefKind {
         &self.kind
     }
 
@@ -1217,6 +1188,17 @@ impl ImplAssocItem {
     }
 }
 
+impl MirBody {
+    pub fn from_mir<'tcx, S: UnderOwnerState<'tcx>>(
+        s: &S,
+        body: rustc_middle::mir::Body<'tcx>,
+    ) -> Option<Self> {
+        let body = Rc::new(body.clone());
+        let s = &s.with_mir(body.clone());
+        Some(body.sinto(s))
+    }
+}
+
 fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -1289,40 +1271,29 @@ where
     })
 }
 
-fn get_body<'tcx, S, Body>(s: &S, args: Option<ty::GenericArgsRef<'tcx>>) -> Option<Body>
+fn get_closure_once_shim<'tcx, S>(s: &S, closure_ty: ty::Ty<'tcx>) -> Option<MirBody>
 where
     S: UnderOwnerState<'tcx>,
-    Body: IsBody + TypeMappable,
-{
-    let def_id = s.owner_id();
-    Body::body(s, def_id, args)
-}
-
-fn get_closure_once_shim<'tcx, S, Body>(s: &S, closure_ty: ty::Ty<'tcx>) -> Option<Body>
-where
-    S: UnderOwnerState<'tcx>,
-    Body: IsBody + TypeMappable,
 {
     let tcx = s.base().tcx;
     let mir = crate::closure_once_shim(tcx, closure_ty)?;
-    let body = Body::from_mir(s, mir)?;
+    let body = MirBody::from_mir(s, mir)?;
     Some(body)
 }
 
-fn get_drop_glue_shim<'tcx, S, Body>(
+fn get_drop_glue_shim<'tcx, S>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
     translate_poly_drop_glue: bool,
-) -> Option<Body>
+) -> Option<MirBody>
 where
     S: UnderOwnerState<'tcx>,
-    Body: IsBody + TypeMappable,
 {
     let tcx = s.base().tcx;
     let def_id = s.owner_id();
     if translate_poly_drop_glue || args.is_some() || tcx.generics_of(def_id).is_empty() {
         let mir = crate::drop_glue_shim(tcx, def_id, args);
-        let body = Body::from_mir(s, mir)?;
+        let body = MirBody::from_mir(s, mir)?;
         Some(body)
     } else {
         // Drop elaboration does not handle generics correctly, so it can ICE on some types. To be

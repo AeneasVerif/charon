@@ -215,7 +215,7 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
 
 #[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::Body<'tcx>, state: S as s)]
-pub struct MirBody<KIND> {
+pub struct MirBody {
     pub span: Span,
     #[map({
         x.iter_enumerated().map(|(local, local_decl)| {
@@ -230,8 +230,6 @@ pub struct MirBody<KIND> {
     pub source_scopes: IndexVec<SourceScope, SourceScopeData>,
     pub tainted_by_errors: Option<ErrorGuaranteed>,
     pub phase: MirPhase,
-    #[value(std::marker::PhantomData)]
-    pub _kind: std::marker::PhantomData<KIND>,
 }
 
 #[derive(AdtInto, Clone, Debug)]
