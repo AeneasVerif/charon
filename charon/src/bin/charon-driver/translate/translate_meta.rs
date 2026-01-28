@@ -193,13 +193,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             DefPathItem::CrateRoot { name, .. } => {
                 // Sanity check
                 error_assert!(self, span, path_elem.disambiguator == 0);
-                Some(PathElem::Ident(name.clone(), disambiguator))
+                Some(PathElem::Ident(name.to_string(), disambiguator))
             }
             // We map the three namespaces onto a single one. We can always disambiguate by looking
             // at the definition.
             DefPathItem::TypeNs(symbol)
             | DefPathItem::ValueNs(symbol)
-            | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
+            | DefPathItem::MacroNs(symbol) => {
+                Some(PathElem::Ident(symbol.to_string(), disambiguator))
+            }
             DefPathItem::Impl => {
                 let full_def = self.hax_def_for_item(item)?;
                 // Two cases, depending on whether the impl block is
@@ -460,7 +462,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             _ => panic!("Unexpected def for associated item: {def:?}"),
         };
         Ok(TraitItemName(
-            assoc.name.as_ref().map(|n| n.into()).unwrap_or_default(),
+            assoc
+                .name
+                .as_ref()
+                .map(|n| n.to_string().into())
+                .unwrap_or_default(),
         ))
     }
 
@@ -586,7 +592,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let lang_item = def
                 .lang_item
                 .clone()
-                .or_else(|| def.diagnostic_item.clone());
+                .or_else(|| def.diagnostic_item.clone())
+                .map(|s| s.to_string());
             (attr_info, lang_item)
         } else {
             (AttrInfo::default(), None)

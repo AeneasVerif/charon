@@ -30,9 +30,9 @@ pub struct FullDef<Body = DefaultFullDefBody> {
     /// Visibility of the definition, for definitions where this makes sense.
     pub visibility: Option<bool>,
     /// If this definition is a lang item, we store the identifier, e.g. `sized`.
-    pub lang_item: Option<String>,
+    pub lang_item: Option<Symbol>,
     /// If this definition is a diagnostic item, we store the identifier, e.g. `box_new`.
-    pub diagnostic_item: Option<String>,
+    pub diagnostic_item: Option<Symbol>,
     pub kind: FullDefKind<Body>,
 }
 
@@ -279,6 +279,20 @@ pub enum ConstKind {
     InlineConst,
     /// A promoted constant, e.g. the `1 + 2` in `&(1 + 2)`
     PromotedConst,
+}
+
+/// Reflects [`rustc_hir::attrs::InlineAttr`]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
+#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::attrs::InlineAttr, state: S as _s)]
+pub enum InlineAttr {
+    None,
+    Hint,
+    Always,
+    Never,
+    Force {
+        attr_span: Span,
+        reason: Option<Symbol>,
+    },
 }
 
 /// Imbues [`rustc_hir::def::DefKind`] with a lot of extra information.

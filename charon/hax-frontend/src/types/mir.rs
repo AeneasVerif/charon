@@ -45,7 +45,7 @@ fn name_of_local(
                 false
             }
         })
-        .map(|dbg| dbg.name.to_ident_string())
+        .map(|dbg| dbg.name.to_string())
 }
 
 /// Enumerates the kinds of Mir bodies. TODO: use const generics

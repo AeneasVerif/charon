@@ -45,7 +45,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
 }
 
 // Full name: core::ops::function::Fn
-#[lang_item("r#fn")]
+#[lang_item("fn")]
 pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>

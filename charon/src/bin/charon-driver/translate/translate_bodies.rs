@@ -1117,8 +1117,8 @@ impl BodyTransCtx<'_, '_, '_> {
 
                 if fun_def
                     .lang_item
-                    .as_deref()
-                    .is_some_and(|lang_it| panic_lang_items.iter().contains(&lang_it))
+                    .as_ref()
+                    .is_some_and(|lang_it| panic_lang_items.iter().contains(&lang_it.as_str()))
                     || panic_names.iter().any(|panic| name.equals_ref_name(panic))
                 {
                     // If the call is `panic!`, then the target is `None`.

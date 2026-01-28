@@ -73,7 +73,7 @@ pub trait FnMut::<closure<'_, '_>, (u8, u8)>
 }
 
 // Full name: core::ops::function::Fn::<closure<'_, '_>, (u8, u8)>
-#[lang_item("r#fn")]
+#[lang_item("fn")]
 pub trait Fn::<closure<'_, '_>, (u8, u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>

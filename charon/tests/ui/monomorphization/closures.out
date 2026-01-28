@@ -156,7 +156,7 @@ pub trait FnMut::<test_crate::main::closure<'_>, (u8)>
 }
 
 // Full name: core::ops::function::Fn::<test_crate::main::closure<'_>, (u8)>
-#[lang_item("r#fn")]
+#[lang_item("fn")]
 pub trait Fn::<test_crate::main::closure<'_>, (u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>

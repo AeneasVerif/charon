@@ -667,7 +667,7 @@ pub fn translate<'tcx, 'ctx>(
     let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
         .to_def_id()
         .sinto(&hax_state);
-    let crate_name = crate_def_id.crate_name(&hax_state);
+    let crate_name = crate_def_id.crate_name(&hax_state).to_string();
     trace!("# Crate: {}", crate_name);
 
     let mut ctx = TranslateCtx {

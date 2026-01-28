@@ -3,6 +3,7 @@ use charon_lib::ast::*;
 use charon_lib::ids::{IndexMap, IndexVec};
 use hax::{HasOwnerId, HasParamEnv, Visibility};
 use itertools::Itertools;
+use rustc_span::sym;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
@@ -352,8 +353,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef,
     ) -> Result<Option<BuiltinTy>, Error> {
         let def = self.hax_def(item)?;
-        let ty = if def.lang_item.as_deref() == Some("owned_box")
-            && self.t_ctx.options.treat_box_as_builtin
+        let ty = if def.lang_item == Some(sym::owned_box) && self.t_ctx.options.treat_box_as_builtin
         {
             Some(BuiltinTy::Box)
         } else {
@@ -706,7 +706,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
                 // Retrieve the field name.
-                let field_name = field_def.name.clone();
+                let field_name = field_def.name.map(|s| s.to_string());
                 // Sanity check
                 match &have_names {
                     None => {
@@ -724,7 +724,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field = Field {
                     span: field_span,
                     attr_info: field_attrs,
-                    name: field_name.clone(),
+                    name: field_name,
                     ty,
                 };
                 fields.push(field);
@@ -732,7 +732,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
             let variant_span = self.t_ctx.translate_span_from_hax(&var_def.span);
-            let variant_name = var_def.name.clone();
+            let variant_name = var_def.name.to_string();
             let variant_full_def =
                 self.hax_def(&def.this().with_def_id(self.hax_state(), &var_def.def_id))?;
             let variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);

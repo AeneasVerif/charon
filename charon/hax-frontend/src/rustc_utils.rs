@@ -58,7 +58,7 @@ pub(crate) fn get_variant_information<'s, S: UnderOwnerState<'s>>(
 ) -> VariantInformations {
     fn is_named<'s, I: std::iter::Iterator<Item = &'s ty::FieldDef> + Clone>(it: I) -> bool {
         it.clone()
-            .any(|field| field.name.to_ident_string().parse::<u64>().is_err())
+            .any(|field| field.name.to_string().parse::<u64>().is_err())
     }
     let variant_def = adt_def.variant(variant_index);
     let variant = variant_def.def_id;

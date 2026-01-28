@@ -1,6 +1,7 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::IndexMap;
+use rustc_span::{kw, sym};
 
 impl<'tcx> TranslateCtx<'tcx> {
     pub fn recognize_builtin_impl(
@@ -25,17 +26,17 @@ impl<'tcx> TranslateCtx<'tcx> {
                     BuiltinImplData::Auto
                 }
                 None => return None,
-                Some(litem) => match litem.as_str() {
-                    "sized" => BuiltinImplData::Sized,
-                    "meta_sized" => BuiltinImplData::MetaSized,
-                    "tuple_trait" => BuiltinImplData::Tuple,
-                    "r#fn" => BuiltinImplData::Fn,
-                    "fn_mut" => BuiltinImplData::FnMut,
-                    "fn_once" => BuiltinImplData::FnOnce,
-                    "pointee_trait" => BuiltinImplData::Pointee,
-                    "clone" => BuiltinImplData::Clone,
-                    "copy" => BuiltinImplData::Copy,
-                    "discriminant_kind" => BuiltinImplData::DiscriminantKind,
+                Some(litem) => match *litem {
+                    sym::sized => BuiltinImplData::Sized,
+                    sym::meta_sized => BuiltinImplData::MetaSized,
+                    sym::tuple_trait => BuiltinImplData::Tuple,
+                    kw::Fn => BuiltinImplData::Fn,
+                    sym::fn_mut => BuiltinImplData::FnMut,
+                    sym::fn_once => BuiltinImplData::FnOnce,
+                    sym::pointee_trait => BuiltinImplData::Pointee,
+                    sym::clone => BuiltinImplData::Clone,
+                    sym::copy => BuiltinImplData::Copy,
+                    sym::discriminant_kind => BuiltinImplData::DiscriminantKind,
                     _ => return None,
                 },
             },

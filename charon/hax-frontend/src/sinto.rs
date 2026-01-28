@@ -24,6 +24,18 @@ macro_rules! sinto_todo {
 }
 
 #[macro_export]
+macro_rules! sinto_reexport {
+    ($path:path) => {
+        pub use $path;
+        impl<S> SInto<S, $path> for $path {
+            fn sinto(&self, _s: &S) -> $path {
+                self.clone()
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! sinto_as_usize {
     ($($mod:ident)::+, $type:ident$(<$($lts:lifetime),*$(,)?>)?) => {
         pub type $type = usize;

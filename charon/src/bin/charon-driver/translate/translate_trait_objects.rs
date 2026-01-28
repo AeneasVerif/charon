@@ -1,6 +1,7 @@
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use hax::TraitPredicate;
 use itertools::Itertools;
+use rustc_span::kw;
 use std::mem;
 
 use super::{
@@ -115,10 +116,9 @@ impl ItemTransCtx<'_, '_> {
         self.binding_levels.push(BindingLevel::new(true));
 
         // Add the existentially quantified type.
-        let ty_id = self.innermost_binder_mut().push_type_var(
-            binder.existential_ty.index,
-            binder.existential_ty.name.clone(),
-        );
+        let ty_id = self
+            .innermost_binder_mut()
+            .push_type_var(binder.existential_ty.index, binder.existential_ty.name);
         let ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(ty_id)).into_ty();
         let val = f(self, ty, &binder.val)?;
 
@@ -176,7 +176,7 @@ impl ItemTransCtx<'_, '_> {
             None => false,
             Some(first_ty) => match first_ty.kind() {
                 hax::TyKind::Param(param_ty) if param_ty.index == 0 => {
-                    assert_eq!(param_ty.name, "Self");
+                    assert_eq!(param_ty.name, kw::SelfUpper);
                     true
                 }
                 _ => false,

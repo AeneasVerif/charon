@@ -85,7 +85,7 @@ pub trait FnMut::<closure::<()>, (())>
 }
 
 // Full name: core::ops::function::Fn::<closure::<()>, (())>
-#[lang_item("r#fn")]
+#[lang_item("fn")]
 pub trait Fn::<closure::<()>, (())>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure::<()>>

@@ -115,7 +115,7 @@ pub trait FnMut::<for<'a> foo::<u32><'a>, (&'_ u32)>
 }
 
 // Full name: core::ops::function::Fn::<for<'a> foo::<u32><'a>, (&'_ u32)>
-#[lang_item("r#fn")]
+#[lang_item("fn")]
 pub trait Fn::<for<'a> foo::<u32><'a>, (&'_ u32)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<for<'a> foo::<u32><'a>>

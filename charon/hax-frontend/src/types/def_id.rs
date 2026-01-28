@@ -11,37 +11,13 @@ use crate::prelude::*;
 
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
-macro_rules! sinto_reexport {
-    ($path:path) => {
-        pub use $path;
-        impl<S> SInto<S, $path> for $path {
-            fn sinto(&self, _s: &S) -> $path {
-                self.clone()
-            }
-        }
-    };
-}
-
 sinto_reexport!(hir::Safety);
 sinto_reexport!(hir::Mutability);
 sinto_reexport!(hir::def::CtorKind);
 sinto_reexport!(hir::def::MacroKinds);
 sinto_reexport!(hir::def::CtorOf);
-
-pub type Symbol = String;
-pub type ByteSymbol = Vec<u8>;
-
-impl<'t, S> SInto<S, Symbol> for rustc_span::symbol::Symbol {
-    fn sinto(&self, _s: &S) -> Symbol {
-        self.to_ident_string()
-    }
-}
-
-impl<'t, S> SInto<S, ByteSymbol> for rustc_span::symbol::ByteSymbol {
-    fn sinto(&self, _s: &S) -> ByteSymbol {
-        self.as_byte_str().to_owned()
-    }
-}
+sinto_reexport!(rustc_span::symbol::Symbol);
+sinto_reexport!(rustc_span::symbol::ByteSymbol);
 
 /// Reflects [`rustc_hir::def::DefKind`]
 #[derive(AdtInto)]
@@ -153,12 +129,12 @@ impl DefId {
         def_id_as_synthetic(self.underlying_rust_def_id(), s)
     }
 
-    pub fn crate_name<'tcx>(&self, s: &impl BaseState<'tcx>) -> String {
+    pub fn crate_name<'tcx>(&self, s: &impl BaseState<'tcx>) -> Symbol {
         let tcx = s.base().tcx;
         if def_id_as_synthetic(self.base, s).is_some() {
-            SYNTHETIC_CRATE_NAME.to_string()
+            Symbol::intern(SYNTHETIC_CRATE_NAME)
         } else {
-            tcx.crate_name(self.base.krate).to_string()
+            tcx.crate_name(self.base.krate)
         }
     }
 
@@ -263,14 +239,6 @@ impl<'s, S: BaseState<'s>> SInto<S, DefId> for RDefId {
         let def_id = translate_def_id(s, *self);
         s.with_item_cache(*self, |cache| cache.def_id = Some(def_id.clone()));
         def_id
-    }
-}
-
-pub type GlobalIdent = DefId;
-
-impl<'tcx, S: BaseState<'tcx>> SInto<S, GlobalIdent> for rustc_hir::def_id::LocalDefId {
-    fn sinto(&self, st: &S) -> DefId {
-        self.to_def_id().sinto(st)
     }
 }
 
