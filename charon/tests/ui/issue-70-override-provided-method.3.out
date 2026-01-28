@@ -138,7 +138,7 @@ where
     _4 = &y_2
     storage_live(_5)
     _5 = &x_1
-    _3 = @TraitClause2::eq<'_, '_>(move _4, move _5)
+    _3 = @TraitClause2::eq<'4, '5>(move _4, move _5)
     if move _3 {
         storage_dead(_5)
         storage_dead(_4)
@@ -196,7 +196,7 @@ where
     _4 = &y_2
     storage_live(_5)
     _5 = &x_1
-    _3 = @TraitClause3::eq<'_, '_>(move _4, move _5)
+    _3 = @TraitClause3::eq<'4, '5>(move _4, move _5)
     if move _3 {
         storage_dead(_5)
         storage_dead(_4)
@@ -267,7 +267,7 @@ where
     _4 = &y_2
     storage_live(_5)
     _5 = &x_1
-    _3 = @TraitClause3::eq<'_, '_>(move _4, move _5)
+    _3 = @TraitClause3::eq<'4, '5>(move _4, move _5)
     if move _3 {
         storage_dead(_5)
         storage_dead(_4)

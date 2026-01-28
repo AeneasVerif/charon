@@ -163,7 +163,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = {impl Clone for usize}::clone<'_>(move source_2)
+    _3 = {impl Clone for usize}::clone<'3>(move source_2)
     drop[@TraitClause0] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -256,7 +256,7 @@ pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = compiletime<'_>(move _3.0, move _3.1)
+    _0 = compiletime<'2>(move _3.0, move _3.1)
 }
 
 fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usize)
@@ -313,7 +313,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
             _4 = Arguments { template: move _6, args: move _8 }
             storage_dead(_8)
             storage_dead(_6)
-            _3 = panic_nounwind_fmt<'_>(move _4, const false)
+            _3 = panic_nounwind_fmt<'6>(move _4, const false)
         },
     }
     storage_dead(_5)
@@ -485,7 +485,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
         _6 = Arguments { template: move _7, args: move _9 }
         storage_dead(_9)
         storage_dead(_7)
-        _5 = panic_nounwind_fmt<'_>(move _6, const false)
+        _5 = panic_nounwind_fmt<'6>(move _6, const false)
     }
     storage_dead(_3)
     return
@@ -709,7 +709,7 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     _7 = Arguments { template: move _11, args: move _13 }
     storage_dead(_13)
     storage_dead(_11)
-    _6 = panic_nounwind_fmt<'_>(move _7, const false)
+    _6 = panic_nounwind_fmt<'6>(move _7, const false)
 }
 
 // Full name: core::mem::SizedTypeProperties
@@ -949,7 +949,7 @@ where
     storage_live(_13)
     storage_live(_3)
     storage_live(self_4)
-    self_4 = @TraitClause0::allocate<'_>(move self_1, move layout_2)
+    self_4 = @TraitClause0::allocate<'2>(move self_1, move layout_2)
     storage_live(v_10)
     match self_4 {
         Result::Ok => {
@@ -1075,7 +1075,7 @@ pub fn panic_nounwind(@1: &'static Str) -> !
     _4 = copy expr_1
     _3 = from_str<'2>(move _4)
     storage_dead(_4)
-    _2 = panic_nounwind_fmt<'_>(move _3, const false)
+    _2 = panic_nounwind_fmt<'4>(move _3, const false)
 }
 
 // Full name: core::ub_checks::maybe_is_nonoverlapping::runtime
@@ -1410,7 +1410,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     _15 = Arguments { template: move _22, args: move _24 }
     storage_dead(_24)
     storage_dead(_22)
-    _14 = panic_nounwind_fmt<'_>(move _15, const false)
+    _14 = panic_nounwind_fmt<'6>(move _15, const false)
 }
 
 pub unsafe fn core::alloc::Allocator::grow<'_0, Self>(@1: &'_0 Self, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
@@ -1444,7 +1444,7 @@ where
     storage_live(_14)
     storage_live(_5)
     storage_live(self_6)
-    self_6 = @TraitClause0::allocate<'_>(copy self_1, move new_layout_4)
+    self_6 = @TraitClause0::allocate<'4>(copy self_1, move new_layout_4)
     storage_live(v_12)
     match self_6 {
         Result::Ok => {
@@ -1491,7 +1491,7 @@ where
     storage_dead(count_10)
     storage_dead(dst_9)
     storage_dead(src_8)
-    _11 = @TraitClause0::deallocate<'_>(move self_1, move ptr_2, move old_layout_3)
+    _11 = @TraitClause0::deallocate<'6>(move self_1, move ptr_2, move old_layout_3)
     _0 = Result::Ok { 0: copy new_ptr_7 }
     return
 }
@@ -1527,7 +1527,7 @@ where
     storage_live(_14)
     storage_live(_5)
     storage_live(self_6)
-    self_6 = @TraitClause0::allocate_zeroed<'_>(copy self_1, move new_layout_4)
+    self_6 = @TraitClause0::allocate_zeroed<'4>(copy self_1, move new_layout_4)
     storage_live(v_12)
     match self_6 {
         Result::Ok => {
@@ -1574,7 +1574,7 @@ where
     storage_dead(count_10)
     storage_dead(dst_9)
     storage_dead(src_8)
-    _11 = @TraitClause0::deallocate<'_>(move self_1, move ptr_2, move old_layout_3)
+    _11 = @TraitClause0::deallocate<'6>(move self_1, move ptr_2, move old_layout_3)
     _0 = Result::Ok { 0: copy new_ptr_7 }
     return
 }
@@ -1610,7 +1610,7 @@ where
     storage_live(_14)
     storage_live(_5)
     storage_live(self_6)
-    self_6 = @TraitClause0::allocate<'_>(copy self_1, copy new_layout_4)
+    self_6 = @TraitClause0::allocate<'4>(copy self_1, copy new_layout_4)
     storage_live(v_12)
     match self_6 {
         Result::Ok => {
@@ -1657,7 +1657,7 @@ where
     storage_dead(count_10)
     storage_dead(dst_9)
     storage_dead(src_8)
-    _11 = @TraitClause0::deallocate<'_>(move self_1, move ptr_2, move old_layout_3)
+    _11 = @TraitClause0::deallocate<'6>(move self_1, move ptr_2, move old_layout_3)
     _0 = Result::Ok { 0: copy new_ptr_7 }
     return
 }
@@ -1692,7 +1692,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = @TraitClause0::clone<'_>(move source_2)
+    _3 = @TraitClause0::clone<'3>(move source_2)
     drop[@TraitClause1] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -1729,7 +1729,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = {impl Clone for NonZeroUsizeInner}::clone<'_>(move source_2)
+    _3 = {impl Clone for NonZeroUsizeInner}::clone<'3>(move source_2)
     drop[@TraitClause0] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -1861,7 +1861,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     _4 = Arguments { template: move _6, args: move _8 }
     storage_dead(_8)
     storage_dead(_6)
-    _3 = panic_nounwind_fmt<'_>(move _4, const false)
+    _3 = panic_nounwind_fmt<'6>(move _4, const false)
 }
 
 fn core::hint::assert_unchecked::precondition_check(@1: bool)
@@ -1912,7 +1912,7 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
         _4 = Arguments { template: move _5, args: move _7 }
         storage_dead(_7)
         storage_dead(_5)
-        _3 = panic_nounwind_fmt<'_>(move _4, const false)
+        _3 = panic_nounwind_fmt<'6>(move _4, const false)
     }
     return
 }
@@ -2256,7 +2256,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
                 storage_dead(_7)
                 storage_live(_26)
                 storage_live(self_27)
-                self_27 = alloc_impl<'_>(move self_1, move new_layout_4, move zeroed_5)
+                self_27 = alloc_impl<'7>(move self_1, move new_layout_4, move zeroed_5)
                 storage_live(v_52)
                 match self_27 {
                     Result::Ok => {
@@ -2556,7 +2556,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
             return
         },
     }
-    _0 = alloc_impl<'_>(move self_1, move new_layout_4, move zeroed_5)
+    _0 = alloc_impl<'5>(move self_1, move new_layout_4, move zeroed_5)
     return
 }
 
@@ -2567,7 +2567,7 @@ pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -
     let self_1: &'0 Global; // arg #1
     let layout_2: Layout; // arg #2
 
-    _0 = alloc_impl<'_>(move self_1, move layout_2, const false)
+    _0 = alloc_impl<'2>(move self_1, move layout_2, const false)
     return
 }
 
@@ -2578,7 +2578,7 @@ pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 Global, @2: La
     let self_1: &'0 Global; // arg #1
     let layout_2: Layout; // arg #2
 
-    _0 = alloc_impl<'_>(move self_1, move layout_2, const true)
+    _0 = alloc_impl<'2>(move self_1, move layout_2, const true)
     return
 }
 
@@ -2626,7 +2626,7 @@ pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 Global, @2: NonNul
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
 
-    _0 = grow_impl<'_>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const false)
+    _0 = grow_impl<'2>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const false)
     return
 }
 
@@ -2639,7 +2639,7 @@ pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 Global, @2:
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
 
-    _0 = grow_impl<'_>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const true)
+    _0 = grow_impl<'2>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const true)
     return
 }
 
@@ -2959,7 +2959,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
                 storage_dead(_9)
                 storage_live(_24)
                 storage_live(self_25)
-                self_25 = alloc_impl<'_>(move self_1, move new_layout_4, const false)
+                self_25 = alloc_impl<'5>(move self_1, move new_layout_4, const false)
                 storage_live(v_60)
                 match self_25 {
                     Result::Ok => {
@@ -3238,7 +3238,7 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
     layout_3 = Layout { size: copy size_1, align: move _9 }
     storage_dead(_9)
     storage_live(_4)
-    _4 = alloc_impl<'_>(move _11, copy layout_3, const false)
+    _4 = alloc_impl<'1>(move _11, copy layout_3, const false)
     match _4 {
         Result::Ok => {
         },

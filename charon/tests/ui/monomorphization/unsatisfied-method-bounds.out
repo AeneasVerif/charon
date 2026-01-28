@@ -136,7 +136,7 @@ fn main()
     storage_live(_2)
     _6 = move _7
     _2 = &(*_6)
-    _1 = {impl MyIterator::<A>}::method<'_>(move _2)
+    _1 = {impl MyIterator::<A>}::method<'3>(move _2)
     storage_live(_9)
     storage_live(_10)
     _10 = B {  }
@@ -147,7 +147,7 @@ fn main()
     storage_live(_4)
     _5 = move _9
     _4 = &(*_5)
-    _3 = {impl MyIterator::<B>}::method<'_>(move _4)
+    _3 = {impl MyIterator::<B>}::method<'5>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

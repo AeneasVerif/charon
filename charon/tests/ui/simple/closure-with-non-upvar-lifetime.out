@@ -132,9 +132,9 @@ fn call_fn<'_0>(@1: &'_0 [u8], @2: usize) -> u8
     let _0: u8; // return
     let a_1: &'0 [u8]; // arg #1
     let i_2: usize; // arg #2
-    let read_3: closure<'_>; // local
-    let _4: &'1 &'0 [u8]; // anonymous local
-    let _5: &'2 closure<'_>; // anonymous local
+    let read_3: closure<'1>; // local
+    let _4: &'2 &'0 [u8]; // anonymous local
+    let _5: &'3 closure<'1>; // anonymous local
     let _6: (usize); // anonymous local
     let _7: usize; // anonymous local
 
@@ -149,7 +149,7 @@ fn call_fn<'_0>(@1: &'_0 [u8], @2: usize) -> u8
     storage_live(_7)
     _7 = copy i_2
     _6 = (move _7)
-    _0 = {impl Fn<(usize)> for closure<'_0>}::call<'_, '_>(move _5, move _6)
+    _0 = {impl Fn<(usize)> for closure<'_0>}::call<'7, '8>(move _5, move _6)
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -191,7 +191,7 @@ fn {impl FnOnce<(usize)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2:
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(usize)> for closure<'_0>}::call_mut<'_0, '_>(move _3, move _2)
+    _0 = {impl FnMut<(usize)> for closure<'_0>}::call_mut<'_0, '4>(move _3, move _2)
     drop[{impl Destruct for closure<'_0>}<'_0>] _1
     return
 }

@@ -278,7 +278,7 @@ fn call_foo<'e>(@1: &'e ()) -> &'e ()
     _6 = move _7
     _5 = &(*_6)
     _4 = &(*_5)
-    _2 = {impl Foo for ()}::foo<'_, '_>(move _3, move _4)
+    _2 = {impl Foo for ()}::foo<'3, '4>(move _3, move _4)
     _0 = &(*_2)
     storage_dead(_4)
     storage_dead(_3)

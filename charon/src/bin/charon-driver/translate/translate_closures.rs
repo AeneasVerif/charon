@@ -341,6 +341,11 @@ impl ItemTransCtx<'_, '_> {
                     return Ok(body);
                 };
 
+                // The (Arg1, Arg2, ..) type. We replace erased regions with body lifetimes.
+                let tupled_ty = signature.inputs[1]
+                    .clone()
+                    .replace_erased_regions(|| self.translate_erased_region());
+
                 blocks.dyn_visit_mut(|local: &mut LocalId| {
                     if local.index() >= 2 {
                         *local += 1;
@@ -351,14 +356,13 @@ impl ItemTransCtx<'_, '_> {
                 locals.arg_count = 2;
                 locals.locals.push(old_locals.next().unwrap()); // ret
                 locals.locals.push(old_locals.next().unwrap()); // state
-                let tupled_arg =
-                    locals.new_var(Some("tupled_args".to_string()), signature.inputs[1].clone());
+                let tupled_arg = locals.new_var(Some("tupled_args".to_string()), tupled_ty.clone());
                 locals.locals.extend(old_locals.map(|mut l| {
                     l.index += 1;
                     l
                 }));
 
-                let untupled_args = signature.inputs[1].as_tuple().unwrap();
+                let untupled_args = tupled_ty.as_tuple().unwrap();
                 let closure_arg_count = untupled_args.elem_count();
                 let new_stts = untupled_args.iter().cloned().enumerate().map(|(i, ty)| {
                     let nth_field = tupled_arg.clone().project(
@@ -419,7 +423,7 @@ impl ItemTransCtx<'_, '_> {
                 let fn_op = FnOperand::Regular(FnPtr::new(
                     fun_id.into(),
                     impl_ref.generics.concat(&GenericArgs {
-                        regions: vec![Region::Erased].into(),
+                        regions: vec![self.translate_erased_region()].into(),
                         ..GenericArgs::empty()
                     }),
                 ));
@@ -430,8 +434,12 @@ impl ItemTransCtx<'_, '_> {
                 let state = builder.new_var(Some("state".to_string()), signature.inputs[0].clone());
                 let args = builder.new_var(Some("args".to_string()), signature.inputs[1].clone());
                 let deref_state = state.deref();
-                let reborrow_ty =
-                    TyKind::Ref(Region::Erased, deref_state.ty.clone(), RefKind::Shared).into_ty();
+                let reborrow_ty = TyKind::Ref(
+                    self.translate_erased_region(),
+                    deref_state.ty.clone(),
+                    RefKind::Shared,
+                )
+                .into_ty();
                 let reborrow = builder.new_var(None, reborrow_ty);
 
                 builder.push_statement(StatementKind::Assign(

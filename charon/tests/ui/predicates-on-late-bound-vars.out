@@ -160,7 +160,7 @@ fn foo()
     storage_live(_3)
     // `try_borrow` has a type that includes predicates on late bound regions.
     _3 = &ref_b_1
-    _2 = try_borrow<'_, bool>[{built_in impl MetaSized for bool}](move _3)
+    _2 = try_borrow<'5, bool>[{built_in impl MetaSized for bool}](move _3)
     storage_dead(_3)
     conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'0, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'0, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] _2
     storage_dead(_2)

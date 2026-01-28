@@ -92,7 +92,7 @@ where
     _2 = &mut f_1
     storage_live(_3)
     _3 = (const 0 : u8)
-    _0 = @TraitClause1::call_mut<'_>(move _2, move _3)
+    _0 = @TraitClause1::call_mut<'2>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for impl FnMut(u8) -> u8}] f_1
@@ -153,7 +153,7 @@ fn {impl FnOnce<(u8)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: (u
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_>(move _3, move _2)
+    _0 = {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '4>(move _3, move _2)
     drop[{impl Destruct for closure<'_0>}<'_0>] _1
     return
 }
@@ -185,8 +185,8 @@ fn main()
     let _0: (); // return
     let z_1: u8; // local
     let _2: u8; // anonymous local
-    let _3: closure<'_>; // anonymous local
-    let _4: &'0 mut u8; // anonymous local
+    let _3: closure<'0>; // anonymous local
+    let _4: &'1 mut u8; // anonymous local
 
     _0 = ()
     storage_live(z_1)
@@ -197,7 +197,7 @@ fn main()
     _4 = &mut z_1
     _3 = closure { 0: move _4 }
     storage_dead(_4)
-    _2 = apply_to_zero_mut<closure<'_>>[{built_in impl Sized for closure<'_>}, {impl FnMut<(u8)> for closure<'_0>}<'_>](move _3)
+    _2 = apply_to_zero_mut<closure<'0>>[{built_in impl Sized for closure<'0>}, {impl FnMut<(u8)> for closure<'_0>}<'0>](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

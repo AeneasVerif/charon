@@ -121,7 +121,7 @@ unsafe fn {impl Destruct for B}::drop_in_place(@1: *mut B)
     _0 = ()
     _2 = &mut (*_1)
     _3 = &mut (*_2)
-    _4 = {impl Drop for B}::drop<'_>(move _3)
+    _4 = {impl Drop for B}::drop<'2>(move _3)
     drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).x
     drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).y
     return

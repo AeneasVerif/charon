@@ -250,28 +250,28 @@ fn foo()
     storage_live(_17)
     storage_live(_18)
     _18 = &string_11
-    _17 = {impl Clone for String}::clone<'_>(move _18)
+    _17 = {impl Clone for String}::clone<'8>(move _18)
     storage_dead(_18)
     _16 = @BoxNew<String>[{built_in impl Sized for String}](move _17)
     _15 = unsize_cast<alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], alloc::boxed::Box<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '5)}, {built_in impl Sized for Global}], {impl Display for String} with {impl Display for String}::{vtable}>(move _16)
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] _16
     storage_dead(_17)
     storage_dead(_16)
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(dyn Display + '3), Global>[{built_in impl MetaSized for (dyn Display + '9)}, {built_in impl Sized for Global}]] _15
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(dyn Display + '3), Global>[{built_in impl MetaSized for (dyn Display + '11)}, {built_in impl Sized for Global}]] _15
     storage_dead(_15)
     storage_live(_19)
     storage_live(_20)
     storage_live(_21)
     storage_live(_22)
     _22 = &string_11
-    _21 = {impl Clone for String}::clone<'_>(move _22)
+    _21 = {impl Clone for String}::clone<'13>(move _22)
     storage_dead(_22)
     _20 = alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _21)
     _19 = unsize_cast<Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], Rc<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '6)}, {built_in impl Sized for Global}]>(move _20)
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] _20
     storage_dead(_21)
     storage_dead(_20)
-    conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<(dyn Display + '3), Global>[{built_in impl MetaSized for (dyn Display + '15)}, {built_in impl Sized for Global}]] _19
+    conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<(dyn Display + '3), Global>[{built_in impl MetaSized for (dyn Display + '19)}, {built_in impl Sized for Global}]] _19
     storage_dead(_19)
     _0 = ()
     conditional_drop[{impl Destruct for String}] string_11

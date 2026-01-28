@@ -436,27 +436,33 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let def = self.hax_def(hax_item)?;
             match def.kind() {
                 hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
-                    generics
-                        .regions
-                        .extend(sig.bound_vars.iter().map(|_| Region::Erased));
+                    generics.regions.extend(
+                        sig.bound_vars
+                            .iter()
+                            .map(|_| self.translate_erased_region()),
+                    );
                 }
                 hax::FullDefKind::Closure { args, .. } => {
-                    generics
-                        .regions
-                        .extend(args.iter_upvar_borrows().map(|_| Region::Erased));
+                    generics.regions.extend(
+                        args.iter_upvar_borrows()
+                            .map(|_| self.translate_erased_region()),
+                    );
                     if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
                     | TransItemSourceKind::ClosureMethod(..)
                     | TransItemSourceKind::ClosureAsFnCast = kind
                     {
-                        generics
-                            .regions
-                            .extend(args.fn_sig.bound_vars.iter().map(|_| Region::Erased));
+                        generics.regions.extend(
+                            args.fn_sig
+                                .bound_vars
+                                .iter()
+                                .map(|_| self.translate_erased_region()),
+                        );
                     }
                     if let TransItemSourceKind::ClosureMethod(
                         ClosureKind::FnMut | ClosureKind::Fn,
                     ) = kind
                     {
-                        generics.regions.push(Region::Erased);
+                        generics.regions.push(self.translate_erased_region());
                     }
                     // If we're in the process of translating this same closure item (possibly with
                     // a different `TransItemSourceKind`), we can reuse the generics they have in
@@ -558,7 +564,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Auxiliary function to translate function calls and references to functions.
     /// Translate a function id applied with some substitutions.
     #[tracing::instrument(skip(self, span))]
-    pub(crate) fn translate_fn_ptr(
+    pub(crate) fn translate_bound_fn_ptr(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
@@ -604,6 +610,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             Ok(FnPtr::new(fun_id, generics))
         })
+    }
+
+    pub(crate) fn translate_fn_ptr(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+    ) -> Result<FnPtr, Error> {
+        let fn_ptr = self.translate_bound_fn_ptr(span, item, kind)?;
+        let fn_ptr = self.erase_region_binder(fn_ptr);
+        Ok(fn_ptr)
     }
 
     pub(crate) fn translate_global_decl_ref(

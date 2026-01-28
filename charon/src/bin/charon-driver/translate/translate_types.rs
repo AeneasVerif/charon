@@ -5,6 +5,25 @@ use hax::{HasOwnerId, HasParamEnv, Visibility};
 use itertools::Itertools;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
+    /// Translate an erased region. If we're inside a body, this will return a fresh body region
+    /// instead.
+    pub(crate) fn translate_erased_region(&mut self) -> Region {
+        if let Some(v) = &mut self.lifetime_freshener {
+            Region::Body(v.push(()))
+        } else {
+            Region::Erased
+        }
+    }
+
+    /// Erase a region binder by supplying erased lifetimes (or fresh body lifetimes) for all its
+    /// arguments.
+    pub(crate) fn erase_region_binder<T: TyVisitable>(&mut self, b: RegionBinder<T>) -> T {
+        let regions = b
+            .regions
+            .map_ref_indexed(|_, _| self.translate_erased_region());
+        b.apply(regions)
+    }
+
     // Translate a region
     pub(crate) fn translate_region(
         &mut self,
@@ -13,8 +32,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<Region, Error> {
         use hax::RegionKind::*;
         match &region.kind {
-            ReErased if let Some(v) = &mut self.lifetime_freshener => Ok(Region::Body(v.push(()))),
-            ReErased => Ok(Region::Erased),
+            ReErased => Ok(self.translate_erased_region()),
             ReStatic => Ok(Region::Static),
             ReBound(hax::BoundVarIndexKind::Bound(id), br) => {
                 Ok(match self.lookup_bound_region(span, *id, br.var) {
@@ -205,7 +223,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::FnPtr(sig)
             }
             hax::TyKind::FnDef { item, .. } => {
-                let fnref = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
+                let fnref = self.translate_bound_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                 TyKind::FnDef(fnref)
             }
             hax::TyKind::Closure(args) => {
@@ -378,20 +396,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ty::Str | ty::Slice(..) => PtrMetadata::Length,
             ty::Dynamic(..) => match hax_ty.kind() {
                 hax::TyKind::Dynamic(dyn_binder, _) => {
-                    let vtable = self
-                        .translate_region_binder(
-                            span,
-                            &dyn_binder.predicates.predicates[0].0.kind,
-                            |ctx, kind: &hax::ClauseKind| {
-                                let hax::ClauseKind::Trait(trait_predicate) = kind else {
-                                    unreachable!()
-                                };
-                                Ok(ctx
-                                    .translate_vtable_struct_ref(span, &trait_predicate.trait_ref)?
-                                    .unwrap())
-                            },
-                        )?
-                        .erase();
+                    let vtable = self.translate_region_binder(
+                        span,
+                        &dyn_binder.predicates.predicates[0].0.kind,
+                        |ctx, kind: &hax::ClauseKind| {
+                            let hax::ClauseKind::Trait(trait_predicate) = kind else {
+                                unreachable!()
+                            };
+                            Ok(ctx
+                                .translate_vtable_struct_ref(span, &trait_predicate.trait_ref)?
+                                .unwrap())
+                        },
+                    )?;
+                    let vtable = self.erase_region_binder(vtable);
                     PtrMetadata::VTable(vtable)
                 }
                 _ => unreachable!("Unexpected hax type {hax_ty:?} for dynamic type: {ty:?}"),

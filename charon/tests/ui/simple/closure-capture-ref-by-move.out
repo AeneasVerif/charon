@@ -103,9 +103,9 @@ fn foo()
     let _0: (); // return
     let x_1: i32; // local
     let rx_2: &'0 mut i32; // local
-    let closure_3: closure<'_>; // local
+    let closure_3: closure<'1>; // local
     let _4: (); // anonymous local
-    let _5: &'1 mut closure<'_>; // anonymous local
+    let _5: &'2 mut closure<'1>; // anonymous local
     let _6: (); // anonymous local
 
     _0 = ()
@@ -120,7 +120,7 @@ fn foo()
     _5 = &mut closure_3
     storage_live(_6)
     _6 = ()
-    _4 = {impl FnMut<()> for closure<'_0>}::call_mut<'_, '_>(move _5, move _6)
+    _4 = {impl FnMut<()> for closure<'_0>}::call_mut<'6, '7>(move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -152,7 +152,7 @@ fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: ())
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_>(move _3, move _2)
+    _0 = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '4>(move _3, move _2)
     drop[{impl Destruct for closure<'_0>}<'_0>] _1
     return
 }

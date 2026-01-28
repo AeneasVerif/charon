@@ -101,7 +101,7 @@ where
     (*self_1) = move _3
     storage_live(_4)
     _4 = &(*arg_2)
-    _0 = @TraitClause1::clone<'_>(move _4)
+    _0 = @TraitClause1::clone<'3>(move _4)
     storage_dead(_4)
     return
 }
@@ -236,7 +236,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = modify_trait_object<'_, i32>[{built_in impl Sized for i32}, {impl Clone for i32}](move _2)
+    _1 = modify_trait_object<'2, i32>[{built_in impl Sized for i32}, {impl Clone for i32}](move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)

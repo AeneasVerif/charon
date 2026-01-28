@@ -273,7 +273,7 @@ fn {impl FnOnce<()> for test_crate::bar::closure}::call_once(@1: test_crate::bar
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_>(move _3, move _2)
+    _0 = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'2>(move _3, move _2)
     drop[{impl Destruct for test_crate::bar::closure}] _1
     return
 }

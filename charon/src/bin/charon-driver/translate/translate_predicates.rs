@@ -324,7 +324,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         tref.hax_skip_binder_ref(),
                         TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias),
                     );
-                    let mut generics = trait_decl_ref.clone().erase().generics;
+                    let mut generics = self.erase_region_binder(trait_decl_ref.clone()).generics;
                     assert!(
                         generics.trait_refs.is_empty(),
                         "found trait alias with non-empty required predicates"
@@ -379,7 +379,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                 ctx.translate_closure_impl_ref(span, closure_args, closure_kind)
                             },
                         )?;
-                        TraitRefKind::TraitImpl(binder.erase())
+                        TraitRefKind::TraitImpl(self.erase_region_binder(binder))
                     } else {
                         let parent_trait_refs =
                             self.translate_trait_impl_exprs(span, &impl_exprs)?;

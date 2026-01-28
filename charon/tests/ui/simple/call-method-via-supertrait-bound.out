@@ -102,7 +102,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = {impl HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause1](move _3)
+    _2 = {impl HasMethod for T}::method<'2, T>[@TraitClause0, @TraitClause1::parent_clause1](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

@@ -129,7 +129,7 @@ fn silly_incr<'_0>(@1: &'_0 mut u32)
     _3 = &two-phase-mut (*x_1)
     storage_live(_4)
     _4 = closure {  }
-    _2 = take<'_, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnOnce<(u32)> for closure}](move _3, move _4)
+    _2 = take<'2, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnOnce<(u32)> for closure}](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
@@ -173,7 +173,7 @@ fn main()
     storage_live(_4)
     _4 = &mut x_1
     _3 = &two-phase-mut (*_4)
-    _2 = silly_incr<'_>(move _3)
+    _2 = silly_incr<'6>(move _3)
     storage_live(_21)
     storage_live(_22)
     _22 = const 1 : u32

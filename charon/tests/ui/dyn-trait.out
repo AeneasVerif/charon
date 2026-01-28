@@ -202,7 +202,7 @@ fn destruct<'_0>(@1: &'_0 (dyn Display + '_0)) -> String
 
     storage_live(_2)
     _2 = &(*x_1) with_metadata(copy x_1.metadata)
-    _0 = {impl ToString for T}::to_string<'_, (dyn Display + '1)>[{built_in impl MetaSized for (dyn Display + '2)}, Display<(dyn Display + '3)>](move _2)
+    _0 = {impl ToString for T}::to_string<'5, (dyn Display + '1)>[{built_in impl MetaSized for (dyn Display + '2)}, Display<(dyn Display + '3)>](move _2)
     storage_dead(_2)
     return
 }
