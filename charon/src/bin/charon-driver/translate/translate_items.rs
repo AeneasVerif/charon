@@ -448,9 +448,7 @@ impl ItemTransCtx<'_, '_> {
                 repr = Some(self.translate_repr_options(hax_repr));
                 self.translate_adt_def(trans_id, span, &item_meta, def)
             }
-            hax::FullDefKind::Closure { args, .. } => {
-                self.translate_closure_adt(trans_id, span, &args)
-            }
+            hax::FullDefKind::Closure { args, .. } => self.translate_closure_adt(span, &args),
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
 

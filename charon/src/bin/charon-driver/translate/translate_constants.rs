@@ -139,15 +139,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
             hax::ConstantExprKind::FnDef(item) => {
-                let fn_ptr = self
-                    .translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
-                    .erase();
+                let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                 ConstantExprKind::FnDef(fn_ptr)
             }
             hax::ConstantExprKind::FnPtr(item) => {
-                let fn_ptr = self
-                    .translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
-                    .erase();
+                let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                 ConstantExprKind::FnPtr(fn_ptr)
             }
             hax::ConstantExprKind::Memory(bytes) => {

@@ -177,7 +177,7 @@ where
     let self_1: &'1 [T]; // arg #1
     let index_2: I; // arg #2
 
-    _0 = @TraitClause2::index<'_>(move index_2, move self_1)
+    _0 = @TraitClause2::index<'3>(move index_2, move self_1)
     return
 }
 
@@ -542,7 +542,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     _8 = Arguments { 0: move _9, 1: move _11 }
     storage_dead(_11)
     storage_dead(_9)
-    _7 = panic_nounwind_fmt<'_>(move _8, const false)
+    _7 = panic_nounwind_fmt<'6>(move _8, const false)
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
@@ -662,7 +662,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     _8 = Arguments { 0: move _9, 1: move _11 }
     storage_dead(_11)
     storage_dead(_9)
-    _7 = panic_nounwind_fmt<'_>(move _8, const false)
+    _7 = panic_nounwind_fmt<'6>(move _8, const false)
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
@@ -917,7 +917,7 @@ fn main()
     _4 = &array_1
     storage_live(_5)
     _5 = Range { start: const 2 : usize, end: const 5 : usize }
-    _3 = {impl Index<I> for [T; N]}::index<'_, i32, Range<usize>[{built_in impl Sized for usize}], 6 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I> for [T]}<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}<i32>[{built_in impl Sized for i32}]]](move _4, move _5)
+    _3 = {impl Index<I> for [T; N]}::index<'3, i32, Range<usize>[{built_in impl Sized for usize}], 6 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I> for [T]}<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}<i32>[{built_in impl Sized for i32}]]](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     slice_2 = &(*_3) with_metadata(copy _3.metadata)

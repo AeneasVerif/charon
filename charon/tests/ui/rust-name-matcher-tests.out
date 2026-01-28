@@ -204,7 +204,7 @@ fn use_generic()
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic_1
-    _3 = get<'_, i32>[{built_in impl Sized for i32}](move _4)
+    _3 = get<'8, i32>[{built_in impl Sized for i32}](move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

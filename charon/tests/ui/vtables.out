@@ -313,7 +313,7 @@ fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 i32) -> bool
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = {impl Super<i32> for i32}::super_method<'_>(move _3, const 10 : i32)
+    _2 = {impl Super<i32> for i32}::super_method<'2>(move _3, const 10 : i32)
     storage_dead(_3)
     _0 = move _2 > const 0 : i32
     storage_dead(_2)
@@ -492,7 +492,7 @@ where
     (*self_1) = move _3
     storage_live(_4)
     _4 = &(*arg_2)
-    _0 = @TraitClause1::clone<'_>(move _4)
+    _0 = @TraitClause1::clone<'3>(move _4)
     storage_dead(_4)
     return
 }
@@ -667,7 +667,7 @@ where
     _5 = &(*self_1) with_metadata(copy self_1.metadata)
     storage_live(_6)
     _6 = &(*t32_2)
-    _4 = @TraitClause0::parent_clause1::operate_on<'_, '_>(move _5, move _6)
+    _4 = @TraitClause0::parent_clause1::operate_on<'5, '6>(move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -676,7 +676,7 @@ where
     _8 = &(*self_1) with_metadata(copy self_1.metadata)
     storage_live(_9)
     _9 = &(*t64_3)
-    _7 = @TraitClause0::parent_clause2::operate_on<'_, '_>(move _8, move _9)
+    _7 = @TraitClause0::parent_clause2::operate_on<'9, '10>(move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -876,7 +876,7 @@ fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 i32, @2: &'_
     _5 = &(*self_1)
     storage_live(_6)
     _6 = &(*t32_2)
-    _4 = {impl Both32And64 for i32}::parent_clause1::operate_on<'_, '_>(move _5, move _6)
+    _4 = {impl Both32And64 for i32}::parent_clause1::operate_on<'5, '6>(move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -885,7 +885,7 @@ fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(@1: &'_0 i32, @2: &'_
     _8 = &(*self_1)
     storage_live(_9)
     _9 = &(*t64_3)
-    _7 = {impl Both32And64 for i32}::parent_clause2::operate_on<'_, '_>(move _8, move _9)
+    _7 = {impl Both32And64 for i32}::parent_clause2::operate_on<'9, '10>(move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -1291,14 +1291,14 @@ fn main()
     storage_live(_17)
     _17 = const "Hello"
     _16 = &(*_17) with_metadata(copy _17.metadata)
-    _15 = {impl ToString for T}::to_string<'_, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _16)
+    _15 = {impl ToString for T}::to_string<'22, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _16)
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)
-    _12 = modify_trait_object<'_, String>[{built_in impl Sized for String}, {impl Clone for String}](move _13)
+    _12 = modify_trait_object<'24, String>[{built_in impl Sized for String}, {impl Clone for String}](move _13)
     _11 = &_12
     storage_dead(_13)
-    _10 = is_empty<'_>(move _11)
+    _10 = is_empty<'26>(move _11)
     if move _10 {
     } else {
         storage_dead(_11)
@@ -1385,7 +1385,7 @@ fn main()
         _83 = move _90
         _42 = &(*_83)
         _41 = &(*_42)
-        _40 = to_dyn_obj<'_, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move _41)
+        _40 = to_dyn_obj<'33, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move _41)
         _39 = &(*_40) with_metadata(copy _40.metadata)
         z_38 = unsize_cast<&'11 (dyn NoParam + '12), &'11 (dyn NoParam + '12),  at []>(move _39)
         storage_dead(_41)
@@ -1469,7 +1469,7 @@ fn main()
         _78 = move _100
         _63 = &(*_78)
         _62 = &(*_63)
-        _59 = use_lifetime_trait<'_, '_>(move _60, move _62)
+        _59 = use_lifetime_trait<'48, '49>(move _60, move _62)
         storage_live(_102)
         storage_live(_103)
         _103 = const 10 : i32

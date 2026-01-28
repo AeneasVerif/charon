@@ -100,7 +100,7 @@ fn new<'_0>(@1: &'_0 mut Rng)
 {
     let _0: (); // return
     let rng_1: &'0 mut Rng; // arg #1
-    let _2: closure<'_>; // anonymous local
+    let _2: closure<'1>; // anonymous local
     let _3: &'0 mut Rng; // anonymous local
 
     _0 = ()
@@ -121,13 +121,13 @@ fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut closure<'_
     let _1: &'0 mut closure<'_0>; // arg #1
     let tupled_args_2: (); // arg #2
     let _3: (); // anonymous local
-    let _4: &'1 mut Rng; // anonymous local
+    let _4: &'_ mut Rng; // anonymous local
 
     _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*((*_1)).0)
-    _3 = next_u64<'_>(move _4)
+    _3 = next_u64<'2>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
@@ -155,8 +155,8 @@ fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: ())
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_>(move _3, move _2)
-    drop[{impl Destruct for closure<'_0>}<'_>] _1
+    _0 = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '4>(move _3, move _2)
+    drop[{impl Destruct for closure<'_0>}<'_0>] _1
     return
 }
 

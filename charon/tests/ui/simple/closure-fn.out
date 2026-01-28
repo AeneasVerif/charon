@@ -109,7 +109,7 @@ where
     _2 = &(*f_1)
     storage_live(_3)
     _3 = (const 10 : u8, const 20 : u8)
-    _0 = @TraitClause1::call<'_>(move _2, move _3)
+    _0 = @TraitClause1::call<'2>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -131,7 +131,7 @@ where
     _2 = &mut (*f_1)
     storage_live(_3)
     _3 = (const 10 : u8, const 20 : u8)
-    _0 = @TraitClause1::call_mut<'_>(move _2, move _3)
+    _0 = @TraitClause1::call_mut<'2>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -250,8 +250,8 @@ fn {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>(@1: closur
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move _3, move _2)
-    drop[{impl Destruct for closure<'_0, '_1>}<'_, '_>] _1
+    _0 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '6>(move _3, move _2)
+    drop[{impl Destruct for closure<'_0, '_1>}<'_0, '_1>] _1
     return
 }
 
@@ -292,20 +292,20 @@ fn main()
     let _0: (); // return
     let v_1: u8; // local
     let z_2: u8; // local
-    let f_3: closure<'_, '_>; // local
-    let _4: &'0 u8; // anonymous local
-    let _5: &'0 u8; // anonymous local
+    let f_3: closure<'0, '1>; // local
+    let _4: &'2 u8; // anonymous local
+    let _5: &'2 u8; // anonymous local
     let _6: u8; // anonymous local
-    let _7: &'1 closure<'_, '_>; // anonymous local
+    let _7: &'3 closure<'0, '1>; // anonymous local
     let _8: (u8, u8); // anonymous local
     let _9: u8; // anonymous local
-    let _10: &'1 closure<'_, '_>; // anonymous local
-    let _11: &'1 closure<'_, '_>; // anonymous local
+    let _10: &'3 closure<'0, '1>; // anonymous local
+    let _11: &'3 closure<'0, '1>; // anonymous local
     let _12: u8; // anonymous local
-    let _13: &'2 mut closure<'_, '_>; // anonymous local
-    let _14: &'2 mut closure<'_, '_>; // anonymous local
+    let _13: &'4 mut closure<'0, '1>; // anonymous local
+    let _14: &'4 mut closure<'0, '1>; // anonymous local
     let _15: u8; // anonymous local
-    let _16: closure<'_, '_>; // anonymous local
+    let _16: closure<'0, '1>; // anonymous local
 
     _0 = ()
     storage_live(v_1)
@@ -325,7 +325,7 @@ fn main()
     _7 = &f_3
     storage_live(_8)
     _8 = (const 10 : u8, const 20 : u8)
-    _6 = {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'_, '_, '_>(move _7, move _8)
+    _6 = {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'10, '11, '12>(move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)
@@ -334,7 +334,7 @@ fn main()
     storage_live(_11)
     _11 = &f_3
     _10 = &(*_11)
-    _9 = apply_to<'_, closure<'_, '_>>[{built_in impl Sized for closure<'_, '_>}, {impl Fn<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move _10)
+    _9 = apply_to<'22, closure<'0, '1>>[{built_in impl Sized for closure<'0, '1>}, {impl Fn<(u8, u8)> for closure<'_0, '_1>}<'0, '1>](move _10)
     storage_dead(_10)
     storage_dead(_11)
     storage_dead(_9)
@@ -343,14 +343,14 @@ fn main()
     storage_live(_14)
     _14 = &mut f_3
     _13 = &two-phase-mut (*_14)
-    _12 = apply_to_mut<'_, closure<'_, '_>>[{built_in impl Sized for closure<'_, '_>}, {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move _13)
+    _12 = apply_to_mut<'32, closure<'0, '1>>[{built_in impl Sized for closure<'0, '1>}, {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'0, '1>](move _13)
     storage_dead(_13)
     storage_dead(_14)
     storage_dead(_12)
     storage_live(_15)
     storage_live(_16)
     _16 = copy f_3
-    _15 = apply_to_once<closure<'_, '_>>[{built_in impl Sized for closure<'_, '_>}, {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_, '_>](move _16)
+    _15 = apply_to_once<closure<'0, '1>>[{built_in impl Sized for closure<'0, '1>}, {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'0, '1>](move _16)
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()

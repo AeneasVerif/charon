@@ -384,7 +384,7 @@ impl<T> RegionBinder<T> {
     /// Substitute the bound variables with the given lifetimes.
     pub fn apply(self, regions: IndexMap<RegionId, Region>) -> T
     where
-        T: AstVisitable,
+        T: TyVisitable,
     {
         assert_eq!(regions.slot_count(), self.regions.slot_count());
         let args = GenericArgs {
@@ -397,7 +397,7 @@ impl<T> RegionBinder<T> {
     /// Substitute the bound variables with erased lifetimes.
     pub fn erase(self) -> T
     where
-        T: AstVisitable,
+        T: TyVisitable,
     {
         let regions = self.regions.map_ref_indexed(|_, _| Region::Erased);
         self.apply(regions)
@@ -1009,6 +1009,9 @@ impl RefKind {
 /// skipped, and all the seen De Bruijn indices will count from the outside of the value. The
 /// returned value, if any, will be put in place of the variable.
 pub trait VarsVisitor {
+    fn visit_erased_region(&mut self) -> Option<Region> {
+        None
+    }
     fn visit_region_var(&mut self, _v: RegionDbVar) -> Option<Region> {
         None
     }
@@ -1127,26 +1130,28 @@ pub trait TyVisitable: Sized + AstVisitable {
             v: &'v mut V,
             depth: DeBruijnId,
         }
+        impl<V> VisitorWithBinderDepth for Wrap<'_, V> {
+            fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                &mut self.depth
+            }
+        }
         impl<V: VarsVisitor> VisitAstMut for Wrap<'_, V> {
-            fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                self.depth = self.depth.incr()
-            }
-            fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                self.depth = self.depth.decr()
-            }
-            fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                self.depth = self.depth.incr()
-            }
-            fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                self.depth = self.depth.decr()
+            fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                VisitWithBinderDepth::new(self).visit(x)
             }
 
             fn exit_region(&mut self, r: &mut Region) {
-                if let Region::Var(var) = r
-                    && let Some(var) = var.move_out_from_depth(self.depth)
-                    && let Some(new_r) = self.v.visit_region_var(var)
-                {
-                    *r = new_r.move_under_binders(self.depth);
+                match r {
+                    Region::Var(var)
+                        if let Some(var) = var.move_out_from_depth(self.depth)
+                            && let Some(new_r) = self.v.visit_region_var(var) =>
+                    {
+                        *r = new_r.move_under_binders(self.depth);
+                    }
+                    Region::Erased if let Some(new_r) = self.v.visit_erased_region() => {
+                        *r = new_r.move_under_binders(self.depth);
+                    }
+                    _ => (),
                 }
             }
             fn exit_ty(&mut self, ty: &mut Ty) {
@@ -1183,10 +1188,11 @@ pub trait TyVisitable: Sized + AstVisitable {
                 }
             }
         }
-        let _ = self.drive_mut(&mut Wrap {
+        Wrap {
             v,
             depth: DeBruijnId::zero(),
-        });
+        }
+        .visit(self);
     }
 
     /// Substitute the generic variables inside `self` by replacing them with the provided values.
@@ -1298,6 +1304,20 @@ pub trait TyVisitable: Sized + AstVisitable {
             f,
             depth: DeBruijnId::zero(),
         })
+    }
+
+    /// Replace all the erased regions by the output of the provided function. Binders levels are
+    /// handled automatically.
+    fn replace_erased_regions(mut self, f: impl FnMut() -> Region) -> Self {
+        #[derive(Visitor)]
+        struct RefreshErasedRegions<F>(F);
+        impl<F: FnMut() -> Region> VarsVisitor for RefreshErasedRegions<F> {
+            fn visit_erased_region(&mut self) -> Option<Region> {
+                Some((self.0)())
+            }
+        }
+        self.visit_vars(&mut RefreshErasedRegions(f));
+        self
     }
 }
 

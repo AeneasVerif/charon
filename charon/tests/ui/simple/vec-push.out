@@ -213,7 +213,7 @@ where
         storage_dead(_5)
         storage_live(_7)
         _7 = &two-phase-mut ((*self_1)).buf
-        _6 = grow_one<'_, T, A>[@TraitClause0, @TraitClause1](move _7)
+        _6 = grow_one<'6, T, A>[@TraitClause0, @TraitClause1](move _7)
         storage_dead(_7)
     } else {
         storage_dead(_5)
@@ -248,7 +248,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = push_mut<'_, T, A>[@TraitClause0, @TraitClause1](move self_1, move value_2)
+    _3 = push_mut<'3, T, A>[@TraitClause0, @TraitClause1](move self_1, move value_2)
     storage_dead(_3)
     return
 }
@@ -263,7 +263,7 @@ fn vec<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl 
     _0 = ()
     storage_live(_2)
     _2 = &two-phase-mut (*x_1)
-    _0 = push<'_, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _2, const 42 : u32)
+    _0 = push<'2, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _2, const 42 : u32)
     storage_dead(_2)
     return
 }

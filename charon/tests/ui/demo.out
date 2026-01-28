@@ -151,7 +151,7 @@ pub fn use_incr()
     storage_live(_4)
     _4 = &mut x_1
     _3 = &two-phase-mut (*_4)
-    _2 = test_crate::incr<'_>(move _3)
+    _2 = test_crate::incr<'2>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -160,7 +160,7 @@ pub fn use_incr()
     storage_live(_7)
     _7 = &mut x_1
     _6 = &two-phase-mut (*_7)
-    _5 = test_crate::incr<'_>(move _6)
+    _5 = test_crate::incr<'4>(move _6)
     storage_dead(_6)
     storage_dead(_7)
     storage_dead(_5)
@@ -169,7 +169,7 @@ pub fn use_incr()
     storage_live(_10)
     _10 = &mut x_1
     _9 = &two-phase-mut (*_10)
-    _8 = test_crate::incr<'_>(move _9)
+    _8 = test_crate::incr<'6>(move _9)
     storage_dead(_9)
     storage_dead(_10)
     storage_dead(_8)
@@ -235,7 +235,7 @@ where
         _11 = copy _10 panic.- const 1 : u32
         _9 = move _11
         storage_dead(_10)
-        _7 = list_nth<'_, T>[@TraitClause0](move _8, move _9)
+        _7 = list_nth<'4, T>[@TraitClause0](move _8, move _9)
         _0 = &(*_7)
         storage_dead(_9)
         storage_dead(_8)
@@ -307,7 +307,7 @@ where
         _16 = copy _15 panic.- const 1 : u32
         _14 = move _16
         storage_dead(_15)
-        _12 = list_nth_mut<'_, T>[@TraitClause0](move _13, move _14)
+        _12 = list_nth_mut<'4, T>[@TraitClause0](move _13, move _14)
         _8 = &mut (*_12)
         storage_dead(_14)
         storage_dead(_13)
@@ -446,7 +446,7 @@ where
             storage_live(_5)
             storage_live(_6)
             _6 = &two-phase-mut (*(*tl_4))
-            _5 = list_tail<'_, T>[@TraitClause0](move _6)
+            _5 = list_tail<'3, T>[@TraitClause0](move _6)
             _3 = &mut (*_5)
             storage_dead(_6)
             storage_dead(_5)
@@ -513,7 +513,7 @@ where
 
     storage_live(_2)
     _2 = &two-phase-mut (*cnt_1)
-    _0 = @TraitClause1::incr<'_>(move _2)
+    _0 = @TraitClause1::incr<'2>(move _2)
     storage_dead(_2)
     return
 }

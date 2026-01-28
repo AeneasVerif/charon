@@ -423,7 +423,7 @@ where
     _3 = &s_1
     _2 = @ArrayToSliceShared<'_, T, 32 : usize>(move _3)
     storage_dead(_3)
-    _0 = len<'_, T>[@TraitClause0](move _2)
+    _0 = len<'3, T>[@TraitClause0](move _2)
     storage_dead(_2)
     conditional_drop[{impl Destruct for [T; N]}<T, 32 : usize>[@TraitClause0]] s_1
     return
@@ -444,7 +444,7 @@ where
     _3 = &(*s_1)
     _2 = @ArrayToSliceShared<'_, T, 32 : usize>(move _3)
     storage_dead(_3)
-    _0 = len<'_, T>[@TraitClause0](move _2)
+    _0 = len<'3, T>[@TraitClause0](move _2)
     storage_dead(_2)
     return
 }
@@ -460,7 +460,7 @@ where
 
     storage_live(_2)
     _2 = &(*s_1) with_metadata(copy s_1.metadata)
-    _0 = len<'_, T>[@TraitClause0](move _2)
+    _0 = len<'2, T>[@TraitClause0](move _2)
     storage_dead(_2)
     return
 }
@@ -648,7 +648,7 @@ pub fn slice_subslice_shared_<'_0>(@1: &'_0 [u32], @2: usize, @3: usize) -> &'_0
     _7 = Range { start: move _8, end: move _9 }
     storage_dead(_9)
     storage_dead(_8)
-    _5 = {impl Index<I, Clause2_Output> for [T]}::index<'_, u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]](move _6, move _7)
+    _5 = {impl Index<I, Clause2_Output> for [T]}::index<'2, u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]](move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
     _4 = &(*_5) with_metadata(copy _5.metadata)
@@ -686,7 +686,7 @@ pub fn slice_subslice_mut_<'_0>(@1: &'_0 mut [u32], @2: usize, @3: usize) -> &'_
     _8 = Range { start: move _9, end: move _10 }
     storage_dead(_10)
     storage_dead(_9)
-    _6 = {impl IndexMut<I, Clause2_Output> for [T]}::index_mut<'_, u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]](move _7, move _8)
+    _6 = {impl IndexMut<I, Clause2_Output> for [T]}::index_mut<'2, u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]](move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)
     _5 = &mut (*_6) with_metadata(copy _6.metadata)
@@ -756,7 +756,7 @@ pub fn array_subslice_shared_<'_0>(@1: &'_0 [u32; 32 : usize], @2: usize, @3: us
     _7 = Range { start: move _8, end: move _9 }
     storage_dead(_9)
     storage_dead(_8)
-    _5 = {impl Index<I, Clause2_Output> for [T; N]}::index<'_, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I, Clause2_Output> for [T]}<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move _6, move _7)
+    _5 = {impl Index<I, Clause2_Output> for [T; N]}::index<'3, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I, Clause2_Output> for [T]}<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
     _4 = &(*_5) with_metadata(copy _5.metadata)
@@ -794,7 +794,7 @@ pub fn array_subslice_mut_<'_0>(@1: &'_0 mut [u32; 32 : usize], @2: usize, @3: u
     _8 = Range { start: move _9, end: move _10 }
     storage_dead(_10)
     storage_dead(_9)
-    _6 = {impl IndexMut<I, Clause2_Clause1_Output> for [T; N]}::index_mut<'_, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl IndexMut<I, Clause2_Output> for [T]}<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move _7, move _8)
+    _6 = {impl IndexMut<I, Clause2_Clause1_Output> for [T; N]}::index_mut<'3, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl IndexMut<I, Clause2_Output> for [T]}<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)
     _5 = &mut (*_6) with_metadata(copy _6.metadata)
@@ -1128,7 +1128,7 @@ pub fn take_all()
     // x passed by address, there is a reborrow here
     _8 = &x_1
     _7 = &(*_8)
-    _6 = take_array_borrow<'_>(move _7)
+    _6 = take_array_borrow<'5>(move _7)
     storage_dead(_7)
     storage_dead(_8)
     storage_dead(_6)
@@ -1141,7 +1141,7 @@ pub fn take_all()
     _11 = &(*_12)
     _10 = @ArrayToSliceShared<'_, u32, 2 : usize>(move _11)
     storage_dead(_11)
-    _9 = take_slice<'_>(move _10)
+    _9 = take_slice<'7>(move _10)
     storage_dead(_10)
     storage_dead(_12)
     storage_dead(_9)
@@ -1155,7 +1155,7 @@ pub fn take_all()
     _15 = &mut (*_16)
     _14 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _15)
     storage_dead(_15)
-    _13 = take_mut_slice<'_>(move _14)
+    _13 = take_mut_slice<'9>(move _14)
     storage_dead(_14)
     storage_dead(_16)
     storage_dead(_13)
@@ -1315,7 +1315,7 @@ pub fn index_all() -> u32
     storage_live(_15)
     _15 = &x_1
     _14 = &(*_15)
-    _13 = index_array_borrow<'_>(move _14)
+    _13 = index_array_borrow<'5>(move _14)
     storage_dead(_14)
     _16 = copy _7 panic.+ copy _13
     _6 = move _16
@@ -1329,7 +1329,7 @@ pub fn index_all() -> u32
     _19 = &(*_20)
     _18 = @ArrayToSliceShared<'_, u32, 2 : usize>(move _19)
     storage_dead(_19)
-    _17 = index_slice_u32_0<'_>(move _18)
+    _17 = index_slice_u32_0<'7>(move _18)
     storage_dead(_18)
     _21 = copy _6 panic.+ copy _17
     _5 = move _21
@@ -1343,7 +1343,7 @@ pub fn index_all() -> u32
     _24 = &mut (*_25)
     _23 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _24)
     storage_dead(_24)
-    _22 = index_mut_slice_u32_0<'_>(move _23)
+    _22 = index_mut_slice_u32_0<'9>(move _23)
     storage_dead(_23)
     _26 = copy _5 panic.+ copy _22
     _0 = move _26
@@ -1459,7 +1459,7 @@ pub fn update_all()
     storage_live(_8)
     _8 = &mut x_1
     _7 = &two-phase-mut (*_8)
-    _6 = update_array_mut_borrow<'_>(move _7)
+    _6 = update_array_mut_borrow<'3>(move _7)
     storage_dead(_7)
     storage_dead(_8)
     storage_dead(_6)
@@ -1471,7 +1471,7 @@ pub fn update_all()
     _11 = &mut (*_12)
     _10 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _11)
     storage_dead(_11)
-    _9 = update_mut_slice<'_>(move _10)
+    _9 = update_mut_slice<'5>(move _10)
     storage_dead(_10)
     storage_dead(_12)
     storage_dead(_9)
@@ -1504,12 +1504,12 @@ pub fn range_all()
     _6 = &mut x_1
     storage_live(_7)
     _7 = Range { start: const 1 : usize, end: const 3 : usize }
-    _5 = {impl IndexMut<I, Clause2_Clause1_Output> for [T; N]}::index_mut<'_, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 4 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl IndexMut<I, Clause2_Output> for [T]}<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move _6, move _7)
+    _5 = {impl IndexMut<I, Clause2_Clause1_Output> for [T; N]}::index_mut<'3, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 4 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl IndexMut<I, Clause2_Output> for [T]}<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
     _4 = &mut (*_5) with_metadata(copy _5.metadata)
     _3 = &two-phase-mut (*_4) with_metadata(copy _4.metadata)
-    _2 = update_mut_slice<'_>(move _3)
+    _2 = update_mut_slice<'5>(move _3)
     storage_dead(_3)
     storage_dead(_5)
     storage_dead(_4)
@@ -1643,7 +1643,7 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
         storage_live(_6)
         storage_live(_7)
         _7 = &(*s_1) with_metadata(copy s_1.metadata)
-        _6 = len<'_, u32>[{built_in impl Sized for u32}](move _7)
+        _6 = len<'2, u32>[{built_in impl Sized for u32}](move _7)
         storage_dead(_7)
         _4 = move _5 < move _6
         if move _4 {
@@ -1717,12 +1717,12 @@ pub fn sum2<'_0, '_1>(@1: &'_0 [u32], @2: &'_1 [u32]) -> u32
     storage_live(_5)
     storage_live(_6)
     _6 = &(*s_1) with_metadata(copy s_1.metadata)
-    _5 = len<'_, u32>[{built_in impl Sized for u32}](move _6)
+    _5 = len<'2, u32>[{built_in impl Sized for u32}](move _6)
     storage_dead(_6)
     storage_live(_7)
     storage_live(_8)
     _8 = &(*s2_2) with_metadata(copy s2_2.metadata)
-    _7 = len<'_, u32>[{built_in impl Sized for u32}](move _8)
+    _7 = len<'4, u32>[{built_in impl Sized for u32}](move _8)
     storage_dead(_8)
     _4 = move _5 == move _7
     if move _4 {
@@ -1743,7 +1743,7 @@ pub fn sum2<'_0, '_1>(@1: &'_0 [u32], @2: &'_1 [u32]) -> u32
         storage_live(_12)
         storage_live(_13)
         _13 = &(*s_1) with_metadata(copy s_1.metadata)
-        _12 = len<'_, u32>[{built_in impl Sized for u32}](move _13)
+        _12 = len<'6, u32>[{built_in impl Sized for u32}](move _13)
         storage_dead(_13)
         _10 = move _11 < move _12
         if move _10 {
@@ -1891,7 +1891,7 @@ pub fn f4<'_0>(@1: &'_0 [u32; 32 : usize], @2: usize, @3: usize) -> &'_0 [u32]
     _7 = Range { start: move _8, end: move _9 }
     storage_dead(_9)
     storage_dead(_8)
-    _5 = {impl Index<I, Clause2_Output> for [T; N]}::index<'_, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I, Clause2_Output> for [T]}<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move _6, move _7)
+    _5 = {impl Index<I, Clause2_Output> for [T; N]}::index<'3, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 32 : usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I, Clause2_Output> for [T]}<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}<u32>[{built_in impl Sized for u32}]]](move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
     _4 = &(*_5) with_metadata(copy _5.metadata)
@@ -1950,10 +1950,10 @@ pub fn f3() -> u32
     storage_live(_12)
     _12 = &b_5
     _11 = &(*_12)
-    _10 = f4<'_>(move _11, const 16 : usize, const 18 : usize)
+    _10 = f4<'4>(move _11, const 16 : usize, const 18 : usize)
     _9 = &(*_10) with_metadata(copy _10.metadata)
     storage_dead(_11)
-    _0 = sum2<'_, '_>(move _6, move _9)
+    _0 = sum2<'7, '8>(move _6, move _9)
     storage_dead(_9)
     storage_dead(_6)
     storage_dead(b_5)
@@ -2028,7 +2028,7 @@ pub fn ite()
         _6 = &mut (*_7)
         _5 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _6)
         storage_dead(_6)
-        _4 = index_mut_slice_u32_0<'_>(move _5)
+        _4 = index_mut_slice_u32_0<'3>(move _5)
         storage_dead(_5)
         storage_dead(_7)
         storage_dead(_4)
@@ -2040,7 +2040,7 @@ pub fn ite()
         _10 = &mut (*_11)
         _9 = @ArrayToSliceMut<'_, u32, 2 : usize>(move _10)
         storage_dead(_10)
-        _8 = index_mut_slice_u32_0<'_>(move _9)
+        _8 = index_mut_slice_u32_0<'5>(move _9)
         storage_dead(_9)
         storage_dead(_11)
         storage_dead(_8)
@@ -2077,7 +2077,7 @@ pub fn zero_slice<'_0>(@1: &'_0 mut [u8])
     storage_live(len_3)
     storage_live(_4)
     _4 = &(*a_1) with_metadata(copy a_1.metadata)
-    len_3 = len<'_, u8>[{built_in impl Sized for u8}](move _4)
+    len_3 = len<'3, u8>[{built_in impl Sized for u8}](move _4)
     storage_dead(_4)
     loop {
         storage_live(_5)
@@ -2132,7 +2132,7 @@ pub fn iter_mut_slice<'_0>(@1: &'_0 mut [u8])
     storage_live(len_2)
     storage_live(_3)
     _3 = &(*a_1) with_metadata(copy a_1.metadata)
-    len_2 = len<'_, u8>[{built_in impl Sized for u8}](move _3)
+    len_2 = len<'3, u8>[{built_in impl Sized for u8}](move _3)
     storage_dead(_3)
     storage_live(i_4)
     i_4 = const 0 : usize
@@ -2194,7 +2194,7 @@ pub fn sum_mut_slice<'_0>(@1: &'_0 mut [u32]) -> u32
         storage_live(_6)
         storage_live(_7)
         _7 = &(*a_1) with_metadata(copy a_1.metadata)
-        _6 = len<'_, u32>[{built_in impl Sized for u32}](move _7)
+        _6 = len<'3, u32>[{built_in impl Sized for u32}](move _7)
         storage_dead(_7)
         _4 = move _5 < move _6
         if move _4 {

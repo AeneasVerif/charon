@@ -251,7 +251,7 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     _7 = Arguments { 0: move _24, 1: move _26 }
     storage_dead(_26)
     storage_dead(_24)
-    _6 = panic_nounwind_fmt<'_>(move _7, const false)
+    _6 = panic_nounwind_fmt<'6>(move _7, const false)
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset
@@ -318,7 +318,7 @@ fn main()
     _4 = &s_1
     _3 = @ArrayToSliceShared<'_, i32, 2 : usize>(move _4)
     storage_dead(_4)
-    ptr_2 = as_ptr<'_, i32>[{built_in impl Sized for i32}](move _3)
+    ptr_2 = as_ptr<'3, i32>[{built_in impl Sized for i32}](move _3)
     storage_dead(_3)
     storage_live(_5)
     storage_live(_6)

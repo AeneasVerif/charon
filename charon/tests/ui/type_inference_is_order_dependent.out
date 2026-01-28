@@ -190,7 +190,7 @@ where
     storage_live(_7)
     storage_live(_8)
     _8 = &(*args_3.0)
-    _7 = new_debug<'5, '_, U>[@TraitClause1, @TraitClause5](move _8)
+    _7 = new_debug<'5, '7, U>[@TraitClause1, @TraitClause5](move _8)
     storage_dead(_8)
     args_6 = [move _7]
     storage_dead(_7)
@@ -206,12 +206,12 @@ where
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'6, 4 : usize, 1 : usize>(move _9, move _11)
+    _2 = new<'8, 4 : usize, 1 : usize>(move _9, move _11)
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
-    _1 = _print<'_>(move _2)
+    _1 = _print<'10>(move _2)
     storage_dead(_2)
     storage_dead(args_6)
     conditional_drop[{built_in impl Destruct for U}] _5

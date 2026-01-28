@@ -166,7 +166,7 @@ where
 
     storage_live(_2)
     _2 = &x_1
-    _0 = @TraitClause1::parent_clause1::method<'_>(move _2)
+    _0 = @TraitClause1::parent_clause1::method<'2>(move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] x_1
     return
@@ -184,7 +184,7 @@ where
 
     storage_live(_2)
     _2 = &x_1
-    _0 = @TraitClause1::parent_clause1::method<'_>(move _2)
+    _0 = @TraitClause1::parent_clause1::method<'2>(move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] x_1
     return

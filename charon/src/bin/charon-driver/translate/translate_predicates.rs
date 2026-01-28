@@ -324,7 +324,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         tref.hax_skip_binder_ref(),
                         TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias),
                     );
-                    let mut generics = trait_decl_ref.clone().erase().generics;
+                    let mut generics = self.erase_region_binder(trait_decl_ref.clone()).generics;
                     assert!(
                         generics.trait_refs.is_empty(),
                         "found trait alias with non-empty required predicates"
@@ -337,31 +337,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else if let hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) =
                     trait_data
                 {
-                    match ty.kind() {
-                        hax::TyKind::Adt(item)
-                        | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
-                        | hax::TyKind::Array(item)
-                        | hax::TyKind::Slice(item)
-                        | hax::TyKind::Tuple(item) => {
-                            let mut impl_ref = self.translate_trait_impl_ref(
-                                span,
-                                item,
-                                TraitImplSource::ImplicitDestruct,
-                            )?;
-                            if let hax::TyKind::Closure(args) = ty.kind() {
-                                // Add lifetimes for the upvar ty borrows.
-                                for _ in args.iter_upvar_borrows() {
-                                    impl_ref.generics.regions.push(Region::Erased);
-                                }
-                            }
-                            TraitRefKind::TraitImpl(impl_ref)
-                        }
-                        _ => raise_error!(
-                            self,
-                            span,
-                            "failed to translate drop glue for type {ty:?}"
-                        ),
-                    }
+                    let (hax::TyKind::Adt(item)
+                    | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
+                    | hax::TyKind::Array(item)
+                    | hax::TyKind::Slice(item)
+                    | hax::TyKind::Tuple(item)) = ty.kind()
+                    else {
+                        raise_error!(self, span, "failed to translate drop glue for type {ty:?}")
+                    };
+                    TraitRefKind::TraitImpl(self.translate_trait_impl_ref(
+                        span,
+                        item,
+                        TraitImplSource::ImplicitDestruct,
+                    )?)
                 } else {
                     let Some(builtin_data) = self.recognize_builtin_impl(trait_data, &trait_def)
                     else {
@@ -391,7 +379,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                 ctx.translate_closure_impl_ref(span, closure_args, closure_kind)
                             },
                         )?;
-                        TraitRefKind::TraitImpl(binder.erase())
+                        TraitRefKind::TraitImpl(self.erase_region_binder(binder))
                     } else {
                         let parent_trait_refs =
                             self.translate_trait_impl_exprs(span, &impl_exprs)?;

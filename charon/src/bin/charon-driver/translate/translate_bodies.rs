@@ -544,9 +544,10 @@ impl BodyTransCtx<'_, '_, '_> {
                         let hax::TyKind::Closure(closure) = hax_operand.ty().kind() else {
                             unreachable!("Non-closure type in PointerCoercion::ClosureFnPointer");
                         };
-                        let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
-                        let fn_ptr_bound = fn_ref.map(FunDeclRef::into);
-                        let fn_ptr: FnPtr = fn_ptr_bound.clone().erase();
+                        let fn_ref: RegionBinder<FunDeclRef> =
+                            self.translate_stateless_closure_as_fn_ref(span, closure)?;
+                        let fn_ptr_bound: RegionBinder<FnPtr> = fn_ref.map(FunDeclRef::into);
+                        let fn_ptr: FnPtr = self.erase_region_binder(fn_ptr_bound.clone());
                         let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
                         operand = Operand::Const(Box::new(ConstantExpr {
                             kind: ConstantExprKind::FnDef(fn_ptr),
@@ -1126,9 +1127,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     // We ignore the arguments
                     return Ok(TerminatorKind::Abort(AbortKind::Panic(Some(name))));
                 } else {
-                    let fn_ptr = self
-                        .translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
-                        .erase();
+                    let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                     FnOperand::Regular(fn_ptr)
                 }
             }

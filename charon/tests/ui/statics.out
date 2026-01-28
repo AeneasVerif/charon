@@ -230,7 +230,7 @@ fn non_copy_static()
     _3 = &FOO
     _2 = move _3
     _1 = &(*_2)
-    _0 = method<'_>(move _1)
+    _0 = method<'2>(move _1)
     storage_dead(_1)
     storage_dead(_2)
     return

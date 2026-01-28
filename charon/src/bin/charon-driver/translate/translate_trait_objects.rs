@@ -315,15 +315,17 @@ impl ItemTransCtx<'_, '_> {
                     (field_name, ty)
                 }
                 TrVTableField::SuperTrait(_, clause) => {
-                    let vtbl_struct = self
-                        .translate_region_binder(span, &clause.kind, |ctx, kind| {
+                    let vtbl_struct =
+                        self.translate_region_binder(span, &clause.kind, |ctx, kind| {
                             let hax::ClauseKind::Trait(pred) = kind else {
                                 unreachable!()
                             };
-                            ctx.translate_vtable_struct_ref(span, &pred.trait_ref)
-                        })?
-                        .erase()
-                        .expect("parent trait should be dyn compatible");
+                            let tyref = ctx
+                                .translate_vtable_struct_ref(span, &pred.trait_ref)?
+                                .expect("parent trait should be dyn compatible");
+                            Ok(tyref)
+                        })?;
+                    let vtbl_struct = self.erase_region_binder(vtbl_struct);
                     let ty = Ty::new(TyKind::Ref(
                         Region::Static,
                         Ty::new(TyKind::Adt(vtbl_struct)),
@@ -628,9 +630,8 @@ impl ItemTransCtx<'_, '_> {
                 // The method is vtable safe so it has no generics, hence we can reuse the impl
                 // generics -- the lifetime binder will be added as `Erased` in `translate_fn_ptr`.
                 let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
-                let shim_ref = self
-                    .translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?
-                    .erase();
+                let shim_ref =
+                    self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
                 ConstantExprKind::FnDef(shim_ref)
             }
             hax::ImplAssocItemValue::DefaultedFn { .. } => ConstantExprKind::Opaque(
@@ -675,21 +676,25 @@ impl ItemTransCtx<'_, '_> {
                 continue;
             }
 
-            let vtable_def_ref = self
-                .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    ctx.translate_vtable_struct_ref(span, tref)
-                })?
-                .erase()
-                .expect("parent trait should be dyn compatible");
+            let bound_tyref =
+                self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                    let tyref = ctx
+                        .translate_vtable_struct_ref(span, tref)?
+                        .expect("parent trait should be dyn compatible");
+                    Ok(tyref)
+                })?;
+            let vtable_def_ref = self.erase_region_binder(bound_tyref);
             let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
             let kind = match &impl_expr.r#impl {
                 hax::ImplExprAtom::Concrete(impl_item) => {
-                    let vtable_instance_ref = self
-                        .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                            ctx.translate_vtable_instance_ref(span, tref, impl_item)
-                        })?
-                        .erase()
-                        .expect("parent trait should be dyn compatible");
+                    let bound_gref: RegionBinder<GlobalDeclRef> =
+                        self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                            let gref = ctx
+                                .translate_vtable_instance_ref(span, tref, impl_item)?
+                                .expect("parent trait should be dyn compatible");
+                            Ok(gref)
+                        })?;
+                    let vtable_instance_ref = self.erase_region_binder(bound_gref);
                     let global = Box::new(ConstantExpr {
                         kind: ConstantExprKind::Global(vtable_instance_ref),
                         ty: fn_ptr_ty,

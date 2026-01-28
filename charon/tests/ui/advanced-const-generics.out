@@ -316,7 +316,7 @@ pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(@1: &'_0 Foo, @2: &'_1 mut Forma
             storage_dead(_6)
         },
     }
-    _0 = core::fmt::{Formatter<'a>}::write_str<'4, '_, '_>(move _3, move _4)
+    _0 = core::fmt::{Formatter<'a>}::write_str<'4, '7, '8>(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return

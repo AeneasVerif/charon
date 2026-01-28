@@ -157,7 +157,7 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_, T, K>[@TraitClause0, @TraitClause1](move _3, move _2)
+    _0 = {impl FnMut<(usize)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'2, T, K>[@TraitClause0, @TraitClause1](move _3, move _2)
     drop[{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1]] _1
     return
 }
