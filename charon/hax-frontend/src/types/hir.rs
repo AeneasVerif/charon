@@ -25,7 +25,7 @@ impl<'tcx, S: BaseState<'tcx>> SInto<S, Ident> for rustc_span::symbol::Ident {
 }
 
 /// Reflects [`rustc_hir::attrs::InlineAttr`]
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::attrs::InlineAttr, state: S as _s)]
 pub enum InlineAttr {
     None,

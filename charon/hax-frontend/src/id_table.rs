@@ -14,7 +14,7 @@ use std::hash::Hash;
 
 /// Unique IDs in a ID table.
 
-#[derive(Default, Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Default, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct Id {
     id: u32,
 }
@@ -84,7 +84,7 @@ pub mod hash_consing {
     /// Hash-consed data structure: a reference-counted wrapper that guarantees that two equal
     /// value will be stored at the same address. This makes it possible to use the pointer address
     /// as a hash value.
-    #[derive(PartialEq, Eq, Hash, PartialOrd, Ord)]
+    #[derive(PartialEq, Eq, Hash)]
     pub struct HashConsed<T>(HashByAddr<Arc<T>>);
 
     impl<T> HashConsed<T> {

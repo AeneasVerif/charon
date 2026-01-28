@@ -31,7 +31,7 @@ pub(crate) struct BindingLevel {
     /// <https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/>
     ///
     /// The map from rust early regions to translated region indices.
-    pub early_region_vars: std::collections::BTreeMap<hax::EarlyParamRegion, RegionId>,
+    pub early_region_vars: HashMap<hax::EarlyParamRegion, RegionId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
     /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.

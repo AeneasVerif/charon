@@ -13,7 +13,7 @@ use rustc_span::def_id::DefId as RDefId;
 
 pub use utils::is_sized_related_trait;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ImplExprPathChunk {
     AssocItem {
         /// Reference to the item, with generics (for GATs), e.g. the `T` and `T: Clone` `ImplExpr`
@@ -67,7 +67,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for resolution:
 /// concrete `impl Trait for Type {}` item, or `LocalBound` for a context-bound `where T: Trait`.
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::ImplExprAtom<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ImplExprAtom {
     /// A concrete `impl Trait for Type {}` item.
     #[custom_arm(FROM_TYPE::Concrete { def_id, generics } => TO_TYPE::Concrete(
@@ -114,7 +114,7 @@ pub enum ImplExprAtom {
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::BuiltinTraitData<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum BuiltinTraitData {
     /// A virtual `Destruct` implementation.
     /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
@@ -127,7 +127,7 @@ pub enum BuiltinTraitData {
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::DestructData<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum DestructData {
     /// A drop that does nothing, e.g. for scalars and pointers.
     Noop,
@@ -149,7 +149,7 @@ pub enum DestructData {
 /// concrete implementations for `u8` and `&str`, represented as a tree.
 pub type ImplExpr = HashConsed<ImplExprContents>;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::ImplExpr<'tcx>, state: S as s)]
 pub struct ImplExprContents {
     /// The trait this is an impl for.

@@ -1,12 +1,12 @@
 use crate::prelude::*;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ConstantInt {
     Int(i128, IntTy),
     Uint(u128, UintTy),
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ConstantLiteral {
     Bool(bool),
     Char(char),
@@ -19,7 +19,7 @@ pub enum ConstantLiteral {
 
 /// The subset of [Expr] that corresponds to constants.
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ConstantExprKind {
     Literal(ConstantLiteral),
     // Adts (structs, enums, unions) or closures.
@@ -82,7 +82,7 @@ pub enum ConstantExprKind {
     Todo(String),
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ConstantFieldExpr {
     pub field: DefId,
     pub value: ConstantExpr,

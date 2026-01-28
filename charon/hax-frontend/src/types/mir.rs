@@ -438,7 +438,7 @@ fn translate_terminator_kind_drop<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>
 
 // We don't use the LitIntType on purpose (we don't want the "unsuffixed" case)
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum ScalarTy {
     Bool,
     Int(IntTy),
@@ -987,7 +987,7 @@ pub enum AssignOp {
 /// Reflects [`rustc_middle::mir::BorrowKind`]
 #[derive(AdtInto)]
 #[args(<S>, from: mir::BorrowKind, state: S as gstate)]
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum BorrowKind {
     Shared,
     Fake(FakeBorrowKind),
@@ -997,7 +997,7 @@ pub enum BorrowKind {
 /// Reflects [`rustc_middle::mir::MutBorrowKind`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_middle::mir::MutBorrowKind, state: S as _s)]
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum MutBorrowKind {
     Default,
     TwoPhaseBorrow,
@@ -1007,7 +1007,7 @@ pub enum MutBorrowKind {
 /// Reflects [`rustc_middle::mir::FakeBorrowKind`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_middle::mir::FakeBorrowKind, state: S as _s)]
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum FakeBorrowKind {
     /// A shared (deep) borrow. Data must be immutable and is aliasable.
     Deep,

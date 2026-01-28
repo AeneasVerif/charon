@@ -6,7 +6,7 @@ pub trait SInto<S, To>: std::marker::PointeeSized {
 macro_rules! sinto_todo {
     ($($mod:ident)::+, $type:ident$(<$($lts:lifetime),*$(,)?>)? as $renamed:ident) => {
 
-        #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+        #[derive(Clone, Debug, Hash, PartialEq, Eq)]
         pub enum $renamed {
             $type {
                 todo: String

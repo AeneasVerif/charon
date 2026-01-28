@@ -10,7 +10,7 @@ use rustc_span::def_id::DefId as RDefId;
 /// Generic container for decorating items with a type, a span,
 /// attributes and other meta-data.
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Decorated<T> {
     pub ty: Ty,
     pub span: Span,
@@ -20,7 +20,7 @@ pub struct Decorated<T> {
 
 /// Reflects [`ty::ParamTy`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ParamTy, state: S as gstate)]
 pub struct ParamTy {
     pub index: u32,
@@ -29,7 +29,7 @@ pub struct ParamTy {
 
 /// Reflects [`ty::ParamConst`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<S>, from: ty::ParamConst, state: S as gstate)]
 pub struct ParamConst {
     pub index: u32,
@@ -41,7 +41,7 @@ pub struct ParamConst {
 /// Reflects [`ty::ExistentialPredicate`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialPredicate<'tcx>, state: S as state)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ExistentialPredicate {
     /// E.g. `From<u64>`. Note that this isn't `T: From<u64>` with a given `T`, this is just
     /// `From<u64>`. Could be written `?: From<u64>`.
@@ -55,7 +55,7 @@ pub enum ExistentialPredicate {
 /// Reflects [`rustc_type_ir::ExistentialTraitRef`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_type_ir::ExistentialTraitRef<ty::TyCtxt<'tcx>>, state: S as state)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ExistentialTraitRef {
     pub def_id: DefId,
     pub args: Vec<GenericArg>,
@@ -64,7 +64,7 @@ pub struct ExistentialTraitRef {
 /// Reflects [`rustc_type_ir::ExistentialProjection`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_type_ir::ExistentialProjection<ty::TyCtxt<'tcx>>, state: S as state)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ExistentialProjection {
     pub def_id: DefId,
     pub args: Vec<GenericArg>,
@@ -73,7 +73,7 @@ pub struct ExistentialProjection {
 
 /// Reflects [`ty::BoundTyKind`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundTyKind, state: S as s)]
 pub enum BoundTyKind {
     Anon,
@@ -83,7 +83,7 @@ pub enum BoundTyKind {
 
 /// Reflects [`ty::BoundTy`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundTy, state: S as s)]
 pub struct BoundTy {
     pub var: BoundVar,
@@ -94,7 +94,7 @@ sinto_as_usize!(rustc_middle::ty, BoundVar);
 
 /// Reflects [`ty::BoundRegionKind`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundRegionKind, state: S as s)]
 pub enum BoundRegionKind {
     Anon,
@@ -106,7 +106,7 @@ pub enum BoundRegionKind {
 
 /// Reflects [`ty::BoundRegion`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundRegion, state: S as s)]
 pub struct BoundRegion {
     pub var: BoundVar,
@@ -122,7 +122,7 @@ pub type PlaceholderType = Placeholder<BoundTy>;
 
 /// Reflects [`ty::Placeholder`]
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Placeholder<T> {
     pub bound: T,
 }
@@ -331,7 +331,7 @@ impl VariantDef {
 
 /// Reflects [`ty::EarlyParamRegion`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::EarlyParamRegion, state: S as s)]
 pub struct EarlyParamRegion {
     pub index: u32,
@@ -340,7 +340,7 @@ pub struct EarlyParamRegion {
 
 /// Reflects [`ty::LateParamRegion`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::LateParamRegion, state: S as s)]
 pub struct LateParamRegion {
     pub scope: DefId,
@@ -349,7 +349,7 @@ pub struct LateParamRegion {
 
 /// Reflects [`ty::LateParamRegionKind`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::LateParamRegionKind, state: S as s)]
 pub enum LateParamRegionKind {
     Anon(u32),
@@ -361,7 +361,7 @@ pub enum LateParamRegionKind {
 
 /// Reflects [`ty::RegionKind`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::RegionKind<'tcx>, state: S as gstate)]
 pub enum RegionKind {
     ReEarlyParam(EarlyParamRegion),
@@ -376,7 +376,7 @@ pub enum RegionKind {
 
 /// Reflects [`ty::BoundVarIndexKind`]
 
-#[derive(AdtInto, Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundVarIndexKind, state: S as gstate)]
 pub enum BoundVarIndexKind {
     Bound(DebruijnIndex),
@@ -388,7 +388,7 @@ sinto_as_usize!(rustc_middle::ty, RegionVid);
 
 /// Reflects [`ty::Region`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::Region<'tcx>, state: S as s)]
 pub struct Region {
     #[value(self.kind().sinto(s))]
@@ -397,7 +397,7 @@ pub struct Region {
 
 /// Reflects both [`ty::GenericArg`] and [`ty::GenericArgKind`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::GenericArgKind<'tcx>, state: S as s)]
 pub enum GenericArg {
     Lifetime(Region),
@@ -407,7 +407,7 @@ pub enum GenericArg {
 
 /// Contents of `ItemRef`.
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ItemRefContents {
     /// The item being refered to.
     pub def_id: DefId,
@@ -460,7 +460,7 @@ pub struct ItemRefContents {
 /// }
 /// ```
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ItemRef {
     pub(crate) contents: id_table::hash_consing::HashConsed<ItemRefContents>,
 }
@@ -698,7 +698,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Vec<GenericArg>> for ty::GenericAr
 /// Reflects both [`ty::GenericArg`] and [`ty::GenericArgKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_ast::ast::LitIntType, state: S as gstate)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum LitIntType {
     Signed(IntTy),
     Unsigned(UintTy),
@@ -707,7 +707,7 @@ pub enum LitIntType {
 
 /// Reflects partially [`ty::InferTy`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S>, from: ty::InferTy, state: S as gstate)]
 pub enum InferTy {
     #[custom_arm(FROM_TYPE::TyVar(..) => TO_TYPE::TyVar,)]
@@ -724,7 +724,7 @@ pub enum InferTy {
 /// Reflects [`rustc_type_ir::IntTy`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_type_ir::IntTy, state: S as _s)]
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum IntTy {
     Isize,
     I8,
@@ -737,7 +737,7 @@ pub enum IntTy {
 /// Reflects [`rustc_type_ir::FloatTy`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_type_ir::FloatTy, state: S as _s)]
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum FloatTy {
     F16,
     F32,
@@ -748,7 +748,7 @@ pub enum FloatTy {
 /// Reflects [`rustc_type_ir::UintTy`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_type_ir::UintTy, state: S as _s)]
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum UintTy {
     Usize,
     U8,
@@ -789,7 +789,7 @@ impl ToString for UintTy {
 /// Reflects [`ty::TypeAndMut`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TypeAndMut<'tcx>, state: S as gstate)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct TypeAndMut {
     pub ty: Box<Ty>,
     pub mutbl: Mutability,
@@ -879,7 +879,7 @@ impl TyGenerics {
 /// This type merges the information from
 /// `rustc_type_ir::AliasKind` and `ty::AliasTy`
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Alias {
     pub kind: AliasKind,
     pub args: Vec<GenericArg>,
@@ -888,7 +888,7 @@ pub struct Alias {
 
 /// Reflects [`ty::AliasKind`]
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum AliasKind {
     /// The projection of a trait type: `<Ty as Trait<...>>::Type<...>`
     Projection {
@@ -975,7 +975,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Box<Ty>> for ty::Ty<'tcx> {
 
 /// Reflects [`rustc_middle::ty::Ty`]
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Ty {
     pub(crate) kind: id_table::hash_consing::HashConsed<TyKind>,
 }
@@ -1008,7 +1008,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx>
 /// Reflects [`ty::TyKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TyKind<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum TyKind {
     Bool,
     Char,
@@ -1102,7 +1102,7 @@ pub enum TyKind {
 /// appropriate trait clauses. The contained value may refer to the fresh ty and the in-scope trait
 /// clauses. This is used to represent types related to `dyn Trait`.
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct DynBinder<T> {
     /// Fresh type parameter that we use as the `Self` type in the prediates below.
     pub existential_ty: ParamTy,
@@ -1290,7 +1290,7 @@ pub struct ReprFlags {
 
 /// Reflects [`ty::Align`], but directly stores the number of bytes as a u64.
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_abi::Align, state: S as _s)]
 pub struct Align {
     #[value({
@@ -1392,7 +1392,7 @@ impl PointerCoercion {
 
 /// Reflects [`rustc_abi::ExternAbi`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_abi::ExternAbi, state: S as s)]
 pub enum ExternAbi {
     Rust,
@@ -1405,7 +1405,7 @@ pub enum ExternAbi {
 
 /// Reflects [`ty::FnSig`]
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::FnSig<'tcx>, state: S as s)]
 pub struct TyFnSig {
     #[value(self.inputs().sinto(s))]
@@ -1436,7 +1436,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitRef> for ty::TraitRef<'tcx> {
 /// Reflects [`ty::TraitPredicate`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TraitPredicate<'tcx>, state: S as tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct TraitPredicate {
     pub trait_ref: TraitRef,
     #[map(*x == ty::PredicatePolarity::Positive)]
@@ -1449,7 +1449,7 @@ pub struct TraitPredicate {
 /// JSONSchema types to OCaml doesn't support tuple structs, and this
 /// is the only tuple struct in the whole AST.
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OutlivesPredicate<T> {
     pub lhs: T,
     pub rhs: Region,
@@ -1475,7 +1475,7 @@ pub type TypeOutlivesPredicate = OutlivesPredicate<Ty>;
 
 /// Reflects [`ty::Term`]
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Term {
     Ty(Ty),
     Const(ConstantExpr),
@@ -1500,7 +1500,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term> for ty::Term<'tcx> {
 /// ```
 /// (provided the trait `Foo` has an associated type `S`).
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ProjectionPredicate {
     /// The `impl Trait for Ty` in `Ty: Trait<..., Type = U>`.
     pub impl_expr: ImplExpr,
@@ -1532,7 +1532,7 @@ impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate>
 /// Reflects [`ty::ClauseKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderBinderState<'tcx>>, from: ty::ClauseKind<'tcx>, state: S as tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ClauseKind {
     Trait(TraitPredicate),
     RegionOutlives(RegionOutlivesPredicate),
@@ -1549,7 +1549,7 @@ sinto_todo!(rustc_middle::ty, HostEffectPredicate<'tcx>);
 
 /// Reflects [`ty::Clause`] and adds a hash-consed predicate identifier.
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Clause {
     pub kind: Binder<ClauseKind>,
 }
@@ -1571,7 +1571,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitPredicate
 
 /// Reflects [`ty::Predicate`] and adds a hash-consed predicate identifier.
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Predicate {
     pub kind: Binder<PredicateKind>,
 }
@@ -1586,7 +1586,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Predicate> for ty::Predicate<'tcx>
 /// Reflects [`ty::BoundVariableKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundVariableKind, state: S as tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum BoundVariableKind {
     Ty(BoundTyKind),
     Region(BoundRegionKind),
@@ -1595,7 +1595,7 @@ pub enum BoundVariableKind {
 
 /// Reflects [`ty::Binder`]
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Binder<T> {
     pub value: T,
     pub bound_vars: Vec<BoundVariableKind>,
@@ -1636,7 +1636,7 @@ impl<T> Binder<T> {
 /// Reflects [`ty::GenericPredicates`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::GenericPredicates<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Default, Hash, PartialEq, Eq)]
 pub struct GenericPredicates {
     #[value(self.predicates.iter().map(|x| x.sinto(s)).collect())]
     pub predicates: Vec<(Clause, Span)>,
@@ -1669,7 +1669,7 @@ where
 /// Reflects [`ty::SubtypePredicate`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::SubtypePredicate<'tcx>, state: S as tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct SubtypePredicate {
     pub a_is_expected: bool,
     pub a: Ty,
@@ -1679,7 +1679,7 @@ pub struct SubtypePredicate {
 /// Reflects [`ty::CoercePredicate`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::CoercePredicate<'tcx>, state: S as tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct CoercePredicate {
     pub a: Ty,
     pub b: Ty,
@@ -1688,14 +1688,14 @@ pub struct CoercePredicate {
 /// Reflects [`ty::AliasRelationDirection`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::AliasRelationDirection, state: S as _tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum AliasRelationDirection {
     Equate,
     Subtype,
 }
 
 /// Reflects [`ty::ClosureArgs`]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 
 pub struct ClosureArgs {
     pub item: ItemRef,
@@ -1758,7 +1758,7 @@ impl ClosureArgs {
 /// Reflects [`ty::ClosureKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ClosureKind, state: S as _tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ClosureKind {
     Fn,
     FnMut,
@@ -1770,7 +1770,7 @@ sinto_todo!(rustc_middle::ty, NormalizesTo<'tcx>);
 /// Reflects [`ty::PredicateKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderBinderState<'tcx>>, from: ty::PredicateKind<'tcx>, state: S as tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum PredicateKind {
     Clause(ClauseKind),
     DynCompatible(DefId),
@@ -1784,7 +1784,7 @@ pub enum PredicateKind {
 
 /// Reflects [`ty::AssocItem`]
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct AssocItem {
     pub def_id: DefId,
     /// This is `None` for RPTITs.
@@ -1855,7 +1855,7 @@ impl AssocItem {
 /// Reflects [`ty::AssocKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: ty::AssocKind, state: S as _tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum AssocKind {
     Const { name: Symbol },
     Fn { name: Symbol, has_self: bool },
@@ -1865,13 +1865,13 @@ pub enum AssocKind {
 /// Reflects [`ty::AssocTypeData`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: ty::AssocTypeData, state: S as _tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum AssocTypeData {
     Normal(Symbol),
     Rpitit(ImplTraitInTraitData),
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum AssocItemContainer {
     TraitContainer {
         trait_ref: TraitRef,
@@ -1895,7 +1895,7 @@ pub enum AssocItemContainer {
 /// Reflects [`ty::ImplTraitInTraitData`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: ty::ImplTraitInTraitData, state: S as _s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ImplTraitInTraitData {
     Trait {
         fn_def_id: DefId,

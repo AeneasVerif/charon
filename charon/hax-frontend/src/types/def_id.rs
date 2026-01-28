@@ -29,7 +29,7 @@ impl<'t, S> SInto<S, ByteSymbol> for rustc_span::symbol::ByteSymbol {
 /// Reflects [`hir::Safety`]
 #[derive(AdtInto)]
 #[args(<S>, from: hir::Safety, state: S as _s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Safety {
     Unsafe,
     Safe,
@@ -40,7 +40,7 @@ pub type Pinnedness = bool;
 
 /// Reflects [`hir::def::CtorKind`]
 
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, AdtInto)]
 #[args(<S>, from: hir::def::CtorKind, state: S as _s)]
 pub enum CtorKind {
     Fn,
@@ -49,7 +49,7 @@ pub enum CtorKind {
 
 /// Reflects [`hir::def::CtorOf`]
 
-#[derive(Debug, Copy, Hash, Clone, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
+#[derive(Debug, Copy, Hash, Clone, PartialEq, Eq, AdtInto)]
 #[args(<S>, from: hir::def::CtorOf, state: S as _s)]
 pub enum CtorOf {
     Struct,
@@ -60,7 +60,7 @@ pub enum CtorOf {
 ///
 /// Reflects [`rustc_middle::mir::Promoted`].
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, AdtInto)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, AdtInto)]
 #[args(<S>, from: rustc_middle::mir::Promoted, state: S as _s)]
 pub struct PromotedId {
     #[value(self.as_u32())]
@@ -77,7 +77,7 @@ impl PromotedId {
 
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_hir::def::DefKind, state: S as tcx)]
-#[derive(Debug, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub enum DefKind {
     Mod,
     Struct,
@@ -121,7 +121,7 @@ pub enum DefKind {
     SyntheticCoroutineBody,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, Default)]
 pub struct MacroKinds {
     bang: bool,
     attr: bool,
@@ -141,12 +141,12 @@ impl<S> SInto<S, MacroKinds> for rustc_hir::def::MacroKinds {
 /// Reflects [`rustc_hir::def_id::DefId`], augmented to also give ids to promoted constants (which
 /// have their own ad-hoc numbering scheme in rustc for now).
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct DefId {
     pub(crate) contents: crate::id_table::hash_consing::HashConsed<DefIdContents>,
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub struct DefIdContents {
     pub krate: String,
     pub path: Vec<DisambiguatedDefPathItem>,
@@ -158,6 +158,8 @@ pub struct DefIdContents {
     ///
     /// **Warning: this `index` field might not be safe to use**. They are valid only for one Rustc
     /// sesssion. Please do not rely on those indices unless you cannot do otherwise.
+    // pub base: RDefId,
+    // pub promoted: Option<PromotedId>,
     pub index: (u32, u32, Option<PromotedId>),
     pub is_local: bool,
 
@@ -369,7 +371,7 @@ impl<'tcx, S: BaseState<'tcx>> SInto<S, GlobalIdent> for rustc_hir::def_id::Loca
 
 /// Reflects [`rustc_hir::definitions::DefPathData`]
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
 #[args(<'ctx, S: UnderOwnerState<'ctx>>, from: rustc_hir::definitions::DefPathData, state: S as s)]
 pub enum DefPathItem {
     CrateRoot {
@@ -398,7 +400,7 @@ pub enum DefPathItem {
     NestedStatic,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
 #[args(<'a, S: UnderOwnerState<'a>>, from: rustc_hir::definitions::DisambiguatedDefPathData, state: S as s)]
 /// Reflects [`rustc_hir::definitions::DisambiguatedDefPathData`]
 pub struct DisambiguatedDefPathItem {

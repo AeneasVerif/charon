@@ -3,7 +3,7 @@ use crate::sinto_as_usize;
 
 /// Describe the kind of a variant
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum VariantKind {
     /// The variant is the only variant of a `struct` type
     Struct {
@@ -25,7 +25,7 @@ sinto_as_usize!(rustc_abi, VariantIdx);
 
 /// Describe a variant
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct VariantInformations {
     pub type_namespace: DefId,
 
