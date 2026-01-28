@@ -75,8 +75,6 @@ where
                 pack: None,
                 flags: Default::default(),
             },
-            // We know these work in poly mode.
-            drop_glue: get_drop_glue_shim(s, args, true),
             destruct_impl,
         };
 
@@ -232,9 +230,28 @@ impl ItemRef {
     where
         S: BaseState<'tcx>,
     {
+        let tcx = s.base().tcx;
+        let def_id = self.def_id.underlying_rust_def_id();
+        let s = &s.with_owner_id(def_id);
         let args = self.rustc_args(s);
-        let s = &s.with_owner_id(self.def_id.underlying_rust_def_id());
-        get_drop_glue_shim(s, Some(args), true).unwrap()
+        let body = crate::drop_glue_shim(tcx, def_id, Some(args));
+        MirBody::from_mir(s, body)
+    }
+
+    /// For `FnMut`&`Fn` closures: the MIR for the `call_once` method; it simply calls
+    /// `call_mut`.
+    pub fn closure_once_shim<'tcx, S>(&self, s: &S) -> Option<MirBody>
+    where
+        S: BaseState<'tcx>,
+    {
+        let tcx = s.base().tcx;
+        let def_id = self.def_id.underlying_rust_def_id();
+        let s = &s.with_owner_id(def_id);
+        let args = self.rustc_args(s);
+        let closure_ty = inst_binder(tcx, s.typing_env(), Some(args), tcx.type_of(def_id));
+        let body = crate::closure_once_shim(tcx, closure_ty)?;
+        let body = MirBody::from_mir(s, body);
+        Some(body)
     }
 }
 
@@ -290,8 +307,6 @@ pub enum FullDefKind {
         variants: IndexVec<VariantIdx, VariantDef>,
         flags: AdtFlags,
         repr: ReprOptions,
-        /// MIR body of the builtin `drop` impl.
-        drop_glue: Option<MirBody>,
         /// Info required to construct a virtual `Drop` impl for this adt.
         destruct_impl: Box<VirtualTraitImpl>,
     },
@@ -393,11 +408,6 @@ pub enum FullDefKind {
         fn_mut_impl: Option<Box<VirtualTraitImpl>>,
         /// Info required to construct a virtual `Fn` impl for this closure.
         fn_impl: Option<Box<VirtualTraitImpl>>,
-        /// For `FnMut`&`Fn` closures: the MIR for the `call_once` method; it simply calls
-        /// `call_mut`.
-        once_shim: Option<MirBody>,
-        /// MIR body of the builtin `drop` impl.
-        drop_glue: Option<MirBody>,
         /// Info required to construct a virtual `Drop` impl for this closure.
         destruct_impl: Box<VirtualTraitImpl>,
         /// The signature of the `call_once` method.
@@ -639,7 +649,6 @@ where
                 variants,
                 flags: def.flags().sinto(s),
                 repr: def.repr().sinto(s),
-                drop_glue: get_drop_glue_shim(s, args, false),
                 destruct_impl: virtual_impl_for(
                     s,
                     ty::TraitRef::new(tcx, destruct_trait, [type_of_self()]),
@@ -868,8 +877,6 @@ where
                 is_const: tcx.constness(def_id) == rustc_hir::Constness::Const,
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 args: ClosureArgs::sfrom(s, def_id, closure),
-                once_shim: get_closure_once_shim(s, closure_ty),
-                drop_glue: get_drop_glue_shim(s, args, false),
                 destruct_impl: virtual_impl_for(
                     s,
                     ty::TraitRef::new(tcx, destruct_trait, [type_of_self()]),
@@ -1192,10 +1199,10 @@ impl MirBody {
     pub fn from_mir<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
         body: rustc_middle::mir::Body<'tcx>,
-    ) -> Option<Self> {
+    ) -> Self {
         let body = Rc::new(body.clone());
         let s = &s.with_mir(body.clone());
-        Some(body.sinto(s))
+        body.sinto(s)
     }
 }
 
@@ -1269,37 +1276,6 @@ where
         implied_impl_exprs: required_impl_exprs,
         types,
     })
-}
-
-fn get_closure_once_shim<'tcx, S>(s: &S, closure_ty: ty::Ty<'tcx>) -> Option<MirBody>
-where
-    S: UnderOwnerState<'tcx>,
-{
-    let tcx = s.base().tcx;
-    let mir = crate::closure_once_shim(tcx, closure_ty)?;
-    let body = MirBody::from_mir(s, mir)?;
-    Some(body)
-}
-
-fn get_drop_glue_shim<'tcx, S>(
-    s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
-    translate_poly_drop_glue: bool,
-) -> Option<MirBody>
-where
-    S: UnderOwnerState<'tcx>,
-{
-    let tcx = s.base().tcx;
-    let def_id = s.owner_id();
-    if translate_poly_drop_glue || args.is_some() || tcx.generics_of(def_id).is_empty() {
-        let mir = crate::drop_glue_shim(tcx, def_id, args);
-        let body = MirBody::from_mir(s, mir)?;
-        Some(body)
-    } else {
-        // Drop elaboration does not handle generics correctly, so it can ICE on some types. To be
-        // safe we don't translate drop glue for poly types unless explicitly opted-in.
-        None
-    }
 }
 
 fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(

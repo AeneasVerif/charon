@@ -11,47 +11,52 @@ impl ItemTransCtx<'_, '_> {
         def: &hax::FullDef,
         self_ty: &Ty,
     ) -> Result<Body, Error> {
-        let (hax::FullDefKind::Adt { drop_glue, .. } | hax::FullDefKind::Closure { drop_glue, .. }) =
-            def.kind()
-        else {
+        let (hax::FullDefKind::Adt { .. } | hax::FullDefKind::Closure { .. }) = def.kind() else {
             return Ok(Body::Missing);
         };
 
-        let tmp_body;
-        let body = match drop_glue {
-            Some(body) => body,
-            None if self.options.translate_poly_drop_glue => {
-                let ctx = std::panic::AssertUnwindSafe(&mut *self);
-                // This is likely to panic, see the docs of `--precise-drops`.
-                let Ok(body) =
-                    std::panic::catch_unwind(move || def.this().drop_glue_shim(ctx.hax_state()))
-                else {
-                    let self_ty_name = if let TyKind::Adt(TypeDeclRef {
-                        id: TypeId::Adt(type_id),
-                        ..
-                    }) = self_ty.kind()
-                        && let Some(name) = self.translated.item_name(*type_id)
-                    {
-                        name.to_string_with_ctx(&self.into_fmt())
-                    } else {
-                        "crate::the::Type".to_string()
-                    };
-                    raise_error!(
-                        self,
-                        span,
-                        "rustc panicked while retrieving drop glue. \
+        // Drop elaboration does not handle generics correctly, so it can ICE on some types. To be
+        // safe we don't translate drop glue for poly types unless explicitly opted-in.
+        let translate_glue = self.options.translate_poly_drop_glue
+            || self.monomorphize()
+            || self
+                .tcx
+                .generics_of(def.this.def_id.underlying_rust_def_id())
+                .is_empty()
+            || def.this.def_id.as_synthetic(self.hax_state()).is_some();
+        if !translate_glue {
+            return Ok(Body::Missing);
+        }
+
+        let body = {
+            let ctx = std::panic::AssertUnwindSafe(&mut *self);
+            // This is likely to panic, see the docs of `--precise-drops`.
+            let Ok(body) =
+                std::panic::catch_unwind(move || def.this().drop_glue_shim(ctx.hax_state()))
+            else {
+                let self_ty_name = if let TyKind::Adt(TypeDeclRef {
+                    id: TypeId::Adt(type_id),
+                    ..
+                }) = self_ty.kind()
+                    && let Some(name) = self.translated.item_name(*type_id)
+                {
+                    name.to_string_with_ctx(&self.into_fmt())
+                } else {
+                    "crate::the::Type".to_string()
+                };
+                raise_error!(
+                    self,
+                    span,
+                    "rustc panicked while retrieving drop glue. \
                         This is known to happen with `--precise-drops`; to silence this warning, \
                         pass `--opaque '{{impl core::marker::Destruct for {}}}'` to charon",
-                        self_ty_name
-                    )
-                };
-                tmp_body = body;
-                &tmp_body
-            }
-            None => return Ok(Body::Missing),
+                    self_ty_name
+                )
+            };
+            body
         };
 
-        Ok(self.translate_body(span, body, &def.source_text))
+        Ok(self.translate_body(span, &body, &def.source_text))
     }
 
     /// Translate the body of the fake `Destruct::drop_in_place` method we're adding to the
