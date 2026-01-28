@@ -122,7 +122,7 @@ pub struct RegionParam {
 }
 
 /// A const generic variable in a signature or binder.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct ConstGenericParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
@@ -130,7 +130,7 @@ pub struct ConstGenericParam {
     #[drive(skip)]
     pub name: String,
     /// Type of the const generic
-    pub ty: LiteralTy,
+    pub ty: Ty,
 }
 
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
@@ -171,7 +171,7 @@ pub type ClauseDbVar = DeBruijnVar<TraitClauseId>;
 
 impl_from_enum!(Region::Var(RegionDbVar));
 impl_from_enum!(TyKind::TypeVar(TypeDbVar));
-impl_from_enum!(ConstGeneric::Var(ConstGenericDbVar));
+impl_from_enum!(ConstantExprKind::Var(ConstGenericDbVar));
 impl_from_enum!(TraitRefKind::Clause(ClauseDbVar));
 impl From<TypeDbVar> for Ty {
     fn from(x: TypeDbVar) -> Self {
@@ -297,7 +297,7 @@ impl RegionParam {
 }
 
 impl ConstGenericParam {
-    pub fn new(index: ConstGenericVarId, name: String, ty: LiteralTy) -> Self {
+    pub fn new(index: ConstGenericVarId, name: String, ty: Ty) -> Self {
         Self { index, name, ty }
     }
 }

@@ -332,16 +332,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for ConstGeneric {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ConstGeneric::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
-            ConstGeneric::Value(v) => write!(f, "{v}"),
-            ConstGeneric::Global(id) => write!(f, "{}", id.with_ctx(ctx)),
-        }
-    }
-}
-
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericDbVar {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         ctx.format_bound_var(f, *self, "@ConstGeneric", |v| Some(v.name.clone()))
@@ -349,8 +339,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericDbVar {
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericParam {
-    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "const {} : {}", self.name, self.ty)
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "const {} : {}", self.name, self.ty.with_ctx(ctx))
     }
 }
 
@@ -1131,7 +1121,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                     }),
                     const_generics: binder.params.const_generics.map_ref(|x| ConstGenericParam {
                         name: underscore.clone(),
-                        ..*x
+                        ty: x.ty.clone(),
+                        index: x.index,
                     }),
                     trait_clauses: binder.params.trait_clauses.clone(),
                     ..GenericParams::empty()

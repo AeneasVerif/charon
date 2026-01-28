@@ -150,7 +150,7 @@ impl Pattern {
                 let args = GenericArgs {
                     regions: [].into(),
                     types: [ty.clone()].into(),
-                    const_generics: [len.clone()].into(),
+                    const_generics: [*len.clone()].into(),
                     trait_refs: [].into(),
                 };
                 self.matches_with_generics(ctx, &type_name, Some(&args))
@@ -179,7 +179,7 @@ impl Pattern {
         }
     }
 
-    pub fn matches_const(&self, _ctx: &TranslatedCrate, _c: &ConstGeneric) -> bool {
+    pub fn matches_const(&self, _ctx: &TranslatedCrate, _c: &ConstantExpr) -> bool {
         if let [PatElem::Glob] = self.elems.as_slice() {
             return true;
         }
@@ -302,7 +302,7 @@ impl PatTy {
         }
     }
 
-    pub fn matches_const(&self, ctx: &TranslatedCrate, c: &ConstGeneric) -> bool {
+    pub fn matches_const(&self, ctx: &TranslatedCrate, c: &ConstantExpr) -> bool {
         match self {
             PatTy::Pat(p) => p.matches_const(ctx, c),
             PatTy::Ref(..) => false,

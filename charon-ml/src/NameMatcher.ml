@@ -268,7 +268,7 @@ type match_config = {
 (** Mapped expressions.
 
     The {!MRegion} variant is used when matching generics. *)
-type mexpr = MTy of T.ty | MCg of T.const_generic | MRegion of T.region
+type mexpr = MTy of T.ty | MCg of T.constant_expr | MRegion of T.region
 [@@deriving show]
 
 type region_map = {
@@ -363,11 +363,11 @@ let update_tmap (c : match_config) (m : maps) (id : var) (v : T.ty) : bool =
   if c.map_vars_to_vars && not is_var then false
   else update_map VarMap.find_opt VarMap.add m.vmap id (MTy v)
 
-let update_cmap (c : match_config) (m : maps) (id : var) (v : T.const_generic) :
+let update_cmap (c : match_config) (m : maps) (id : var) (v : T.constant_expr) :
     bool =
   let is_var =
-    match v with
-    | CgVar _ -> true
+    match v.kind with
+    | CVar _ -> true
     | _ -> false
   in
   if c.map_vars_to_vars && not is_var then false
@@ -386,7 +386,7 @@ let opt_update_tmap (c : match_config) (m : maps) (id : var option) (v : T.ty) :
   | Some id -> update_tmap c m id v
 
 let opt_update_cmap (c : match_config) (m : maps) (id : var option)
-    (v : T.const_generic) : bool =
+    (v : T.constant_expr) : bool =
   match id with
   | None -> true
   | Some id -> update_cmap c m id v
@@ -718,16 +718,16 @@ and match_generic_arg (ctx : 'fun_body ctx) (c : match_config) (m : maps)
   | GRegion pr, MRegion r -> match_region c m pr r
   | GExpr e, MTy ty -> match_expr_with_ty ctx c m e ty
   | GExpr e, MCg cg -> match_expr_with_const_generic ctx c m e cg
-  | GValue v, MCg (CgValue cg) -> match_literal v cg
+  | GValue v, MCg { kind = CLiteral cg; _ } -> match_literal v cg
   | _ -> false
 
 and match_expr_with_const_generic (ctx : 'fun_body ctx) (c : match_config)
-    (m : maps) (pcg : expr) (cg : T.const_generic) : bool =
-  match (pcg, cg) with
+    (m : maps) (pcg : expr) (cg : T.constant_expr) : bool =
+  match (pcg, cg.kind) with
   | EVar pv, _ -> opt_update_cmap c m pv cg
-  | EComp pat, CgGlobal gid ->
+  | EComp pat, CGlobal gref ->
       (* Lookup the decl and match the name *)
-      let d = T.GlobalDeclId.Map.find gid ctx.crate.global_decls in
+      let d = T.GlobalDeclId.Map.find gref.id ctx.crate.global_decls in
       match_name ctx c pat d.item_meta.name
   | _ -> false
 
@@ -1120,15 +1120,16 @@ and ty_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
   (* Convert the type *)
   ty_to_pattern_aux ctx c m ty
 
-and const_generic_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
-    (m : constraints) (cg : T.const_generic) : generic_arg =
-  match cg with
-  | CgVar v -> GExpr (EVar (const_generic_var_to_pattern m v))
-  | CgValue v -> GValue (literal_to_pattern c v)
-  | CgGlobal gid ->
-      let d = T.GlobalDeclId.Map.find gid ctx.crate.global_decls in
+and constant_expr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
+    (m : constraints) (cg : T.constant_expr) : generic_arg =
+  match cg.kind with
+  | CVar v -> GExpr (EVar (const_generic_var_to_pattern m v))
+  | CLiteral v -> GValue (literal_to_pattern c v)
+  | CGlobal gref ->
+      let d = T.GlobalDeclId.Map.find gref.id ctx.crate.global_decls in
       let n = name_to_pattern_aux ctx c d.item_meta.name in
       GExpr (EComp n)
+  | _ -> raise (Failure "TODO")
 
 and generic_args_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (m : constraints) (generics : T.generic_args) : generic_args =
@@ -1138,7 +1139,7 @@ and generic_args_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
   let regions = List.map (region_to_pattern m) regions in
   let types = List.map (ty_to_pattern_aux ctx c m) types in
   let const_generics =
-    List.map (const_generic_to_pattern ctx c m) const_generics
+    List.map (constant_expr_to_pattern ctx c m) const_generics
   in
   List.concat
     [

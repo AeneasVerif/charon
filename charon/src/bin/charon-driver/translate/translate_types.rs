@@ -143,7 +143,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 assert!(args.types.elem_count() == 1 && args.const_generics.elem_count() == 1);
                 TyKind::Array(
                     args.types.pop().unwrap(),
-                    args.const_generics.pop().unwrap(),
+                    Box::new(args.const_generics.pop().unwrap()),
                 )
             }
             hax::TyKind::Slice(item_ref) => {
@@ -314,7 +314,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     regions.push(self.translate_region(span, region)?);
                 }
                 Const(c) => {
-                    const_generics.push(self.translate_constant_expr_to_const_generic(span, c)?);
+                    const_generics.push(self.translate_constant_expr(span, c)?);
                 }
             }
         }

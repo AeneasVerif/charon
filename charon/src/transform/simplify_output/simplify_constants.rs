@@ -135,10 +135,8 @@ fn transform_constant_expr(
                 .map(|x| transform_constant_expr(ctx, Box::new(x)))
                 .collect_vec();
 
-            let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Unsigned(
-                UIntTy::Usize,
-                fields.len() as u128,
-            )));
+            let len =
+                ConstantExpr::mk_usize(ScalarValue::Unsigned(UIntTy::Usize, fields.len() as u128));
             let ty = match val.ty.kind() {
                 TyKind::Array(ty, _) => ty.clone(),
                 TyKind::Slice(ty) => {
@@ -147,7 +145,7 @@ fn transform_constant_expr(
                 }
                 _ => unreachable!("Unexpected type in array/slice constant"),
             };
-            Rvalue::Aggregate(AggregateKind::Array(ty, len), fields)
+            Rvalue::Aggregate(AggregateKind::Array(ty, Box::new(len)), fields)
         }
         ConstantExprKind::FnPtr(fptr) => {
             let TyKind::FnPtr(sig) = val.ty.kind() else {

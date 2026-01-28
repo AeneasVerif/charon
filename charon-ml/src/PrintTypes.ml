@@ -227,11 +227,82 @@ and trait_impl_ref_to_string (env : 'a fmt_env) (iref : trait_impl_ref) : string
   let generics = generic_args_to_string env iref.generics in
   impl ^ generics
 
-and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
-  match cg with
-  | CgGlobal id -> global_decl_id_to_string env id
-  | CgVar var -> const_generic_db_var_to_string env var
-  | CgValue lit -> literal_to_string lit
+and provenance_to_string (env : 'a fmt_env) (pv : provenance) : string =
+  match pv with
+  | Global gref -> "prov_global(" ^ global_decl_ref_to_string env gref ^ ")"
+  | Function fn_ref -> "prov_fn(" ^ fun_decl_ref_to_string env fn_ref ^ ")"
+  | Unknown -> "prov_unknown"
+
+and byte_to_string (env : 'a fmt_env) (cv : byte) : string =
+  match cv with
+  | Uninit -> "uninit"
+  | Value b -> string_of_int b
+  | Provenance (p, i) ->
+      provenance_to_string env p ^ "[" ^ string_of_int i ^ "]"
+
+and const_aggregate_to_string (env : 'a fmt_env) (tref : type_decl_ref)
+    opt_variant_id (fields : constant_expr list) : string =
+  let fields = List.map (constant_expr_to_string env) fields in
+
+  match tref.id with
+  | TTuple -> "(" ^ String.concat ", " fields ^ ")"
+  | TAdtId def_id ->
+      let adt_name = type_decl_id_to_string env def_id in
+      let variant_name =
+        match opt_variant_id with
+        | None -> adt_name
+        | Some variant_id ->
+            adt_name ^ "::" ^ adt_variant_to_string env def_id variant_id
+      in
+      let fields =
+        match adt_field_names env def_id opt_variant_id with
+        | None -> "(" ^ String.concat ", " fields ^ ")"
+        | Some field_names ->
+            let fields = List.combine field_names fields in
+            let fields =
+              List.map
+                (fun (field, value) -> field ^ " = " ^ value ^ ";")
+                fields
+            in
+            let fields = String.concat " " fields in
+            "{ " ^ fields ^ " }"
+      in
+      variant_name ^ " " ^ fields
+  | TBuiltin _ -> raise (Failure "Unreachable")
+
+and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
+  match cv.kind with
+  | CLiteral lit ->
+      "(" ^ literal_to_string lit ^ " : " ^ ty_to_string env cv.ty ^ ")"
+  | CVar var -> const_generic_db_var_to_string env var
+  | CTraitConst (trait_ref, const_name) ->
+      let trait_ref = trait_ref_to_string env trait_ref in
+      trait_ref ^ const_name
+  | CFnDef fn_ptr | CFnPtr fn_ptr -> fn_ptr_to_string env fn_ptr
+  | CRawMemory bytes ->
+      "RawMemory(["
+      ^ String.concat ", " (List.map (byte_to_string env) bytes)
+      ^ "])"
+  | COpaque reason -> "Opaque(" ^ reason ^ ")"
+  | CAdt (variant_id, fields) -> begin
+      match cv.ty with
+      | TAdt tref -> const_aggregate_to_string env tref variant_id fields
+      | _ -> "malformed constant"
+    end
+  | CArray fields | CSlice fields ->
+      "["
+      ^ String.concat ", " (List.map (constant_expr_to_string env) fields)
+      ^ "]"
+  | CGlobal gref -> global_decl_ref_to_string env gref
+  | CPtrNoProvenance n -> "(" ^ Z.to_string n ^ " as *const _)"
+  | CRef c -> "&" ^ constant_expr_to_string env c
+  | CPtr (ref_kind, c) ->
+      let ref_kind =
+        match ref_kind with
+        | RShared -> "&raw const"
+        | RMut -> "&raw mut"
+      in
+      ref_kind ^ constant_expr_to_string env c
 
 and builtin_fun_id_to_string (aid : builtin_fun_id) : string =
   match aid with
@@ -304,7 +375,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       in
       "dyn (" ^ String.concat " + " clauses ^ reg_str ^ ")"
   | TArray (ty, len) ->
-      "[" ^ ty_to_string env ty ^ "; " ^ const_generic_to_string env len ^ "]"
+      "[" ^ ty_to_string env ty ^ "; " ^ constant_expr_to_string env len ^ "]"
   | TSlice ty -> "[" ^ ty_to_string env ty ^ "]"
   | TPtrMetadata ty -> "PtrMetadata(" ^ ty_to_string env ty ^ ")"
   | TError msg -> "type_error (\"" ^ msg ^ "\")"
@@ -317,7 +388,7 @@ and generic_args_to_strings (env : 'a fmt_env) (generics : generic_args) :
   let { regions; types; const_generics; trait_refs } = generics in
   let regions = List.map (region_to_string env) regions in
   let types = List.map (ty_to_string env) types in
-  let cgs = List.map (const_generic_to_string env) const_generics in
+  let cgs = List.map (constant_expr_to_string env) const_generics in
   let params = List.flatten [ regions; types; cgs ] in
   let trait_refs = List.map (trait_ref_to_string env) trait_refs in
   (params, trait_refs)
@@ -439,6 +510,38 @@ and generic_params_to_strings (env : 'a fmt_env) (generics : generic_params) :
   let trait_clauses = List.map (trait_param_to_string env) trait_clauses in
   (params, trait_clauses)
 
+and adt_variant_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
+    (variant_id : VariantId.id) : string =
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
+  | None ->
+      type_decl_id_to_pretty_string def_id
+      ^ "::"
+      ^ variant_id_to_pretty_string variant_id
+  | Some def -> begin
+      match def.kind with
+      | Enum variants ->
+          let variant = VariantId.nth variants variant_id in
+          name_to_string env def.item_meta.name ^ "::" ^ variant.variant_name
+      | _ -> raise (Failure "Unreachable")
+    end
+
+and adt_field_names (env : 'a fmt_env) (def_id : TypeDeclId.id)
+    (opt_variant_id : VariantId.id option) : string list option =
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
+  | None -> None
+  | Some { kind = Opaque; _ } -> None
+  | Some def ->
+      let fields = type_decl_get_fields def opt_variant_id in
+      (* There are two cases: either all the fields have names, or none
+         of them has names *)
+      let has_names =
+        List.exists (fun f -> Option.is_some f.field_name) fields
+      in
+      if has_names then
+        let fields = List.map (fun f -> Option.get f.field_name) fields in
+        Some fields
+      else None
+
 let field_to_string env (f : field) : string =
   match f.field_name with
   | Some field_name -> field_name ^ " : " ^ ty_to_string env f.field_ty
@@ -538,38 +641,6 @@ let type_decl_to_string (env : 'a fmt_env) (def : type_decl) : string =
   | Alias ty -> "type " ^ name ^ params ^ clauses ^ " = " ^ ty_to_string env ty
   | Opaque -> "opaque type " ^ name ^ params ^ clauses
   | TDeclError err -> "error(\"" ^ err ^ "\")"
-
-let adt_variant_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
-    (variant_id : VariantId.id) : string =
-  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
-  | None ->
-      type_decl_id_to_pretty_string def_id
-      ^ "::"
-      ^ variant_id_to_pretty_string variant_id
-  | Some def -> begin
-      match def.kind with
-      | Enum variants ->
-          let variant = VariantId.nth variants variant_id in
-          name_to_string env def.item_meta.name ^ "::" ^ variant.variant_name
-      | _ -> raise (Failure "Unreachable")
-    end
-
-let adt_field_names (env : 'a fmt_env) (def_id : TypeDeclId.id)
-    (opt_variant_id : VariantId.id option) : string list option =
-  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
-  | None -> None
-  | Some { kind = Opaque; _ } -> None
-  | Some def ->
-      let fields = type_decl_get_fields def opt_variant_id in
-      (* There are two cases: either all the fields have names, or none
-         of them has names *)
-      let has_names =
-        List.exists (fun f -> Option.is_some f.field_name) fields
-      in
-      if has_names then
-        let fields = List.map (fun f -> Option.get f.field_name) fields in
-        Some fields
-      else None
 
 let adt_field_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) (field_id : FieldId.id) :

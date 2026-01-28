@@ -108,14 +108,14 @@ let ty_as_builtin_adt (ty : ty) : builtin_ty * generic_args =
   | Some (id, generics) -> (id, generics)
   | None -> raise (Failure "Unreachable")
 
-let ty_as_opt_array (ty : ty) : (ty * const_generic) option =
+let ty_as_opt_array (ty : ty) : (ty * constant_expr) option =
   match ty with
   | TArray (ty, len) -> Some (ty, len)
   | _ -> None
 
 let ty_is_array (ty : ty) : bool = Option.is_some (ty_as_opt_array ty)
 
-let ty_as_array (ty : ty) : ty * const_generic =
+let ty_as_array (ty : ty) : ty * constant_expr =
   match ty_as_opt_array ty with
   | Some (ty, n) -> (ty, n)
   | None -> raise (Failure "Unreachable")
@@ -166,9 +166,9 @@ let integer_as_literal (int_ty : integer_type) : literal_type =
   | Signed int_ty -> TInt int_ty
   | Unsigned int_ty -> TUInt int_ty
 
-let const_generic_as_literal (cg : const_generic) : Values.literal =
-  match cg with
-  | CgValue v -> v
+let constant_expr_as_literal (c : constant_expr) : Values.literal =
+  match c.kind with
+  | CLiteral v -> v
   | _ -> raise (Failure "Unreachable")
 
 let trait_instance_id_as_trait_impl (id : trait_ref_kind) :
@@ -197,7 +197,7 @@ let empty_generic_args : generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }
 
 let mk_generic_args (regions : region list) (types : ty list)
-    (const_generics : const_generic list) (trait_refs : trait_ref list) :
+    (const_generics : constant_expr list) (trait_refs : trait_ref list) :
     generic_args =
   { regions; types; const_generics; trait_refs }
 
@@ -224,7 +224,8 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   in
   let const_generics =
     List.map
-      (fun (v : const_generic_param) -> CgVar (Free v.index))
+      (fun (v : const_generic_param) ->
+        { kind = CVar (Free v.index); ty = v.ty })
       generics.const_generics
   in
   let trait_refs =

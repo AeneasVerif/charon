@@ -23,7 +23,7 @@ type subst = {
           DeBruijn index. A negative DeBruijn index means that the region is
           locally bound. *)
   ty_subst : TypeVarId.id de_bruijn_var -> ty;
-  cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic;
+  cg_subst : ConstGenericVarId.id de_bruijn_var -> constant_expr_kind;
       (** Substitution from *local* trait clause to trait instance *)
   tr_subst : TraitClauseId.id de_bruijn_var -> trait_ref_kind;
       (** Substitution for the [Self] trait instance *)
@@ -35,7 +35,7 @@ type subst = {
 type single_binder_subst = {
   r_sb_subst : RegionId.id -> region;
   ty_sb_subst : TypeVarId.id -> ty;
-  cg_sb_subst : ConstGenericVarId.id -> const_generic;
+  cg_sb_subst : ConstGenericVarId.id -> constant_expr_kind;
   tr_sb_subst : TraitClauseId.id -> trait_ref_kind;
       (** Substitution for the [Self] trait instance *)
   tr_sb_self : trait_ref_kind;
@@ -45,7 +45,7 @@ let empty_subst : subst =
   {
     r_subst = (fun var -> RVar var);
     ty_subst = (fun var -> TVar var);
-    cg_subst = (fun var -> CgVar var);
+    cg_subst = (fun var -> CVar var);
     tr_subst = (fun var -> Clause var);
     tr_self = Self;
   }
@@ -161,7 +161,7 @@ let shift_subst (subst : subst) : subst =
       compose (st_shift_visitor#visit_ty 1) (compose subst.ty_subst decr_db_var);
     cg_subst =
       compose
-        (st_shift_visitor#visit_const_generic 1)
+        (st_shift_visitor#visit_constant_expr_kind 1)
         (compose subst.cg_subst decr_db_var);
     tr_subst =
       compose
@@ -197,11 +197,7 @@ let st_substitute_visitor =
 
     method! visit_RVar (subst : subst) var = subst.r_subst var
     method! visit_TVar (subst : subst) var = subst.ty_subst var
-    method! visit_CgVar (subst : subst) var = subst.cg_subst var
-
-    method! visit_CVar (subst : subst) var =
-      constant_expr_of_const_generic @@ subst.cg_subst var
-
+    method! visit_CVar (subst : subst) var = subst.cg_subst var
     method! visit_Clause (subst : subst) var = subst.tr_subst var
     method! visit_Self (subst : subst) = subst.tr_self
   end
@@ -319,12 +315,14 @@ let make_type_subst_from_vars (vars : type_param list) (tys : ty list) :
     ids and a list of const generics (with which to substitute the const generic
     variable ids) *)
 let make_const_generic_subst (var_ids : ConstGenericVarId.id list)
-    (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
+    (cgs : constant_expr_kind list) : ConstGenericVarId.id -> constant_expr_kind
+    =
   let map = ConstGenericVarId.Map.of_list (List.combine var_ids cgs) in
   fun varid -> ConstGenericVarId.Map.find varid map
 
 let make_const_generic_subst_from_vars (vars : const_generic_param list)
-    (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
+    (cgs : constant_expr_kind list) : ConstGenericVarId.id -> constant_expr_kind
+    =
   make_const_generic_subst
     (List.map (fun (x : const_generic_param) -> x.index) vars)
     cgs
@@ -347,7 +345,8 @@ let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
   let r_sb_subst = make_region_subst_from_vars params.regions args.regions in
   let ty_sb_subst = make_type_subst_from_vars params.types args.types in
   let cg_sb_subst =
-    make_const_generic_subst_from_vars params.const_generics args.const_generics
+    make_const_generic_subst_from_vars params.const_generics
+      (List.map (fun (c : constant_expr) -> c.kind) args.const_generics)
   in
   let tr_sb_subst =
     make_trait_subst_from_clauses params.trait_clauses args.trait_refs
@@ -678,7 +677,8 @@ let bound_identity_args (params : generic_params) : generic_args =
         params.types;
     const_generics =
       List.map
-        (fun (var : const_generic_param) -> s.cg_sb_subst var.index)
+        (fun (var : const_generic_param) : Types.constant_expr ->
+          { kind = s.cg_sb_subst var.index; ty = var.ty })
         params.const_generics;
     trait_refs =
       List.map

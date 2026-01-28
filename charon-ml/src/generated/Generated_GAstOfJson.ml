@@ -92,7 +92,7 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedAdt (x_0, x_1, x_2))
     | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
-        let* x_1 = const_generic_of_json ctx x_1 in
+        let* x_1 = box_of_json constant_expr_of_json ctx x_1 in
         Ok (AggregatedArray (x_0, x_1))
     | `Assoc [ ("RawPtr", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
@@ -539,21 +539,6 @@ and closure_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "FnOnce" -> Ok FnOnce
     | _ -> Error "")
 
-and const_generic_of_json (ctx : of_json_ctx) (js : json) :
-    (const_generic, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Global", global) ] ->
-        let* global = global_decl_id_of_json ctx global in
-        Ok (CgGlobal global)
-    | `Assoc [ ("Var", var) ] ->
-        let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
-        Ok (CgVar var)
-    | `Assoc [ ("Value", value) ] ->
-        let* value = literal_of_json ctx value in
-        Ok (CgValue value)
-    | _ -> Error "")
-
 and const_generic_param_of_json (ctx : of_json_ctx) (js : json) :
     (const_generic_param, string) result =
   combine_error_msgs js __FUNCTION__
@@ -561,7 +546,7 @@ and const_generic_param_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("index", index); ("name", name); ("ty", ty) ] ->
         let* index = const_generic_var_id_of_json ctx index in
         let* name = string_of_json ctx name in
-        let* ty = literal_type_of_json ctx ty in
+        let* ty = ty_of_json ctx ty in
         Ok ({ index; name; ty } : const_generic_param)
     | _ -> Error "")
 
@@ -968,7 +953,7 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           index_map_of_json type_var_id_of_json ty_of_json ctx types
         in
         let* const_generics =
-          index_map_of_json const_generic_var_id_of_json const_generic_of_json
+          index_map_of_json const_generic_var_id_of_json constant_expr_of_json
             ctx const_generics
         in
         let* trait_refs =
@@ -1717,12 +1702,12 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
     | `Assoc [ ("Len", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in
-        let* x_2 = option_of_json const_generic_of_json ctx x_2 in
+        let* x_2 = option_of_json (box_of_json constant_expr_of_json) ctx x_2 in
         Ok (Len (x_0, x_1, x_2))
     | `Assoc [ ("Repeat", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = operand_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in
-        let* x_2 = const_generic_of_json ctx x_2 in
+        let* x_2 = box_of_json constant_expr_of_json ctx x_2 in
         Ok (Repeat (x_0, x_1, x_2))
     | `Assoc [ ("ShallowInitBox", `List [ x_0; x_1 ]) ] ->
         let* x_0 = operand_of_json ctx x_0 in
@@ -2143,7 +2128,7 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
         Ok (TPtrMetadata ptr_metadata)
     | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
-        let* x_1 = const_generic_of_json ctx x_1 in
+        let* x_1 = box_of_json constant_expr_of_json ctx x_1 in
         Ok (TArray (x_0, x_1))
     | `Assoc [ ("Slice", slice) ] ->
         let* slice = ty_of_json ctx slice in
@@ -2293,7 +2278,7 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Length", length) ] ->
-        let* length = const_generic_of_json ctx length in
+        let* length = box_of_json constant_expr_of_json ctx length in
         Ok (MetaLength length)
     | `Assoc [ ("VTable", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_ref_of_json ctx x_0 in

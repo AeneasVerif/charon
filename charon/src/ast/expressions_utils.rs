@@ -93,6 +93,15 @@ impl Place {
     }
 }
 
+impl ConstantExpr {
+    pub fn mk_usize(scalar: ScalarValue) -> Self {
+        ConstantExpr {
+            kind: ConstantExprKind::Literal(Literal::Scalar(scalar)),
+            ty: Ty::mk_usize(),
+        }
+    }
+}
+
 impl Operand {
     pub fn mk_const_unit() -> Self {
         Operand::Const(Box::new(ConstantExpr {
@@ -216,19 +225,6 @@ impl ProjectionElem {
             PtrMetadata => ty.get_ptr_metadata(krate).into_type(),
             Index { .. } | Subslice { .. } => ty.as_array_or_slice().ok_or(())?.clone(),
         })
-    }
-}
-
-impl From<ConstGeneric> for ConstantExprKind {
-    fn from(cg: ConstGeneric) -> Self {
-        match cg {
-            ConstGeneric::Global(id) => ConstantExprKind::Global(GlobalDeclRef {
-                id,
-                generics: Box::new(GenericArgs::empty()),
-            }),
-            ConstGeneric::Var(var) => ConstantExprKind::Var(var),
-            ConstGeneric::Value(lit) => ConstantExprKind::Literal(lit),
-        }
     }
 }
 
