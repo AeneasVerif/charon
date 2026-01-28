@@ -233,24 +233,15 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         args: &hax::ClosureArgs,
     ) -> Result<IndexVec<FieldId, Ty>, Error> {
-        let upvar_tys = args
+        let upvar_tys: IndexVec<FieldId, Ty> = args
             .upvar_tys
             .iter()
-            .map(|ty| -> Result<Ty, Error> {
-                let mut ty = self.translate_ty(span, ty)?;
-                // We supply fresh regions for the by-ref upvars.
-                if let TyKind::Ref(Region::Erased | Region::Body(_), deref_ty, kind) = ty.kind() {
-                    let region_id = self.the_only_binder_mut().push_upvar_region();
-                    ty = TyKind::Ref(
-                        Region::Var(DeBruijnVar::new_at_zero(region_id)),
-                        deref_ty.clone(),
-                        *kind,
-                    )
-                    .into_ty();
-                }
-                Ok(ty)
-            })
+            .map(|ty| self.translate_ty(span, ty))
             .try_collect()?;
+        let upvar_tys = upvar_tys.replace_erased_regions(|| {
+            let region_id = self.the_only_binder_mut().push_upvar_region();
+            Region::Var(DeBruijnVar::new_at_zero(region_id))
+        });
         Ok(upvar_tys)
     }
 
