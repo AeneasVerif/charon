@@ -774,10 +774,10 @@ impl BodyTransCtx<'_, '_, '_> {
                         let akind = AggregateKind::Adt(tref, None, None);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::RawPtr(ty, is_mut) => {
+                    hax::AggregateKind::RawPtr(ty, mutability) => {
                         // TODO: replace with a call to `ptr::from_raw_parts`.
                         let t_ty = self.translate_ty(span, ty)?;
-                        let mutability = if *is_mut {
+                        let mutability = if mutability.is_mut() {
                             RefKind::Mut
                         } else {
                             RefKind::Shared

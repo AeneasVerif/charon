@@ -255,7 +255,7 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
                     assert!(item.in_trait.is_none());
                     let item = item.mutate_def_id(s, |def_id| {
                         // Construct a def_id for the promoted constant.
-                        *def_id = def_id.make_promoted_child(s, promoted.sinto(s));
+                        *def_id = def_id.make_promoted_child(s, promoted);
                     });
                     Promoted(item)
                 }

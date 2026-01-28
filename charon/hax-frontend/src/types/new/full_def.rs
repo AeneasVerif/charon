@@ -109,7 +109,7 @@ where
             predicates: GenericPredicates { predicates: vec![] },
             parent: Some(parent_def.this().clone()),
         };
-        let body = get_promoted_mir(tcx, rust_def_id, promoted_id.as_rust_promoted_id());
+        let body = get_promoted_mir(tcx, rust_def_id, promoted_id);
         let body = substitute(tcx, s.typing_env(), args, body);
         source_span = Some(body.span);
 
@@ -484,7 +484,7 @@ pub enum FullDefKind<Body> {
 
     // Others
     /// Macros
-    Macro(MacroKinds),
+    Macro(hir::def::MacroKinds),
     /// A use of `global_asm!`.
     GlobalAsm,
     /// A synthetic coroutine body created by the lowering of a coroutine-closure, such as an async
@@ -985,7 +985,7 @@ where
             }
         }
         RDefKind::Field => FullDefKind::Field,
-        RDefKind::Macro(kinds) => FullDefKind::Macro(kinds.sinto(s)),
+        RDefKind::Macro(kinds) => FullDefKind::Macro(kinds),
         RDefKind::GlobalAsm => FullDefKind::GlobalAsm,
         RDefKind::SyntheticCoroutineBody => FullDefKind::SyntheticCoroutineBody,
     }

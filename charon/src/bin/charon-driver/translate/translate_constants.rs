@@ -129,7 +129,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr(span, arg)?;
-                let rk = RefKind::mutable(*mutability);
+                let rk = RefKind::mutable(mutability.is_mut());
                 ConstantExprKind::Ptr(rk, Box::new(arg))
             }
             hax::ConstantExprKind::ConstRef { id } => {

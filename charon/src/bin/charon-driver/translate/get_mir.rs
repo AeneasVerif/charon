@@ -124,9 +124,6 @@ fn get_mir_for_def_id_and_level<'tcx>(
             };
             Some(body)
         }
-        Some(promoted_id) => {
-            let promoted_id = promoted_id.as_rust_promoted_id();
-            Some(hax::get_promoted_mir(tcx, rust_def_id, promoted_id))
-        }
+        Some(promoted_id) => Some(hax::get_promoted_mir(tcx, rust_def_id, promoted_id)),
     }
 }

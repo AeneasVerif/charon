@@ -179,7 +179,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 let region = self.translate_region(span, region)?;
                 let ty = self.translate_ty(span, ty)?;
-                let kind = if *mutability {
+                let kind = if mutability.is_mut() {
                     RefKind::Mut
                 } else {
                     RefKind::Shared
@@ -189,7 +189,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::RawPtr(ty, mutbl) => {
                 trace!("RawPtr: {:?}", (ty, mutbl));
                 let ty = self.translate_ty(span, ty)?;
-                let kind = if *mutbl {
+                let kind = if mutbl.is_mut() {
                     RefKind::Mut
                 } else {
                     RefKind::Shared

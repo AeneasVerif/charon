@@ -4,17 +4,6 @@
 //! This module also includes some `rustc_ast` definitions when they show up in HIR.
 use crate::prelude::*;
 
-use rustc_hir as hir;
-
-impl<S> SInto<S, Mutability> for hir::Mutability {
-    fn sinto(&self, _s: &S) -> Mutability {
-        match self {
-            Self::Mut => true,
-            Self::Not => false,
-        }
-    }
-}
-
 /// Reflects [`rustc_span::symbol::Ident`]
 pub type Ident = (Symbol, Span);
 

@@ -11,6 +11,23 @@ use crate::prelude::*;
 
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
+macro_rules! sinto_reexport {
+    ($path:path) => {
+        pub use $path;
+        impl<S> SInto<S, $path> for $path {
+            fn sinto(&self, _s: &S) -> $path {
+                self.clone()
+            }
+        }
+    };
+}
+
+sinto_reexport!(hir::Safety);
+sinto_reexport!(hir::Mutability);
+sinto_reexport!(hir::def::CtorKind);
+sinto_reexport!(hir::def::MacroKinds);
+sinto_reexport!(hir::def::CtorOf);
+
 pub type Symbol = String;
 pub type ByteSymbol = Vec<u8>;
 
@@ -26,55 +43,7 @@ impl<'t, S> SInto<S, ByteSymbol> for rustc_span::symbol::ByteSymbol {
     }
 }
 
-/// Reflects [`hir::Safety`]
-#[derive(AdtInto)]
-#[args(<S>, from: hir::Safety, state: S as _s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum Safety {
-    Unsafe,
-    Safe,
-}
-
-pub type Mutability = bool;
-pub type Pinnedness = bool;
-
-/// Reflects [`hir::def::CtorKind`]
-
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, AdtInto)]
-#[args(<S>, from: hir::def::CtorKind, state: S as _s)]
-pub enum CtorKind {
-    Fn,
-    Const,
-}
-
-/// Reflects [`hir::def::CtorOf`]
-
-#[derive(Debug, Copy, Hash, Clone, PartialEq, Eq, AdtInto)]
-#[args(<S>, from: hir::def::CtorOf, state: S as _s)]
-pub enum CtorOf {
-    Struct,
-    Variant,
-}
-
-/// The id of a promoted MIR constant.
-///
-/// Reflects [`rustc_middle::mir::Promoted`].
-
-#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, AdtInto)]
-#[args(<S>, from: rustc_middle::mir::Promoted, state: S as _s)]
-pub struct PromotedId {
-    #[value(self.as_u32())]
-    pub id: u32,
-}
-
-impl PromotedId {
-    pub fn as_rust_promoted_id(&self) -> rustc_middle::mir::Promoted {
-        rustc_middle::mir::Promoted::from_u32(self.id)
-    }
-}
-
 /// Reflects [`rustc_hir::def::DefKind`]
-
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_hir::def::DefKind, state: S as tcx)]
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
@@ -121,26 +90,10 @@ pub enum DefKind {
     SyntheticCoroutineBody,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, Default)]
-pub struct MacroKinds {
-    bang: bool,
-    attr: bool,
-    derive: bool,
-}
-
-impl<S> SInto<S, MacroKinds> for rustc_hir::def::MacroKinds {
-    fn sinto(&self, _s: &S) -> MacroKinds {
-        MacroKinds {
-            bang: self.contains(Self::BANG),
-            attr: self.contains(Self::ATTR),
-            derive: self.contains(Self::DERIVE),
-        }
-    }
-}
+pub use rustc_middle::mir::Promoted as PromotedId;
 
 /// Reflects [`rustc_hir::def_id::DefId`], augmented to also give ids to promoted constants (which
 /// have their own ad-hoc numbering scheme in rustc for now).
-
 #[derive(Clone, PartialEq, Eq)]
 pub struct DefId {
     pub(crate) contents: crate::id_table::hash_consing::HashConsed<DefIdContents>,
@@ -187,6 +140,9 @@ impl DefId {
     pub fn is_local(&self) -> bool {
         self.base.is_local()
     }
+    pub fn promoted_id(&self) -> Option<PromotedId> {
+        self.promoted
+    }
 
     /// Returns the [`SyntheticItem`] encoded by a [rustc `DefId`](RDefId), if
     /// any.
@@ -212,7 +168,7 @@ impl DefId {
             Some(id) => DisambiguatedDefPathItem {
                 data: DefPathItem::PromotedConst,
                 // Reuse the promoted id as disambiguator, like for inline consts.
-                disambiguator: id.id,
+                disambiguator: id.as_u32(),
             },
             None => {
                 let tcx = s.base().tcx;
@@ -249,12 +205,6 @@ impl DefId {
     }
 }
 
-impl DefId {
-    pub fn promoted_id(&self) -> Option<PromotedId> {
-        self.promoted
-    }
-}
-
 impl std::ops::Deref for DefId {
     type Target = DefIdContents;
     fn deref(&self) -> &Self::Target {
@@ -267,7 +217,7 @@ impl std::fmt::Debug for DefId {
         // Use the more legible rustc debug implementation.
         write!(f, "{:?}", self.underlying_rust_def_id())?;
         if let Some(promoted) = self.promoted_id() {
-            write!(f, "::promoted#{}", promoted.id)?;
+            write!(f, "::promoted#{}", promoted.as_u32())?;
         }
         Ok(())
     }
