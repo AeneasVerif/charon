@@ -91,22 +91,6 @@ pub(crate) fn get_variant_information<'s, S: UnderOwnerState<'s>>(
     }
 }
 
-#[tracing::instrument(skip(sess))]
-pub fn translate_span(span: rustc_span::Span, sess: &rustc_session::Session) -> Span {
-    let smap: &rustc_span::source_map::SourceMap = sess.psess.source_map();
-    let filename = smap.span_to_filename(span);
-
-    let lo = smap.lookup_char_pos(span.lo());
-    let hi = smap.lookup_char_pos(span.hi());
-
-    Span {
-        lo: lo.into(),
-        hi: hi.into(),
-        filename: filename.sinto(&()),
-        rust_span_data: Some(span.data()),
-    }
-}
-
 pub trait HasParamEnv<'tcx> {
     fn param_env(&self) -> ty::ParamEnv<'tcx>;
     fn typing_env(&self) -> ty::TypingEnv<'tcx>;

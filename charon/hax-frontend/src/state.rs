@@ -82,8 +82,6 @@ mod types {
     /// Global caches
     #[derive(Default)]
     pub struct GlobalCache<'tcx> {
-        /// Cache the `Span` translations.
-        pub spans: HashMap<rustc_span::Span, Span>,
         /// Per-item cache.
         pub per_item: HashMap<RDefId, ItemCache<'tcx>>,
         /// Map that recovers rustc args for a given `ItemRef`.

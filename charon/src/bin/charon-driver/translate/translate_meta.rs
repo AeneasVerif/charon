@@ -31,10 +31,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub fn translate_filename(&mut self, name: &hax::FileName) -> meta::FileName {
+    pub fn translate_filename(&mut self, name: rustc_span::FileName) -> meta::FileName {
         match name {
-            hax::FileName::Real(name) => {
-                use hax::RealFileName;
+            rustc_span::FileName::Real(name) => {
+                use rustc_span::RealFileName;
                 match name {
                     RealFileName::LocalPath(path) => {
                         let path = if let Ok(path) = path.strip_prefix(&self.sysroot) {
@@ -105,25 +105,28 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub fn translate_span_data(&mut self, rspan: &hax::Span) -> meta::SpanData {
-        let filename = self.translate_filename(&rspan.filename);
-        let rust_span = rspan.rust_span_data.unwrap().span();
+    pub fn translate_span_data(&mut self, span: rustc_span::Span) -> meta::SpanData {
+        let smap: &rustc_span::source_map::SourceMap = self.tcx.sess.psess.source_map();
+        let filename = smap.span_to_filename(span);
+        let filename = self.translate_filename(filename);
+        let span = span;
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
                 unimplemented!();
             }
-            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename, rust_span),
+            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename, span),
         };
 
-        fn convert_loc(loc: &hax::Loc) -> Loc {
+        let convert_loc = |pos: rustc_span::BytePos| -> Loc {
+            let loc = smap.lookup_char_pos(pos);
             Loc {
                 line: loc.line,
-                col: loc.col,
+                col: loc.col_display,
             }
-        }
-        let beg = convert_loc(&rspan.lo);
-        let end = convert_loc(&rspan.hi);
+        };
+        let beg = convert_loc(span.lo());
+        let end = convert_loc(span.hi());
 
         // Put together
         meta::SpanData { file_id, beg, end }
@@ -136,14 +139,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         source_info: &hax::SourceInfo,
     ) -> Span {
         // Translate the span
-        let data = self.translate_span_data(&source_info.span);
+        let data = self.translate_span_data(source_info.span);
 
         // Lookup the top-most inlined parent scope.
         let mut parent_span = None;
         let mut scope_data = &source_scopes[source_info.scope];
         while let Some(parent_scope) = scope_data.inlined_parent_scope {
             scope_data = &source_scopes[parent_scope];
-            parent_span = Some(&scope_data.span);
+            parent_span = Some(scope_data.span);
         }
 
         if let Some(parent_span) = parent_span {
@@ -160,9 +163,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub(crate) fn translate_span_from_hax(&mut self, span: &hax::Span) -> Span {
+    pub(crate) fn translate_span_from_hax(&mut self, span: &rustc_span::Span) -> Span {
         Span {
-            data: self.translate_span_data(span),
+            data: self.translate_span_data(*span),
             generated_from_span: None,
         }
     }

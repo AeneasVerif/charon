@@ -29,7 +29,6 @@ extern crate rustc_target;
 extern crate rustc_trait_selection;
 extern crate rustc_type_ir;
 
-pub mod comments;
 mod rustc_utils;
 pub mod state;
 mod utils;
