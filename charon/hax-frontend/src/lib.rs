@@ -52,11 +52,7 @@ pub use hax_adt_into::AdtInto;
 pub use sinto::SInto;
 
 pub mod options {
-    use hax_adt_into::derive_group;
-    use schemars::JsonSchema;
-
-    #[derive_group(Serializers)]
-    #[derive(Debug, Clone, JsonSchema)]
+    #[derive(Debug, Clone)]
     pub enum Glob {
         One,  // *
         Many, // **
@@ -72,8 +68,7 @@ pub mod options {
         }
     }
 
-    #[derive_group(Serializers)]
-    #[derive(Debug, Clone, JsonSchema)]
+    #[derive(Debug, Clone)]
     pub enum NamespaceChunk {
         Glob(Glob),
         Exact(String),
@@ -98,8 +93,7 @@ pub mod options {
         }
     }
 
-    #[derive_group(Serializers)]
-    #[derive(Debug, Clone, JsonSchema)]
+    #[derive(Debug, Clone)]
     pub struct Namespace {
         pub chunks: Vec<NamespaceChunk>,
     }

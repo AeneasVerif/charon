@@ -13,16 +13,14 @@ impl<S> SInto<S, u64> for rustc_middle::mir::interpret::AllocId {
 
 sinto_as_usize!(rustc_hir::hir_id, ItemLocalId);
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_middle::mir::SourceInfo, state: S as s)]
 pub struct SourceInfo {
     pub span: Span,
     pub scope: SourceScope,
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_middle::mir::LocalDecl<'tcx>, state: S as s)]
 pub struct LocalDecl {
     pub mutability: Mutability,
@@ -53,32 +51,25 @@ fn name_of_local(
 /// Enumerates the kinds of Mir bodies. TODO: use const generics
 /// instead of an open list of types.
 pub mod mir_kinds {
-    use crate::prelude::{JsonSchema, derive_group};
-
-    #[derive_group(Serializers)]
-    #[derive(Clone, Copy, Debug, JsonSchema)]
+    #[derive(Clone, Copy, Debug)]
     pub struct Built;
 
-    #[derive_group(Serializers)]
-    #[derive(Clone, Copy, Debug, JsonSchema)]
+    #[derive(Clone, Copy, Debug)]
     pub struct Promoted;
 
-    #[derive_group(Serializers)]
-    #[derive(Clone, Copy, Debug, JsonSchema)]
+    #[derive(Clone, Copy, Debug)]
     pub struct Elaborated;
 
-    #[derive_group(Serializers)]
-    #[derive(Clone, Copy, Debug, JsonSchema)]
+    #[derive(Clone, Copy, Debug)]
     pub struct Optimized;
 
-    #[derive_group(Serializers)]
-    #[derive(Clone, Copy, Debug, JsonSchema)]
+    #[derive(Clone, Copy, Debug)]
     pub struct CTFE;
 
     /// MIR of unknown origin. `body()` returns `None`; this is used to get the bodies provided via
     /// `from_mir` but not attempt to get MIR for functions etc.
-    #[derive_group(Serializers)]
-    #[derive(Clone, Copy, Debug, JsonSchema)]
+
+    #[derive(Clone, Copy, Debug)]
     pub struct Unknown;
 
     pub use rustc::*;
@@ -181,16 +172,15 @@ pub mod mir_kinds {
 pub use mir_kinds::IsMirKind;
 
 /// The contents of `Operand::Const`.
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug)]
 pub struct ConstOperand {
     pub span: Span,
     pub ty: Ty,
     pub kind: ConstOperandKind,
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug)]
 pub enum ConstOperandKind {
     /// An evaluated constant represented as an expression.
     Value(ConstantExpr),
@@ -281,8 +271,7 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     }
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::Body<'tcx>, state: S as s)]
 pub struct MirBody<KIND> {
     pub span: Span,
@@ -303,8 +292,7 @@ pub struct MirBody<KIND> {
     pub _kind: std::marker::PhantomData<KIND>,
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_middle::mir::SourceScopeData<'tcx>, state: S as s)]
 pub struct SourceScopeData {
     pub span: Span,
@@ -312,8 +300,7 @@ pub struct SourceScopeData {
     pub inlined_parent_scope: Option<SourceScope>,
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_middle::mir::MirPhase, state: S as _s)]
 pub enum MirPhase {
     Built,
@@ -324,8 +311,7 @@ pub enum MirPhase {
 sinto_todo!(rustc_middle::mir, AnalysisPhase);
 sinto_todo!(rustc_middle::mir, RuntimePhase);
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::Operand<'tcx>, state: S as s)]
 pub enum Operand {
     Copy(Place),
@@ -342,8 +328,7 @@ impl Operand {
     }
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::Terminator<'tcx>, state: S as s)]
 pub struct Terminator {
     pub source_info: SourceInfo,
@@ -452,8 +437,8 @@ fn translate_terminator_kind_drop<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>
 }
 
 // We don't use the LitIntType on purpose (we don't want the "unsuffixed" case)
-#[derive_group(Serializers)]
-#[derive(Clone, Copy, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ScalarTy {
     Bool,
     Int(IntTy),
@@ -461,8 +446,7 @@ pub enum ScalarTy {
     Char,
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug)]
 pub struct ScalarInt {
     /// Little-endian representation of the integer
     pub data_le_bytes: [u8; 16],
@@ -506,8 +490,8 @@ fn translate_switchint<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>(
 }
 
 /// A value of type `fn<...> A -> B` that can be called.
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug)]
 pub enum FunOperand {
     /// Call to a statically-known function.
     Static(ItemRef),
@@ -515,8 +499,7 @@ pub enum FunOperand {
     Dynamic(Operand),
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_middle::mir::UnwindAction, state: S as _s)]
 pub enum UnwindAction {
     Continue,
@@ -525,8 +508,7 @@ pub enum UnwindAction {
     Cleanup(BasicBlock),
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::TerminatorKind<'tcx>, state: S as s)]
 pub enum TerminatorKind {
     Goto {
@@ -618,8 +600,7 @@ pub enum TerminatorKind {
     },
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::Statement<'tcx>, state: S as s)]
 pub struct Statement {
     pub source_info: SourceInfo,
@@ -627,8 +608,7 @@ pub struct Statement {
     pub kind: Box<StatementKind>,
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::StatementKind<'tcx>, state: S as s)]
 pub enum StatementKind {
     Assign((Place, Rvalue)),
@@ -651,16 +631,14 @@ pub enum StatementKind {
     Nop,
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::NonDivergingIntrinsic<'tcx>, state: S as s)]
 pub enum NonDivergingIntrinsic {
     Assume(Operand),
     CopyNonOverlapping(CopyNonOverlapping),
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::CopyNonOverlapping<'tcx>, state: S as s)]
 pub struct CopyNonOverlapping {
     pub src: Operand,
@@ -668,16 +646,14 @@ pub struct CopyNonOverlapping {
     pub count: Operand,
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug)]
 pub struct Place {
     /// The type of the element on which we apply the projection given by `kind`
     pub ty: Ty,
     pub kind: PlaceKind,
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug)]
 pub enum PlaceKind {
     Local(Local),
     Projection {
@@ -686,8 +662,7 @@ pub enum PlaceKind {
     },
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug)]
 pub enum ProjectionElemFieldKind {
     Tuple(FieldIdx),
     Adt {
@@ -699,8 +674,7 @@ pub enum ProjectionElemFieldKind {
     ClosureState(FieldIdx),
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug)]
 pub enum ProjectionElem {
     Deref,
     Field(ProjectionElemFieldKind),
@@ -804,8 +778,7 @@ impl<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>> SInto<S, Place>
     }
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::AggregateKind<'tcx>, state: S as s)]
 pub enum AggregateKind {
     Array(Ty),
@@ -841,8 +814,7 @@ pub enum AggregateKind {
     RawPtr(Ty, Mutability),
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug)]
 pub enum CastKind {
     PointerExposeProvenance,
     PointerWithExposedProvenance,
@@ -883,23 +855,20 @@ impl CastKind {
     }
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S>, from: rustc_middle::mir::CoercionSource, state: S as _s)]
 pub enum CoercionSource {
     AsCast,
     Implicit,
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_middle::mir::NullOp, state: S as _s)]
 pub enum NullOp {
     RuntimeChecks(RuntimeChecks),
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_middle::mir::RuntimeChecks, state: S as _s)]
 pub enum RuntimeChecks {
     UbChecks,
@@ -907,8 +876,7 @@ pub enum RuntimeChecks {
     OverflowChecks,
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::Rvalue<'tcx>, state: S as s)]
 pub enum Rvalue {
     Use(Operand),
@@ -934,8 +902,7 @@ pub enum Rvalue {
     WrapUnsafeBinder(Operand, Ty),
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_middle::mir::RawPtrKind, state: S as _s)]
 pub enum RawPtrKind {
     Mut,
@@ -943,8 +910,7 @@ pub enum RawPtrKind {
     FakeForPtrMetadata,
 }
 
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema)]
+#[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>, from: rustc_middle::mir::BasicBlockData<'tcx>, state: S as s)]
 pub struct BasicBlockData {
     pub statements: Vec<Statement>,
@@ -959,8 +925,8 @@ make_idx_wrapper!(rustc_middle::ty, UserTypeAnnotationIndex);
 make_idx_wrapper!(rustc_abi, FieldIdx);
 
 /// Reflects [`rustc_middle::mir::UnOp`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Copy, Clone, Debug, JsonSchema)]
+
+#[derive(AdtInto, Copy, Clone, Debug)]
 #[args(<'slt, S: UnderOwnerState<'slt>>, from: mir::UnOp, state: S as _s)]
 pub enum UnOp {
     Not,
@@ -969,8 +935,8 @@ pub enum UnOp {
 }
 
 /// Reflects [`rustc_middle::mir::BinOp`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Copy, Clone, Debug, JsonSchema)]
+
+#[derive(AdtInto, Copy, Clone, Debug)]
 #[args(<'slt, S: UnderOwnerState<'slt>>, from: mir::BinOp, state: S as _s)]
 pub enum BinOp {
     Add,
@@ -1002,8 +968,8 @@ pub enum BinOp {
 }
 
 /// Reflects [`rustc_middle::mir::AssignOp`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Copy, Clone, Debug, JsonSchema)]
+
+#[derive(AdtInto, Copy, Clone, Debug)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: mir::AssignOp, state: S as _s)]
 pub enum AssignOp {
     AddAssign,
@@ -1021,8 +987,7 @@ pub enum AssignOp {
 /// Reflects [`rustc_middle::mir::BorrowKind`]
 #[derive(AdtInto)]
 #[args(<S>, from: mir::BorrowKind, state: S as gstate)]
-#[derive_group(Serializers)]
-#[derive(Copy, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum BorrowKind {
     Shared,
     Fake(FakeBorrowKind),
@@ -1032,8 +997,7 @@ pub enum BorrowKind {
 /// Reflects [`rustc_middle::mir::MutBorrowKind`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_middle::mir::MutBorrowKind, state: S as _s)]
-#[derive_group(Serializers)]
-#[derive(Copy, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MutBorrowKind {
     Default,
     TwoPhaseBorrow,
@@ -1043,8 +1007,7 @@ pub enum MutBorrowKind {
 /// Reflects [`rustc_middle::mir::FakeBorrowKind`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_middle::mir::FakeBorrowKind, state: S as _s)]
-#[derive_group(Serializers)]
-#[derive(Copy, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum FakeBorrowKind {
     /// A shared (deep) borrow. Data must be immutable and is aliasable.
     Deep,

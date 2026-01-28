@@ -12,8 +12,8 @@ use std::sync::Arc;
 type DefaultFullDefBody = MirBody<mir_kinds::Unknown>;
 
 /// Gathers a lot of definition information about a [`rustc_hir::def_id::DefId`].
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug, )]
 pub struct FullDef<Body = DefaultFullDefBody> {
     /// A reference to the current item. If the item was provided with generic args, they are
     /// stored here; otherwise the args are the identity_args for this item.
@@ -255,8 +255,8 @@ impl ItemRef {
 }
 
 /// The combination of type generics and related predicates.
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug, )]
 pub struct ParamEnv {
     /// Generic parameters of the item.
     pub generics: TyGenerics,
@@ -267,8 +267,8 @@ pub struct ParamEnv {
 }
 
 /// The kind of a constant item.
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug, )]
 pub enum ConstKind {
     /// Top-level constant: `const CONST: usize = 42;`
     TopLevel,
@@ -281,8 +281,8 @@ pub enum ConstKind {
 }
 
 /// Imbues [`rustc_hir::def::DefKind`] with a lot of extra information.
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug, )]
 pub enum FullDefKind<Body> {
     // Types
     /// ADts (`Struct`, `Enum` and `Union` map to this variant).
@@ -992,8 +992,8 @@ where
 
 /// An associated item in a trait impl. This can be an item provided by the trait impl, or an item
 /// that reuses the trait decl default value.
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug, )]
 pub struct ImplAssocItem {
     /// This is `None` for RPTITs.
     pub name: Option<Symbol>,
@@ -1015,8 +1015,7 @@ pub struct ImplAssocItem {
     pub value: ImplAssocItemValue,
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug, )]
 pub enum ImplAssocItemValue {
     /// The item is provided by the trait impl.
     Provided {
@@ -1047,8 +1046,8 @@ pub enum ImplAssocItemValue {
 
 /// Partial data for a trait impl, used for fake trait impls that we generate ourselves such as
 /// `FnOnce` and `Drop` impls.
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug, )]
 pub struct VirtualTraitImpl {
     /// The trait that is implemented by this impl block.
     pub trait_pred: TraitPredicate,

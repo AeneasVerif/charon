@@ -9,8 +9,8 @@ use rustc_ast::ast;
 use rustc_hir as hir;
 
 /// Reflects [`ast::LitFloatType`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: ast::LitFloatType, state: S as gstate)]
 pub enum LitFloatType {
     Suffixed(FloatTy),
@@ -51,8 +51,7 @@ impl<'t, S> SInto<S, TokenStream> for rustc_ast::tokenstream::TokenStream {
 /// Reflects [`rustc_ast::token::Delimiter`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_ast::token::Delimiter, state: S as _s)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Delimiter {
     Parenthesis,
     Brace,
@@ -65,8 +64,7 @@ sinto_todo!(rustc_ast::token, InvisibleOrigin);
 /// Reflects [`rustc_ast::ast::DelimArgs`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_ast::ast::DelimArgs, state: S as gstate)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DelimArgs {
     pub dspan: DelimSpan,
     pub delim: Delimiter,
@@ -85,8 +83,8 @@ impl<'tcx, S: BaseState<'tcx>> SInto<S, Ident> for rustc_span::symbol::Ident {
 }
 
 /// Reflects [`rustc_ast::AttrStyle`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[args(<S>, from: rustc_ast::AttrStyle, state: S as _s)]
 pub enum AttrStyle {
     Outer,
@@ -96,8 +94,7 @@ pub enum AttrStyle {
 /// Reflects [`rustc_ast::ast::StrStyle`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_ast::ast::StrStyle, state: S as gstate)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum StrStyle {
     Cooked,
     Raw(u8),
@@ -106,20 +103,14 @@ pub enum StrStyle {
 /// Reflects [`rustc_ast::ast::LitKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_ast::ast::LitKind, state: S as gstate)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum LitKind {
     Str(Symbol, StrStyle),
     ByteStr(ByteSymbol, StrStyle),
     CStr(ByteSymbol, StrStyle),
     Byte(u8),
     Char(char),
-    Int(
-        #[serde(with = "serialize_int::unsigned")]
-        #[schemars(with = "String")]
-        u128,
-        LitIntType,
-    ),
+    Int(u128, LitIntType),
     Float(Symbol, LitFloatType),
     Bool(bool),
     Err(ErrorGuaranteed),
@@ -134,8 +125,7 @@ impl<S> SInto<S, u128> for rustc_data_structures::packed::Pu128 {
 /// Reflects [`rustc_ast::token::CommentKind`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_ast::token::CommentKind, state: S as _s)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CommentKind {
     Line,
     Block,
@@ -144,8 +134,7 @@ pub enum CommentKind {
 /// Reflects [`rustc_hir::AttrArgs`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::AttrArgs, state: S as tcx)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AttrArgs {
     Empty,
     Delimited(DelimArgs),
@@ -155,8 +144,7 @@ pub enum AttrArgs {
 /// Reflects [`rustc_ast::MetaItemLit`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_ast::MetaItemLit, state: S as tcx)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MetaItemLit {
     pub symbol: Symbol,
     pub suffix: Option<Symbol>,
@@ -165,8 +153,8 @@ pub struct MetaItemLit {
 }
 
 /// Reflects [`rustc_hir::AttrItem`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::AttrItem, state: S as gstate)]
 pub struct AttrItem {
     #[map(x.to_string())]

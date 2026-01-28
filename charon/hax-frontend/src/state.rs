@@ -86,8 +86,6 @@ mod types {
         pub spans: HashMap<rustc_span::Span, Span>,
         /// Per-item cache.
         pub per_item: HashMap<RDefId, ItemCache<'tcx>>,
-        /// A ID table session, providing fresh IDs.
-        pub id_table_session: id_table::Session,
         /// Map that recovers rustc args for a given `ItemRef`.
         pub reverse_item_refs_map: HashMap<ItemRef, ty::GenericArgsRef<'tcx>>,
         /// We create some artificial items; their def_ids are stored here. See the

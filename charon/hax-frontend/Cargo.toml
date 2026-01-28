@@ -12,9 +12,6 @@ rustc_private=true
 
 [dependencies]
 itertools = "0.11.0"
-serde = { version = "1.0", features = ["derive", "rc"] }
-serde_json = "1.0"
-schemars = "0.8"
 tracing = { version = "0.1", features = [
      "max_level_trace",
      "release_max_level_trace",

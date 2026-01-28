@@ -2,22 +2,21 @@ use crate::prelude::*;
 use crate::sinto_todo;
 
 /// Reflects [`rustc_span::Loc`]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, PartialEq, Eq, Hash, PartialOrd, Ord)]
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Loc {
     pub line: usize,
     pub col: usize,
 }
 
 /// Reflects [`rustc_span::Span`]
-#[derive(::serde::Serialize, ::serde::Deserialize, Clone, Debug, JsonSchema, Eq, Ord)]
+#[derive(Clone, Debug, Eq, Ord)]
 pub struct Span {
     pub lo: Loc,
     pub hi: Loc,
     pub filename: FileName,
     /// Original rustc span; can be useful for reporting rustc
     /// diagnostics (this is used in Charon)
-    #[serde(skip)]
     pub rust_span_data: Option<rustc_span::SpanData>,
 }
 
@@ -72,8 +71,8 @@ impl<'tcx, S: BaseState<'tcx>> SInto<S, Span> for rustc_span::Span {
 }
 
 /// Reflects [`rustc_span::source_map::Spanned`]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+
+#[derive(Clone, Debug)]
 pub struct Spanned<T> {
     pub node: T,
     pub span: Span,
@@ -96,8 +95,8 @@ impl<'tcx, S> SInto<S, PathBuf> for PathBuf {
 }
 
 /// Reflects [`rustc_span::RealFileName`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, PartialEq, Eq, Hash, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[args(<S>, from: rustc_span::RealFileName, state: S as _s)]
 pub enum RealFileName {
     LocalPath(PathBuf),
@@ -116,8 +115,7 @@ impl<S> SInto<S, u64> for rustc_hashes::Hash64 {
 /// Reflects [`rustc_span::FileName`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_span::FileName, state: S as gstate)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum FileName {
     Real(RealFileName),
     CfgSpec(u64),

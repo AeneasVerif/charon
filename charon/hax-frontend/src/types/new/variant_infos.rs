@@ -2,8 +2,8 @@ use crate::prelude::*;
 use crate::sinto_as_usize;
 
 /// Describe the kind of a variant
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum VariantKind {
     /// The variant is the only variant of a `struct` type
     Struct {
@@ -24,8 +24,8 @@ pub enum VariantKind {
 sinto_as_usize!(rustc_abi, VariantIdx);
 
 /// Describe a variant
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VariantInformations {
     pub type_namespace: DefId,
 

@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct IndexVec<I: 'static, T: 'static> {
     pub raw: Vec<T>,
     _marker: std::marker::PhantomData<fn(_: &I)>,
@@ -66,8 +65,7 @@ where
 
 macro_rules! make_idx_wrapper {
     ($($mod:ident)::+, $type:ident) => {
-        #[derive_group(Serializers)]#[derive(Copy, Clone, Eq, Debug, Hash, PartialEq, PartialOrd, Ord, JsonSchema)]
-        #[serde(untagged)]
+        #[derive(Copy, Clone, Eq, Debug, Hash, PartialEq, PartialOrd, Ord, )]
         pub enum $type {
             $type(usize),
         }

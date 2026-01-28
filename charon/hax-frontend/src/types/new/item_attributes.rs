@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug, )]
 pub struct ItemAttributes {
     pub attributes: Vec<Attribute>,
     pub parent_attributes: Vec<Attribute>,

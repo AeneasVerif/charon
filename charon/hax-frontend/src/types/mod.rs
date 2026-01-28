@@ -3,7 +3,6 @@ mod def_id;
 mod hir;
 mod mir;
 mod new;
-pub(crate) mod serialize_int;
 mod span;
 mod ty;
 

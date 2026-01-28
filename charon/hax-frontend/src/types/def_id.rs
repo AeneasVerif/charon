@@ -6,10 +6,8 @@
 //! `hax-engine-names-extract` to have a build dependency on the whole
 //! frontend, that double the build times for the Rust part of hax.
 
-use hax_adt_into::derive_group;
-
+use crate::AdtInto;
 use crate::prelude::*;
-use crate::{AdtInto, JsonSchema};
 
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
@@ -29,9 +27,8 @@ impl<'t, S> SInto<S, ByteSymbol> for rustc_span::symbol::ByteSymbol {
 }
 
 /// Reflects [`hir::Safety`]
-#[derive(AdtInto, JsonSchema)]
+#[derive(AdtInto)]
 #[args(<S>, from: hir::Safety, state: S as _s)]
-#[derive_group(Serializers)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Safety {
     Unsafe,
@@ -42,8 +39,8 @@ pub type Mutability = bool;
 pub type Pinnedness = bool;
 
 /// Reflects [`hir::def::CtorKind`]
-#[derive_group(Serializers)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, JsonSchema, AdtInto)]
+
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
 #[args(<S>, from: hir::def::CtorKind, state: S as _s)]
 pub enum CtorKind {
     Fn,
@@ -51,8 +48,8 @@ pub enum CtorKind {
 }
 
 /// Reflects [`hir::def::CtorOf`]
-#[derive_group(Serializers)]
-#[derive(Debug, Copy, Hash, Clone, PartialEq, Eq, PartialOrd, Ord, JsonSchema, AdtInto)]
+
+#[derive(Debug, Copy, Hash, Clone, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
 #[args(<S>, from: hir::def::CtorOf, state: S as _s)]
 pub enum CtorOf {
     Struct,
@@ -62,8 +59,8 @@ pub enum CtorOf {
 /// The id of a promoted MIR constant.
 ///
 /// Reflects [`rustc_middle::mir::Promoted`].
-#[derive_group(Serializers)]
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, JsonSchema, AdtInto)]
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, AdtInto)]
 #[args(<S>, from: rustc_middle::mir::Promoted, state: S as _s)]
 pub struct PromotedId {
     #[value(self.as_u32())]
@@ -77,8 +74,8 @@ impl PromotedId {
 }
 
 /// Reflects [`rustc_hir::def::DefKind`]
-#[derive_group(Serializers)]
-#[derive(JsonSchema, AdtInto)]
+
+#[derive(AdtInto)]
 #[args(<S>, from: rustc_hir::def::DefKind, state: S as tcx)]
 #[derive(Debug, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
 pub enum DefKind {
@@ -124,8 +121,7 @@ pub enum DefKind {
     SyntheticCoroutineBody,
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Default, JsonSchema)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct MacroKinds {
     bang: bool,
     attr: bool,
@@ -144,14 +140,13 @@ impl<S> SInto<S, MacroKinds> for rustc_hir::def::MacroKinds {
 
 /// Reflects [`rustc_hir::def_id::DefId`], augmented to also give ids to promoted constants (which
 /// have their own ad-hoc numbering scheme in rustc for now).
-#[derive_group(Serializers)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, JsonSchema)]
+
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DefId {
     pub(crate) contents: crate::id_table::hash_consing::HashConsed<DefIdContents>,
 }
 
-#[derive_group(Serializers)]
-#[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord, JsonSchema)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DefIdContents {
     pub krate: String,
     pub path: Vec<DisambiguatedDefPathItem>,
@@ -373,8 +368,8 @@ impl<'tcx, S: BaseState<'tcx>> SInto<S, GlobalIdent> for rustc_hir::def_id::Loca
 }
 
 /// Reflects [`rustc_hir::definitions::DefPathData`]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto, JsonSchema)]
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
 #[args(<'ctx, S: UnderOwnerState<'ctx>>, from: rustc_hir::definitions::DefPathData, state: S as s)]
 pub enum DefPathItem {
     CrateRoot {
@@ -403,8 +398,7 @@ pub enum DefPathItem {
     NestedStatic,
 }
 
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto, JsonSchema)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto)]
 #[args(<'a, S: UnderOwnerState<'a>>, from: rustc_hir::definitions::DisambiguatedDefPathData, state: S as s)]
 /// Reflects [`rustc_hir::definitions::DisambiguatedDefPathData`]
 pub struct DisambiguatedDefPathItem {

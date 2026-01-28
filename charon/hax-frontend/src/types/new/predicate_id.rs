@@ -1,8 +1,6 @@
 use crate::prelude::*;
 
-#[derive_group(Serializers)]
-#[derive(Copy, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[serde(transparent)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 /// A `PredicateId` is a unique identifier for a clause or a
 /// predicate. It is computed by hashing predicates and clause in a
 /// uniform and deterministic way.

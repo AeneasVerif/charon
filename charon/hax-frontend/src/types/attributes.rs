@@ -4,8 +4,8 @@
 use crate::prelude::*;
 
 /// Reflects [`rustc_hir::Attribute`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::Attribute, state: S as gstate)]
 pub enum Attribute {
     Parsed(AttributeKind),
@@ -15,8 +15,7 @@ pub enum Attribute {
 /// Reflects [`rustc_hir::attrs::AttributeKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::attrs::AttributeKind, state: S as tcx)]
-#[derive_group(Serializers)]
-#[derive(Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AttributeKind {
     Align {
         align: Align,
@@ -49,8 +48,8 @@ pub enum AttributeKind {
 }
 
 /// Reflects [`rustc_hir::attrs::Deprecation`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[args(<'tcx, S>, from: rustc_hir::attrs::Deprecation, state: S as _s)]
 pub struct Deprecation {
     pub since: DeprecatedSince,
@@ -59,8 +58,8 @@ pub struct Deprecation {
 }
 
 /// Reflects [`rustc_hir::attrs::DeprecatedSince`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[args(<'tcx, S>, from: rustc_hir::attrs::DeprecatedSince, state: S as _s)]
 pub enum DeprecatedSince {
     RustcVersion(RustcVersion),
@@ -71,8 +70,8 @@ pub enum DeprecatedSince {
 }
 
 /// Reflects [`rustc_hir::RustcVersion`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[args(<'tcx, S>, from: rustc_hir::RustcVersion, state: S as _s)]
 pub struct RustcVersion {
     pub major: u16,
@@ -81,8 +80,8 @@ pub struct RustcVersion {
 }
 
 /// Reflects [`rustc_hir::attrs::InlineAttr`]
-#[derive_group(Serializers)]
-#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+
+#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::attrs::InlineAttr, state: S as _s)]
 pub enum InlineAttr {
     None,
