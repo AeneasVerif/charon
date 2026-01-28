@@ -52,15 +52,6 @@ fn name_of_local(
 /// instead of an open list of types.
 pub mod mir_kinds {
     #[derive(Clone, Copy, Debug)]
-    pub struct Built;
-
-    #[derive(Clone, Copy, Debug)]
-    pub struct Promoted;
-
-    #[derive(Clone, Copy, Debug)]
-    pub struct Elaborated;
-
-    #[derive(Clone, Copy, Debug)]
     pub struct Optimized;
 
     #[derive(Clone, Copy, Debug)]
@@ -68,7 +59,6 @@ pub mod mir_kinds {
 
     /// MIR of unknown origin. `body()` returns `None`; this is used to get the bodies provided via
     /// `from_mir` but not attempt to get MIR for functions etc.
-
     #[derive(Clone, Copy, Debug)]
     pub struct Unknown;
 
@@ -86,54 +76,6 @@ pub mod mir_kinds {
                 id: DefId,
                 f: impl FnOnce(&Body<'tcx>) -> T,
             ) -> Option<T>;
-        }
-
-        impl IsMirKind for Built {
-            fn get_mir<'tcx, T>(
-                tcx: TyCtxt<'tcx>,
-                id: DefId,
-                f: impl FnOnce(&Body<'tcx>) -> T,
-            ) -> Option<T> {
-                let id = id.as_local()?;
-                let steal = tcx.mir_built(id);
-                if steal.is_stolen() {
-                    None
-                } else {
-                    Some(f(&steal.borrow()))
-                }
-            }
-        }
-
-        impl IsMirKind for Promoted {
-            fn get_mir<'tcx, T>(
-                tcx: TyCtxt<'tcx>,
-                id: DefId,
-                f: impl FnOnce(&Body<'tcx>) -> T,
-            ) -> Option<T> {
-                let id = id.as_local()?;
-                let (steal, _) = tcx.mir_promoted(id);
-                if steal.is_stolen() {
-                    None
-                } else {
-                    Some(f(&steal.borrow()))
-                }
-            }
-        }
-
-        impl IsMirKind for Elaborated {
-            fn get_mir<'tcx, T>(
-                tcx: TyCtxt<'tcx>,
-                id: DefId,
-                f: impl FnOnce(&Body<'tcx>) -> T,
-            ) -> Option<T> {
-                let id = id.as_local()?;
-                let steal = tcx.mir_drops_elaborated_and_const_checked(id);
-                if steal.is_stolen() {
-                    None
-                } else {
-                    Some(f(&steal.borrow()))
-                }
-            }
         }
 
         impl IsMirKind for Optimized {

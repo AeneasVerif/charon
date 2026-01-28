@@ -66,12 +66,10 @@ fn bits_and_type_to_float_constant_literal(bits: u128, ty: FloatTy) -> ConstantL
 }
 
 impl ConstantExprKind {
-    pub fn decorate(self, ty: Ty, span: Span) -> Decorated<Self> {
+    pub fn decorate(self, ty: Ty, _span: Span) -> Decorated<Self> {
         Decorated {
             contents: Box::new(self),
-            hir_id: None,
             ty,
-            span,
         }
     }
 }

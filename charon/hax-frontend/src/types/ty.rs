@@ -13,9 +13,7 @@ use rustc_span::def_id::DefId as RDefId;
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Decorated<T> {
     pub ty: Ty,
-    pub span: Span,
     pub contents: Box<T>,
-    pub hir_id: Option<(usize, usize)>,
 }
 
 /// Reflects [`ty::ParamTy`]
