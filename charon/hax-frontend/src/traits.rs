@@ -13,7 +13,7 @@ use rustc_span::def_id::DefId as RDefId;
 
 pub use utils::is_sized_related_trait;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, )]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ImplExprPathChunk {
     AssocItem {
         /// Reference to the item, with generics (for GATs), e.g. the `T` and `T: Clone` `ImplExpr`
@@ -27,14 +27,12 @@ pub enum ImplExprPathChunk {
         assoc_item: AssocItem,
         /// The implemented predicate.
         predicate: Binder<TraitPredicate>,
-        predicate_id: PredicateId,
         /// The index of this predicate in the list returned by `implied_predicates`.
         index: usize,
     },
     Parent {
         /// The implemented predicate.
         predicate: Binder<TraitPredicate>,
-        predicate_id: PredicateId,
         /// The index of this predicate in the list returned by `implied_predicates`.
         index: usize,
     },
@@ -53,14 +51,12 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for resolution:
                 item: translate_item_ref(s, item.def_id, generic_args),
                 assoc_item: AssocItem::sfrom(s, item),
                 predicate: predicate.sinto(s),
-                predicate_id: <_ as SInto<_, Clause>>::sinto(predicate, s).id,
                 index: index.sinto(s),
             },
             resolution::PathChunk::Parent {
                 predicate, index, ..
             } => ImplExprPathChunk::Parent {
                 predicate: predicate.sinto(s),
-                predicate_id: <_ as SInto<_, Clause>>::sinto(predicate, s).id,
                 index: index.sinto(s),
             },
         }
@@ -71,7 +67,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for resolution:
 /// concrete `impl Trait for Type {}` item, or `LocalBound` for a context-bound `where T: Trait`.
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::ImplExprAtom<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, )]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ImplExprAtom {
     /// A concrete `impl Trait for Type {}` item.
     #[custom_arm(FROM_TYPE::Concrete { def_id, generics } => TO_TYPE::Concrete(
@@ -80,12 +76,6 @@ pub enum ImplExprAtom {
     Concrete(ItemRef),
     /// A context-bound clause like `where T: Trait`.
     LocalBound {
-        #[not_in_source]
-        #[value({
-            let Self::LocalBound { predicate, .. } = self else { unreachable!() };
-            predicate.sinto(s).id
-        })]
-        predicate_id: PredicateId,
         /// The nth (non-self) predicate found for this item. We use predicates from
         /// `required_predicates` starting from the parentmost item.
         index: usize,
@@ -124,7 +114,7 @@ pub enum ImplExprAtom {
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::BuiltinTraitData<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, )]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum BuiltinTraitData {
     /// A virtual `Destruct` implementation.
     /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
@@ -137,7 +127,7 @@ pub enum BuiltinTraitData {
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::DestructData<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, )]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DestructData {
     /// A drop that does nothing, e.g. for scalars and pointers.
     Noop,
@@ -191,12 +181,6 @@ pub fn super_clause_to_clause_and_impl_expr<'tcx, S: UnderOwnerState<'tcx>>(
     }
     let impl_trait_ref =
         rustc_middle::ty::Binder::dummy(tcx.impl_trait_ref(impl_did).instantiate_identity());
-    let original_predicate_id = {
-        // We don't want the id of the substituted clause id, but the
-        // original clause id (with, i.e., `Self`)
-        let s = &s.with_owner_id(impl_trait_ref.def_id());
-        clause.sinto(s).id
-    };
     let new_clause = clause.instantiate_supertrait(tcx, impl_trait_ref);
     let impl_expr = solve_trait(
         s,
@@ -205,9 +189,8 @@ pub fn super_clause_to_clause_and_impl_expr<'tcx, S: UnderOwnerState<'tcx>>(
             .as_trait_clause()?
             .to_poly_trait_ref(),
     );
-    let mut new_clause_no_binder = new_clause.sinto(s);
-    new_clause_no_binder.id = original_predicate_id;
-    Some((new_clause_no_binder, impl_expr, span.sinto(s)))
+    let new_clause = new_clause.sinto(s);
+    Some((new_clause, impl_expr, span.sinto(s)))
 }
 
 /// This is the entrypoint of the solving.

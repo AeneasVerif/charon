@@ -1208,8 +1208,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         value: ClauseKind::Projection(proj),
                         bound_vars,
                     };
-                    let id = kind.clone().map(PredicateKind::Clause).predicate_id();
-                    Clause { kind, id }
+                    Clause { kind }
                 }
             };
             (clause, span.clone())
@@ -1554,14 +1553,12 @@ sinto_todo!(rustc_middle::ty, HostEffectPredicate<'tcx>);
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Clause {
     pub kind: Binder<ClauseKind>,
-    pub id: PredicateId,
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::Clause<'tcx> {
     fn sinto(&self, s: &S) -> Clause {
         let kind = self.kind().sinto(s);
-        let id = kind.clone().map(PredicateKind::Clause).predicate_id();
-        Clause { kind, id }
+        Clause { kind }
     }
 }
 
@@ -1569,8 +1566,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitPredicate
     fn sinto(&self, s: &S) -> Clause {
         let kind: Binder<_> = self.sinto(s);
         let kind: Binder<ClauseKind> = kind.map(ClauseKind::Trait);
-        let id = kind.clone().map(PredicateKind::Clause).predicate_id();
-        Clause { kind, id }
+        Clause { kind }
     }
 }
 
@@ -1579,14 +1575,12 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitPredicate
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Predicate {
     pub kind: Binder<PredicateKind>,
-    pub id: PredicateId,
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Predicate> for ty::Predicate<'tcx> {
     fn sinto(&self, s: &S) -> Predicate {
         let kind = self.kind().sinto(s);
-        let id = kind.predicate_id();
-        Predicate { kind, id }
+        Predicate { kind }
     }
 }
 

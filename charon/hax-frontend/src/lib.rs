@@ -30,7 +30,6 @@ extern crate rustc_trait_selection;
 extern crate rustc_type_ir;
 
 pub mod comments;
-mod deterministic_hash;
 mod rustc_utils;
 pub mod state;
 mod utils;
