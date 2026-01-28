@@ -17,14 +17,23 @@ pub enum ConstantLiteral {
     ByteStr(Vec<u8>),
 }
 
-/// The subset of [Expr] that corresponds to constants.
+sinto_as_usize!(rustc_abi, VariantIdx);
 
+/// Describe the kind of a variant
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum VariantKind {
+    Struct,
+    Union,
+    Enum { index: VariantIdx },
+}
+
+/// The subset of [Expr] that corresponds to constants.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ConstantExprKind {
     Literal(ConstantLiteral),
     // Adts (structs, enums, unions) or closures.
     Adt {
-        info: VariantInformations,
+        kind: VariantKind,
         fields: Vec<ConstantFieldExpr>,
     },
     Array {

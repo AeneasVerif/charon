@@ -50,44 +50,18 @@ pub(crate) fn can_have_generics<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> 
     }
 }
 
-#[tracing::instrument(skip(s))]
-pub(crate) fn get_variant_information<'s, S: UnderOwnerState<'s>>(
+pub(crate) fn get_variant_kind<'s, S: UnderOwnerState<'s>>(
     adt_def: &ty::AdtDef<'s>,
     variant_index: rustc_abi::VariantIdx,
-    s: &S,
-) -> VariantInformations {
-    fn is_named<'s, I: std::iter::Iterator<Item = &'s ty::FieldDef> + Clone>(it: I) -> bool {
-        it.clone()
-            .any(|field| field.name.to_string().parse::<u64>().is_err())
-    }
-    let variant_def = adt_def.variant(variant_index);
-    let variant = variant_def.def_id;
-    let constructs_type: DefId = adt_def.did().sinto(s);
-    let kind = if adt_def.is_struct() {
-        let named = is_named(adt_def.all_fields());
-        VariantKind::Struct { named }
+    _s: &S,
+) -> VariantKind {
+    if adt_def.is_struct() {
+        VariantKind::Struct
     } else if adt_def.is_union() {
         VariantKind::Union
     } else {
-        let named = is_named(variant_def.fields.iter());
         let index = variant_index.into();
-        VariantKind::Enum { index, named }
-    };
-    VariantInformations {
-        typ: constructs_type.clone(),
-        variant: variant.sinto(s),
-        kind,
-        type_namespace: match &constructs_type.parent {
-            Some(parent) => parent.clone(),
-            None => {
-                let span = s.base().tcx.def_span(variant);
-                fatal!(
-                    s[span],
-                    "Type {:#?} appears to have no parent",
-                    constructs_type
-                )
-            }
-        },
+        VariantKind::Enum { index }
     }
 }
 

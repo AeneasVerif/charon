@@ -218,7 +218,7 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
                     let variant_def = &def.variant(variant_idx);
 
                     ConstantExprKind::Adt {
-                        info: get_variant_information(def, variant_idx, s),
+                        kind: get_variant_kind(def, variant_idx, s),
                         fields: fields
                             .into_iter()
                             .zip(&variant_def.fields)
@@ -305,9 +305,8 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
                     })
                 })
                 .collect::<InterpResult<Vec<_>>>()?;
-            let variants_info = get_variant_information(adt_def, variant, s);
             ConstantExprKind::Adt {
-                info: variants_info,
+                kind: get_variant_kind(adt_def, variant, s),
                 fields,
             }
         }
@@ -325,14 +324,8 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
                     })
                 })
                 .collect::<InterpResult<Vec<_>>>()?;
-            let variants_info = VariantInformations {
-                type_namespace: def_id.parent.clone().unwrap(),
-                typ: def_id.clone(),
-                variant: def_id,
-                kind: VariantKind::Struct { named: false },
-            };
             ConstantExprKind::Adt {
-                info: variants_info,
+                kind: VariantKind::Struct,
                 fields,
             }
         }

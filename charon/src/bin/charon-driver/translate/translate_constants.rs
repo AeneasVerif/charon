@@ -63,13 +63,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_constant_expr_kind(span, lit)?
             }
-            hax::ConstantExprKind::Adt { info, fields } => {
+            hax::ConstantExprKind::Adt { kind, fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|f| self.translate_constant_expr(span, &f.value))
                     .try_collect()?;
                 use hax::VariantKind;
-                let vid = if let VariantKind::Enum { index, .. } = info.kind {
+                let vid = if let VariantKind::Enum { index, .. } = *kind {
                     Some(VariantId::new(index))
                 } else {
                     None
