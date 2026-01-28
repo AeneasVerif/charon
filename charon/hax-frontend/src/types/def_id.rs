@@ -148,21 +148,9 @@ pub struct DefId {
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub struct DefIdContents {
-    pub krate: String,
-    pub path: Vec<DisambiguatedDefPathItem>,
     pub parent: Option<DefId>,
-    /// Stores rustc's `CrateNum`, `DefIndex` and `Promoted` raw indices. This can be useful if one
-    /// needs to convert a [`DefId`] into a [`rustc_hir::def_id::DefId`]. If the promoted id is
-    /// `Some`, then this `DefId` indicates the nth promoted constant associated with the item,
-    /// which doesn't have a real `rustc::DefId`.
-    ///
-    /// **Warning: this `index` field might not be safe to use**. They are valid only for one Rustc
-    /// sesssion. Please do not rely on those indices unless you cannot do otherwise.
-    // pub base: RDefId,
-    // pub promoted: Option<PromotedId>,
-    pub index: (u32, u32, Option<PromotedId>),
-    pub is_local: bool,
-
+    pub base: RDefId,
+    pub promoted: Option<PromotedId>,
     /// The kind of definition this `DefId` points to.
     pub kind: crate::DefKind,
 }
@@ -186,19 +174,18 @@ impl DefId {
     /// The rustc def_id corresponding to this item, if there is one. Promoted constants don't have
     /// a rustc def_id.
     pub fn as_rust_def_id(&self) -> Option<RDefId> {
-        let (_, _, promoted) = self.index;
-        match promoted {
+        match self.promoted {
             None => Some(self.underlying_rust_def_id()),
             Some(_) => None,
         }
     }
     /// The def_id of this item or its parent if this is a promoted constant.
     pub fn underlying_rust_def_id(&self) -> RDefId {
-        let (krate, index, _) = self.index;
-        RDefId {
-            krate: rustc_hir::def_id::CrateNum::from_u32(krate),
-            index: rustc_hir::def_id::DefIndex::from_u32(index),
-        }
+        self.base
+    }
+
+    pub fn is_local(&self) -> bool {
+        self.base.is_local()
     }
 
     /// Returns the [`SyntheticItem`] encoded by a [rustc `DefId`](RDefId), if
@@ -210,22 +197,39 @@ impl DefId {
         def_id_as_synthetic(self.underlying_rust_def_id(), s)
     }
 
-    /// Iterate over this element and its parents.
-    pub fn ancestry(&self) -> impl Iterator<Item = &Self> {
-        std::iter::successors(Some(self), |def| def.parent.as_ref())
+    pub fn crate_name<'tcx>(&self, s: &impl BaseState<'tcx>) -> String {
+        let tcx = s.base().tcx;
+        if def_id_as_synthetic(self.base, s).is_some() {
+            SYNTHETIC_CRATE_NAME.to_string()
+        } else {
+            tcx.crate_name(self.base.krate).to_string()
+        }
     }
 
     /// The `PathItem` corresponding to this item.
-    pub fn path_item(&self) -> DisambiguatedDefPathItem {
-        self.path
-            .last()
-            .cloned()
-            .unwrap_or_else(|| DisambiguatedDefPathItem {
-                disambiguator: 0,
-                data: DefPathItem::CrateRoot {
-                    name: self.krate.clone(),
-                },
-            })
+    pub fn path_item<'tcx>(&self, s: &impl BaseState<'tcx>) -> DisambiguatedDefPathItem {
+        match self.promoted {
+            Some(id) => DisambiguatedDefPathItem {
+                data: DefPathItem::PromotedConst,
+                // Reuse the promoted id as disambiguator, like for inline consts.
+                disambiguator: id.id,
+            },
+            None => {
+                let tcx = s.base().tcx;
+                // Set the def_id so the `CrateRoot` path item can fetch the crate name.
+                let state_with_id = s.with_owner_id(self.base);
+                tcx.def_path(self.base)
+                    .data
+                    .last()
+                    .map(|x| x.sinto(&state_with_id))
+                    .unwrap_or_else(|| DisambiguatedDefPathItem {
+                        disambiguator: 0,
+                        data: DefPathItem::CrateRoot {
+                            name: self.crate_name(s),
+                        },
+                    })
+            }
+        }
     }
 
     /// Construct a hax `DefId` for the nth promoted constant of the current item. That `DefId` has
@@ -235,19 +239,10 @@ impl DefId {
         s: &S,
         promoted_id: PromotedId,
     ) -> Self {
-        let mut path = self.path.clone();
-        path.push(DisambiguatedDefPathItem {
-            data: DefPathItem::PromotedConst,
-            // Reuse the promoted id as disambiguator, like for inline consts.
-            disambiguator: promoted_id.id,
-        });
-        let (krate, index, _) = self.index;
         let contents = DefIdContents {
-            krate: self.krate.clone(),
-            path,
             parent: Some(self.clone()),
-            is_local: self.is_local,
-            index: (krate, index, Some(promoted_id)),
+            base: self.base,
+            promoted: Some(promoted_id),
             kind: DefKind::PromotedConst,
         };
         contents.make_def_id(s)
@@ -256,8 +251,7 @@ impl DefId {
 
 impl DefId {
     pub fn promoted_id(&self) -> Option<PromotedId> {
-        let (_, _, promoted) = self.index;
-        promoted
+        self.promoted
     }
 }
 
@@ -281,10 +275,7 @@ impl std::fmt::Debug for DefId {
 
 impl std::hash::Hash for DefId {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        // A `DefId` is basically an interned path; we only hash the path, discarding the rest of
-        // the information.
-        self.krate.hash(state);
-        self.path.hash(state);
+        self.base.hash(state);
         self.promoted_id().hash(state);
     }
 }
@@ -305,29 +296,10 @@ pub(super) const SYNTHETIC_CRATE_NAME: &str = "<synthetic>";
 
 fn translate_def_id<'tcx, S: BaseState<'tcx>>(s: &S, def_id: RDefId) -> DefId {
     let tcx = s.base().tcx;
-    let path = {
-        // Set the def_id so the `CrateRoot` path item can fetch the crate name.
-        let state_with_id = s.with_owner_id(def_id);
-        tcx.def_path(def_id)
-            .data
-            .iter()
-            .map(|x| x.sinto(&state_with_id))
-            .collect()
-    };
     let contents = DefIdContents {
-        path,
-        krate: if def_id_as_synthetic(def_id, s).is_some() {
-            SYNTHETIC_CRATE_NAME.to_string()
-        } else {
-            tcx.crate_name(def_id.krate).to_string()
-        },
         parent: tcx.opt_parent(def_id).sinto(s),
-        index: (
-            rustc_hir::def_id::CrateNum::as_u32(def_id.krate),
-            rustc_hir::def_id::DefIndex::as_u32(def_id.index),
-            None,
-        ),
-        is_local: def_id.is_local(),
+        base: def_id,
+        promoted: None,
         kind: get_def_kind(tcx, def_id).sinto(s),
     };
     contents.make_def_id(s)
@@ -341,23 +313,6 @@ impl<'s, S: BaseState<'s>> SInto<S, DefId> for RDefId {
         let def_id = translate_def_id(s, *self);
         s.with_item_cache(*self, |cache| cache.def_id = Some(def_id.clone()));
         def_id
-    }
-}
-
-pub type Path = Vec<String>;
-
-impl std::convert::From<DefId> for Path {
-    fn from(v: DefId) -> Vec<String> {
-        std::iter::once(&v.krate)
-            .chain(v.path.iter().filter_map(|item| match &item.data {
-                DefPathItem::TypeNs(s)
-                | DefPathItem::ValueNs(s)
-                | DefPathItem::MacroNs(s)
-                | DefPathItem::LifetimeNs(s) => Some(s),
-                _ => None,
-            }))
-            .cloned()
-            .collect()
     }
 }
 

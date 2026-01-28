@@ -184,7 +184,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         item: &RustcItem,
     ) -> Result<Option<PathElem>, Error> {
         let def_id = item.def_id();
-        let path_elem = def_id.path_item();
+        let path_elem = def_id.path_item(&self.hax_state);
         // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens
         // notably with macros and inherent impl blocks.
         let disambiguator = Disambiguator::new(path_elem.disambiguator as usize);
@@ -578,7 +578,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
-        let is_local = def.def_id().is_local;
+        let is_local = def.def_id().is_local();
         let (attr_info, lang_item) = if !item_src.is_derived_item()
             || matches!(item_src.kind, TransItemSourceKind::ClosureMethod(..))
         {

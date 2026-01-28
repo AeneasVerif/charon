@@ -186,7 +186,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     {
         let mut errors = self.errors.borrow_mut();
         let current_def_id = mem::replace(&mut errors.def_id, item_id);
-        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local);
+        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local());
         drop(errors); // important: release the refcell "lock"
         let ret = f(self);
         let mut errors = self.errors.borrow_mut();

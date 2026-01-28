@@ -288,7 +288,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         };
         self.errors
             .borrow_mut()
-            .register_dep_source(dep_src, item_id, src.def_id().is_local);
+            .register_dep_source(dep_src, item_id, src.def_id().is_local());
         item_id.try_into().ok()
     }
 
@@ -326,7 +326,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         Some(DepSource {
             src_id: self.item_id?,
-            span: self.item_src.def_id().is_local.then_some(span),
+            span: self.item_src.def_id().is_local().then_some(span),
         })
     }
 
@@ -667,7 +667,7 @@ pub fn translate<'tcx, 'ctx>(
     let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
         .to_def_id()
         .sinto(&hax_state);
-    let crate_name = crate_def_id.krate.clone();
+    let crate_name = crate_def_id.crate_name(&hax_state);
     trace!("# Crate: {}", crate_name);
 
     let mut ctx = TranslateCtx {
