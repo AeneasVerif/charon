@@ -2,7 +2,7 @@
 //! This module is independent from the rest of hax, in particular it doesn't use its
 //! state-tracking machinery.
 
-use hax_frontend_exporter_options::BoundsOptions;
+use crate::options::BoundsOptions;
 use itertools::{Either, Itertools};
 use std::collections::{HashMap, hash_map::Entry};
 

@@ -861,7 +861,6 @@ version = "0.3.5"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
- "hax-frontend-exporter-options",
  "itertools 0.11.0",
  "lazy_static",
  "paste",
@@ -869,16 +868,6 @@ dependencies = [
  "serde",
  "serde_json",
  "tracing",
-]
-
-[[package]]
-name = "hax-frontend-exporter-options"
-version = "0.3.5"
-dependencies = [
- "hax-adt-into",
- "schemars",
- "serde",
- "serde_json",
 ]
 
 [[package]]
