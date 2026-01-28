@@ -1,12 +1,5 @@
 pub use module::*;
 
-#[cfg(not(feature = "rustc"))]
-mod module {
-    pub trait IsBody: Sized + Clone + 'static {}
-    impl<T: Sized + Clone + 'static> IsBody for T {}
-}
-
-#[cfg(feature = "rustc")]
 mod module {
     pub use crate::prelude::*;
     pub use rustc_hir::{

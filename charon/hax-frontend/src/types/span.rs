@@ -17,12 +17,8 @@ pub struct Span {
     pub filename: FileName,
     /// Original rustc span; can be useful for reporting rustc
     /// diagnostics (this is used in Charon)
-    #[cfg(feature = "rustc")]
     #[serde(skip)]
     pub rust_span_data: Option<rustc_span::SpanData>,
-    #[cfg(not(feature = "rustc"))]
-    #[serde(skip)]
-    pub rust_span_data: Option<()>,
 }
 
 const _: () = {
@@ -55,7 +51,6 @@ const _: () = {
     }
 };
 
-#[cfg(feature = "rustc")]
 impl From<rustc_span::Loc> for Loc {
     fn from(val: rustc_span::Loc) -> Self {
         Loc {
@@ -65,7 +60,6 @@ impl From<rustc_span::Loc> for Loc {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: BaseState<'tcx>> SInto<S, Span> for rustc_span::Span {
     fn sinto(&self, s: &S) -> Span {
         if let Some(span) = s.with_global_cache(|cache| cache.spans.get(self).cloned()) {
@@ -84,7 +78,6 @@ pub struct Spanned<T> {
     pub node: T,
     pub span: Span,
 }
-#[cfg(feature = "rustc")]
 impl<'s, S: UnderOwnerState<'s>, T: SInto<S, U>, U> SInto<S, Spanned<U>>
     for rustc_span::source_map::Spanned<T>
 {
@@ -114,7 +107,6 @@ pub enum RealFileName {
     },
 }
 
-#[cfg(feature = "rustc")]
 impl<S> SInto<S, u64> for rustc_hashes::Hash64 {
     fn sinto(&self, _: &S) -> u64 {
         self.as_u64()

@@ -396,7 +396,6 @@ pub fn adt_into(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     };
 
     quote! {
-        #[cfg(feature = "rustc")]
         const _ : () = {
             use #from as FROM_TYPE;
             use #to as TO_TYPE;

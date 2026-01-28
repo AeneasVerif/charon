@@ -1,23 +1,16 @@
 use crate::{id_table::hash_consing::HashConsed, prelude::*};
 
-#[cfg(feature = "rustc")]
 pub mod resolution;
-#[cfg(feature = "rustc")]
 mod utils;
-#[cfg(feature = "rustc")]
 pub use utils::{
     Predicates, ToPolyTraitRef, erase_and_norm, erase_free_regions, implied_predicates, normalize,
     predicates_defined_on, required_predicates, self_predicate,
 };
 
-#[cfg(feature = "rustc")]
 pub use resolution::PredicateSearcher;
-#[cfg(feature = "rustc")]
 use rustc_middle::ty;
-#[cfg(feature = "rustc")]
 use rustc_span::def_id::DefId as RDefId;
 
-#[cfg(feature = "rustc")]
 pub use utils::is_sized_related_trait;
 
 #[derive_group(Serializers)]
@@ -48,7 +41,6 @@ pub enum ImplExprPathChunk {
     },
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for resolution::PathChunk<'tcx> {
     fn sinto(&self, s: &S) -> ImplExprPathChunk {
         match self {
@@ -181,7 +173,6 @@ pub struct ImplExprContents {
     pub r#impl: ImplExprAtom,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExpr> for resolution::ImplExpr<'tcx> {
     fn sinto(&self, s: &S) -> ImplExpr {
         HashConsed::new(self.sinto(s))
@@ -190,7 +181,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExpr> for resolution::ImplExpr
 
 /// Given a clause `clause` in the context of some impl block `impl_did`, susbts correctly `Self`
 /// from `clause` and (1) derive a `Clause` and (2) resolve an `ImplExpr`.
-#[cfg(feature = "rustc")]
 pub fn super_clause_to_clause_and_impl_expr<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     impl_did: rustc_span::def_id::DefId,
@@ -226,7 +216,6 @@ pub fn super_clause_to_clause_and_impl_expr<'tcx, S: UnderOwnerState<'tcx>>(
 }
 
 /// This is the entrypoint of the solving.
-#[cfg(feature = "rustc")]
 #[tracing::instrument(level = "trace", skip(s))]
 pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
@@ -251,7 +240,6 @@ pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
 }
 
 /// Translate a reference to an item, resolving the appropriate trait clauses as needed.
-#[cfg(feature = "rustc")]
 #[tracing::instrument(level = "trace", skip(s), ret)]
 pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
@@ -261,7 +249,6 @@ pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
     ItemRef::translate(s, def_id, generics)
 }
 
-#[cfg(feature = "rustc")]
 pub fn inherits_parent_clauses<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> bool {
     use rustc_hir::def::DefKind::*;
     match tcx.def_kind(def_id) {
@@ -275,7 +262,6 @@ pub fn inherits_parent_clauses<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> b
 /// Solve the trait obligations for a specific item use (for example, a method call, an ADT, etc.)
 /// in the current context. Just like generic args include generics of parent items, this includes
 /// impl exprs for parent items.
-#[cfg(feature = "rustc")]
 #[tracing::instrument(level = "trace", skip(s), ret)]
 pub fn solve_item_required_traits<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
@@ -303,7 +289,6 @@ pub fn solve_item_required_traits<'tcx, S: UnderOwnerState<'tcx>>(
 
 /// Solve the trait obligations for implementing a trait (or for trait associated type bounds) in
 /// the current context.
-#[cfg(feature = "rustc")]
 #[tracing::instrument(level = "trace", skip(s), ret)]
 pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
@@ -316,7 +301,6 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
 
 /// Apply the given generics to the provided clauses and resolve the trait references in the
 /// current context.
-#[cfg(feature = "rustc")]
 fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     generics: ty::GenericArgsRef<'tcx>,
@@ -342,7 +326,6 @@ fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
 }
 
 /// Retrieve the `Self: Trait` clause for a trait associated item.
-#[cfg(feature = "rustc")]
 pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
@@ -362,7 +345,6 @@ pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
 }
 
 /// Solve the `T: Sized` predicate.
-#[cfg(feature = "rustc")]
 pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> ImplExpr {
     let tcx = s.base().tcx;
     let sized_trait = tcx.lang_items().sized_trait().unwrap();

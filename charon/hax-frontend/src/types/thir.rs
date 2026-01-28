@@ -2,7 +2,6 @@
 //! information and lightly desugared.
 use crate::prelude::*;
 
-#[cfg(feature = "rustc")]
 use rustc_middle::thir;
 
 /// Reflects [`thir::LogicalOp`]
@@ -60,7 +59,6 @@ pub struct AdtExpr {
     pub base: AdtExprBase,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: ExprState<'tcx>> SInto<S, AdtExpr> for thir::AdtExpr<'tcx> {
     fn sinto(&self, s: &S) -> AdtExpr {
         let variants = self.adt_def.variants();
@@ -89,7 +87,6 @@ pub struct LocalIdent {
     pub id: HirId,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, LocalIdent> for thir::LocalVarId {
     fn sinto(&self, s: &S) -> LocalIdent {
         LocalIdent {
@@ -106,7 +103,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, LocalIdent> for thir::LocalVarId {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<S> SInto<S, u64> for rustc_middle::mir::interpret::AllocId {
     fn sinto(&self, _: &S) -> u64 {
         self.0.get()
@@ -174,21 +170,18 @@ pub struct Stmt {
     pub kind: StmtKind,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: ExprState<'tcx>> SInto<S, Block> for thir::BlockId {
     fn sinto(&self, s: &S) -> Block {
         s.thir().blocks[*self].sinto(s)
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: ExprState<'tcx>> SInto<S, Stmt> for thir::StmtId {
     fn sinto(&self, s: &S) -> Stmt {
         s.thir().stmts[*self].sinto(s)
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: ExprState<'tcx>> SInto<S, Expr> for thir::Expr<'tcx> {
     fn sinto(&self, s: &S) -> Expr {
         let s = &s.with_ty(self.ty);
@@ -341,14 +334,12 @@ impl<'tcx, S: ExprState<'tcx>> SInto<S, Expr> for thir::Expr<'tcx> {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: ExprState<'tcx>> SInto<S, Expr> for thir::ExprId {
     fn sinto(&self, s: &S) -> Expr {
         s.thir().exprs[*self].sinto(s)
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: ExprState<'tcx>> SInto<S, Pat> for thir::Pat<'tcx> {
     fn sinto(&self, s: &S) -> Pat {
         let thir::Pat { span, kind, ty } = self;
@@ -386,7 +377,6 @@ impl<'tcx, S: ExprState<'tcx>> SInto<S, Pat> for thir::Pat<'tcx> {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: ExprState<'tcx>> SInto<S, Arm> for thir::ArmId {
     fn sinto(&self, s: &S) -> Arm {
         s.thir().arms[*self].sinto(s)
@@ -435,7 +425,6 @@ pub struct PatRange {
     pub end: RangeEnd,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, PatRange> for thir::PatRange<'tcx> {
     fn sinto(&self, s: &S) -> PatRange {
         let sinto_bdy = |bdy| match bdy {
@@ -879,7 +868,6 @@ pub enum ExprKind {
     Todo(String),
 }
 
-#[cfg(feature = "rustc")]
 pub trait ExprKindExt<'tcx> {
     fn hir_id_and_attributes<S: ExprState<'tcx>>(
         &self,
@@ -888,7 +876,6 @@ pub trait ExprKindExt<'tcx> {
     fn unroll_scope<S: BaseState<'tcx> + HasThir<'tcx>>(&self, s: &S) -> thir::Expr<'tcx>;
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx> ExprKindExt<'tcx> for thir::Expr<'tcx> {
     fn hir_id_and_attributes<S: ExprState<'tcx>>(
         &self,
@@ -912,12 +899,10 @@ impl<'tcx> ExprKindExt<'tcx> for thir::Expr<'tcx> {
     }
 }
 
-#[cfg(feature = "rustc")]
 pub trait HirIdExt {
     fn index(&self) -> (usize, usize);
 }
 
-#[cfg(feature = "rustc")]
 impl HirIdExt for rustc_hir::HirId {
     fn index(&self) -> (usize, usize) {
         use crate::rustc_index::Idx;

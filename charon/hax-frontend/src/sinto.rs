@@ -1,9 +1,3 @@
-#[cfg(not(feature = "rustc"))]
-pub trait SInto<S, To> {
-    fn sinto(&self, s: &S) -> To;
-}
-
-#[cfg(feature = "rustc")]
 pub trait SInto<S, To>: std::marker::PointeeSized {
     fn sinto(&self, s: &S) -> To;
 }
@@ -18,7 +12,6 @@ macro_rules! sinto_todo {
                 todo: String
             },
         }
-        #[cfg(feature = "rustc")]
         impl<$($($lts,)*)? S> SInto<S, $renamed> for $($mod)::+::$type$(<$($lts,)*>)? {
             fn sinto(&self, _: &S) -> $renamed {
                 $renamed::$type{todo: format!("{:?}", self)}
@@ -34,7 +27,6 @@ macro_rules! sinto_todo {
 macro_rules! sinto_as_usize {
     ($($mod:ident)::+, $type:ident$(<$($lts:lifetime),*$(,)?>)?) => {
         pub type $type = usize;
-        #[cfg(feature = "rustc")]
         impl<$($($lts,)*)? S> SInto<S, $type> for $($mod)::+::$type$(<$($lts,)*>)? {
             fn sinto(&self, _: &S) -> $type {
                 self.as_usize()

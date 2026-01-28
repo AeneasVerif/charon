@@ -7,7 +7,6 @@ pub struct IndexVec<I: 'static, T: 'static> {
     _marker: std::marker::PhantomData<fn(_: &I)>,
 }
 
-#[cfg(feature = "rustc")]
 impl<I: rustc_index::Idx, T: Sized> IndexVec<I, T> {
     pub fn into_iter_enumerated(
         self,
@@ -19,7 +18,6 @@ impl<I: rustc_index::Idx, T: Sized> IndexVec<I, T> {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<I: rustc_index::Idx, T: Sized> std::ops::Deref for IndexVec<I, T> {
     type Target = rustc_index::IndexSlice<I, T>;
     fn deref(&self) -> &Self::Target {
@@ -27,14 +25,12 @@ impl<I: rustc_index::Idx, T: Sized> std::ops::Deref for IndexVec<I, T> {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<I: rustc_index::Idx, T: Sized> std::ops::DerefMut for IndexVec<I, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         Self::Target::from_raw_mut(&mut self.raw)
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<I: rustc_index::Idx, T> From<rustc_index::IndexVec<I, T>> for IndexVec<I, T> {
     fn from(val: rustc_index::IndexVec<I, T>) -> Self {
         IndexVec {
@@ -44,7 +40,6 @@ impl<I: rustc_index::Idx, T> From<rustc_index::IndexVec<I, T>> for IndexVec<I, T
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<S, J: rustc_index::Idx, I: rustc_index::Idx + SInto<S, J>, U: Clone, T: SInto<S, U>>
     SInto<S, IndexVec<J, U>> for rustc_index::IndexSlice<I, T>
 {
@@ -56,7 +51,6 @@ impl<S, J: rustc_index::Idx, I: rustc_index::Idx + SInto<S, J>, U: Clone, T: SIn
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<I, T> FromIterator<T> for IndexVec<I, T>
 where
     I: rustc_index::Idx,
@@ -77,7 +71,6 @@ macro_rules! make_idx_wrapper {
         pub enum $type {
             $type(usize),
         }
-        #[cfg(feature = "rustc")]
         const _: () = {
             use rustc_index::Idx;
             type OriginalType = $($mod::)+$type;

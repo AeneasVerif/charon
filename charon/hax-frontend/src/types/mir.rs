@@ -3,7 +3,6 @@
 //! or patterns; instead the control flow is entirely described by gotos and switches on integer
 //! values.
 use crate::prelude::*;
-#[cfg(feature = "rustc")]
 use rustc_middle::{mir, ty};
 
 #[derive_group(Serializers)]
@@ -27,7 +26,6 @@ pub struct LocalDecl {
 
 pub type BasicBlocks = IndexVec<BasicBlock, BasicBlockData>;
 
-#[cfg(feature = "rustc")]
 fn name_of_local(
     local: rustc_middle::mir::Local,
     var_debug_info: &Vec<mir::VarDebugInfo>,
@@ -75,9 +73,7 @@ pub mod mir_kinds {
     #[derive(Clone, Copy, Debug, JsonSchema)]
     pub struct Unknown;
 
-    #[cfg(feature = "rustc")]
     pub use rustc::*;
-    #[cfg(feature = "rustc")]
     mod rustc {
         use super::*;
         use rustc_middle::mir::Body;
@@ -174,7 +170,6 @@ pub mod mir_kinds {
     }
 }
 
-#[cfg(feature = "rustc")]
 pub use mir_kinds::IsMirKind;
 
 /// The contents of `Operand::Const`.
@@ -198,7 +193,6 @@ pub enum ConstOperandKind {
     Promoted(ItemRef),
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstOperand> for mir::ConstOperand<'tcx> {
     fn sinto(&self, s: &S) -> ConstOperand {
         let kind = translate_mir_const(s, self.span, self.const_);
@@ -211,7 +205,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstOperand> for mir::ConstOperan
 }
 
 /// Retrieve the MIR for a promoted body.
-#[cfg(feature = "rustc")]
 pub fn get_promoted_mir<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
     def_id: RDefId,
@@ -229,7 +222,6 @@ pub fn get_promoted_mir<'tcx>(
     }
 }
 
-#[cfg(feature = "rustc")]
 /// Translate a MIR constant.
 fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
@@ -333,7 +325,6 @@ pub enum Operand {
     Constant(ConstOperand),
 }
 
-#[cfg(feature = "rustc")]
 impl Operand {
     pub fn ty(&self) -> &Ty {
         match self {
@@ -351,7 +342,6 @@ pub struct Terminator {
     pub kind: TerminatorKind,
 }
 
-#[cfg(feature = "rustc")]
 fn translate_terminator_kind_call<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>(
     s: &S,
     terminator: &rustc_middle::mir::TerminatorKind<'tcx>,
@@ -422,7 +412,6 @@ fn translate_terminator_kind_call<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>
     }
 }
 
-#[cfg(feature = "rustc")]
 fn translate_terminator_kind_drop<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>(
     s: &S,
     terminator: &rustc_middle::mir::TerminatorKind<'tcx>,
@@ -473,7 +462,6 @@ pub struct ScalarInt {
 }
 
 /// Translate a `SwitchInt` terminator.
-#[cfg(feature = "rustc")]
 fn translate_switchint<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>>(
     s: &S,
     discr: &mir::Operand<'tcx>,
@@ -724,7 +712,6 @@ pub enum ProjectionElem {
 }
 
 // refactor
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx> + HasMir<'tcx>> SInto<S, Place>
     for rustc_middle::mir::Place<'tcx>
 {
@@ -862,7 +849,6 @@ pub enum CastKind {
     Subtype,
 }
 
-#[cfg(feature = "rustc")]
 impl CastKind {
     fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,

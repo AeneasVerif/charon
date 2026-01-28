@@ -8,7 +8,6 @@ use crate::prelude::*;
 /// uniform and deterministic way.
 pub struct PredicateId(u64);
 
-#[cfg(feature = "rustc")]
 mod rustc {
     use super::*;
     impl<'tcx> Binder<PredicateKind> {

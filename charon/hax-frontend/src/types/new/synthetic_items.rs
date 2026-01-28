@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-#[cfg(feature = "rustc")]
 use {
     rustc_hir::definitions::DisambiguatorState,
     rustc_middle::ty,
@@ -23,7 +22,6 @@ pub enum SyntheticItem {
     Tuple(usize),
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx> GlobalCache<'tcx> {
     pub fn get_synthetic_def_id(
         &mut self,

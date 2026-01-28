@@ -12,9 +12,7 @@ pub use crate::index_vec::*;
 pub use crate::traits::*;
 pub use crate::types::*;
 
-#[cfg(feature = "rustc")]
 pub use self::rustc::*;
-#[cfg(feature = "rustc")]
 pub mod rustc {
     pub use crate::rustc_utils::*;
     pub use crate::state::*;

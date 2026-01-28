@@ -1,16 +1,10 @@
 use crate::prelude::*;
 
-#[cfg(feature = "rustc")]
 use itertools::Itertools;
-#[cfg(feature = "rustc")]
 use rustc_hir::def::DefKind as RDefKind;
-#[cfg(feature = "rustc")]
 use rustc_middle::mir;
-#[cfg(feature = "rustc")]
 use rustc_middle::ty;
-#[cfg(feature = "rustc")]
 use rustc_span::def_id::DefId as RDefId;
-#[cfg(feature = "rustc")]
 use std::sync::Arc;
 
 /// Hack: charon used to rely on the old `()` default everywhere. To avoid big merge conflicts with
@@ -41,7 +35,6 @@ pub struct FullDef<Body = DefaultFullDefBody> {
     pub kind: FullDefKind<Body>,
 }
 
-#[cfg(feature = "rustc")]
 /// Construct the `FullDefKind` for this item. If `args` is `Some`, the returned `FullDef` will be
 /// instantiated with the provided generics.
 fn translate_full_def<'tcx, S, Body>(
@@ -175,7 +168,6 @@ where
     }
 }
 
-#[cfg(feature = "rustc")]
 impl DefId {
     /// Get the span of the definition of this item. This is the span used in diagnostics when
     /// referring to the item.
@@ -237,7 +229,6 @@ impl DefId {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl ItemRef {
     /// Get the full definition of the item, instantiated with the provided generics.
     pub fn instantiated_full_def<'tcx, S, Body>(&self, s: &S) -> Arc<FullDef<Body>>
@@ -500,7 +491,6 @@ pub enum FullDefKind<Body> {
     SyntheticCoroutineBody,
 }
 
-#[cfg(feature = "rustc")]
 fn gen_vtable_sig<'tcx>(
     // The state that owns the method DefId
     s: &impl UnderOwnerState<'tcx>,
@@ -569,7 +559,6 @@ fn gen_vtable_sig<'tcx>(
     Some(normalized_sig.sinto(s))
 }
 
-#[cfg(feature = "rustc")]
 fn gen_closure_sig<'tcx>(
     // The state that owns the method DefId
     s: &impl UnderOwnerState<'tcx>,
@@ -610,7 +599,6 @@ fn gen_closure_sig<'tcx>(
     Some(sig.sinto(s))
 }
 
-#[cfg(feature = "rustc")]
 /// Construct the `FullDefKind` for this item.
 ///
 /// If `args` is `Some`, instantiate the whole definition with these generics; otherwise keep the
@@ -1106,7 +1094,6 @@ impl<Body> FullDef<Body> {
     }
 
     /// Return the parent of this item if the item inherits the typing context from its parent.
-    #[cfg(feature = "rustc")]
     pub fn typing_parent<'tcx>(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef> {
         use FullDefKind::*;
         match self.kind() {
@@ -1164,7 +1151,6 @@ impl<Body> FullDef<Body> {
 
     /// Lists the children of this item that can be named, in the way of normal rust paths. For
     /// types, this includes inherent items.
-    #[cfg(feature = "rustc")]
     pub fn nameable_children<'tcx>(&self, s: &impl BaseState<'tcx>) -> Vec<(Symbol, DefId)> {
         let mut children = match self.kind() {
             FullDefKind::Mod { items } => items
@@ -1217,7 +1203,6 @@ impl ImplAssocItem {
     }
 }
 
-#[cfg(feature = "rustc")]
 fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -1234,7 +1219,6 @@ fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
 }
 
 /// Generates a `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` type for this trait.
-#[cfg(feature = "rustc")]
 fn get_trait_decl_dyn_self_ty<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -1260,7 +1244,6 @@ fn get_trait_decl_dyn_self_ty<'tcx, S: UnderOwnerState<'tcx>>(
 
 /// Do the trait resolution necessary to create a new impl for the given trait_ref. Used when we
 /// generate fake trait impls e.g. for `FnOnce` and `Drop`.
-#[cfg(feature = "rustc")]
 fn virtual_impl_for<'tcx, S>(s: &S, trait_ref: ty::TraitRef<'tcx>) -> Box<VirtualTraitImpl>
 where
     S: UnderOwnerState<'tcx>,
@@ -1292,7 +1275,6 @@ where
     })
 }
 
-#[cfg(feature = "rustc")]
 fn get_body<'tcx, S, Body>(s: &S, args: Option<ty::GenericArgsRef<'tcx>>) -> Option<Body>
 where
     S: UnderOwnerState<'tcx>,
@@ -1302,7 +1284,6 @@ where
     Body::body(s, def_id, args)
 }
 
-#[cfg(feature = "rustc")]
 fn get_closure_once_shim<'tcx, S, Body>(s: &S, closure_ty: ty::Ty<'tcx>) -> Option<Body>
 where
     S: UnderOwnerState<'tcx>,
@@ -1314,7 +1295,6 @@ where
     Some(body)
 }
 
-#[cfg(feature = "rustc")]
 fn get_drop_glue_shim<'tcx, S, Body>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -1337,7 +1317,6 @@ where
     }
 }
 
-#[cfg(feature = "rustc")]
 fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -1380,7 +1359,6 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     }
 }
 
-#[cfg(feature = "rustc")]
 fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -1405,7 +1383,6 @@ fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     implied_predicates.sinto(s)
 }
 
-#[cfg(feature = "rustc")]
 fn const_value<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,

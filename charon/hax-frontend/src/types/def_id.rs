@@ -5,33 +5,23 @@
 //! `hax-engine-names-extract` uses those types, but we don't want
 //! `hax-engine-names-extract` to have a build dependency on the whole
 //! frontend, that double the build times for the Rust part of hax.
-//!
-//! The feature `extract_names_mode` exists only in the crate
-//! `hax-engine-names-extract`, and is used to turn off the derive
-//! attributes `AdtInto` and `JsonSchema`.
 
 use hax_adt_into::derive_group;
 
-#[cfg(not(feature = "extract_names_mode"))]
 use crate::prelude::*;
-#[cfg(not(feature = "extract_names_mode"))]
 use crate::{AdtInto, JsonSchema};
 
-#[cfg(feature = "rustc")]
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
 pub type Symbol = String;
-#[cfg(not(feature = "extract_names_mode"))]
 pub type ByteSymbol = Vec<u8>;
 
-#[cfg(all(not(feature = "extract_names_mode"), feature = "rustc"))]
 impl<'t, S> SInto<S, Symbol> for rustc_span::symbol::Symbol {
     fn sinto(&self, _s: &S) -> Symbol {
         self.to_ident_string()
     }
 }
 
-#[cfg(all(not(feature = "extract_names_mode"), feature = "rustc"))]
 impl<'t, S> SInto<S, ByteSymbol> for rustc_span::symbol::ByteSymbol {
     fn sinto(&self, _s: &S) -> ByteSymbol {
         self.as_byte_str().to_owned()
@@ -39,8 +29,8 @@ impl<'t, S> SInto<S, ByteSymbol> for rustc_span::symbol::ByteSymbol {
 }
 
 /// Reflects [`hir::Safety`]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(AdtInto, JsonSchema))]
-#[cfg_attr(not(feature = "extract_names_mode"), args(<S>, from: hir::Safety, state: S as _s))]
+#[derive(AdtInto, JsonSchema)]
+#[args(<S>, from: hir::Safety, state: S as _s)]
 #[derive_group(Serializers)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Safety {
@@ -53,9 +43,8 @@ pub type Pinnedness = bool;
 
 /// Reflects [`hir::def::CtorKind`]
 #[derive_group(Serializers)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(JsonSchema, AdtInto))]
-#[cfg_attr(not(feature = "extract_names_mode"), args(<S>, from: hir::def::CtorKind, state: S as _s))]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, JsonSchema, AdtInto)]
+#[args(<S>, from: hir::def::CtorKind, state: S as _s)]
 pub enum CtorKind {
     Fn,
     Const,
@@ -63,9 +52,8 @@ pub enum CtorKind {
 
 /// Reflects [`hir::def::CtorOf`]
 #[derive_group(Serializers)]
-#[derive(Debug, Copy, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(JsonSchema, AdtInto))]
-#[cfg_attr(not(feature = "extract_names_mode"), args(<S>, from: hir::def::CtorOf, state: S as _s))]
+#[derive(Debug, Copy, Hash, Clone, PartialEq, Eq, PartialOrd, Ord, JsonSchema, AdtInto)]
+#[args(<S>, from: hir::def::CtorOf, state: S as _s)]
 pub enum CtorOf {
     Struct,
     Variant,
@@ -75,15 +63,13 @@ pub enum CtorOf {
 ///
 /// Reflects [`rustc_middle::mir::Promoted`].
 #[derive_group(Serializers)]
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(JsonSchema, AdtInto))]
-#[cfg_attr(not(feature = "extract_names_mode"), args(<S>, from: rustc_middle::mir::Promoted, state: S as _s))]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, JsonSchema, AdtInto)]
+#[args(<S>, from: rustc_middle::mir::Promoted, state: S as _s)]
 pub struct PromotedId {
-    #[cfg_attr(not(feature = "extract_names_mode"), value(self.as_u32()))]
+    #[value(self.as_u32())]
     pub id: u32,
 }
 
-#[cfg(feature = "rustc")]
 impl PromotedId {
     pub fn as_rust_promoted_id(&self) -> rustc_middle::mir::Promoted {
         rustc_middle::mir::Promoted::from_u32(self.id)
@@ -92,8 +78,8 @@ impl PromotedId {
 
 /// Reflects [`rustc_hir::def::DefKind`]
 #[derive_group(Serializers)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(JsonSchema, AdtInto))]
-#[cfg_attr(not(feature = "extract_names_mode"), args(<S>, from: rustc_hir::def::DefKind, state: S as tcx))]
+#[derive(JsonSchema, AdtInto)]
+#[args(<S>, from: rustc_hir::def::DefKind, state: S as tcx)]
 #[derive(Debug, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
 pub enum DefKind {
     Mod,
@@ -124,7 +110,7 @@ pub enum DefKind {
     ForeignMod,
     AnonConst,
     InlineConst,
-    #[cfg_attr(not(feature = "extract_names_mode"), disable_mapping)]
+    #[disable_mapping]
     /// Added by hax: promoted constants don't have def_ids in rustc but they do in hax.
     PromotedConst,
     OpaqueTy,
@@ -139,15 +125,13 @@ pub enum DefKind {
 }
 
 #[derive_group(Serializers)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Default)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(JsonSchema))]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Default, JsonSchema)]
 pub struct MacroKinds {
     bang: bool,
     attr: bool,
     derive: bool,
 }
 
-#[cfg(feature = "rustc")]
 impl<S> SInto<S, MacroKinds> for rustc_hir::def::MacroKinds {
     fn sinto(&self, _s: &S) -> MacroKinds {
         MacroKinds {
@@ -161,15 +145,13 @@ impl<S> SInto<S, MacroKinds> for rustc_hir::def::MacroKinds {
 /// Reflects [`rustc_hir::def_id::DefId`], augmented to also give ids to promoted constants (which
 /// have their own ad-hoc numbering scheme in rustc for now).
 #[derive_group(Serializers)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(JsonSchema))]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, JsonSchema)]
 pub struct DefId {
     pub(crate) contents: crate::id_table::hash_consing::HashConsed<DefIdContents>,
 }
 
 #[derive_group(Serializers)]
-#[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(JsonSchema))]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord, JsonSchema)]
 pub struct DefIdContents {
     pub krate: String,
     pub path: Vec<DisambiguatedDefPathItem>,
@@ -188,7 +170,6 @@ pub struct DefIdContents {
     pub kind: crate::DefKind,
 }
 
-#[cfg(feature = "rustc")]
 impl DefIdContents {
     pub fn make_def_id<'tcx, S: BaseState<'tcx>>(self, _s: &S) -> DefId {
         let contents = id_table::hash_consing::HashConsed::new(self);
@@ -197,7 +178,6 @@ impl DefIdContents {
 }
 
 /// Returns the [`SyntheticItem`] encoded by a [rustc `DefId`](RDefId), if any.
-#[cfg(feature = "rustc")]
 pub fn def_id_as_synthetic<'tcx>(
     def_id: RDefId,
     s: &impl BaseState<'tcx>,
@@ -205,7 +185,6 @@ pub fn def_id_as_synthetic<'tcx>(
     s.with_global_cache(|c| c.reverse_synthetic_map.get(&def_id).copied())
 }
 
-#[cfg(feature = "rustc")]
 impl DefId {
     /// The rustc def_id corresponding to this item, if there is one. Promoted constants don't have
     /// a rustc def_id.
@@ -292,17 +271,6 @@ impl std::ops::Deref for DefId {
     }
 }
 
-#[cfg(not(feature = "rustc"))]
-impl std::fmt::Debug for DefId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("DefId")
-            .field("krate", &self.krate)
-            .field("path", &self.path)
-            .finish()
-    }
-}
-
-#[cfg(feature = "rustc")]
 impl std::fmt::Debug for DefId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Use the more legible rustc debug implementation.
@@ -326,7 +294,6 @@ impl std::hash::Hash for DefId {
 
 /// Gets the kind of the definition. Can't use `def_kind` directly because this crashes on the
 /// crate root.
-#[cfg(feature = "rustc")]
 pub(crate) fn get_def_kind<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> hir::def::DefKind {
     if def_id == rustc_span::def_id::CRATE_DEF_ID.to_def_id() {
         // Horrible hack: without this, `def_kind` crashes on the crate root. Presumably some table
@@ -339,7 +306,6 @@ pub(crate) fn get_def_kind<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> hir::
 /// The crate name under which synthetic items are exported under.
 pub(super) const SYNTHETIC_CRATE_NAME: &str = "<synthetic>";
 
-#[cfg(feature = "rustc")]
 fn translate_def_id<'tcx, S: BaseState<'tcx>>(s: &S, def_id: RDefId) -> DefId {
     let tcx = s.base().tcx;
     let path = {
@@ -370,7 +336,6 @@ fn translate_def_id<'tcx, S: BaseState<'tcx>>(s: &S, def_id: RDefId) -> DefId {
     contents.make_def_id(s)
 }
 
-#[cfg(all(not(feature = "extract_names_mode"), feature = "rustc"))]
 impl<'s, S: BaseState<'s>> SInto<S, DefId> for RDefId {
     fn sinto(&self, s: &S) -> DefId {
         if let Some(def_id) = s.with_item_cache(*self, |cache| cache.def_id.clone()) {
@@ -382,10 +347,8 @@ impl<'s, S: BaseState<'s>> SInto<S, DefId> for RDefId {
     }
 }
 
-#[cfg(not(feature = "extract_names_mode"))]
 pub type Path = Vec<String>;
 
-#[cfg(all(not(feature = "extract_names_mode"), feature = "rustc"))]
 impl std::convert::From<DefId> for Path {
     fn from(v: DefId) -> Vec<String> {
         std::iter::once(&v.krate)
@@ -401,10 +364,8 @@ impl std::convert::From<DefId> for Path {
     }
 }
 
-#[cfg(not(feature = "extract_names_mode"))]
 pub type GlobalIdent = DefId;
 
-#[cfg(all(not(feature = "extract_names_mode"), feature = "rustc"))]
 impl<'tcx, S: BaseState<'tcx>> SInto<S, GlobalIdent> for rustc_hir::def_id::LocalDefId {
     fn sinto(&self, st: &S) -> DefId {
         self.to_def_id().sinto(st)
@@ -413,12 +374,11 @@ impl<'tcx, S: BaseState<'tcx>> SInto<S, GlobalIdent> for rustc_hir::def_id::Loca
 
 /// Reflects [`rustc_hir::definitions::DefPathData`]
 #[derive_group(Serializers)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(AdtInto, JsonSchema))]
-#[cfg_attr(not(feature = "extract_names_mode"), args(<'ctx, S: UnderOwnerState<'ctx>>, from: rustc_hir::definitions::DefPathData, state: S as s))]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto, JsonSchema)]
+#[args(<'ctx, S: UnderOwnerState<'ctx>>, from: rustc_hir::definitions::DefPathData, state: S as s)]
 pub enum DefPathItem {
     CrateRoot {
-        #[cfg_attr(not(feature = "extract_names_mode"), value(s.base().tcx.crate_name(s.owner_id().krate).sinto(s)))]
+        #[value(s.base().tcx.crate_name(s.owner_id().krate).sinto(s))]
         name: Symbol,
     },
     Impl,
@@ -433,7 +393,7 @@ pub enum DefPathItem {
     Ctor,
     LateAnonConst,
     AnonConst,
-    #[cfg_attr(not(feature = "extract_names_mode"), disable_mapping)]
+    #[disable_mapping]
     PromotedConst,
     DesugaredAnonymousLifetime,
     OpaqueTy,
@@ -444,9 +404,8 @@ pub enum DefPathItem {
 }
 
 #[derive_group(Serializers)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(not(feature = "extract_names_mode"), derive(AdtInto, JsonSchema))]
-#[cfg_attr(not(feature = "extract_names_mode"), args(<'a, S: UnderOwnerState<'a>>, from: rustc_hir::definitions::DisambiguatedDefPathData, state: S as s))]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, AdtInto, JsonSchema)]
+#[args(<'a, S: UnderOwnerState<'a>>, from: rustc_hir::definitions::DisambiguatedDefPathData, state: S as s)]
 /// Reflects [`rustc_hir::definitions::DisambiguatedDefPathData`]
 pub struct DisambiguatedDefPathItem {
     pub data: DefPathItem,

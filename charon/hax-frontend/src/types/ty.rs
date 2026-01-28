@@ -4,9 +4,7 @@ use crate::prelude::*;
 use crate::sinto_as_usize;
 use crate::sinto_todo;
 
-#[cfg(feature = "rustc")]
 use rustc_middle::ty;
-#[cfg(feature = "rustc")]
 use rustc_span::def_id::DefId as RDefId;
 
 /// Generic container for decorating items with a type, a span,
@@ -133,7 +131,6 @@ pub struct Placeholder<T> {
     pub bound: T,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>, T: SInto<S, U>, U> SInto<S, Placeholder<U>>
     for ty::Placeholder<T>
 {
@@ -153,7 +150,6 @@ pub struct Canonical<T> {
 /// Reflects [`ty::CanonicalUserType`]
 pub type CanonicalUserType = Canonical<UserType>;
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>, T: SInto<S, U>, U> SInto<S, Canonical<U>>
     for rustc_middle::infer::canonical::Canonical<'tcx, T>
 {
@@ -241,7 +237,6 @@ pub enum Visibility<Id> {
     Restricted(Id),
 }
 
-#[cfg(feature = "rustc")]
 impl<S, T: SInto<S, U>, U> SInto<S, Visibility<U>> for ty::Visibility<T> {
     fn sinto(&self, s: &S) -> Visibility<U> {
         use ty::Visibility as T;
@@ -266,7 +261,6 @@ pub struct FieldDef {
     pub span: Span,
 }
 
-#[cfg(feature = "rustc")]
 impl FieldDef {
     pub fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
@@ -313,7 +307,6 @@ pub struct VariantDef {
     pub span: Span,
 }
 
-#[cfg(feature = "rustc")]
 impl VariantDef {
     pub(crate) fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
@@ -478,7 +471,6 @@ pub struct ItemRef {
 }
 
 impl ItemRefContents {
-    #[cfg(feature = "rustc")]
     fn intern<'tcx, S: BaseState<'tcx>>(self, _s: &S) -> ItemRef {
         let contents = id_table::hash_consing::HashConsed::new(self);
         ItemRef { contents }
@@ -487,7 +479,6 @@ impl ItemRefContents {
 
 impl ItemRef {
     /// The main way to obtain an `ItemRef`: from a `def_id` and generics.
-    #[cfg(feature = "rustc")]
     pub fn translate<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
         def_id: RDefId,
@@ -510,7 +501,6 @@ impl ItemRef {
     /// For instance, [`<u32 as From<u8>>::from`] produces a [`ItemRef`] with a
     /// [`DefId`] looking like `core::convert::num::Impl#42::from` when
     /// `resolve_impl` is `true`, `core::convert::From::from` otherwise.
-    #[cfg(feature = "rustc")]
     pub fn translate_maybe_resolve_impl<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
         // Whether to resolve trait references.
@@ -614,7 +604,6 @@ impl ItemRef {
     }
 
     /// Construct an `ItemRef` for items that can't have generics (e.g. modules).
-    #[cfg(feature = "rustc")]
     pub fn dummy_without_generics<'tcx, S: BaseState<'tcx>>(s: &S, def_id: DefId) -> ItemRef {
         let content = ItemRefContents {
             def_id,
@@ -635,7 +624,6 @@ impl ItemRef {
 
     /// For an `ItemRef` that refers to a trait, this returns values for each of the non-gat
     /// associated types of this trait and its parents, in a fixed order.
-    #[cfg(feature = "rustc")]
     pub fn trait_associated_types<'tcx, S: UnderOwnerState<'tcx>>(&self, s: &S) -> Vec<Ty> {
         if !matches!(self.def_id.kind, DefKind::Trait | DefKind::TraitAlias) {
             panic!("`ItemRef::trait_associated_types` expected a trait")
@@ -654,7 +642,6 @@ impl ItemRef {
     }
 
     /// Erase lifetimes from the generic arguments of this item.
-    #[cfg(feature = "rustc")]
     pub fn erase<'tcx, S: UnderOwnerState<'tcx>>(&self, s: &S) -> Self {
         let def_id = self.def_id.underlying_rust_def_id();
         let args = self.rustc_args(s);
@@ -668,13 +655,11 @@ impl ItemRef {
 
     /// Recover the original rustc args that generated this `ItemRef`. Will panic if the `ItemRef`
     /// was built by hand instead of using `translate_item_ref`.
-    #[cfg(feature = "rustc")]
     pub fn rustc_args<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> ty::GenericArgsRef<'tcx> {
         s.with_global_cache(|cache| *cache.reverse_item_refs_map.get(self).unwrap())
     }
 
     /// Mutate the `DefId`, keeping the same generic args.
-    #[cfg(feature = "rustc")]
     pub fn mutate_def_id<'tcx, S: BaseState<'tcx>>(
         &self,
         s: &S,
@@ -691,7 +676,6 @@ impl ItemRef {
     }
 
     /// Set the `DefId`, keeping the same generic args.
-    #[cfg(feature = "rustc")]
     pub fn with_def_id<'tcx, S: BaseState<'tcx>>(&self, s: &S, def_id: &DefId) -> Self {
         self.mutate_def_id(s, |d| *d = def_id.clone())
     }
@@ -704,14 +688,12 @@ impl std::ops::Deref for ItemRef {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericArg> for ty::GenericArg<'tcx> {
     fn sinto(&self, s: &S) -> GenericArg {
         self.kind().sinto(s)
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Vec<GenericArg>> for ty::GenericArgsRef<'tcx> {
     fn sinto(&self, s: &S) -> Vec<GenericArg> {
         self.iter().map(|v| v.kind().sinto(s)).collect()
@@ -823,7 +805,6 @@ pub struct TypeAndMut {
     pub mutbl: Mutability,
 }
 
-#[cfg(feature = "rustc")]
 impl<S, U, T: SInto<S, U>> SInto<S, Vec<U>> for ty::List<T> {
     fn sinto(&self, s: &S) -> Vec<U> {
         self.iter().map(|x| x.sinto(s)).collect()
@@ -902,7 +883,6 @@ pub struct TyGenerics {
     pub has_late_bound_regions: Option<Span>,
 }
 
-#[cfg(feature = "rustc")]
 impl TyGenerics {
     pub(crate) fn count_total_params(&self) -> usize {
         self.parent_count + self.params.len()
@@ -941,7 +921,6 @@ pub enum AliasKind {
     Free,
 }
 
-#[cfg(feature = "rustc")]
 impl Alias {
     #[tracing::instrument(level = "trace", skip(s))]
     fn from<'tcx, S: UnderOwnerState<'tcx>>(
@@ -1001,7 +980,6 @@ impl Alias {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Box<Ty>> for ty::Ty<'tcx> {
     fn sinto(&self, s: &S) -> Box<Ty> {
         Box::new(self.sinto(s))
@@ -1017,7 +995,6 @@ pub struct Ty {
 }
 
 impl Ty {
-    #[cfg(feature = "rustc")]
     pub fn new<'tcx, S: BaseState<'tcx>>(_s: &S, kind: TyKind) -> Self {
         let kind = id_table::hash_consing::HashConsed::new(kind);
         Ty { kind }
@@ -1028,7 +1005,6 @@ impl Ty {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx> {
     fn sinto(&self, s: &S) -> Ty {
         if let Some(ty) = s.with_cache(|cache| cache.tys.get(self).cloned()) {
@@ -1153,7 +1129,6 @@ pub struct DynBinder<T> {
 }
 
 /// Do trait resolution in the context of the clauses of a `dyn Trait` type.
-#[cfg(feature = "rustc")]
 fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
     s: &S,
     // The predicates in the context.
@@ -1289,7 +1264,6 @@ pub enum AdtKind {
     Tuple,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, AdtKind> for ty::AdtKind {
     fn sinto(&self, _s: &S) -> AdtKind {
         match self {
@@ -1368,7 +1342,6 @@ pub enum UnsizingMetadata {
     Unknown,
 }
 
-#[cfg(feature = "rustc")]
 impl PointerCoercion {
     pub fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
@@ -1458,7 +1431,6 @@ pub type PolyFnSig = Binder<TyFnSig>;
 /// `self.in_trait` is always `None` because a trait can't be associated to another one.
 pub type TraitRef = ItemRef;
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitRef> for ty::TraitRef<'tcx> {
     fn sinto(&self, s: &S) -> TraitRef {
         translate_item_ref(s, self.def_id, self.args)
@@ -1488,7 +1460,6 @@ pub struct OutlivesPredicate<T> {
     pub rhs: Region,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>, T, U> SInto<S, OutlivesPredicate<U>>
     for ty::OutlivesPredicate<'tcx, T>
 where
@@ -1515,7 +1486,6 @@ pub enum Term {
     Const(ConstantExpr),
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term> for ty::Term<'tcx> {
     fn sinto(&self, s: &S) -> Term {
         use ty::TermKind;
@@ -1545,7 +1515,6 @@ pub struct ProjectionPredicate {
     pub ty: Ty,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate>
     for ty::ProjectionPredicate<'tcx>
 {
@@ -1592,7 +1561,6 @@ pub struct Clause {
     pub id: PredicateId,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::Clause<'tcx> {
     fn sinto(&self, s: &S) -> Clause {
         let kind = self.kind().sinto(s);
@@ -1601,7 +1569,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::Clause<'tcx> {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitPredicate<'tcx> {
     fn sinto(&self, s: &S) -> Clause {
         let kind: Binder<_> = self.sinto(s);
@@ -1619,7 +1586,6 @@ pub struct Predicate {
     pub id: PredicateId,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Predicate> for ty::Predicate<'tcx> {
     fn sinto(&self, s: &S) -> Predicate {
         let kind = self.kind().sinto(s);
@@ -1689,7 +1655,6 @@ pub struct GenericPredicates {
     pub predicates: Vec<(Clause, Span)>,
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericPredicates>
     for crate::traits::Predicates<'tcx>
 {
@@ -1700,7 +1665,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericPredicates>
     }
 }
 
-#[cfg(feature = "rustc")]
 impl<'tcx, S: UnderOwnerState<'tcx>, T1, T2> SInto<S, Binder<T2>> for ty::Binder<'tcx, T1>
 where
     T1: SInto<StateWithBinder<'tcx>, T2>,
@@ -1778,7 +1742,6 @@ impl ClosureArgs {
     }
 }
 
-#[cfg(feature = "rustc")]
 impl ClosureArgs {
     // Manual implementation because we need the `def_id` of the closure.
     pub(crate) fn sfrom<'tcx, S>(
@@ -1851,7 +1814,6 @@ pub struct AssocItem {
     pub has_value: bool,
 }
 
-#[cfg(feature = "rustc")]
 impl AssocItem {
     pub fn sfrom<'tcx, S: BaseState<'tcx>>(s: &S, item: &ty::AssocItem) -> AssocItem {
         Self::sfrom_instantiated(s, item, None)
