@@ -443,10 +443,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     );
                 }
                 hax::FullDefKind::Closure { args, .. } => {
-                    generics.regions.extend(
-                        args.iter_upvar_borrows()
-                            .map(|_| self.translate_erased_region()),
-                    );
+                    let upvar_regions = if self.item_src.def_id() == &args.item.def_id {
+                        assert!(self.outermost_binder().closure_upvar_tys.is_some());
+                        self.outermost_binder().closure_upvar_regions.len()
+                    } else {
+                        // If we're not translating a closure item, fetch the closure adt
+                        // definition and add enough erased lifetimes to match its number of
+                        // arguments.
+                        let adt_decl_id: ItemId =
+                            self.register_item(span, hax_item, TransItemSourceKind::Type);
+                        let adt_decl = self.get_or_translate(adt_decl_id)?;
+                        let adt_generics = adt_decl.generic_params();
+                        adt_generics.regions.elem_count() - generics.regions.elem_count()
+                    };
+                    generics
+                        .regions
+                        .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
                     if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
                     | TransItemSourceKind::ClosureMethod(..)
                     | TransItemSourceKind::ClosureAsFnCast = kind

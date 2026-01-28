@@ -2,6 +2,7 @@ use crate::translate::translate_ctx::TraitImplSource;
 
 use super::translate_ctx::{ItemTransCtx, TransItemSourceKind};
 use charon_lib::ast::*;
+use charon_lib::ids::IndexVec;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -33,14 +34,18 @@ pub(crate) struct BindingLevel {
     pub early_region_vars: std::collections::BTreeMap<hax::EarlyParamRegion, RegionId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
-    /// The regions added for by-ref upvars, in order of upvars.
-    pub by_ref_upvar_regions: Vec<RegionId>,
     /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
     pub closure_call_method_region: Option<RegionId>,
     /// The map from rust type variable indices to translated type variable indices.
     pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The map from rust const generic variables to translate const generic variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
+    /// The types of the captured variables, when we're translating a closure item. This is
+    /// translated early because this translation requires adding new lifetime generics to the
+    /// current binder.
+    pub closure_upvar_tys: Option<IndexVec<FieldId, Ty>>,
+    /// The regions we added for the upvars.
+    pub closure_upvar_regions: Vec<RegionId>,
     /// Cache the translation of types. This harnesses the deduplication of `Ty` that hax does.
     // Important: we can't reuse type caches from earlier binders as the new binder may change what
     // a given variable resolves to.
@@ -92,15 +97,15 @@ impl BindingLevel {
         rid
     }
 
-    /// Add a region for a by_ref upvar in a closure.
+    /// Add a region for an upvar in a closure.
     pub fn push_upvar_region(&mut self) -> RegionId {
         // We musn't push to `bound_region_vars` because that will contain the higher-kinded
-        // signature lifetimes if any and they must be lookup-able.
+        // signature lifetimes (if any) and they must be lookup-able.
         let region_id = self
             .params
             .regions
             .push_with(|index| RegionParam { index, name: None });
-        self.by_ref_upvar_regions.push(region_id);
+        self.closure_upvar_regions.push(region_id);
         region_id
     }
 
@@ -418,10 +423,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.push_late_bound_generics_for_def(span, def)?;
 
         if let hax::FullDefKind::Closure { args, .. } = def.kind() {
-            // Add the lifetime generics coming from the by-ref upvars.
-            args.iter_upvar_borrows().for_each(|_| {
-                self.the_only_binder_mut().push_upvar_region();
-            });
+            // Add the lifetime generics coming from the upvars. We translate the upvar types early
+            // to know what lifetimes are needed.
+            let closure_upvar_tys = self.translate_closure_upvar_tys(span, args)?;
+            self.the_only_binder_mut().closure_upvar_tys = Some(closure_upvar_tys);
             // Add the lifetime generics coming from the higher-kindedness of the signature.
             if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
             | TransItemSourceKind::ClosureMethod(..)

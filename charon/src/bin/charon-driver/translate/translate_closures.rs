@@ -38,6 +38,7 @@
 //! }
 //! ```
 
+use itertools::Itertools;
 use std::mem;
 
 use super::translate_crate::TransItemSourceKind;
@@ -46,7 +47,6 @@ use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
 use charon_lib::ullbc_ast::*;
-use itertools::Itertools;
 
 pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
     match kind {
@@ -57,7 +57,7 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
 }
 
 /// References to closure items are subtle because there are three sources of lifetimes on top of
-/// the normal generics: the by-ref upvars, the higher-kindedness of the closure itself, and the
+/// the normal generics: the upvars, the higher-kindedness of the closure itself, and the
 /// late-bound generics of the `call`/`call_mut` methods. One must be careful to choose the right
 /// method from these.
 impl ItemTransCtx<'_, '_> {
@@ -225,25 +225,22 @@ impl ItemTransCtx<'_, '_> {
         Ok(TyKind::Adt(tref).into_ty())
     }
 
-    pub fn translate_closure_adt(
+    /// Translate the types of the captured variables. Importantly, this adds lifetime parameters
+    /// to the environment, so will be run early as part of setting up generics for closure-related
+    /// items.
+    pub fn translate_closure_upvar_tys(
         &mut self,
-        _trans_id: TypeDeclId,
         span: Span,
         args: &hax::ClosureArgs,
-    ) -> Result<TypeDeclKind, Error> {
-        let mut by_ref_upvar_regions = self
-            .the_only_binder()
-            .by_ref_upvar_regions
-            .clone()
-            .into_iter();
-        let fields: IndexVec<FieldId, Field> = args
+    ) -> Result<IndexVec<FieldId, Ty>, Error> {
+        let upvar_tys = args
             .upvar_tys
             .iter()
-            .map(|ty| -> Result<Field, Error> {
+            .map(|ty| -> Result<Ty, Error> {
                 let mut ty = self.translate_ty(span, ty)?;
                 // We supply fresh regions for the by-ref upvars.
-                if let TyKind::Ref(Region::Erased, deref_ty, kind) = ty.kind() {
-                    let region_id = by_ref_upvar_regions.next().unwrap();
+                if let TyKind::Ref(Region::Erased | Region::Body(_), deref_ty, kind) = ty.kind() {
+                    let region_id = self.the_only_binder_mut().push_upvar_region();
                     ty = TyKind::Ref(
                         Region::Var(DeBruijnVar::new_at_zero(region_id)),
                         deref_ty.clone(),
@@ -251,14 +248,31 @@ impl ItemTransCtx<'_, '_> {
                     )
                     .into_ty();
                 }
-                Ok(Field {
-                    span,
-                    attr_info: AttrInfo::dummy_private(),
-                    name: None,
-                    ty,
-                })
+                Ok(ty)
             })
             .try_collect()?;
+        Ok(upvar_tys)
+    }
+
+    pub fn translate_closure_adt(
+        &mut self,
+        span: Span,
+        _args: &hax::ClosureArgs,
+    ) -> Result<TypeDeclKind, Error> {
+        let fields: IndexVec<FieldId, Field> = self
+            .the_only_binder()
+            .closure_upvar_tys
+            .as_ref()
+            .unwrap()
+            .iter()
+            .cloned()
+            .map(|ty| Field {
+                span,
+                attr_info: AttrInfo::dummy_private(),
+                name: None,
+                ty: ty,
+            })
+            .collect();
         Ok(TypeDeclKind::Struct(fields))
     }
 
@@ -341,10 +355,8 @@ impl ItemTransCtx<'_, '_> {
                     return Ok(body);
                 };
 
-                // The (Arg1, Arg2, ..) type. We replace erased regions with body lifetimes.
-                let tupled_ty = signature.inputs[1]
-                    .clone()
-                    .replace_erased_regions(|| self.translate_erased_region());
+                // The (Arg1, Arg2, ..) type.
+                let tupled_ty = &signature.inputs[1];
 
                 blocks.dyn_visit_mut(|local: &mut LocalId| {
                     if local.index() >= 2 {
