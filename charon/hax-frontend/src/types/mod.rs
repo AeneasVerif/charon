@@ -5,7 +5,6 @@ mod mir;
 mod new;
 pub(crate) mod serialize_int;
 mod span;
-mod thir;
 mod ty;
 
 pub use attributes::*;
@@ -14,5 +13,4 @@ pub use hir::*;
 pub use mir::*;
 pub use new::*;
 pub use span::*;
-pub use thir::*;
 pub use ty::*;

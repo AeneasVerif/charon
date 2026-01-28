@@ -131,25 +131,6 @@ mod module {
         }
     }
 
-    pub fn make_fn_def<'tcx, Body: IsBody, S: BaseState<'tcx>>(
-        fn_sig: &rustc_hir::FnSig,
-        body_id: &rustc_hir::BodyId,
-        s: &S,
-    ) -> FnDef<Body> {
-        let hir_id = body_id.hir_id;
-        let ldid = hir_id.owner.def_id;
-
-        let (thir, expr_entrypoint) = get_thir(ldid, s);
-        let s = &s.with_owner_id(ldid.to_def_id()).with_thir(thir.clone());
-        FnDef {
-            params: thir.params.raw.sinto(s),
-            ret: thir.exprs[expr_entrypoint].ty.sinto(s),
-            body: Body::body(s, ldid.to_def_id(), None).s_unwrap(s),
-            sig_span: fn_sig.span.sinto(s),
-            header: fn_sig.header.sinto(s),
-        }
-    }
-
     pub fn body_from_id<'tcx, Body: IsBody, S: UnderOwnerState<'tcx>>(
         id: rustc_hir::BodyId,
         s: &S,
@@ -177,30 +158,6 @@ mod module {
                 _body: rustc_middle::mir::Body<'tcx>,
             ) -> Option<Self> {
                 Some(())
-            }
-        }
-        impl IsBody for ThirBody {
-            fn body<'tcx, S: BaseState<'tcx>>(
-                s: &S,
-                did: RDefId,
-                instantiate: Option<ty::GenericArgsRef<'tcx>>,
-            ) -> Option<Self> {
-                let did = did.as_local()?;
-                let (thir, expr) = get_thir(did, s);
-                assert!(instantiate.is_none(), "monomorphized thir isn't supported");
-                let s = &s.with_owner_id(did.to_def_id());
-                Some(if *CORE_EXTRACTION_MODE {
-                    let expr = &thir.exprs[expr];
-                    Decorated {
-                        contents: Box::new(ExprKind::Tuple { fields: vec![] }),
-                        hir_id: None,
-                        attributes: vec![],
-                        ty: expr.ty.sinto(s),
-                        span: expr.span.sinto(s),
-                    }
-                } else {
-                    expr.sinto(&s.with_thir(thir))
-                })
             }
         }
 

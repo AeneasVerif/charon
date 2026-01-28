@@ -3,6 +3,15 @@
 
 use crate::prelude::*;
 
+/// Reflects [`rustc_hir::Attribute`]
+#[derive_group(Serializers)]
+#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::Attribute, state: S as gstate)]
+pub enum Attribute {
+    Parsed(AttributeKind),
+    Unparsed(AttrItem),
+}
+
 /// Reflects [`rustc_hir::attrs::AttributeKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::attrs::AttributeKind, state: S as tcx)]

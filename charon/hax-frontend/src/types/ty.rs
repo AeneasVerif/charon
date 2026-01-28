@@ -1407,6 +1407,19 @@ impl PointerCoercion {
     }
 }
 
+/// Reflects [`rustc_abi::ExternAbi`]
+#[derive_group(Serializers)]
+#[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_abi::ExternAbi, state: S as s)]
+pub enum ExternAbi {
+    Rust,
+    C {
+        unwind: bool,
+    },
+    #[todo]
+    Other(String),
+}
+
 /// Reflects [`ty::FnSig`]
 #[derive_group(Serializers)]
 #[derive(AdtInto, Clone, Debug, JsonSchema, Hash, PartialEq, Eq, PartialOrd, Ord)]

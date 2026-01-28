@@ -5,6 +5,14 @@
 use crate::prelude::*;
 use rustc_middle::{mir, ty};
 
+impl<S> SInto<S, u64> for rustc_middle::mir::interpret::AllocId {
+    fn sinto(&self, _: &S) -> u64 {
+        self.0.get()
+    }
+}
+
+sinto_as_usize!(rustc_hir::hir_id, ItemLocalId);
+
 #[derive_group(Serializers)]
 #[derive(AdtInto, Clone, Debug, JsonSchema)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_middle::mir::SourceInfo, state: S as s)]

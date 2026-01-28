@@ -130,35 +130,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> HasParamEnv<'tcx> for S {
     }
 }
 
-#[tracing::instrument(skip(s))]
-pub(crate) fn attribute_from_scope<'tcx, S: ExprState<'tcx>>(
-    s: &S,
-    scope: &rustc_middle::middle::region::Scope,
-) -> (Option<rustc_hir::hir_id::HirId>, Vec<Attribute>) {
-    let owner = s.owner_id();
-    let tcx = s.base().tcx;
-    let scope_tree = tcx.region_scope_tree(owner);
-    let hir_id = scope.hir_id(scope_tree);
-    let tcx = s.base().tcx;
-    let attributes = hir_id
-        .map(|hir_id| tcx.hir_attrs(hir_id).sinto(s))
-        .unwrap_or_default();
-    (hir_id, attributes)
-}
-
-/// Gets the closest ancestor of `id` that is the id of a type.
-pub fn get_closest_parent_type(
-    tcx: &ty::TyCtxt,
-    id: rustc_span::def_id::DefId,
-) -> rustc_span::def_id::DefId {
-    match tcx.def_kind(id) {
-        rustc_hir::def::DefKind::Union
-        | rustc_hir::def::DefKind::Struct
-        | rustc_hir::def::DefKind::Enum => id,
-        _ => get_closest_parent_type(tcx, tcx.parent(id)),
-    }
-}
-
 /// Gets the visibility (`pub` or not) of the definition. Returns `None` for defs that don't have a
 /// meaningful visibility.
 pub fn get_def_visibility<'tcx>(

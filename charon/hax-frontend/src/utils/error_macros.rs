@@ -59,7 +59,6 @@ macro_rules! report {
     };
 }
 
-macro_rules! error { ($($tt:tt)*) => {$crate::utils::report!(error, $($tt)*)} }
 #[allow(unused_macros)]
 macro_rules! warning { ($($tt:tt)*) => {$crate::utils::report!(warn, $($tt)*)} }
 macro_rules! fatal { ($($tt:tt)*) => {$crate::utils::report!(fatal, $($tt)*)} }
@@ -79,22 +78,13 @@ macro_rules! supposely_unreachable_message {
     };
 }
 
-macro_rules! supposely_unreachable {
-    ($s:ident $([$span:expr])?, $label:literal $($tt:tt)*) => {
-        {
-            $crate::utils::error!($s$([$span])?, $crate::utils::supposely_unreachable_message!($label) $($tt)+)
-        }
-    };
-}
 macro_rules! supposely_unreachable_fatal {
     ($s:ident $([$span:expr])?, $label:literal $($tt:tt)*) => {
         $crate::utils::fatal!($s$([$span])?, $crate::utils::supposely_unreachable_message!($label) $($tt)+)
     };
 }
 
-pub(crate) use error;
 pub(crate) use fatal;
-pub(crate) use supposely_unreachable;
 pub(crate) use supposely_unreachable_fatal;
 pub(crate) use supposely_unreachable_message;
 #[allow(unused_imports)]
@@ -147,12 +137,3 @@ mod s_expect_impls {
         }
     }
 }
-
-macro_rules! s_assert {
-    ($s:ident, $assertion:expr) => {{
-        if !($assertion) {
-            fatal!($s, "assertion failed: {}", stringify!($assertion))
-        }
-    }};
-}
-pub(crate) use s_assert;
