@@ -444,25 +444,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    /// Push a new binding level corresponding to the provided `def` for the duration of the inner
-    /// function call.
-    pub(crate) fn translate_binder_for_def<F, U>(
+    /// Push a new binding level, run the provided function inside it, then return the bound value.
+    pub(crate) fn inside_binder<F, U>(
         &mut self,
-        span: Span,
         kind: BinderKind,
-        def: &hax::FullDef,
+        is_item_binder: bool,
         f: F,
     ) -> Result<Binder<U>, Error>
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
         assert!(!self.binding_levels.is_empty());
-        self.binding_levels.push(BindingLevel::new(true));
-
-        // Register the type-level parameters for just this binder.
-        self.push_generics_for_def_without_parents(span, def)?;
-        self.push_late_bound_generics_for_def(span, def)?;
-        self.innermost_binder().params.check_consistency();
+        self.binding_levels.push(BindingLevel::new(is_item_binder));
 
         // Call the continuation. Important: do not short-circuit on error here.
         let res = f(self);
@@ -478,6 +471,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    /// Push a new binding level corresponding to the provided `def` for the duration of the inner
+    /// function call.
+    pub(crate) fn translate_binder_for_def<F, U>(
+        &mut self,
+        span: Span,
+        kind: BinderKind,
+        def: &hax::FullDef,
+        f: F,
+    ) -> Result<Binder<U>, Error>
+    where
+        F: FnOnce(&mut Self) -> Result<U, Error>,
+    {
+        self.inside_binder(kind, true, |this| {
+            this.push_generics_for_def_without_parents(span, def)?;
+            this.push_late_bound_generics_for_def(span, def)?;
+            this.innermost_binder().params.check_consistency();
+            f(this)
+        })
+    }
+
     /// Push a group of bound regions and call the continuation.
     /// We use this when diving into a `for<'a>`, or inside an arrow type (because
     /// it contains universally quantified regions).
@@ -490,23 +503,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self, &T) -> Result<U, Error>,
     {
-        assert!(!self.binding_levels.is_empty());
-
-        // Register the variables
-        let mut binding_level = BindingLevel::new(false);
-        binding_level.push_params_from_binder(binder.rebind(()))?;
-        self.binding_levels.push(binding_level);
-
-        // Call the continuation. Important: do not short-circuit on error here.
-        let res = f(self, binder.hax_skip_binder_ref());
-
-        // Reset
-        let regions = self.binding_levels.pop().unwrap().params.regions;
-
-        // Return
-        res.map(|skip_binder| RegionBinder {
-            regions,
-            skip_binder,
+        let binder = self.inside_binder(BinderKind::Other, false, |this| {
+            this.innermost_binder_mut()
+                .push_params_from_binder(binder.rebind(()))?;
+            f(this, binder.hax_skip_binder_ref())
+        })?;
+        // Convert to a region-only binder.
+        Ok(RegionBinder {
+            regions: binder.params.regions,
+            skip_binder: binder.skip_binder,
         })
     }
 
