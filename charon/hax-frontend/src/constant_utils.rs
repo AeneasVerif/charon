@@ -17,7 +17,7 @@ pub enum ConstantLiteral {
     ByteStr(Vec<u8>),
 }
 
-sinto_as_usize!(rustc_abi, VariantIdx);
+sinto_reexport!(rustc_abi::VariantIdx);
 
 /// Describe the kind of a variant
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

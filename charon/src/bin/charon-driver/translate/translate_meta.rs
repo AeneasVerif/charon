@@ -1,12 +1,14 @@
 //! Translate information about items: name, attributes, etc.
+use itertools::Itertools;
+use rustc_middle::mir;
+use std::cmp::Ord;
+use std::path::{Component, PathBuf};
+
 use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use hax::{DefPathItem, SInto};
-use itertools::Itertools;
-use std::cmp::Ord;
-use std::path::{Component, PathBuf};
 
 // Spans
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
@@ -135,8 +137,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Compute span data from a Rust source scope
     pub fn translate_span_from_source_info(
         &mut self,
-        source_scopes: &hax::IndexVec<hax::SourceScope, hax::SourceScopeData>,
-        source_info: &hax::SourceInfo,
+        source_scopes: &rustc_index::IndexVec<mir::SourceScope, mir::SourceScopeData>,
+        source_info: &mir::SourceInfo,
     ) -> Span {
         // Translate the span
         let data = self.translate_span_data(source_info.span);
@@ -163,7 +165,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub(crate) fn translate_span_from_hax(&mut self, span: &rustc_span::Span) -> Span {
+    pub(crate) fn translate_span(&mut self, span: &rustc_span::Span) -> Span {
         Span {
             data: self.translate_span_data(*span),
             generated_from_span: None,
@@ -172,7 +174,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
         let span = def_id.def_span(&self.hax_state);
-        self.translate_span_from_hax(&span)
+        self.translate_span(&span)
     }
 }
 
@@ -503,7 +505,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 match Attribute::parse_from_raw(raw_attr) {
                     Ok(a) => Some(a),
                     Err(msg) => {
-                        let span = self.translate_span_from_hax(&attr.span.sinto(&self.hax_state));
+                        let span = self.translate_span(&attr.span.sinto(&self.hax_state));
                         register_error!(self, span, "Error parsing attribute: {msg}");
                         None
                     }
@@ -541,7 +543,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let mut renames = attributes.iter().filter_map(|a| a.as_rename()).cloned();
             let rename = renames.next();
             if renames.next().is_some() {
-                let span = self.translate_span_from_hax(&def.span);
+                let span = self.translate_span(&def.span);
                 register_error!(
                     self,
                     span,
@@ -583,7 +585,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             return item_meta.clone();
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
-        let span = self.translate_span_from_hax(span);
+        let span = self.translate_span(span);
         let is_local = def.def_id().is_local();
         let (attr_info, lang_item) = if !item_src.is_derived_item()
             || matches!(item_src.kind, TransItemSourceKind::ClosureMethod(..))
@@ -620,15 +622,5 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         self.cached_item_metas
             .insert(item_src.clone(), item_meta.clone());
         item_meta
-    }
-}
-
-impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
-    pub(crate) fn translate_span_from_hax(&mut self, rspan: &hax::Span) -> Span {
-        self.t_ctx.translate_span_from_hax(rspan)
-    }
-
-    pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
-        self.t_ctx.def_span(def_id)
     }
 }

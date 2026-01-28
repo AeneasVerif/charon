@@ -1045,8 +1045,7 @@ pub enum TyKind {
 
     #[custom_arm(
         ty::TyKind::Closure (def_id, generics) => {
-            let closure = generics.as_closure();
-            TyKind::Closure(ClosureArgs::sfrom(s, *def_id, closure))
+            TyKind::Closure(ClosureArgs::sfrom(s, *def_id, generics))
         },
     )]
     Closure(ClosureArgs),
@@ -1297,20 +1296,7 @@ pub struct Align {
     pub bytes: u64,
 }
 
-/// Reflects [`ty::adjustment::PointerCoercion`]
-
-#[derive(Clone, Debug)]
-pub enum PointerCoercion {
-    ReifyFnPointer,
-    UnsafeFnPointer,
-    ClosureFnPointer(Safety),
-    MutToConstPointer,
-    ArrayToPointer,
-    Unsize(UnsizingMetadata),
-}
-
 /// The metadata to attach to the newly-unsized ptr.
-
 #[derive(Clone, Debug)]
 pub enum UnsizingMetadata {
     /// Unsize an array to a slice, storing the length as metadata.
@@ -1323,73 +1309,54 @@ pub enum UnsizingMetadata {
     Unknown,
 }
 
-impl PointerCoercion {
-    pub fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
-        s: &S,
-        coercion: ty::adjustment::PointerCoercion,
-        src_ty: ty::Ty<'tcx>,
-        tgt_ty: ty::Ty<'tcx>,
-    ) -> PointerCoercion {
-        match coercion {
-            ty::adjustment::PointerCoercion::ReifyFnPointer => PointerCoercion::ReifyFnPointer,
-            ty::adjustment::PointerCoercion::UnsafeFnPointer => PointerCoercion::UnsafeFnPointer,
-            ty::adjustment::PointerCoercion::ClosureFnPointer(x) => {
-                PointerCoercion::ClosureFnPointer(x.sinto(s))
-            }
-            ty::adjustment::PointerCoercion::MutToConstPointer => {
-                PointerCoercion::MutToConstPointer
-            }
-            ty::adjustment::PointerCoercion::ArrayToPointer => PointerCoercion::ArrayToPointer,
-            ty::adjustment::PointerCoercion::Unsize => {
-                // TODO: to properly find out what field we want, we should use the query
-                // `coerce_unsized_info`, which we call recursively to get the list of fields
-                // to go into until we reach a pointer/reference.
-                // We should also pass this list of field IDs in the unsizing metadata.
+pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    src_ty: ty::Ty<'tcx>,
+    tgt_ty: ty::Ty<'tcx>,
+) -> UnsizingMetadata {
+    // TODO: to properly find out what field we want, we should use the query
+    // `coerce_unsized_info`, which we call recursively to get the list of fields
+    // to go into until we reach a pointer/reference.
+    // We should also pass this list of field IDs in the unsizing metadata.
 
-                let (Some(src_ty), Some(tgt_ty)) =
-                    (src_ty.builtin_deref(true), tgt_ty.builtin_deref(true))
-                else {
-                    return PointerCoercion::Unsize(UnsizingMetadata::Unknown);
-                };
+    let (Some(src_ty), Some(tgt_ty)) = (src_ty.builtin_deref(true), tgt_ty.builtin_deref(true))
+    else {
+        return UnsizingMetadata::Unknown;
+    };
 
-                let tcx = s.base().tcx;
-                let typing_env = s.typing_env();
-                let (src_ty, tgt_ty) = tcx
-                    .struct_lockstep_tails_raw(src_ty, tgt_ty, |ty| normalize(tcx, typing_env, ty));
+    let tcx = s.base().tcx;
+    let typing_env = s.typing_env();
+    let (src_ty, tgt_ty) =
+        tcx.struct_lockstep_tails_raw(src_ty, tgt_ty, |ty| normalize(tcx, typing_env, ty));
 
-                let meta = match (&src_ty.kind(), &tgt_ty.kind()) {
-                    (ty::Array(_, len), ty::Slice(_)) => {
-                        let len = len.sinto(s);
-                        UnsizingMetadata::Length(len)
-                    }
-                    (ty::Dynamic(from_preds, _), ty::Dynamic(to_preds, ..)) => {
-                        let impl_expr = resolve_for_dyn(s, from_preds, |searcher, fresh_ty| {
-                            let to_pred = to_preds.principal().unwrap().with_self_ty(tcx, fresh_ty);
-                            searcher.resolve(&to_pred, &|_| {}).s_unwrap(s).sinto(s)
-                        });
-                        UnsizingMetadata::NestedVTable(impl_expr)
-                    }
-                    (_, ty::Dynamic(preds, ..)) => {
-                        let pred = preds[0].with_self_ty(tcx, src_ty);
-                        let clause = pred.as_trait_clause().expect(
-                            "the first `ExistentialPredicate` of `TyKind::Dynamic` \
-                                        should be a trait clause",
-                        );
-                        let tref = clause.rebind(clause.skip_binder().trait_ref);
-                        let impl_expr = solve_trait(s, tref);
-
-                        UnsizingMetadata::DirectVTable(impl_expr)
-                    }
-                    _ => UnsizingMetadata::Unknown,
-                };
-                PointerCoercion::Unsize(meta)
-            }
+    match (&src_ty.kind(), &tgt_ty.kind()) {
+        (ty::Array(_, len), ty::Slice(_)) => {
+            let len = len.sinto(s);
+            UnsizingMetadata::Length(len)
         }
+        (ty::Dynamic(from_preds, _), ty::Dynamic(to_preds, ..)) => {
+            let impl_expr = resolve_for_dyn(s, from_preds, |searcher, fresh_ty| {
+                let to_pred = to_preds.principal().unwrap().with_self_ty(tcx, fresh_ty);
+                searcher.resolve(&to_pred, &|_| {}).s_unwrap(s).sinto(s)
+            });
+            UnsizingMetadata::NestedVTable(impl_expr)
+        }
+        (_, ty::Dynamic(preds, ..)) => {
+            let pred = preds[0].with_self_ty(tcx, src_ty);
+            let clause = pred.as_trait_clause().expect(
+                "the first `ExistentialPredicate` of `TyKind::Dynamic` \\
+                                        should be a trait clause",
+            );
+            let tref = clause.rebind(clause.skip_binder().trait_ref);
+            let impl_expr = solve_trait(s, tref);
+
+            UnsizingMetadata::DirectVTable(impl_expr)
+        }
+        _ => UnsizingMetadata::Unknown,
     }
 }
 
 /// Reflects [`rustc_abi::ExternAbi`]
-
 #[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_abi::ExternAbi, state: S as s)]
 pub enum ExternAbi {
@@ -1402,7 +1369,6 @@ pub enum ExternAbi {
 }
 
 /// Reflects [`ty::FnSig`]
-
 #[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::FnSig<'tcx>, state: S as s)]
 pub struct TyFnSig {
@@ -1726,14 +1692,11 @@ impl ClosureArgs {
 
 impl ClosureArgs {
     // Manual implementation because we need the `def_id` of the closure.
-    pub(crate) fn sfrom<'tcx, S>(
-        s: &S,
-        def_id: RDefId,
-        from: ty::ClosureArgs<ty::TyCtxt<'tcx>>,
-    ) -> Self
+    pub fn sfrom<'tcx, S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
     where
         S: UnderOwnerState<'tcx>,
     {
+        let from = from.as_closure();
         let tcx = s.base().tcx;
         let sig = from.sig();
         let item = {

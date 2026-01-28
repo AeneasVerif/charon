@@ -56,7 +56,7 @@ impl ItemTransCtx<'_, '_> {
             body
         };
 
-        Ok(self.translate_body(span, &body, &def.source_text))
+        Ok(self.translate_body(span, body, &def.source_text))
     }
 
     /// Translate the body of the fake `Destruct::drop_in_place` method we're adding to the

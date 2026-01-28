@@ -402,7 +402,7 @@ impl ItemTransCtx<'_, '_> {
                 let Some(body) = def.this.closure_once_shim(self.hax_state()) else {
                     panic!("missing shim for closure")
                 };
-                self.translate_body(span, &body, &def.source_text)
+                self.translate_body(span, body, &def.source_text)
             }
             // Target translation:
             //

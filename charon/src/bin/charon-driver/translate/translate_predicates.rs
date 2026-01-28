@@ -133,7 +133,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<(), Error> {
         use hax::ClauseKind;
         trace!("{:?}", clause);
-        let span = self.translate_span_from_hax(hspan);
+        let span = self.translate_span(hspan);
         match clause.kind.hax_skip_binder_ref() {
             ClauseKind::Trait(trait_pred) => {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {

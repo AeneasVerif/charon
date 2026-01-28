@@ -62,31 +62,3 @@ where
         }
     }
 }
-
-macro_rules! make_idx_wrapper {
-    ($($mod:ident)::+, $type:ident) => {
-        #[derive(Copy, Clone, Eq, Debug, Hash, PartialEq, )]
-        pub enum $type {
-            $type(usize),
-        }
-        const _: () = {
-            use rustc_index::Idx;
-            type OriginalType = $($mod::)+$type;
-            impl Idx for $type {
-                fn new(idx: usize) -> Self {
-                    $type::$type(idx)
-                }
-                fn index(self) -> usize {
-                    let $type::$type(x) = self;
-                    x.index()
-                }
-            }
-            impl<S> SInto<S, $type> for OriginalType {
-                fn sinto(&self, _s: &S) -> $type {
-                    $type::new(self.index())
-                }
-            }
-        };
-    };
-}
-pub(crate) use make_idx_wrapper;

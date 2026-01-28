@@ -330,3 +330,11 @@ pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> I
     let tref = ty::Binder::dummy(ty::TraitRef::new(tcx, sized_trait, [ty]));
     solve_trait(s, tref)
 }
+
+/// Solve the `T: Destruct` predicate.
+pub fn solve_destruct<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> ImplExpr {
+    let tcx = s.base().tcx;
+    let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
+    let tref = ty::Binder::dummy(ty::TraitRef::new(tcx, destruct_trait, [ty]));
+    solve_trait(s, tref)
+}

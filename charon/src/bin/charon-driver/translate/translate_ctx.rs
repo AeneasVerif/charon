@@ -96,7 +96,7 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
     /// The Hax context with the current `DefId`.
-    pub hax_state_with_id: hax::StateWithOwner<'tcx>,
+    pub hax_state: hax::StateWithOwner<'tcx>,
     /// Whether to consider a `ImplExprAtom::Error` as an error for us. True except inside type
     /// aliases, because rust does not enforce correct trait bounds on type aliases.
     pub error_on_impl_expr_error: bool,
@@ -210,7 +210,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             item_src,
             item_id,
             t_ctx,
-            hax_state_with_id,
+            hax_state: hax_state_with_id,
             error_on_impl_expr_error: true,
             binding_levels: Default::default(),
             lifetime_freshener: None,
@@ -231,7 +231,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     pub fn hax_state_with_id(&self) -> &hax::StateWithOwner<'tcx> {
-        &self.hax_state_with_id
+        &self.hax_state
+    }
+
+    pub fn catch_sinto<T, U>(&mut self, span: Span, x: &T) -> Result<U, Error>
+    where
+        T: Debug + SInto<hax::StateWithOwner<'tcx>, U>,
+    {
+        self.t_ctx.catch_sinto(&self.hax_state, span, x)
     }
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition

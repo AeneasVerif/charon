@@ -1,9 +1,11 @@
+use itertools::Itertools;
+use rustc_middle::ty;
+use rustc_span::sym;
+
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::{IndexMap, IndexVec};
 use hax::{HasOwnerId, HasParamEnv, Visibility};
-use itertools::Itertools;
-use rustc_span::sym;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
@@ -290,6 +292,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(kind.into_ty())
     }
 
+    pub(crate) fn translate_rustc_ty(
+        &mut self,
+        span: Span,
+        ty: &ty::Ty<'tcx>,
+    ) -> Result<Ty, Error> {
+        let ty = self.t_ctx.catch_sinto(&self.hax_state, span, ty)?;
+        self.translate_ty(span, &ty)
+    }
+
     pub fn translate_poly_fun_sig(
         &mut self,
         span: Span,
@@ -374,7 +385,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
         let rdefid = item.def_id.as_rust_def_id().unwrap();
-        let hax_state = &self.hax_state_with_id;
+        let hax_state = &self.hax_state;
         let ty_env = hax_state.typing_env();
         let ty = tcx
             .type_of(rdefid)
@@ -670,7 +681,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             AdtKind::Struct | AdtKind::Union => {
                 // Check the unique variant
                 error_assert!(self, def_span, variants.len() == 1);
-                variants[0]
+                variants[hax::VariantIdx::from(0usize)]
                     .fields
                     .iter()
                     .all(|f| matches!(f.vis, Visibility::Public))
@@ -698,7 +709,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let mut have_names: Option<bool> = None;
             for (j, field_def) in var_def.fields.iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
-                let field_span = self.t_ctx.translate_span_from_hax(&field_def.span);
+                let field_span = self.t_ctx.translate_span(&field_def.span);
                 // Translate the field type
                 let ty = self.translate_ty(field_span, &field_def.ty)?;
                 let field_full_def =
@@ -731,7 +742,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
 
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
-            let variant_span = self.t_ctx.translate_span_from_hax(&var_def.span);
+            let variant_span = self.t_ctx.translate_span(&var_def.span);
             let variant_name = var_def.name.to_string();
             let variant_full_def =
                 self.hax_def(&def.this().with_def_id(self.hax_state(), &var_def.def_id))?;

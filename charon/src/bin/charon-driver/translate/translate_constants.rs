@@ -1,4 +1,8 @@
 //! Functions to translate constants to LLBC.
+use rustc_middle::ty;
+
+use crate::translate::translate_bodies::translate_variant_id;
+
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 
@@ -70,7 +74,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .try_collect()?;
                 use hax::VariantKind;
                 let vid = if let VariantKind::Enum { index, .. } = *kind {
-                    Some(VariantId::new(index))
+                    Some(translate_variant_id(index))
                 } else {
                     None
                 };
@@ -156,5 +160,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         };
 
         Ok(ConstantExpr { kind, ty })
+    }
+
+    pub(crate) fn translate_ty_constant_expr(
+        &mut self,
+        span: Span,
+        c: &ty::Const<'tcx>,
+    ) -> Result<ConstantExpr, Error> {
+        let c = self.catch_sinto(span, c)?;
+        self.translate_constant_expr(span, &c)
     }
 }

@@ -226,7 +226,7 @@ impl ItemRef {
     /// Get the drop glue shim for this. Panics if the `DefKind` isn't appropriate. Drop glue shims
     /// are normally translated by hax when safe to do so (i.e. for mono types). This method can be
     /// used if you know what you're doing and want drop glue for a poly type. This may cause ICEs.
-    pub fn drop_glue_shim<'tcx, S>(&self, s: &S) -> MirBody
+    pub fn drop_glue_shim<'tcx, S>(&self, s: &S) -> mir::Body<'tcx>
     where
         S: BaseState<'tcx>,
     {
@@ -234,13 +234,12 @@ impl ItemRef {
         let def_id = self.def_id.underlying_rust_def_id();
         let s = &s.with_owner_id(def_id);
         let args = self.rustc_args(s);
-        let body = crate::drop_glue_shim(tcx, def_id, Some(args));
-        MirBody::from_mir(s, body)
+        crate::drop_glue_shim(tcx, def_id, Some(args))
     }
 
     /// For `FnMut`&`Fn` closures: the MIR for the `call_once` method; it simply calls
     /// `call_mut`.
-    pub fn closure_once_shim<'tcx, S>(&self, s: &S) -> Option<MirBody>
+    pub fn closure_once_shim<'tcx, S>(&self, s: &S) -> Option<mir::Body<'tcx>>
     where
         S: BaseState<'tcx>,
     {
@@ -249,9 +248,7 @@ impl ItemRef {
         let s = &s.with_owner_id(def_id);
         let args = self.rustc_args(s);
         let closure_ty = inst_binder(tcx, s.typing_env(), Some(args), tcx.type_of(def_id));
-        let body = crate::closure_once_shim(tcx, closure_ty)?;
-        let body = MirBody::from_mir(s, body);
-        Some(body)
+        crate::closure_once_shim(tcx, closure_ty)
     }
 }
 
@@ -876,7 +873,7 @@ where
                 param_env: get_param_env(s, args),
                 is_const: tcx.constness(def_id) == rustc_hir::Constness::Const,
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                args: ClosureArgs::sfrom(s, def_id, closure),
+                args: ClosureArgs::sfrom(s, def_id, closure_args),
                 destruct_impl: virtual_impl_for(
                     s,
                     ty::TraitRef::new(tcx, destruct_trait, [type_of_self()]),
@@ -1192,17 +1189,6 @@ impl ImplAssocItem {
             ImplAssocItemValue::Provided { def_id, .. } => def_id,
             _ => &self.decl_def_id,
         }
-    }
-}
-
-impl MirBody {
-    pub fn from_mir<'tcx, S: UnderOwnerState<'tcx>>(
-        s: &S,
-        body: rustc_middle::mir::Body<'tcx>,
-    ) -> Self {
-        let body = Rc::new(body.clone());
-        let s = &s.with_mir(body.clone());
-        body.sinto(s)
     }
 }
 
