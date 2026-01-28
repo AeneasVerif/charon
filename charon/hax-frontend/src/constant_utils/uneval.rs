@@ -70,7 +70,6 @@ impl ConstantExprKind {
         Decorated {
             contents: Box::new(self),
             hir_id: None,
-            attributes: vec![],
             ty,
             span,
         }

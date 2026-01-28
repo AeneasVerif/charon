@@ -16,7 +16,6 @@ pub struct Decorated<T> {
     pub span: Span,
     pub contents: Box<T>,
     pub hir_id: Option<(usize, usize)>,
-    pub attributes: Vec<Attribute>,
 }
 
 /// Reflects [`ty::ParamTy`]

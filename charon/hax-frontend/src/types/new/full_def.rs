@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 use itertools::Itertools;
+use rustc_hir as hir;
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::mir;
 use rustc_middle::ty;
@@ -13,7 +14,7 @@ type DefaultFullDefBody = MirBody<mir_kinds::Unknown>;
 
 /// Gathers a lot of definition information about a [`rustc_hir::def_id::DefId`].
 
-#[derive(Clone, Debug, )]
+#[derive(Clone, Debug)]
 pub struct FullDef<Body = DefaultFullDefBody> {
     /// A reference to the current item. If the item was provided with generic args, they are
     /// stored here; otherwise the args are the identity_args for this item.
@@ -25,7 +26,7 @@ pub struct FullDef<Body = DefaultFullDefBody> {
     /// The text of the whole definition.
     pub source_text: Option<String>,
     /// Attributes on this definition, if applicable.
-    pub attributes: Vec<Attribute>,
+    pub attributes: Vec<hir::Attribute>,
     /// Visibility of the definition, for definitions where this makes sense.
     pub visibility: Option<bool>,
     /// If this definition is a lang item, we store the identifier, e.g. `sized`.
@@ -131,7 +132,7 @@ where
 
         let def_kind = get_def_kind(tcx, rust_def_id);
         source_span = rust_def_id.as_local().map(|ldid| tcx.source_span(ldid));
-        attributes = get_def_attrs(tcx, rust_def_id, def_kind).sinto(s);
+        attributes = get_def_attrs(tcx, rust_def_id, def_kind).to_vec();
         visibility = get_def_visibility(tcx, rust_def_id, def_kind);
         lang_item = s
             .base()
@@ -256,7 +257,7 @@ impl ItemRef {
 
 /// The combination of type generics and related predicates.
 
-#[derive(Clone, Debug, )]
+#[derive(Clone, Debug)]
 pub struct ParamEnv {
     /// Generic parameters of the item.
     pub generics: TyGenerics,
@@ -268,7 +269,7 @@ pub struct ParamEnv {
 
 /// The kind of a constant item.
 
-#[derive(Clone, Debug, )]
+#[derive(Clone, Debug)]
 pub enum ConstKind {
     /// Top-level constant: `const CONST: usize = 42;`
     TopLevel,
@@ -282,7 +283,7 @@ pub enum ConstKind {
 
 /// Imbues [`rustc_hir::def::DefKind`] with a lot of extra information.
 
-#[derive(Clone, Debug, )]
+#[derive(Clone, Debug)]
 pub enum FullDefKind<Body> {
     // Types
     /// ADts (`Struct`, `Enum` and `Union` map to this variant).
@@ -993,7 +994,7 @@ where
 /// An associated item in a trait impl. This can be an item provided by the trait impl, or an item
 /// that reuses the trait decl default value.
 
-#[derive(Clone, Debug, )]
+#[derive(Clone, Debug)]
 pub struct ImplAssocItem {
     /// This is `None` for RPTITs.
     pub name: Option<Symbol>,
@@ -1015,7 +1016,7 @@ pub struct ImplAssocItem {
     pub value: ImplAssocItemValue,
 }
 
-#[derive(Clone, Debug, )]
+#[derive(Clone, Debug)]
 pub enum ImplAssocItemValue {
     /// The item is provided by the trait impl.
     Provided {
@@ -1047,7 +1048,7 @@ pub enum ImplAssocItemValue {
 /// Partial data for a trait impl, used for fake trait impls that we generate ourselves such as
 /// `FnOnce` and `Drop` impls.
 
-#[derive(Clone, Debug, )]
+#[derive(Clone, Debug)]
 pub struct VirtualTraitImpl {
     /// The trait that is implemented by this impl block.
     pub trait_pred: TraitPredicate,

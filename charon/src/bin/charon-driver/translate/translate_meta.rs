@@ -3,7 +3,7 @@ use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
-use hax::DefPathItem;
+use hax::{DefPathItem, SInto};
 use itertools::Itertools;
 use std::cmp::Ord;
 use std::path::{Component, PathBuf};
@@ -470,32 +470,31 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
-    pub(crate) fn translate_attribute(&mut self, attr: &hax::Attribute) -> Option<Attribute> {
-        use hax::Attribute as Haxttribute;
-        use hax::AttributeKind as HaxttributeKind;
+    pub(crate) fn translate_attribute(&mut self, attr: &rustc_hir::Attribute) -> Option<Attribute> {
+        use rustc_hir as hir;
+        use rustc_hir::attrs as hir_attrs;
         match attr {
-            Haxttribute::Parsed(HaxttributeKind::DocComment { comment, .. }) => {
+            hir::Attribute::Parsed(hir_attrs::AttributeKind::DocComment { comment, .. }) => {
                 Some(Attribute::DocComment(comment.to_string()))
             }
-            Haxttribute::Parsed(_) => None,
-            Haxttribute::Unparsed(attr) => {
+            hir::Attribute::Parsed(_) => None,
+            hir::Attribute::Unparsed(attr) => {
                 let raw_attr = RawAttribute {
-                    path: attr.path.clone(),
+                    path: attr.path.to_string(),
                     args: match &attr.args {
-                        hax::AttrArgs::Empty => None,
-                        hax::AttrArgs::Delimited(args) => Some(args.tokens.clone()),
-                        hax::AttrArgs::Eq { expr, .. } => self
-                            .tcx
-                            .sess
-                            .source_map()
-                            .span_to_snippet(expr.span.rust_span_data.unwrap().span())
-                            .ok(),
+                        hir::AttrArgs::Empty => None,
+                        hir::AttrArgs::Delimited(args) => {
+                            Some(rustc_ast_pretty::pprust::tts_to_string(&args.tokens))
+                        }
+                        hir::AttrArgs::Eq { expr, .. } => {
+                            self.tcx.sess.source_map().span_to_snippet(expr.span).ok()
+                        }
                     },
                 };
                 match Attribute::parse_from_raw(raw_attr) {
                     Ok(a) => Some(a),
                     Err(msg) => {
-                        let span = self.translate_span_from_hax(&attr.span);
+                        let span = self.translate_span_from_hax(&attr.span.sinto(&self.hax_state));
                         register_error!(self, span, "Error parsing attribute: {msg}");
                         None
                     }

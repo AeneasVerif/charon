@@ -3,12 +3,10 @@
 
 mod full_def;
 mod impl_infos;
-mod item_attributes;
 mod synthetic_items;
 mod variant_infos;
 
 pub use full_def::*;
 pub use impl_infos::*;
-pub use item_attributes::*;
 pub use synthetic_items::*;
 pub use variant_infos::*;
