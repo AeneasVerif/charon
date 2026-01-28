@@ -27,17 +27,6 @@ where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
-// Full name: core::clone::impls::{impl Clone for u32}::clone
-pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 u32) -> u32
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for u32}
-impl Clone for u32 {
-    parent_clause0 = {built_in impl Sized for u32}
-    fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 i32) -> i32
 = <opaque>
@@ -57,6 +46,17 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
 impl Clone for usize {
     parent_clause0 = {built_in impl Sized for usize}
     fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl Clone for u32 {
+    parent_clause0 = {built_in impl Sized for u32}
+    fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -131,16 +131,6 @@ where
     [@TraitClause0]: PartialOrd<Self, Rhs>,
 = <opaque>
 
-// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
-pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> bool
-= <opaque>
-
-// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
-impl PartialEq<u32> for u32 {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<u32> for u32}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<u32> for u32}::{vtable}
-}
-
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
 pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> bool
 = <opaque>
@@ -161,15 +151,14 @@ impl PartialEq<usize> for usize {
     vtable: {impl PartialEq<usize> for usize}::{vtable}
 }
 
-// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
-pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
+pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> bool
 = <opaque>
 
-// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
-impl PartialOrd<u32> for u32 {
-    parent_clause0 = {impl PartialEq<u32> for u32}
-    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_1, '_1_1>
-    vtable: {impl PartialOrd<u32> for u32}::{vtable}
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
+impl PartialEq<u32> for u32 {
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<u32> for u32}::eq<'_0_1, '_1_1>
+    vtable: {impl PartialEq<u32> for u32}::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
@@ -192,6 +181,17 @@ impl PartialOrd<usize> for usize {
     parent_clause0 = {impl PartialEq<usize> for usize}
     fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<usize> for usize}::{vtable}
+}
+
+// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
+pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
+impl PartialOrd<u32> for u32 {
+    parent_clause0 = {impl PartialEq<u32> for u32}
+    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_1, '_1_1>
+    vtable: {impl PartialOrd<u32> for u32}::{vtable}
 }
 
 // Full name: core::default::Default

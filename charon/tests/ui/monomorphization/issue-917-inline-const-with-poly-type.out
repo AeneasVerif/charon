@@ -47,10 +47,10 @@ pub trait Destruct::<closure::<()>>
     vtable: core::marker::Destruct::{vtable}::<closure::<()>>
 }
 
-unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
+unsafe fn core::marker::Destruct::drop_in_place::<()>(@1: *mut ())
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<()>(@1: *mut ())
+unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(())>

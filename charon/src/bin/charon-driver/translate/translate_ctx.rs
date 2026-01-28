@@ -9,7 +9,7 @@ use hax::SInto;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
@@ -54,9 +54,8 @@ pub struct TranslateCtx<'tcx> {
 
     /// Context for tracking and reporting errors.
     pub errors: RefCell<ErrorCtx>,
-    /// The declarations we came accross and which we haven't translated yet. We keep them sorted
-    /// to make the output order a bit more stable.
-    pub items_to_translate: BTreeSet<TransItemSource>,
+    /// The declarations we came accross and which we haven't translated yet.
+    pub items_to_translate: VecDeque<TransItemSource>,
     /// The declaration we've already processed (successfully or not).
     pub processed: HashSet<TransItemSource>,
     /// Stack of the translations currently happening. Used to avoid accidental cycles.
