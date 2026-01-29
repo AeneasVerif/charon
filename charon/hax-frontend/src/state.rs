@@ -139,9 +139,6 @@ mod types {
         }
     }
 
-    pub type MacroCalls = Rc<HashMap<Span, Span>>;
-    pub type RcThir<'tcx> = Rc<rustc_middle::thir::Thir<'tcx>>;
-    pub type RcMir<'tcx> = Rc<rustc_middle::mir::Body<'tcx>>;
     pub type UnitBinder<'tcx> = rustc_middle::ty::Binder<'tcx, ()>;
 }
 
@@ -149,41 +146,23 @@ mk!(
     struct State<'tcx> {
         base: {'tcx} types::Base,
         owner_id: {} rustc_hir::def_id::DefId,
-        thir: {'tcx} types::RcThir,
-        mir: {'tcx} types::RcMir,
         binder: {'tcx} types::UnitBinder,
-        ty: {'tcx} rustc_middle::ty::Ty,
     }
 );
 
 pub use self::types::*;
 
-pub type StateWithBase<'tcx> = State<Base<'tcx>, (), (), (), (), ()>;
-pub type StateWithOwner<'tcx> = State<Base<'tcx>, rustc_hir::def_id::DefId, (), (), (), ()>;
+pub type StateWithBase<'tcx> = State<Base<'tcx>, (), ()>;
+pub type StateWithOwner<'tcx> = State<Base<'tcx>, rustc_hir::def_id::DefId, ()>;
 pub type StateWithBinder<'tcx> =
-    State<Base<'tcx>, rustc_hir::def_id::DefId, (), (), types::UnitBinder<'tcx>, ()>;
-pub type StateWithThir<'tcx> =
-    State<Base<'tcx>, rustc_hir::def_id::DefId, types::RcThir<'tcx>, (), (), ()>;
-pub type StateWithThirAndTy<'tcx> = State<
-    Base<'tcx>,
-    rustc_hir::def_id::DefId,
-    types::RcThir<'tcx>,
-    (),
-    (),
-    rustc_middle::ty::Ty<'tcx>,
->;
-pub type StateWithMir<'tcx> =
-    State<Base<'tcx>, rustc_hir::def_id::DefId, (), types::RcMir<'tcx>, (), ()>;
+    State<Base<'tcx>, rustc_hir::def_id::DefId, types::UnitBinder<'tcx>>;
 
 impl<'tcx> StateWithBase<'tcx> {
     pub fn new(tcx: rustc_middle::ty::TyCtxt<'tcx>, options: crate::options::Options) -> Self {
         Self {
             base: Base::new(tcx, options),
             owner_id: (),
-            thir: (),
-            mir: (),
             binder: (),
-            ty: (),
         }
     }
 }
@@ -196,10 +175,7 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
         State {
             owner_id,
             base,
-            thir: (),
-            mir: (),
             binder: (),
-            ty: (),
         }
     }
 }
@@ -211,10 +187,7 @@ pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwnerId {
         State {
             owner_id: self.owner_id(),
             base,
-            thir: (),
-            mir: (),
             binder: (),
-            ty: (),
         }
     }
     fn with_binder(&self, binder: types::UnitBinder<'tcx>) -> StateWithBinder<'tcx> {
@@ -222,29 +195,6 @@ pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwnerId {
             base: self.base(),
             owner_id: self.owner_id(),
             binder,
-            thir: (),
-            mir: (),
-            ty: (),
-        }
-    }
-    fn with_thir(&self, thir: types::RcThir<'tcx>) -> StateWithThir<'tcx> {
-        State {
-            base: self.base(),
-            owner_id: self.owner_id(),
-            thir,
-            mir: (),
-            binder: (),
-            ty: (),
-        }
-    }
-    fn with_mir(&self, mir: types::RcMir<'tcx>) -> StateWithMir<'tcx> {
-        State {
-            base: self.base(),
-            owner_id: self.owner_id(),
-            mir,
-            thir: (),
-            binder: (),
-            ty: (),
         }
     }
 }
@@ -252,22 +202,6 @@ impl<'tcx, T: BaseState<'tcx> + HasOwnerId> UnderOwnerState<'tcx> for T {}
 
 /// State of anything below a binder.
 pub trait UnderBinderState<'tcx> = UnderOwnerState<'tcx> + HasBinder<'tcx>;
-
-/// While translating expressions, we expect to always have a THIR
-/// body and an `owner_id` in the state
-pub trait ExprState<'tcx>: UnderOwnerState<'tcx> + HasThir<'tcx> {
-    fn with_ty(&self, ty: rustc_middle::ty::Ty<'tcx>) -> StateWithThirAndTy<'tcx> {
-        State {
-            base: self.base(),
-            owner_id: self.owner_id(),
-            thir: self.thir(),
-            mir: (),
-            binder: (),
-            ty,
-        }
-    }
-}
-impl<'tcx, T> ExprState<'tcx> for T where T: UnderOwnerState<'tcx> + HasThir<'tcx> {}
 
 pub trait WithGlobalCacheExt<'tcx>: BaseState<'tcx> {
     /// Access the global cache. You must not call `sinto` within this function as this will likely
