@@ -89,7 +89,7 @@ fn do_test::<bool>(@1: bool, @2: bool)
         _4 = &expected_2;
         storage_live(_5);
         _5 = &init_1;
-        _3 = {impl PartialEq::<bool, bool>}::eq<'_, '_>(move _4, move _5) -> bb1 (unwind: bb2);
+        _3 = {impl PartialEq::<bool, bool>}::eq<'3, '4>(move _4, move _5) -> bb1 (unwind: bb2);
     }
 
     bb1: {

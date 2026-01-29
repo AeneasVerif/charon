@@ -38,6 +38,7 @@
 //! }
 //! ```
 
+use itertools::Itertools;
 use std::mem;
 
 use super::translate_crate::TransItemSourceKind;
@@ -46,7 +47,6 @@ use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
 use charon_lib::ullbc_ast::*;
-use itertools::Itertools;
 
 pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
     match kind {
@@ -57,141 +57,51 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
 }
 
 /// References to closure items are subtle because there are three sources of lifetimes on top of
-/// the normal generics: the by-ref upvars, the higher-kindedness of the closure itself, and the
+/// the normal generics: the upvars, the higher-kindedness of the closure itself, and the
 /// late-bound generics of the `call`/`call_mut` methods. One must be careful to choose the right
 /// method from these.
 impl ItemTransCtx<'_, '_> {
-    /// If we're translating a closure-related item, get the upvar regions in scope; otherwise get
-    /// erased regions.
-    fn by_ref_upvar_regions(&self, closure: &hax::ClosureArgs) -> IndexMap<RegionId, Region> {
-        if self.item_src.def_id() == &closure.item.def_id {
-            // We have fresh upvar regions in scope.
-            self.outermost_binder()
-                .by_ref_upvar_regions
-                .iter()
-                .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r)))
-                .collect()
-        } else {
-            closure
-                .iter_upvar_borrows()
-                .map(|_| Region::Erased)
-                .collect()
-        }
-    }
-
-    /// If we're translating a closure-related item, get the late regions in scope; otherwise get
-    /// erased regions.
-    fn closure_late_regions(&self, closure: &hax::ClosureArgs) -> IndexMap<RegionId, Region> {
-        if self.item_src.def_id() == &closure.item.def_id {
-            // We have fresh late regions in scope.
-            self.outermost_binder()
-                .bound_region_vars
-                .iter()
-                .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r)))
-                .collect()
-        } else {
-            closure
-                .fn_sig
-                .bound_vars
-                .iter()
-                .map(|_| Region::Erased)
-                .collect()
-        }
-    }
-
-    /// If we're translating a closure-related item, get the method regions in scope; otherwise get
-    /// erased regions.
-    fn closure_method_regions(
-        &self,
-        closure: &hax::ClosureArgs,
-        target_kind: ClosureKind,
-    ) -> IndexMap<RegionId, Region> {
-        if self.item_src.def_id() == &closure.item.def_id {
-            // We have fresh method regions in scope.
-            self.outermost_binder()
-                .closure_call_method_region
-                .iter()
-                .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r)))
-                .collect()
-        } else {
-            match target_kind {
-                ClosureKind::FnOnce => IndexMap::new(),
-                ClosureKind::FnMut | ClosureKind::Fn => [Region::Erased].into_iter().collect(),
-            }
-        }
-    }
-
-    /// Translate a reference to a closure item that takes only upvar lifetimes. The resulting type
-    /// needs lifetime arguments for the upvars (captured variables). If you want to instantiate
-    /// this binder, use the lifetimes from `self.by_ref_upvar_regions`.
-    fn translate_closure_bound_ref_with_upvars(
-        &mut self,
-        span: Span,
-        closure: &hax::ClosureArgs,
-        kind: TransItemSourceKind,
-    ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
-        // We add lifetime args for each borrowing upvar, gotta supply them here.
-        let upvar_binder = hax::Binder {
-            value: (),
-            bound_vars: closure
-                .iter_upvar_borrows()
-                .map(|_| hax::BoundVariableKind::Region(hax::BoundRegionKind::Anon))
-                .collect(),
-        };
-        let mut tref: DeclRef<ItemId> = self.translate_item(span, &closure.item, kind)?;
-        // Hack to recover some lifetimes that are erased in `ClosureArgs`.
-        if self.item_src.def_id() == &closure.item.def_id && !self.monomorphize() {
-            let depth = self.binding_levels.depth();
-            // At this point `tref` contains exactly the generic arguments of the enclosing item.
-            // Every closure item gets at least these as generics, so we can simply reuse the
-            // in-scope generics.
-            for (rid, r) in tref.generics.regions.iter_mut_indexed() {
-                *r = Region::Var(DeBruijnVar::bound(depth, rid));
-            }
-        }
-        self.translate_region_binder(span, &upvar_binder, |ctx, _| {
-            let mut tref = tref.move_under_binder();
-            tref.generics.regions.extend(
-                ctx.innermost_binder()
-                    .params
-                    .identity_args()
-                    .regions
-                    .into_iter(),
-            );
-            Ok(tref)
-        })
-    }
-
-    /// Translate a reference to a closure item that takes upvar lifetimes and late-bound
-    /// lifetimes. The binder binds the late-bound lifetimes of the closure itself, if it is
-    /// higher-kinded. If you want to instantiate the binder, use the lifetimes from
-    /// `self.closure_late_regions`.
+    /// Translate a reference to a closure item that takes late-bound lifetimes. The binder binds
+    /// the late-bound lifetimes of the closure itself, if it is higher-kinded.
     fn translate_closure_bound_ref_with_late_bound(
         &mut self,
         span: Span,
         closure: &hax::ClosureArgs,
         kind: TransItemSourceKind,
     ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
-        let inner_ref = self
-            .translate_closure_bound_ref_with_upvars(span, closure, kind)?
-            .apply(self.by_ref_upvar_regions(closure));
+        if !matches!(
+            kind,
+            TransItemSourceKind::TraitImpl(..) | TransItemSourceKind::ClosureAsFnCast
+        ) {
+            raise_error!(
+                self,
+                span,
+                "Called `translate_closure_bound_ref_with_late_bound` on a `{kind:?}`; \
+                use `translate_closure_ref_with_upvars` \
+                or `translate_closure_bound_ref_with_method_bound` instead"
+            )
+        }
+        let dref: DeclRef<ItemId> = self.translate_item(span, &closure.item, kind)?;
         self.translate_region_binder(span, &closure.fn_sig, |ctx, _| {
-            let mut inner_ref = inner_ref.move_under_binder();
-            inner_ref.generics.regions.extend(
+            let mut dref = dref.move_under_binder();
+            // The regions for these item kinds have the fn late bound regions at the end.
+            for (a, b) in dref.generics.regions.iter_mut().rev().zip(
                 ctx.innermost_binder()
                     .params
                     .identity_args()
                     .regions
-                    .into_iter(),
-            );
-            Ok(inner_ref)
+                    .into_iter()
+                    .rev(),
+            ) {
+                *a = b;
+            }
+            Ok(dref)
         })
     }
 
-    /// Translate a reference to a closure item that takes upvar lifetimes, late-bound lifetimes,
-    /// and method lifetimes. The binder binds the late-bound lifetimes of the `call`/`call_mut`
-    /// method (specified by `target_kind`). If you want to instantiate the binder, use the
-    /// lifetimes from `self.closure_method_regions`.
+    /// Translate a reference to a closure item that takes late-bound lifetimes and method
+    /// lifetimes. The binder binds the late-bound lifetimes of the `call`/`call_mut` method
+    /// (specified by `target_kind`).
     fn translate_closure_bound_ref_with_method_bound(
         &mut self,
         span: Span,
@@ -199,18 +109,24 @@ impl ItemTransCtx<'_, '_> {
         kind: TransItemSourceKind,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
-        let mut dref = self
-            .translate_closure_bound_ref_with_late_bound(span, closure, kind)?
-            .apply(self.closure_late_regions(closure))
-            .move_under_binder();
+        if !matches!(kind, TransItemSourceKind::ClosureMethod(..)) {
+            raise_error!(
+                self,
+                span,
+                "Called `translate_closure_bound_ref_with_method_bound` on a `{kind:?}`; \
+                use `translate_closure_ref_with_upvars` \
+                or `translate_closure_bound_ref_with_late_bound` instead"
+            )
+        }
+        let dref: DeclRef<ItemId> = self.translate_item(span, &closure.item, kind)?;
+        let mut dref = dref.move_under_binder();
         let mut regions = IndexMap::new();
         match target_kind {
             ClosureKind::FnOnce => {}
             ClosureKind::FnMut | ClosureKind::Fn => {
                 let rid = regions.push_with(|index| RegionParam { index, name: None });
-                dref.generics
-                    .regions
-                    .push(Region::Var(DeBruijnVar::new_at_zero(rid)));
+                *dref.generics.regions.iter_mut().last().unwrap() =
+                    Region::Var(DeBruijnVar::new_at_zero(rid));
             }
         }
         Ok(RegionBinder {
@@ -227,10 +143,7 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         closure: &hax::ClosureArgs,
     ) -> Result<TypeDeclRef, Error> {
-        let kind = TransItemSourceKind::Type;
-        let bound_dref = self.translate_closure_bound_ref_with_upvars(span, closure, kind)?;
-        let dref = bound_dref.apply(self.by_ref_upvar_regions(closure));
-        Ok(dref.try_into().unwrap())
+        self.translate_item(span, &closure.item, TransItemSourceKind::Type)
     }
 
     /// For stateless closures, translate a function reference to the top-level function that
@@ -267,9 +180,11 @@ impl ItemTransCtx<'_, '_> {
         closure: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<TraitImplRef, Error> {
-        Ok(self
-            .translate_closure_bound_impl_ref(span, closure, target_kind)?
-            .apply(self.closure_late_regions(closure)))
+        self.translate_item(
+            span,
+            &closure.item,
+            TransItemSourceKind::TraitImpl(TraitImplSource::Closure(target_kind)),
+        )
     }
 
     pub fn translate_closure_info(
@@ -310,40 +225,45 @@ impl ItemTransCtx<'_, '_> {
         Ok(TyKind::Adt(tref).into_ty())
     }
 
-    pub fn translate_closure_adt(
+    /// Translate the types of the captured variables. Importantly, this adds lifetime parameters
+    /// to the environment, so will be run early as part of setting up generics for closure-related
+    /// items.
+    pub fn translate_closure_upvar_tys(
         &mut self,
-        _trans_id: TypeDeclId,
         span: Span,
         args: &hax::ClosureArgs,
-    ) -> Result<TypeDeclKind, Error> {
-        let mut by_ref_upvar_regions = self
-            .the_only_binder()
-            .by_ref_upvar_regions
-            .clone()
-            .into_iter();
-        let fields: IndexVec<FieldId, Field> = args
+    ) -> Result<IndexVec<FieldId, Ty>, Error> {
+        let upvar_tys: IndexVec<FieldId, Ty> = args
             .upvar_tys
             .iter()
-            .map(|ty| -> Result<Field, Error> {
-                let mut ty = self.translate_ty(span, ty)?;
-                // We supply fresh regions for the by-ref upvars.
-                if let TyKind::Ref(Region::Erased, deref_ty, kind) = ty.kind() {
-                    let region_id = by_ref_upvar_regions.next().unwrap();
-                    ty = TyKind::Ref(
-                        Region::Var(DeBruijnVar::new_at_zero(region_id)),
-                        deref_ty.clone(),
-                        *kind,
-                    )
-                    .into_ty();
-                }
-                Ok(Field {
-                    span,
-                    attr_info: AttrInfo::dummy_private(),
-                    name: None,
-                    ty,
-                })
-            })
+            .map(|ty| self.translate_ty(span, ty))
             .try_collect()?;
+        let upvar_tys = upvar_tys.replace_erased_regions(|| {
+            let region_id = self.the_only_binder_mut().push_upvar_region();
+            Region::Var(DeBruijnVar::new_at_zero(region_id))
+        });
+        Ok(upvar_tys)
+    }
+
+    pub fn translate_closure_adt(
+        &mut self,
+        span: Span,
+        _args: &hax::ClosureArgs,
+    ) -> Result<TypeDeclKind, Error> {
+        let fields: IndexVec<FieldId, Field> = self
+            .the_only_binder()
+            .closure_upvar_tys
+            .as_ref()
+            .unwrap()
+            .iter()
+            .cloned()
+            .map(|ty| Field {
+                span,
+                attr_info: AttrInfo::dummy_private(),
+                name: None,
+                ty: ty,
+            })
+            .collect();
         Ok(TypeDeclKind::Struct(fields))
     }
 
@@ -426,6 +346,9 @@ impl ItemTransCtx<'_, '_> {
                     return Ok(body);
                 };
 
+                // The (Arg1, Arg2, ..) type.
+                let tupled_ty = &signature.inputs[1];
+
                 blocks.dyn_visit_mut(|local: &mut LocalId| {
                     if local.index() >= 2 {
                         *local += 1;
@@ -436,14 +359,13 @@ impl ItemTransCtx<'_, '_> {
                 locals.arg_count = 2;
                 locals.locals.push(old_locals.next().unwrap()); // ret
                 locals.locals.push(old_locals.next().unwrap()); // state
-                let tupled_arg =
-                    locals.new_var(Some("tupled_args".to_string()), signature.inputs[1].clone());
+                let tupled_arg = locals.new_var(Some("tupled_args".to_string()), tupled_ty.clone());
                 locals.locals.extend(old_locals.map(|mut l| {
                     l.index += 1;
                     l
                 }));
 
-                let untupled_args = signature.inputs[1].as_tuple().unwrap();
+                let untupled_args = tupled_ty.as_tuple().unwrap();
                 let closure_arg_count = untupled_args.elem_count();
                 let new_stts = untupled_args.iter().cloned().enumerate().map(|(i, ty)| {
                     let nth_field = tupled_arg.clone().project(
@@ -504,7 +426,7 @@ impl ItemTransCtx<'_, '_> {
                 let fn_op = FnOperand::Regular(FnPtr::new(
                     fun_id.into(),
                     impl_ref.generics.concat(&GenericArgs {
-                        regions: vec![Region::Erased].into(),
+                        regions: vec![self.translate_erased_region()].into(),
                         ..GenericArgs::empty()
                     }),
                 ));
@@ -515,8 +437,12 @@ impl ItemTransCtx<'_, '_> {
                 let state = builder.new_var(Some("state".to_string()), signature.inputs[0].clone());
                 let args = builder.new_var(Some("args".to_string()), signature.inputs[1].clone());
                 let deref_state = state.deref();
-                let reborrow_ty =
-                    TyKind::Ref(Region::Erased, deref_state.ty.clone(), RefKind::Shared).into_ty();
+                let reborrow_ty = TyKind::Ref(
+                    self.translate_erased_region(),
+                    deref_state.ty.clone(),
+                    RefKind::Shared,
+                )
+                .into_ty();
                 let reborrow = builder.new_var(None, reborrow_ty);
 
                 builder.push_statement(StatementKind::Assign(
@@ -585,9 +511,15 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Translate the function signature
-        let signature = self
-            .translate_closure_method_sig(def, span, args, target_kind)?
-            .apply(self.closure_method_regions(args, target_kind));
+        let bound_sig = self.translate_closure_method_sig(def, span, args, target_kind)?;
+        // We give it the lifetime parameter we had prepared for that purpose.
+        let signature = bound_sig.apply(
+            self.the_only_binder()
+                .closure_call_method_region
+                .iter()
+                .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r)))
+                .collect(),
+        );
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque

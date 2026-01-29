@@ -286,7 +286,7 @@ where
     _3 = @TraitClause1::use_item_provided<Clause2_Item>[@TraitClause2](move _4)
     _2 = &_3
     storage_dead(_4)
-    _0 = @TraitClause2::parent_clause1::parent_clause1::clone<'_>(move _2)
+    _0 = @TraitClause2::parent_clause1::parent_clause1::clone<'11>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     return

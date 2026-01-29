@@ -67,7 +67,7 @@ fn main()
     storage_live(_2)
     _3 = move _4
     _2 = &(*_3)
-    _1 = is_some<'_, bool>[{built_in impl Sized for bool}](move _2)
+    _1 = is_some<'2, bool>[{built_in impl Sized for bool}](move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

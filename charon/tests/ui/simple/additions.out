@@ -48,7 +48,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = @TraitClause0::clone<'_>(move source_2)
+    _3 = @TraitClause0::clone<'3>(move source_2)
     drop[@TraitClause1] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -77,7 +77,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = {impl Clone for u8}::clone<'_>(move source_2)
+    _3 = {impl Clone for u8}::clone<'3>(move source_2)
     drop[@TraitClause0] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)

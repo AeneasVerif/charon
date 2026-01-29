@@ -66,7 +66,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = foo<'_>(move _2)
+    _1 = foo<'2>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)

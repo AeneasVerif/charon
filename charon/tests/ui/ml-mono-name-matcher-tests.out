@@ -304,7 +304,7 @@ fn foo()
     storage_live(_2)
     _11 = move _12
     _2 = &(*_11)
-    _1 = is_some::<i32><'_>(move _2)
+    _1 = is_some::<i32><'4>(move _2)
     storage_live(_14)
     storage_live(_15)
     _15 = [const false]
@@ -326,7 +326,7 @@ fn foo()
     _8 = &(*slice_3) with_metadata(copy slice_3.metadata)
     storage_live(_9)
     _9 = RangeFrom::<usize> { start: const 1 : usize }
-    _7 = {impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_>(move _8, move _9)
+    _7 = {impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'6>(move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     _6 = &(*_7) with_metadata(copy _7.metadata)

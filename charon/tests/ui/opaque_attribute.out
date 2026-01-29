@@ -81,7 +81,7 @@ where
             x_2 = &((*self_1) as variant Option::Some).0
             storage_live(_3)
             _3 = &(*x_2)
-            _0 = @TraitClause1::get_bool<'_>(move _3)
+            _0 = @TraitClause1::get_bool<'3>(move _3)
             storage_dead(_3)
             storage_dead(x_2)
             return

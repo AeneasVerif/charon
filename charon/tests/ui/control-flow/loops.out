@@ -1630,7 +1630,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(_9)
         _9 = &mut iter_6
         _8 = &two-phase-mut (*_9)
-        _7 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8)
+        _7 = {impl Iterator for Range<A>[@TraitClause0]}::next<'3, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8)
         storage_dead(_8)
         match _7 {
             Option::None => {
@@ -1665,7 +1665,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(_17)
         _17 = &mut iter_14
         _16 = &two-phase-mut (*_17)
-        _15 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _16)
+        _15 = {impl Iterator for Range<A>[@TraitClause0]}::next<'5, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _16)
         storage_dead(_16)
         match _15 {
             Option::None => {
@@ -1690,7 +1690,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
             storage_live(_24)
             _24 = &mut iter_21
             _23 = &two-phase-mut (*_24)
-            _22 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _23)
+            _22 = {impl Iterator for Range<A>[@TraitClause0]}::next<'7, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _23)
             storage_dead(_23)
             match _22 {
                 Option::None => {
@@ -1763,7 +1763,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
             storage_live(_11)
             _11 = &mut iter_8
             _10 = &two-phase-mut (*_11)
-            _9 = {impl Iterator for Range<A>[@TraitClause0]}::next<'_, u32>[{built_in impl Sized for u32}, {impl Step for u32}](move _10)
+            _9 = {impl Iterator for Range<A>[@TraitClause0]}::next<'2, u32>[{built_in impl Sized for u32}, {impl Step for u32}](move _10)
             storage_dead(_10)
             match _9 {
                 Option::None => {
@@ -1935,7 +1935,7 @@ pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in
         storage_live(_5)
         storage_live(_6)
         _6 = &(*v_1)
-        _5 = alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'_, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _6)
+        _5 = alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _6)
         storage_dead(_6)
         _3 = move _4 < move _5
         if move _3 {
@@ -1949,7 +1949,7 @@ pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in
         _8 = &mut (*v_1)
         storage_live(_9)
         _9 = copy i_2
-        _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
+        _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'6, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
         (*_7) = const 0 : u32

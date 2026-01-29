@@ -186,7 +186,7 @@ fn main()
     storage_live(_6)
     _6 = &y_2
     _5 = &(*_6)
-    _3 = {impl Ord for i32}::cmp<'_, '_>(move _4, move _5)
+    _3 = {impl Ord for i32}::cmp<'3, '4>(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_6)

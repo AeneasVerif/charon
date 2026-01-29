@@ -104,7 +104,7 @@ fn main()
     storage_live(_5)
     _5 = &mut hasher_1
     _4 = &two-phase-mut (*_5)
-    _2 = {impl Hash for u32}::hash<'_, '_, DefaultHasher>[{built_in impl Sized for DefaultHasher}, {impl Hasher for DefaultHasher}](move _3, move _4)
+    _2 = {impl Hash for u32}::hash<'4, '5, DefaultHasher>[{built_in impl Sized for DefaultHasher}, {impl Hasher for DefaultHasher}](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_5)

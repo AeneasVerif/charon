@@ -55,7 +55,7 @@ where
 
     _0 = ()
     storage_live(_1)
-    _1 = const @TraitClause1::cmp<'_, '_>
+    _1 = const @TraitClause1::cmp<'4, '5>
     storage_dead(_1)
     _0 = ()
     return

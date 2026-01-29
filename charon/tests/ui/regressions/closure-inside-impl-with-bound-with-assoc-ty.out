@@ -199,7 +199,7 @@ where
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move _2)
+    _0 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move _2)
     drop[{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]] _1
     return
 }

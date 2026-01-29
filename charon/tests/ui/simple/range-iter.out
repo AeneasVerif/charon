@@ -460,7 +460,7 @@ fn iter(@1: usize)
         storage_live(_8)
         _8 = &mut iter_5
         _7 = &two-phase-mut (*_8)
-        _6 = {impl Iterator<A> for Range<A>}::next<'_, usize>[{impl Step for usize}](move _7)
+        _6 = {impl Iterator<A> for Range<A>}::next<'2, usize>[{impl Step for usize}](move _7)
         storage_dead(_7)
         match _6 {
             Option::None => {

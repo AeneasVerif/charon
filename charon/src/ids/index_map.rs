@@ -429,7 +429,7 @@ where
     I: Idx,
 {
     type Item = T;
-    type IntoIter = impl Iterator<Item = T>;
+    type IntoIter = impl Iterator<Item = T> + DoubleEndedIterator;
 
     fn into_iter(self) -> Self::IntoIter {
         self.vector.into_iter().flat_map(|opt| opt)

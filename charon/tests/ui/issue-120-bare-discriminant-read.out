@@ -90,7 +90,7 @@ where
     storage_live(_4)
     _4 = &opt_1
     _3 = &(*_4)
-    _2 = discriminant_value<'_, T>[@TraitClause0](move _3)
+    _2 = discriminant_value<'2, T>[@TraitClause0](move _3)
     storage_dead(_3)
     _0 = move _2 != const 0 : isize
     storage_dead(_2)

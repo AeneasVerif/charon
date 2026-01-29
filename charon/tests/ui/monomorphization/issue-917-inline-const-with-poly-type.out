@@ -178,7 +178,7 @@ fn {impl FnOnce::<closure::<()>, (())>}::call_once::<()>(@1: closure::<()>, @2: 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut::<closure::<()>, (())>}::call_mut::<()><'_>(move _3, move _2)
+    _0 = {impl FnMut::<closure::<()>, (())>}::call_mut::<()><'2>(move _3, move _2)
     drop[{impl Destruct::<closure::<()>>}::<()>] _1
     return
 }
