@@ -166,6 +166,8 @@ impl Attribute {
         let parsed = match attr_name {
             // `#[charon::opaque]`
             "opaque" if args.is_none() => Self::Opaque,
+            // `#[charon::opaque]`
+            "exclude" if args.is_none() => Self::Exclude,
             // `#[charon::rename("new_name")]`
             "rename" if let Some(attr) = args => {
                 let Some(attr) = attr

@@ -70,6 +70,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
         let def = self.hax_def_for_item(&item_src.item)?;
         let item_meta = self.translate_item_meta(&def, item_src, name, opacity);
+        if item_meta.opacity.is_invisible() {
+            return Ok(());
+        }
 
         // Initialize the item translation context
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);

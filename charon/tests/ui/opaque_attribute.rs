@@ -36,6 +36,11 @@ pub fn test_bool_trait_option<T: BoolTrait>(x: Option<T>) -> bool {
     x.get_bool() && x.ret_true()
 }
 
+#[verify::exclude]
+pub fn exclude_this_entirely<T: BoolTrait>(x: Option<T>) -> bool {
+    false
+}
+
 #[charon::opaque]
 type Test = i32;
 

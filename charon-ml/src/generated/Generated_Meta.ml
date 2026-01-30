@@ -46,6 +46,8 @@ type attr_info = {
 and attribute =
   | AttrOpaque
       (** Do not translate the body of this item. Written [#[charon::opaque]] *)
+  | AttrExclude
+      (** Do not translate this item at all. Written [#[charon::exclude]] *)
   | AttrRename of string
       (** Provide a new name that consumers of the llbc can use. Written
           [#[charon::rename("new_name")]] *)

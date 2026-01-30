@@ -116,6 +116,9 @@ pub enum Attribute {
     /// Do not translate the body of this item.
     /// Written `#[charon::opaque]`
     Opaque,
+    /// Do not translate this item at all.
+    /// Written `#[charon::exclude]`
+    Exclude,
     /// Provide a new name that consumers of the llbc can use.
     /// Written `#[charon::rename("new_name")]`
     Rename(String),

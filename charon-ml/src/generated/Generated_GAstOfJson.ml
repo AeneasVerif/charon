@@ -148,6 +148,7 @@ and attribute_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Opaque" -> Ok AttrOpaque
+    | `String "Exclude" -> Ok AttrExclude
     | `Assoc [ ("Rename", rename) ] ->
         let* rename = string_of_json ctx rename in
         Ok (AttrRename rename)

@@ -53,7 +53,7 @@ doc:
 
 # Build and run the tests
 .PHONY: test
-test: clean-generated build-dev charon-tests charon-ml-tests
+test: charon-ml/src/CharonVersion.ml clean-generated build-dev charon-tests charon-ml-tests
 
 # Run Charon on various test files
 .PHONY: charon-tests

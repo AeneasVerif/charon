@@ -601,7 +601,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             (AttrInfo::default(), None)
         };
 
-        let opacity = if self.is_extern_item(def)
+        let opacity = if attr_info.attributes.iter().any(|attr| attr.is_exclude()) {
+            ItemOpacity::Invisible.max(name_opacity)
+        } else if self.is_extern_item(def)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
         {
             // Force opaque in these cases.
