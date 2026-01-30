@@ -118,8 +118,6 @@ impl Display for DeclarationGroup {
 
 pub struct Deps {
     dgraph: DiGraphMap<ItemId, ()>,
-    // Want to make sure we remember the order of insertion
-    graph: SeqHashMap<ItemId, SeqHashSet<ItemId>>,
 }
 
 /// We use this when computing the graph
@@ -176,17 +174,16 @@ impl Deps {
     fn new() -> Self {
         Deps {
             dgraph: DiGraphMap::new(),
-            graph: SeqHashMap::new(),
         }
     }
 
     fn visitor_for_item<'a>(&'a mut self, item: ItemRef<'_>) -> DepsForItem<'a> {
-        let id = item.id();
-        self.insert_node(id);
+        let current_id = item.id();
+        self.dgraph.add_node(current_id);
 
         let mut for_item = DepsForItem {
             deps: self,
-            current_id: id,
+            current_id,
             parent_trait_impl: None,
             parent_trait_decl: None,
         };
@@ -204,26 +201,11 @@ impl Deps {
 
         for_item
     }
-
-    fn insert_node(&mut self, id: ItemId) {
-        // We have to be careful about duplicate nodes
-        if !self.dgraph.contains_node(id) {
-            self.dgraph.add_node(id);
-            assert!(!self.graph.contains_key(&id));
-            self.graph.insert(id, SeqHashSet::new());
-        }
-    }
 }
 
 impl DepsForItem<'_> {
     fn insert_edge(&mut self, id1: impl Into<ItemId>) {
-        let id0 = self.current_id;
-        let id1 = id1.into();
-        self.deps.insert_node(id1);
-        if !self.deps.dgraph.contains_edge(id0, id1) {
-            self.deps.dgraph.add_edge(id0, id1, ());
-            self.deps.graph.get_mut(&id0).unwrap().insert(id1);
-        }
+        self.deps.dgraph.add_edge(self.current_id, id1.into(), ());
     }
 }
 
@@ -412,13 +394,12 @@ fn group_declarations_from_scc(
         // Note that the length of an SCC should be at least 1.
         let mut it = scc.iter();
         let id0 = *it.next().unwrap();
-        let decl = graph.graph.get(&id0).unwrap();
-
         // If an SCC has length one, the declaration may be simply recursive:
         // we determine whether it is the case by checking if the def id is in
         // its own set of dependencies.
         let is_mutually_recursive = scc.len() > 1;
-        let is_simply_recursive = !is_mutually_recursive && decl.contains(&id0);
+        let is_simply_recursive =
+            !is_mutually_recursive && graph.dgraph.neighbors(id0).contains(&id0);
         let is_rec = is_mutually_recursive || is_simply_recursive;
 
         let all_same_kind = scc
@@ -474,11 +455,10 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
     // be the same as the one in which the user wrote them.
     // Remark: the [get_id_dependencies] function will be called once per id, meaning
     // it is ok if it is not very efficient and clones values.
-    let get_id_dependencies = &|id| graph.graph.get(&id).unwrap().iter().copied().collect();
+    let get_id_dependencies = &|id| graph.dgraph.neighbors(id).collect();
     let all_ids: Vec<ItemId> = graph
-        .graph
-        .keys()
-        .copied()
+        .dgraph
+        .nodes()
         // Don't list ids that weren't translated.
         .filter(|id| ctx.translated.get_item(*id).is_some())
         .collect();
