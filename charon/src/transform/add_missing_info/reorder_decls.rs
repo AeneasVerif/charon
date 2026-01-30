@@ -13,12 +13,10 @@ use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
 use itertools::Itertools;
-use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
-use super::sccs::*;
 use crate::transform::ctx::TransformPass;
 
 impl<Id: Copy> GDeclarationGroup<Id> {
@@ -117,12 +115,15 @@ impl Display for DeclarationGroup {
 }
 
 pub struct Deps {
+    /// The dependency graph between translated items. We're careful to only add items that got
+    /// translated.
     dgraph: DiGraphMap<ItemId, ()>,
 }
 
 /// We use this when computing the graph
 #[derive(Visitor)]
 pub struct DepsForItem<'a> {
+    ctx: &'a TransformCtx,
     deps: &'a mut Deps,
     current_id: ItemId,
     // We use this to track the trait impl block the current item belongs to
@@ -177,11 +178,16 @@ impl Deps {
         }
     }
 
-    fn visitor_for_item<'a>(&'a mut self, item: ItemRef<'_>) -> DepsForItem<'a> {
+    fn visitor_for_item<'a>(
+        &'a mut self,
+        ctx: &'a TransformCtx,
+        item: ItemRef<'_>,
+    ) -> DepsForItem<'a> {
         let current_id = item.id();
         self.dgraph.add_node(current_id);
 
         let mut for_item = DepsForItem {
+            ctx,
             deps: self,
             current_id,
             parent_trait_impl: None,
@@ -204,8 +210,12 @@ impl Deps {
 }
 
 impl DepsForItem<'_> {
-    fn insert_edge(&mut self, id1: impl Into<ItemId>) {
-        self.deps.dgraph.add_edge(self.current_id, id1.into(), ());
+    fn insert_edge(&mut self, tgt: impl Into<ItemId>) {
+        let tgt = tgt.into();
+        // Only add translated items.
+        if self.ctx.translated.get_item(tgt).is_some() {
+            self.deps.dgraph.add_edge(self.current_id, tgt, ());
+        }
     }
 }
 
@@ -302,7 +312,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
 
     let mut graph = Deps::new();
     for item in sorted_items {
-        let mut visitor = graph.visitor_for_item(item);
+        let mut visitor = graph.visitor_for_item(ctx, item);
         match item {
             ItemRef::Type(..) | ItemRef::TraitImpl(..) | ItemRef::Global(..) => {
                 let _ = item.drive(&mut visitor);
@@ -379,9 +389,8 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
 fn group_declarations_from_scc(
     _ctx: &TransformCtx,
     graph: Deps,
-    reordered_sccs: SCCs<ItemId>,
+    reordered_sccs: Vec<Vec<ItemId>>,
 ) -> DeclarationsGroups {
-    let reordered_sccs = &reordered_sccs.sccs;
     let mut reordered_decls: DeclarationsGroups = Vec::new();
 
     // Iterate over the SCC ids in the proper order
@@ -440,31 +449,15 @@ fn group_declarations_from_scc(
 }
 
 fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
-    trace!();
-
-    // Step 1: explore the declarations to build the graph
+    // Build the graph of dependencies between items.
     let graph = compute_declarations_graph(ctx);
     trace!("Graph:\n{}\n", graph.fmt_with_ctx(&ctx.into_fmt()));
 
-    // Step 2: Apply Tarjan's SCC (Strongly Connected Components) algorithm
-    let sccs = tarjan_scc(&graph.dgraph);
+    // Compute SCCs (Strongly Connected Components) for the graph in a way that preserves the
+    // original node order as much as possible.
+    let reordered_sccs = super::sccs::ordered_scc(&graph.dgraph);
 
-    // Step 3: Reorder the declarations in an order as close as possible to the one
-    // given by the user. To be more precise, if we don't need to move
-    // definitions, the order in which we generate the declarations should
-    // be the same as the one in which the user wrote them.
-    // Remark: the [get_id_dependencies] function will be called once per id, meaning
-    // it is ok if it is not very efficient and clones values.
-    let get_id_dependencies = &|id| graph.dgraph.neighbors(id).collect();
-    let all_ids: Vec<ItemId> = graph
-        .dgraph
-        .nodes()
-        // Don't list ids that weren't translated.
-        .filter(|id| ctx.translated.get_item(*id).is_some())
-        .collect();
-    let reordered_sccs = reorder_sccs::<ItemId>(get_id_dependencies, &all_ids, &sccs);
-
-    // Finally, generate the list of declarations
+    // Convert to a list of declarations.
     let reordered_decls = group_declarations_from_scc(ctx, graph, reordered_sccs);
 
     trace!("{:?}", reordered_decls);
@@ -476,23 +469,5 @@ impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let reordered_decls = compute_reordered_decls(&ctx);
         ctx.translated.ordered_decls = Some(reordered_decls);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_reorder_sccs1() {
-        let sccs = vec![vec![0], vec![1, 2], vec![3, 4, 5]];
-        let ids = vec![0, 1, 2, 3, 4, 5];
-
-        let get_deps = &|x| match x {
-            0 => vec![3],
-            1 => vec![0, 3],
-            _ => vec![],
-        };
-        let reordered = super::reorder_sccs(get_deps, &ids, &sccs);
-
-        assert!(reordered.sccs == vec![vec![3, 4, 5], vec![0], vec![1, 2],]);
     }
 }
