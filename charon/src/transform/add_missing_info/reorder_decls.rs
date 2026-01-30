@@ -13,12 +13,10 @@ use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
 use itertools::Itertools;
-use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
-use super::sccs::*;
 use crate::transform::ctx::TransformPass;
 
 impl<Id: Copy> GDeclarationGroup<Id> {
@@ -37,17 +35,17 @@ impl<Id: Copy> GDeclarationGroup<Id> {
         self.get_ids().iter().copied().map(|id| id.into()).collect()
     }
 
-    fn make_group(is_rec: bool, gr: impl Iterator<Item = ItemId>) -> Self
+    fn make_group(is_rec: bool, ids: Vec<ItemId>) -> Self
     where
         Id: TryFrom<ItemId>,
         Id::Error: Debug,
     {
-        let gr: Vec<_> = gr.map(|x| x.try_into().unwrap()).collect();
+        let ids: Vec<_> = ids.into_iter().map(|x| x.try_into().unwrap()).collect();
         if is_rec {
-            GDeclarationGroup::Rec(gr)
+            GDeclarationGroup::Rec(ids)
         } else {
-            assert!(gr.len() == 1);
-            GDeclarationGroup::NonRec(gr[0])
+            assert!(ids.len() == 1);
+            GDeclarationGroup::NonRec(ids[0])
         }
     }
 
@@ -63,6 +61,29 @@ impl<Id: Copy> GDeclarationGroup<Id> {
 }
 
 impl DeclarationGroup {
+    fn make_group(is_rec: bool, ids: Vec<ItemId>) -> Self {
+        let id0 = ids[0];
+        let all_same_kind = ids
+            .iter()
+            .all(|id| id0.variant_index_arity() == id.variant_index_arity());
+        match id0 {
+            _ if !all_same_kind => {
+                DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            ItemId::Type(_) => DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids)),
+            ItemId::Fun(_) => DeclarationGroup::Fun(GDeclarationGroup::make_group(is_rec, ids)),
+            ItemId::Global(_) => {
+                DeclarationGroup::Global(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            ItemId::TraitDecl(_) => {
+                DeclarationGroup::TraitDecl(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            ItemId::TraitImpl(_) => {
+                DeclarationGroup::TraitImpl(GDeclarationGroup::make_group(is_rec, ids))
+            }
+        }
+    }
+
     pub fn to_mixed_group(&self) -> GDeclarationGroup<ItemId> {
         use DeclarationGroup::*;
         match self {
@@ -116,13 +137,18 @@ impl Display for DeclarationGroup {
     }
 }
 
-#[derive(Visitor)]
 pub struct Deps {
+    /// The dependency graph between translated items. We're careful to only add items that got
+    /// translated.
     dgraph: DiGraphMap<ItemId, ()>,
-    // Want to make sure we remember the order of insertion
-    graph: SeqHashMap<ItemId, SeqHashSet<ItemId>>,
-    // We use this when computing the graph
-    current_id: Option<ItemId>,
+}
+
+/// We use this when computing the graph
+#[derive(Visitor)]
+pub struct DepsForItem<'a> {
+    ctx: &'a TransformCtx,
+    deps: &'a mut Deps,
+    current_id: ItemId,
     // We use this to track the trait impl block the current item belongs to
     // (if relevant).
     //
@@ -172,73 +198,57 @@ impl Deps {
     fn new() -> Self {
         Deps {
             dgraph: DiGraphMap::new(),
-            graph: SeqHashMap::new(),
-            current_id: None,
+        }
+    }
+
+    fn visitor_for_item<'a>(
+        &'a mut self,
+        ctx: &'a TransformCtx,
+        item: ItemRef<'_>,
+    ) -> DepsForItem<'a> {
+        let current_id = item.id();
+        self.dgraph.add_node(current_id);
+
+        let mut for_item = DepsForItem {
+            ctx,
+            deps: self,
+            current_id,
             parent_trait_impl: None,
             parent_trait_decl: None,
-        }
-    }
-
-    fn set_impl_or_trait_id(&mut self, kind: &ItemSource) {
-        match kind {
-            ItemSource::TraitDecl { trait_ref, .. } => self.parent_trait_decl = Some(trait_ref.id),
-            ItemSource::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.id),
-            _ => {}
-        }
-    }
-    fn set_current_id(&mut self, ctx: &TransformCtx, id: ItemId) {
-        self.insert_node(id);
-        self.current_id = Some(id);
+        };
 
         // Add the id of the impl/trait this item belongs to, if necessary
-        use ItemId::*;
-        match id {
-            TraitDecl(_) | TraitImpl(_) | Type(_) => (),
-            Global(id) => {
-                if let Some(decl) = ctx.translated.global_decls.get(id) {
-                    self.set_impl_or_trait_id(&decl.src);
-                }
+        match item.parent_info() {
+            ItemSource::TraitDecl { trait_ref, .. } => {
+                for_item.parent_trait_decl = Some(trait_ref.id)
             }
-            Fun(id) => {
-                if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                    self.set_impl_or_trait_id(&decl.src);
-                }
+            ItemSource::TraitImpl { impl_ref, .. } => {
+                for_item.parent_trait_impl = Some(impl_ref.id)
             }
+            _ => {}
         }
-    }
 
-    fn unset_current_id(&mut self) {
-        self.current_id = None;
-        self.parent_trait_impl = None;
-        self.parent_trait_decl = None;
+        for_item
     }
+}
 
-    fn insert_node(&mut self, id: ItemId) {
-        // We have to be careful about duplicate nodes
-        if !self.dgraph.contains_node(id) {
-            self.dgraph.add_node(id);
-            assert!(!self.graph.contains_key(&id));
-            self.graph.insert(id, SeqHashSet::new());
-        }
-    }
-
-    fn insert_edge(&mut self, id1: ItemId) {
-        let id0 = self.current_id.unwrap();
-        self.insert_node(id1);
-        if !self.dgraph.contains_edge(id0, id1) {
-            self.dgraph.add_edge(id0, id1, ());
-            self.graph.get_mut(&id0).unwrap().insert(id1);
+impl DepsForItem<'_> {
+    fn insert_edge(&mut self, tgt: impl Into<ItemId>) {
+        let tgt = tgt.into();
+        // Only add translated items.
+        if self.ctx.translated.get_item(tgt).is_some() {
+            self.deps.dgraph.add_edge(self.current_id, tgt, ());
         }
     }
 }
 
-impl VisitAst for Deps {
+impl VisitAst for DepsForItem<'_> {
     fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
-        self.insert_edge((*id).into());
+        self.insert_edge(*id);
     }
 
     fn enter_global_decl_id(&mut self, id: &GlobalDeclId) {
-        self.insert_edge((*id).into());
+        self.insert_edge(*id);
     }
 
     fn enter_trait_impl_id(&mut self, id: &TraitImplId) {
@@ -246,28 +256,22 @@ impl VisitAst for Deps {
         // TODO: this is not very satisfying but this is the only way we have of preventing
         // mutually recursive groups between method impls and trait impls in the presence of
         // associated types...
-        if let Some(impl_id) = &self.parent_trait_impl
-            && impl_id == id
-        {
-            return;
+        if self.parent_trait_impl != Some(*id) {
+            self.insert_edge(*id);
         }
-        self.insert_edge((*id).into());
     }
 
     fn enter_trait_decl_id(&mut self, id: &TraitDeclId) {
         // If the trait is the trait this item belongs to, we ignore it. This is to avoid mutually
         // recursive groups between e.g. traits decls and their globals. We treat methods
         // specifically.
-        if let Some(trait_id) = &self.parent_trait_decl
-            && trait_id == id
-        {
-            return;
+        if self.parent_trait_decl != Some(*id) {
+            self.insert_edge(*id);
         }
-        self.insert_edge((*id).into());
     }
 
     fn enter_fun_decl_id(&mut self, id: &FunDeclId) {
-        self.insert_edge((*id).into());
+        self.insert_edge(*id);
     }
 
     fn visit_item_meta(&mut self, _: &ItemMeta) -> ControlFlow<Self::Break> {
@@ -301,12 +305,8 @@ impl Deps {
 }
 
 fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
-    // The order we explore the items in will dictate the final order. We do the following: std
-    // items, then items from foreign crates (sorted by crate name), then local items. Within a
-    // crate, we sort by file then by source order.
-    let mut sorted_items = ctx.translated.all_items().collect_vec();
-    // Pre-sort files to avoid costly string comparisons. Maps file ids to an index that reflects
-    // ordering on the crates (with `core` and `std` sorted first) and file names.
+    // Pre-sort files to limit the number of costly string comparisons. Maps file ids to an index
+    // that reflects ordering on the crates (with `core` and `std` sorted first) and file names.
     let sorted_file_ids: IndexMap<FileId, usize> = ctx
         .translated
         .files
@@ -321,6 +321,11 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
         .map(|(i, _file_id)| i)
         .collect();
     assert_eq!(ctx.translated.files.len(), sorted_file_ids.slot_count());
+
+    // The order we explore the items in will dictate the final order. We do the following: std
+    // items, then items from foreign crates (sorted by crate name), then local items. Within a
+    // crate, we sort by file then by source order.
+    let mut sorted_items = ctx.translated.all_items().collect_vec();
     sorted_items.sort_by_key(|item| {
         let item_meta = item.item_meta();
         let span = item_meta.span.data;
@@ -330,11 +335,10 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
 
     let mut graph = Deps::new();
     for item in sorted_items {
-        let id = item.id();
-        graph.set_current_id(ctx, id);
+        let mut visitor = graph.visitor_for_item(ctx, item);
         match item {
             ItemRef::Type(..) | ItemRef::TraitImpl(..) | ItemRef::Global(..) => {
-                let _ = item.drive(&mut graph);
+                let _ = item.drive(&mut visitor);
             }
             ItemRef::Fun(d) => {
                 let FunDecl {
@@ -347,15 +351,15 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     body,
                 } = d;
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
-                // TODO: add `is_global_initializer` to `ItemKind`.
-                let _ = generics.drive(&mut graph);
-                let _ = signature.drive(&mut graph);
-                let _ = body.drive(&mut graph);
+                // TODO: add `is_global_initializer` to `ItemSource`.
+                let _ = generics.drive(&mut visitor);
+                let _ = signature.drive(&mut visitor);
+                let _ = body.drive(&mut visitor);
                 // FIXME(#514): A method declaration depends on its declaring trait because of its
                 // `Self` clause. While the clause is implicit, we make sure to record the
                 // dependency manually.
                 if let ItemSource::TraitDecl { trait_ref, .. } = src {
-                    graph.insert_edge(trait_ref.id.into());
+                    visitor.insert_edge(trait_ref.id);
                 }
             }
             ItemRef::TraitDecl(d) => {
@@ -370,14 +374,14 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     vtable,
                 } = d;
                 // Visit the traits referenced in the generics
-                let _ = generics.drive(&mut graph);
+                let _ = generics.drive(&mut visitor);
 
                 // Visit the parent clauses
-                let _ = parent_clauses.drive(&mut graph);
+                let _ = parent_clauses.drive(&mut visitor);
 
                 // Visit the items
-                let _ = types.drive(&mut graph);
-                let _ = vtable.drive(&mut graph);
+                let _ = types.drive(&mut visitor);
+                let _ = vtable.drive(&mut visitor);
 
                 // We consider that a trait decl only contains the function/constant signatures.
                 // Therefore we don't explore the default const/method ids.
@@ -387,117 +391,53 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                         ty,
                         default,
                     } = assoc_const;
-                    let _ = ty.drive(&mut graph);
+                    let _ = ty.drive(&mut visitor);
                     if let Some(gref) = default {
-                        let _ = gref.generics.drive(&mut graph);
+                        let _ = gref.generics.drive(&mut visitor);
                     }
                 }
                 for bound_method in methods {
                     let id = bound_method.skip_binder.item.id;
-                    let _ = bound_method.params.drive(&mut graph);
+                    let _ = bound_method.params.drive(&mut visitor);
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                        let _ = decl.signature.drive(&mut graph);
+                        let _ = decl.signature.drive(&mut visitor);
                     }
                 }
             }
         }
-        graph.unset_current_id();
     }
     graph
 }
 
-fn group_declarations_from_scc(
-    _ctx: &TransformCtx,
-    graph: Deps,
-    reordered_sccs: SCCs<ItemId>,
-) -> DeclarationsGroups {
-    let reordered_sccs = &reordered_sccs.sccs;
-    let mut reordered_decls: DeclarationsGroups = Vec::new();
-
-    // Iterate over the SCC ids in the proper order
-    for scc in reordered_sccs.iter() {
-        if scc.is_empty() {
-            // This can happen if we failed to translate the item in this group.
-            continue;
-        }
-
-        // Note that the length of an SCC should be at least 1.
-        let mut it = scc.iter();
-        let id0 = *it.next().unwrap();
-        let decl = graph.graph.get(&id0).unwrap();
-
-        // If an SCC has length one, the declaration may be simply recursive:
-        // we determine whether it is the case by checking if the def id is in
-        // its own set of dependencies.
-        let is_mutually_recursive = scc.len() > 1;
-        let is_simply_recursive = !is_mutually_recursive && decl.contains(&id0);
-        let is_rec = is_mutually_recursive || is_simply_recursive;
-
-        let all_same_kind = scc
-            .iter()
-            .all(|id| id0.variant_index_arity() == id.variant_index_arity());
-        let ids = scc.iter().copied();
-        let group: DeclarationGroup = match id0 {
-            _ if !all_same_kind => {
-                DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
-            }
-            ItemId::Type(_) => DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids)),
-            ItemId::Fun(_) => DeclarationGroup::Fun(GDeclarationGroup::make_group(is_rec, ids)),
-            ItemId::Global(_) => {
-                DeclarationGroup::Global(GDeclarationGroup::make_group(is_rec, ids))
-            }
-            ItemId::TraitDecl(_) => {
-                let gr: Vec<_> = ids.map(|x| x.try_into().unwrap()).collect();
-                // Trait declarations often refer to `Self`, like below,
-                // which means they are often considered as recursive by our
-                // analysis. TODO: do something more precise. What is important
-                // is that we never use the "whole" self clause as argument,
-                // but rather projections over the self clause (like `<Self as Foo>::u`,
-                // in the declaration for `Foo`).
-                if gr.len() == 1 {
-                    DeclarationGroup::TraitDecl(GDeclarationGroup::NonRec(gr[0]))
-                } else {
-                    DeclarationGroup::TraitDecl(GDeclarationGroup::Rec(gr))
-                }
-            }
-            ItemId::TraitImpl(_) => {
-                DeclarationGroup::TraitImpl(GDeclarationGroup::make_group(is_rec, ids))
-            }
-        };
-
-        reordered_decls.push(group);
-    }
-    reordered_decls
-}
-
 fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
-    trace!();
-
-    // Step 1: explore the declarations to build the graph
+    // Build the graph of dependencies between items.
     let graph = compute_declarations_graph(ctx);
     trace!("Graph:\n{}\n", graph.fmt_with_ctx(&ctx.into_fmt()));
 
-    // Step 2: Apply Tarjan's SCC (Strongly Connected Components) algorithm
-    let sccs = tarjan_scc(&graph.dgraph);
+    // Compute SCCs (Strongly Connected Components) for the graph in a way that preserves the
+    // original node order as much as possible.
+    let reordered_sccs = super::sccs::ordered_scc(&graph.dgraph);
 
-    // Step 3: Reorder the declarations in an order as close as possible to the one
-    // given by the user. To be more precise, if we don't need to move
-    // definitions, the order in which we generate the declarations should
-    // be the same as the one in which the user wrote them.
-    // Remark: the [get_id_dependencies] function will be called once per id, meaning
-    // it is ok if it is not very efficient and clones values.
-    let get_id_dependencies = &|id| graph.graph.get(&id).unwrap().iter().copied().collect();
-    let all_ids: Vec<ItemId> = graph
-        .graph
-        .keys()
-        .copied()
-        // Don't list ids that weren't translated.
-        .filter(|id| ctx.translated.get_item(*id).is_some())
+    // Convert to a list of declarations.
+    let reordered_decls = reordered_sccs
+        .into_iter()
+        // This can happen if we failed to translate the item in this group.
+        .filter(|scc| !scc.is_empty())
+        .map(|scc| {
+            // If an SCC has length one, the declaration may be simply recursive: we determine whether
+            // it is the case by checking if the def id is in its own set of dependencies.
+            // Trait declarations often refer to `Self`, which means they are often considered as
+            // recursive by our analysis. So we cheat an declare them non-recursive.
+            // TODO: do something more precise. What is important is that we never use the "whole" self
+            // clause as argument, but rather projections over the self clause (like `<Self as
+            // Foo>::u`, in the declaration for `Foo`).
+            let id0 = scc[0];
+            let is_non_rec = scc.len() == 1
+                && (id0.is_trait_decl() || !graph.dgraph.neighbors(id0).contains(&id0));
+
+            DeclarationGroup::make_group(!is_non_rec, scc)
+        })
         .collect();
-    let reordered_sccs = reorder_sccs::<ItemId>(get_id_dependencies, &all_ids, &sccs);
-
-    // Finally, generate the list of declarations
-    let reordered_decls = group_declarations_from_scc(ctx, graph, reordered_sccs);
 
     trace!("{:?}", reordered_decls);
     reordered_decls
@@ -508,23 +448,5 @@ impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let reordered_decls = compute_reordered_decls(&ctx);
         ctx.translated.ordered_decls = Some(reordered_decls);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_reorder_sccs1() {
-        let sccs = vec![vec![0], vec![1, 2], vec![3, 4, 5]];
-        let ids = vec![0, 1, 2, 3, 4, 5];
-
-        let get_deps = &|x| match x {
-            0 => vec![3],
-            1 => vec![0, 3],
-            _ => vec![],
-        };
-        let reordered = super::reorder_sccs(get_deps, &ids, &sccs);
-
-        assert!(reordered.sccs == vec![vec![3, 4, 5], vec![0], vec![1, 2],]);
     }
 }
