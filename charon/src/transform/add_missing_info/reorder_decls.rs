@@ -116,13 +116,17 @@ impl Display for DeclarationGroup {
     }
 }
 
-#[derive(Visitor)]
 pub struct Deps {
     dgraph: DiGraphMap<ItemId, ()>,
     // Want to make sure we remember the order of insertion
     graph: SeqHashMap<ItemId, SeqHashSet<ItemId>>,
-    // We use this when computing the graph
-    current_id: Option<ItemId>,
+}
+
+/// We use this when computing the graph
+#[derive(Visitor)]
+pub struct DepsForItem<'a> {
+    deps: &'a mut Deps,
+    current_id: ItemId,
     // We use this to track the trait impl block the current item belongs to
     // (if relevant).
     //
@@ -173,44 +177,32 @@ impl Deps {
         Deps {
             dgraph: DiGraphMap::new(),
             graph: SeqHashMap::new(),
-            current_id: None,
+        }
+    }
+
+    fn visitor_for_item<'a>(&'a mut self, item: ItemRef<'_>) -> DepsForItem<'a> {
+        let id = item.id();
+        self.insert_node(id);
+
+        let mut for_item = DepsForItem {
+            deps: self,
+            current_id: id,
             parent_trait_impl: None,
             parent_trait_decl: None,
-        }
-    }
-
-    fn set_impl_or_trait_id(&mut self, kind: &ItemSource) {
-        match kind {
-            ItemSource::TraitDecl { trait_ref, .. } => self.parent_trait_decl = Some(trait_ref.id),
-            ItemSource::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.id),
-            _ => {}
-        }
-    }
-    fn set_current_id(&mut self, ctx: &TransformCtx, id: ItemId) {
-        self.insert_node(id);
-        self.current_id = Some(id);
+        };
 
         // Add the id of the impl/trait this item belongs to, if necessary
-        use ItemId::*;
-        match id {
-            TraitDecl(_) | TraitImpl(_) | Type(_) => (),
-            Global(id) => {
-                if let Some(decl) = ctx.translated.global_decls.get(id) {
-                    self.set_impl_or_trait_id(&decl.src);
-                }
+        match item.parent_info() {
+            ItemSource::TraitDecl { trait_ref, .. } => {
+                for_item.parent_trait_decl = Some(trait_ref.id)
             }
-            Fun(id) => {
-                if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                    self.set_impl_or_trait_id(&decl.src);
-                }
+            ItemSource::TraitImpl { impl_ref, .. } => {
+                for_item.parent_trait_impl = Some(impl_ref.id)
             }
+            _ => {}
         }
-    }
 
-    fn unset_current_id(&mut self) {
-        self.current_id = None;
-        self.parent_trait_impl = None;
-        self.parent_trait_decl = None;
+        for_item
     }
 
     fn insert_node(&mut self, id: ItemId) {
@@ -221,24 +213,27 @@ impl Deps {
             self.graph.insert(id, SeqHashSet::new());
         }
     }
+}
 
-    fn insert_edge(&mut self, id1: ItemId) {
-        let id0 = self.current_id.unwrap();
-        self.insert_node(id1);
-        if !self.dgraph.contains_edge(id0, id1) {
-            self.dgraph.add_edge(id0, id1, ());
-            self.graph.get_mut(&id0).unwrap().insert(id1);
+impl DepsForItem<'_> {
+    fn insert_edge(&mut self, id1: impl Into<ItemId>) {
+        let id0 = self.current_id;
+        let id1 = id1.into();
+        self.deps.insert_node(id1);
+        if !self.deps.dgraph.contains_edge(id0, id1) {
+            self.deps.dgraph.add_edge(id0, id1, ());
+            self.deps.graph.get_mut(&id0).unwrap().insert(id1);
         }
     }
 }
 
-impl VisitAst for Deps {
+impl VisitAst for DepsForItem<'_> {
     fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
-        self.insert_edge((*id).into());
+        self.insert_edge(*id);
     }
 
     fn enter_global_decl_id(&mut self, id: &GlobalDeclId) {
-        self.insert_edge((*id).into());
+        self.insert_edge(*id);
     }
 
     fn enter_trait_impl_id(&mut self, id: &TraitImplId) {
@@ -246,28 +241,22 @@ impl VisitAst for Deps {
         // TODO: this is not very satisfying but this is the only way we have of preventing
         // mutually recursive groups between method impls and trait impls in the presence of
         // associated types...
-        if let Some(impl_id) = &self.parent_trait_impl
-            && impl_id == id
-        {
-            return;
+        if self.parent_trait_impl != Some(*id) {
+            self.insert_edge(*id);
         }
-        self.insert_edge((*id).into());
     }
 
     fn enter_trait_decl_id(&mut self, id: &TraitDeclId) {
         // If the trait is the trait this item belongs to, we ignore it. This is to avoid mutually
         // recursive groups between e.g. traits decls and their globals. We treat methods
         // specifically.
-        if let Some(trait_id) = &self.parent_trait_decl
-            && trait_id == id
-        {
-            return;
+        if self.parent_trait_decl != Some(*id) {
+            self.insert_edge(*id);
         }
-        self.insert_edge((*id).into());
     }
 
     fn enter_fun_decl_id(&mut self, id: &FunDeclId) {
-        self.insert_edge((*id).into());
+        self.insert_edge(*id);
     }
 
     fn visit_item_meta(&mut self, _: &ItemMeta) -> ControlFlow<Self::Break> {
@@ -301,12 +290,8 @@ impl Deps {
 }
 
 fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
-    // The order we explore the items in will dictate the final order. We do the following: std
-    // items, then items from foreign crates (sorted by crate name), then local items. Within a
-    // crate, we sort by file then by source order.
-    let mut sorted_items = ctx.translated.all_items().collect_vec();
-    // Pre-sort files to avoid costly string comparisons. Maps file ids to an index that reflects
-    // ordering on the crates (with `core` and `std` sorted first) and file names.
+    // Pre-sort files to limit the number of costly string comparisons. Maps file ids to an index
+    // that reflects ordering on the crates (with `core` and `std` sorted first) and file names.
     let sorted_file_ids: IndexMap<FileId, usize> = ctx
         .translated
         .files
@@ -321,6 +306,11 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
         .map(|(i, _file_id)| i)
         .collect();
     assert_eq!(ctx.translated.files.len(), sorted_file_ids.slot_count());
+
+    // The order we explore the items in will dictate the final order. We do the following: std
+    // items, then items from foreign crates (sorted by crate name), then local items. Within a
+    // crate, we sort by file then by source order.
+    let mut sorted_items = ctx.translated.all_items().collect_vec();
     sorted_items.sort_by_key(|item| {
         let item_meta = item.item_meta();
         let span = item_meta.span.data;
@@ -330,11 +320,10 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
 
     let mut graph = Deps::new();
     for item in sorted_items {
-        let id = item.id();
-        graph.set_current_id(ctx, id);
+        let mut visitor = graph.visitor_for_item(item);
         match item {
             ItemRef::Type(..) | ItemRef::TraitImpl(..) | ItemRef::Global(..) => {
-                let _ = item.drive(&mut graph);
+                let _ = item.drive(&mut visitor);
             }
             ItemRef::Fun(d) => {
                 let FunDecl {
@@ -347,15 +336,15 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     body,
                 } = d;
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
-                // TODO: add `is_global_initializer` to `ItemKind`.
-                let _ = generics.drive(&mut graph);
-                let _ = signature.drive(&mut graph);
-                let _ = body.drive(&mut graph);
+                // TODO: add `is_global_initializer` to `ItemSource`.
+                let _ = generics.drive(&mut visitor);
+                let _ = signature.drive(&mut visitor);
+                let _ = body.drive(&mut visitor);
                 // FIXME(#514): A method declaration depends on its declaring trait because of its
                 // `Self` clause. While the clause is implicit, we make sure to record the
                 // dependency manually.
                 if let ItemSource::TraitDecl { trait_ref, .. } = src {
-                    graph.insert_edge(trait_ref.id.into());
+                    visitor.insert_edge(trait_ref.id);
                 }
             }
             ItemRef::TraitDecl(d) => {
@@ -370,14 +359,14 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     vtable,
                 } = d;
                 // Visit the traits referenced in the generics
-                let _ = generics.drive(&mut graph);
+                let _ = generics.drive(&mut visitor);
 
                 // Visit the parent clauses
-                let _ = parent_clauses.drive(&mut graph);
+                let _ = parent_clauses.drive(&mut visitor);
 
                 // Visit the items
-                let _ = types.drive(&mut graph);
-                let _ = vtable.drive(&mut graph);
+                let _ = types.drive(&mut visitor);
+                let _ = vtable.drive(&mut visitor);
 
                 // We consider that a trait decl only contains the function/constant signatures.
                 // Therefore we don't explore the default const/method ids.
@@ -387,21 +376,20 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                         ty,
                         default,
                     } = assoc_const;
-                    let _ = ty.drive(&mut graph);
+                    let _ = ty.drive(&mut visitor);
                     if let Some(gref) = default {
-                        let _ = gref.generics.drive(&mut graph);
+                        let _ = gref.generics.drive(&mut visitor);
                     }
                 }
                 for bound_method in methods {
                     let id = bound_method.skip_binder.item.id;
-                    let _ = bound_method.params.drive(&mut graph);
+                    let _ = bound_method.params.drive(&mut visitor);
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                        let _ = decl.signature.drive(&mut graph);
+                        let _ = decl.signature.drive(&mut visitor);
                     }
                 }
             }
         }
-        graph.unset_current_id();
     }
     graph
 }
