@@ -73,7 +73,7 @@ pub trait FnMut::<closure<'_, '_>, (u8, u8)>
 }
 
 // Full name: core::ops::function::Fn::<closure<'_, '_>, (u8, u8)>
-#[lang_item("r#fn")]
+#[lang_item("fn")]
 pub trait Fn::<closure<'_, '_>, (u8, u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
@@ -90,16 +90,16 @@ pub fn core::ops::function::Fn::call<'_0>(@1: &'_0 closure<'_, '_>, @2: (u8, u8)
 pub fn core::ops::function::Fn::call::<closure<'_, '_>, (u8, u8)><'_0>(@1: &'_0 closure<'_, '_>, @2: (u8, u8)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut closure<'_, '_>, @2: (u8, u8)) -> u8
-= <opaque>
-
 pub fn core::ops::function::FnMut::call_mut::<closure<'_, '_>, (u8, u8)><'_0>(@1: &'_0 mut closure<'_, '_>, @2: (u8, u8)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once(@1: closure<'_, '_>, @2: (u8, u8)) -> u8
+pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut closure<'_, '_>, @2: (u8, u8)) -> u8
 = <opaque>
 
 pub fn core::ops::function::FnOnce::call_once::<closure<'_, '_>, (u8, u8)>(@1: closure<'_, '_>, @2: (u8, u8)) -> u8
+= <opaque>
+
+pub fn core::ops::function::FnOnce::call_once(@1: closure<'_, '_>, @2: (u8, u8)) -> u8
 = <opaque>
 
 fn UNIT_METADATA()

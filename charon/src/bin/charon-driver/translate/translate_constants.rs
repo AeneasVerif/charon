@@ -1,4 +1,8 @@
 //! Functions to translate constants to LLBC.
+use rustc_middle::ty;
+
+use crate::translate::translate_bodies::translate_variant_id;
+
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 
@@ -63,14 +67,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_constant_expr_kind(span, lit)?
             }
-            hax::ConstantExprKind::Adt { info, fields } => {
+            hax::ConstantExprKind::Adt { kind, fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|f| self.translate_constant_expr(span, &f.value))
                     .try_collect()?;
                 use hax::VariantKind;
-                let vid = if let VariantKind::Enum { index, .. } = info.kind {
-                    Some(VariantId::new(index))
+                let vid = if let VariantKind::Enum { index, .. } = *kind {
+                    Some(translate_variant_id(index))
                 } else {
                     None
                 };
@@ -129,7 +133,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr(span, arg)?;
-                let rk = RefKind::mutable(*mutability);
+                let rk = RefKind::mutable(mutability.is_mut());
                 ConstantExprKind::Ptr(rk, Box::new(arg))
             }
             hax::ConstantExprKind::ConstRef { id } => {
@@ -156,5 +160,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         };
 
         Ok(ConstantExpr { kind, ty })
+    }
+
+    pub(crate) fn translate_ty_constant_expr(
+        &mut self,
+        span: Span,
+        c: &ty::Const<'tcx>,
+    ) -> Result<ConstantExpr, Error> {
+        let c = self.catch_sinto(span, c)?;
+        self.translate_constant_expr(span, &c)
     }
 }

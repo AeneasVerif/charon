@@ -1,12 +1,14 @@
 //! Translate information about items: name, attributes, etc.
+use itertools::Itertools;
+use rustc_middle::mir;
+use std::cmp::Ord;
+use std::path::{Component, PathBuf};
+
 use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
-use hax::DefPathItem;
-use itertools::Itertools;
-use std::cmp::Ord;
-use std::path::{Component, PathBuf};
+use hax::{DefPathItem, SInto};
 
 // Spans
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
@@ -31,10 +33,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub fn translate_filename(&mut self, name: &hax::FileName) -> meta::FileName {
+    pub fn translate_filename(&mut self, name: rustc_span::FileName) -> meta::FileName {
         match name {
-            hax::FileName::Real(name) => {
-                use hax::RealFileName;
+            rustc_span::FileName::Real(name) => {
+                use rustc_span::RealFileName;
                 match name {
                     RealFileName::LocalPath(path) => {
                         let path = if let Ok(path) = path.strip_prefix(&self.sysroot) {
@@ -105,25 +107,28 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub fn translate_span_data(&mut self, rspan: &hax::Span) -> meta::SpanData {
-        let filename = self.translate_filename(&rspan.filename);
-        let rust_span = rspan.rust_span_data.unwrap().span();
+    pub fn translate_span_data(&mut self, span: rustc_span::Span) -> meta::SpanData {
+        let smap: &rustc_span::source_map::SourceMap = self.tcx.sess.psess.source_map();
+        let filename = smap.span_to_filename(span);
+        let filename = self.translate_filename(filename);
+        let span = span;
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
                 unimplemented!();
             }
-            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename, rust_span),
+            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename, span),
         };
 
-        fn convert_loc(loc: &hax::Loc) -> Loc {
+        let convert_loc = |pos: rustc_span::BytePos| -> Loc {
+            let loc = smap.lookup_char_pos(pos);
             Loc {
                 line: loc.line,
-                col: loc.col,
+                col: loc.col_display,
             }
-        }
-        let beg = convert_loc(&rspan.lo);
-        let end = convert_loc(&rspan.hi);
+        };
+        let beg = convert_loc(span.lo());
+        let end = convert_loc(span.hi());
 
         // Put together
         meta::SpanData { file_id, beg, end }
@@ -132,18 +137,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Compute span data from a Rust source scope
     pub fn translate_span_from_source_info(
         &mut self,
-        source_scopes: &hax::IndexVec<hax::SourceScope, hax::SourceScopeData>,
-        source_info: &hax::SourceInfo,
+        source_scopes: &rustc_index::IndexVec<mir::SourceScope, mir::SourceScopeData>,
+        source_info: &mir::SourceInfo,
     ) -> Span {
         // Translate the span
-        let data = self.translate_span_data(&source_info.span);
+        let data = self.translate_span_data(source_info.span);
 
         // Lookup the top-most inlined parent scope.
         let mut parent_span = None;
         let mut scope_data = &source_scopes[source_info.scope];
         while let Some(parent_scope) = scope_data.inlined_parent_scope {
             scope_data = &source_scopes[parent_scope];
-            parent_span = Some(&scope_data.span);
+            parent_span = Some(scope_data.span);
         }
 
         if let Some(parent_span) = parent_span {
@@ -160,16 +165,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub(crate) fn translate_span_from_hax(&mut self, span: &hax::Span) -> Span {
+    pub(crate) fn translate_span(&mut self, span: &rustc_span::Span) -> Span {
         Span {
-            data: self.translate_span_data(span),
+            data: self.translate_span_data(*span),
             generated_from_span: None,
         }
     }
 
     pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
         let span = def_id.def_span(&self.hax_state);
-        self.translate_span_from_hax(&span)
+        self.translate_span(&span)
     }
 }
 
@@ -181,7 +186,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         item: &RustcItem,
     ) -> Result<Option<PathElem>, Error> {
         let def_id = item.def_id();
-        let path_elem = def_id.path_item();
+        let path_elem = def_id.path_item(&self.hax_state);
         // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens
         // notably with macros and inherent impl blocks.
         let disambiguator = Disambiguator::new(path_elem.disambiguator as usize);
@@ -190,13 +195,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             DefPathItem::CrateRoot { name, .. } => {
                 // Sanity check
                 error_assert!(self, span, path_elem.disambiguator == 0);
-                Some(PathElem::Ident(name.clone(), disambiguator))
+                Some(PathElem::Ident(name.to_string(), disambiguator))
             }
             // We map the three namespaces onto a single one. We can always disambiguate by looking
             // at the definition.
             DefPathItem::TypeNs(symbol)
             | DefPathItem::ValueNs(symbol)
-            | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
+            | DefPathItem::MacroNs(symbol) => {
+                Some(PathElem::Ident(symbol.to_string(), disambiguator))
+            }
             DefPathItem::Impl => {
                 let full_def = self.hax_def_for_item(item)?;
                 // Two cases, depending on whether the impl block is
@@ -457,7 +464,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             _ => panic!("Unexpected def for associated item: {def:?}"),
         };
         Ok(TraitItemName(
-            assoc.name.as_ref().map(|n| n.into()).unwrap_or_default(),
+            assoc
+                .name
+                .as_ref()
+                .map(|n| n.to_string().into())
+                .unwrap_or_default(),
         ))
     }
 
@@ -470,32 +481,31 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
-    pub(crate) fn translate_attribute(&mut self, attr: &hax::Attribute) -> Option<Attribute> {
-        use hax::Attribute as Haxttribute;
-        use hax::AttributeKind as HaxttributeKind;
+    pub(crate) fn translate_attribute(&mut self, attr: &rustc_hir::Attribute) -> Option<Attribute> {
+        use rustc_hir as hir;
+        use rustc_hir::attrs as hir_attrs;
         match attr {
-            Haxttribute::Parsed(HaxttributeKind::DocComment { comment, .. }) => {
+            hir::Attribute::Parsed(hir_attrs::AttributeKind::DocComment { comment, .. }) => {
                 Some(Attribute::DocComment(comment.to_string()))
             }
-            Haxttribute::Parsed(_) => None,
-            Haxttribute::Unparsed(attr) => {
+            hir::Attribute::Parsed(_) => None,
+            hir::Attribute::Unparsed(attr) => {
                 let raw_attr = RawAttribute {
-                    path: attr.path.clone(),
+                    path: attr.path.to_string(),
                     args: match &attr.args {
-                        hax::AttrArgs::Empty => None,
-                        hax::AttrArgs::Delimited(args) => Some(args.tokens.clone()),
-                        hax::AttrArgs::Eq { expr, .. } => self
-                            .tcx
-                            .sess
-                            .source_map()
-                            .span_to_snippet(expr.span.rust_span_data.unwrap().span())
-                            .ok(),
+                        hir::AttrArgs::Empty => None,
+                        hir::AttrArgs::Delimited(args) => {
+                            Some(rustc_ast_pretty::pprust::tts_to_string(&args.tokens))
+                        }
+                        hir::AttrArgs::Eq { expr, .. } => {
+                            self.tcx.sess.source_map().span_to_snippet(expr.span).ok()
+                        }
                     },
                 };
                 match Attribute::parse_from_raw(raw_attr) {
                     Ok(a) => Some(a),
                     Err(msg) => {
-                        let span = self.translate_span_from_hax(&attr.span);
+                        let span = self.translate_span(&attr.span.sinto(&self.hax_state));
                         register_error!(self, span, "Error parsing attribute: {msg}");
                         None
                     }
@@ -533,7 +543,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let mut renames = attributes.iter().filter_map(|a| a.as_rename()).cloned();
             let rename = renames.next();
             if renames.next().is_some() {
-                let span = self.translate_span_from_hax(&def.span);
+                let span = self.translate_span(&def.span);
                 register_error!(
                     self,
                     span,
@@ -575,8 +585,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             return item_meta.clone();
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
-        let span = self.translate_span_from_hax(span);
-        let is_local = def.def_id().is_local;
+        let span = self.translate_span(span);
+        let is_local = def.def_id().is_local();
         let (attr_info, lang_item) = if !item_src.is_derived_item()
             || matches!(item_src.kind, TransItemSourceKind::ClosureMethod(..))
         {
@@ -584,7 +594,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let lang_item = def
                 .lang_item
                 .clone()
-                .or_else(|| def.diagnostic_item.clone());
+                .or_else(|| def.diagnostic_item.clone())
+                .map(|s| s.to_string());
             (attr_info, lang_item)
         } else {
             (AttrInfo::default(), None)
@@ -611,15 +622,5 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         self.cached_item_metas
             .insert(item_src.clone(), item_meta.clone());
         item_meta
-    }
-}
-
-impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
-    pub(crate) fn translate_span_from_hax(&mut self, rspan: &hax::Span) -> Span {
-        self.t_ctx.translate_span_from_hax(rspan)
-    }
-
-    pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
-        self.t_ctx.def_span(def_id)
     }
 }

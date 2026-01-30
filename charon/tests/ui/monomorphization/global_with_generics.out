@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<i32>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<i32>
-
-// Full name: core::marker::Sized::<i32>
-#[lang_item("sized")]
-pub trait Sized::<i32>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<i32>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<bool>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<bool>
@@ -21,6 +9,18 @@ pub trait MetaSized::<bool>
 pub trait Sized::<bool>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<bool>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized::<i32>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<i32>
+
+// Full name: core::marker::Sized::<i32>
+#[lang_item("sized")]
+pub trait Sized::<i32>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<i32>
     non-dyn-compatible
 }
 
@@ -34,14 +34,14 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun1()
 
-// Full name: test_crate::Foo::<i32>
-struct Foo::<i32> {
-  value: i32,
-}
-
 // Full name: test_crate::Foo::<bool>
 struct Foo::<bool> {
   value: bool,
+}
+
+// Full name: test_crate::Foo::<i32>
+struct Foo::<i32> {
+  value: i32,
 }
 
 // Full name: test_crate::FooInt

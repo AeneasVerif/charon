@@ -149,7 +149,7 @@ pub fn def_path_def_ids<'a, 'tcx>(
             match elem {
                 PatElem::Ident { name: elem, .. } => {
                     items = nameable_children
-                        .filter(|(child_name, _)| child_name == elem)
+                        .filter(|(child_name, _)| child_name.as_str() == elem)
                         .filter_map(|(_, def_id)| def_id.as_rust_def_id())
                         .collect();
                 }

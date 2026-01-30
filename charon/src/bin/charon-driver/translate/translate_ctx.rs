@@ -9,7 +9,7 @@ use hax::SInto;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
@@ -54,9 +54,8 @@ pub struct TranslateCtx<'tcx> {
 
     /// Context for tracking and reporting errors.
     pub errors: RefCell<ErrorCtx>,
-    /// The declarations we came accross and which we haven't translated yet. We keep them sorted
-    /// to make the output order a bit more stable.
-    pub items_to_translate: BTreeSet<TransItemSource>,
+    /// The declarations we came accross and which we haven't translated yet.
+    pub items_to_translate: VecDeque<TransItemSource>,
     /// The declaration we've already processed (successfully or not).
     pub processed: HashSet<TransItemSource>,
     /// Stack of the translations currently happening. Used to avoid accidental cycles.
@@ -97,7 +96,7 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
     /// The Hax context with the current `DefId`.
-    pub hax_state_with_id: hax::StateWithOwner<'tcx>,
+    pub hax_state: hax::StateWithOwner<'tcx>,
     /// Whether to consider a `ImplExprAtom::Error` as an error for us. True except inside type
     /// aliases, because rust does not enforce correct trait bounds on type aliases.
     pub error_on_impl_expr_error: bool,
@@ -187,7 +186,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     {
         let mut errors = self.errors.borrow_mut();
         let current_def_id = mem::replace(&mut errors.def_id, item_id);
-        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local);
+        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local());
         drop(errors); // important: release the refcell "lock"
         let ret = f(self);
         let mut errors = self.errors.borrow_mut();
@@ -211,7 +210,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             item_src,
             item_id,
             t_ctx,
-            hax_state_with_id,
+            hax_state: hax_state_with_id,
             error_on_impl_expr_error: true,
             binding_levels: Default::default(),
             lifetime_freshener: None,
@@ -232,7 +231,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     pub fn hax_state_with_id(&self) -> &hax::StateWithOwner<'tcx> {
-        &self.hax_state_with_id
+        &self.hax_state
+    }
+
+    pub fn catch_sinto<T, U>(&mut self, span: Span, x: &T) -> Result<U, Error>
+    where
+        T: Debug + SInto<hax::StateWithOwner<'tcx>, U>,
+    {
+        self.t_ctx.catch_sinto(&self.hax_state, span, x)
     }
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition

@@ -31,7 +31,7 @@ pub(crate) struct BindingLevel {
     /// <https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/>
     ///
     /// The map from rust early regions to translated region indices.
-    pub early_region_vars: std::collections::BTreeMap<hax::EarlyParamRegion, RegionId>,
+    pub early_region_vars: HashMap<hax::EarlyParamRegion, RegionId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
     /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
@@ -53,7 +53,8 @@ pub(crate) struct BindingLevel {
 }
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
-fn translate_region_name(s: String) -> Option<String> {
+fn translate_region_name(s: hax::Symbol) -> Option<String> {
+    let s = s.to_string();
     if s == "'_" { None } else { Some(s) }
 }
 
@@ -67,7 +68,7 @@ impl BindingLevel {
 
     /// Important: we must push all the early-bound regions before pushing any other region.
     pub(crate) fn push_early_region(&mut self, region: hax::EarlyParamRegion) -> RegionId {
-        let name = translate_region_name(region.name.clone());
+        let name = translate_region_name(region.name);
         // Check that there are no late-bound regions
         assert!(
             self.bound_region_vars.is_empty(),
@@ -86,7 +87,7 @@ impl BindingLevel {
         use hax::BoundRegionKind::*;
         let name = match region {
             Anon => None,
-            NamedAnon(symbol) | Named(_, symbol) => translate_region_name(symbol.clone()),
+            NamedAnon(symbol) | Named(_, symbol) => translate_region_name(symbol),
             ClosureEnv => Some("@env".to_owned()),
         };
         let rid = self
@@ -109,20 +110,24 @@ impl BindingLevel {
         region_id
     }
 
-    pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
-        let var_id = self
-            .params
-            .types
-            .push_with(|index| TypeParam { index, name });
+    pub(crate) fn push_type_var(&mut self, rid: u32, name: hax::Symbol) -> TypeVarId {
+        let var_id = self.params.types.push_with(|index| TypeParam {
+            index,
+            name: name.to_string(),
+        });
         self.type_vars_map.insert(rid, var_id);
         var_id
     }
 
-    pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: Ty, name: String) {
+    pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: Ty, name: hax::Symbol) {
         let var_id = self
             .params
             .const_generics
-            .push_with(|index| ConstGenericParam { index, name, ty });
+            .push_with(|index| ConstGenericParam {
+                index,
+                name: name.to_string(),
+                ty,
+            });
         self.const_generic_vars_map.insert(rid, var_id);
     }
 
@@ -315,18 +320,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::GenericParamDefKind::Type { .. } => {
                 let _ = self
                     .innermost_binder_mut()
-                    .push_type_var(param.index, param.name.clone());
+                    .push_type_var(param.index, param.name);
             }
             hax::GenericParamDefKind::Const { ty, .. } => {
                 let span = self.def_span(&param.def_id);
                 // The type should be primitive, meaning it shouldn't contain variables,
                 // non-primitive adts, etc. As a result, we can use an empty context.
                 let ty = self.translate_ty(span, ty)?;
-                self.innermost_binder_mut().push_const_generic_var(
-                    param.index,
-                    ty,
-                    param.name.clone(),
-                );
+                self.innermost_binder_mut()
+                    .push_const_generic_var(param.index, ty, param.name);
             }
         }
 

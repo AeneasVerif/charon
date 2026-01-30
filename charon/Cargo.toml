@@ -40,8 +40,7 @@ path = "tests/cargo.rs"
 harness = false
 
 [dependencies]
-hax = { package = "hax-frontend-exporter", git = "https://github.com/AeneasVerif/hax", branch = "main", optional = true }
-# hax = { package = "hax-frontend-exporter", path = "../../hax/frontend/exporter", optional = true }
+hax = { package = "hax-frontend-exporter", path = "./hax-frontend", optional = true }
 serde_state = { git = "https://github.com/Nadrieril/serde_state", branch = "main" }
 # serde_state = { path = "../../../forks/serde_state/serde_state" }
 macros = { path = "./macros" }

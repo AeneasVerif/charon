@@ -399,11 +399,7 @@ impl ItemTransCtx<'_, '_> {
             //
             (FnOnce, Fn | FnMut) => {
                 // Hax (via rustc) gives us the MIR to do this.
-                let hax::FullDefKind::Closure {
-                    once_shim: Some(body),
-                    ..
-                } = &def.kind
-                else {
+                let Some(body) = def.this.closure_once_shim(self.hax_state()) else {
                     panic!("missing shim for closure")
                 };
                 self.translate_body(span, body, &def.source_text)
