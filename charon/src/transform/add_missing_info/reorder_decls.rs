@@ -35,17 +35,17 @@ impl<Id: Copy> GDeclarationGroup<Id> {
         self.get_ids().iter().copied().map(|id| id.into()).collect()
     }
 
-    fn make_group(is_rec: bool, gr: impl Iterator<Item = ItemId>) -> Self
+    fn make_group(is_rec: bool, ids: Vec<ItemId>) -> Self
     where
         Id: TryFrom<ItemId>,
         Id::Error: Debug,
     {
-        let gr: Vec<_> = gr.map(|x| x.try_into().unwrap()).collect();
+        let ids: Vec<_> = ids.into_iter().map(|x| x.try_into().unwrap()).collect();
         if is_rec {
-            GDeclarationGroup::Rec(gr)
+            GDeclarationGroup::Rec(ids)
         } else {
-            assert!(gr.len() == 1);
-            GDeclarationGroup::NonRec(gr[0])
+            assert!(ids.len() == 1);
+            GDeclarationGroup::NonRec(ids[0])
         }
     }
 
@@ -61,6 +61,29 @@ impl<Id: Copy> GDeclarationGroup<Id> {
 }
 
 impl DeclarationGroup {
+    fn make_group(is_rec: bool, ids: Vec<ItemId>) -> Self {
+        let id0 = ids[0];
+        let all_same_kind = ids
+            .iter()
+            .all(|id| id0.variant_index_arity() == id.variant_index_arity());
+        match id0 {
+            _ if !all_same_kind => {
+                DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            ItemId::Type(_) => DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids)),
+            ItemId::Fun(_) => DeclarationGroup::Fun(GDeclarationGroup::make_group(is_rec, ids)),
+            ItemId::Global(_) => {
+                DeclarationGroup::Global(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            ItemId::TraitDecl(_) => {
+                DeclarationGroup::TraitDecl(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            ItemId::TraitImpl(_) => {
+                DeclarationGroup::TraitImpl(GDeclarationGroup::make_group(is_rec, ids))
+            }
+        }
+    }
+
     pub fn to_mixed_group(&self) -> GDeclarationGroup<ItemId> {
         use DeclarationGroup::*;
         match self {
@@ -386,68 +409,6 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
     graph
 }
 
-fn group_declarations_from_scc(
-    _ctx: &TransformCtx,
-    graph: Deps,
-    reordered_sccs: Vec<Vec<ItemId>>,
-) -> DeclarationsGroups {
-    let mut reordered_decls: DeclarationsGroups = Vec::new();
-
-    // Iterate over the SCC ids in the proper order
-    for scc in reordered_sccs.iter() {
-        if scc.is_empty() {
-            // This can happen if we failed to translate the item in this group.
-            continue;
-        }
-
-        // Note that the length of an SCC should be at least 1.
-        let mut it = scc.iter();
-        let id0 = *it.next().unwrap();
-        // If an SCC has length one, the declaration may be simply recursive:
-        // we determine whether it is the case by checking if the def id is in
-        // its own set of dependencies.
-        let is_mutually_recursive = scc.len() > 1;
-        let is_simply_recursive =
-            !is_mutually_recursive && graph.dgraph.neighbors(id0).contains(&id0);
-        let is_rec = is_mutually_recursive || is_simply_recursive;
-
-        let all_same_kind = scc
-            .iter()
-            .all(|id| id0.variant_index_arity() == id.variant_index_arity());
-        let ids = scc.iter().copied();
-        let group: DeclarationGroup = match id0 {
-            _ if !all_same_kind => {
-                DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
-            }
-            ItemId::Type(_) => DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids)),
-            ItemId::Fun(_) => DeclarationGroup::Fun(GDeclarationGroup::make_group(is_rec, ids)),
-            ItemId::Global(_) => {
-                DeclarationGroup::Global(GDeclarationGroup::make_group(is_rec, ids))
-            }
-            ItemId::TraitDecl(_) => {
-                let gr: Vec<_> = ids.map(|x| x.try_into().unwrap()).collect();
-                // Trait declarations often refer to `Self`, like below,
-                // which means they are often considered as recursive by our
-                // analysis. TODO: do something more precise. What is important
-                // is that we never use the "whole" self clause as argument,
-                // but rather projections over the self clause (like `<Self as Foo>::u`,
-                // in the declaration for `Foo`).
-                if gr.len() == 1 {
-                    DeclarationGroup::TraitDecl(GDeclarationGroup::NonRec(gr[0]))
-                } else {
-                    DeclarationGroup::TraitDecl(GDeclarationGroup::Rec(gr))
-                }
-            }
-            ItemId::TraitImpl(_) => {
-                DeclarationGroup::TraitImpl(GDeclarationGroup::make_group(is_rec, ids))
-            }
-        };
-
-        reordered_decls.push(group);
-    }
-    reordered_decls
-}
-
 fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
     // Build the graph of dependencies between items.
     let graph = compute_declarations_graph(ctx);
@@ -458,7 +419,25 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
     let reordered_sccs = super::sccs::ordered_scc(&graph.dgraph);
 
     // Convert to a list of declarations.
-    let reordered_decls = group_declarations_from_scc(ctx, graph, reordered_sccs);
+    let reordered_decls = reordered_sccs
+        .into_iter()
+        // This can happen if we failed to translate the item in this group.
+        .filter(|scc| !scc.is_empty())
+        .map(|scc| {
+            // If an SCC has length one, the declaration may be simply recursive: we determine whether
+            // it is the case by checking if the def id is in its own set of dependencies.
+            // Trait declarations often refer to `Self`, which means they are often considered as
+            // recursive by our analysis. So we cheat an declare them non-recursive.
+            // TODO: do something more precise. What is important is that we never use the "whole" self
+            // clause as argument, but rather projections over the self clause (like `<Self as
+            // Foo>::u`, in the declaration for `Foo`).
+            let id0 = scc[0];
+            let is_non_rec = scc.len() == 1
+                && (id0.is_trait_decl() || !graph.dgraph.neighbors(id0).contains(&id0));
+
+            DeclarationGroup::make_group(!is_non_rec, scc)
+        })
+        .collect();
 
     trace!("{:?}", reordered_decls);
     reordered_decls
