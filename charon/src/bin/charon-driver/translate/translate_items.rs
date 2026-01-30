@@ -6,6 +6,7 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
 use itertools::Itertools;
+use rustc_span::sym;
 use std::mem;
 use std::ops::ControlFlow;
 
@@ -846,7 +847,7 @@ impl ItemTransCtx<'_, '_> {
             }
         }
 
-        if def.lang_item.as_deref() == Some("destruct") {
+        if def.lang_item == Some(sym::destruct) {
             // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
             let (method_name, method_binder) =
                 self.prepare_drop_in_place_method(def, span, def_id, None);
@@ -1098,7 +1099,7 @@ impl ItemTransCtx<'_, '_> {
         }
 
         let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
-        if implemented_trait_def.lang_item.as_deref() == Some("destruct") {
+        if implemented_trait_def.lang_item == Some(sym::destruct) {
             raise_error!(
                 self,
                 span,

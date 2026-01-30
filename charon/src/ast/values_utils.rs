@@ -131,13 +131,17 @@ impl ScalarValue {
         ScalarValue::Unsigned(ty, v)
     }
 
-    pub fn from_uint(ptr_size: ByteCount, ty: UIntTy, v: u128) -> ScalarResult<ScalarValue> {
+    pub fn from_uint(ptr_size: ByteCount, ty: UIntTy, v: u128) -> ScalarResult<Self> {
         if !ScalarValue::uint_is_in_bounds(ptr_size, ty, v) {
             trace!("Not in bounds for {:?}: {}", ty, v);
             Err(ScalarError::OutOfBounds)
         } else {
             Ok(ScalarValue::from_unchecked_uint(ty, v))
         }
+    }
+
+    pub fn mk_usize(ptr_size: ByteCount, v: u64) -> Self {
+        ScalarValue::from_uint(ptr_size, UIntTy::Usize, v as u128).unwrap()
     }
 
     /// When computing the result of binary operations, we convert the values

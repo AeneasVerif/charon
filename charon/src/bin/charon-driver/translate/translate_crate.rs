@@ -170,15 +170,6 @@ impl TransItemSource {
             _ => true,
         }
     }
-
-    /// Value with which we order values.
-    fn sort_key(&self) -> impl Ord + '_ {
-        let item_id = match &self.item {
-            RustcItem::Poly(_) => None,
-            RustcItem::Mono(item) => Some(&item.generic_args),
-        };
-        (self.def_id().index, &self.kind, item_id)
-    }
 }
 
 impl RustcItem {
@@ -187,18 +178,6 @@ impl RustcItem {
             RustcItem::Poly(def_id) => def_id,
             RustcItem::Mono(item_ref) => &item_ref.def_id,
         }
-    }
-}
-
-/// Manual impls because `DefId` is not orderable.
-impl PartialOrd for TransItemSource {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for TransItemSource {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.sort_key().cmp(&other.sort_key())
     }
 }
 
@@ -309,7 +288,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         };
         self.errors
             .borrow_mut()
-            .register_dep_source(dep_src, item_id, src.def_id().is_local);
+            .register_dep_source(dep_src, item_id, src.def_id().is_local());
         item_id.try_into().ok()
     }
 
@@ -320,7 +299,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         item_src: TransItemSource,
     ) -> Option<T> {
         let id = self.register_no_enqueue(dep_src, &item_src);
-        self.items_to_translate.insert(item_src);
+        self.items_to_translate.push_back(item_src);
         id
     }
 
@@ -329,7 +308,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let id = id.into();
         if self.translated.get_item(id).is_none() {
             let item_src = self.reverse_id_map[&id].clone();
-            self.items_to_translate.insert(item_src);
+            self.items_to_translate.push_back(item_src);
         }
     }
 
@@ -347,7 +326,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         Some(DepSource {
             src_id: self.item_id?,
-            span: self.item_src.def_id().is_local.then_some(span),
+            span: self.item_src.def_id().is_local().then_some(span),
         })
     }
 
@@ -688,7 +667,7 @@ pub fn translate<'tcx, 'ctx>(
     let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
         .to_def_id()
         .sinto(&hax_state);
-    let crate_name = crate_def_id.krate.clone();
+    let crate_name = crate_def_id.crate_name(&hax_state).to_string();
     trace!("# Crate: {}", crate_name);
 
     let mut ctx = TranslateCtx {
@@ -749,7 +728,7 @@ pub fn translate<'tcx, 'ctx>(
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
-    while let Some(item_src) = ctx.items_to_translate.pop_first() {
+    while let Some(item_src) = ctx.items_to_translate.pop_front() {
         if ctx.processed.insert(item_src.clone()) {
             ctx.translate_item(&item_src);
         }

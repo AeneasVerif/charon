@@ -3,11 +3,14 @@
 //! us to handle, and easier to maintain - rustc's representation can evolve
 //! independently.
 
+use itertools::Itertools;
+use rustc_span::sym;
+
+use super::translate_bodies::translate_variant_id;
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::ullbc_ast::*;
-use itertools::Itertools;
 
 impl ItemTransCtx<'_, '_> {
     /// Generate a fake function body for ADT constructors.
@@ -42,7 +45,7 @@ impl ItemTransCtx<'_, '_> {
             .try_collect()?;
         let variant = match ctor_of {
             hax::CtorOf::Struct => None,
-            hax::CtorOf::Variant => Some(VariantId::from(*variant_id)),
+            hax::CtorOf::Variant => Some(translate_variant_id(*variant_id)),
         };
         builder.push_statement(StatementKind::Assign(
             return_place,
@@ -57,7 +60,7 @@ impl ItemTransCtx<'_, '_> {
         item: &hax::ItemRef,
     ) -> Result<Option<BuiltinFunId>, Error> {
         let def = self.hax_def(item)?;
-        let fun_id = if def.diagnostic_item.as_deref() == Some("box_new")
+        let fun_id = if def.diagnostic_item == Some(sym::box_new)
             && self.t_ctx.options.treat_box_as_builtin
         {
             Some(BuiltinFunId::BoxNew)

@@ -47,10 +47,10 @@ pub trait Destruct::<closure::<()>>
     vtable: core::marker::Destruct::{vtable}::<closure::<()>>
 }
 
-unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
+unsafe fn core::marker::Destruct::drop_in_place::<()>(@1: *mut ())
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<()>(@1: *mut ())
+unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(())>
@@ -85,7 +85,7 @@ pub trait FnMut::<closure::<()>, (())>
 }
 
 // Full name: core::ops::function::Fn::<closure::<()>, (())>
-#[lang_item("r#fn")]
+#[lang_item("fn")]
 pub trait Fn::<closure::<()>, (())>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure::<()>>

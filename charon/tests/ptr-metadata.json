@@ -36,15 +36,15 @@
   "test_crate::GenericBehindIndirectionUnsized": "None",
   "test_crate::ThinGeneric": "None",
   "test_crate::Showable::{vtable}": "None",
-  "core::marker::MetaSized::{vtable}": "None",
   "alloc::boxed::Box": "None",
   "alloc::alloc::Global": "None",
-  "core::cmp::Ordering": "None",
-  "core::option::Option": "None",
-  "core::fmt::Formatter": "None",
-  "core::result::Result": "None",
-  "core::fmt::Error": "None",
+  "core::marker::MetaSized::{vtable}": "None",
   "core::alloc::layout::Layout": "None",
+  "core::result::Result": "None",
   "core::ptr::non_null::NonNull": "None",
-  "core::alloc::AllocError": "None"
+  "core::alloc::AllocError": "None",
+  "core::fmt::Formatter": "None",
+  "core::fmt::Error": "None",
+  "core::cmp::Ordering": "None",
+  "core::option::Option": "None"
 }
