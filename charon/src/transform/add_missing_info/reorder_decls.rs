@@ -334,6 +334,9 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
     });
 
     let mut graph = Deps::new();
+    for item in &sorted_items {
+        graph.dgraph.add_node(item.id());
+    }
     for item in sorted_items {
         let mut visitor = graph.visitor_for_item(ctx, item);
         match item {
