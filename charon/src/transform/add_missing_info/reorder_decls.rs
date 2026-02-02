@@ -14,6 +14,7 @@ use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
 use itertools::Itertools;
 use petgraph::graphmap::DiGraphMap;
+use std::collections::HashMap;
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
@@ -305,39 +306,8 @@ impl Deps {
 }
 
 fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
-    // Pre-sort files to limit the number of costly string comparisons. Maps file ids to an index
-    // that reflects ordering on the crates (with `core` and `std` sorted first) and file names.
-    let sorted_file_ids: IndexMap<FileId, usize> = ctx
-        .translated
-        .files
-        .all_indices()
-        .sorted_by_key(|&file_id| {
-            let file = &ctx.translated.files[file_id];
-            let is_std = file.crate_name == "std" || file.crate_name == "core";
-            (!is_std, &file.crate_name, &file.name)
-        })
-        .enumerate()
-        .sorted_by_key(|(_i, file_id)| *file_id)
-        .map(|(i, _file_id)| i)
-        .collect();
-    assert_eq!(ctx.translated.files.len(), sorted_file_ids.slot_count());
-
-    // The order we explore the items in will dictate the final order. We do the following: std
-    // items, then items from foreign crates (sorted by crate name), then local items. Within a
-    // crate, we sort by file then by source order.
-    let mut sorted_items = ctx.translated.all_items().collect_vec();
-    sorted_items.sort_by_key(|item| {
-        let item_meta = item.item_meta();
-        let span = item_meta.span.data;
-        let file_name_order = sorted_file_ids.get(span.file_id);
-        (item_meta.is_local, file_name_order, span.beg, item.id())
-    });
-
     let mut graph = Deps::new();
-    for item in &sorted_items {
-        graph.dgraph.add_node(item.id());
-    }
-    for item in sorted_items {
+    for item in ctx.translated.all_items() {
         let mut visitor = graph.visitor_for_item(ctx, item);
         match item {
             ItemRef::Type(..) | ItemRef::TraitImpl(..) | ItemRef::Global(..) => {
@@ -417,9 +387,44 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
     let graph = compute_declarations_graph(ctx);
     trace!("Graph:\n{}\n", graph.fmt_with_ctx(&ctx.into_fmt()));
 
-    // Compute SCCs (Strongly Connected Components) for the graph in a way that preserves the
-    // original node order as much as possible.
-    let reordered_sccs = super::sccs::ordered_scc(&graph.dgraph);
+    // Pre-sort files to limit the number of costly string comparisons. Maps file ids to an index
+    // that reflects ordering on the crates (with `core` and `std` sorted first) and file names.
+    let sorted_file_ids: IndexMap<FileId, usize> = ctx
+        .translated
+        .files
+        .all_indices()
+        .sorted_by_cached_key(|&file_id| {
+            let file = &ctx.translated.files[file_id];
+            let is_std = file.crate_name == "std" || file.crate_name == "core";
+            (!is_std, &file.crate_name, &file.name)
+        })
+        .enumerate()
+        .sorted_by_key(|(_i, file_id)| *file_id)
+        .map(|(i, _file_id)| i)
+        .collect();
+    assert_eq!(ctx.translated.files.len(), sorted_file_ids.slot_count());
+
+    // We sort items as follows: std items, then items from foreign crates (sorted by crate name),
+    // then local items. Within a crate, we sort by file then by source order.
+    let sort_by = |item: &ItemRef| {
+        let item_meta = item.item_meta();
+        let span = item_meta.span.data;
+        let file_name_order = sorted_file_ids.get(span.file_id);
+        (item_meta.is_local, file_name_order, span.beg, item.id())
+    };
+    // We record for each item the order in which we're sorting it, to make `sort_by` cheap.
+    let item_sorted_index: HashMap<ItemId, usize> = ctx
+        .translated
+        .all_items()
+        .sorted_by_cached_key(sort_by)
+        .enumerate()
+        .map(|(i, item)| (item.id(), i))
+        .collect();
+    let sort_by = |id: &ItemId| item_sorted_index.get(id).unwrap();
+
+    // Compute SCCs (Strongly Connected Components) for the graph in a way that matches the chosen
+    // order as much as possible.
+    let reordered_sccs = super::sccs::ordered_scc(&graph.dgraph, sort_by);
 
     // Convert to a list of declarations.
     let reordered_decls = reordered_sccs
