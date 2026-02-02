@@ -1,5 +1,11 @@
 # Final LLBC before serialization:
 
+// Full name: core::array::TryFromSliceError
+pub opaque type TryFromSliceError
+
+// Full name: core::fmt::Error
+pub struct Error {}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -23,8 +29,9 @@ where
   Err(E),
 }
 
-// Full name: core::fmt::Error
-pub struct Error {}
+// Full name: core::array::{impl Debug for TryFromSliceError}::fmt
+pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 TryFromSliceError, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
 
 // Full name: core::fmt::Debug
 #[lang_item("Debug")]
@@ -34,29 +41,10 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
-// Full name: core::array::TryFromSliceError
-pub opaque type TryFromSliceError
-
-// Full name: core::array::{impl Debug for TryFromSliceError}::fmt
-pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 TryFromSliceError, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <opaque>
-
 // Full name: core::array::{impl Debug for TryFromSliceError}
 impl Debug for TryFromSliceError {
     fn fmt<'_0_1, '_1_1, '_2_1> = {impl Debug for TryFromSliceError}::fmt<'_0_1, '_1_1, '_2_1>
     vtable: {impl Debug for TryFromSliceError}::{vtable}
-}
-
-// Full name: core::convert::TryFrom
-#[lang_item("TryFrom")]
-pub trait TryFrom<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Error>
-    type Error
-    fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
-    non-dyn-compatible
 }
 
 // Full name: core::clone::Clone
@@ -83,6 +71,18 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
 = <opaque>
+
+// Full name: core::convert::TryFrom
+#[lang_item("TryFrom")]
+pub trait TryFrom<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Error>
+    type Error
+    fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
+    non-dyn-compatible
+}
 
 // Full name: core::array::{impl TryFrom<&'_0 [T]> for [T; N]}
 impl<'_0, T, const N : usize> TryFrom<&'_0 [T]> for [T; N]

@@ -80,9 +80,18 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
     // Also compute the graph of the sccs, where there is an edge between sccs if there's an edge
     // between some nodes of each scc.
     let mut scc_graph: DiGraphMap<SccId, ()> = DiGraphMap::new();
-    for (&node, &scc_id) in &id_to_scc {
-        for neighbor in graph.neighbors(node) {
-            let neighbor_scc_id = *id_to_scc.get(&neighbor).unwrap();
+    // Add sccs in the order of their earliest element.
+    for (_, &scc_id) in &id_to_scc {
+        scc_graph.add_node(scc_id);
+    }
+    for scc_id in 0..sccs.len() {
+        // Add the scc neighbors in the desired node order.
+        for neighbor_scc_id in sccs[scc_id]
+            .iter()
+            .flat_map(|node| graph.neighbors(*node))
+            .sorted_by_key(&sort_by)
+            .map(|neighbor| *id_to_scc.get(&neighbor).unwrap())
+        {
             if neighbor_scc_id == scc_id {
                 // Can't have a self loop because `weird_dag_postorder` loops on loops.
                 continue;
@@ -94,7 +103,7 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
 
     // Reorder the SCCs among themselves by a post-order visit of the graph.
     let mut reordered_sccs_ids: SeqHashSet<SccId> = SeqHashSet::new();
-    for (_, &scc_id) in &id_to_scc {
+    for scc_id in scc_graph.nodes() {
         weird_dag_postorder(&scc_graph, &mut reordered_sccs_ids, scc_id);
     }
 

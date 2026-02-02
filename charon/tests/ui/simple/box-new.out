@@ -19,6 +19,10 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub opaque type NonNull<T>
+
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -29,10 +33,6 @@ where
   Ok(T),
   Err(E),
 }
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub opaque type NonNull<T>
 
 // Full name: core::alloc::Allocator
 pub trait Allocator<Self>

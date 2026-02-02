@@ -140,6 +140,10 @@ where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
 
+// Full name: core::marker::Send
+#[lang_item("Send")]
+pub trait Send<Self>
+
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
@@ -148,10 +152,6 @@ pub trait Copy<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
     non-dyn-compatible
 }
-
-// Full name: core::marker::Send
-#[lang_item("Send")]
-pub trait Send<Self>
 
 // Full name: core::marker::Sync
 #[lang_item("sync")]

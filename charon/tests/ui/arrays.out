@@ -4,6 +4,14 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
 // Full name: core::ops::index::Index
 #[lang_item("index")]
 pub trait Index<Self, Idx, Self_Output>
@@ -13,14 +21,6 @@ pub trait Index<Self, Idx, Self_Output>
     parent_clause2 : [@TraitClause2]: MetaSized<Self_Output>
     fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx, Self_Output>[Self]
     vtable: core::ops::index::Index::{vtable}<Idx, Self_Output>
-}
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
 }
 
 // Full name: core::array::{impl Index<I, Clause2_Output> for [T; N]}::index

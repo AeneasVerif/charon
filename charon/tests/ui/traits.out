@@ -184,16 +184,6 @@ where
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for bool}::get_bool
-pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
-{
-    let _0: bool; // return
-    let self_1: &'0 bool; // arg #1
-
-    _0 = copy (*self_1)
-    return
-}
-
 // Full name: test_crate::{impl BoolTrait for bool}::ret_true
 pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
 {
@@ -201,6 +191,16 @@ pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
     let self_1: &'0 bool; // arg #1
 
     _0 = const true
+    return
+}
+
+// Full name: test_crate::{impl BoolTrait for bool}::get_bool
+pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
+{
+    let _0: bool; // return
+    let self_1: &'0 bool; // arg #1
+
+    _0 = copy (*self_1)
     return
 }
 
@@ -239,6 +239,18 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     return
 }
 
+// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true
+pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let _0: bool; // return
+    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
+
+    _0 = const true
+    return
+}
+
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::get_bool
 pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
 where
@@ -256,18 +268,6 @@ where
         },
     }
     _0 = const false
-    return
-}
-
-// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true
-pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: bool; // return
-    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
-
-    _0 = const true
     return
 }
 

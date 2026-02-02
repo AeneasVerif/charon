@@ -398,9 +398,6 @@ fn ptr_casts()
     return
 }
 
-// Full name: test_crate::fn_casts::closure
-struct closure {}
-
 fn test_crate::fn_casts::foo()
 {
     let _0: (); // return
@@ -418,6 +415,19 @@ unsafe fn bar()
     _0 = ()
     _0 = ()
     return
+}
+
+// Full name: test_crate::fn_casts::closure
+struct closure {}
+
+// Full name: test_crate::fn_casts::closure::{impl Destruct for closure}::drop_in_place
+unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+= <missing>
+
+// Full name: test_crate::fn_casts::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
 }
 
 // Full name: test_crate::fn_casts::{impl Fn<(u8)> for closure}::call
@@ -448,16 +458,6 @@ fn {impl FnMut<(u8)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (u8))
     _3 = &(*state_1)
     _0 = {impl Fn<(u8)> for closure}::call<'2>(move _3, move args_2)
     return
-}
-
-// Full name: test_crate::fn_casts::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
-= <missing>
-
-// Full name: test_crate::fn_casts::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
-    non-dyn-compatible
 }
 
 // Full name: test_crate::fn_casts::{impl FnOnce<(u8)> for closure}::call_once

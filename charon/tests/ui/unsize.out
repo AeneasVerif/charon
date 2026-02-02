@@ -146,16 +146,16 @@ impl Clone for String {
     non-dyn-compatible
 }
 
-// Full name: alloc::string::{impl Display for String}::fmt
-pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 String, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <opaque>
-
 // Full name: alloc::string::{impl Display for String}::{vtable}
 fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl Display for String}::{vtable}()
+
+// Full name: alloc::string::{impl Display for String}::fmt
+pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 String, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
 
 // Full name: alloc::string::{impl Display for String}
 impl Display for String {

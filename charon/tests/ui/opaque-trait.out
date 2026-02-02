@@ -168,6 +168,16 @@ impl Trait for () {
     non-dyn-compatible
 }
 
+// Full name: test_crate::{impl Trait for u8}::method1
+fn {impl Trait for u8}::method1()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
 // Full name: test_crate::{impl Trait for u8}::CONST2
 fn {impl Trait for u8}::CONST2() -> usize
 {
@@ -179,16 +189,6 @@ fn {impl Trait for u8}::CONST2() -> usize
 
 // Full name: test_crate::{impl Trait for u8}::CONST2
 const {impl Trait for u8}::CONST2: usize = {impl Trait for u8}::CONST2()
-
-// Full name: test_crate::{impl Trait for u8}::method1
-fn {impl Trait for u8}::method1()
-{
-    let _0: (); // return
-
-    _0 = ()
-    _0 = ()
-    return
-}
 
 // Full name: test_crate::{impl Trait for u8}::method2
 fn {impl Trait for u8}::method2()

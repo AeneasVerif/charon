@@ -184,14 +184,6 @@ impl Step for usize {
     non-dyn-compatible
 }
 
-// Full name: core::iter::traits::iterator::Iterator
-#[lang_item("iterator")]
-pub trait Iterator<Self, Self_Item>
-{
-    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self, Self_Item>[Self]
-    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self_Item>
-}
-
 // Full name: core::ops::range::Range
 #[lang_item("Range")]
 pub struct Range<Idx> {
@@ -204,6 +196,14 @@ pub fn {impl Iterator<A> for Range<A>}::next<'_0, A>(@1: &'_0 mut Range<A>) -> O
 where
     [@TraitClause0]: Step<A>,
 = <opaque>
+
+// Full name: core::iter::traits::iterator::Iterator
+#[lang_item("iterator")]
+pub trait Iterator<Self, Self_Item>
+{
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self, Self_Item>[Self]
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self_Item>
+}
 
 // Full name: core::iter::range::{impl Iterator<A> for Range<A>}
 impl<A> Iterator<A> for Range<A>

@@ -125,6 +125,23 @@ where
     return
 }
 
+// Full name: test_crate::{Foo<F>[@TraitClause0]}::method::closure::{impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}::drop_in_place<F, T>(@1: *mut closure<F, T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: Sized<T>,
+= <missing>
+
+// Full name: test_crate::{Foo<F>[@TraitClause0]}::method::closure::{impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}
+impl<F, T> Destruct for closure<F, T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: Sized<T>,
+{
+    fn drop_in_place = {impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}::drop_in_place<F, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::{impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call
 fn {impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call<'_0, F, T>(@1: &'_0 closure<F, T>[@TraitClause0, @TraitClause1], @2: (()))
 where
@@ -159,23 +176,6 @@ where
     _3 = &(*state_1)
     _0 = {impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call<'2, F, T>[@TraitClause0, @TraitClause1](move _3, move args_2)
     return
-}
-
-// Full name: test_crate::{Foo<F>[@TraitClause0]}::method::closure::{impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}::drop_in_place<F, T>(@1: *mut closure<F, T>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<T>,
-= <missing>
-
-// Full name: test_crate::{Foo<F>[@TraitClause0]}::method::closure::{impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}
-impl<F, T> Destruct for closure<F, T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<T>,
-{
-    fn drop_in_place = {impl Destruct for closure<F, T>[@TraitClause0, @TraitClause1]}::drop_in_place<F, T>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::{impl FnOnce<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call_once

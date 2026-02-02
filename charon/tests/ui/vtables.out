@@ -227,6 +227,19 @@ where
     [@TraitClause0]: Checkable<Self, T>,
 = <method_without_default_body>
 
+// Full name: test_crate::{impl Super<i32> for i32}::{vtable_drop_shim}
+unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Super<i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Super<i32> + '1), *mut i32>(move dyn_self_1)
+    return
+}
+
 // Full name: test_crate::{impl Super<i32> for i32}::super_method
 fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 i32, @2: i32) -> i32
 {
@@ -246,19 +259,6 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 i32, @2: i32) -> i32
     _0 = move _5
     storage_dead(_4)
     storage_dead(_3)
-    return
-}
-
-// Full name: test_crate::{impl Super<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Super<i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Super<i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -302,6 +302,19 @@ impl Super<i32> for i32 {
     vtable: {impl Super<i32> for i32}::{vtable}
 }
 
+// Full name: test_crate::{impl Checkable<i32> for i32}::{vtable_drop_shim}
+unsafe fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Checkable<i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Checkable<i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Checkable<i32> + '1), *mut i32>(move dyn_self_1)
+    return
+}
+
 // Full name: test_crate::{impl Checkable<i32> for i32}::check
 fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 i32) -> bool
 {
@@ -317,19 +330,6 @@ fn {impl Checkable<i32> for i32}::check<'_0>(@1: &'_0 i32) -> bool
     storage_dead(_3)
     _0 = move _2 > const 0 : i32
     storage_dead(_2)
-    return
-}
-
-// Full name: test_crate::{impl Checkable<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Checkable<i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Checkable<i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Checkable<i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -475,6 +475,22 @@ where
     [@TraitClause0]: Modifiable<Self, T>,
 = <method_without_default_body>
 
+// Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
+unsafe fn {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Modifiable<T> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut i32>(move dyn_self_1)
+    return
+}
+
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify
 fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(@1: &'_0 mut i32, @2: &'_1 T) -> T
 where
@@ -494,22 +510,6 @@ where
     _4 = &(*arg_2)
     _0 = @TraitClause1::clone<'3>(move _4)
     storage_dead(_4)
-    return
-}
-
-// Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
-unsafe fn {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>,
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Modifiable<T> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -684,6 +684,19 @@ where
     return
 }
 
+// Full name: test_crate::{impl BaseOn<i32> for i32}::{vtable_drop_shim}
+unsafe fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn BaseOn<i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn BaseOn<i32> + '1), *mut i32>(move dyn_self_1)
+    return
+}
+
 // Full name: test_crate::{impl BaseOn<i32> for i32}::operate_on
 fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32)
 {
@@ -711,19 +724,6 @@ fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
-    return
-}
-
-// Full name: test_crate::{impl BaseOn<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn BaseOn<i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn BaseOn<i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -768,6 +768,19 @@ impl BaseOn<i32> for i32 {
     vtable: {impl BaseOn<i32> for i32}::{vtable}
 }
 
+// Full name: test_crate::{impl BaseOn<i64> for i32}::{vtable_drop_shim}
+unsafe fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i64>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn BaseOn<i64> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn BaseOn<i64> + '1), *mut i32>(move dyn_self_1)
+    return
+}
+
 // Full name: test_crate::{impl BaseOn<i64> for i32}::operate_on
 fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i64)
 {
@@ -799,19 +812,6 @@ fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i64)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
-    return
-}
-
-// Full name: test_crate::{impl BaseOn<i64> for i32}::{vtable_drop_shim}
-unsafe fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(@1: *mut (dyn BaseOn<i64>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn BaseOn<i64> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn BaseOn<i64> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -970,6 +970,19 @@ where
     [@TraitClause0]: LifetimeTrait<Self>,
 = <method_without_default_body>
 
+// Full name: test_crate::{impl LifetimeTrait for i32}::{vtable_drop_shim}
+unsafe fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(@1: *mut (dyn LifetimeTrait<Ty = i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn LifetimeTrait<Ty = i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn LifetimeTrait<Ty = i32> + '1), *mut i32>(move dyn_self_1)
+    return
+}
+
 // Full name: test_crate::{impl LifetimeTrait for i32}::lifetime_method
 fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 i32, @2: &'a i32) -> &'a i32
 {
@@ -996,19 +1009,6 @@ fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(@1: &'_1 i32, @2: &'a 
     storage_dead(_4)
     storage_dead(_3)
     _0 = copy arg_2
-    return
-}
-
-// Full name: test_crate::{impl LifetimeTrait for i32}::{vtable_drop_shim}
-unsafe fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(@1: *mut (dyn LifetimeTrait<Ty = i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn LifetimeTrait<Ty = i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn LifetimeTrait<Ty = i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 

@@ -251,17 +251,6 @@ impl Step for u8 {
     non-dyn-compatible
 }
 
-// Full name: core::iter::traits::iterator::Iterator
-#[lang_item("iterator")]
-pub trait Iterator<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
-    type Item
-    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
-    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
-}
-
 // Full name: core::ops::range::Range
 #[lang_item("Range")]
 pub struct Range<Idx>
@@ -278,6 +267,17 @@ where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Step<A>,
 = <opaque>
+
+// Full name: core::iter::traits::iterator::Iterator
+#[lang_item("iterator")]
+pub trait Iterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    type Item
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}
 impl<A> Iterator for Range<A>[@TraitClause0]
@@ -566,6 +566,16 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::map::closure
 struct closure {}
 
+// Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
+unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+= <missing>
+
+// Full name: test_crate::map::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::map::{impl FnMut<(i32)> for closure}::call_mut
 fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32)) -> i32
 {
@@ -578,16 +588,6 @@ fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32
     v_3 = move tupled_args_2.0
     _0 = copy v_3
     return
-}
-
-// Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
-= <missing>
-
-// Full name: test_crate::map::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
-    non-dyn-compatible
 }
 
 // Full name: test_crate::map::{impl FnOnce<(i32)> for closure}::call_once

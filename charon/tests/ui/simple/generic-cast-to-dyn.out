@@ -2,13 +2,13 @@
 
 opaque type core::any::Any::{vtable}
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
-
 // Full name: core::any::TypeId
 #[lang_item("type_id")]
 pub opaque type TypeId
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
 
 // Full name: core::any::Any
 #[lang_item("Any")]

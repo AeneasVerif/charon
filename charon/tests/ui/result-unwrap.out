@@ -207,6 +207,10 @@ pub trait Destruct<Self>
 unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <missing>
 
+// Full name: core::result::unwrap_failed
+fn unwrap_failed<'_0, '_1>(@1: &'_0 Str, @2: &'_1 (dyn Debug + '_1)) -> !
+= <missing>
+
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -216,10 +220,6 @@ fn UNIT_METADATA()
 }
 
 const UNIT_METADATA: () = @Fun0()
-
-// Full name: core::result::unwrap_failed
-fn unwrap_failed<'_0, '_1>(@1: &'_0 Str, @2: &'_1 (dyn Debug + '_1)) -> !
-= <missing>
 
 pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where

@@ -116,17 +116,6 @@ impl Destruct for HouseCat {
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Feline for HouseCat}::hunt
-fn {impl Feline for HouseCat}::hunt<'_0>(@1: &'_0 HouseCat)
-{
-    let _0: (); // return
-    let self_1: &'0 HouseCat; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
 // Full name: test_crate::{impl Feline for HouseCat}::{vtable_drop_shim}
 unsafe fn {impl Feline for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Feline))
 {
@@ -138,6 +127,17 @@ unsafe fn {impl Feline for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Feline))
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn Feline + '1), *mut HouseCat>(move dyn_self_1)
     drop[{impl Destruct for HouseCat}] (*target_self_2)
+    return
+}
+
+// Full name: test_crate::{impl Feline for HouseCat}::hunt
+fn {impl Feline for HouseCat}::hunt<'_0>(@1: &'_0 HouseCat)
+{
+    let _0: (); // return
+    let self_1: &'0 HouseCat; // arg #1
+
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -180,17 +180,6 @@ impl Feline for HouseCat {
     vtable: {impl Feline for HouseCat}::{vtable}
 }
 
-// Full name: test_crate::{impl Pettable for HouseCat}::pet
-fn {impl Pettable for HouseCat}::pet<'_0>(@1: &'_0 HouseCat)
-{
-    let _0: (); // return
-    let self_1: &'0 HouseCat; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
 // Full name: test_crate::{impl Pettable for HouseCat}::{vtable_drop_shim}
 unsafe fn {impl Pettable for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Pettable))
 {
@@ -202,6 +191,17 @@ unsafe fn {impl Pettable for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Pettabl
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn Pettable + '1), *mut HouseCat>(move dyn_self_1)
     drop[{impl Destruct for HouseCat}] (*target_self_2)
+    return
+}
+
+// Full name: test_crate::{impl Pettable for HouseCat}::pet
+fn {impl Pettable for HouseCat}::pet<'_0>(@1: &'_0 HouseCat)
+{
+    let _0: (); // return
+    let self_1: &'0 HouseCat; // arg #1
+
+    _0 = ()
+    _0 = ()
     return
 }
 
@@ -244,17 +244,6 @@ impl Pettable for HouseCat {
     vtable: {impl Pettable for HouseCat}::{vtable}
 }
 
-// Full name: test_crate::{impl Cat for HouseCat}::meow
-fn {impl Cat for HouseCat}::meow<'_0>(@1: &'_0 HouseCat)
-{
-    let _0: (); // return
-    let self_1: &'0 HouseCat; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
 // Full name: test_crate::{impl Cat for HouseCat}::{vtable_drop_shim}
 unsafe fn {impl Cat for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Cat))
 {
@@ -266,6 +255,17 @@ unsafe fn {impl Cat for HouseCat}::{vtable_drop_shim}(@1: *mut (dyn Cat))
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn Cat + '1), *mut HouseCat>(move dyn_self_1)
     drop[{impl Destruct for HouseCat}] (*target_self_2)
+    return
+}
+
+// Full name: test_crate::{impl Cat for HouseCat}::meow
+fn {impl Cat for HouseCat}::meow<'_0>(@1: &'_0 HouseCat)
+{
+    let _0: (); // return
+    let self_1: &'0 HouseCat; // arg #1
+
+    _0 = ()
+    _0 = ()
     return
 }
 

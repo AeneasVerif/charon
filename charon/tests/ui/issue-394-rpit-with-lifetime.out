@@ -12,6 +12,11 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::iter::sources::from_fn::FromFn
+pub opaque type FromFn<F>
+where
+    [@TraitClause0]: Sized<F>,
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -54,11 +59,6 @@ where
   None,
   Some(T),
 }
-
-// Full name: core::iter::sources::from_fn::FromFn
-pub opaque type FromFn<F>
-where
-    [@TraitClause0]: Sized<F>,
 
 // Full name: core::iter::sources::from_fn::from_fn
 pub fn from_fn<T, F>(@1: F) -> FromFn<F>[@TraitClause1]
@@ -103,6 +103,16 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::sparse_transitions::closure
 struct closure<'a> {}
 
+// Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}::drop_in_place
+unsafe fn {impl Destruct for closure<'a>}::drop_in_place<'a>(@1: *mut closure<'a>)
+= <missing>
+
+// Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}
+impl<'a> Destruct for closure<'a> {
+    fn drop_in_place = {impl Destruct for closure<'a>}::drop_in_place<'a>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'a>}::call_mut
 fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(@1: &'_1 mut closure<'a>, @2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
@@ -112,16 +122,6 @@ fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(@1: &'_1 mut closure<'a>,
 
     _0 = Option::None {  }
     return
-}
-
-// Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}::drop_in_place
-unsafe fn {impl Destruct for closure<'a>}::drop_in_place<'a>(@1: *mut closure<'a>)
-= <missing>
-
-// Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}
-impl<'a> Destruct for closure<'a> {
-    fn drop_in_place = {impl Destruct for closure<'a>}::drop_in_place<'a>
-    non-dyn-compatible
 }
 
 // Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'a>}::call_once

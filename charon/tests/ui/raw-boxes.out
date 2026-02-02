@@ -80,6 +80,23 @@ pub struct Layout {
   align: Alignment,
 }
 
+// Full name: core::alloc::layout::{Layout}::max_size_for_align
+fn max_size_for_align(@1: Alignment) -> usize
+{
+    let _0: usize; // return
+    let align_1: Alignment; // arg #1
+    let _2: usize; // anonymous local
+    let _3: AlignmentEnum; // anonymous local
+
+    storage_live(_3)
+    storage_live(_2)
+    _3 = copy (align_1).0
+    _2 = @discriminant(_3)
+    _0 = const 9223372036854775808 : usize ub.- move _2
+    storage_dead(_2)
+    return
+}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -185,6 +202,13 @@ impl Copy for usize {
     non-dyn-compatible
 }
 
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::marker::PhantomData
+#[lang_item("phantom_data")]
+pub struct PhantomData<T> {}
+
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
 pub struct NonNull<T> {
@@ -201,13 +225,6 @@ where
   Ok(T),
   Err(E),
 }
-
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
-pub struct PhantomData<T> {}
 
 // Full name: core::fmt::rt::ArgumentType
 enum ArgumentType<'a> {
@@ -355,23 +372,6 @@ pub fn core::ptr::alignment::{Alignment}::new(@1: usize) -> Option<Alignment>[{b
     _2 = transmute<usize, Alignment>(copy align_1)
     storage_dead(_5)
     _0 = Option::Some { 0: move _2 }
-    storage_dead(_2)
-    return
-}
-
-// Full name: core::alloc::layout::{Layout}::max_size_for_align
-fn max_size_for_align(@1: Alignment) -> usize
-{
-    let _0: usize; // return
-    let align_1: Alignment; // arg #1
-    let _2: usize; // anonymous local
-    let _3: AlignmentEnum; // anonymous local
-
-    storage_live(_3)
-    storage_live(_2)
-    _3 = copy (align_1).0
-    _2 = @discriminant(_3)
-    _0 = const 9223372036854775808 : usize ub.- move _2
     storage_dead(_2)
     return
 }
@@ -538,178 +538,22 @@ where
     [@TraitClause0]: Allocator<Self>,
 = <method_without_default_body>
 
-// Full name: core::ops::control_flow::ControlFlow
-#[lang_item("ControlFlow")]
-pub enum ControlFlow<B, C>
-where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<C>,
-{
-  Continue(C),
-  Break(B),
-}
-
 // Full name: core::convert::Infallible
 pub enum Infallible {
 }
 
-// Full name: core::ptr::const_ptr::{*const T}::is_aligned_to
-pub fn is_aligned_to<T>(@1: *const T, @2: usize) -> bool
-{
-    let _0: bool; // return
-    let self_1: *const T; // arg #1
-    let align_2: usize; // arg #2
-    let _3: Arguments<'0>; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: u32; // anonymous local
-    let _8: *const (); // anonymous local
-    let s_9: &'1 Str; // local
-    let _10: NonNull<u8>; // anonymous local
-    let _11: *const u8; // anonymous local
-    let _12: NonNull<Argument<'2>>; // anonymous local
-    let _13: usize; // anonymous local
-    let _14: usize; // anonymous local
-    let _15: usize; // anonymous local
-    let _16: *const Str; // anonymous local
-    let _17: &'3 [u8]; // anonymous local
-
-    storage_live(_7)
-    _7 = ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy align_2)
-    switch move _7 {
-        1 : u32 => {
-        },
-        _ => {
-            storage_dead(_7)
-            storage_live(_3)
-            storage_live(s_9)
-            s_9 = const "is_aligned_to: align is not a power-of-two"
-            storage_live(_10)
-            storage_live(_11)
-            storage_live(_16)
-            _16 = &raw const (*s_9) with_metadata(copy s_9.metadata)
-            _11 = cast<*const Str, *const u8>(copy _16)
-            storage_dead(_16)
-            _10 = transmute<*const u8, NonNull<u8>>(copy _11)
-            storage_dead(_11)
-            storage_live(_12)
-            storage_live(_13)
-            storage_live(_14)
-            storage_live(_15)
-            storage_live(_17)
-            _17 = transmute<&'1 Str, &'3 [u8]>(const "is_aligned_to: align is not a power-of-two")
-            _15 = copy _17.metadata
-            storage_dead(_17)
-            _14 = move _15 wrap.<< const 1 : i32
-            storage_dead(_15)
-            _13 = move _14 | const 1 : usize
-            storage_dead(_14)
-            _12 = transmute<usize, NonNull<Argument<'2>>>(move _13)
-            storage_dead(_13)
-            _3 = Arguments { template: move _10, args: move _12 }
-            storage_dead(_12)
-            storage_dead(_10)
-            storage_dead(s_9)
-            panic(core::panicking::panic_fmt)
-        },
-    }
-    storage_dead(_7)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_8)
-    _8 = cast<*const T, *const ()>(copy self_1)
-    _5 = transmute<*const (), usize>(copy _8)
-    storage_dead(_8)
-    storage_live(_6)
-    _6 = copy align_2 wrap.- const 1 : usize
-    _4 = move _5 & move _6
-    storage_dead(_6)
-    storage_dead(_5)
-    _0 = move _4 == const 0 : usize
-    storage_dead(_4)
-    return
-}
-
-fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool)
+// Full name: core::intrinsics::write_bytes
+pub unsafe fn write_bytes<T>(@1: *mut T, @2: u8, @3: usize)
+where
+    [@TraitClause0]: Sized<T>,
 {
     let _0: (); // return
-    let addr_1: *const (); // arg #1
-    let align_2: usize; // arg #2
-    let zero_size_3: bool; // arg #3
-    let _4: bool; // anonymous local
-    let msg_5: &'0 Str; // local
-    let _6: !; // anonymous local
-    let _7: Arguments<'1>; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: bool; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: NonNull<u8>; // anonymous local
-    let _12: *const u8; // anonymous local
-    let _13: NonNull<Argument<'2>>; // anonymous local
-    let _14: usize; // anonymous local
-    let _15: usize; // anonymous local
-    let _16: usize; // anonymous local
-    let _17: *const Str; // anonymous local
-    let _18: &'3 [u8]; // anonymous local
+    let dst_1: *mut T; // arg #1
+    let val_2: u8; // arg #2
+    let count_3: usize; // arg #3
 
-    storage_live(msg_5)
-    storage_live(_6)
     _0 = ()
-    storage_live(_4)
-    storage_live(_8)
-    _8 = is_aligned_to<()>(copy addr_1, move align_2)
-    if move _8 {
-        if copy zero_size_3 {
-            storage_dead(_8)
-            storage_dead(_4)
-            return
-        } else {
-            storage_live(_9)
-            storage_live(_10)
-            _10 = transmute<*const (), usize>(copy addr_1)
-            _9 = move _10 == const 0 : usize
-            storage_dead(_10)
-            _4 = ~(move _9)
-            storage_dead(_9)
-            storage_dead(_8)
-            if move _4 {
-                storage_dead(_4)
-                return
-            } else {
-            }
-        }
-    } else {
-        storage_dead(_8)
-    }
-    msg_5 = const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
-    storage_live(_7)
-    storage_live(_11)
-    storage_live(_12)
-    storage_live(_17)
-    _17 = &raw const (*msg_5) with_metadata(copy msg_5.metadata)
-    _12 = cast<*const Str, *const u8>(copy _17)
-    storage_dead(_17)
-    _11 = transmute<*const u8, NonNull<u8>>(copy _12)
-    storage_dead(_12)
-    storage_live(_13)
-    storage_live(_14)
-    storage_live(_15)
-    storage_live(_16)
-    storage_live(_18)
-    _18 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
-    _16 = copy _18.metadata
-    storage_dead(_18)
-    _15 = move _16 wrap.<< const 1 : i32
-    storage_dead(_16)
-    _14 = move _15 | const 1 : usize
-    storage_dead(_15)
-    _13 = transmute<usize, NonNull<Argument<'2>>>(move _14)
-    storage_dead(_14)
-    _7 = Arguments { template: move _11, args: move _13 }
-    storage_dead(_13)
-    storage_dead(_11)
-    _6 = panic_nounwind_fmt<'6>(move _7, const false)
+    undefined_behavior
 }
 
 // Full name: core::mem::SizedTypeProperties
@@ -905,18 +749,174 @@ where
     non-dyn-compatible
 }
 
-// Full name: core::intrinsics::write_bytes
-pub unsafe fn write_bytes<T>(@1: *mut T, @2: u8, @3: usize)
+// Full name: core::ops::control_flow::ControlFlow
+#[lang_item("ControlFlow")]
+pub enum ControlFlow<B, C>
 where
-    [@TraitClause0]: Sized<T>,
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
+{
+  Continue(C),
+  Break(B),
+}
+
+// Full name: core::ptr::const_ptr::{*const T}::is_aligned_to
+pub fn is_aligned_to<T>(@1: *const T, @2: usize) -> bool
+{
+    let _0: bool; // return
+    let self_1: *const T; // arg #1
+    let align_2: usize; // arg #2
+    let _3: Arguments<'0>; // anonymous local
+    let _4: usize; // anonymous local
+    let _5: usize; // anonymous local
+    let _6: usize; // anonymous local
+    let _7: u32; // anonymous local
+    let _8: *const (); // anonymous local
+    let s_9: &'1 Str; // local
+    let _10: NonNull<u8>; // anonymous local
+    let _11: *const u8; // anonymous local
+    let _12: NonNull<Argument<'2>>; // anonymous local
+    let _13: usize; // anonymous local
+    let _14: usize; // anonymous local
+    let _15: usize; // anonymous local
+    let _16: *const Str; // anonymous local
+    let _17: &'3 [u8]; // anonymous local
+
+    storage_live(_7)
+    _7 = ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy align_2)
+    switch move _7 {
+        1 : u32 => {
+        },
+        _ => {
+            storage_dead(_7)
+            storage_live(_3)
+            storage_live(s_9)
+            s_9 = const "is_aligned_to: align is not a power-of-two"
+            storage_live(_10)
+            storage_live(_11)
+            storage_live(_16)
+            _16 = &raw const (*s_9) with_metadata(copy s_9.metadata)
+            _11 = cast<*const Str, *const u8>(copy _16)
+            storage_dead(_16)
+            _10 = transmute<*const u8, NonNull<u8>>(copy _11)
+            storage_dead(_11)
+            storage_live(_12)
+            storage_live(_13)
+            storage_live(_14)
+            storage_live(_15)
+            storage_live(_17)
+            _17 = transmute<&'1 Str, &'3 [u8]>(const "is_aligned_to: align is not a power-of-two")
+            _15 = copy _17.metadata
+            storage_dead(_17)
+            _14 = move _15 wrap.<< const 1 : i32
+            storage_dead(_15)
+            _13 = move _14 | const 1 : usize
+            storage_dead(_14)
+            _12 = transmute<usize, NonNull<Argument<'2>>>(move _13)
+            storage_dead(_13)
+            _3 = Arguments { template: move _10, args: move _12 }
+            storage_dead(_12)
+            storage_dead(_10)
+            storage_dead(s_9)
+            panic(core::panicking::panic_fmt)
+        },
+    }
+    storage_dead(_7)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_8)
+    _8 = cast<*const T, *const ()>(copy self_1)
+    _5 = transmute<*const (), usize>(copy _8)
+    storage_dead(_8)
+    storage_live(_6)
+    _6 = copy align_2 wrap.- const 1 : usize
+    _4 = move _5 & move _6
+    storage_dead(_6)
+    storage_dead(_5)
+    _0 = move _4 == const 0 : usize
+    storage_dead(_4)
+    return
+}
+
+fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool)
 {
     let _0: (); // return
-    let dst_1: *mut T; // arg #1
-    let val_2: u8; // arg #2
-    let count_3: usize; // arg #3
+    let addr_1: *const (); // arg #1
+    let align_2: usize; // arg #2
+    let zero_size_3: bool; // arg #3
+    let _4: bool; // anonymous local
+    let msg_5: &'0 Str; // local
+    let _6: !; // anonymous local
+    let _7: Arguments<'1>; // anonymous local
+    let _8: bool; // anonymous local
+    let _9: bool; // anonymous local
+    let _10: usize; // anonymous local
+    let _11: NonNull<u8>; // anonymous local
+    let _12: *const u8; // anonymous local
+    let _13: NonNull<Argument<'2>>; // anonymous local
+    let _14: usize; // anonymous local
+    let _15: usize; // anonymous local
+    let _16: usize; // anonymous local
+    let _17: *const Str; // anonymous local
+    let _18: &'3 [u8]; // anonymous local
 
+    storage_live(msg_5)
+    storage_live(_6)
     _0 = ()
-    undefined_behavior
+    storage_live(_4)
+    storage_live(_8)
+    _8 = is_aligned_to<()>(copy addr_1, move align_2)
+    if move _8 {
+        if copy zero_size_3 {
+            storage_dead(_8)
+            storage_dead(_4)
+            return
+        } else {
+            storage_live(_9)
+            storage_live(_10)
+            _10 = transmute<*const (), usize>(copy addr_1)
+            _9 = move _10 == const 0 : usize
+            storage_dead(_10)
+            _4 = ~(move _9)
+            storage_dead(_9)
+            storage_dead(_8)
+            if move _4 {
+                storage_dead(_4)
+                return
+            } else {
+            }
+        }
+    } else {
+        storage_dead(_8)
+    }
+    msg_5 = const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+    storage_live(_7)
+    storage_live(_11)
+    storage_live(_12)
+    storage_live(_17)
+    _17 = &raw const (*msg_5) with_metadata(copy msg_5.metadata)
+    _12 = cast<*const Str, *const u8>(copy _17)
+    storage_dead(_17)
+    _11 = transmute<*const u8, NonNull<u8>>(copy _12)
+    storage_dead(_12)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_15)
+    storage_live(_16)
+    storage_live(_18)
+    _18 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _16 = copy _18.metadata
+    storage_dead(_18)
+    _15 = move _16 wrap.<< const 1 : i32
+    storage_dead(_16)
+    _14 = move _15 | const 1 : usize
+    storage_dead(_15)
+    _13 = transmute<usize, NonNull<Argument<'2>>>(move _14)
+    storage_dead(_14)
+    _7 = Arguments { template: move _11, args: move _13 }
+    storage_dead(_13)
+    storage_dead(_11)
+    _6 = panic_nounwind_fmt<'6>(move _7, const false)
 }
 
 pub fn core::alloc::Allocator::allocate_zeroed<'_0, Self>(@1: &'_0 Self, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
@@ -2560,6 +2560,18 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
     return
 }
 
+// Full name: alloc::alloc::{impl Allocator for Global}::by_ref
+pub fn {impl Allocator for Global}::by_ref<'_0>(@1: &'_0 Global) -> &'_0 Global
+where
+    [@TraitClause0]: Sized<Global>,
+{
+    let _0: &'0 Global; // return
+    let self_1: &'0 Global; // arg #1
+
+    _0 = copy self_1
+    return
+}
+
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
 pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
@@ -3137,18 +3149,6 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::by_ref
-pub fn {impl Allocator for Global}::by_ref<'_0>(@1: &'_0 Global) -> &'_0 Global
-where
-    [@TraitClause0]: Sized<Global>,
-{
-    let _0: &'0 Global; // return
-    let self_1: &'0 Global; // arg #1
-
-    _0 = copy self_1
-    return
-}
-
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl Allocator for Global {
     parent_clause0 = {built_in impl MetaSized for Global}
@@ -3161,16 +3161,6 @@ impl Allocator for Global {
     fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Global>> = {impl Allocator for Global}::by_ref<'_0_1>[@TraitClause0_1]
     vtable: {impl Allocator for Global}::{vtable}
 }
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: alloc::alloc::handle_alloc_error::ct_error
 fn ct_error(@1: Layout) -> !
@@ -3199,6 +3189,16 @@ pub fn handle_alloc_error(@1: Layout) -> !
     storage_dead(_3)
     _0 = ct_error(move _2.0)
 }
+
+fn UNIT_METADATA()
+{
+    let _0: (); // return
+
+    _0 = ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
 
 // Full name: alloc::alloc::exchange_malloc
 #[lang_item("exchange_malloc")]

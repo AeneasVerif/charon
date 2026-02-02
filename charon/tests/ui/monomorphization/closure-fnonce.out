@@ -106,6 +106,25 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun1()
 
+// Full name: test_crate::main::closure::{impl Destruct::<closure>}::drop_in_place
+unsafe fn {impl Destruct::<closure>}::drop_in_place(@1: *mut closure)
+{
+    let _0: (); // return
+    let _1: *mut closure; // arg #1
+    let _2: &'0 mut closure; // anonymous local
+
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1)
+    return
+}
+
+// Full name: test_crate::main::closure::{impl Destruct::<closure>}
+impl Destruct::<closure> {
+    fn drop_in_place = {impl Destruct::<closure>}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::main::{impl FnOnce::<closure, (u8)>}::call_once
 fn {impl FnOnce::<closure, (u8)>}::call_once(@1: closure, @2: (u8)) -> u8
 {
@@ -133,25 +152,6 @@ fn {impl FnOnce::<closure, (u8)>}::call_once(@1: closure, @2: (u8)) -> u8
     _0 = move _7
     storage_dead(_6)
     return
-}
-
-// Full name: test_crate::main::closure::{impl Destruct::<closure>}::drop_in_place
-unsafe fn {impl Destruct::<closure>}::drop_in_place(@1: *mut closure)
-{
-    let _0: (); // return
-    let _1: *mut closure; // arg #1
-    let _2: &'0 mut closure; // anonymous local
-
-    storage_live(_2)
-    _0 = ()
-    _2 = &mut (*_1)
-    return
-}
-
-// Full name: test_crate::main::closure::{impl Destruct::<closure>}
-impl Destruct::<closure> {
-    fn drop_in_place = {impl Destruct::<closure>}::drop_in_place
-    non-dyn-compatible
 }
 
 // Full name: test_crate::apply_to_zero_once::<closure>

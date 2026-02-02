@@ -18,6 +18,12 @@ pub opaque type IntoIter<T, const N : usize>
 where
     [@TraitClause0]: Sized<T>,
 
+// Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place
+unsafe fn {impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, const N : usize>(@1: *mut IntoIter<T, N>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
@@ -25,12 +31,6 @@ pub trait Destruct<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
-
-// Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place<T, const N : usize>(@1: *mut IntoIter<T, N>[@TraitClause0])
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
 
 // Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[@TraitClause0]}
 impl<T, const N : usize> Destruct for IntoIter<T, N>[@TraitClause0]
@@ -41,6 +41,12 @@ where
     non-dyn-compatible
 }
 
+// Full name: core::array::iter::{impl IntoIterator for [T; N]}::into_iter
+pub fn {impl IntoIterator for [T; N]}::into_iter<T, const N : usize>(@1: [T; N]) -> IntoIter<T, N>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
 // Full name: core::clone::Clone
 #[lang_item("clone")]
 pub trait Clone<Self>
@@ -49,6 +55,43 @@ pub trait Clone<Self>
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
     non-dyn-compatible
+}
+
+// Full name: core::cmp::PartialEq
+#[lang_item("eq")]
+pub trait PartialEq<Self, Rhs>
+{
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn ne<'_0_1, '_1_1> = core::cmp::PartialEq::ne<'_0_1, '_1_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
+}
+
+// Full name: core::cmp::Ordering
+#[lang_item("Ordering")]
+pub enum Ordering {
+  Less,
+  Equal,
+  Greater,
+}
+
+// Full name: core::cmp::Eq
+#[lang_item("Eq")]
+pub trait Eq<Self>
+{
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    fn assert_receiver_is_total_eq<'_0_1> = assert_receiver_is_total_eq<'_0_1, Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: core::ops::control_flow::ControlFlow
+#[lang_item("ControlFlow")]
+pub enum ControlFlow<B, C>
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
+{
+  Continue(C),
+  Break(B),
 }
 
 // Full name: core::option::Option
@@ -61,16 +104,151 @@ where
   Some(T),
 }
 
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
+// Full name: core::cmp::PartialOrd
+#[lang_item("partial_ord")]
+pub trait PartialOrd<Self, Rhs>
+{
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
+    fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn lt<'_0_1, '_1_1> = core::cmp::PartialOrd::lt<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn le<'_0_1, '_1_1> = core::cmp::PartialOrd::le<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn gt<'_0_1, '_1_1> = core::cmp::PartialOrd::gt<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn ge<'_0_1, '_1_1> = core::cmp::PartialOrd::ge<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn __chaining_lt<'_0_1, '_1_1> = __chaining_lt<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn __chaining_le<'_0_1, '_1_1> = __chaining_le<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn __chaining_gt<'_0_1, '_1_1> = __chaining_gt<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn __chaining_ge<'_0_1, '_1_1> = __chaining_ge<'_0_1, '_1_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
+}
+
+// Full name: core::cmp::Ord
+#[lang_item("Ord")]
+pub trait Ord<Self>
+{
+    parent_clause0 : [@TraitClause0]: Eq<Self>
+    parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
+    fn cmp<'_0_1, '_1_1> = core::cmp::Ord::cmp<'_0_1, '_1_1, Self>[Self]
+    fn max<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = core::cmp::Ord::max<Self>[Self, @TraitClause0_1, @TraitClause1_1]
+    fn min<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = core::cmp::Ord::min<Self>[Self, @TraitClause0_1, @TraitClause1_1]
+    fn clamp<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = clamp<Self>[Self, @TraitClause0_1, @TraitClause1_1]
+    non-dyn-compatible
+}
+
+// Full name: core::default::Default
+#[lang_item("Default")]
+pub trait Default<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn default = default<Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: core::iter::adapters::chain::Chain
+pub opaque type Chain<A, B>
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Sized<B>,
+
+// Full name: core::iter::adapters::cloned::Cloned
+pub opaque type Cloned<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::copied::Copied
+pub opaque type Copied<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::cycle::Cycle
+pub opaque type Cycle<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::enumerate::Enumerate
+#[lang_item("Enumerate")]
+pub opaque type Enumerate<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::filter::Filter
+pub opaque type Filter<I, P>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
+
+// Full name: core::iter::adapters::filter_map::FilterMap
+pub opaque type FilterMap<I, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+
+// Full name: core::iter::adapters::fuse::Fuse
+pub opaque type Fuse<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::inspect::Inspect
+pub opaque type Inspect<I, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+
+// Full name: core::iter::adapters::map::Map
+pub opaque type Map<I, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+
+// Full name: core::iter::adapters::map_while::MapWhile
+pub opaque type MapWhile<I, P>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
+
+// Full name: core::iter::adapters::rev::Rev
+pub opaque type Rev<T>
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-{
-  Ok(T),
-  Err(E),
-}
+
+// Full name: core::iter::adapters::scan::Scan
+pub opaque type Scan<I, St, F>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<St>,
+    [@TraitClause2]: Sized<F>,
+
+// Full name: core::iter::adapters::skip::Skip
+pub opaque type Skip<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::skip_while::SkipWhile
+pub opaque type SkipWhile<I, P>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
+
+// Full name: core::iter::adapters::step_by::StepBy
+pub opaque type StepBy<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::take::Take
+pub opaque type Take<I>
+where
+    [@TraitClause0]: Sized<I>,
+
+// Full name: core::iter::adapters::take_while::TakeWhile
+pub opaque type TakeWhile<I, P>
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
+
+// Full name: core::iter::adapters::zip::Zip
+pub opaque type Zip<A, B>
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Sized<B>,
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -100,21 +278,14 @@ pub trait ZeroablePrimitive<Self>
     non-dyn-compatible
 }
 
-// Full name: core::num::nonzero::NonZero
-#[lang_item("NonZero")]
-pub opaque type NonZero<T>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ZeroablePrimitive<T>,
-
-// Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
-= <opaque>
-
 // Full name: core::clone::impls::{impl Clone for usize}::clone_from
 pub fn {impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut usize, @2: &'_1 usize)
 where
     [@TraitClause0]: Destruct<usize>,
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for usize}
@@ -130,12 +301,6 @@ impl Copy for usize {
     parent_clause0 = {built_in impl MetaSized for usize}
     parent_clause1 = {impl Clone for usize}
     non-dyn-compatible
-}
-
-// Full name: core::num::nonzero::{impl Sealed for usize}
-impl Sealed for usize {
-    parent_clause0 = {built_in impl MetaSized for usize}
-    vtable: {impl Sealed for usize}::{vtable}
 }
 
 // Full name: core::num::niche_types::NonZeroUsizeInner
@@ -166,6 +331,12 @@ impl Copy for NonZeroUsizeInner {
     non-dyn-compatible
 }
 
+// Full name: core::num::nonzero::{impl Sealed for usize}
+impl Sealed for usize {
+    parent_clause0 = {built_in impl MetaSized for usize}
+    vtable: {impl Sealed for usize}::{vtable}
+}
+
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for usize}
 impl ZeroablePrimitive for usize {
     parent_clause0 = {built_in impl Sized for usize}
@@ -176,6 +347,13 @@ impl ZeroablePrimitive for usize {
     type NonZeroInner = NonZeroUsizeInner
     non-dyn-compatible
 }
+
+// Full name: core::num::nonzero::NonZero
+#[lang_item("NonZero")]
+pub opaque type NonZero<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: ZeroablePrimitive<T>,
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -220,17 +398,6 @@ pub trait FromResidual<Self, R>
     non-dyn-compatible
 }
 
-// Full name: core::ops::control_flow::ControlFlow
-#[lang_item("ControlFlow")]
-pub enum ControlFlow<B, C>
-where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<C>,
-{
-  Continue(C),
-  Break(B),
-}
-
 // Full name: core::ops::try_trait::Try
 #[lang_item("Try")]
 pub trait Try<Self>
@@ -246,93 +413,6 @@ pub trait Try<Self>
     non-dyn-compatible
 }
 
-// Full name: core::iter::adapters::step_by::StepBy
-pub opaque type StepBy<I>
-where
-    [@TraitClause0]: Sized<I>,
-
-// Full name: core::iter::adapters::chain::Chain
-pub opaque type Chain<A, B>
-where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Sized<B>,
-
-// Full name: core::iter::adapters::zip::Zip
-pub opaque type Zip<A, B>
-where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Sized<B>,
-
-// Full name: core::iter::adapters::map::Map
-pub opaque type Map<I, F>
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>,
-
-// Full name: core::iter::adapters::filter::Filter
-pub opaque type Filter<I, P>
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<P>,
-
-// Full name: core::iter::adapters::filter_map::FilterMap
-pub opaque type FilterMap<I, F>
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>,
-
-// Full name: core::iter::adapters::enumerate::Enumerate
-#[lang_item("Enumerate")]
-pub opaque type Enumerate<I>
-where
-    [@TraitClause0]: Sized<I>,
-
-// Full name: core::iter::adapters::skip_while::SkipWhile
-pub opaque type SkipWhile<I, P>
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<P>,
-
-// Full name: core::iter::adapters::take_while::TakeWhile
-pub opaque type TakeWhile<I, P>
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<P>,
-
-// Full name: core::iter::adapters::map_while::MapWhile
-pub opaque type MapWhile<I, P>
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<P>,
-
-// Full name: core::iter::adapters::skip::Skip
-pub opaque type Skip<I>
-where
-    [@TraitClause0]: Sized<I>,
-
-// Full name: core::iter::adapters::take::Take
-pub opaque type Take<I>
-where
-    [@TraitClause0]: Sized<I>,
-
-// Full name: core::iter::adapters::scan::Scan
-pub opaque type Scan<I, St, F>
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<St>,
-    [@TraitClause2]: Sized<F>,
-
-// Full name: core::iter::adapters::fuse::Fuse
-pub opaque type Fuse<I>
-where
-    [@TraitClause0]: Sized<I>,
-
-// Full name: core::iter::adapters::inspect::Inspect
-pub opaque type Inspect<I, F>
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>,
-
 // Full name: core::ops::try_trait::Residual
 pub trait Residual<Self, O>
 where
@@ -347,90 +427,16 @@ where
     non-dyn-compatible
 }
 
-// Full name: core::default::Default
-#[lang_item("Default")]
-pub trait Default<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn default = default<Self>[Self]
-    non-dyn-compatible
-}
-
-// Full name: core::cmp::PartialEq
-#[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
-{
-    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn ne<'_0_1, '_1_1> = core::cmp::PartialEq::ne<'_0_1, '_1_1, Self, Rhs>[Self]
-    vtable: core::cmp::PartialEq::{vtable}<Rhs>
-}
-
-// Full name: core::cmp::Eq
-#[lang_item("Eq")]
-pub trait Eq<Self>
-{
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
-    fn assert_receiver_is_total_eq<'_0_1> = assert_receiver_is_total_eq<'_0_1, Self>[Self]
-    non-dyn-compatible
-}
-
-// Full name: core::cmp::Ordering
-#[lang_item("Ordering")]
-pub enum Ordering {
-  Less,
-  Equal,
-  Greater,
-}
-
-// Full name: core::cmp::PartialOrd
-#[lang_item("partial_ord")]
-pub trait PartialOrd<Self, Rhs>
-{
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn lt<'_0_1, '_1_1> = core::cmp::PartialOrd::lt<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn le<'_0_1, '_1_1> = core::cmp::PartialOrd::le<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn gt<'_0_1, '_1_1> = core::cmp::PartialOrd::gt<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn ge<'_0_1, '_1_1> = core::cmp::PartialOrd::ge<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn __chaining_lt<'_0_1, '_1_1> = __chaining_lt<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn __chaining_le<'_0_1, '_1_1> = __chaining_le<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn __chaining_gt<'_0_1, '_1_1> = __chaining_gt<'_0_1, '_1_1, Self, Rhs>[Self]
-    fn __chaining_ge<'_0_1, '_1_1> = __chaining_ge<'_0_1, '_1_1, Self, Rhs>[Self]
-    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
-}
-
-// Full name: core::cmp::Ord
-#[lang_item("Ord")]
-pub trait Ord<Self>
-{
-    parent_clause0 : [@TraitClause0]: Eq<Self>
-    parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0_1, '_1_1> = core::cmp::Ord::cmp<'_0_1, '_1_1, Self>[Self]
-    fn max<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = core::cmp::Ord::max<Self>[Self, @TraitClause0_1, @TraitClause1_1]
-    fn min<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = core::cmp::Ord::min<Self>[Self, @TraitClause0_1, @TraitClause1_1]
-    fn clamp<[@TraitClause0_1]: Sized<Self>, [@TraitClause1_1]: Destruct<Self>> = clamp<Self>[Self, @TraitClause0_1, @TraitClause1_1]
-    non-dyn-compatible
-}
-
-// Full name: core::iter::adapters::rev::Rev
-pub opaque type Rev<T>
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
 where
     [@TraitClause0]: Sized<T>,
-
-// Full name: core::iter::adapters::copied::Copied
-pub opaque type Copied<I>
-where
-    [@TraitClause0]: Sized<I>,
-
-// Full name: core::iter::adapters::cloned::Cloned
-pub opaque type Cloned<I>
-where
-    [@TraitClause0]: Sized<I>,
-
-// Full name: core::iter::adapters::cycle::Cycle
-pub opaque type Cycle<I>
-where
-    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
 
 // Full name: core::iter::adapters::array_chunks::ArrayChunks
 pub opaque type ArrayChunks<I, const N : usize>
@@ -658,41 +664,11 @@ pub trait Iterator<Self>
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
-// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::next
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next<'_0, T, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0]) -> Option<T>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::next_chunk
 pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next_chunk<'_0, T, const N : usize, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0]) -> Result<[T; N], IntoIter<T, N>[{impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for [T; N]}, {built_in impl Sized for IntoIter<T, N>[{impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]::parent_clause1]}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<IntoIter<T, N>[@TraitClause0]>,
-= <opaque>
-
-// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::size_hint
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::size_hint<'_0, T, const N : usize>(@1: &'_0 IntoIter<T, N>[@TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::count
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::count<T, const N : usize>(@1: IntoIter<T, N>[@TraitClause0]) -> usize
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::last
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::last<T, const N : usize>(@1: IntoIter<T, N>[@TraitClause0]) -> Option<T>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::advance_by
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::advance_by<'_0, T, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0], @2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]}]
-where
-    [@TraitClause0]: Sized<T>,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::nth
@@ -983,20 +959,6 @@ where
     @TraitClause3::parent_clause1::Output = bool,
 = <opaque>
 
-// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::try_fold
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::try_fold<'_0, T, B, F, R, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0], @2: B, @3: F) -> R
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Sized<F>,
-    [@TraitClause3]: Sized<R>,
-    [@TraitClause4]: Sized<IntoIter<T, N>[@TraitClause0]>,
-    [@TraitClause5]: FnMut<F, (B, T)>,
-    [@TraitClause6]: Try<R>,
-    @TraitClause5::parent_clause1::Output = R,
-    @TraitClause6::Output = B,
-= <opaque>
-
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::try_for_each
 pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::try_for_each<'_0, T, F, R, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0], @2: F) -> R
 where
@@ -1008,16 +970,6 @@ where
     [@TraitClause5]: Try<R>,
     @TraitClause4::parent_clause1::Output = R,
     @TraitClause5::Output = (),
-= <opaque>
-
-// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::fold
-pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::fold<T, Acc, Fold, const N : usize>(@1: IntoIter<T, N>[@TraitClause0], @2: Acc, @3: Fold) -> Acc
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<Acc>,
-    [@TraitClause2]: Sized<Fold>,
-    [@TraitClause3]: FnMut<Fold, (Acc, T)>,
-    @TraitClause3::parent_clause1::Output = Acc,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::reduce
@@ -1412,6 +1364,60 @@ where
     @TraitClause4::parent_clause1::Output = K,
 = <opaque>
 
+// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::next
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next<'_0, T, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0]) -> Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::size_hint
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::size_hint<'_0, T, const N : usize>(@1: &'_0 IntoIter<T, N>[@TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::fold
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::fold<T, Acc, Fold, const N : usize>(@1: IntoIter<T, N>[@TraitClause0], @2: Acc, @3: Fold) -> Acc
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<Acc>,
+    [@TraitClause2]: Sized<Fold>,
+    [@TraitClause3]: FnMut<Fold, (Acc, T)>,
+    @TraitClause3::parent_clause1::Output = Acc,
+= <opaque>
+
+// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::try_fold
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::try_fold<'_0, T, B, F, R, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0], @2: B, @3: F) -> R
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<R>,
+    [@TraitClause4]: Sized<IntoIter<T, N>[@TraitClause0]>,
+    [@TraitClause5]: FnMut<F, (B, T)>,
+    [@TraitClause6]: Try<R>,
+    @TraitClause5::parent_clause1::Output = R,
+    @TraitClause6::Output = B,
+= <opaque>
+
+// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::count
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::count<T, const N : usize>(@1: IntoIter<T, N>[@TraitClause0]) -> usize
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::last
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::last<T, const N : usize>(@1: IntoIter<T, N>[@TraitClause0]) -> Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::advance_by
+pub fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::advance_by<'_0, T, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0], @2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[@TraitClause0]}::__iterator_get_unchecked
 pub unsafe fn {impl Iterator for IntoIter<T, N>[@TraitClause0]}::__iterator_get_unchecked<'_0, T, const N : usize>(@1: &'_0 mut IntoIter<T, N>[@TraitClause0], @2: usize) -> T
 where
@@ -1505,12 +1511,6 @@ where
     fn __iterator_get_unchecked<'_0_1> = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::__iterator_get_unchecked<'_0_1, T, N>[@TraitClause0]
     vtable: {impl Iterator for IntoIter<T, N>[@TraitClause0]}::{vtable}<T, N>[@TraitClause0]
 }
-
-// Full name: core::array::iter::{impl IntoIterator for [T; N]}::into_iter
-pub fn {impl IntoIterator for [T; N]}::into_iter<T, const N : usize>(@1: [T; N]) -> IntoIter<T, N>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
 
 // Full name: core::array::iter::{impl IntoIterator for [T; N]}
 impl<T, const N : usize> IntoIterator for [T; N]
@@ -1652,6 +1652,10 @@ where
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
 
+// Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
+pub fn {impl AddAssign<&'_0 i32> for i32}::add_assign<'_0, '_1>(@1: &'_1 mut i32, @2: &'_0 i32)
+= <opaque>
+
 // Full name: core::ops::arith::AddAssign
 #[lang_item("add_assign")]
 pub trait AddAssign<Self, Rhs>
@@ -1661,10 +1665,6 @@ pub trait AddAssign<Self, Rhs>
     fn add_assign<'_0_1> = core::ops::arith::AddAssign::add_assign<'_0_1, Self, Rhs>[Self]
     vtable: core::ops::arith::AddAssign::{vtable}<Rhs>
 }
-
-// Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
-pub fn {impl AddAssign<&'_0 i32> for i32}::add_assign<'_0, '_1>(@1: &'_1 mut i32, @2: &'_0 i32)
-= <opaque>
 
 // Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}
 impl<'_0> AddAssign<&'_0 i32> for i32 {
@@ -2573,47 +2573,11 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk
 pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Result<[&'a T; N], IntoIter<&'a T, N>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for [&'a T; N]}, {built_in impl Sized for IntoIter<&'a T, N>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::size_hint
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::size_hint<'a, '_1, T>(@1: &'_1 Iter<'a, T>[@TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::count
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::count<'a, T>(@1: Iter<'a, T>[@TraitClause0]) -> usize
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::last<'a, T>(@1: Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::advance_by
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::advance_by<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: usize) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
-where
-    [@TraitClause0]: Sized<T>,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::step_by
@@ -2670,16 +2634,6 @@ where
     [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>,
     [@TraitClause4]: FnMut<F, (&'a T)>,
     @TraitClause4::parent_clause1::Output = B,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::for_each
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::for_each<'a, T, F>(@1: Iter<'a, T>[@TraitClause0], @2: F)
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: FnMut<F, (&'a T)>,
-    @TraitClause3::parent_clause1::Output = (),
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::filter
@@ -2925,16 +2879,6 @@ where
     @TraitClause5::Output = (),
 = <opaque>
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::fold
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::fold<'a, T, B, F>(@1: Iter<'a, T>[@TraitClause0], @2: B, @3: F) -> B
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Sized<F>,
-    [@TraitClause3]: FnMut<F, (B, &'a T)>,
-    @TraitClause3::parent_clause1::Output = B,
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::reduce
 pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::reduce<'a, T, F>(@1: Iter<'a, T>[@TraitClause0], @2: F) -> Option<&'a T>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]
 where
@@ -2959,47 +2903,6 @@ where
     @TraitClause6::parent_clause1::Output = R,
 = <opaque>
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::all
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::all<'a, '_1, T, F>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: F) -> bool
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: FnMut<F, (&'a T)>,
-    @TraitClause3::parent_clause1::Output = bool,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::any
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::any<'a, '_1, T, F>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: F) -> bool
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: FnMut<F, (&'a T)>,
-    @TraitClause3::parent_clause1::Output = bool,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::find
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_1, T, P>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: P) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<P>,
-    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: for<'_0_1> FnMut<P, (&'_0_1 &'a T)>,
-    for<'_0_1> @TraitClause3::parent_clause1::Output = bool,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::find_map
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find_map<'a, '_1, T, B, F>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: F) -> Option<B>[@TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Sized<F>,
-    [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: FnMut<F, (&'a T)>,
-    @TraitClause4::parent_clause1::Output = Option<B>[@TraitClause1],
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::try_find
 pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::try_find<'a, '_1, T, R, impl FnMut(&Self::Item) -> R>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: impl FnMut(&Self::Item) -> R) -> @TraitClause5::TryType
 where
@@ -3012,28 +2915,6 @@ where
     [@TraitClause6]: for<'_0_1> FnMut<impl FnMut(&Self::Item) -> R, (&'_0_1 &'a T)>,
     @TraitClause4::Output = bool,
     for<'_0_1> @TraitClause6::parent_clause1::Output = R,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::position
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::position<'a, '_1, T, P>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: P) -> Option<usize>[{built_in impl Sized for usize}]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<P>,
-    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: FnMut<P, (&'a T)>,
-    @TraitClause3::parent_clause1::Output = bool,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::rposition
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::rposition<'a, '_1, T, P>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: P) -> Option<usize>[{built_in impl Sized for usize}]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<P>,
-    [@TraitClause2]: FnMut<P, (@TraitClause4::parent_clause1::Item)>,
-    [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause4]: ExactSizeIterator<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause5]: DoubleEndedIterator<Iter<'a, T>[@TraitClause0]>,
-    @TraitClause2::parent_clause1::Output = bool,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::max
@@ -3305,16 +3186,6 @@ where
     [@TraitClause2]: PartialOrd<&'a T, &'a T>,
 = <opaque>
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by<'a, T, F>(@1: Iter<'a, T>[@TraitClause0], @2: F) -> bool
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
-    [@TraitClause3]: for<'_0_1, '_1_1> FnMut<F, (&'_0_1 &'a T, &'_1_1 &'a T)>,
-    for<'_0_1, '_1_1> @TraitClause3::parent_clause1::Output = bool,
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by_key
 pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by_key<'a, T, F, K>(@1: Iter<'a, T>[@TraitClause0], @2: F) -> bool
 where
@@ -3327,10 +3198,139 @@ where
     @TraitClause4::parent_clause1::Output = K,
 = <opaque>
 
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::size_hint
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::size_hint<'a, '_1, T>(@1: &'_1 Iter<'a, T>[@TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::count
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::count<'a, T>(@1: Iter<'a, T>[@TraitClause0]) -> usize
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::nth
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: usize) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::advance_by
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::advance_by<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::last
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::last<'a, T>(@1: Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::fold
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::fold<'a, T, B, F>(@1: Iter<'a, T>[@TraitClause0], @2: B, @3: F) -> B
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: FnMut<F, (B, &'a T)>,
+    @TraitClause3::parent_clause1::Output = B,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::for_each
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::for_each<'a, T, F>(@1: Iter<'a, T>[@TraitClause0], @2: F)
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause3]: FnMut<F, (&'a T)>,
+    @TraitClause3::parent_clause1::Output = (),
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::all
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::all<'a, '_1, T, F>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: F) -> bool
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause3]: FnMut<F, (&'a T)>,
+    @TraitClause3::parent_clause1::Output = bool,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::any
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::any<'a, '_1, T, F>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: F) -> bool
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause3]: FnMut<F, (&'a T)>,
+    @TraitClause3::parent_clause1::Output = bool,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::find
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_1, T, P>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: P) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause3]: for<'_0_1> FnMut<P, (&'_0_1 &'a T)>,
+    for<'_0_1> @TraitClause3::parent_clause1::Output = bool,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::find_map
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find_map<'a, '_1, T, B, F>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: F) -> Option<B>[@TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause4]: FnMut<F, (&'a T)>,
+    @TraitClause4::parent_clause1::Output = Option<B>[@TraitClause1],
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::position
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::position<'a, '_1, T, P>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: P) -> Option<usize>[{built_in impl Sized for usize}]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause3]: FnMut<P, (&'a T)>,
+    @TraitClause3::parent_clause1::Output = bool,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::rposition
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::rposition<'a, '_1, T, P>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: P) -> Option<usize>[{built_in impl Sized for usize}]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: FnMut<P, (@TraitClause4::parent_clause1::Item)>,
+    [@TraitClause3]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause4]: ExactSizeIterator<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause5]: DoubleEndedIterator<Iter<'a, T>[@TraitClause0]>,
+    @TraitClause2::parent_clause1::Output = bool,
+= <opaque>
+
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::__iterator_get_unchecked
 pub unsafe fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0], @2: usize) -> &'a T
 where
     [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::is_sorted_by<'a, T, F>(@1: Iter<'a, T>[@TraitClause0], @2: F) -> bool
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause3]: for<'_0_1, '_1_1> FnMut<F, (&'_0_1 &'a T, &'_1_1 &'a T)>,
+    for<'_0_1, '_1_1> @TraitClause3::parent_clause1::Output = bool,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}
@@ -3428,12 +3428,6 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next_chunk
 pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0]) -> Result<[&'a [T]; N], IntoIter<&'a [T], N>[{impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for [&'a [T]; N]}, {built_in impl Sized for IntoIter<&'a [T], N>[{impl Iterator for Chunks<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]}]
 where
@@ -3441,32 +3435,8 @@ where
     [@TraitClause1]: Sized<Chunks<'a, T>[@TraitClause0]>,
 = <opaque>
 
-// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::size_hint
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::size_hint<'a, '_1, T>(@1: &'_1 Chunks<'a, T>[@TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::count
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::count<'a, T>(@1: Chunks<'a, T>[@TraitClause0]) -> usize
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::last<'a, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::advance_by
 pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::advance_by<'a, '_1, T>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0], @2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0], @2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -4183,6 +4153,36 @@ where
     @TraitClause4::parent_clause1::Output = K,
 = <opaque>
 
+// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::size_hint
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::size_hint<'a, '_1, T>(@1: &'_1 Chunks<'a, T>[@TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::count
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::count<'a, T>(@1: Chunks<'a, T>[@TraitClause0]) -> usize
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0], @2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::last
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::last<'a, T>(@1: Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::__iterator_get_unchecked
 pub unsafe fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0], @2: usize) -> &'a [T]
 where
@@ -4284,12 +4284,6 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next_chunk
 pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut ChunksExact<'a, T>[@TraitClause0]) -> Result<[&'a [T]; N], IntoIter<&'a [T], N>[{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for [&'a [T]; N]}, {built_in impl Sized for IntoIter<&'a [T], N>[{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]}]
 where
@@ -4297,32 +4291,8 @@ where
     [@TraitClause1]: Sized<ChunksExact<'a, T>[@TraitClause0]>,
 = <opaque>
 
-// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::size_hint
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::size_hint<'a, '_1, T>(@1: &'_1 ChunksExact<'a, T>[@TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::count
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::count<'a, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> usize
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last<'a, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::advance_by
 pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::advance_by<'a, '_1, T>(@1: &'_1 mut ChunksExact<'a, T>[@TraitClause0], @2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, {impl ZeroablePrimitive for usize}]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut ChunksExact<'a, T>[@TraitClause0], @2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -5037,6 +5007,36 @@ where
     [@TraitClause4]: FnMut<F, (&'a [T])>,
     [@TraitClause5]: PartialOrd<K, K>,
     @TraitClause4::parent_clause1::Output = K,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::size_hint
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::size_hint<'a, '_1, T>(@1: &'_1 ChunksExact<'a, T>[@TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::count
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::count<'a, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> usize
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(@1: &'_1 mut ChunksExact<'a, T>[@TraitClause0], @2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last<'a, T>(@1: ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+where
+    [@TraitClause0]: Sized<T>,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::__iterator_get_unchecked
