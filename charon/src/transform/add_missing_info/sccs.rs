@@ -9,7 +9,7 @@ use petgraph::prelude::DiGraphMap;
 
 use crate::ast::*;
 
-/// Explore a DAG in a sort-of post-order. This naively explores the same node many times. If the
+/// Explore a DAG in a sort-of post-order. This isn't exactly post-order but almost. If the
 /// graph has a loop, this won't terminate. We should probably do a real postorder but that would
 /// change the chosen ordering.
 fn weird_dag_postorder<Id: NodeTrait>(
