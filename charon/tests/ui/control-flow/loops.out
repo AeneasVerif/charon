@@ -308,8 +308,8 @@ where
     vtable: {impl Iterator for Range<A>[@TraitClause0]}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
 
-// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
-pub fn {impl IntoIterator for I}::into_iter<I>(@1: I) -> I
+// Full name: core::iter::traits::collect::{impl#0}::into_iter
+pub fn {impl#0}::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Iterator<I>,
@@ -454,8 +454,8 @@ where
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut
-pub fn {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause2], @2: I) -> &'_0 mut @TraitClause3::Output
+// Full name: alloc::vec::{impl#6}::index_mut
+pub fn {impl#6}::index_mut<'_0, T, I, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause2], @2: I) -> &'_0 mut @TraitClause3::Output
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
@@ -1228,7 +1228,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     storage_live(_4)
     storage_live(_5)
     _5 = Range { start: const 0 : i32, end: const 128 : i32 }
-    _4 = {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5)
+    _4 = {impl#0}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5)
     storage_dead(_5)
     storage_live(iter_6)
     iter_6 = move _4
@@ -1263,7 +1263,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     _13 = copy step_out_1
     _12 = Range { start: const 0 : usize, end: move _13 }
     storage_dead(_13)
-    _11 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _12)
+    _11 = {impl#0}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _12)
     storage_dead(_12)
     storage_live(iter_14)
     iter_14 = move _11
@@ -1288,7 +1288,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         _20 = copy step_in_2
         _19 = Range { start: const 0 : usize, end: move _20 }
         storage_dead(_20)
-        _18 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _19)
+        _18 = {impl#0}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _19)
         storage_dead(_19)
         storage_live(iter_21)
         iter_21 = move _18
@@ -1361,7 +1361,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
         _7 = copy n_2
         _6 = Range { start: const 0 : u32, end: move _7 }
         storage_dead(_7)
-        _5 = {impl IntoIterator for I}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[@TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move _6)
+        _5 = {impl#0}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[@TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move _6)
         storage_dead(_6)
         storage_live(iter_8)
         iter_8 = move _5
@@ -1557,7 +1557,7 @@ pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in
         _8 = &mut (*v_1)
         storage_live(_9)
         _9 = copy i_2
-        _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'6, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
+        _7 = {impl#6}::index_mut<'6, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
         (*_7) = const 0 : u32

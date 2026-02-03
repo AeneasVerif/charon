@@ -244,8 +244,8 @@ where
     vtable: {impl Iterator for Range<A>[@TraitClause0]}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
 
-// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
-pub fn {impl IntoIterator for I}::into_iter<I>(@1: I) -> I
+// Full name: core::iter::traits::collect::{impl#2}::into_iter
+pub fn {impl#2}::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Iterator<I>,
@@ -411,7 +411,7 @@ fn cbd(@1: [u8; 33 : usize])
     storage_live(_2)
     storage_live(_3)
     _3 = Range { start: const 0 : u8, end: const 3 : u8 }
-    _2 = {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move _3)
+    _2 = {impl#2}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move _3)
     storage_dead(_3)
     storage_live(iter_4)
     iter_4 = move _2

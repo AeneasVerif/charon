@@ -27,8 +27,8 @@ where
     [@TraitClause0]: Default<Self>,
 = <opaque>
 
-// Full name: core::default::{impl Default for u32}::default
-pub fn {impl Default for u32}::default() -> u32
+// Full name: core::default::{impl#2}::default
+pub fn {impl#2}::default() -> u32
 = <opaque>
 
 // Full name: core::fmt::Arguments
@@ -241,9 +241,9 @@ pub fn {impl Default for Foo}::default() -> Foo
     let _2: u32; // anonymous local
 
     storage_live(_1)
-    _1 = {impl Default for u32}::default()
+    _1 = {impl#2}::default()
     storage_live(_2)
-    _2 = {impl Default for u32}::default()
+    _2 = {impl#2}::default()
     _0 = Foo { x: move _1, y: move _2 }
     storage_dead(_2)
     storage_dead(_1)
@@ -271,9 +271,9 @@ pub fn {impl Default for Bar}::default() -> Bar
     let _2: u32; // anonymous local
 
     storage_live(_1)
-    _1 = {impl Default for u32}::default()
+    _1 = {impl#2}::default()
     storage_live(_2)
-    _2 = {impl Default for u32}::default()
+    _2 = {impl#2}::default()
     _0 = Bar { x: move _1, super_long_field_name: move _2 }
     storage_dead(_2)
     storage_dead(_1)

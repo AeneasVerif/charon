@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::ops::arith::{impl Add<i32> for &'_0 i32}::add
-pub fn {impl Add<i32> for &'_0 i32}::add<'_0>(@1: &'_0 i32, @2: i32) -> i32
+// Full name: core::ops::arith::{impl#5}::add
+pub fn {impl#5}::add<'_0>(@1: &'_0 i32, @2: i32) -> i32
 = <opaque>
 
 opaque type core::marker::MetaSized::{vtable}
@@ -165,7 +165,7 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 i32, @2: i32) -> i32
     _3 = copy self_1
     storage_live(_4)
     _4 = copy arg_2
-    _0 = {impl Add<i32> for &'_0 i32}::add<'1>(move _3, move _4)
+    _0 = {impl#5}::add<'1>(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return

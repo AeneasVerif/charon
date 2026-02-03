@@ -24,8 +24,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::array::{impl Index<I> for [T; N]}::index
-pub fn {impl Index<I> for [T; N]}::index<'_0, T, I, const N : usize>(@1: &'_0 [T; N], @2: I) -> &'_0 @TraitClause2::Output
+// Full name: core::array::{impl#0}::index
+pub fn {impl#0}::index<'_0, T, I, const N : usize>(@1: &'_0 [T; N], @2: I) -> &'_0 @TraitClause2::Output
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
@@ -902,7 +902,7 @@ fn main()
     _4 = &array_1
     storage_live(_5)
     _5 = Range { start: const 2 : usize, end: const 5 : usize }
-    _3 = {impl Index<I> for [T; N]}::index<'3, i32, Range<usize>[{built_in impl Sized for usize}], 6 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I> for [T]}<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}<i32>[{built_in impl Sized for i32}]]](move _4, move _5)
+    _3 = {impl#0}::index<'3, i32, Range<usize>[{built_in impl Sized for usize}], 6 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Index<I> for [T]}<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}<i32>[{built_in impl Sized for i32}]]](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     slice_2 = &(*_3) with_metadata(copy _3.metadata)

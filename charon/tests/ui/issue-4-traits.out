@@ -121,8 +121,8 @@ where
     [@TraitClause0]: TryFrom<Self, T>,
 = <opaque>
 
-// Full name: core::convert::{impl TryInto<U> for T}::try_into
-pub fn {impl TryInto<U> for T}::try_into<T, U>(@1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
+// Full name: core::convert::{impl#0}::try_into
+pub fn {impl#0}::try_into<T, U>(@1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -163,7 +163,7 @@ fn trait_error<'_0>(@1: &'_0 [u8])
     storage_live(_3)
     storage_live(_4)
     _4 = &(*s_1) with_metadata(copy s_1.metadata)
-    _3 = {impl TryInto<U> for T}::try_into<&'0 [u8], [u8; 4 : usize]>[{built_in impl Sized for &'0 [u8]}, {built_in impl Sized for [u8; 4 : usize]}, {impl TryFrom<&'_0 [T]> for [T; N]}<'0, u8, 4 : usize>[{built_in impl Sized for u8}, {impl Copy for u8}]](move _4)
+    _3 = {impl#0}::try_into<&'0 [u8], [u8; 4 : usize]>[{built_in impl Sized for &'0 [u8]}, {built_in impl Sized for [u8; 4 : usize]}, {impl TryFrom<&'_0 [T]> for [T; N]}<'0, u8, 4 : usize>[{built_in impl Sized for u8}, {impl Copy for u8}]](move _4)
     storage_dead(_4)
     _array_2 = unwrap<[u8; 4 : usize], TryFromSliceError>[{built_in impl Sized for [u8; 4 : usize]}, {built_in impl Sized for TryFromSliceError}, {impl Debug for TryFromSliceError}](move _3)
     storage_dead(_3)

@@ -64,8 +64,8 @@ impl Destruct for Global {
     non-dyn-compatible
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+// Full name: alloc::boxed::Box::{impl#6}::drop_in_place
+unsafe fn {impl#6}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -77,8 +77,8 @@ where
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+// Full name: alloc::string::String::{impl#1}::drop_in_place
+unsafe fn {impl#1}::drop_in_place(@1: *mut String)
 = <opaque>
 
 // Full name: alloc::vec::Vec
@@ -90,8 +90,8 @@ where
     [@TraitClause3]: Destruct<T>,
     [@TraitClause4]: Destruct<type_error("removed allocator parameter")>,
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+// Full name: alloc::vec::Vec::{impl#4}::drop_in_place
+unsafe fn {impl#4}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -122,7 +122,7 @@ fn use_string(@1: String)
     storage_live(drop_arg_2)
     drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 = {impl Destruct for String}::drop_in_place(move drop_arg_2)
+    drop_ret_3 = {impl#1}::drop_in_place(move drop_arg_2)
     return
 }
 
@@ -139,7 +139,7 @@ fn use_vec(@1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for 
     storage_live(drop_arg_2)
     drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move drop_arg_2)
+    drop_ret_3 = {impl#4}::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move drop_arg_2)
     return
 }
 
@@ -222,11 +222,11 @@ unsafe fn {impl Destruct for Point}::drop_in_place(@1: *mut Point)
     storage_live(drop_arg_5)
     drop_arg_5 = &raw mut ((*_2)).x
     storage_live(drop_ret_6)
-    drop_ret_6 = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move drop_arg_5)
+    drop_ret_6 = {impl#6}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move drop_arg_5)
     storage_live(drop_arg_7)
     drop_arg_7 = &raw mut ((*_2)).y
     storage_live(drop_ret_8)
-    drop_ret_8 = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move drop_arg_7)
+    drop_ret_8 = {impl#6}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}](move drop_arg_7)
     return
 }
 

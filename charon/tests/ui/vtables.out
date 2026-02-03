@@ -138,8 +138,8 @@ impl Clone for String {
     non-dyn-compatible
 }
 
-// Full name: alloc::string::{impl ToString for T}::to_string
-pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 T) -> String
+// Full name: alloc::string::{impl#9}::to_string
+pub fn {impl#9}::to_string<'_0, T>(@1: &'_0 T) -> String
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Display<T>,
@@ -1265,7 +1265,7 @@ fn main()
     storage_live(_17)
     _17 = const "Hello"
     _16 = &(*_17) with_metadata(copy _17.metadata)
-    _15 = {impl ToString for T}::to_string<'22, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _16)
+    _15 = {impl#9}::to_string<'22, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _16)
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)

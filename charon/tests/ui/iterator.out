@@ -41,8 +41,8 @@ where
     non-dyn-compatible
 }
 
-// Full name: core::array::iter::{impl IntoIterator for [T; N]}::into_iter
-pub fn {impl IntoIterator for [T; N]}::into_iter<T, const N : usize>(@1: [T; N]) -> IntoIter<T, N>[@TraitClause0]
+// Full name: core::array::iter::{impl#0}::into_iter
+pub fn {impl#0}::into_iter<T, const N : usize>(@1: [T; N]) -> IntoIter<T, N>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -1637,8 +1637,8 @@ where
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
 
-// Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
-pub fn {impl AddAssign<&'_0 i32> for i32}::add_assign<'_0, '_1>(@1: &'_1 mut i32, @2: &'_0 i32)
+// Full name: core::ops::arith::{impl#5}::add_assign
+pub fn {impl#5}::add_assign<'_0, '_1>(@1: &'_1 mut i32, @2: &'_0 i32)
 = <opaque>
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size
@@ -1680,8 +1680,8 @@ where
     [@TraitClause0]: IntoIterator<Self>,
 = <opaque>
 
-// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
-pub fn {impl IntoIterator for I}::into_iter<I>(@1: I) -> I
+// Full name: core::iter::traits::collect::{impl#1}::into_iter
+pub fn {impl#1}::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Iterator<I>,
@@ -5183,9 +5183,9 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = copy a_1
-    _4 = {impl IntoIterator for [T; N]}::into_iter<i32, 7 : usize>[{built_in impl Sized for i32}](move _5)
+    _4 = {impl#0}::into_iter<i32, 7 : usize>[{built_in impl Sized for i32}](move _5)
     storage_dead(_5)
-    _3 = {impl IntoIterator for I}::into_iter<IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]}, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]](move _4)
+    _3 = {impl#1}::into_iter<IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]}, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]](move _4)
     storage_dead(_4)
     storage_live(iter_6)
     iter_6 = move _3
@@ -5231,7 +5231,7 @@ fn main()
     storage_dead(_16)
     _14 = iter<'21, i32>[{built_in impl Sized for i32}](move _15)
     storage_dead(_15)
-    _13 = {impl IntoIterator for I}::into_iter<Iter<'1, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'1, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'1, i32>[{built_in impl Sized for i32}]](move _14)
+    _13 = {impl#1}::into_iter<Iter<'1, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'1, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'1, i32>[{built_in impl Sized for i32}]](move _14)
     storage_dead(_14)
     storage_live(iter_17)
     iter_17 = move _13
@@ -5257,7 +5257,7 @@ fn main()
         _23 = &two-phase-mut i_2
         storage_live(_24)
         _24 = copy v_21
-        _22 = {impl AddAssign<&'_0 i32> for i32}::add_assign<'29, '31>(move _23, move _24)
+        _22 = {impl#5}::add_assign<'29, '31>(move _23, move _24)
         storage_dead(_24)
         storage_dead(_23)
         storage_dead(_22)
@@ -5279,7 +5279,7 @@ fn main()
     storage_dead(_28)
     _26 = chunks<'33, i32>[{built_in impl Sized for i32}](move _27, const 2 : usize)
     storage_dead(_27)
-    _25 = {impl IntoIterator for I}::into_iter<Chunks<'9, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'9, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'9, i32>[{built_in impl Sized for i32}]](move _26)
+    _25 = {impl#1}::into_iter<Chunks<'9, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'9, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'9, i32>[{built_in impl Sized for i32}]](move _26)
     storage_dead(_26)
     storage_live(iter_29)
     iter_29 = move _25
@@ -5317,7 +5317,7 @@ fn main()
     storage_dead(_37)
     _35 = chunks_exact<'42, i32>[{built_in impl Sized for i32}](move _36, const 2 : usize)
     storage_dead(_36)
-    _34 = {impl IntoIterator for I}::into_iter<ChunksExact<'13, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'13, i32>[{built_in impl Sized for i32}]}, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'13, i32>[{built_in impl Sized for i32}]](move _35)
+    _34 = {impl#1}::into_iter<ChunksExact<'13, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'13, i32>[{built_in impl Sized for i32}]}, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'13, i32>[{built_in impl Sized for i32}]](move _35)
     storage_dead(_35)
     storage_live(iter_38)
     iter_38 = move _34

@@ -8,8 +8,8 @@ pub enum Ordering {
   Greater,
 }
 
-// Full name: core::cmp::impls::{impl Ord for i32}::cmp
-pub fn {impl Ord for i32}::cmp<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> Ordering
+// Full name: core::cmp::impls::{impl#0}::cmp
+pub fn {impl#0}::cmp<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> Ordering
 = <opaque>
 
 fn UNIT_METADATA()
@@ -45,7 +45,7 @@ fn main()
     storage_live(_6)
     _6 = &y_2
     _5 = &(*_6)
-    _3 = {impl Ord for i32}::cmp<'3, '4>(move _4, move _5)
+    _3 = {impl#0}::cmp<'3, '4>(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_6)

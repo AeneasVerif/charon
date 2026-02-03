@@ -28,8 +28,8 @@ where
     [@TraitClause0]: From<Self, T>,
 = <opaque>
 
-// Full name: core::convert::{impl Into<U> for T}::into
-pub fn {impl Into<U> for T}::into<T, U>(@1: T) -> U
+// Full name: core::convert::{impl#0}::into
+pub fn {impl#0}::into<T, U>(@1: T) -> U
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -127,7 +127,7 @@ fn foo()
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_3)
-    _3 = {impl Into<U> for T}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const 42 : u32)
+    _3 = {impl#0}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const 42 : u32)
     storage_live(_11)
     storage_live(_12)
     _12 = const 0 : i32

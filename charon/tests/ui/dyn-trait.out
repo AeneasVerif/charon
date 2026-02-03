@@ -142,8 +142,8 @@ pub struct Global {}
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::{impl ToString for T}::to_string
-pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 T) -> String
+// Full name: alloc::string::{impl#1}::to_string
+pub fn {impl#1}::to_string<'_0, T>(@1: &'_0 T) -> String
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Display<T>,
@@ -166,7 +166,7 @@ fn destruct<'_0>(@1: &'_0 (dyn Display + '_0)) -> String
 
     storage_live(_2)
     _2 = &(*x_1) with_metadata(copy x_1.metadata)
-    _0 = {impl ToString for T}::to_string<'5, (dyn Display + '1)>[{built_in impl MetaSized for (dyn Display + '2)}, Display<(dyn Display + '3)>](move _2)
+    _0 = {impl#1}::to_string<'5, (dyn Display + '1)>[{built_in impl MetaSized for (dyn Display + '2)}, Display<(dyn Display + '3)>](move _2)
     storage_dead(_2)
     return
 }

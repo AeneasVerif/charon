@@ -44,15 +44,15 @@ where
     non-dyn-compatible
 }
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref
-pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0, T, A>(@1: &'_0 alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]) -> &'_0 T
+// Full name: alloc::boxed::{impl#5}::deref
+pub fn {impl#5}::deref<'_0, T, A>(@1: &'_0 alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]) -> &'_0 T
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut
-pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0, T, A>(@1: &'_0 mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]) -> &'_0 mut T
+// Full name: alloc::boxed::{impl#4}::deref_mut
+pub fn {impl#4}::deref_mut<'_0, T, A>(@1: &'_0 mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]) -> &'_0 mut T
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -422,13 +422,13 @@ pub fn test_box1()
     storage_live(x_2)
     storage_live(_3)
     _3 = &two-phase-mut b_1
-    x_2 = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'5, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
+    x_2 = {impl#4}::deref_mut<'5, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
     storage_dead(_3)
     (*x_2) = const 1 : i32
     storage_live(x_4)
     storage_live(_5)
     _5 = &b_1
-    x_4 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'7, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
+    x_4 = {impl#5}::deref<'7, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)

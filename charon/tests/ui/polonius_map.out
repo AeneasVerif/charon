@@ -192,8 +192,8 @@ where
     [@TraitClause5]: BuildHasher<S>,
 = <opaque>
 
-// Full name: std::collections::hash::map::{impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index
-pub fn {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_0, '_1, K, Q, V, S>(@1: &'_1 HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3], @2: &'_0 Q) -> &'_1 V
+// Full name: std::collections::hash::map::{impl#4}::index
+pub fn {impl#4}::index<'_0, '_1, K, Q, V, S>(@1: &'_1 HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3], @2: &'_0 Q) -> &'_1 V
 where
     [@TraitClause0]: Sized<K>,
     [@TraitClause1]: MetaSized<Q>,
@@ -315,7 +315,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut HashMap<u32, u32, RandomState>[{built_in 
             _14 = move _18
             _13 = &(*_14)
             _12 = &(*_13)
-            _10 = {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'11, '13, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _11, move _12)
+            _10 = {impl#4}::index<'11, '13, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _11, move _12)
             storage_dead(_12)
             storage_dead(_11)
             _9 = &(*_10)

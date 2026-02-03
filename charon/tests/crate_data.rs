@@ -598,9 +598,8 @@ fn declaration_groups() -> anyhow::Result<()> {
         "#,
     )?;
 
-    // There are 3 function items: one for `foo`, one for the initializer of `Trait::FOO`, and
-    // one for the initializer of UNIT_METADATA (always included).
-    assert_eq!(crate_data.fun_decls.iter().count(), 3);
+    // There are 2 function items: one for `foo` and one for the initializer of `Trait::FOO`.
+    assert_eq!(crate_data.fun_decls.iter().count(), 2);
     let decl_groups = crate_data.ordered_decls.unwrap();
     assert_eq!(decl_groups.len(), 6);
 

@@ -87,8 +87,8 @@ where
     return
 }
 
-// Full name: core::convert::num::{impl From<i32> for i64}::from
-pub fn {impl From<i32> for i64}::from(@1: i32) -> i64
+// Full name: core::convert::num::{impl#0}::from
+pub fn {impl#0}::from(@1: i32) -> i64
 {
     let _0: i64; // return
     let small_1: i32; // arg #1
@@ -292,7 +292,7 @@ fn convert(@1: i32) -> i64
 
     storage_live(_2)
     _2 = copy x_1
-    _0 = {impl From<i32> for i64}::from(move _2)
+    _0 = {impl#0}::from(move _2)
     storage_dead(_2)
     return
 }

@@ -30,8 +30,8 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+// Full name: core::slice::iter::{impl#0}::next
+pub fn {impl#0}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -91,7 +91,7 @@ fn main()
     _6 = iter<'8, i32>[{built_in impl Sized for i32}](move _7)
     _5 = &two-phase-mut _6
     storage_dead(_7)
-    _4 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'9, '11, i32>[{built_in impl Sized for i32}](move _5)
+    _4 = {impl#0}::next<'9, '11, i32>[{built_in impl Sized for i32}](move _5)
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)

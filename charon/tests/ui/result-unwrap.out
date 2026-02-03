@@ -77,16 +77,16 @@ where
     [@TraitClause0]: Debug<Self>,
 = <method_without_default_body>
 
-// Full name: core::fmt::num::{impl LowerHex for u32}::fmt
-pub fn {impl LowerHex for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+// Full name: core::fmt::num::{impl#1}::fmt
+pub fn {impl#1}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <missing>
 
-// Full name: core::fmt::num::{impl UpperHex for u32}::fmt
-pub fn {impl UpperHex for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+// Full name: core::fmt::num::{impl#3}::fmt
+pub fn {impl#3}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <missing>
 
-// Full name: core::fmt::num::imp::{impl Display for u32}::fmt
-pub fn {impl Display for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+// Full name: core::fmt::num::imp::{impl#2}::fmt
+pub fn {impl#2}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <missing>
 
 // Full name: core::fmt::num::{impl Debug for u32}::fmt
@@ -110,7 +110,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Forma
         },
         _ => {
             storage_dead(_3)
-            _0 = {impl LowerHex for u32}::fmt<'6, '7, '8>(move self_1, move f_2)
+            _0 = {impl#1}::fmt<'6, '7, '8>(move self_1, move f_2)
             return
         },
     }
@@ -125,12 +125,12 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Forma
         },
         _ => {
             storage_dead(_5)
-            _0 = {impl UpperHex for u32}::fmt<'18, '19, '20>(move self_1, move f_2)
+            _0 = {impl#3}::fmt<'18, '19, '20>(move self_1, move f_2)
             return
         },
     }
     storage_dead(_5)
-    _0 = {impl Display for u32}::fmt<'12, '13, '14>(move self_1, move f_2)
+    _0 = {impl#2}::fmt<'12, '13, '14>(move self_1, move f_2)
     return
 }
 

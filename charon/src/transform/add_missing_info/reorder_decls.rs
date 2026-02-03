@@ -391,9 +391,16 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
     deps.graph
 }
 
-fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
+fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
     // Build the graph of dependencies between items.
     let graph = compute_declarations_graph(ctx);
+
+    // Remove unreachable items.
+    for id in ctx.translated.all_ids() {
+        if !graph.contains_node(id) {
+            ctx.translated.remove_item(id);
+        }
+    }
 
     // Pre-sort files to limit the number of costly string comparisons. Maps file ids to an index
     // that reflects ordering on the crates (with `core` and `std` sorted first) and file names.
@@ -462,7 +469,7 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        let reordered_decls = compute_reordered_decls(&ctx);
+        let reordered_decls = compute_reordered_decls(ctx);
         ctx.translated.ordered_decls = Some(reordered_decls);
     }
 }

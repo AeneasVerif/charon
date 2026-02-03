@@ -211,8 +211,8 @@ where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <method_without_default_body>
 
-// Full name: core::slice::index::{impl Index<I> for [T]}::index
-pub fn {impl Index<I> for [T]}::index<'_0, T, I>(@1: &'_0 [T], @2: I) -> &'_0 @TraitClause2::Output
+// Full name: core::slice::index::{impl#0}::index
+pub fn {impl#0}::index<'_0, T, I>(@1: &'_0 [T], @2: I) -> &'_0 @TraitClause2::Output
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
@@ -544,8 +544,8 @@ where
     _16 = slice_index_fail(move start_3, move end_4, move len_6)
 }
 
-// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check
-fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(@1: usize, @2: usize, @3: usize)
+// Full name: core::slice::index::{impl#3}::get_unchecked_mut::precondition_check
+fn {impl#3}::get_unchecked_mut::precondition_check(@1: usize, @2: usize, @3: usize)
 {
     let _0: (); // return
     let start_1: usize; // arg #1
@@ -649,7 +649,7 @@ where
     if move _4 {
         storage_live(_6)
         _6 = copy slice_2.metadata
-        _5 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(copy self_10, copy exclusive_end_3, move _6)
+        _5 = {impl#3}::get_unchecked_mut::precondition_check(copy self_10, copy exclusive_end_3, move _6)
         storage_dead(_6)
     } else {
     }
@@ -666,8 +666,8 @@ where
     return
 }
 
-// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check
-fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
+// Full name: core::slice::index::{impl#3}::get_unchecked::precondition_check
+fn {impl#3}::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
 {
     let _0: (); // return
     let start_1: usize; // arg #1
@@ -771,7 +771,7 @@ where
     if move _4 {
         storage_live(_6)
         _6 = copy slice_2.metadata
-        _5 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(copy self_10, copy exclusive_end_3, move _6)
+        _5 = {impl#3}::get_unchecked::precondition_check(copy self_10, copy exclusive_end_3, move _6)
         storage_dead(_6)
     } else {
     }
@@ -1003,7 +1003,7 @@ pub fn slice_index_range<'_0>(@1: &'_0 [u8]) -> &'_0 [u8]
     _4 = &(*slice_1) with_metadata(copy slice_1.metadata)
     storage_live(_5)
     _5 = new<usize>[{built_in impl Sized for usize}](const 0 : usize, const 10 : usize)
-    _3 = {impl Index<I> for [T]}::index<'2, u8, RangeInclusive<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for u8}, {built_in impl Sized for RangeInclusive<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}<u8>[{built_in impl Sized for u8}]](move _4, move _5)
+    _3 = {impl#0}::index<'2, u8, RangeInclusive<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for u8}, {built_in impl Sized for RangeInclusive<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}<u8>[{built_in impl Sized for u8}]](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)

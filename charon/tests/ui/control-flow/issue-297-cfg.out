@@ -33,8 +33,8 @@ pub trait Iterator<Self>
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
-// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
-pub fn {impl IntoIterator for I}::into_iter<I>(@1: I) -> I
+// Full name: core::iter::traits::collect::{impl#0}::into_iter
+pub fn {impl#0}::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Iterator<I>,
@@ -236,7 +236,7 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
     _6 = &(*a_1) with_metadata(copy a_1.metadata)
     _5 = chunks<'7, u8>[{built_in impl Sized for u8}](move _6, const 3 : usize)
     storage_dead(_6)
-    _4 = {impl IntoIterator for I}::into_iter<Chunks<'2, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'2, u8>[{built_in impl Sized for u8}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'2, u8>[{built_in impl Sized for u8}]](move _5)
+    _4 = {impl#0}::into_iter<Chunks<'2, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'2, u8>[{built_in impl Sized for u8}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'2, u8>[{built_in impl Sized for u8}]](move _5)
     storage_dead(_5)
     storage_live(iter_7)
     iter_7 = move _4
