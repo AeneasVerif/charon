@@ -74,12 +74,38 @@ impl Destruct for String {
     non-dyn-compatible
 }
 
-// Full name: alloc::string::{impl#0}::to_string
-pub fn {impl#0}::to_string<'_0, T>(@1: &'_0 T) -> String
+// Full name: alloc::string::ToString
+#[lang_item("ToString")]
+pub trait ToString<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn to_string<'_0_1> = alloc::string::ToString::to_string<'_0_1, Self>[Self]
+    vtable: alloc::string::ToString::{vtable}
+}
+
+#[lang_item("to_string_method")]
+pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 Self) -> String
+where
+    [@TraitClause0]: ToString<Self>,
+= <opaque>
+
+// Full name: alloc::string::{impl ToString for T}::to_string
+pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 T) -> String
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Display<T>,
 = <opaque>
+
+// Full name: alloc::string::{impl ToString for T}
+impl<T> ToString for T
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Display<T>,
+{
+    parent_clause0 = @TraitClause0
+    fn to_string<'_0_1> = {impl ToString for T}::to_string<'_0_1, T>[@TraitClause0, @TraitClause1]
+    vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
+}
 
 fn UNIT_METADATA()
 {
@@ -143,7 +169,7 @@ fn main()
     storage_live(_3)
     _3 = const "Hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    _s_1 = {impl#0}::to_string<'2, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _2)
+    _s_1 = {impl ToString for T}::to_string<'2, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

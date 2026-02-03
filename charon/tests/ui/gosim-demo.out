@@ -93,6 +93,45 @@ where
   Some(T),
 }
 
+// Full name: core::iter::traits::iterator::Iterator
+#[lang_item("iterator")]
+pub trait Iterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    type Item
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
+
+// Full name: core::iter::traits::collect::IntoIterator
+#[lang_item("IntoIterator")]
+pub trait IntoIterator<Self>
+where
+    Self::parent_clause3::Item = Self::Item,
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    parent_clause2 : [@TraitClause2]: Sized<Self::IntoIter>
+    parent_clause3 : [@TraitClause3]: Iterator<Self::IntoIter>
+    type Item
+    type IntoIter
+    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
+}
+
+#[lang_item("into_iter")]
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
+where
+    [@TraitClause0]: IntoIterator<Self>,
+= <opaque>
+
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+= <opaque>
+
 // Full name: core::slice::iter::Iter
 #[lang_item("SliceIter")]
 pub opaque type Iter<'a, T>
@@ -101,17 +140,44 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl#1}::next
-pub fn {impl#1}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::iter::{impl#0}::into_iter
-pub fn {impl#0}::into_iter<'a, T>(@1: &'a [T]) -> Iter<'a, T>[@TraitClause0]
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}
+impl<'a, T> Iterator for Iter<'a, T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = {built_in impl MetaSized for Iter<'_, T>[@TraitClause0]}
+    parent_clause1 = {built_in impl Sized for &'_ T}
+    type Item = &'a T
+    fn next<'_0_1> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
+    vtable: {impl Iterator for Iter<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
+}
+
+// Full name: core::slice::iter::{impl IntoIterator for &'a [T]}::into_iter
+pub fn {impl IntoIterator for &'a [T]}::into_iter<'a, T>(@1: &'a [T]) -> Iter<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
+
+// Full name: core::slice::iter::{impl IntoIterator for &'a [T]}
+impl<'a, T> IntoIterator for &'a [T]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = {built_in impl MetaSized for &'_ [T]}
+    parent_clause1 = {built_in impl Sized for &'_ T}
+    parent_clause2 = {built_in impl Sized for Iter<'_, T>[@TraitClause0]}
+    parent_clause3 = {impl Iterator for Iter<'a, T>[@TraitClause0]}<'_, T>[@TraitClause0]
+    type Item = &'a T
+    type IntoIter = Iter<'a, T>[@TraitClause0]
+    fn into_iter = {impl IntoIterator for &'a [T]}::into_iter<'a, T>[@TraitClause0]
+    vtable: {impl IntoIterator for &'a [T]}::{vtable}<'a, T>[@TraitClause0]
+}
 
 // Full name: std::io::stdio::_eprint
 pub fn _eprint<'_0>(@1: Arguments<'_0>)
@@ -160,7 +226,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice_1
-    _2 = {impl#0}::into_iter<'11, T>[@TraitClause0](move _3)
+    _2 = {impl IntoIterator for &'a [T]}::into_iter<'11, T>[@TraitClause0](move _3)
     storage_dead(_3)
     storage_live(iter_4)
     iter_4 = move _2
@@ -170,7 +236,7 @@ where
         storage_live(_7)
         _7 = &mut iter_4
         _6 = &two-phase-mut (*_7)
-        _5 = {impl#1}::next<'12, '14, T>[@TraitClause0](move _6)
+        _5 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'12, '14, T>[@TraitClause0](move _6)
         storage_dead(_6)
         match _5 {
             Option::None => {

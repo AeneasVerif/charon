@@ -308,17 +308,88 @@ where
     vtable: {impl Iterator for Range<A>[@TraitClause0]}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
 
-// Full name: core::iter::traits::collect::{impl#0}::into_iter
-pub fn {impl#0}::into_iter<I>(@1: I) -> I
+// Full name: core::iter::traits::collect::IntoIterator
+#[lang_item("IntoIterator")]
+pub trait IntoIterator<Self>
+where
+    Self::parent_clause3::Item = Self::Item,
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    parent_clause2 : [@TraitClause2]: Sized<Self::IntoIter>
+    parent_clause3 : [@TraitClause3]: Iterator<Self::IntoIter>
+    type Item
+    type IntoIter
+    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
+}
+
+#[lang_item("into_iter")]
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
+where
+    [@TraitClause0]: IntoIterator<Self>,
+= <opaque>
+
+// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
+pub fn {impl IntoIterator for I}::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Iterator<I>,
 = <opaque>
 
+// Full name: core::iter::traits::collect::{impl IntoIterator for I}
+impl<I> IntoIterator for I
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
+{
+    parent_clause0 = @TraitClause0::parent_clause0
+    parent_clause1 = @TraitClause1::parent_clause1
+    parent_clause2 = @TraitClause0
+    parent_clause3 = @TraitClause1
+    type Item = @TraitClause1::Item
+    type IntoIter = I
+    fn into_iter = {impl IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
+    vtable: {impl IntoIterator for I}::{vtable}<I>[@TraitClause0, @TraitClause1]
+}
+
 #[lang_item("next")]
 pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: Iterator<Self>,
+= <opaque>
+
+// Full name: core::ops::index::Index
+#[lang_item("index")]
+pub trait Index<Self, Idx>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: MetaSized<Idx>
+    parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
+    type Output
+    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
+}
+
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
+where
+    [@TraitClause0]: Index<Self, Idx>,
+= <opaque>
+
+// Full name: core::ops::index::IndexMut
+#[lang_item("index_mut")]
+pub trait IndexMut<Self, Idx>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Index<Self, Idx>
+    parent_clause2 : [@TraitClause2]: MetaSized<Idx>
+    fn index_mut<'_0_1> = core::ops::index::IndexMut::index_mut<'_0_1, Self, Idx>[Self]
+    vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::parent_clause1::Output>
+}
+
+pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut Self, @2: Idx) -> &'_0 mut @TraitClause0::parent_clause1::Output
+where
+    [@TraitClause0]: IndexMut<Self, Idx>,
 = <opaque>
 
 // Full name: core::slice::index::private_slice_index::Sealed
@@ -454,14 +525,54 @@ where
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
-// Full name: alloc::vec::{impl#6}::index_mut
-pub fn {impl#6}::index_mut<'_0, T, I, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause2], @2: I) -> &'_0 mut @TraitClause3::Output
+// Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index
+pub fn {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0, T, I, A>(@1: &'_0 Vec<T>[@TraitClause0, @TraitClause2], @2: I) -> &'_0 @TraitClause3::Output
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, [T]>,
 = <opaque>
+
+// Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}
+impl<T, I, A> Index<I> for Vec<T>[@TraitClause0, @TraitClause2]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Sized<A>,
+    [@TraitClause3]: SliceIndex<I, [T]>,
+{
+    parent_clause0 = {built_in impl MetaSized for Vec<T>[@TraitClause0, @TraitClause2]}
+    parent_clause1 = @TraitClause1::parent_clause0
+    parent_clause2 = @TraitClause3::parent_clause3
+    type Output = @TraitClause3::Output
+    fn index<'_0_1> = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_1, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    vtable: {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::{vtable}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+}
+
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut
+pub fn {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause2], @2: I) -> &'_0 mut @TraitClause3::Output
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Sized<A>,
+    [@TraitClause3]: SliceIndex<I, [T]>,
+= <opaque>
+
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}
+impl<T, I, A> IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Sized<A>,
+    [@TraitClause3]: SliceIndex<I, [T]>,
+{
+    parent_clause0 = {built_in impl MetaSized for Vec<T>[@TraitClause0, @TraitClause2]}
+    parent_clause1 = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    parent_clause2 = @TraitClause1::parent_clause0
+    fn index_mut<'_0_1> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_1, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    vtable: {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::{vtable}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+}
 
 fn UNIT_METADATA()
 {
@@ -1228,7 +1339,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     storage_live(_4)
     storage_live(_5)
     _5 = Range { start: const 0 : i32, end: const 128 : i32 }
-    _4 = {impl#0}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5)
+    _4 = {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5)
     storage_dead(_5)
     storage_live(iter_6)
     iter_6 = move _4
@@ -1263,7 +1374,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     _13 = copy step_out_1
     _12 = Range { start: const 0 : usize, end: move _13 }
     storage_dead(_13)
-    _11 = {impl#0}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _12)
+    _11 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _12)
     storage_dead(_12)
     storage_live(iter_14)
     iter_14 = move _11
@@ -1288,7 +1399,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         _20 = copy step_in_2
         _19 = Range { start: const 0 : usize, end: move _20 }
         storage_dead(_20)
-        _18 = {impl#0}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _19)
+        _18 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _19)
         storage_dead(_19)
         storage_live(iter_21)
         iter_21 = move _18
@@ -1361,7 +1472,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
         _7 = copy n_2
         _6 = Range { start: const 0 : u32, end: move _7 }
         storage_dead(_7)
-        _5 = {impl#0}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[@TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move _6)
+        _5 = {impl IntoIterator for I}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[@TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move _6)
         storage_dead(_6)
         storage_live(iter_8)
         iter_8 = move _5
@@ -1557,7 +1668,7 @@ pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in
         _8 = &mut (*v_1)
         storage_live(_9)
         _9 = copy i_2
-        _7 = {impl#6}::index_mut<'6, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
+        _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'6, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
         (*_7) = const 0 : u32

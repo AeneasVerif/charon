@@ -115,19 +115,51 @@ impl Clone for u8 {
     non-dyn-compatible
 }
 
+// Full name: core::convert::TryInto
+#[lang_item("TryInto")]
+pub trait TryInto<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Error>
+    type Error
+    fn try_into = core::convert::TryInto::try_into<Self, T>[Self]
+    non-dyn-compatible
+}
+
+pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> Result<T, @TraitClause0::Error>[@TraitClause0::parent_clause1, @TraitClause0::parent_clause2]
+where
+    [@TraitClause0]: TryInto<Self, T>,
+= <opaque>
+
 #[lang_item("try_from_fn")]
 pub fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause0::parent_clause0, @TraitClause0::parent_clause2]
 where
     [@TraitClause0]: TryFrom<Self, T>,
 = <opaque>
 
-// Full name: core::convert::{impl#0}::try_into
-pub fn {impl#0}::try_into<T, U>(@1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
+// Full name: core::convert::{impl TryInto<U> for T}::try_into
+pub fn {impl TryInto<U> for T}::try_into<T, U>(@1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: TryFrom<U, T>,
 = <opaque>
+
+// Full name: core::convert::{impl TryInto<U> for T}
+impl<T, U> TryInto<U> for T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: TryFrom<U, T>,
+{
+    parent_clause0 = @TraitClause0
+    parent_clause1 = @TraitClause1
+    parent_clause2 = @TraitClause2::parent_clause2
+    type Error = @TraitClause2::Error
+    fn try_into = {impl TryInto<U> for T}::try_into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
+}
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
@@ -163,7 +195,7 @@ pub fn trait_error<'_0>(@1: &'_0 [u8])
     storage_live(_3)
     storage_live(_4)
     _4 = &(*s_1) with_metadata(copy s_1.metadata)
-    _3 = {impl#0}::try_into<&'0 [u8], [u8; 4 : usize]>[{built_in impl Sized for &'0 [u8]}, {built_in impl Sized for [u8; 4 : usize]}, {impl TryFrom<&'_0 [T]> for [T; N]}<'0, u8, 4 : usize>[{built_in impl Sized for u8}, {impl Copy for u8}]](move _4)
+    _3 = {impl TryInto<U> for T}::try_into<&'0 [u8], [u8; 4 : usize]>[{built_in impl Sized for &'0 [u8]}, {built_in impl Sized for [u8; 4 : usize]}, {impl TryFrom<&'_0 [T]> for [T; N]}<'0, u8, 4 : usize>[{built_in impl Sized for u8}, {impl Copy for u8}]](move _4)
     storage_dead(_4)
     _array_2 = unwrap<[u8; 4 : usize], TryFromSliceError>[{built_in impl Sized for [u8; 4 : usize]}, {built_in impl Sized for TryFromSliceError}, {impl Debug for TryFromSliceError}](move _3)
     storage_dead(_3)

@@ -12,6 +12,21 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::convert::Into
+#[lang_item("Into")]
+pub trait Into<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn into = core::convert::Into::into<Self, T>[Self]
+    non-dyn-compatible
+}
+
+pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
+where
+    [@TraitClause0]: Into<Self, T>,
+= <opaque>
+
 // Full name: core::convert::From
 #[lang_item("From")]
 pub trait From<Self, T>
@@ -28,8 +43,8 @@ where
     [@TraitClause0]: From<Self, T>,
 = <opaque>
 
-// Full name: core::convert::{impl#0}::into
-pub fn {impl#0}::into<T, U>(@1: T) -> U
+// Full name: core::convert::{impl Into<U> for T}::into
+pub fn {impl Into<U> for T}::into<T, U>(@1: T) -> U
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -40,6 +55,19 @@ where
 
     _0 = @TraitClause2::from(move self_1)
     return
+}
+
+// Full name: core::convert::{impl Into<U> for T}
+impl<T, U> Into<U> for T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: From<U, T>,
+{
+    parent_clause0 = @TraitClause0
+    parent_clause1 = @TraitClause1
+    fn into = {impl Into<U> for T}::into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
+    non-dyn-compatible
 }
 
 // Full name: core::convert::num::{impl From<u32> for u64}::from
@@ -127,7 +155,7 @@ fn foo()
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_3)
-    _3 = {impl#0}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const 42 : u32)
+    _3 = {impl Into<U> for T}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const 42 : u32)
     storage_live(_11)
     storage_live(_12)
     _12 = const 0 : i32

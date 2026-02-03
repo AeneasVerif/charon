@@ -147,6 +147,23 @@ impl Hash for u32 {
     non-dyn-compatible
 }
 
+// Full name: core::ops::index::Index
+#[lang_item("index")]
+pub trait Index<Self, Idx>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: MetaSized<Idx>
+    parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
+    type Output
+    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
+}
+
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
+where
+    [@TraitClause0]: Index<Self, Idx>,
+= <opaque>
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -192,8 +209,8 @@ where
     [@TraitClause5]: BuildHasher<S>,
 = <opaque>
 
-// Full name: std::collections::hash::map::{impl#4}::index
-pub fn {impl#4}::index<'_0, '_1, K, Q, V, S>(@1: &'_1 HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3], @2: &'_0 Q) -> &'_1 V
+// Full name: std::collections::hash::map::{impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index
+pub fn {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_0, '_1, K, Q, V, S>(@1: &'_1 HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3], @2: &'_0 Q) -> &'_1 V
 where
     [@TraitClause0]: Sized<K>,
     [@TraitClause1]: MetaSized<Q>,
@@ -206,6 +223,28 @@ where
     [@TraitClause8]: Hash<Q>,
     [@TraitClause9]: BuildHasher<S>,
 = <opaque>
+
+// Full name: std::collections::hash::map::{impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}
+impl<'_0, K, Q, V, S> Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]
+where
+    [@TraitClause0]: Sized<K>,
+    [@TraitClause1]: MetaSized<Q>,
+    [@TraitClause2]: Sized<V>,
+    [@TraitClause3]: Sized<S>,
+    [@TraitClause4]: Eq<K>,
+    [@TraitClause5]: Hash<K>,
+    [@TraitClause6]: Borrow<K, Q>,
+    [@TraitClause7]: Eq<Q>,
+    [@TraitClause8]: Hash<Q>,
+    [@TraitClause9]: BuildHasher<S>,
+{
+    parent_clause0 = {built_in impl MetaSized for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}
+    parent_clause1 = {built_in impl MetaSized for &'_ Q}
+    parent_clause2 = @TraitClause2::parent_clause0
+    type Output = V
+    fn index<'_0_1> = {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_0, '_0_1, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
+    vtable: {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::{vtable}<'_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
+}
 
 // Full name: std::hash::random::RandomState
 pub opaque type RandomState
@@ -315,7 +354,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut HashMap<u32, u32, RandomState>[{built_in 
             _14 = move _18
             _13 = &(*_14)
             _12 = &(*_13)
-            _10 = {impl#4}::index<'11, '13, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _11, move _12)
+            _10 = {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'11, '13, u32, u32, u32, RandomState>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _11, move _12)
             storage_dead(_12)
             storage_dead(_11)
             _9 = &(*_10)

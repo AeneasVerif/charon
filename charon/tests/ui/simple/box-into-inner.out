@@ -117,6 +117,20 @@ where
     non-dyn-compatible
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut Self)
+where
+    [@TraitClause0]: Drop<Self>,
+= <opaque>
+
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
 pub opaque type NonNull<T>
@@ -128,12 +142,23 @@ pub opaque type Unique<T>
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::boxed::{impl#3}::drop
-pub fn {impl#3}::drop<'_0, T, A>(@1: &'_0 mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 = <opaque>
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+    fn drop<'_0_1> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'_0_1, T, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
+}
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -202,7 +227,7 @@ fn into_inner(@1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}
     storage_dead(_x_2)
     _5 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
     _3 = &mut b_1
-    _4 = {impl#3}::drop<'2, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _3)
+    _4 = {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop<'2, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _3)
     return
 }
 

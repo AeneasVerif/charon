@@ -335,11 +335,15 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
                 let _ = generics.drive(&mut visitor);
                 let _ = signature.drive(&mut visitor);
                 let _ = body.drive(&mut visitor);
-                // FIXME(#514): A method declaration depends on its declaring trait because of its
-                // `Self` clause. While the clause is implicit, we make sure to record the
-                // dependency manually.
-                if let ItemSource::TraitDecl { trait_ref, .. } = src {
-                    visitor.insert_edge(trait_ref.id);
+                match src {
+                    ItemSource::TraitDecl { trait_ref, .. } => {
+                        visitor.insert_edge(trait_ref.id);
+                    }
+                    ItemSource::TraitImpl { impl_ref, .. } => {
+                        // Keep the impl around without recording a dependency.
+                        visitor.insert_node(impl_ref.id);
+                    }
+                    _ => (),
                 }
             }
             ItemRef::TraitDecl(d) => {

@@ -22,6 +22,23 @@ where
   Some(T),
 }
 
+// Full name: core::iter::traits::iterator::Iterator
+#[lang_item("iterator")]
+pub trait Iterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    type Item
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
+
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+= <opaque>
+
 // Full name: core::slice::iter::Iter
 #[lang_item("SliceIter")]
 pub opaque type Iter<'a, T>
@@ -30,11 +47,23 @@ where
     T : 'a,
     T : 'a,
 
-// Full name: core::slice::iter::{impl#0}::next
-pub fn {impl#0}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
+
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}
+impl<'a, T> Iterator for Iter<'a, T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = {built_in impl MetaSized for Iter<'_, T>[@TraitClause0]}
+    parent_clause1 = {built_in impl Sized for &'_ T}
+    type Item = &'a T
+    fn next<'_0_1> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
+    vtable: {impl Iterator for Iter<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
+}
 
 // Full name: core::slice::{[T]}::iter
 #[lang_item("slice_iter")]
@@ -91,7 +120,7 @@ fn main()
     _6 = iter<'8, i32>[{built_in impl Sized for i32}](move _7)
     _5 = &two-phase-mut _6
     storage_dead(_7)
-    _4 = {impl#0}::next<'9, '11, i32>[{built_in impl Sized for i32}](move _5)
+    _4 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'9, '11, i32>[{built_in impl Sized for i32}](move _5)
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)

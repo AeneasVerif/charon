@@ -87,14 +87,38 @@ where
     return
 }
 
-// Full name: core::convert::num::{impl#0}::from
-pub fn {impl#0}::from(@1: i32) -> i64
+// Full name: core::convert::From
+#[lang_item("From")]
+pub trait From<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn from = core::convert::From::from<Self, T>[Self]
+    non-dyn-compatible
+}
+
+#[lang_item("from_fn")]
+pub fn core::convert::From::from<Self, T>(@1: T) -> Self
+where
+    [@TraitClause0]: From<Self, T>,
+= <method_without_default_body>
+
+// Full name: core::convert::num::{impl From<i32> for i64}::from
+pub fn {impl From<i32> for i64}::from(@1: i32) -> i64
 {
     let _0: i64; // return
     let small_1: i32; // arg #1
 
     _0 = cast<i32, i64>(copy small_1)
     return
+}
+
+// Full name: core::convert::num::{impl From<i32> for i64}
+impl From<i32> for i64 {
+    parent_clause0 = {built_in impl Sized for i64}
+    parent_clause1 = {built_in impl Sized for i32}
+    fn from = {impl From<i32> for i64}::from
+    non-dyn-compatible
 }
 
 // Full name: core::marker::PhantomData
@@ -292,7 +316,7 @@ fn convert(@1: i32) -> i64
 
     storage_live(_2)
     _2 = copy x_1
-    _0 = {impl#0}::from(move _2)
+    _0 = {impl From<i32> for i64}::from(move _2)
     storage_dead(_2)
     return
 }

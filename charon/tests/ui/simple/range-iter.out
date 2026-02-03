@@ -168,11 +168,36 @@ where
     vtable: {impl Iterator<A> for Range<A>}::{vtable}<A>[@TraitClause0]
 }
 
-// Full name: core::iter::traits::collect::{impl#0}::into_iter
-pub fn {impl#0}::into_iter<I, Clause0_Item>(@1: I) -> I
+// Full name: core::iter::traits::collect::IntoIterator
+#[lang_item("IntoIterator")]
+pub trait IntoIterator<Self, Self_Item, Self_IntoIter>
+{
+    parent_clause0 : [@TraitClause0]: Iterator<Self_IntoIter, Self_Item>
+    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self, Self_Item, Self_IntoIter>[Self]
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self_Item, Self_IntoIter>
+}
+
+#[lang_item("into_iter")]
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self, Clause0_Item, Clause0_IntoIter>(@1: Self) -> Clause0_IntoIter
+where
+    [@TraitClause0]: IntoIterator<Self, Clause0_Item, Clause0_IntoIter>,
+= <opaque>
+
+// Full name: core::iter::traits::collect::{impl IntoIterator<Clause0_Item, I> for I}::into_iter
+pub fn {impl IntoIterator<Clause0_Item, I> for I}::into_iter<I, Clause0_Item>(@1: I) -> I
 where
     [@TraitClause0]: Iterator<I, Clause0_Item>,
 = <opaque>
+
+// Full name: core::iter::traits::collect::{impl IntoIterator<Clause0_Item, I> for I}
+impl<I, Clause0_Item> IntoIterator<Clause0_Item, I> for I
+where
+    [@TraitClause0]: Iterator<I, Clause0_Item>,
+{
+    parent_clause0 = @TraitClause0
+    fn into_iter = {impl IntoIterator<Clause0_Item, I> for I}::into_iter<I, Clause0_Item>[@TraitClause0]
+    vtable: {impl IntoIterator<Clause0_Item, I> for I}::{vtable}<I>[@TraitClause0]
+}
 
 #[lang_item("next")]
 pub fn core::iter::traits::iterator::Iterator::next<'_0, Self, Clause0_Item>(@1: &'_0 mut Self) -> Option<Clause0_Item>
@@ -211,7 +236,7 @@ fn iter(@1: usize)
     _4 = copy n_1
     _3 = Range { start: const 0 : usize, end: move _4 }
     storage_dead(_4)
-    _2 = {impl#0}::into_iter<Range<usize>, usize>[{impl Iterator<A> for Range<A>}<usize>[{impl Step for usize}]](move _3)
+    _2 = {impl IntoIterator<Clause0_Item, I> for I}::into_iter<Range<usize>, usize>[{impl Iterator<A> for Range<A>}<usize>[{impl Step for usize}]](move _3)
     storage_dead(_3)
     storage_live(iter_5)
     iter_5 = move _2

@@ -1,10 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-opaque type core::fmt::Display::{vtable}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -16,6 +11,26 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    non-dyn-compatible
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+= <opaque>
+
+// Full name: core::fmt::Error
+pub struct Error {}
+
+opaque type core::fmt::Display::{vtable}
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -120,9 +135,16 @@ impl Destruct for String {
 pub fn alloc::string::{String}::new() -> String
 = <opaque>
 
-// Full name: alloc::string::{impl#4}::clone
-pub fn {impl#4}::clone<'_0>(@1: &'_0 String) -> String
+// Full name: alloc::string::{impl Clone for String}::clone
+pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 String) -> String
 = <opaque>
+
+// Full name: alloc::string::{impl Clone for String}
+impl Clone for String {
+    parent_clause0 = {built_in impl Sized for String}
+    fn clone<'_0_1> = {impl Clone for String}::clone<'_0_1>
+    non-dyn-compatible
+}
 
 // Full name: alloc::string::{impl Display for String}::fmt
 pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 String, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
@@ -228,7 +250,7 @@ fn foo()
     storage_live(_17)
     storage_live(_18)
     _18 = &string_11
-    _17 = {impl#4}::clone<'8>(move _18)
+    _17 = {impl Clone for String}::clone<'8>(move _18)
     storage_dead(_18)
     _16 = @BoxNew<String>[{built_in impl Sized for String}](move _17)
     _15 = unsize_cast<alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], alloc::boxed::Box<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '5)}, {built_in impl Sized for Global}], {impl Display for String} with {impl Display for String}::{vtable}>(move _16)
@@ -242,7 +264,7 @@ fn foo()
     storage_live(_21)
     storage_live(_22)
     _22 = &string_11
-    _21 = {impl#4}::clone<'13>(move _22)
+    _21 = {impl Clone for String}::clone<'13>(move _22)
     storage_dead(_22)
     _20 = alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _21)
     _19 = unsize_cast<Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], Rc<(dyn Display + '3)>[{built_in impl MetaSized for (dyn Display + '6)}, {built_in impl Sized for Global}]>(move _20)

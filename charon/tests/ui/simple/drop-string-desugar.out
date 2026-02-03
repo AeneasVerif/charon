@@ -62,8 +62,8 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-// Full name: alloc::vec::Vec::{impl#3}::drop_in_place
-unsafe fn {impl#3}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -71,8 +71,8 @@ where
     [@TraitClause4]: Destruct<A>,
 = <opaque>
 
-// Full name: alloc::string::String::{impl#0}::drop_in_place
-unsafe fn {impl#0}::drop_in_place(@1: *mut String)
+// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
+unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 {
     let _0: (); // return
     let _1: *mut String; // arg #1
@@ -86,14 +86,32 @@ unsafe fn {impl#0}::drop_in_place(@1: *mut String)
     storage_live(drop_arg_3)
     drop_arg_3 = &raw mut ((*_2)).vec
     storage_live(drop_ret_4)
-    drop_ret_4 = {impl#3}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}](move drop_arg_3)
+    drop_ret_4 = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}](move drop_arg_3)
     return
+}
+
+// Full name: alloc::string::String::{impl Destruct for String}
+impl Destruct for String {
+    fn drop_in_place = {impl Destruct for String}::drop_in_place
+    non-dyn-compatible
 }
 
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
 pub fn new() -> String
 = <opaque>
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
+impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<T>,
+    [@TraitClause4]: Destruct<A>,
+{
+    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
+    non-dyn-compatible
+}
 
 // Full name: test_crate::use_string
 fn use_string(@1: String)
@@ -108,7 +126,7 @@ fn use_string(@1: String)
     storage_live(drop_arg_2)
     drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 = {impl#0}::drop_in_place(move drop_arg_2)
+    drop_ret_3 = {impl Destruct for String}::drop_in_place(move drop_arg_2)
     return
 }
 
@@ -127,7 +145,7 @@ fn main()
     storage_live(drop_arg_2)
     drop_arg_2 = &raw mut _s_1
     storage_live(drop_ret_3)
-    drop_ret_3 = {impl#0}::drop_in_place(move drop_arg_2)
+    drop_ret_3 = {impl Destruct for String}::drop_in_place(move drop_arg_2)
     storage_dead(_s_1)
     return
 }

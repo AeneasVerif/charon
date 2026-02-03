@@ -24,11 +24,20 @@ impl PartialEq<u8> for u8 {
     vtable: {impl PartialEq<u8> for u8}::{vtable}
 }
 
-// Full name: core::cmp::impls::{impl#2}::eq
-pub fn {impl#2}::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 &'_1 A, @2: &'_3 &'_0 B) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<&'_0 B> for &'_1 A}::eq
+pub fn {impl PartialEq<&'_0 B> for &'_1 A}::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 &'_1 A, @2: &'_3 &'_0 B) -> bool
 where
     [@TraitClause0]: PartialEq<A, B>,
 = <opaque>
+
+// Full name: core::cmp::impls::{impl PartialEq<&'_0 B> for &'_1 A}
+impl<'_0, '_1, A, B> PartialEq<&'_0 B> for &'_1 A
+where
+    [@TraitClause0]: PartialEq<A, B>,
+{
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'_0, '_1, '_0_1, '_1_1, A, B>[@TraitClause0]
+    vtable: {impl PartialEq<&'_0 B> for &'_1 A}::{vtable}<'_0, '_1, A, B>[@TraitClause0]
+}
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
@@ -124,7 +133,7 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 Enum, @2: &'_1 Enu
                         _15 = &__self_0_13
                         storage_live(_16)
                         _16 = &__arg1_0_14
-                        _0 = {impl#2}::eq<'7, '8, '11, '12, u8, u8>[{impl PartialEq<u8> for u8}](move _15, move _16)
+                        _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'7, '8, '11, '12, u8, u8>[{impl PartialEq<u8> for u8}](move _15, move _16)
                         storage_dead(_16)
                         storage_dead(_15)
                         storage_dead(__arg1_0_14)

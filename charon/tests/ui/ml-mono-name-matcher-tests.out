@@ -1,10 +1,31 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized::<RangeFrom::<usize>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<RangeFrom::<usize>>
+
+// Full name: core::marker::MetaSized::<[bool]>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<[bool]>
+
 // Full name: core::ops::range::RangeFrom::<usize>
 #[lang_item("RangeFrom")]
 pub struct RangeFrom::<usize> {
   start: usize,
 }
+
+// Full name: core::ops::index::Index::<[bool], RangeFrom::<usize>>
+#[lang_item("index")]
+pub trait Index::<[bool], RangeFrom::<usize>>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<[bool]>
+    parent_clause1 : [@TraitClause1]: MetaSized::<RangeFrom::<usize>>
+    fn index<'_0_1> = core::ops::index::Index::index::<[bool], RangeFrom::<usize>><'_0_1>
+    vtable: core::ops::index::Index::{vtable}::<[bool], RangeFrom::<usize>><[bool]>
+}
+
+pub fn core::ops::index::Index::index::<[bool], RangeFrom::<usize>><'_0>(@1: &'_0 [bool], @2: RangeFrom::<usize>) -> &'_0 [bool]
+= <opaque>
 
 // Full name: core::option::Option::<i32>
 #[lang_item("Option")]
@@ -17,9 +38,17 @@ pub enum Option::<i32> {
 pub fn is_some::<i32><'_0>(@1: &'_0 Option::<i32>) -> bool
 = <opaque>
 
-// Full name: core::slice::index::{impl#0}::index::<bool, RangeFrom::<usize>>
-pub fn {impl#0}::index::<bool, RangeFrom::<usize>><'_0>(@1: &'_0 [bool], @2: RangeFrom::<usize>) -> &'_0 [bool]
+// Full name: core::slice::index::{impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>>
+pub fn {impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_0>(@1: &'_0 [bool], @2: RangeFrom::<usize>) -> &'_0 [bool]
 = <opaque>
+
+// Full name: core::slice::index::{impl Index::<[bool], RangeFrom::<usize>>}::<bool, RangeFrom::<usize>>
+impl Index::<[bool], RangeFrom::<usize>> {
+    parent_clause0 = {built_in impl MetaSized::<[bool]>}
+    parent_clause1 = {built_in impl MetaSized::<RangeFrom::<usize>>}
+    fn index<'_0_1> = {impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_0_1>
+    vtable: {impl Index::<[bool], RangeFrom::<usize>>}::{vtable}::<bool, RangeFrom::<usize>>
+}
 
 fn UNIT_METADATA()
 {
@@ -94,7 +123,7 @@ fn foo()
     _8 = &(*slice_3) with_metadata(copy slice_3.metadata)
     storage_live(_9)
     _9 = RangeFrom::<usize> { start: const 1 : usize }
-    _7 = {impl#0}::index::<bool, RangeFrom::<usize>><'6>(move _8, move _9)
+    _7 = {impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'6>(move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     _6 = &(*_7) with_metadata(copy _7.metadata)

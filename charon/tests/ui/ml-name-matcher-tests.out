@@ -24,6 +24,23 @@ pub trait Destruct<Self>
 unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
+// Full name: core::ops::index::Index
+#[lang_item("index")]
+pub trait Index<Self, Idx>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: MetaSized<Idx>
+    parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
+    type Output
+    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
+}
+
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
+where
+    [@TraitClause0]: Index<Self, Idx>,
+= <opaque>
+
 // Full name: core::ops::range::RangeFrom
 #[lang_item("RangeFrom")]
 pub struct RangeFrom<Idx>
@@ -74,13 +91,28 @@ pub trait SliceIndex<Self, T>
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
-// Full name: core::slice::index::{impl#4}::index
-pub fn {impl#4}::index<'_0, T, I>(@1: &'_0 [T], @2: I) -> &'_0 @TraitClause2::Output
+// Full name: core::slice::index::{impl Index<I> for [T]}::index
+pub fn {impl Index<I> for [T]}::index<'_0, T, I>(@1: &'_0 [T], @2: I) -> &'_0 @TraitClause2::Output
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: SliceIndex<I, [T]>,
 = <opaque>
+
+// Full name: core::slice::index::{impl Index<I> for [T]}
+impl<T, I> Index<I> for [T]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: SliceIndex<I, [T]>,
+{
+    parent_clause0 = {built_in impl MetaSized for [T]}
+    parent_clause1 = @TraitClause1::parent_clause0
+    parent_clause2 = @TraitClause2::parent_clause3
+    type Output = @TraitClause2::Output
+    fn index<'_0_1> = {impl Index<I> for [T]}::index<'_0_1, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+    vtable: {impl Index<I> for [T]}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+}
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}
 impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}] {
@@ -315,7 +347,7 @@ fn foo()
     _8 = &(*slice_3) with_metadata(copy slice_3.metadata)
     storage_live(_9)
     _9 = RangeFrom { start: const 1 : usize }
-    _7 = {impl#4}::index<'6, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}<bool>[{built_in impl Sized for bool}]](move _8, move _9)
+    _7 = {impl Index<I> for [T]}::index<'6, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}<bool>[{built_in impl Sized for bool}]](move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     _6 = &(*_7) with_metadata(copy _7.metadata)

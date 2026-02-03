@@ -89,6 +89,23 @@ pub fn MAX() -> usize
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
 
+// Full name: core::ops::index::Index
+#[lang_item("index")]
+pub trait Index<Self, Idx>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: MetaSized<Idx>
+    parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
+    type Output
+    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
+}
+
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
+where
+    [@TraitClause0]: Index<Self, Idx>,
+= <method_without_default_body>
+
 // Full name: core::ops::range::RangeInclusive
 #[lang_item("RangeInclusive")]
 pub struct RangeInclusive<Idx>
@@ -211,8 +228,8 @@ where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <method_without_default_body>
 
-// Full name: core::slice::index::{impl#0}::index
-pub fn {impl#0}::index<'_0, T, I>(@1: &'_0 [T], @2: I) -> &'_0 @TraitClause2::Output
+// Full name: core::slice::index::{impl Index<I> for [T]}::index
+pub fn {impl Index<I> for [T]}::index<'_0, T, I>(@1: &'_0 [T], @2: I) -> &'_0 @TraitClause2::Output
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
@@ -224,6 +241,21 @@ where
 
     _0 = @TraitClause2::index<'3>(move index_2, move self_1)
     return
+}
+
+// Full name: core::slice::index::{impl Index<I> for [T]}
+impl<T, I> Index<I> for [T]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: SliceIndex<I, [T]>,
+{
+    parent_clause0 = {built_in impl MetaSized for [T]}
+    parent_clause1 = @TraitClause1::parent_clause0
+    parent_clause2 = @TraitClause2::parent_clause3
+    type Output = @TraitClause2::Output
+    fn index<'_0_1> = {impl Index<I> for [T]}::index<'_0_1, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+    vtable: {impl Index<I> for [T]}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::slice::index::slice_index_fail
@@ -1003,7 +1035,7 @@ pub fn slice_index_range<'_0>(@1: &'_0 [u8]) -> &'_0 [u8]
     _4 = &(*slice_1) with_metadata(copy slice_1.metadata)
     storage_live(_5)
     _5 = new<usize>[{built_in impl Sized for usize}](const 0 : usize, const 10 : usize)
-    _3 = {impl#0}::index<'2, u8, RangeInclusive<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for u8}, {built_in impl Sized for RangeInclusive<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}<u8>[{built_in impl Sized for u8}]](move _4, move _5)
+    _3 = {impl Index<I> for [T]}::index<'2, u8, RangeInclusive<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for u8}, {built_in impl Sized for RangeInclusive<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}<u8>[{built_in impl Sized for u8}]](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)
