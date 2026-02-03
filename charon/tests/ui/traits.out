@@ -184,16 +184,6 @@ where
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for bool}::ret_true
-pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
-{
-    let _0: bool; // return
-    let self_1: &'0 bool; // arg #1
-
-    _0 = const true
-    return
-}
-
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
 pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
 {
@@ -201,6 +191,16 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
     let self_1: &'0 bool; // arg #1
 
     _0 = copy (*self_1)
+    return
+}
+
+// Full name: test_crate::{impl BoolTrait for bool}::ret_true
+pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
+{
+    let _0: bool; // return
+    let self_1: &'0 bool; // arg #1
+
+    _0 = const true
     return
 }
 
@@ -239,18 +239,6 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     return
 }
 
-// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true
-pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: bool; // return
-    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
-
-    _0 = const true
-    return
-}
-
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::get_bool
 pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
 where
@@ -268,6 +256,18 @@ where
         },
     }
     _0 = const false
+    return
+}
+
+// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true
+pub fn {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0, T>(@1: &'_0 Option<T>[@TraitClause0]) -> bool
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let _0: bool; // return
+    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
+
+    _0 = const true
     return
 }
 
@@ -812,18 +812,6 @@ where
     [@TraitClause0]: WithConstTy<Self, LEN>,
 = <method_without_default_body>
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
-pub fn LEN1() -> usize
-{
-    let _0: usize; // return
-
-    _0 = const 12 : usize
-    return
-}
-
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
-pub const LEN1: usize = LEN1()
-
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::f
 pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut u64, @2: &'_1 [u8; 32 : usize])
 {
@@ -835,6 +823,18 @@ pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut u64, @2
     _0 = ()
     return
 }
+
+// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
+pub fn LEN1() -> usize
+{
+    let _0: usize; // return
+
+    _0 = const 12 : usize
+    return
+}
+
+// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
+pub const LEN1: usize = LEN1()
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}
 impl WithConstTy<32 : usize> for bool {

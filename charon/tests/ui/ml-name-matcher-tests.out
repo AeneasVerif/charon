@@ -150,26 +150,8 @@ where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get
-pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut
-pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked
-pub unsafe fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: *const [T]) -> *const [T]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: *mut [T]) -> *mut [T]
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut
+pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -180,8 +162,26 @@ where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut
-pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> &'_0 mut [T]
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: *mut [T]) -> *mut [T]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked
+pub unsafe fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: *const [T]) -> *const [T]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut
+pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get
+pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -358,19 +358,19 @@ fn foo()
     return
 }
 
-fn test_crate::funs_with_disambiguator::f() -> u32
-{
-    let _0: u32; // return
-
-    _0 = const 0 : u32
-    return
-}
-
 fn test_crate::funs_with_disambiguator::f#1() -> u32
 {
     let _0: u32; // return
 
     _0 = const 1 : u32
+    return
+}
+
+fn test_crate::funs_with_disambiguator::f() -> u32
+{
+    let _0: u32; // return
+
+    _0 = const 0 : u32
     return
 }
 

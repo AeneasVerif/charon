@@ -6,25 +6,9 @@ use itertools::Itertools;
 use petgraph::algo::scc::tarjan_scc;
 use petgraph::graphmap::NodeTrait;
 use petgraph::prelude::DiGraphMap;
+use petgraph::visit::{DfsPostOrder, Walker};
 
 use crate::ast::*;
-
-/// Explore a DAG in a sort-of post-order. This isn't exactly post-order but almost. If the
-/// graph has a loop, this won't terminate. We should probably do a real postorder but that would
-/// change the chosen ordering.
-fn weird_dag_postorder<Id: NodeTrait>(
-    graph: &DiGraphMap<Id, ()>,
-    visited: &mut SeqHashSet<Id>,
-    node: Id,
-) {
-    if visited.contains(&node) {
-        return;
-    }
-    for neighbor in graph.neighbors(node) {
-        weird_dag_postorder(graph, visited, neighbor)
-    }
-    visited.insert(node);
-}
 
 /// Compute the SCCs (Strongly Connected Components) of a set of identifiers, where the order of
 /// the SCCs and the order of the identifiers inside the SCCs attempt to respect as much as
@@ -92,19 +76,16 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
             .sorted_by_key(&sort_by)
             .map(|neighbor| *id_to_scc.get(&neighbor).unwrap())
         {
-            if neighbor_scc_id == scc_id {
-                // Can't have a self loop because `weird_dag_postorder` loops on loops.
-                continue;
-            } else {
-                scc_graph.add_edge(scc_id, neighbor_scc_id, ());
-            }
+            scc_graph.add_edge(scc_id, neighbor_scc_id, ());
         }
     }
 
     // Reorder the SCCs among themselves by a post-order visit of the graph.
     let mut reordered_sccs_ids: SeqHashSet<SccId> = SeqHashSet::new();
     for scc_id in scc_graph.nodes() {
-        weird_dag_postorder(&scc_graph, &mut reordered_sccs_ids, scc_id);
+        for scc_id in DfsPostOrder::new(&scc_graph, scc_id).iter(&scc_graph) {
+            reordered_sccs_ids.insert(scc_id);
+        }
     }
 
     // Output the fully reordered SCCs.

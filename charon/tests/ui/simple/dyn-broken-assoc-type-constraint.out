@@ -72,22 +72,6 @@ where
     [@TraitClause0]: Broken<Self>,
 = <method_without_default_body>
 
-// Full name: test_crate::{impl Broken for T}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Broken<Assoc = ()>))
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Broken<Assoc = ()> + '0); // arg #1
-    let target_self_2: *mut T; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Broken<Assoc = ()> + '1), *mut T>(move dyn_self_1)
-    drop[{built_in impl Destruct for T}] (*target_self_2)
-    return
-}
-
 // Full name: test_crate::{impl Broken for T}::broken
 pub fn {impl Broken for T}::broken<'_0, T>(@1: &'_0 T)
 where
@@ -116,6 +100,22 @@ where
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Broken + '1), &'_0 T>(move _1)
     _0 = {impl Broken for T}::broken<'_0, T>[@TraitClause0, @TraitClause1](move _2)
+    return
+}
+
+// Full name: test_crate::{impl Broken for T}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Broken<Assoc = ()>))
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Broken<Assoc = ()> + '0); // arg #1
+    let target_self_2: *mut T; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Broken<Assoc = ()> + '1), *mut T>(move dyn_self_1)
+    drop[{built_in impl Destruct for T}] (*target_self_2)
     return
 }
 

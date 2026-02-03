@@ -68,15 +68,15 @@ pub trait Destruct::<Global>
     vtable: core::marker::Destruct::{vtable}::<Global>
 }
 
-// Full name: alloc::alloc::Global::{impl Destruct::<Global>}::drop_in_place
-unsafe fn {impl Destruct::<Global>}::drop_in_place(@1: *mut Global)
-= <opaque>
+fn UNIT_METADATA()
+{
+    let _0: (); // return
 
-// Full name: alloc::alloc::Global::{impl Destruct::<Global>}
-impl Destruct::<Global> {
-    fn drop_in_place = {impl Destruct::<Global>}::drop_in_place
-    non-dyn-compatible
+    _0 = ()
+    return
 }
+
+const UNIT_METADATA: () = @Fun0()
 
 // Full name: alloc::string::String::{impl Destruct::<String>}::drop_in_place
 unsafe fn {impl Destruct::<String>}::drop_in_place(@1: *mut String)
@@ -87,16 +87,6 @@ impl Destruct::<String> {
     fn drop_in_place = {impl Destruct::<String>}::drop_in_place
     non-dyn-compatible
 }
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::<slice>::{impl Destruct::<[String]>}::drop_in_place::<String>
 unsafe fn {impl Destruct::<[String]>}::drop_in_place::<String>(@1: *mut [String])
@@ -141,6 +131,16 @@ unsafe fn {impl Destruct::<[String]>}::drop_in_place::<String>(@1: *mut [String]
 // Full name: test_crate::<slice>::{impl Destruct::<[String]>}::<String>
 impl Destruct::<[String]> {
     fn drop_in_place = {impl Destruct::<[String]>}::drop_in_place::<String>
+    non-dyn-compatible
+}
+
+// Full name: alloc::alloc::Global::{impl Destruct::<Global>}::drop_in_place
+unsafe fn {impl Destruct::<Global>}::drop_in_place(@1: *mut Global)
+= <opaque>
+
+// Full name: alloc::alloc::Global::{impl Destruct::<Global>}
+impl Destruct::<Global> {
+    fn drop_in_place = {impl Destruct::<Global>}::drop_in_place
     non-dyn-compatible
 }
 

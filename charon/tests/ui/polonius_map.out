@@ -75,6 +75,14 @@ impl Eq for u32 {
     non-dyn-compatible
 }
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {
@@ -82,14 +90,6 @@ pub trait Hasher<Self>
     fn finish<'_0_1> = core::hash::Hasher::finish<'_0_1, Self>[Self]
     fn write<'_0_1, '_1_1> = core::hash::Hasher::write<'_0_1, '_1_1, Self>[Self]
     vtable: core::hash::Hasher::{vtable}
-}
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
 }
 
 // Full name: core::hash::Hash
@@ -252,16 +252,12 @@ pub opaque type RandomState
 // Full name: std::hash::random::DefaultHasher
 pub opaque type DefaultHasher
 
-// Full name: std::hash::random::{impl BuildHasher for RandomState}::build_hasher
-pub fn {impl BuildHasher for RandomState}::build_hasher<'_0>(@1: &'_0 RandomState) -> DefaultHasher
+// Full name: std::hash::random::{impl Hasher for DefaultHasher}::finish
+pub fn {impl Hasher for DefaultHasher}::finish<'_0>(@1: &'_0 DefaultHasher) -> u64
 = <opaque>
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}::write
 pub fn {impl Hasher for DefaultHasher}::write<'_0, '_1>(@1: &'_0 mut DefaultHasher, @2: &'_1 [u8])
-= <opaque>
-
-// Full name: std::hash::random::{impl Hasher for DefaultHasher}::finish
-pub fn {impl Hasher for DefaultHasher}::finish<'_0>(@1: &'_0 DefaultHasher) -> u64
 = <opaque>
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}
@@ -271,6 +267,10 @@ impl Hasher for DefaultHasher {
     fn write<'_0_1, '_1_1> = {impl Hasher for DefaultHasher}::write<'_0_1, '_1_1>
     vtable: {impl Hasher for DefaultHasher}::{vtable}
 }
+
+// Full name: std::hash::random::{impl BuildHasher for RandomState}::build_hasher
+pub fn {impl BuildHasher for RandomState}::build_hasher<'_0>(@1: &'_0 RandomState) -> DefaultHasher
+= <opaque>
 
 // Full name: std::hash::random::{impl BuildHasher for RandomState}
 impl BuildHasher for RandomState {

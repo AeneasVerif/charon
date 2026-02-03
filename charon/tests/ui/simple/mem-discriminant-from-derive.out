@@ -140,9 +140,13 @@ where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
 
-// Full name: core::marker::Send
-#[lang_item("Send")]
-pub trait Send<Self>
+// Full name: core::marker::Unpin
+#[lang_item("unpin")]
+pub trait Unpin<Self>
+
+// Full name: core::marker::Sync
+#[lang_item("sync")]
+pub trait Sync<Self>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -153,13 +157,9 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Sync
-#[lang_item("sync")]
-pub trait Sync<Self>
-
-// Full name: core::marker::Unpin
-#[lang_item("unpin")]
-pub trait Unpin<Self>
+// Full name: core::marker::Send
+#[lang_item("Send")]
+pub trait Send<Self>
 
 // Full name: core::marker::DiscriminantKind
 #[lang_item("discriminant_kind")]

@@ -162,16 +162,16 @@ where
     [@TraitClause0]: Step<Self>,
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for usize}::steps_between
-pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> (usize, Option<usize>)
+// Full name: core::iter::range::{impl Step for usize}::backward_checked
+pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::forward_checked
 pub fn {impl Step for usize}::forward_checked(@1: usize, @2: usize) -> Option<usize>
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for usize}::backward_checked
-pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>
+// Full name: core::iter::range::{impl Step for usize}::steps_between
+pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> (usize, Option<usize>)
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}
@@ -191,12 +191,6 @@ pub struct Range<Idx> {
   end: Idx,
 }
 
-// Full name: core::iter::range::{impl Iterator<A> for Range<A>}::next
-pub fn {impl Iterator<A> for Range<A>}::next<'_0, A>(@1: &'_0 mut Range<A>) -> Option<A>
-where
-    [@TraitClause0]: Step<A>,
-= <opaque>
-
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item("iterator")]
 pub trait Iterator<Self, Self_Item>
@@ -204,6 +198,12 @@ pub trait Iterator<Self, Self_Item>
     fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self, Self_Item>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self_Item>
 }
+
+// Full name: core::iter::range::{impl Iterator<A> for Range<A>}::next
+pub fn {impl Iterator<A> for Range<A>}::next<'_0, A>(@1: &'_0 mut Range<A>) -> Option<A>
+where
+    [@TraitClause0]: Step<A>,
+= <opaque>
 
 // Full name: core::iter::range::{impl Iterator<A> for Range<A>}
 impl<A> Iterator<A> for Range<A>

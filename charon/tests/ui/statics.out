@@ -192,17 +192,6 @@ fn mut_static()
 // Full name: test_crate::non_copy_static::Foo
 struct Foo {}
 
-// Full name: test_crate::non_copy_static::{Foo}::method
-fn method<'_0>(@1: &'_0 Foo)
-{
-    let _0: (); // return
-    let self_1: &'0 Foo; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
 // Full name: test_crate::non_copy_static::FOO
 fn FOO() -> Foo
 {
@@ -214,6 +203,17 @@ fn FOO() -> Foo
 
 // Full name: test_crate::non_copy_static::FOO
 static FOO: Foo = FOO()
+
+// Full name: test_crate::non_copy_static::{Foo}::method
+fn method<'_0>(@1: &'_0 Foo)
+{
+    let _0: (); // return
+    let self_1: &'0 Foo; // arg #1
+
+    _0 = ()
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::non_copy_static
 fn non_copy_static()

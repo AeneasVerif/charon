@@ -123,9 +123,13 @@ where
     [@TraitClause0]: Hasher<Self>,
 = <opaque>
 
-// Full name: core::marker::Send
-#[lang_item("Send")]
-pub trait Send<Self>
+// Full name: core::marker::Unpin
+#[lang_item("unpin")]
+pub trait Unpin<Self>
+
+// Full name: core::marker::Sync
+#[lang_item("sync")]
+pub trait Sync<Self>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -136,13 +140,9 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Sync
-#[lang_item("sync")]
-pub trait Sync<Self>
-
-// Full name: core::marker::Unpin
-#[lang_item("unpin")]
-pub trait Unpin<Self>
+// Full name: core::marker::Send
+#[lang_item("Send")]
+pub trait Send<Self>
 
 // Full name: core::marker::DiscriminantKind
 #[lang_item("discriminant_kind")]
@@ -215,10 +215,15 @@ enum Foo {
   B,
 }
 
-// Full name: test_crate::{impl StructuralPartialEq for Foo}
-impl StructuralPartialEq for Foo {
-    parent_clause0 = {built_in impl MetaSized for Foo}
-    vtable: {impl StructuralPartialEq for Foo}::{vtable}
+// Full name: test_crate::{impl Eq for Foo}::assert_receiver_is_total_eq
+pub fn {impl Eq for Foo}::assert_receiver_is_total_eq<'_0>(@1: &'_0 Foo)
+{
+    let _0: (); // return
+    let self_1: &'0 Foo; // arg #1
+
+    _0 = ()
+    _0 = ()
+    return
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
@@ -262,22 +267,17 @@ impl PartialEq<Foo> for Foo {
     vtable: {impl PartialEq<Foo> for Foo}::{vtable}
 }
 
-// Full name: test_crate::{impl Eq for Foo}::assert_receiver_is_total_eq
-pub fn {impl Eq for Foo}::assert_receiver_is_total_eq<'_0>(@1: &'_0 Foo)
-{
-    let _0: (); // return
-    let self_1: &'0 Foo; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
 // Full name: test_crate::{impl Eq for Foo}
 impl Eq for Foo {
     parent_clause0 = {impl PartialEq<Foo> for Foo}
     fn assert_receiver_is_total_eq<'_0_1> = {impl Eq for Foo}::assert_receiver_is_total_eq<'_0_1>
     non-dyn-compatible
+}
+
+// Full name: test_crate::{impl StructuralPartialEq for Foo}
+impl StructuralPartialEq for Foo {
+    parent_clause0 = {built_in impl MetaSized for Foo}
+    vtable: {impl StructuralPartialEq for Foo}::{vtable}
 }
 
 // Full name: test_crate::{impl ConstParamTy_ for Foo}

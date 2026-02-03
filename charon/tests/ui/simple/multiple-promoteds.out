@@ -1,9 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::ops::arith::{impl Add<&'_0 u32> for &'_1 u32}::add
-pub fn {impl Add<&'_0 u32> for &'_1 u32}::add<'_0, '_1>(@1: &'_1 u32, @2: &'_0 u32) -> u32
-= <opaque>
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -27,6 +23,10 @@ pub trait Add<Self, Rhs>
     fn add = core::ops::arith::Add::add<Self, Rhs>[Self]
     vtable: core::ops::arith::Add::{vtable}<Rhs, Self::Output>
 }
+
+// Full name: core::ops::arith::{impl Add<&'_0 u32> for &'_1 u32}::add
+pub fn {impl Add<&'_0 u32> for &'_1 u32}::add<'_0, '_1>(@1: &'_1 u32, @2: &'_0 u32) -> u32
+= <opaque>
 
 // Full name: core::ops::arith::{impl Add<&'_0 u32> for &'_1 u32}
 impl<'_0, '_1> Add<&'_0 u32> for &'_1 u32 {

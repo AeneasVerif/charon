@@ -27,13 +27,6 @@ where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::cell::Ref
-#[lang_item("RefCellRef")]
-pub opaque type Ref<'b, T>
-where
-    [@TraitClause0]: MetaSized<T>,
-    T : 'b,
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -44,6 +37,13 @@ where
   Ok(T),
   Err(E),
 }
+
+// Full name: core::cell::Ref
+#[lang_item("RefCellRef")]
+pub opaque type Ref<'b, T>
+where
+    [@TraitClause0]: MetaSized<T>,
+    T : 'b,
 
 // Full name: core::cell::{RefCell<T>[@TraitClause0]}::try_borrow
 pub fn try_borrow<'_0, T>(@1: &'_0 RefCell<T>[@TraitClause0]) -> Result<Ref<'_0, T>[@TraitClause0], BorrowError>[{built_in impl Sized for Ref<'_0, T>[@TraitClause0]}, {built_in impl Sized for BorrowError}]

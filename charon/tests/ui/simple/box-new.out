@@ -19,10 +19,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub opaque type NonNull<T>
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -33,6 +29,10 @@ where
   Ok(T),
   Err(E),
 }
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub opaque type NonNull<T>
 
 // Full name: core::alloc::Allocator
 pub trait Allocator<Self>
@@ -68,12 +68,12 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
-= <opaque>
-
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
 pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout)
+= <opaque>
+
+// Full name: alloc::alloc::{impl Allocator for Global}::allocate
+pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}

@@ -132,23 +132,6 @@ where
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place<F, Clause1_Repr>(@1: *mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: PrimeField<F, Clause1_Repr>,
-= <missing>
-
-// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
-impl<F, Clause1_Repr> Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: PrimeField<F, Clause1_Repr>,
-{
-    fn drop_in_place = {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call
 fn {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_0, F, Clause1_Repr>(@1: &'_0 closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1], @2: (()))
 where
@@ -183,6 +166,23 @@ where
     _3 = &(*state_1)
     _0 = {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move args_2)
     return
+}
+
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place<F, Clause1_Repr>(@1: *mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: PrimeField<F, Clause1_Repr>,
+= <missing>
+
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
+impl<F, Clause1_Repr> Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: PrimeField<F, Clause1_Repr>,
+{
+    fn drop_in_place = {impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::drop_in_place<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once

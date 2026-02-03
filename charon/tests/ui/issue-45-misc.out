@@ -4,20 +4,20 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
+}
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnOnce
@@ -228,16 +228,16 @@ where
     [@TraitClause0]: Step<Self>,
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for u8}::steps_between
-pub fn {impl Step for u8}::steps_between<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+// Full name: core::iter::range::{impl Step for u8}::backward_checked
+pub fn {impl Step for u8}::backward_checked(@1: u8, @2: usize) -> Option<u8>[{built_in impl Sized for u8}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}::forward_checked
 pub fn {impl Step for u8}::forward_checked(@1: u8, @2: usize) -> Option<u8>[{built_in impl Sized for u8}]
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for u8}::backward_checked
-pub fn {impl Step for u8}::backward_checked(@1: u8, @2: usize) -> Option<u8>[{built_in impl Sized for u8}]
+// Full name: core::iter::range::{impl Step for u8}::steps_between
+pub fn {impl Step for u8}::steps_between<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}
@@ -261,13 +261,6 @@ where
   end: Idx,
 }
 
-// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
-pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut Range<A>[@TraitClause0]) -> Option<A>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Step<A>,
-= <opaque>
-
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item("iterator")]
 pub trait Iterator<Self>
@@ -278,6 +271,13 @@ pub trait Iterator<Self>
     fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
+
+// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
+pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut Range<A>[@TraitClause0]) -> Option<A>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Step<A>,
+= <opaque>
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}
 impl<A> Iterator for Range<A>[@TraitClause0]
@@ -566,16 +566,6 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::map::closure
 struct closure {}
 
-// Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
-= <missing>
-
-// Full name: test_crate::map::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: test_crate::map::{impl FnMut<(i32)> for closure}::call_mut
 fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32)) -> i32
 {
@@ -588,6 +578,16 @@ fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32
     v_3 = move tupled_args_2.0
     _0 = copy v_3
     return
+}
+
+// Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
+unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+= <missing>
+
+// Full name: test_crate::map::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
 }
 
 // Full name: test_crate::map::{impl FnOnce<(i32)> for closure}::call_once

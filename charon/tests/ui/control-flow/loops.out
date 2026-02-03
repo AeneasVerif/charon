@@ -246,16 +246,16 @@ where
     [@TraitClause0]: Step<Self>,
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for usize}::steps_between
-pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+// Full name: core::iter::range::{impl Step for usize}::backward_checked
+pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::forward_checked
 pub fn {impl Step for usize}::forward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for usize}::backward_checked
-pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
+// Full name: core::iter::range::{impl Step for usize}::steps_between
+pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}
@@ -269,16 +269,16 @@ impl Step for usize {
     non-dyn-compatible
 }
 
-// Full name: core::iter::range::{impl Step for u32}::steps_between
-pub fn {impl Step for u32}::steps_between<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+// Full name: core::iter::range::{impl Step for u32}::backward_checked
+pub fn {impl Step for u32}::backward_checked(@1: u32, @2: usize) -> Option<u32>[{built_in impl Sized for u32}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u32}::forward_checked
 pub fn {impl Step for u32}::forward_checked(@1: u32, @2: usize) -> Option<u32>[{built_in impl Sized for u32}]
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for u32}::backward_checked
-pub fn {impl Step for u32}::backward_checked(@1: u32, @2: usize) -> Option<u32>[{built_in impl Sized for u32}]
+// Full name: core::iter::range::{impl Step for u32}::steps_between
+pub fn {impl Step for u32}::steps_between<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u32}
@@ -292,16 +292,16 @@ impl Step for u32 {
     non-dyn-compatible
 }
 
-// Full name: core::iter::range::{impl Step for i32}::steps_between
-pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+// Full name: core::iter::range::{impl Step for i32}::backward_checked
+pub fn {impl Step for i32}::backward_checked(@1: i32, @2: usize) -> Option<i32>[{built_in impl Sized for i32}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::forward_checked
 pub fn {impl Step for i32}::forward_checked(@1: i32, @2: usize) -> Option<i32>[{built_in impl Sized for i32}]
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for i32}::backward_checked
-pub fn {impl Step for i32}::backward_checked(@1: i32, @2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+// Full name: core::iter::range::{impl Step for i32}::steps_between
+pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}
@@ -325,13 +325,6 @@ where
   end: Idx,
 }
 
-// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
-pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut Range<A>[@TraitClause0]) -> Option<A>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Step<A>,
-= <opaque>
-
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item("iterator")]
 pub trait Iterator<Self>
@@ -342,6 +335,13 @@ pub trait Iterator<Self>
     fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
+
+// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
+pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(@1: &'_0 mut Range<A>[@TraitClause0]) -> Option<A>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Step<A>,
+= <opaque>
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}
 impl<A> Iterator for Range<A>[@TraitClause0]
@@ -734,26 +734,8 @@ where
     [@TraitClause0]: SliceIndex<Self, T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
-pub fn {impl SliceIndex<[T]> for usize}::get<'_0, T>(@1: usize, @2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_mut
-pub fn {impl SliceIndex<[T]> for usize}::get_mut<'_0, T>(@1: usize, @2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
-pub unsafe fn {impl SliceIndex<[T]> for usize}::get_unchecked<T>(@1: usize, @2: *const [T]) -> *const T
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<[T]> for usize}::get_unchecked_mut<T>(@1: usize, @2: *mut [T]) -> *mut T
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn {impl SliceIndex<[T]> for usize}::index_mut<'_0, T>(@1: usize, @2: &'_0 mut [T]) -> &'_0 mut T
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -764,8 +746,26 @@ where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
-pub fn {impl SliceIndex<[T]> for usize}::index_mut<'_0, T>(@1: usize, @2: &'_0 mut [T]) -> &'_0 mut T
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<[T]> for usize}::get_unchecked_mut<T>(@1: usize, @2: *mut [T]) -> *mut T
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
+pub unsafe fn {impl SliceIndex<[T]> for usize}::get_unchecked<T>(@1: usize, @2: *const [T]) -> *const T
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_mut
+pub fn {impl SliceIndex<[T]> for usize}::get_mut<'_0, T>(@1: usize, @2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
+pub fn {impl SliceIndex<[T]> for usize}::get<'_0, T>(@1: usize, @2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>

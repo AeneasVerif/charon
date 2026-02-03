@@ -110,16 +110,6 @@ fn main()
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
-= <missing>
-
-// Full name: test_crate::main::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: test_crate::main::{impl Fn<()> for closure}::call
 fn {impl Fn<()> for closure}::call<'_0>(@1: &'_0 closure, @2: ())
 {
@@ -158,6 +148,16 @@ fn {impl FnMut<()> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: ())
     _3 = &(*state_1)
     _0 = {impl Fn<()> for closure}::call<'2>(move _3, move args_2)
     return
+}
+
+// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
+unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+= <missing>
+
+// Full name: test_crate::main::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnOnce<()> for closure}::call_once

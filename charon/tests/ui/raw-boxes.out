@@ -80,21 +80,10 @@ pub struct Layout {
   align: Alignment,
 }
 
-// Full name: core::alloc::layout::{Layout}::max_size_for_align
-fn max_size_for_align(@1: Alignment) -> usize
-{
-    let _0: usize; // return
-    let align_1: Alignment; // arg #1
-    let _2: usize; // anonymous local
-    let _3: AlignmentEnum; // anonymous local
-
-    storage_live(_3)
-    storage_live(_2)
-    _3 = copy (align_1).0
-    _2 = @discriminant(_3)
-    _0 = const 9223372036854775808 : usize ub.- move _2
-    storage_dead(_2)
-    return
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub struct NonNull<T> {
+  pointer: *const T,
 }
 
 // Full name: core::marker::MetaSized
@@ -109,112 +98,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
-}
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::clone::Clone
-#[lang_item("clone")]
-pub trait Clone<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item("copy")]
-pub trait Copy<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
-    non-dyn-compatible
-}
-
-// Full name: core::intrinsics::ctpop
-pub fn ctpop<T>(@1: T) -> u32
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
-{
-    let _0: u32; // return
-    let x_1: T; // arg #1
-
-    undefined_behavior
-}
-
-// Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
-{
-    let _0: usize; // return
-    let self_1: &'0 usize; // arg #1
-
-    _0 = copy (*self_1)
-    return
-}
-
-// Full name: core::clone::impls::{impl Clone for usize}::clone_from
-pub fn {impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut usize, @2: &'_1 usize)
-where
-    [@TraitClause0]: Destruct<usize>,
-{
-    let _0: (); // return
-    let self_1: &'0 mut usize; // arg #1
-    let source_2: &'1 usize; // arg #2
-    let _3: usize; // anonymous local
-
-    _0 = ()
-    storage_live(_3)
-    _3 = {impl Clone for usize}::clone<'3>(move source_2)
-    drop[@TraitClause0] (*self_1)
-    (*self_1) = move _3
-    storage_dead(_3)
-    return
-}
-
-// Full name: core::clone::impls::{impl Clone for usize}
-impl Clone for usize {
-    parent_clause0 = {built_in impl Sized for usize}
-    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<usize>> = {impl Clone for usize}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for usize}
-impl Copy for usize {
-    parent_clause0 = {built_in impl MetaSized for usize}
-    parent_clause1 = {impl Clone for usize}
-    non-dyn-compatible
-}
-
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
-pub struct PhantomData<T> {}
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub struct NonNull<T> {
-  pointer: *const T,
-}
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -225,6 +108,13 @@ where
   Ok(T),
   Err(E),
 }
+
+// Full name: core::marker::PhantomData
+#[lang_item("phantom_data")]
+pub struct PhantomData<T> {}
+
+// Full name: core::fmt::Error
+pub struct Error {}
 
 // Full name: core::fmt::rt::ArgumentType
 enum ArgumentType<'a> {
@@ -274,6 +164,89 @@ pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
     storage_dead(_5)
     storage_dead(_4)
     _0 = compiletime<'2>(move _3.0, move _3.1)
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item("copy")]
+pub trait Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
+{
+    let _0: usize; // return
+    let self_1: &'0 usize; // arg #1
+
+    _0 = copy (*self_1)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone_from
+pub fn {impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut usize, @2: &'_1 usize)
+where
+    [@TraitClause0]: Destruct<usize>,
+{
+    let _0: (); // return
+    let self_1: &'0 mut usize; // arg #1
+    let source_2: &'1 usize; // arg #2
+    let _3: usize; // anonymous local
+
+    _0 = ()
+    storage_live(_3)
+    _3 = {impl Clone for usize}::clone<'3>(move source_2)
+    drop[@TraitClause0] (*self_1)
+    (*self_1) = move _3
+    storage_dead(_3)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl Clone for usize {
+    parent_clause0 = {built_in impl Sized for usize}
+    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<usize>> = {impl Clone for usize}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for usize}
+impl Copy for usize {
+    parent_clause0 = {built_in impl MetaSized for usize}
+    parent_clause1 = {impl Clone for usize}
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::ctpop
+pub fn ctpop<T>(@1: T) -> u32
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
+{
+    let _0: u32; // return
+    let x_1: T; // arg #1
+
+    undefined_behavior
 }
 
 fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usize)
@@ -337,6 +310,16 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     return
 }
 
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
 pub fn core::ptr::alignment::{Alignment}::new(@1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
 {
     let _0: Option<Alignment>[{built_in impl Sized for Alignment}]; // return
@@ -372,6 +355,23 @@ pub fn core::ptr::alignment::{Alignment}::new(@1: usize) -> Option<Alignment>[{b
     _2 = transmute<usize, Alignment>(copy align_1)
     storage_dead(_5)
     _0 = Option::Some { 0: move _2 }
+    storage_dead(_2)
+    return
+}
+
+// Full name: core::alloc::layout::{Layout}::max_size_for_align
+fn max_size_for_align(@1: Alignment) -> usize
+{
+    let _0: usize; // return
+    let align_1: Alignment; // arg #1
+    let _2: usize; // anonymous local
+    let _3: AlignmentEnum; // anonymous local
+
+    storage_live(_3)
+    storage_live(_2)
+    _3 = copy (align_1).0
+    _2 = @discriminant(_3)
+    _0 = const 9223372036854775808 : usize ub.- move _2
     storage_dead(_2)
     return
 }
@@ -538,228 +538,6 @@ where
     [@TraitClause0]: Allocator<Self>,
 = <method_without_default_body>
 
-// Full name: core::convert::Infallible
-pub enum Infallible {
-}
-
-// Full name: core::intrinsics::write_bytes
-pub unsafe fn write_bytes<T>(@1: *mut T, @2: u8, @3: usize)
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: (); // return
-    let dst_1: *mut T; // arg #1
-    let val_2: u8; // arg #2
-    let count_3: usize; // arg #3
-
-    _0 = ()
-    undefined_behavior
-}
-
-// Full name: core::mem::SizedTypeProperties
-pub trait SizedTypeProperties<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    const SIZE : usize
-    const ALIGN : usize
-    const IS_ZST : bool
-    const LAYOUT : Layout
-    const MAX_SLICE_LEN : usize
-    non-dyn-compatible
-}
-
-// Full name: core::intrinsics::size_of
-pub fn size_of<T>() -> usize
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    undefined_behavior
-}
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub fn SIZE<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: usize; // return
-
-    _0 = size_of<Self>[@TraitClause0::parent_clause0]()
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub const SIZE<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = SIZE()
-
-// Full name: core::intrinsics::align_of
-pub fn align_of<T>() -> usize
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    undefined_behavior
-}
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub fn ALIGN<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: usize; // return
-
-    _0 = align_of<Self>[@TraitClause0::parent_clause0]()
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub const ALIGN<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = ALIGN()
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub fn IS_ZST<Self>() -> bool
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: bool; // return
-
-    _0 = const @TraitClause0::SIZE == const 0 : usize
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub const IS_ZST<Self>: bool
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = IS_ZST()
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub fn LAYOUT<Self>() -> Layout
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: Layout; // return
-
-    _0 = from_size_align_unchecked(const @TraitClause0::SIZE, const @TraitClause0::ALIGN)
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub const LAYOUT<Self>: Layout
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = LAYOUT()
-
-pub fn core::num::{usize}::MAX() -> usize
-{
-    let _0: usize; // return
-
-    _0 = ~(const 0 : usize)
-    return
-}
-
-pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
-
-pub fn core::num::{isize}::MAX() -> isize
-{
-    let _0: isize; // return
-    let _1: usize; // anonymous local
-    let _2: u32; // anonymous local
-    let _3: bool; // anonymous local
-
-    storage_live(_2)
-    storage_live(_3)
-    storage_live(_1)
-    _2 = cast<i32, u32>(const 1 : i32)
-    _3 = move _2 < const 64 : u32
-    assert(move _3 == true)
-    _1 = copy core::num::{usize}::MAX wrap.>> const 1 : i32
-    _0 = cast<usize, isize>(move _1)
-    storage_dead(_1)
-    return
-}
-
-pub const core::num::{isize}::MAX: isize = core::num::{isize}::MAX()
-
-// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
-pub fn MAX_SLICE_LEN<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: usize; // return
-    let _1: usize; // anonymous local
-    let n_2: usize; // local
-    let _3: usize; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: bool; // anonymous local
-
-    storage_live(_5)
-    storage_live(_1)
-    _1 = const @TraitClause0::SIZE
-    switch copy _1 {
-        0 : usize => {
-            _0 = copy core::num::{usize}::MAX
-        },
-        _ => {
-            storage_live(n_2)
-            n_2 = copy _1
-            storage_live(_3)
-            _3 = cast<isize, usize>(copy core::num::{isize}::MAX)
-            storage_live(_4)
-            _4 = copy n_2
-            _5 = copy _4 == const 0 : usize
-            assert(move _5 == false)
-            _0 = move _3 ub./ move _4
-            storage_dead(_4)
-            storage_dead(_3)
-            storage_dead(n_2)
-        },
-    }
-    storage_dead(_1)
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
-pub const MAX_SLICE_LEN<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = MAX_SLICE_LEN()
-
-// Full name: core::mem::{impl SizedTypeProperties for T}
-impl<T> SizedTypeProperties for T
-where
-    [@TraitClause0]: Sized<T>,
-{
-    parent_clause0 = @TraitClause0
-    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    non-dyn-compatible
-}
-
-// Full name: core::ops::control_flow::ControlFlow
-#[lang_item("ControlFlow")]
-pub enum ControlFlow<B, C>
-where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<C>,
-{
-  Continue(C),
-  Break(B),
-}
-
 // Full name: core::ptr::const_ptr::{*const T}::is_aligned_to
 pub fn is_aligned_to<T>(@1: *const T, @2: usize) -> bool
 {
@@ -919,6 +697,228 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     _6 = panic_nounwind_fmt<'6>(move _7, const false)
 }
 
+// Full name: core::ops::control_flow::ControlFlow
+#[lang_item("ControlFlow")]
+pub enum ControlFlow<B, C>
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
+{
+  Continue(C),
+  Break(B),
+}
+
+pub fn core::num::{usize}::MAX() -> usize
+{
+    let _0: usize; // return
+
+    _0 = ~(const 0 : usize)
+    return
+}
+
+pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
+
+pub fn core::num::{isize}::MAX() -> isize
+{
+    let _0: isize; // return
+    let _1: usize; // anonymous local
+    let _2: u32; // anonymous local
+    let _3: bool; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_1)
+    _2 = cast<i32, u32>(const 1 : i32)
+    _3 = move _2 < const 64 : u32
+    assert(move _3 == true)
+    _1 = copy core::num::{usize}::MAX wrap.>> const 1 : i32
+    _0 = cast<usize, isize>(move _1)
+    storage_dead(_1)
+    return
+}
+
+pub const core::num::{isize}::MAX: isize = core::num::{isize}::MAX()
+
+// Full name: core::mem::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const SIZE : usize
+    const ALIGN : usize
+    const IS_ZST : bool
+    const LAYOUT : Layout
+    const MAX_SLICE_LEN : usize
+    non-dyn-compatible
+}
+
+// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
+pub fn MAX_SLICE_LEN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: usize; // return
+    let _1: usize; // anonymous local
+    let n_2: usize; // local
+    let _3: usize; // anonymous local
+    let _4: usize; // anonymous local
+    let _5: bool; // anonymous local
+
+    storage_live(_5)
+    storage_live(_1)
+    _1 = const @TraitClause0::SIZE
+    switch copy _1 {
+        0 : usize => {
+            _0 = copy core::num::{usize}::MAX
+        },
+        _ => {
+            storage_live(n_2)
+            n_2 = copy _1
+            storage_live(_3)
+            _3 = cast<isize, usize>(copy core::num::{isize}::MAX)
+            storage_live(_4)
+            _4 = copy n_2
+            _5 = copy _4 == const 0 : usize
+            assert(move _5 == false)
+            _0 = move _3 ub./ move _4
+            storage_dead(_4)
+            storage_dead(_3)
+            storage_dead(n_2)
+        },
+    }
+    storage_dead(_1)
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
+pub const MAX_SLICE_LEN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = MAX_SLICE_LEN()
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub fn LAYOUT<Self>() -> Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: Layout; // return
+
+    _0 = from_size_align_unchecked(const @TraitClause0::SIZE, const @TraitClause0::ALIGN)
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub const LAYOUT<Self>: Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = LAYOUT()
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub fn IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: bool; // return
+
+    _0 = const @TraitClause0::SIZE == const 0 : usize
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub const IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = IS_ZST()
+
+// Full name: core::intrinsics::align_of
+pub fn align_of<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let _0: usize; // return
+
+    undefined_behavior
+}
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub fn ALIGN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: usize; // return
+
+    _0 = align_of<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub const ALIGN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGN()
+
+// Full name: core::intrinsics::size_of
+pub fn size_of<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let _0: usize; // return
+
+    undefined_behavior
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub fn SIZE<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: usize; // return
+
+    _0 = size_of<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub const SIZE<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = SIZE()
+
+// Full name: core::mem::{impl SizedTypeProperties for T}
+impl<T> SizedTypeProperties for T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = @TraitClause0
+    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::write_bytes
+pub unsafe fn write_bytes<T>(@1: *mut T, @2: u8, @3: usize)
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let _0: (); // return
+    let dst_1: *mut T; // arg #1
+    let val_2: u8; // arg #2
+    let count_3: usize; // arg #3
+
+    _0 = ()
+    undefined_behavior
+}
+
+// Full name: core::convert::Infallible
+pub enum Infallible {
+}
+
 pub fn core::alloc::Allocator::allocate_zeroed<'_0, Self>(@1: &'_0 Self, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
@@ -1008,15 +1008,6 @@ where
     [@TraitClause0]: Allocator<Self>,
 = <method_without_default_body>
 
-// Full name: core::intrinsics::cold_path
-pub fn cold_path()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
 // Full name: core::fmt::{Arguments<'a>}::from_str
 pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
 {
@@ -1076,6 +1067,15 @@ pub fn panic_nounwind(@1: &'static Str) -> !
     _3 = from_str<'2>(move _4)
     storage_dead(_4)
     _2 = panic_nounwind_fmt<'4>(move _3, const false)
+}
+
+// Full name: core::intrinsics::cold_path
+pub fn cold_path()
+{
+    let _0: (); // return
+
+    _0 = ()
+    return
 }
 
 // Full name: core::ub_checks::maybe_is_nonoverlapping::runtime
@@ -2560,101 +2560,6 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::by_ref
-pub fn {impl Allocator for Global}::by_ref<'_0>(@1: &'_0 Global) -> &'_0 Global
-where
-    [@TraitClause0]: Sized<Global>,
-{
-    let _0: &'0 Global; // return
-    let self_1: &'0 Global; // arg #1
-
-    _0 = copy self_1
-    return
-}
-
-// Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
-{
-    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
-    let layout_2: Layout; // arg #2
-
-    _0 = alloc_impl<'2>(move self_1, move layout_2, const false)
-    return
-}
-
-// Full name: alloc::alloc::{impl Allocator for Global}::allocate_zeroed
-pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
-{
-    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
-    let layout_2: Layout; // arg #2
-
-    _0 = alloc_impl<'2>(move self_1, move layout_2, const true)
-    return
-}
-
-// Full name: alloc::alloc::{impl Allocator for Global}::deallocate
-pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout)
-{
-    let _0: (); // return
-    let self_1: &'0 Global; // arg #1
-    let ptr_2: NonNull<u8>; // arg #2
-    let layout_3: Layout; // arg #3
-    let _4: usize; // anonymous local
-    let ptr_5: *mut u8; // local
-    let _6: usize; // anonymous local
-    let _7: AlignmentEnum; // anonymous local
-
-    storage_live(_4)
-    _0 = ()
-    _4 = copy (layout_3).size
-    switch move _4 {
-        0 : usize => {
-        },
-        _ => {
-            storage_live(ptr_5)
-            ptr_5 = transmute<NonNull<u8>, *mut u8>(copy ptr_2)
-            storage_live(_6)
-            storage_live(_7)
-            _7 = copy ((layout_3).align).0
-            _6 = @discriminant(_7)
-            storage_dead(_7)
-            _0 = __rust_dealloc(move ptr_5, move _4, move _6)
-            storage_dead(_6)
-            storage_dead(ptr_5)
-            return
-        },
-    }
-    return
-}
-
-// Full name: alloc::alloc::{impl Allocator for Global}::grow
-pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
-{
-    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
-    let ptr_2: NonNull<u8>; // arg #2
-    let old_layout_3: Layout; // arg #3
-    let new_layout_4: Layout; // arg #4
-
-    _0 = grow_impl<'2>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const false)
-    return
-}
-
-// Full name: alloc::alloc::{impl Allocator for Global}::grow_zeroed
-pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
-{
-    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
-    let ptr_2: NonNull<u8>; // arg #2
-    let old_layout_3: Layout; // arg #3
-    let new_layout_4: Layout; // arg #4
-
-    _0 = grow_impl<'2>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const true)
-    return
-}
-
 // Full name: alloc::alloc::{impl Allocator for Global}::shrink
 pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
@@ -3149,6 +3054,101 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
     return
 }
 
+// Full name: alloc::alloc::{impl Allocator for Global}::grow_zeroed
+pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+{
+    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
+    let self_1: &'0 Global; // arg #1
+    let ptr_2: NonNull<u8>; // arg #2
+    let old_layout_3: Layout; // arg #3
+    let new_layout_4: Layout; // arg #4
+
+    _0 = grow_impl<'2>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const true)
+    return
+}
+
+// Full name: alloc::alloc::{impl Allocator for Global}::grow
+pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+{
+    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
+    let self_1: &'0 Global; // arg #1
+    let ptr_2: NonNull<u8>; // arg #2
+    let old_layout_3: Layout; // arg #3
+    let new_layout_4: Layout; // arg #4
+
+    _0 = grow_impl<'2>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const false)
+    return
+}
+
+// Full name: alloc::alloc::{impl Allocator for Global}::deallocate
+pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout)
+{
+    let _0: (); // return
+    let self_1: &'0 Global; // arg #1
+    let ptr_2: NonNull<u8>; // arg #2
+    let layout_3: Layout; // arg #3
+    let _4: usize; // anonymous local
+    let ptr_5: *mut u8; // local
+    let _6: usize; // anonymous local
+    let _7: AlignmentEnum; // anonymous local
+
+    storage_live(_4)
+    _0 = ()
+    _4 = copy (layout_3).size
+    switch move _4 {
+        0 : usize => {
+        },
+        _ => {
+            storage_live(ptr_5)
+            ptr_5 = transmute<NonNull<u8>, *mut u8>(copy ptr_2)
+            storage_live(_6)
+            storage_live(_7)
+            _7 = copy ((layout_3).align).0
+            _6 = @discriminant(_7)
+            storage_dead(_7)
+            _0 = __rust_dealloc(move ptr_5, move _4, move _6)
+            storage_dead(_6)
+            storage_dead(ptr_5)
+            return
+        },
+    }
+    return
+}
+
+// Full name: alloc::alloc::{impl Allocator for Global}::allocate_zeroed
+pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+{
+    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
+    let self_1: &'0 Global; // arg #1
+    let layout_2: Layout; // arg #2
+
+    _0 = alloc_impl<'2>(move self_1, move layout_2, const true)
+    return
+}
+
+// Full name: alloc::alloc::{impl Allocator for Global}::allocate
+pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+{
+    let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
+    let self_1: &'0 Global; // arg #1
+    let layout_2: Layout; // arg #2
+
+    _0 = alloc_impl<'2>(move self_1, move layout_2, const false)
+    return
+}
+
+// Full name: alloc::alloc::{impl Allocator for Global}::by_ref
+pub fn {impl Allocator for Global}::by_ref<'_0>(@1: &'_0 Global) -> &'_0 Global
+where
+    [@TraitClause0]: Sized<Global>,
+{
+    let _0: &'0 Global; // return
+    let self_1: &'0 Global; // arg #1
+
+    _0 = copy self_1
+    return
+}
+
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl Allocator for Global {
     parent_clause0 = {built_in impl MetaSized for Global}
@@ -3161,6 +3161,16 @@ impl Allocator for Global {
     fn by_ref<'_0_1, [@TraitClause0_1]: Sized<Global>> = {impl Allocator for Global}::by_ref<'_0_1>[@TraitClause0_1]
     vtable: {impl Allocator for Global}::{vtable}
 }
+
+fn UNIT_METADATA()
+{
+    let _0: (); // return
+
+    _0 = ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
 
 // Full name: alloc::alloc::handle_alloc_error::ct_error
 fn ct_error(@1: Layout) -> !
@@ -3189,16 +3199,6 @@ pub fn handle_alloc_error(@1: Layout) -> !
     storage_dead(_3)
     _0 = ct_error(move _2.0)
 }
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: alloc::alloc::exchange_malloc
 #[lang_item("exchange_malloc")]

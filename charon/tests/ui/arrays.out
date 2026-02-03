@@ -4,14 +4,6 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
-
 // Full name: core::ops::index::Index
 #[lang_item("index")]
 pub trait Index<Self, Idx, Self_Output>
@@ -21,6 +13,14 @@ pub trait Index<Self, Idx, Self_Output>
     parent_clause2 : [@TraitClause2]: MetaSized<Self_Output>
     fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx, Self_Output>[Self]
     vtable: core::ops::index::Index::{vtable}<Idx, Self_Output>
+}
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::array::{impl Index<I, Clause2_Output> for [T; N]}::index
@@ -223,26 +223,8 @@ where
     [@TraitClause0]: SliceIndex<Self, T, Clause0_Output>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get
-pub fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
-pub fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
-pub unsafe fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: *const [T]) -> *const [T]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: *mut [T]) -> *mut [T]
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
+pub fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -253,8 +235,26 @@ where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
-pub fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> &'_0 mut [T]
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: *mut [T]) -> *mut [T]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
+pub unsafe fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: *const [T]) -> *const [T]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
+pub fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get
+pub fn {impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>

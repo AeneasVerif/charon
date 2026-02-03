@@ -183,21 +183,6 @@ where
     return
 }
 
-// Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>(@1: *mut closure<Self>[@TraitClause0])
-where
-    [@TraitClause0]: Thing<Self>,
-= <missing>
-
-// Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}
-impl<Self> Destruct for closure<Self>[@TraitClause0]
-where
-    [@TraitClause0]: Thing<Self>,
-{
-    fn drop_in_place = {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>[@TraitClause0]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::Thing::foo::{impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut
 fn {impl FnMut<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_mut<'_0, Self>(@1: &'_0 mut closure<Self>[@TraitClause0], @2: (@TraitClause0::Item))
 where
@@ -213,6 +198,21 @@ where
     _3 = &(*state_1)
     _0 = {impl Fn<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call<'2, Self>[@TraitClause0](move _3, move args_2)
     return
+}
+
+// Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place
+unsafe fn {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>(@1: *mut closure<Self>[@TraitClause0])
+where
+    [@TraitClause0]: Thing<Self>,
+= <missing>
+
+// Full name: test_crate::Thing::foo::closure::{impl Destruct for closure<Self>[@TraitClause0]}
+impl<Self> Destruct for closure<Self>[@TraitClause0]
+where
+    [@TraitClause0]: Thing<Self>,
+{
+    fn drop_in_place = {impl Destruct for closure<Self>[@TraitClause0]}::drop_in_place<Self>[@TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Thing::foo::{impl FnOnce<(@TraitClause0::Item)> for closure<Self>[@TraitClause0]}::call_once

@@ -109,7 +109,7 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-struct test_crate::foo::closure<'_0, T>
+struct test_crate::foo::closure::closure<'_0, T>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -117,7 +117,7 @@ where
   &'_0 T,
 }
 
-struct test_crate::foo::closure::closure<'_0, T>
+struct test_crate::foo::closure<'_0, T>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -164,23 +164,6 @@ where
     return
 }
 
-// Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'_0, T>(@1: *mut test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>,
-= <missing>
-
-// Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}
-impl<'_0, T> Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>,
-{
-    fn drop_in_place = {impl Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'_0, T>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::foo::{impl FnMut<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_mut
 fn {impl FnMut<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, '_1, T>(@1: &'_1 mut test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1], @2: ()) -> test_crate::foo::closure::closure<'_, T>[@TraitClause0, @TraitClause1]
 where
@@ -196,6 +179,23 @@ where
     _3 = &(*state_1)
     _0 = {impl Fn<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call<'_0, '3, T>[@TraitClause0, @TraitClause1](move _3, move args_2)
     return
+}
+
+// Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'_0, T>(@1: *mut test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+= <missing>
+
+// Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}
+impl<'_0, T> Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    fn drop_in_place = {impl Destruct for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'_0, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo::{impl FnOnce<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_once
@@ -259,23 +259,6 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::foo::closure::closure::{impl Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'_0, T>(@1: *mut test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>,
-= <missing>
-
-// Full name: test_crate::foo::closure::closure::{impl Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}
-impl<'_0, T> Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>,
-{
-    fn drop_in_place = {impl Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'_0, T>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::foo::closure::{impl Fn<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call
 fn {impl Fn<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call<'_0, '_1, T>(@1: &'_1 test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1], @2: ()) -> &'_ T
 where
@@ -305,6 +288,23 @@ where
     _3 = &(*state_1)
     _0 = {impl Fn<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call<'_0, '3, T>[@TraitClause0, @TraitClause1](move _3, move args_2)
     return
+}
+
+// Full name: test_crate::foo::closure::closure::{impl Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'_0, T>(@1: *mut test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+= <missing>
+
+// Full name: test_crate::foo::closure::closure::{impl Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}
+impl<'_0, T> Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    fn drop_in_place = {impl Destruct for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::drop_in_place<'_0, T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo::closure::{impl FnOnce<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_once

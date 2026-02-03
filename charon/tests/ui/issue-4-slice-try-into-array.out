@@ -1,11 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::array::TryFromSliceError
-pub opaque type TryFromSliceError
-
-// Full name: core::fmt::Error
-pub struct Error {}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -29,9 +23,8 @@ where
   Err(E),
 }
 
-// Full name: core::array::{impl Debug for TryFromSliceError}::fmt
-pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 TryFromSliceError, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <opaque>
+// Full name: core::fmt::Error
+pub struct Error {}
 
 // Full name: core::fmt::Debug
 #[lang_item("Debug")]
@@ -40,6 +33,13 @@ pub trait Debug<Self>
     fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Debug::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: core::fmt::Debug::{vtable}
 }
+
+// Full name: core::array::TryFromSliceError
+pub opaque type TryFromSliceError
+
+// Full name: core::array::{impl Debug for TryFromSliceError}::fmt
+pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 TryFromSliceError, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
 
 // Full name: core::array::{impl Debug for TryFromSliceError}
 impl Debug for TryFromSliceError {
@@ -65,13 +65,6 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-// Full name: core::array::{impl TryFrom<&'_0 [T]> for [T; N]}::try_from
-pub fn {impl TryFrom<&'_0 [T]> for [T; N]}::try_from<'_0, T, const N : usize>(@1: &'_0 [T]) -> Result<[T; N], TryFromSliceError>[{built_in impl Sized for [T; N]}, {built_in impl Sized for TryFromSliceError}]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
-= <opaque>
-
 // Full name: core::convert::TryFrom
 #[lang_item("TryFrom")]
 pub trait TryFrom<Self, T>
@@ -83,6 +76,13 @@ pub trait TryFrom<Self, T>
     fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
     non-dyn-compatible
 }
+
+// Full name: core::array::{impl TryFrom<&'_0 [T]> for [T; N]}::try_from
+pub fn {impl TryFrom<&'_0 [T]> for [T; N]}::try_from<'_0, T, const N : usize>(@1: &'_0 [T]) -> Result<[T; N], TryFromSliceError>[{built_in impl Sized for [T; N]}, {built_in impl Sized for TryFromSliceError}]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
+= <opaque>
 
 // Full name: core::array::{impl TryFrom<&'_0 [T]> for [T; N]}
 impl<'_0, T, const N : usize> TryFrom<&'_0 [T]> for [T; N]
