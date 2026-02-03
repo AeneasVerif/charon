@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<u8>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<u8>
-
-// Full name: core::marker::Sized::<u8>
-#[lang_item("sized")]
-pub trait Sized::<u8>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<u8>
-    non-dyn-compatible
-}
-
 // Full name: core::option::Option::<u8>
 #[lang_item("Option")]
 pub enum Option::<u8> {

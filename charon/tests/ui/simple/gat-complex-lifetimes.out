@@ -20,10 +20,6 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 fn UNIT_METADATA()
 {
     let _0: (); // return

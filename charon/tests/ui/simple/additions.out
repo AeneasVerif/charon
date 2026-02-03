@@ -30,31 +30,6 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-= <method_without_default_body>
-
-pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 Self)
-where
-    [@TraitClause0]: Clone<Self>,
-    [@TraitClause1]: Destruct<Self>,
-{
-    let _0: (); // return
-    let self_1: &'0 mut Self; // arg #1
-    let source_2: &'1 Self; // arg #2
-    let _3: Self; // anonymous local
-
-    _0 = ()
-    storage_live(_3)
-    _3 = @TraitClause0::clone<'3>(move source_2)
-    drop[@TraitClause1] (*self_1)
-    (*self_1) = move _3
-    storage_dead(_3)
-    return
-}
-
 // Full name: core::clone::impls::{impl Clone for u8}::clone
 pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
 {
@@ -120,10 +95,6 @@ impl Copy for u8 {
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <missing>
-
 pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8
 {
     let _0: u8; // return
@@ -155,16 +126,6 @@ pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
     _0 = copy self_1 checked.+ copy rhs_2
     return
 }
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::main
 fn main()

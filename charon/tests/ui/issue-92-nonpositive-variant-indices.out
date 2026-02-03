@@ -1,15 +1,5 @@
 # Final LLBC before serialization:
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::Ordering
 enum Ordering {
   Less,

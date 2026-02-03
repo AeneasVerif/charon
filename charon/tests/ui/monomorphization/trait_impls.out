@@ -1,29 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<bool>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<bool>
-
-// Full name: core::marker::Sized::<bool>
-#[lang_item("sized")]
-pub trait Sized::<bool>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Destruct::<bool>
-#[lang_item("destruct")]
-pub trait Destruct::<bool>
-{
-    fn drop_in_place = drop_in_place::<bool>
-    vtable: core::marker::Destruct::{vtable}::<bool>
-}
-
-// Full name: core::marker::Destruct::drop_in_place::<bool>
-unsafe fn drop_in_place::<bool>(@1: *mut bool)
-= <opaque>
-
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -34,17 +10,6 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun1()
 
-// Full name: test_crate::Trait::<bool>
-pub trait Trait::<bool>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
-    fn method<'_0_1> = test_crate::Trait::method::<bool><'_0_1>
-    vtable: test_crate::Trait::{vtable}::<bool>
-}
-
-pub fn test_crate::Trait::method::<bool><'_0>(@1: &'_0 bool)
-= <method_without_default_body>
-
 // Full name: test_crate::{impl Trait::<bool>}::method
 pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 bool)
 {
@@ -54,13 +19,6 @@ pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 bool)
     _0 = ()
     _0 = ()
     return
-}
-
-// Full name: test_crate::{impl Trait::<bool>}
-impl Trait::<bool> {
-    parent_clause0 = {built_in impl MetaSized::<bool>}
-    fn method<'_0_1> = {impl Trait::<bool>}::method<'_0_1>
-    vtable: {impl Trait::<bool>}::{vtable}
 }
 
 // Full name: test_crate::do_test::<bool>

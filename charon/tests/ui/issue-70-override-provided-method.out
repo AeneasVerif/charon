@@ -8,12 +8,6 @@ pub trait PartialEq<Self, Rhs>
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
-#[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
-where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
-= <opaque>
-
 // Full name: core::cmp::Ordering
 #[lang_item("Ordering")]
 pub enum Ordering {
@@ -53,12 +47,6 @@ pub trait PartialOrd<Self, Rhs>
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
-#[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
-where
-    [@TraitClause0]: PartialOrd<Self, Rhs>,
-= <opaque>
-
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
 pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> bool
 = <opaque>
@@ -69,26 +57,9 @@ impl PartialEq<i32> for i32 {
     vtable: {impl PartialEq<i32> for i32}::{vtable}
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
-pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> bool
-= <opaque>
-
-// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
-impl PartialEq<u32> for u32 {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<u32> for u32}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<u32> for u32}::{vtable}
-}
-
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
 pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
-
-// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
-impl PartialOrd<u32> for u32 {
-    parent_clause0 = {impl PartialEq<u32> for u32}
-    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_1, '_1_1>
-    vtable: {impl PartialOrd<u32> for u32}::{vtable}
-}
 
 // Full name: core::marker::StructuralPartialEq
 #[lang_item("structural_peq")]
@@ -104,16 +75,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: PartialEq<T, T>,
 = <opaque>
-
-// Full name: core::option::{impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}
-impl<T> PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: PartialEq<T, T>,
-{
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'_0_1, '_1_1, T>[@TraitClause0, @TraitClause1]
-    vtable: {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0, @TraitClause1]
-}
 
 fn UNIT_METADATA()
 {

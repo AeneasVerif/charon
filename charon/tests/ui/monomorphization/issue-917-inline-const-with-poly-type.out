@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<()>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<()>
-
-// Full name: core::marker::Sized::<()>
-#[lang_item("sized")]
-pub trait Sized::<()>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<()>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<(())>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<(())>
@@ -28,14 +16,6 @@ pub trait Sized::<(())>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<closure::<()>>
 
-// Full name: core::marker::Destruct::<()>
-#[lang_item("destruct")]
-pub trait Destruct::<()>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<()>
-    vtable: core::marker::Destruct::{vtable}::<()>
-}
-
 // Full name: test_crate::foo::{const}::closure::<()>
 struct closure::<()> {}
 
@@ -46,12 +26,6 @@ pub trait Destruct::<closure::<()>>
     fn drop_in_place = core::marker::Destruct::drop_in_place::<closure::<()>>
     vtable: core::marker::Destruct::{vtable}::<closure::<()>>
 }
-
-unsafe fn core::marker::Destruct::drop_in_place::<()>(@1: *mut ())
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
-= <opaque>
 
 // Full name: core::marker::Tuple::<(())>
 #[lang_item("tuple_trait")]
@@ -95,18 +69,6 @@ pub trait Fn::<closure::<()>, (())>
     fn call<'_0_1> = core::ops::function::Fn::call::<closure::<()>, (())><'_0_1>
     vtable: core::ops::function::Fn::{vtable}::<closure::<()>, (())><()>
 }
-
-pub fn core::ops::function::Fn::call::<closure::<()>, (())><'_0>(@1: &'_0 closure::<()>, @2: (()))
-= <opaque>
-
-pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut closure::<()>, @2: (()))
-= <opaque>
-
-pub fn core::ops::function::FnMut::call_mut::<closure::<()>, (())><'_0>(@1: &'_0 mut closure::<()>, @2: (()))
-= <opaque>
-
-pub fn core::ops::function::FnOnce::call_once::<closure::<()>, (())>(@1: closure::<()>, @2: (()))
-= <opaque>
 
 fn UNIT_METADATA()
 {

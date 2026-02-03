@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<closure>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<closure>
-
-// Full name: core::marker::Sized::<closure>
-#[lang_item("sized")]
-pub trait Sized::<closure>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<closure>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<(u8)>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<(u8)>
@@ -24,17 +12,9 @@ pub trait Sized::<(u8)>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized::<NotCopy>
+// Full name: core::marker::MetaSized::<closure>
 #[lang_item("meta_sized")]
-pub trait MetaSized::<NotCopy>
-
-// Full name: core::marker::Sized::<NotCopy>
-#[lang_item("sized")]
-pub trait Sized::<NotCopy>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<NotCopy>
-    non-dyn-compatible
-}
+pub trait MetaSized::<closure>
 
 // Full name: test_crate::NotCopy
 struct NotCopy {}
@@ -51,20 +31,6 @@ pub trait Destruct::<closure>
     fn drop_in_place = core::marker::Destruct::drop_in_place::<closure>
     vtable: core::marker::Destruct::{vtable}::<closure>
 }
-
-// Full name: core::marker::Destruct::<NotCopy>
-#[lang_item("destruct")]
-pub trait Destruct::<NotCopy>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<NotCopy>
-    vtable: core::marker::Destruct::{vtable}::<NotCopy>
-}
-
-unsafe fn core::marker::Destruct::drop_in_place::<closure>(@1: *mut closure)
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_in_place::<NotCopy>(@1: *mut NotCopy)
-= <opaque>
 
 // Full name: core::marker::Tuple::<(u8)>
 #[lang_item("tuple_trait")]
@@ -89,12 +55,6 @@ pub trait FnOnce::<closure, (u8)>
     fn call_once = core::ops::function::FnOnce::call_once::<closure, (u8)>
     vtable: core::ops::function::FnOnce::{vtable}::<closure, (u8)><u8>
 }
-
-pub fn core::ops::function::FnOnce::call_once::<closure, (u8)>(@1: closure, @2: (u8)) -> u8
-= <opaque>
-
-pub fn core::ops::function::FnOnce::call_once(@1: closure, @2: (u8)) -> u8
-= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -171,25 +131,6 @@ fn apply_to_zero_once::<closure>(@1: closure) -> u8
     storage_dead(_2)
     conditional_drop[{impl Destruct::<closure>}] f_1
     return
-}
-
-// Full name: test_crate::NotCopy::{impl Destruct::<NotCopy>}::drop_in_place
-unsafe fn {impl Destruct::<NotCopy>}::drop_in_place(@1: *mut NotCopy)
-{
-    let _0: (); // return
-    let _1: *mut NotCopy; // arg #1
-    let _2: &'0 mut NotCopy; // anonymous local
-
-    storage_live(_2)
-    _0 = ()
-    _2 = &mut (*_1)
-    return
-}
-
-// Full name: test_crate::NotCopy::{impl Destruct::<NotCopy>}
-impl Destruct::<NotCopy> {
-    fn drop_in_place = {impl Destruct::<NotCopy>}::drop_in_place
-    non-dyn-compatible
 }
 
 // Full name: test_crate::main

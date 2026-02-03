@@ -34,11 +34,6 @@ pub trait Display<Self>
     vtable: core::fmt::Display::{vtable}
 }
 
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    [@TraitClause0]: Display<Self>,
-= <opaque>
-
 // Full name: core::fmt::{impl Display for Str}::fmt
 pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 Str, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
@@ -57,9 +52,6 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -74,38 +66,12 @@ impl Destruct for String {
     non-dyn-compatible
 }
 
-// Full name: alloc::string::ToString
-#[lang_item("ToString")]
-pub trait ToString<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn to_string<'_0_1> = alloc::string::ToString::to_string<'_0_1, Self>[Self]
-    vtable: alloc::string::ToString::{vtable}
-}
-
-#[lang_item("to_string_method")]
-pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 Self) -> String
-where
-    [@TraitClause0]: ToString<Self>,
-= <opaque>
-
 // Full name: alloc::string::{impl ToString for T}::to_string
 pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 T) -> String
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Display<T>,
 = <opaque>
-
-// Full name: alloc::string::{impl ToString for T}
-impl<T> ToString for T
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Display<T>,
-{
-    parent_clause0 = @TraitClause0
-    fn to_string<'_0_1> = {impl ToString for T}::to_string<'_0_1, T>[@TraitClause0, @TraitClause1]
-    vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
-}
 
 fn UNIT_METADATA()
 {

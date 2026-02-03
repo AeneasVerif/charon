@@ -32,21 +32,6 @@ where
     [@TraitClause2]: Index<[T], I>,
 = <opaque>
 
-// Full name: core::array::{impl Index<I> for [T; N]}
-impl<T, I, const N : usize> Index<I> for [T; N]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Index<[T], I>,
-{
-    parent_clause0 = {built_in impl MetaSized for [T; N]}
-    parent_clause1 = @TraitClause1::parent_clause0
-    parent_clause2 = @TraitClause2::parent_clause2
-    type Output = @TraitClause2::Output
-    fn index<'_0_1> = {impl Index<I> for [T; N]}::index<'_0_1, T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl Index<I> for [T; N]}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
-}
-
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
@@ -66,11 +51,6 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(@1: usize, @2: usiz
 
 fn core::slice::index::slice_index_fail::do_panic#3::runtime(@1: usize, @2: usize) -> !
 = <missing>
-
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
-where
-    [@TraitClause0]: Index<Self, Idx>,
-= <opaque>
 
 // Full name: core::ops::range::Range
 #[lang_item("Range")]
@@ -296,31 +276,6 @@ impl Sealed for Range<usize>[{built_in impl Sized for usize}] {
     parent_clause0 = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
     vtable: {impl Sealed for Range<usize>[{built_in impl Sized for usize}]}::{vtable}
 }
-
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 T) -> Option<&'_0 @TraitClause0::Output>[{built_in impl Sized for &'_0 @TraitClause0::Output}]
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-= <method_without_default_body>
-
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut T) -> Option<&'_0 mut @TraitClause0::Output>[{built_in impl Sized for &'_0 mut @TraitClause0::Output}]
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-= <method_without_default_body>
-
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const @TraitClause0::Output
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-= <method_without_default_body>
-
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut @TraitClause0::Output
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-= <method_without_default_body>
-
-pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut T) -> &'_0 mut @TraitClause0::Output
-where
-    [@TraitClause0]: SliceIndex<Self, T>,
-= <method_without_default_body>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
 pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: Range<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> &'_0 mut [T]

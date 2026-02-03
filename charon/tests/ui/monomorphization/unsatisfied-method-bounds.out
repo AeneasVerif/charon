@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<A>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<A>
-
-// Full name: core::marker::MetaSized::<B>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<B>
-
-// Full name: alloc::string::String
-#[lang_item("String")]
-pub opaque type String
-
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -25,65 +13,6 @@ const UNIT_METADATA: () = @Fun1()
 // Full name: test_crate::A
 struct A {}
 
-// Full name: test_crate::MyIterator::<A>
-trait MyIterator::<A>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<A>
-    fn method<'_0_1> = test_crate::MyIterator::method::<A><'_0_1>
-    vtable: test_crate::MyIterator::{vtable}::<A><String>
-}
-
-// Full name: test_crate::B
-struct B {}
-
-// Full name: test_crate::MyIterator::<B>
-trait MyIterator::<B>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<B>
-    fn method<'_0_1> = test_crate::MyIterator::method::<B><'_0_1>
-    vtable: test_crate::MyIterator::{vtable}::<B><u8>
-}
-
-fn test_crate::MyIterator::method<'_0>(@1: &'_0 A)
-{
-    let _0: (); // return
-    let self_1: &'0 A; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
-fn test_crate::MyIterator::method<'_0>(@1: &'_0 B)
-{
-    let _0: (); // return
-    let self_1: &'0 B; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
-fn test_crate::MyIterator::method::<A><'_0>(@1: &'_0 A)
-{
-    let _0: (); // return
-    let self_1: &'0 A; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
-fn test_crate::MyIterator::method::<B><'_0>(@1: &'_0 B)
-{
-    let _0: (); // return
-    let self_1: &'0 B; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
 // Full name: test_crate::{impl MyIterator::<A>}::method
 fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 A)
 {
@@ -95,12 +24,8 @@ fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 A)
     return
 }
 
-// Full name: test_crate::{impl MyIterator::<A>}
-impl MyIterator::<A> {
-    parent_clause0 = {built_in impl MetaSized::<A>}
-    fn method<'_0_1> = {impl MyIterator::<A>}::method<'_0_1>
-    vtable: {impl MyIterator::<A>}::{vtable}
-}
+// Full name: test_crate::B
+struct B {}
 
 // Full name: test_crate::{impl MyIterator::<B>}::method
 fn {impl MyIterator::<B>}::method<'_0>(@1: &'_0 B)
@@ -111,13 +36,6 @@ fn {impl MyIterator::<B>}::method<'_0>(@1: &'_0 B)
     _0 = ()
     _0 = ()
     return
-}
-
-// Full name: test_crate::{impl MyIterator::<B>}
-impl MyIterator::<B> {
-    parent_clause0 = {built_in impl MetaSized::<B>}
-    fn method<'_0_1> = {impl MyIterator::<B>}::method<'_0_1>
-    vtable: {impl MyIterator::<B>}::{vtable}
 }
 
 // Full name: test_crate::main

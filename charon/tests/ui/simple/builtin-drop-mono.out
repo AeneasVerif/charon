@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<String>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<String>
-
-// Full name: core::marker::Sized::<String>
-#[lang_item("sized")]
-pub trait Sized::<String>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<String>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<Global>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<Global>
@@ -159,24 +147,6 @@ pub trait Destruct::<(String, String)>
     fn drop_in_place = core::marker::Destruct::drop_in_place::<(String, String)>
     vtable: core::marker::Destruct::{vtable}::<(String, String)>
 }
-
-unsafe fn core::marker::Destruct::drop_in_place::<[String; 4 : usize]>(@1: *mut [String; 4 : usize])
-= <missing>
-
-unsafe fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
-= <missing>
-
-unsafe fn core::marker::Destruct::drop_in_place::<[String]>(@1: *mut [String])
-= <missing>
-
-unsafe fn core::marker::Destruct::drop_in_place::<Global>(@1: *mut Global)
-= <missing>
-
-unsafe fn core::marker::Destruct::drop_in_place::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl Destruct::<[String]>}::<String>, {impl Destruct::<Global>}]>(@1: *mut alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl Destruct::<[String]>}::<String>, {impl Destruct::<Global>}])
-= <missing>
-
-unsafe fn core::marker::Destruct::drop_in_place::<(String, String)>(@1: *mut (String, String))
-= <missing>
 
 // Full name: alloc::boxed::Box::{impl Destruct::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl Destruct::<[String]>}::<String>, {impl Destruct::<Global>}]>}::drop_in_place::<[String], Global>
 unsafe fn {impl Destruct::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl Destruct::<[String]>}::<String>, {impl Destruct::<Global>}]>}::drop_in_place::<[String], Global>(@1: *mut alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl Destruct::<[String]>}::<String>, {impl Destruct::<Global>}])

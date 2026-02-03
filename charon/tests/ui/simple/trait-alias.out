@@ -35,10 +35,6 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>

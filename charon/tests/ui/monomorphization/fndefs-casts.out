@@ -1,53 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<u8>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<u8>
-
-// Full name: core::marker::Sized::<u8>
-#[lang_item("sized")]
-pub trait Sized::<u8>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<u8>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<char>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<char>
-
-// Full name: core::marker::Sized::<char>
-#[lang_item("sized")]
-pub trait Sized::<char>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<char>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<u32>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<u32>
-
-// Full name: core::marker::Sized::<u32>
-#[lang_item("sized")]
-pub trait Sized::<u32>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<u32>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<for<'a> foo::<u32><'a>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<for<'a> foo::<u32><'a>>
-
-// Full name: core::marker::Sized::<for<'a> foo::<u32><'a>>
-#[lang_item("sized")]
-pub trait Sized::<for<'a> foo::<u32><'a>>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<for<'a> foo::<u32><'a>>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<(&'_ u32)>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<(&'_ u32)>
@@ -60,6 +12,18 @@ pub trait Sized::<(&'_ u32)>
     non-dyn-compatible
 }
 
+// Full name: core::marker::MetaSized::<for<'a> foo::<u32><'a>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<for<'a> foo::<u32><'a>>
+
+// Full name: core::marker::Tuple::<(&'_ u32)>
+#[lang_item("tuple_trait")]
+pub trait Tuple::<(&'_ u32)>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ u32)>
+    vtable: core::marker::Tuple::{vtable}::<(&'_ u32)>
+}
+
 // Full name: test_crate::foo::<u32>
 fn foo::<u32><'a>(@1: &'a u32)
 {
@@ -69,26 +33,6 @@ fn foo::<u32><'a>(@1: &'a u32)
     _0 = ()
     _0 = ()
     return
-}
-
-// Full name: core::marker::Destruct::<for<'a> foo::<u32><'a>>
-#[lang_item("destruct")]
-pub trait Destruct::<for<'a> foo::<u32><'a>>
-{
-    fn drop_in_place = drop_in_place::<for<'a> foo::<u32><'a>>
-    vtable: core::marker::Destruct::{vtable}::<for<'a> foo::<u32><'a>>
-}
-
-// Full name: core::marker::Destruct::drop_in_place::<for<'a> foo::<u32><'a>>
-unsafe fn drop_in_place::<for<'a> foo::<u32><'a>>(@1: *mut for<'a> foo::<u32><'a>)
-= <opaque>
-
-// Full name: core::marker::Tuple::<(&'_ u32)>
-#[lang_item("tuple_trait")]
-pub trait Tuple::<(&'_ u32)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ u32)>
-    vtable: core::marker::Tuple::{vtable}::<(&'_ u32)>
 }
 
 // Full name: core::ops::function::FnOnce::<for<'a> foo::<u32><'a>, (&'_ u32)>
@@ -126,20 +70,8 @@ pub trait Fn::<for<'a> foo::<u32><'a>, (&'_ u32)>
     vtable: core::ops::function::Fn::{vtable}::<for<'a> foo::<u32><'a>, (&'_ u32)><()>
 }
 
-// Full name: core::ops::function::Fn::call::<for<'a> foo::<u32><'a>, (&'_ u32)>
-pub fn call::<for<'a> foo::<u32><'a>, (&'_ u32)><'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32))
-= <opaque>
-
 // Full name: core::ops::function::Fn::call
 pub fn call<'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32))
-= <opaque>
-
-// Full name: core::ops::function::FnMut::call_mut::<for<'a> foo::<u32><'a>, (&'_ u32)>
-pub fn call_mut::<for<'a> foo::<u32><'a>, (&'_ u32)><'_0>(@1: &'_0 mut for<'a> foo::<u32><'a>, @2: (&'_ u32))
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once::<for<'a> foo::<u32><'a>, (&'_ u32)>
-pub fn call_once::<for<'a> foo::<u32><'a>, (&'_ u32)>(@1: for<'a> foo::<u32><'a>, @2: (&'_ u32))
 = <opaque>
 
 fn UNIT_METADATA()

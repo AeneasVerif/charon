@@ -60,13 +60,6 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-= <opaque>
-
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
@@ -74,9 +67,6 @@ pub trait Destruct<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]

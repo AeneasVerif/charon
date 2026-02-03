@@ -602,7 +602,7 @@ fn declaration_groups() -> anyhow::Result<()> {
     // one for the initializer of UNIT_METADATA (always included).
     assert_eq!(crate_data.fun_decls.iter().count(), 3);
     let decl_groups = crate_data.ordered_decls.unwrap();
-    assert_eq!(decl_groups.len(), 8);
+    assert_eq!(decl_groups.len(), 6);
 
     Ok(())
 }

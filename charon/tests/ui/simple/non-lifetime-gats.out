@@ -20,9 +20,6 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 // Full name: core::ops::deref::Deref
 #[lang_item("deref")]
 pub trait Deref<Self>
@@ -32,12 +29,6 @@ pub trait Deref<Self>
     fn deref<'_0_1> = core::ops::deref::Deref::deref<'_0_1, Self>[Self]
     vtable: core::ops::deref::Deref::{vtable}<Self::Target>
 }
-
-#[lang_item("deref_method")]
-pub fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 Self) -> &'_0 @TraitClause0::Target
-where
-    [@TraitClause0]: Deref<Self>,
-= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -78,16 +69,6 @@ where
     fn deref<'_0_1> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_1, T, A>[@TraitClause0, @TraitClause1]
     vtable: {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
 }
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::PointerFamily
 pub trait PointerFamily<Self>

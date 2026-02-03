@@ -7,16 +7,6 @@ pub fn CONSTANT() -> u8
 // Full name: foreign_constant_aux::CONSTANT
 pub const CONSTANT: u8 = CONSTANT()
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::foo
 fn foo() -> u8
 {

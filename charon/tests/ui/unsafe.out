@@ -21,13 +21,6 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-= <opaque>
-
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
@@ -35,12 +28,6 @@ pub trait PartialEq<Self, Rhs>
     fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
-
-#[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
-where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
-= <opaque>
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
@@ -86,18 +73,6 @@ pub trait Ord<Self>
     fn cmp<'_0_1, '_1_1> = core::cmp::Ord::cmp<'_0_1, '_1_1, Self>[Self]
     non-dyn-compatible
 }
-
-#[lang_item("ord_cmp_method")]
-pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> Ordering
-where
-    [@TraitClause0]: Ord<Self>,
-= <opaque>
-
-#[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
-where
-    [@TraitClause0]: PartialOrd<Self, Rhs>,
-= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<()> for ()}::eq
 pub fn {impl PartialEq<()> for ()}::eq<'_0, '_1>(@1: &'_0 (), @2: &'_1 ()) -> bool
@@ -160,11 +135,6 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    [@TraitClause0]: Debug<Self>,
-= <opaque>
-
 // Full name: core::fmt::{impl Debug for ()}::fmt
 pub fn {impl Debug for ()}::fmt<'_0, '_1, '_2>(@1: &'_0 (), @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
@@ -191,25 +161,6 @@ pub trait Hash<Self>
     fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = core::hash::Hash::hash<'_0_1, '_1_1, Self, H>[Self, @TraitClause0_1, @TraitClause1_1]
     non-dyn-compatible
 }
-
-pub fn core::hash::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 Self, @2: &'_1 mut H)
-where
-    [@TraitClause0]: Hash<Self>,
-    [@TraitClause1]: Sized<H>,
-    [@TraitClause2]: Hasher<H>,
-= <opaque>
-
-// Full name: core::hash::Hasher::finish
-pub fn finish<'_0, Self>(@1: &'_0 Self) -> u64
-where
-    [@TraitClause0]: Hasher<Self>,
-= <opaque>
-
-// Full name: core::hash::Hasher::write
-pub fn write<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 [u8])
-where
-    [@TraitClause0]: Hasher<Self>,
-= <opaque>
 
 // Full name: core::hash::impls::{impl Hash for ()}::hash
 pub fn {impl Hash for ()}::hash<'_0, '_1, H>(@1: &'_0 (), @2: &'_1 mut H)
@@ -251,18 +202,6 @@ pub trait Freeze<Self>
 // Full name: core::marker::Unpin
 #[lang_item("unpin")]
 pub trait Unpin<Self>
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
 
 // Full name: core::ptr::const_ptr::{*const T}::read
 pub unsafe fn read<T>(@1: *const T) -> T

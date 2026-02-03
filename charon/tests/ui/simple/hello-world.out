@@ -1,64 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::result::Result::<(), Error>
-#[lang_item("Result")]
-pub enum Result::<(), Error> {
-  Ok(()),
-  Err(Error),
-}
-
-// Full name: core::fmt::Display::<Str>
-#[lang_item("Display")]
-pub trait Display::<Str>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Display::fmt::<Str><'_0_1, '_1_1, '_2_1>
-    vtable: core::fmt::Display::{vtable}::<Str>
-}
-
-pub fn core::fmt::Display::fmt::<Str><'_0, '_1, '_2>(@1: &'_0 Str, @2: &'_1 mut Formatter::<'_>) -> Result::<(), Error>
-= <opaque>
-
-// Full name: core::fmt::{impl Display::<Str>}::fmt
-pub fn {impl Display::<Str>}::fmt<'_0, '_1, '_2>(@1: &'_0 Str, @2: &'_1 mut Formatter::<'_>) -> Result::<(), Error>
-= <opaque>
-
-// Full name: core::fmt::{impl Display::<Str>}
-impl Display::<Str> {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Display::<Str>}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl Display::<Str>}::{vtable}
-}
-
-// Full name: core::marker::MetaSized::<()>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<()>
-
-// Full name: core::marker::Sized::<()>
-#[lang_item("sized")]
-pub trait Sized::<()>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<()>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<Error>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<Error>
-
-// Full name: core::marker::Sized::<Error>
-#[lang_item("sized")]
-pub trait Sized::<Error>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<Error>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<Str>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<Str>
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -71,9 +12,6 @@ pub trait Destruct::<String>
     vtable: core::marker::Destruct::{vtable}::<String>
 }
 
-unsafe fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
-= <opaque>
-
 // Full name: alloc::string::String::{impl Destruct::<String>}::drop_in_place
 unsafe fn {impl Destruct::<String>}::drop_in_place(@1: *mut String)
 = <opaque>
@@ -84,39 +22,9 @@ impl Destruct::<String> {
     non-dyn-compatible
 }
 
-// Full name: alloc::string::ToString::<Str>
-#[lang_item("ToString")]
-pub trait ToString::<Str>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<Str>
-    fn to_string<'_0_1> = alloc::string::ToString::to_string::<Str><'_0_1>
-    vtable: alloc::string::ToString::{vtable}::<Str>
-}
-
-#[lang_item("to_string_method")]
-pub fn alloc::string::ToString::to_string::<Str><'_0>(@1: &'_0 Str) -> String
-= <opaque>
-
 // Full name: alloc::string::{impl ToString::<Str>}::to_string::<Str>
 pub fn {impl ToString::<Str>}::to_string::<Str><'_0>(@1: &'_0 Str) -> String
 = <opaque>
-
-// Full name: alloc::string::{impl ToString::<Str>}::<Str>
-impl ToString::<Str> {
-    parent_clause0 = {built_in impl MetaSized::<Str>}
-    fn to_string<'_0_1> = {impl ToString::<Str>}::to_string::<Str><'_0_1>
-    vtable: {impl ToString::<Str>}::{vtable}::<Str>
-}
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::main
 fn main()

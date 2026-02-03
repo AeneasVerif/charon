@@ -72,67 +72,13 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    [@TraitClause0]: Debug<Self>,
-= <method_without_default_body>
-
-// Full name: core::fmt::Display
-#[lang_item("Display")]
-pub trait Display<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Display::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::Display::{vtable}
-}
-
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    [@TraitClause0]: Display<Self>,
-= <method_without_default_body>
-
-// Full name: core::fmt::LowerHex
-pub trait LowerHex<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::LowerHex::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::LowerHex::{vtable}
-}
-
-pub fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    [@TraitClause0]: LowerHex<Self>,
-= <method_without_default_body>
-
-// Full name: core::fmt::UpperHex
-pub trait UpperHex<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::UpperHex::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::UpperHex::{vtable}
-}
-
-pub fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    [@TraitClause0]: UpperHex<Self>,
-= <method_without_default_body>
-
 // Full name: core::fmt::num::{impl LowerHex for u32}::fmt
 pub fn {impl LowerHex for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <missing>
 
-// Full name: core::fmt::num::{impl LowerHex for u32}
-impl LowerHex for u32 {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl LowerHex for u32}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl LowerHex for u32}::{vtable}
-}
-
 // Full name: core::fmt::num::{impl UpperHex for u32}::fmt
 pub fn {impl UpperHex for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <missing>
-
-// Full name: core::fmt::num::{impl UpperHex for u32}
-impl UpperHex for u32 {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl UpperHex for u32}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl UpperHex for u32}::{vtable}
-}
 
 // Full name: core::fmt::num::imp::{impl Display for u32}::fmt
 pub fn {impl Display for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
@@ -188,24 +134,6 @@ impl Debug for u32 {
     fn fmt<'_0_1, '_1_1, '_2_1> = {impl Debug for u32}::fmt<'_0_1, '_1_1, '_2_1>
     vtable: {impl Debug for u32}::{vtable}
 }
-
-// Full name: core::fmt::num::imp::{impl Display for u32}
-impl Display for u32 {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Display for u32}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl Display for u32}::{vtable}
-}
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <missing>
 
 fn UNIT_METADATA()
 {

@@ -8,9 +8,6 @@ pub trait Destruct<Self>
     vtable: {vtable}
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -29,16 +26,6 @@ impl Destruct for String {
 #[lang_item("string_new")]
 pub fn new() -> String
 = <opaque>
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::use_string
 fn use_string(@1: String)

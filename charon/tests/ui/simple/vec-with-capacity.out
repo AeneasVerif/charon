@@ -28,9 +28,6 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {
@@ -196,16 +193,6 @@ where
     storage_dead(_2)
     return
 }
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::vec
 fn vec()

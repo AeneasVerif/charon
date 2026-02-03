@@ -1,49 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::E1
-enum E1 {
-  A,
-  B,
-}
-
-// Full name: core::intrinsics::discriminant_value::<E1>
-pub fn discriminant_value::<E1><'_0>(@1: &'_0 E1) -> isize
-= <opaque>
-
-// Full name: test_crate::E2
-enum E2 {
-  A,
-  B,
-}
-
-// Full name: core::intrinsics::discriminant_value::<E2>
-pub fn discriminant_value::<E2><'_0>(@1: &'_0 E2) -> isize
-= <opaque>
-
-// Full name: core::marker::MetaSized::<E1>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<E1>
-
-// Full name: core::marker::Sized::<E1>
-#[lang_item("sized")]
-pub trait Sized::<E1>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<E1>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<E2>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<E2>
-
-// Full name: core::marker::Sized::<E2>
-#[lang_item("sized")]
-pub trait Sized::<E2>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<E2>
-    non-dyn-compatible
-}
-
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -53,6 +9,18 @@ fn UNIT_METADATA()
 }
 
 const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::E1
+enum E1 {
+  A,
+  B,
+}
+
+// Full name: test_crate::E2
+enum E2 {
+  A,
+  B,
+}
 
 // Full name: test_crate::main
 fn main()

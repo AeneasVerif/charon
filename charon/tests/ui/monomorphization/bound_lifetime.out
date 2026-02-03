@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<&'_ u32>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<&'_ u32>
-
-// Full name: core::marker::Sized::<&'_ u32>
-#[lang_item("sized")]
-pub trait Sized::<&'_ u32>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<&'_ u32>
-    non-dyn-compatible
-}
-
 // Full name: core::option::Option::<&'_ u32>
 #[lang_item("Option")]
 pub enum Option::<&'_ u32> {

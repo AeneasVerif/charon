@@ -1,29 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<bool>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<bool>
-
-// Full name: core::marker::Sized::<bool>
-#[lang_item("sized")]
-pub trait Sized::<bool>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<i32>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<i32>
-
-// Full name: core::marker::Sized::<i32>
-#[lang_item("sized")]
-pub trait Sized::<i32>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<i32>
-    non-dyn-compatible
-}
-
 fn UNIT_METADATA()
 {
     let _0: (); // return

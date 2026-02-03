@@ -41,11 +41,6 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut Self)
-where
-    [@TraitClause0]: Drop<Self>,
-= <opaque>
-
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)
 = <opaque>
@@ -73,18 +68,6 @@ where
     [@TraitClause4]: Destruct<A>,
 = <opaque>
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
-impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause3]: Destruct<T>,
-    [@TraitClause4]: Destruct<A>,
-{
-    fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
-    non-dyn-compatible
-}
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -92,12 +75,6 @@ pub opaque type String
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 = <opaque>
-
-// Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
-    fn drop_in_place = {impl Destruct for String}::drop_in_place
-    non-dyn-compatible
-}
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
@@ -116,18 +93,6 @@ where
     [@TraitClause3]: Destruct<T>,
     [@TraitClause4]: Destruct<A>,
 = <opaque>
-
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
-impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause3]: Destruct<T>,
-    [@TraitClause4]: Destruct<A>,
-{
-    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
-    non-dyn-compatible
-}
 
 fn UNIT_METADATA()
 {
