@@ -44,7 +44,8 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
     graph: &DiGraphMap<Id, ()>,
     sort_by: impl Fn(&Id) -> O,
 ) -> Vec<Vec<Id>> {
-    type SccId = usize;
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    struct SccId(usize);
 
     let mut sccs = tarjan_scc(graph);
 
@@ -57,20 +58,21 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
     let id_to_scc: SeqHashMap<Id, SccId> = sccs
         .iter()
         .enumerate()
+        .map(|(i, nodes)| (SccId(i), nodes))
         .flat_map(|(scc_id, scc_nodes)| scc_nodes.iter().map(move |node| (*node, scc_id)))
         .sorted_by_key(|(node, _)| sort_by(node))
         .collect();
 
-    // Also compute the graph of the sccs, where there is an edge between sccs if there's an edge
+    // Compute the graph of the sccs, where there is an edge between sccs if there's an edge
     // between some nodes of each scc.
     let mut scc_graph: DiGraphMap<SccId, ()> = DiGraphMap::new();
     // Add sccs in the order of their earliest element.
     for (_, &scc_id) in &id_to_scc {
         scc_graph.add_node(scc_id);
     }
-    for scc_id in 0..sccs.len() {
+    for (scc_id, scc_nodes) in sccs.iter().enumerate().map(|(i, nodes)| (SccId(i), nodes)) {
         // Add the scc neighbors in the desired node order.
-        for neighbor_scc_id in sccs[scc_id]
+        for neighbor_scc_id in scc_nodes
             .iter()
             .flat_map(|node| graph.neighbors(*node))
             .sorted_by_key(&sort_by)
@@ -80,7 +82,11 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
         }
     }
 
-    // Reorder the SCCs among themselves by a post-order visit of the graph.
+    // Reorder the SCCs among themselves by a post-order visit of the graph: for each scc (in the
+    // order of their earliest node in the desired order), we list it and all the sccs it depends
+    // on we haven't yet included, in postorder. This guarantees that the final order is a
+    // topological sort for the scc DAG. Moreover this will explore other sccs in order too because
+    // we sorted the list of neighbors.
     let mut reordered_sccs_ids: SeqHashSet<SccId> = SeqHashSet::new();
     for scc_id in scc_graph.nodes() {
         for scc_id in DfsPostOrder::new(&scc_graph, scc_id).iter(&scc_graph) {
@@ -91,7 +97,7 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
     // Output the fully reordered SCCs.
     reordered_sccs_ids
         .into_iter()
-        .map(|scc_id| mem::take(&mut sccs[scc_id]))
+        .map(|scc_id| mem::take(&mut sccs[scc_id.0]))
         .collect()
 }
 
