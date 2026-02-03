@@ -10,7 +10,7 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-fn test_crate::nonzero_disambiguator::my_function()
+fn test_crate::nonzero_disambiguator::my_function#1()
 {
     let _0: (); // return
 
@@ -19,7 +19,7 @@ fn test_crate::nonzero_disambiguator::my_function()
     return
 }
 
-fn test_crate::nonzero_disambiguator::my_function#1()
+fn test_crate::nonzero_disambiguator::my_function()
 {
     let _0: (); // return
 

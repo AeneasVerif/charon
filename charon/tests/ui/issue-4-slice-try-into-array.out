@@ -47,18 +47,6 @@ impl Debug for TryFromSliceError {
     vtable: {impl Debug for TryFromSliceError}::{vtable}
 }
 
-// Full name: core::convert::TryFrom
-#[lang_item("TryFrom")]
-pub trait TryFrom<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Error>
-    type Error
-    fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
-    non-dyn-compatible
-}
-
 // Full name: core::clone::Clone
 #[lang_item("clone")]
 pub trait Clone<Self>
@@ -74,6 +62,18 @@ pub trait Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::convert::TryFrom
+#[lang_item("TryFrom")]
+pub trait TryFrom<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Error>
+    type Error
+    fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
     non-dyn-compatible
 }
 

@@ -68,6 +68,14 @@ pub trait T3<Self>
     vtable: test_crate::T3::{vtable}<Self::T>
 }
 
+// Full name: test_crate::T4
+pub trait T4<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: T3<Self>
+    vtable: test_crate::T4::{vtable}<Self::parent_clause1::T>
+}
+
 // Full name: test_crate::T5
 pub trait T5<Self>
 {
@@ -76,14 +84,6 @@ pub trait T5<Self>
     parent_clause2 : [@TraitClause2]: T4<Self::T>
     type T
     vtable: test_crate::T5::{vtable}<Self::T>
-}
-
-// Full name: test_crate::T4
-pub trait T4<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: T3<Self>
-    vtable: test_crate::T4::{vtable}<Self::parent_clause1::T>
 }
 
 // Full name: test_crate::T6

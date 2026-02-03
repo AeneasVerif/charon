@@ -214,16 +214,16 @@ where
     [@TraitClause0]: Step<Self>,
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for usize}::steps_between
-pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+// Full name: core::iter::range::{impl Step for usize}::backward_checked
+pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::forward_checked
 pub fn {impl Step for usize}::forward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for usize}::backward_checked
-pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
+// Full name: core::iter::range::{impl Step for usize}::steps_between
+pub fn {impl Step for usize}::steps_between<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}
@@ -237,16 +237,16 @@ impl Step for usize {
     non-dyn-compatible
 }
 
-// Full name: core::iter::range::{impl Step for i32}::steps_between
-pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+// Full name: core::iter::range::{impl Step for i32}::backward_checked
+pub fn {impl Step for i32}::backward_checked(@1: i32, @2: usize) -> Option<i32>[{built_in impl Sized for i32}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::forward_checked
 pub fn {impl Step for i32}::forward_checked(@1: i32, @2: usize) -> Option<i32>[{built_in impl Sized for i32}]
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for i32}::backward_checked
-pub fn {impl Step for i32}::backward_checked(@1: i32, @2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+// Full name: core::iter::range::{impl Step for i32}::steps_between
+pub fn {impl Step for i32}::steps_between<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}
@@ -260,6 +260,16 @@ impl Step for i32 {
     non-dyn-compatible
 }
 
+// Full name: core::ops::range::Range
+#[lang_item("Range")]
+pub struct Range<Idx>
+where
+    [@TraitClause0]: Sized<Idx>,
+{
+  start: Idx,
+  end: Idx,
+}
+
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item("iterator")]
 pub trait Iterator<Self>
@@ -269,16 +279,6 @@ pub trait Iterator<Self>
     type Item
     fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
-}
-
-// Full name: core::ops::range::Range
-#[lang_item("Range")]
-pub struct Range<Idx>
-where
-    [@TraitClause0]: Sized<Idx>,
-{
-  start: Idx,
-  end: Idx,
 }
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next

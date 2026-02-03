@@ -106,22 +106,6 @@ where
     return
 }
 
-// Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Clone<T>,
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Modifiable<T> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut i32>(move dyn_self_1)
-    return
-}
-
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify::{vtable_method}
 fn {vtable_method}<'_0, '_1, T>(@1: &'_0 mut (dyn Modifiable<T>), @2: &'_1 T) -> T
 where
@@ -136,6 +120,22 @@ where
     storage_live(_3)
     _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move _1)
     _0 = {impl Modifiable<T> for i32}::modify<'_0, '_1, T>[@TraitClause0, @TraitClause1](move _3, move _2)
+    return
+}
+
+// Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Modifiable<T> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut i32>(move dyn_self_1)
     return
 }
 

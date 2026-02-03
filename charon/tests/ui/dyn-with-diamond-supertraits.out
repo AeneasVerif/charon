@@ -211,19 +211,6 @@ fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 i32, @2: i32) -> i32
     return
 }
 
-// Full name: test_crate::{impl Super<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Super<i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Super<i32> + '1), *mut i32>(move dyn_self_1)
-    return
-}
-
 // Full name: test_crate::{impl Super<i32> for i32}::super_method::{vtable_method}
 fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(@1: &'_0 (dyn Super<i32>), @2: i32) -> i32
 {
@@ -235,6 +222,19 @@ fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(@1: &'_0 (dyn S
     storage_live(_3)
     _3 = concretize<&'_0 (dyn Super<i32> + '1), &'_0 i32>(move _1)
     _0 = {impl Super<i32> for i32}::super_method<'_0>(move _3, move _2)
+    return
+}
+
+// Full name: test_crate::{impl Super<i32> for i32}::{vtable_drop_shim}
+unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Super<i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Super<i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Super<i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -281,19 +281,6 @@ fn {impl Internal for i32}::internal_method<'_0>(@1: &'_0 i32) -> i32
     return
 }
 
-// Full name: test_crate::{impl Internal for i32}::{vtable_drop_shim}
-unsafe fn {impl Internal for i32}::{vtable_drop_shim}(@1: *mut (dyn Internal<Internal = i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Internal<Internal = i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Internal<Internal = i32> + '1), *mut i32>(move dyn_self_1)
-    return
-}
-
 // Full name: test_crate::{impl Internal for i32}::internal_method::{vtable_method}
 fn {impl Internal for i32}::internal_method::{vtable_method}<'_0>(@1: &'_0 (dyn Internal<Internal = i32>)) -> i32
 {
@@ -304,6 +291,19 @@ fn {impl Internal for i32}::internal_method::{vtable_method}<'_0>(@1: &'_0 (dyn 
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Internal<Internal = i32> + '1), &'_0 i32>(move _1)
     _0 = {impl Internal for i32}::internal_method<'_0>(move _2)
+    return
+}
+
+// Full name: test_crate::{impl Internal for i32}::{vtable_drop_shim}
+unsafe fn {impl Internal for i32}::{vtable_drop_shim}(@1: *mut (dyn Internal<Internal = i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Internal<Internal = i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Internal<Internal = i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -351,19 +351,6 @@ fn {impl Left for i32}::left_method<'_0>(@1: &'_0 i32) -> i32
     return
 }
 
-// Full name: test_crate::{impl Left for i32}::{vtable_drop_shim}
-unsafe fn {impl Left for i32}::{vtable_drop_shim}(@1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Left<parent_clause1::Internal = i32, Left = i32> + '1), *mut i32>(move dyn_self_1)
-    return
-}
-
 // Full name: test_crate::{impl Left for i32}::left_method::{vtable_method}
 fn {impl Left for i32}::left_method::{vtable_method}<'_0>(@1: &'_0 (dyn Left<parent_clause1::Internal = i32, Left = i32>)) -> i32
 {
@@ -374,6 +361,19 @@ fn {impl Left for i32}::left_method::{vtable_method}<'_0>(@1: &'_0 (dyn Left<par
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Left<parent_clause1::Internal = i32, Left = i32> + '1), &'_0 i32>(move _1)
     _0 = {impl Left for i32}::left_method<'_0>(move _2)
+    return
+}
+
+// Full name: test_crate::{impl Left for i32}::{vtable_drop_shim}
+unsafe fn {impl Left for i32}::{vtable_drop_shim}(@1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Left<parent_clause1::Internal = i32, Left = i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -455,19 +455,6 @@ fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 i32) -> i32
     return
 }
 
-// Full name: test_crate::{impl Right<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Right<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32> + '1), *mut i32>(move dyn_self_1)
-    return
-}
-
 // Full name: test_crate::{impl Right<i32> for i32}::right_method::{vtable_method}
 fn {impl Right<i32> for i32}::right_method::{vtable_method}<'_0>(@1: &'_0 (dyn Right<i32, parent_clause1::Internal = i32, Right = i32>)) -> i32
 {
@@ -478,6 +465,19 @@ fn {impl Right<i32> for i32}::right_method::{vtable_method}<'_0>(@1: &'_0 (dyn R
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Right<i32, parent_clause1::Internal = i32, Right = i32> + '1), &'_0 i32>(move _1)
     _0 = {impl Right<i32> for i32}::right_method<'_0>(move _2)
+    return
+}
+
+// Full name: test_crate::{impl Right<i32> for i32}::{vtable_drop_shim}
+unsafe fn {impl Right<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 
@@ -543,19 +543,6 @@ fn {impl Join<i32> for i32}::join_method<'_0>(@1: &'_0 i32) -> (i32, i32)
     return
 }
 
-// Full name: test_crate::{impl Join<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Join<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '0); // arg #1
-    let target_self_2: *mut i32; // local
-
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '1), *mut i32>(move dyn_self_1)
-    return
-}
-
 // Full name: test_crate::{impl Join<i32> for i32}::join_method::{vtable_method}
 fn {impl Join<i32> for i32}::join_method::{vtable_method}<'_0>(@1: &'_0 (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32>)) -> (i32, i32)
 {
@@ -566,6 +553,19 @@ fn {impl Join<i32> for i32}::join_method::{vtable_method}<'_0>(@1: &'_0 (dyn Joi
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '1), &'_0 i32>(move _1)
     _0 = {impl Join<i32> for i32}::join_method<'_0>(move _2)
+    return
+}
+
+// Full name: test_crate::{impl Join<i32> for i32}::{vtable_drop_shim}
+unsafe fn {impl Join<i32> for i32}::{vtable_drop_shim}(@1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '1), *mut i32>(move dyn_self_1)
     return
 }
 

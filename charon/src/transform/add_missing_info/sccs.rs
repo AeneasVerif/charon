@@ -1,34 +1,18 @@
-use std::collections::HashMap;
 use std::fmt::Debug;
 use std::mem;
 use std::vec::Vec;
 
+use itertools::Itertools;
 use petgraph::algo::scc::tarjan_scc;
 use petgraph::graphmap::NodeTrait;
 use petgraph::prelude::DiGraphMap;
+use petgraph::visit::{DfsPostOrder, Walker};
 
 use crate::ast::*;
 
-/// Explore a DAG in a sort-of post-order. This naively explores the same node many times. If the
-/// graph has a loop, this won't terminate. We should probably do a real postorder but that would
-/// change the chosen ordering.
-fn weird_dag_postorder<Id: NodeTrait>(
-    graph: &DiGraphMap<Id, ()>,
-    visited: &mut SeqHashSet<Id>,
-    node: Id,
-) {
-    if visited.contains(&node) {
-        return;
-    }
-    for neighbor in graph.neighbors(node) {
-        weird_dag_postorder(graph, visited, neighbor)
-    }
-    visited.insert(node);
-}
-
 /// Compute the SCCs (Strongly Connected Components) of a set of identifiers, where the order of
 /// the SCCs and the order of the identifiers inside the SCCs attempt to respect as much as
-/// possible the original order between the identifiers.
+/// possible the sort order given. The provided `sort_by` should be cheap.
 ///
 /// This is used to generate the translated definitions in a consistent and stable manner. For
 /// instance, let's say we extract 4 definitions  `f`, `g1`, `g2` and `h`, where:
@@ -56,49 +40,64 @@ fn weird_dag_postorder<Id: NodeTrait>(
 /// SCCs Of course, this SCC might have dependencies, so we need to add the dependencies first (in
 /// which case we have reordering to do). This is what this function does: we add an SCC and its
 /// dependencies to the list of reordered SCCs by doing a depth-first search.
-pub fn ordered_scc<Id: NodeTrait + Debug>(graph: &DiGraphMap<Id, ()>) -> Vec<Vec<Id>> {
-    type SccId = usize;
+pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
+    graph: &DiGraphMap<Id, ()>,
+    sort_by: impl Fn(&Id) -> O,
+) -> Vec<Vec<Id>> {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    struct SccId(usize);
 
-    let sccs = tarjan_scc(graph);
-
-    // Map the nodes to their SCC index.
-    let id_to_scc: HashMap<Id, SccId> = sccs
-        .iter()
-        .enumerate()
-        .flat_map(|(scc_id, scc_nodes)| scc_nodes.iter().map(move |node| (*node, scc_id)))
-        .collect();
+    let mut sccs = tarjan_scc(graph);
 
     // Reorder the identifiers inside the SCCs.
-    let mut reordered_sccs: Vec<Vec<Id>> = sccs.iter().map(|_| vec![]).collect();
-    // Also compute the graph of the sccs, where there is an edge between sccs if there's an edge
+    for scc in sccs.iter_mut() {
+        scc.sort_by_key(&sort_by);
+    }
+
+    // Map the nodes to their SCC index. The map is sorted.
+    let id_to_scc: SeqHashMap<Id, SccId> = sccs
+        .iter()
+        .enumerate()
+        .map(|(i, nodes)| (SccId(i), nodes))
+        .flat_map(|(scc_id, scc_nodes)| scc_nodes.iter().map(move |node| (*node, scc_id)))
+        .sorted_by_key(|(node, _)| sort_by(node))
+        .collect();
+
+    // Compute the graph of the sccs, where there is an edge between sccs if there's an edge
     // between some nodes of each scc.
     let mut scc_graph: DiGraphMap<SccId, ()> = DiGraphMap::new();
-    for node in graph.nodes() {
-        let scc_id = *id_to_scc.get(&node).unwrap();
-        reordered_sccs[scc_id].push(node);
-
-        for neighbor in graph.neighbors(node) {
-            let neighbor_scc_id = *id_to_scc.get(&neighbor).unwrap();
-            if neighbor_scc_id == scc_id {
-                // Can't have a self loop because `weird_dag_postorder` loops on loops.
-                continue;
-            } else {
-                scc_graph.add_edge(scc_id, neighbor_scc_id, ());
-            }
+    // Add sccs in the order of their earliest element.
+    for (_, &scc_id) in &id_to_scc {
+        scc_graph.add_node(scc_id);
+    }
+    for (scc_id, scc_nodes) in sccs.iter().enumerate().map(|(i, nodes)| (SccId(i), nodes)) {
+        // Add the scc neighbors in the desired node order.
+        for neighbor_scc_id in scc_nodes
+            .iter()
+            .flat_map(|node| graph.neighbors(*node))
+            .sorted_by_key(&sort_by)
+            .map(|neighbor| *id_to_scc.get(&neighbor).unwrap())
+        {
+            scc_graph.add_edge(scc_id, neighbor_scc_id, ());
         }
     }
 
-    // Reorder the SCCs among themselves by a post-order visit of the graph.
+    // Reorder the SCCs among themselves by a post-order visit of the graph: for each scc (in the
+    // order of their earliest node in the desired order), we list it and all the sccs it depends
+    // on we haven't yet included, in postorder. This guarantees that the final order is a
+    // topological sort for the scc DAG. Moreover this will explore other sccs in order too because
+    // we sorted the list of neighbors.
     let mut reordered_sccs_ids: SeqHashSet<SccId> = SeqHashSet::new();
-    for id in graph.nodes() {
-        let scc_id = *id_to_scc.get(&id).unwrap();
-        weird_dag_postorder(&scc_graph, &mut reordered_sccs_ids, scc_id);
+    for scc_id in scc_graph.nodes() {
+        for scc_id in DfsPostOrder::new(&scc_graph, scc_id).iter(&scc_graph) {
+            reordered_sccs_ids.insert(scc_id);
+        }
     }
 
     // Output the fully reordered SCCs.
     reordered_sccs_ids
         .into_iter()
-        .map(|scc_id| mem::take(&mut reordered_sccs[scc_id]))
+        .map(|scc_id| mem::take(&mut sccs[scc_id.0]))
         .collect()
 }
 
@@ -109,9 +108,6 @@ mod tests {
     #[test]
     fn test_reorder_sccs1() {
         let mut graph = DiGraphMap::new();
-        for i in 0..=5 {
-            graph.add_node(i);
-        }
 
         // First nontrivial cc
         graph.add_edge(1, 2, ());
@@ -125,7 +121,7 @@ mod tests {
         graph.add_edge(0, 3, ());
         graph.add_edge(1, 3, ());
 
-        let reordered = super::ordered_scc(&graph);
+        let reordered = super::ordered_scc(&graph, |i| *i);
 
         assert_eq!(reordered, vec![vec![3, 4, 5], vec![0], vec![1, 2],]);
     }

@@ -101,29 +101,25 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait for ()}::CONST1
-fn {impl Trait for ()}::CONST1() -> usize
+// Full name: test_crate::{impl Trait for ()}::method2
+fn {impl Trait for ()}::method2()
 {
-    let _0: usize; // return
+    let _0: (); // return
 
-    _0 = const 1 : usize
+    _0 = ()
+    _0 = ()
     return
 }
 
-// Full name: test_crate::{impl Trait for ()}::CONST1
-const {impl Trait for ()}::CONST1: usize = {impl Trait for ()}::CONST1()
-
-// Full name: test_crate::{impl Trait for ()}::CONST2
-fn {impl Trait for ()}::CONST2() -> usize
+// Full name: test_crate::{impl Trait for ()}::method1
+fn {impl Trait for ()}::method1()
 {
-    let _0: usize; // return
+    let _0: (); // return
 
-    _0 = const 1 : usize
+    _0 = ()
+    _0 = ()
     return
 }
-
-// Full name: test_crate::{impl Trait for ()}::CONST2
-const {impl Trait for ()}::CONST2: usize = {impl Trait for ()}::CONST2()
 
 // Full name: test_crate::{impl Trait for ()}::CONST3
 fn {impl Trait for ()}::CONST3() -> usize
@@ -137,25 +133,29 @@ fn {impl Trait for ()}::CONST3() -> usize
 // Full name: test_crate::{impl Trait for ()}::CONST3
 const {impl Trait for ()}::CONST3: usize = {impl Trait for ()}::CONST3()
 
-// Full name: test_crate::{impl Trait for ()}::method1
-fn {impl Trait for ()}::method1()
+// Full name: test_crate::{impl Trait for ()}::CONST2
+fn {impl Trait for ()}::CONST2() -> usize
 {
-    let _0: (); // return
+    let _0: usize; // return
 
-    _0 = ()
-    _0 = ()
+    _0 = const 1 : usize
     return
 }
 
-// Full name: test_crate::{impl Trait for ()}::method2
-fn {impl Trait for ()}::method2()
-{
-    let _0: (); // return
+// Full name: test_crate::{impl Trait for ()}::CONST2
+const {impl Trait for ()}::CONST2: usize = {impl Trait for ()}::CONST2()
 
-    _0 = ()
-    _0 = ()
+// Full name: test_crate::{impl Trait for ()}::CONST1
+fn {impl Trait for ()}::CONST1() -> usize
+{
+    let _0: usize; // return
+
+    _0 = const 1 : usize
     return
 }
+
+// Full name: test_crate::{impl Trait for ()}::CONST1
+const {impl Trait for ()}::CONST1: usize = {impl Trait for ()}::CONST1()
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
@@ -166,6 +166,16 @@ impl Trait for () {
     fn method1 = {impl Trait for ()}::method1
     fn method2 = {impl Trait for ()}::method2
     non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Trait for u8}::method2
+fn {impl Trait for u8}::method2()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
 }
 
 // Full name: test_crate::{impl Trait for u8}::CONST2
@@ -182,16 +192,6 @@ const {impl Trait for u8}::CONST2: usize = {impl Trait for u8}::CONST2()
 
 // Full name: test_crate::{impl Trait for u8}::method1
 fn {impl Trait for u8}::method1()
-{
-    let _0: (); // return
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
-// Full name: test_crate::{impl Trait for u8}::method2
-fn {impl Trait for u8}::method2()
 {
     let _0: (); // return
 

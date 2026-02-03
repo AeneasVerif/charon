@@ -401,25 +401,6 @@ fn ptr_casts()
 // Full name: test_crate::fn_casts::closure
 struct closure {}
 
-fn test_crate::fn_casts::foo()
-{
-    let _0: (); // return
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
-// Full name: test_crate::fn_casts::bar
-unsafe fn bar()
-{
-    let _0: (); // return
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
 // Full name: test_crate::fn_casts::{impl Fn<(u8)> for closure}::call
 fn {impl Fn<(u8)> for closure}::call<'_0>(@1: &'_0 closure, @2: (u8))
 {
@@ -490,6 +471,25 @@ fn as_fn(@1: u8)
     args_2 = (move arg1_1)
     state_3 = closure {  }
     _0 = {impl FnOnce<(u8)> for closure}::call_once(move state_3, move args_2)
+    return
+}
+
+// Full name: test_crate::fn_casts::bar
+unsafe fn bar()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+fn test_crate::fn_casts::foo()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
     return
 }
 

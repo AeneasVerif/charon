@@ -1,9 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
-
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
@@ -11,6 +7,10 @@ pub trait Destruct<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
 
 // Full name: core::borrow::Borrow
 #[lang_item("Borrow")]

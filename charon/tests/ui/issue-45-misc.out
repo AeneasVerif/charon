@@ -4,20 +4,20 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::Tuple::{vtable}
+}
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnOnce
@@ -228,16 +228,16 @@ where
     [@TraitClause0]: Step<Self>,
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for u8}::steps_between
-pub fn {impl Step for u8}::steps_between<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+// Full name: core::iter::range::{impl Step for u8}::backward_checked
+pub fn {impl Step for u8}::backward_checked(@1: u8, @2: usize) -> Option<u8>[{built_in impl Sized for u8}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}::forward_checked
 pub fn {impl Step for u8}::forward_checked(@1: u8, @2: usize) -> Option<u8>[{built_in impl Sized for u8}]
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for u8}::backward_checked
-pub fn {impl Step for u8}::backward_checked(@1: u8, @2: usize) -> Option<u8>[{built_in impl Sized for u8}]
+// Full name: core::iter::range::{impl Step for u8}::steps_between
+pub fn {impl Step for u8}::steps_between<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}
@@ -251,6 +251,16 @@ impl Step for u8 {
     non-dyn-compatible
 }
 
+// Full name: core::ops::range::Range
+#[lang_item("Range")]
+pub struct Range<Idx>
+where
+    [@TraitClause0]: Sized<Idx>,
+{
+  start: Idx,
+  end: Idx,
+}
+
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item("iterator")]
 pub trait Iterator<Self>
@@ -260,16 +270,6 @@ pub trait Iterator<Self>
     type Item
     fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
-}
-
-// Full name: core::ops::range::Range
-#[lang_item("Range")]
-pub struct Range<Idx>
-where
-    [@TraitClause0]: Sized<Idx>,
-{
-  start: Idx,
-  end: Idx,
 }
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next

@@ -163,9 +163,6 @@ impl<const N : usize> HasDefaultLen<N> for [(); N] {
 }
 
 // Full name: test_crate::{impl HasDefaultLen<N> for [bool; N]}::LEN
-pub const {impl HasDefaultLen<N> for [bool; N]}::LEN<const N : usize>: usize = {impl HasDefaultLen<N> for [bool; N]}::LEN()
-
-// Full name: test_crate::{impl HasDefaultLen<N> for [bool; N]}::LEN
 pub fn {impl HasDefaultLen<N> for [bool; N]}::LEN<const N : usize>() -> usize
 {
     let _0: usize; // return
@@ -181,6 +178,9 @@ pub fn {impl HasDefaultLen<N> for [bool; N]}::LEN<const N : usize>() -> usize
     storage_dead(_1)
     return
 }
+
+// Full name: test_crate::{impl HasDefaultLen<N> for [bool; N]}::LEN
+pub const {impl HasDefaultLen<N> for [bool; N]}::LEN<const N : usize>: usize = {impl HasDefaultLen<N> for [bool; N]}::LEN()
 
 // Full name: test_crate::{impl HasDefaultLen<N> for [bool; N]}
 impl<const N : usize> HasDefaultLen<N> for [bool; N] {

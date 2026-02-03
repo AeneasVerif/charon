@@ -216,25 +216,6 @@ fn bar()
     return
 }
 
-// Full name: test_crate::bar::closure::{impl Destruct for test_crate::bar::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::bar::closure}::drop_in_place(@1: *mut test_crate::bar::closure)
-{
-    let _0: (); // return
-    let _1: *mut test_crate::bar::closure; // arg #1
-    let _2: &'0 mut test_crate::bar::closure; // anonymous local
-
-    storage_live(_2)
-    _0 = ()
-    _2 = &mut (*_1)
-    return
-}
-
-// Full name: test_crate::bar::closure::{impl Destruct for test_crate::bar::closure}
-impl Destruct for test_crate::bar::closure {
-    fn drop_in_place = {impl Destruct for test_crate::bar::closure}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: test_crate::bar::{impl Fn<()> for test_crate::bar::closure}::call
 fn {impl Fn<()> for test_crate::bar::closure}::call<'_0>(@1: &'_0 test_crate::bar::closure, @2: ())
 {
@@ -260,6 +241,25 @@ fn {impl FnMut<()> for test_crate::bar::closure}::call_mut<'_0>(@1: &'_0 mut tes
     _3 = &(*state_1)
     _0 = {impl Fn<()> for test_crate::bar::closure}::call<'2>(move _3, move args_2)
     return
+}
+
+// Full name: test_crate::bar::closure::{impl Destruct for test_crate::bar::closure}::drop_in_place
+unsafe fn {impl Destruct for test_crate::bar::closure}::drop_in_place(@1: *mut test_crate::bar::closure)
+{
+    let _0: (); // return
+    let _1: *mut test_crate::bar::closure; // arg #1
+    let _2: &'0 mut test_crate::bar::closure; // anonymous local
+
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1)
+    return
+}
+
+// Full name: test_crate::bar::closure::{impl Destruct for test_crate::bar::closure}
+impl Destruct for test_crate::bar::closure {
+    fn drop_in_place = {impl Destruct for test_crate::bar::closure}::drop_in_place
+    non-dyn-compatible
 }
 
 // Full name: test_crate::bar::{impl FnOnce<()> for test_crate::bar::closure}::call_once

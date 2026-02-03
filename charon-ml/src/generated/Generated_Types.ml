@@ -92,10 +92,10 @@ and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
 (** The id of a translated item. *)
 and item_id =
   | IdType of type_decl_id
-  | IdFun of fun_decl_id
-  | IdGlobal of global_decl_id
   | IdTraitDecl of trait_decl_id
   | IdTraitImpl of trait_impl_id
+  | IdFun of fun_decl_id
+  | IdGlobal of global_decl_id
 
 and trait_clause_id = (TraitClauseId.id[@visitors.opaque])
 and trait_decl_id = (TraitDeclId.id[@visitors.opaque])

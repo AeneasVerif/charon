@@ -44,10 +44,10 @@ generate_index_type!(TraitImplId, "TraitImpl");
 #[serde_state(stateless)]
 pub enum ItemId {
     Type(TypeDeclId),
-    Fun(FunDeclId),
-    Global(GlobalDeclId),
     TraitDecl(TraitDeclId),
     TraitImpl(TraitImplId),
+    Fun(FunDeclId),
+    Global(GlobalDeclId),
 }
 
 /// Implement `TryFrom`  and `From` to convert between an enum and its variants.

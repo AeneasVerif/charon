@@ -215,28 +215,28 @@ pub fn core::slice::index::SliceIndex::index::<RangeFrom::<usize>, [bool]><'_0>(
 pub fn core::slice::index::SliceIndex::index_mut::<RangeFrom::<usize>, [bool]><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut [bool]) -> &'_0 mut [bool]
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get::<bool>
-pub fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 [bool]) -> Option::<&'_ [bool]>
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_mut::<bool>
-pub fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_mut::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut [bool]) -> Option::<&'_ mut [bool]>
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_unchecked::<bool>
-pub unsafe fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_unchecked::<bool>(@1: RangeFrom::<usize>, @2: *const [bool]) -> *const [bool]
-= <opaque>
-
-// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_unchecked_mut::<bool>
-pub unsafe fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_unchecked_mut::<bool>(@1: RangeFrom::<usize>, @2: *mut [bool]) -> *mut [bool]
+// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::index_mut::<bool>
+pub fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::index_mut::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut [bool]) -> &'_0 mut [bool]
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::index::<bool>
 pub fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::index::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 [bool]) -> &'_0 [bool]
 = <opaque>
 
-// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::index_mut::<bool>
-pub fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::index_mut::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut [bool]) -> &'_0 mut [bool]
+// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_unchecked_mut::<bool>
+pub unsafe fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_unchecked_mut::<bool>(@1: RangeFrom::<usize>, @2: *mut [bool]) -> *mut [bool]
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_unchecked::<bool>
+pub unsafe fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_unchecked::<bool>(@1: RangeFrom::<usize>, @2: *const [bool]) -> *const [bool]
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_mut::<bool>
+pub fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get_mut::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 mut [bool]) -> Option::<&'_ mut [bool]>
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get::<bool>
+pub fn {impl SliceIndex::<RangeFrom::<usize>, [bool]>}::get::<bool><'_0>(@1: RangeFrom::<usize>, @2: &'_0 [bool]) -> Option::<&'_ [bool]>
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex::<RangeFrom::<usize>, [bool]>}::<bool>
@@ -337,19 +337,19 @@ fn foo()
     return
 }
 
-fn test_crate::funs_with_disambiguator::f() -> u32
-{
-    let _0: u32; // return
-
-    _0 = const 0 : u32
-    return
-}
-
 fn test_crate::funs_with_disambiguator::f#1() -> u32
 {
     let _0: u32; // return
 
     _0 = const 1 : u32
+    return
+}
+
+fn test_crate::funs_with_disambiguator::f() -> u32
+{
+    let _0: u32; // return
+
+    _0 = const 0 : u32
     return
 }
 
