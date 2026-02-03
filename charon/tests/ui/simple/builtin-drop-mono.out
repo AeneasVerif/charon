@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<String>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<String>
-
-// Full name: core::marker::Sized::<String>
-#[lang_item("sized")]
-pub trait Sized::<String>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<String>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<Global>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<Global>

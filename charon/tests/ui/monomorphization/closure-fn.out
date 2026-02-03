@@ -1,17 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<closure<'_, '_>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<closure<'_, '_>>
-
-// Full name: core::marker::Sized::<closure<'_, '_>>
-#[lang_item("sized")]
-pub trait Sized::<closure<'_, '_>>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<closure<'_, '_>>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<(u8, u8)>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<(u8, u8)>
@@ -23,6 +11,10 @@ pub trait Sized::<(u8, u8)>
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8, u8)>
     non-dyn-compatible
 }
+
+// Full name: core::marker::MetaSized::<closure<'_, '_>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<closure<'_, '_>>
 
 // Full name: test_crate::main::closure
 struct closure<'_0, '_1> {
@@ -84,22 +76,13 @@ pub trait Fn::<closure<'_, '_>, (u8, u8)>
     vtable: core::ops::function::Fn::{vtable}::<closure<'_, '_>, (u8, u8)><u8>
 }
 
-pub fn core::ops::function::Fn::call<'_0>(@1: &'_0 closure<'_, '_>, @2: (u8, u8)) -> u8
-= <opaque>
-
 pub fn core::ops::function::Fn::call::<closure<'_, '_>, (u8, u8)><'_0>(@1: &'_0 closure<'_, '_>, @2: (u8, u8)) -> u8
 = <opaque>
 
 pub fn core::ops::function::FnMut::call_mut::<closure<'_, '_>, (u8, u8)><'_0>(@1: &'_0 mut closure<'_, '_>, @2: (u8, u8)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut closure<'_, '_>, @2: (u8, u8)) -> u8
-= <opaque>
-
 pub fn core::ops::function::FnOnce::call_once::<closure<'_, '_>, (u8, u8)>(@1: closure<'_, '_>, @2: (u8, u8)) -> u8
-= <opaque>
-
-pub fn core::ops::function::FnOnce::call_once(@1: closure<'_, '_>, @2: (u8, u8)) -> u8
 = <opaque>
 
 fn UNIT_METADATA()

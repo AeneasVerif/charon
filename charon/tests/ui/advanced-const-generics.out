@@ -1,33 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone
-#[lang_item("clone")]
-pub trait Clone<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-= <opaque>
-
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
@@ -59,6 +31,18 @@ where
 // Full name: core::fmt::Error
 pub struct Error {}
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -86,89 +70,6 @@ where
 pub fn core::fmt::{Formatter<'a>}::write_str<'a, '_1, '_2>(@1: &'_1 mut Formatter<'a>, @2: &'_2 Str) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
-// Full name: core::hash::Hasher
-pub trait Hasher<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn finish<'_0_1> = finish<'_0_1, Self>[Self]
-    fn write<'_0_1, '_1_1> = write<'_0_1, '_1_1, Self>[Self]
-    vtable: core::hash::Hasher::{vtable}
-}
-
-// Full name: core::hash::Hash
-#[lang_item("Hash")]
-pub trait Hash<Self>
-{
-    fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = hash<'_0_1, '_1_1, Self, H>[Self, @TraitClause0_1, @TraitClause1_1]
-    non-dyn-compatible
-}
-
-// Full name: core::hash::Hash::hash
-pub fn hash<'_0, '_1, Self, H>(@1: &'_0 Self, @2: &'_1 mut H)
-where
-    [@TraitClause0]: Hash<Self>,
-    [@TraitClause1]: Sized<H>,
-    [@TraitClause2]: Hasher<H>,
-= <opaque>
-
-// Full name: core::hash::Hasher::finish
-pub fn finish<'_0, Self>(@1: &'_0 Self) -> u64
-where
-    [@TraitClause0]: Hasher<Self>,
-= <opaque>
-
-// Full name: core::hash::Hasher::write
-pub fn write<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 [u8])
-where
-    [@TraitClause0]: Hasher<Self>,
-= <opaque>
-
-// Full name: core::marker::Unpin
-#[lang_item("unpin")]
-pub trait Unpin<Self>
-
-// Full name: core::marker::Sync
-#[lang_item("sync")]
-pub trait Sync<Self>
-
-// Full name: core::marker::Copy
-#[lang_item("copy")]
-pub trait Copy<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Send
-#[lang_item("Send")]
-pub trait Send<Self>
-
-// Full name: core::marker::DiscriminantKind
-#[lang_item("discriminant_kind")]
-pub trait DiscriminantKind<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Discriminant>
-    parent_clause2 : [@TraitClause2]: Clone<Self::Discriminant>
-    parent_clause3 : [@TraitClause3]: Copy<Self::Discriminant>
-    parent_clause4 : [@TraitClause4]: Debug<Self::Discriminant>
-    parent_clause5 : [@TraitClause5]: Eq<Self::Discriminant>
-    parent_clause6 : [@TraitClause6]: PartialEq<Self::Discriminant, Self::Discriminant>
-    parent_clause7 : [@TraitClause7]: Hash<Self::Discriminant>
-    parent_clause8 : [@TraitClause8]: Send<Self::Discriminant>
-    parent_clause9 : [@TraitClause9]: Sync<Self::Discriminant>
-    parent_clause10 : [@TraitClause10]: Unpin<Self::Discriminant>
-    type Discriminant
-    vtable: core::marker::DiscriminantKind::{vtable}<Self::Discriminant>
-}
-
-// Full name: core::intrinsics::discriminant_value
-pub fn discriminant_value<'_0, T>(@1: &'_0 T) -> {built_in impl DiscriminantKind for T}::Discriminant
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
 // Full name: core::marker::StructuralPartialEq
 #[lang_item("structural_peq")]
 pub trait StructuralPartialEq<Self>
@@ -176,18 +77,6 @@ pub trait StructuralPartialEq<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::marker::StructuralPartialEq::{vtable}
 }
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
 
 // Full name: core::marker::ConstParamTy_
 #[lang_item("const_param_ty")]

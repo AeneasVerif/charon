@@ -12,14 +12,6 @@ pub trait PartialEq::<bool, bool>
 pub fn core::cmp::PartialEq::eq::<bool, bool><'_0, '_1>(@1: &'_0 bool, @2: &'_1 bool) -> bool
 = <opaque>
 
-// Full name: core::cmp::Eq::<bool>
-#[lang_item("Eq")]
-pub trait Eq::<bool>
-{
-    parent_clause0 : [@TraitClause0]: PartialEq::<bool, bool>
-    non-dyn-compatible
-}
-
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}::eq
 pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 bool, @2: &'_1 bool) -> bool
 = <opaque>
@@ -29,36 +21,6 @@ impl PartialEq::<bool, bool> {
     fn eq<'_0_1, '_1_1> = {impl PartialEq::<bool, bool>}::eq<'_0_1, '_1_1>
     vtable: {impl PartialEq::<bool, bool>}::{vtable}
 }
-
-// Full name: core::cmp::impls::{impl Eq::<bool>}
-impl Eq::<bool> {
-    parent_clause0 = {impl PartialEq::<bool, bool>}
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<bool>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<bool>
-
-// Full name: core::marker::Sized::<bool>
-#[lang_item("sized")]
-pub trait Sized::<bool>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Destruct::<bool>
-#[lang_item("destruct")]
-pub trait Destruct::<bool>
-{
-    fn drop_in_place = drop_in_place::<bool>
-    vtable: core::marker::Destruct::{vtable}::<bool>
-}
-
-// Full name: core::marker::Destruct::drop_in_place::<bool>
-unsafe fn drop_in_place::<bool>(@1: *mut bool)
-= <opaque>
 
 fn UNIT_METADATA()
 {

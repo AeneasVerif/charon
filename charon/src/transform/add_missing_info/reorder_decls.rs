@@ -7,14 +7,12 @@
 //! to be explicit about mutual recursion. This should come useful for translation to any other
 //! language with these properties.
 use crate::common::*;
-use crate::formatter::{FmtCtx, IntoFormatter};
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
 use itertools::Itertools;
 use petgraph::graphmap::DiGraphMap;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
@@ -138,10 +136,13 @@ impl Display for DeclarationGroup {
     }
 }
 
+#[derive(Default)]
 pub struct Deps {
     /// The dependency graph between translated items. We're careful to only add items that got
     /// translated.
-    dgraph: DiGraphMap<ItemId, ()>,
+    graph: DiGraphMap<ItemId, ()>,
+    unprocessed: Vec<ItemId>,
+    visited: HashSet<ItemId>,
 }
 
 /// We use this when computing the graph
@@ -196,19 +197,13 @@ pub struct DepsForItem<'a> {
 }
 
 impl Deps {
-    fn new() -> Self {
-        Deps {
-            dgraph: DiGraphMap::new(),
-        }
-    }
-
     fn visitor_for_item<'a>(
         &'a mut self,
         ctx: &'a TransformCtx,
         item: ItemRef<'_>,
     ) -> DepsForItem<'a> {
         let current_id = item.id();
-        self.dgraph.add_node(current_id);
+        self.graph.add_node(current_id);
 
         let mut for_item = DepsForItem {
             ctx,
@@ -234,11 +229,21 @@ impl Deps {
 }
 
 impl DepsForItem<'_> {
-    fn insert_edge(&mut self, tgt: impl Into<ItemId>) {
+    fn insert_node(&mut self, tgt: impl Into<ItemId>) {
         let tgt = tgt.into();
         // Only add translated items.
         if self.ctx.translated.get_item(tgt).is_some() {
-            self.deps.dgraph.add_edge(self.current_id, tgt, ());
+            if !self.deps.visited.contains(&tgt) {
+                self.deps.unprocessed.push(tgt);
+            }
+        }
+    }
+    fn insert_edge(&mut self, tgt: impl Into<ItemId>) {
+        let tgt = tgt.into();
+        self.insert_node(tgt);
+        // Only add translated items.
+        if self.ctx.translated.get_item(tgt).is_some() {
+            self.deps.graph.add_edge(self.current_id, tgt, ());
         }
     }
 }
@@ -286,29 +291,31 @@ impl VisitAst for DepsForItem<'_> {
     }
 }
 
-impl Deps {
-    fn fmt_with_ctx(&self, ctx: &FmtCtx<'_>) -> String {
-        self.dgraph
-            .nodes()
-            .map(|node| {
-                let edges = self
-                    .dgraph
-                    .edges(node)
-                    .map(|e| format!("\n  {}", e.1.with_ctx(ctx)))
-                    .collect::<Vec<String>>()
-                    .join(",");
+fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemId, ()> {
+    let mut deps = Deps::default();
+    // Start from the items included in `start_from`. We've mostly only translated items accessible
+    // from that, but some passes render items inaccessible again, which we filter out here.
+    deps.unprocessed = ctx
+        .translated
+        .all_items()
+        .filter(|item| {
+            ctx.options
+                .start_from
+                .iter()
+                .any(|pat| pat.matches(&ctx.translated, &item.item_meta().name))
+        })
+        .map(|item| item.id())
+        .collect();
 
-                format!("{} -> [{}\n]", node.with_ctx(ctx), edges)
-            })
-            .format(",\n")
-            .to_string()
-    }
-}
-
-fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
-    let mut graph = Deps::new();
-    for item in ctx.translated.all_items() {
-        let mut visitor = graph.visitor_for_item(ctx, item);
+    // Explore reachable items.
+    while let Some(id) = deps.unprocessed.pop() {
+        if !deps.visited.insert(id) {
+            continue;
+        }
+        let Some(item) = ctx.translated.get_item(id) else {
+            continue;
+        };
+        let mut visitor = deps.visitor_for_item(ctx, item);
         match item {
             ItemRef::Type(..) | ItemRef::TraitImpl(..) | ItemRef::Global(..) => {
                 let _ = item.drive(&mut visitor);
@@ -328,11 +335,15 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 let _ = generics.drive(&mut visitor);
                 let _ = signature.drive(&mut visitor);
                 let _ = body.drive(&mut visitor);
-                // FIXME(#514): A method declaration depends on its declaring trait because of its
-                // `Self` clause. While the clause is implicit, we make sure to record the
-                // dependency manually.
-                if let ItemSource::TraitDecl { trait_ref, .. } = src {
-                    visitor.insert_edge(trait_ref.id);
+                match src {
+                    ItemSource::TraitDecl { trait_ref, .. } => {
+                        visitor.insert_edge(trait_ref.id);
+                    }
+                    ItemSource::TraitImpl { impl_ref, .. } => {
+                        // Keep the impl around without recording a dependency.
+                        visitor.insert_node(impl_ref.id);
+                    }
+                    _ => (),
                 }
             }
             ItemRef::TraitDecl(d) => {
@@ -366,11 +377,13 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     } = assoc_const;
                     let _ = ty.drive(&mut visitor);
                     if let Some(gref) = default {
+                        visitor.insert_node(gref.id); // Still count the item as reachable.
                         let _ = gref.generics.drive(&mut visitor);
                     }
                 }
                 for bound_method in methods {
                     let id = bound_method.skip_binder.item.id;
+                    visitor.insert_node(id); // Still count the item as reachable.
                     let _ = bound_method.params.drive(&mut visitor);
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
                         let _ = decl.signature.drive(&mut visitor);
@@ -379,13 +392,19 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
             }
         }
     }
-    graph
+    deps.graph
 }
 
-fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
+fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
     // Build the graph of dependencies between items.
     let graph = compute_declarations_graph(ctx);
-    trace!("Graph:\n{}\n", graph.fmt_with_ctx(&ctx.into_fmt()));
+
+    // Remove unreachable items.
+    for id in ctx.translated.all_ids() {
+        if !graph.contains_node(id) {
+            ctx.translated.remove_item(id);
+        }
+    }
 
     // Pre-sort files to limit the number of costly string comparisons. Maps file ids to an index
     // that reflects ordering on the crates (with `core` and `std` sorted first) and file names.
@@ -424,7 +443,7 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
 
     // Compute SCCs (Strongly Connected Components) for the graph in a way that matches the chosen
     // order as much as possible.
-    let reordered_sccs = super::sccs::ordered_scc(&graph.dgraph, sort_by);
+    let reordered_sccs = super::sccs::ordered_scc(&graph, sort_by);
 
     // Convert to a list of declarations.
     let reordered_decls = reordered_sccs
@@ -440,8 +459,8 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
             // clause as argument, but rather projections over the self clause (like `<Self as
             // Foo>::u`, in the declaration for `Foo`).
             let id0 = scc[0];
-            let is_non_rec = scc.len() == 1
-                && (id0.is_trait_decl() || !graph.dgraph.neighbors(id0).contains(&id0));
+            let is_non_rec =
+                scc.len() == 1 && (id0.is_trait_decl() || !graph.neighbors(id0).contains(&id0));
 
             DeclarationGroup::make_group(!is_non_rec, scc)
         })
@@ -454,7 +473,7 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        let reordered_decls = compute_reordered_decls(&ctx);
+        let reordered_decls = compute_reordered_decls(ctx);
         ctx.translated.ordered_decls = Some(reordered_decls);
     }
 }

@@ -1,27 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<u32>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<u32>
-
-// Full name: core::marker::Sized::<u32>
-#[lang_item("sized")]
-pub trait Sized::<u32>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<u32>
-    non-dyn-compatible
-}
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::foo::<10 : usize>
 fn foo::<10 : usize>()
 {

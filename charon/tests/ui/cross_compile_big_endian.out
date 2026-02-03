@@ -11,16 +11,6 @@ pub const MAX: usize = MAX()
 pub fn to_ne_bytes(@1: u128) -> [u8; 16 : usize]
 = <opaque>
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::S
 fn S() -> [u8; 16 : usize]
 {

@@ -30,16 +30,6 @@ impl Destruct for String {
 pub fn new() -> String
 = <opaque>
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::use_string
 fn use_string(@1: String)
 {

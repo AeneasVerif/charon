@@ -4,26 +4,6 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized::<bool>
 
-// Full name: core::marker::Sized::<bool>
-#[lang_item("sized")]
-pub trait Sized::<bool>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<bool>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Destruct::<bool>
-#[lang_item("destruct")]
-pub trait Destruct::<bool>
-{
-    fn drop_in_place = drop_in_place::<bool>
-    vtable: core::marker::Destruct::{vtable}::<bool>
-}
-
-// Full name: core::marker::Destruct::drop_in_place::<bool>
-unsafe fn drop_in_place::<bool>(@1: *mut bool)
-= <opaque>
-
 fn UNIT_METADATA()
 {
     let _0: (); // return

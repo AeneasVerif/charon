@@ -192,18 +192,6 @@ pub trait Freeze<Self>
 #[lang_item("unpin")]
 pub trait Unpin<Self>
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 // Full name: core::ptr::metadata::Pointee
 #[lang_item("pointee_trait")]
 pub trait Pointee<Self>

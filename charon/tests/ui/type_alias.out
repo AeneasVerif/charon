@@ -43,18 +43,6 @@ where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -136,16 +124,6 @@ where
     fn to_owned<'_0_1> = {impl ToOwned for [T]}::to_owned<'_0_1, T>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::Usize
 pub type Usize = usize

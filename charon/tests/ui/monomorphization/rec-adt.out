@@ -1,29 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<u8>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<u8>
-
-// Full name: core::marker::Sized::<u8>
-#[lang_item("sized")]
-pub trait Sized::<u8>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<u8>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<NonNull::<Node::<u8>>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<NonNull::<Node::<u8>>>
-
-// Full name: core::marker::Sized::<NonNull::<Node::<u8>>>
-#[lang_item("sized")]
-pub trait Sized::<NonNull::<Node::<u8>>>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<NonNull::<Node::<u8>>>
-    non-dyn-compatible
-}
-
 // Full name: core::ptr::non_null::NonNull::<Node::<u8>>
 #[lang_item("NonNull")]
 pub opaque type NonNull::<Node::<u8>>
@@ -35,25 +11,9 @@ pub enum Option::<NonNull::<Node::<u8>>> {
   Some(NonNull::<Node::<u8>>),
 }
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun1()
-
 // Full name: test_crate::LinkedList::<u8>
 pub struct LinkedList::<u8> {
   head: Option::<NonNull::<Node::<u8>>>,
-}
-
-// Full name: test_crate::Node::<u8>
-struct Node::<u8> {
-  next: Option::<NonNull::<Node::<u8>>>,
-  element: u8,
 }
 
 // Full name: test_crate::{LinkedList::<u8>}::new::<u8>

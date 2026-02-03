@@ -104,16 +104,6 @@ unsafe fn drop_in_place<Self>(@1: *mut Self)
 #[lang_item("String")]
 pub opaque type String
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::Struct
 struct Struct<A>
 where

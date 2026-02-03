@@ -44,26 +44,6 @@ trait MyIterator::<B>
     vtable: test_crate::MyIterator::{vtable}::<B><u8>
 }
 
-fn test_crate::MyIterator::method<'_0>(@1: &'_0 A)
-{
-    let _0: (); // return
-    let self_1: &'0 A; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
-fn test_crate::MyIterator::method<'_0>(@1: &'_0 B)
-{
-    let _0: (); // return
-    let self_1: &'0 B; // arg #1
-
-    _0 = ()
-    _0 = ()
-    return
-}
-
 fn test_crate::MyIterator::method::<A><'_0>(@1: &'_0 A)
 {
     let _0: (); // return

@@ -24,16 +24,6 @@ pub trait Destruct<Self>
 unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::ignore
 fn ignore<T>(@1: T)
 where

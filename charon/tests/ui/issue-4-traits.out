@@ -173,18 +173,6 @@ impl Copy for u8 {
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap
 pub fn unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
@@ -192,16 +180,6 @@ where
     [@TraitClause1]: Sized<E>,
     [@TraitClause2]: Debug<E>,
 = <opaque>
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::trait_error
 fn trait_error<'_0>(@1: &'_0 [u8])

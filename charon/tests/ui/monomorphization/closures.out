@@ -1,41 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<test_crate::main::closure<'_>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure<'_>>
-
-// Full name: core::marker::Sized::<test_crate::main::closure<'_>>
-#[lang_item("sized")]
-pub trait Sized::<test_crate::main::closure<'_>>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<test_crate::main::closure#1<'_>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure#1<'_>>
-
-// Full name: core::marker::Sized::<test_crate::main::closure#1<'_>>
-#[lang_item("sized")]
-pub trait Sized::<test_crate::main::closure#1<'_>>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized::<test_crate::main::closure#2>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure#2>
-
-// Full name: core::marker::Sized::<test_crate::main::closure#2>
-#[lang_item("sized")]
-pub trait Sized::<test_crate::main::closure#2>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
-    non-dyn-compatible
-}
-
 // Full name: core::marker::MetaSized::<(u8)>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<(u8)>
@@ -48,17 +12,17 @@ pub trait Sized::<(u8)>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized::<Thing>
+// Full name: core::marker::MetaSized::<test_crate::main::closure<'_>>
 #[lang_item("meta_sized")]
-pub trait MetaSized::<Thing>
+pub trait MetaSized::<test_crate::main::closure<'_>>
 
-// Full name: core::marker::Sized::<Thing>
-#[lang_item("sized")]
-pub trait Sized::<Thing>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<Thing>
-    non-dyn-compatible
-}
+// Full name: core::marker::MetaSized::<test_crate::main::closure#1<'_>>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<test_crate::main::closure#1<'_>>
+
+// Full name: core::marker::MetaSized::<test_crate::main::closure#2>
+#[lang_item("meta_sized")]
+pub trait MetaSized::<test_crate::main::closure#2>
 
 struct test_crate::main::closure<'_0> {
   &'_0 u8,
@@ -99,14 +63,6 @@ pub trait Destruct::<test_crate::main::closure#2>
     vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure#2>
 }
 
-// Full name: core::marker::Destruct::<Thing>
-#[lang_item("destruct")]
-pub trait Destruct::<Thing>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<Thing>
-    vtable: core::marker::Destruct::{vtable}::<Thing>
-}
-
 unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
 = <opaque>
 
@@ -114,9 +70,6 @@ unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_
 = <opaque>
 
 unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_in_place::<Thing>(@1: *mut Thing)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(u8)>
@@ -170,9 +123,6 @@ pub trait Fn::<test_crate::main::closure<'_>, (u8)>
 pub fn core::ops::function::Fn::call::<test_crate::main::closure<'_>, (u8)><'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8)) -> u8
 = <opaque>
 
-pub fn core::ops::function::Fn::call<'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8)) -> u8
-= <opaque>
-
 // Full name: core::ops::function::FnOnce::<test_crate::main::closure#1<'_>, (u8)>
 #[lang_item("fn_once")]
 pub trait FnOnce::<test_crate::main::closure#1<'_>, (u8)>
@@ -199,12 +149,6 @@ pub trait FnMut::<test_crate::main::closure#1<'_>, (u8)>
 pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8)><'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8)) -> u8
-= <opaque>
-
-pub fn core::ops::function::FnMut::call_mut<'_0>(@1: &'_0 mut test_crate::main::closure<'_>, @2: (u8)) -> u8
-= <opaque>
-
 pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8)><'_0>(@1: &'_0 mut test_crate::main::closure<'_>, @2: (u8)) -> u8
 = <opaque>
 
@@ -222,9 +166,6 @@ pub trait FnOnce::<test_crate::main::closure#2, (u8)>
 pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8)>(@1: test_crate::main::closure#2, @2: (u8)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once(@1: test_crate::main::closure#2, @2: (u8)) -> u8
-= <opaque>
-
 pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8)>(@1: test_crate::main::closure<'_>, @2: (u8)) -> u8
 = <opaque>
 
@@ -240,25 +181,6 @@ fn UNIT_METADATA()
 }
 
 const UNIT_METADATA: () = @Fun1()
-
-// Full name: test_crate::Thing::{impl Destruct::<Thing>}::drop_in_place
-unsafe fn {impl Destruct::<Thing>}::drop_in_place(@1: *mut Thing)
-{
-    let _0: (); // return
-    let _1: *mut Thing; // arg #1
-    let _2: &'0 mut Thing; // anonymous local
-
-    storage_live(_2)
-    _0 = ()
-    _2 = &mut (*_1)
-    return
-}
-
-// Full name: test_crate::Thing::{impl Destruct::<Thing>}
-impl Destruct::<Thing> {
-    fn drop_in_place = {impl Destruct::<Thing>}::drop_in_place
-    non-dyn-compatible
-}
 
 // Full name: test_crate::main::{impl Fn::<test_crate::main::closure<'_>, (u8)>}::call
 fn {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'_0, '_1>(@1: &'_1 test_crate::main::closure<'_0>, @2: (u8)) -> u8

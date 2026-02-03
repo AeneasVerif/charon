@@ -9,16 +9,6 @@ pub fn drop<T>(@1: T)
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
-
 // Full name: test_crate::Foo
 struct Foo {
   x: alloc::boxed::Box<u32>,

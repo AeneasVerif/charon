@@ -40,18 +40,6 @@ impl<'_0> Add<i32> for &'_0 i32 {
     vtable: {impl Add<i32> for &'_0 i32}::{vtable}<'_0>
 }
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
 #[lang_item("add")]
 pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0::Output
 where
