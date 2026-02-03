@@ -63,6 +63,15 @@ pub trait Destruct::<test_crate::main::closure#2>
     vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure#2>
 }
 
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
+= <opaque>
+
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
+= <opaque>
+
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
+= <opaque>
+
 // Full name: core::marker::Tuple::<(u8)>
 #[lang_item("tuple_trait")]
 pub trait Tuple::<(u8)>
@@ -111,6 +120,9 @@ pub trait Fn::<test_crate::main::closure<'_>, (u8)>
     vtable: core::ops::function::Fn::{vtable}::<test_crate::main::closure<'_>, (u8)><u8>
 }
 
+pub fn core::ops::function::Fn::call::<test_crate::main::closure<'_>, (u8)><'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8)) -> u8
+= <opaque>
+
 // Full name: core::ops::function::FnOnce::<test_crate::main::closure#1<'_>, (u8)>
 #[lang_item("fn_once")]
 pub trait FnOnce::<test_crate::main::closure#1<'_>, (u8)>
@@ -134,6 +146,12 @@ pub trait FnMut::<test_crate::main::closure#1<'_>, (u8)>
     vtable: core::ops::function::FnMut::{vtable}::<test_crate::main::closure#1<'_>, (u8)><u8>
 }
 
+pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8)><'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8)) -> u8
+= <opaque>
+
+pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8)><'_0>(@1: &'_0 mut test_crate::main::closure<'_>, @2: (u8)) -> u8
+= <opaque>
+
 // Full name: core::ops::function::FnOnce::<test_crate::main::closure#2, (u8)>
 #[lang_item("fn_once")]
 pub trait FnOnce::<test_crate::main::closure#2, (u8)>
@@ -144,6 +162,15 @@ pub trait FnOnce::<test_crate::main::closure#2, (u8)>
     fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8)>
     vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure#2, (u8)><u8>
 }
+
+pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8)>(@1: test_crate::main::closure#2, @2: (u8)) -> u8
+= <opaque>
+
+pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8)>(@1: test_crate::main::closure<'_>, @2: (u8)) -> u8
+= <opaque>
+
+pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8)>(@1: test_crate::main::closure#1<'_>, @2: (u8)) -> u8
+= <opaque>
 
 fn UNIT_METADATA()
 {

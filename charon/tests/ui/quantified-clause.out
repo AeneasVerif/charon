@@ -21,6 +21,13 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone::clone
+#[lang_item("clone_fn")]
+pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+= <opaque>
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -58,6 +65,20 @@ where
     vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
+// Full name: core::iter::traits::collect::IntoIterator::into_iter
+#[lang_item("into_iter")]
+pub fn into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
+where
+    [@TraitClause0]: IntoIterator<Self>,
+= <opaque>
+
+// Full name: core::iter::traits::iterator::Iterator::next
+#[lang_item("next")]
+pub fn next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+= <opaque>
+
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
@@ -74,6 +95,10 @@ pub trait Destruct<Self>
     fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -107,6 +132,18 @@ pub trait FnMut<Self, Args>
     fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
+
+// Full name: core::ops::function::FnMut::call_mut
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
+
+// Full name: core::ops::function::FnOnce::call_once
+pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 // Full name: core::result::Result
 #[lang_item("Result")]

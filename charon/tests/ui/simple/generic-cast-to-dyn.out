@@ -21,6 +21,12 @@ where
     vtable: core::any::Any::{vtable}
 }
 
+// Full name: core::any::Any::type_id
+pub fn type_id<'_0, Self>(@1: &'_0 Self) -> TypeId
+where
+    [@TraitClause0]: Any<Self>,
+= <opaque>
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>

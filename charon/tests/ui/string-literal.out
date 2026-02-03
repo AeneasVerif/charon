@@ -34,6 +34,11 @@ pub trait Display<Self>
     vtable: core::fmt::Display::{vtable}
 }
 
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+where
+    [@TraitClause0]: Display<Self>,
+= <opaque>
+
 // Full name: core::fmt::{impl Display for Str}::fmt
 pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 Str, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
@@ -51,6 +56,9 @@ pub trait Destruct<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]

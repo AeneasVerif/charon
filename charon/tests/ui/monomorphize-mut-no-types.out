@@ -78,6 +78,19 @@ pub trait core::marker::Destruct::<Option<Option<&_ mut _>>><'_0, T0>
     vtable: core::marker::Destruct::{vtable}
 }
 
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
+unsafe fn core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>(@1: *mut &'_0 mut T0)
+= <opaque>
+
+unsafe fn core::marker::Destruct::drop_in_place::<Option<&_ mut _>><'_0, T0>(@1: *mut Option<&'_0 mut T0>)
+= <opaque>
+
+unsafe fn core::marker::Destruct::drop_in_place::<Option<Option<&_ mut _>>><'_0, T0>(@1: *mut Option<Option<&'_0 mut T0>>)
+= <opaque>
+
 fn UNIT_METADATA()
 {
     let _0: (); // return

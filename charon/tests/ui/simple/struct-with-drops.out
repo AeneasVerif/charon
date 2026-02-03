@@ -20,6 +20,9 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::ops::drop::Drop
 #[lang_item("drop")]
 pub trait Drop<Self>
@@ -29,6 +32,11 @@ pub trait Drop<Self>
     fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut Self)
+where
+    [@TraitClause0]: Drop<Self>,
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]

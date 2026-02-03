@@ -21,6 +21,12 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+= <opaque>
+
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
@@ -52,6 +58,10 @@ pub trait Destruct<Self>
     fn drop_in_place = drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]

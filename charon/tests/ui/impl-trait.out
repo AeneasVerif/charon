@@ -58,6 +58,9 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -78,6 +81,11 @@ pub trait FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 fn UNIT_METADATA()
 {

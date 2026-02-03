@@ -62,6 +62,31 @@ pub trait PartialEq<Self, Rhs>
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
+// Full name: core::cmp::PartialEq::eq
+#[lang_item("cmp_partialeq_eq")]
+pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+= <method_without_default_body>
+
+// Full name: core::cmp::PartialEq::ne
+#[lang_item("cmp_partialeq_ne")]
+pub fn ne<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+{
+    let _0: bool; // return
+    let self_1: &'0 Self; // arg #1
+    let other_2: &'1 Rhs; // arg #2
+    let _3: bool; // anonymous local
+
+    storage_live(_3)
+    _3 = @TraitClause0::eq<'4, '5>(move self_1, move other_2)
+    _0 = ~(move _3)
+    storage_dead(_3)
+    return
+}
+
 // Full name: core::convert::num::{impl From<i32> for i64}::from
 pub fn {impl From<i32> for i64}::from(@1: i32) -> i64
 {
@@ -75,6 +100,9 @@ pub fn {impl From<i32> for i64}::from(@1: i32) -> i64
 // Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
 pub struct PhantomData<T> {}
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <missing>
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {

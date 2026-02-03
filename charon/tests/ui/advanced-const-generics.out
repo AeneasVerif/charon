@@ -8,6 +8,12 @@ pub trait PartialEq<Self, Rhs>
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
+
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
 pub trait Eq<Self>
@@ -16,6 +22,11 @@ pub trait Eq<Self>
     fn assert_receiver_is_total_eq<'_0_1> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_1, Self>[Self]
     non-dyn-compatible
 }
+
+pub fn core::cmp::Eq::assert_receiver_is_total_eq<'_0, Self>(@1: &'_0 Self)
+where
+    [@TraitClause0]: Eq<Self>,
+= <opaque>
 
 // Full name: core::fmt::Error
 pub struct Error {}
@@ -50,6 +61,11 @@ pub trait Debug<Self>
     fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Debug::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: core::fmt::Debug::{vtable}
 }
+
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+where
+    [@TraitClause0]: Debug<Self>,
+= <opaque>
 
 pub fn core::fmt::{Formatter<'a>}::write_str<'a, '_1, '_2>(@1: &'_1 mut Formatter<'a>, @2: &'_2 Str) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>

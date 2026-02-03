@@ -46,6 +46,11 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+where
+    [@TraitClause0]: Debug<Self>,
+= <opaque>
+
 // Full name: core::fmt::{impl Debug for &'_0 T}::fmt
 pub fn {impl Debug for &'_0 T}::fmt<'_0, '_1, '_2, '_3, T>(@1: &'_1 &'_0 T, @2: &'_2 mut Formatter<'_3>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where

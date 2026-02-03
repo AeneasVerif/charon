@@ -21,6 +21,12 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 i32) -> i32
 = <opaque>
@@ -62,6 +68,12 @@ pub trait PartialEq<Self, Rhs>
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
+
 // Full name: core::cmp::Ordering
 #[lang_item("Ordering")]
 pub enum Ordering {
@@ -88,6 +100,12 @@ pub trait PartialOrd<Self, Rhs>
     fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
+
+#[lang_item("cmp_partialord_cmp")]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
 pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> bool
@@ -164,6 +182,21 @@ pub trait Step<Self>
     fn backward_checked = core::iter::range::Step::backward_checked<Self>[Self]
     non-dyn-compatible
 }
+
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
+
+pub fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
+
+pub fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
 pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>[{built_in impl Sized for usize}]
@@ -282,6 +315,12 @@ where
     [@TraitClause1]: Iterator<I>,
 = <opaque>
 
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+= <opaque>
+
 // Full name: core::slice::index::private_slice_index::Sealed
 pub trait Sealed<Self>
 {
@@ -312,6 +351,36 @@ pub trait SliceIndex<Self, T>
     fn index_mut<'_0_1> = core::slice::index::SliceIndex::index_mut<'_0_1, Self, T>[Self]
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
+
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 T) -> Option<&'_0 @TraitClause0::Output>[{built_in impl Sized for &'_0 @TraitClause0::Output}]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut T) -> Option<&'_0 mut @TraitClause0::Output>[{built_in impl Sized for &'_0 mut @TraitClause0::Output}]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 T) -> &'_0 @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut T) -> &'_0 mut @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
 pub fn {impl SliceIndex<[T]> for usize}::index_mut<'_0, T>(@1: usize, @2: &'_0 mut [T]) -> &'_0 mut T

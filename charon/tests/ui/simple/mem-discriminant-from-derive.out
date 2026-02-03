@@ -8,6 +8,12 @@ pub trait PartialEq<Self, Rhs>
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
+
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}::eq
 pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(@1: &'_0 u8, @2: &'_1 u8) -> bool
 = <opaque>

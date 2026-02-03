@@ -20,6 +20,9 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>

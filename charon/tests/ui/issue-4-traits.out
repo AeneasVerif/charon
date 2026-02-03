@@ -98,6 +98,12 @@ where
     non-dyn-compatible
 }
 
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for u8}::clone
 pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
 = <opaque>
@@ -109,12 +115,23 @@ impl Clone for u8 {
     non-dyn-compatible
 }
 
+#[lang_item("try_from_fn")]
+pub fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause0::parent_clause0, @TraitClause0::parent_clause2]
+where
+    [@TraitClause0]: TryFrom<Self, T>,
+= <opaque>
+
 // Full name: core::convert::{impl TryInto<U> for T}::try_into
 pub fn {impl TryInto<U> for T}::try_into<T, U>(@1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: TryFrom<U, T>,
+= <opaque>
+
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+where
+    [@TraitClause0]: Debug<Self>,
 = <opaque>
 
 // Full name: core::marker::{impl Copy for u8}

@@ -20,6 +20,10 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::ops::range::RangeFrom
 #[lang_item("RangeFrom")]
 pub struct RangeFrom<Idx>
@@ -83,6 +87,36 @@ impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}] {
     parent_clause0 = {built_in impl MetaSized for RangeFrom<usize>[{built_in impl Sized for usize}]}
     vtable: {impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}::{vtable}
 }
+
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 T) -> Option<&'_0 @TraitClause0::Output>[{built_in impl Sized for &'_0 @TraitClause0::Output}]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut T) -> Option<&'_0 mut @TraitClause0::Output>[{built_in impl Sized for &'_0 mut @TraitClause0::Output}]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 T) -> &'_0 @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
+
+pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut T) -> &'_0 mut @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
+= <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut
 pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(@1: RangeFrom<usize>[{built_in impl Sized for usize}], @2: &'_0 mut [T]) -> &'_0 mut [T]

@@ -41,6 +41,11 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut Self)
+where
+    [@TraitClause0]: Drop<Self>,
+= <opaque>
+
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)
 = <opaque>

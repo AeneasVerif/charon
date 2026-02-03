@@ -8,6 +8,9 @@ pub trait Destruct<Self>
     vtable: {vtable}
 }
 
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String

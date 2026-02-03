@@ -12,6 +12,9 @@ pub trait Destruct::<String>
     vtable: core::marker::Destruct::{vtable}::<String>
 }
 
+unsafe fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
+= <opaque>
+
 // Full name: alloc::string::String::{impl Destruct::<String>}::drop_in_place
 unsafe fn {impl Destruct::<String>}::drop_in_place(@1: *mut String)
 = <opaque>

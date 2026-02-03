@@ -40,6 +40,12 @@ where
     [@TraitClause1]: Iterator<I>,
 = <opaque>
 
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+= <opaque>
+
 // Full name: core::slice::iter::Chunks
 pub opaque type Chunks<'a, T>
 where

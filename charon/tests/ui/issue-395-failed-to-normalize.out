@@ -33,6 +33,13 @@ pub trait Iterator<Self>
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
+// Full name: core::iter::traits::iterator::Iterator::next
+#[lang_item("next")]
+pub fn next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+= <opaque>
+
 // Full name: test_crate::Trait
 pub trait Trait<Self>
 {

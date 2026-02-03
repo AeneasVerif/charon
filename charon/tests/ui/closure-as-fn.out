@@ -20,6 +20,9 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -64,6 +67,21 @@ pub trait Fn<Self, Args>
     fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
+
+pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+where
+    [@TraitClause0]: Fn<Self, Args>,
+= <opaque>
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 fn UNIT_METADATA()
 {

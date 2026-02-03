@@ -229,13 +229,20 @@ impl Deps {
 }
 
 impl DepsForItem<'_> {
-    fn insert_edge(&mut self, tgt: impl Into<ItemId>) {
+    fn insert_node(&mut self, tgt: impl Into<ItemId>) {
         let tgt = tgt.into();
         // Only add translated items.
         if self.ctx.translated.get_item(tgt).is_some() {
             if !self.deps.visited.contains(&tgt) {
                 self.deps.unprocessed.push(tgt);
             }
+        }
+    }
+    fn insert_edge(&mut self, tgt: impl Into<ItemId>) {
+        let tgt = tgt.into();
+        self.insert_node(tgt);
+        // Only add translated items.
+        if self.ctx.translated.get_item(tgt).is_some() {
             self.deps.graph.add_edge(self.current_id, tgt, ());
         }
     }
@@ -366,11 +373,13 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
                     } = assoc_const;
                     let _ = ty.drive(&mut visitor);
                     if let Some(gref) = default {
+                        visitor.insert_node(gref.id); // Still count the item as reachable.
                         let _ = gref.generics.drive(&mut visitor);
                     }
                 }
                 for bound_method in methods {
                     let id = bound_method.skip_binder.item.id;
+                    visitor.insert_node(id); // Still count the item as reachable.
                     let _ = bound_method.params.drive(&mut visitor);
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
                         let _ = decl.signature.drive(&mut visitor);

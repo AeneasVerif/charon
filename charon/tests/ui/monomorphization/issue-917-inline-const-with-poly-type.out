@@ -27,6 +27,9 @@ pub trait Destruct::<closure::<()>>
     vtable: core::marker::Destruct::{vtable}::<closure::<()>>
 }
 
+unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
+= <opaque>
+
 // Full name: core::marker::Tuple::<(())>
 #[lang_item("tuple_trait")]
 pub trait Tuple::<(())>
@@ -69,6 +72,15 @@ pub trait Fn::<closure::<()>, (())>
     fn call<'_0_1> = core::ops::function::Fn::call::<closure::<()>, (())><'_0_1>
     vtable: core::ops::function::Fn::{vtable}::<closure::<()>, (())><()>
 }
+
+pub fn core::ops::function::Fn::call::<closure::<()>, (())><'_0>(@1: &'_0 closure::<()>, @2: (()))
+= <opaque>
+
+pub fn core::ops::function::FnMut::call_mut::<closure::<()>, (())><'_0>(@1: &'_0 mut closure::<()>, @2: (()))
+= <opaque>
+
+pub fn core::ops::function::FnOnce::call_once::<closure::<()>, (())>(@1: closure::<()>, @2: (()))
+= <opaque>
 
 fn UNIT_METADATA()
 {

@@ -8,6 +8,12 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for usize}::clone
 pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
 = <opaque>
@@ -25,6 +31,12 @@ pub trait PartialEq<Self, Rhs>
     fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
+
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::Ordering
 #[lang_item("Ordering")]
@@ -49,6 +61,12 @@ pub trait PartialOrd<Self, Rhs>
     fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
+
+#[lang_item("cmp_partialord_cmp")]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> Option<Ordering>
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
+= <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
 pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(@1: &'_0 usize, @2: &'_1 usize) -> bool
@@ -82,6 +100,21 @@ pub trait Step<Self>
     fn backward_checked = core::iter::range::Step::backward_checked<Self>[Self]
     non-dyn-compatible
 }
+
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 Self, @2: &'_1 Self) -> (usize, Option<usize>)
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
+
+pub fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> Option<Self>
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
+
+pub fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> Option<Self>
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
 pub fn {impl Step for usize}::backward_checked(@1: usize, @2: usize) -> Option<usize>
@@ -139,6 +172,12 @@ where
 pub fn {impl IntoIterator<Clause0_Item, I> for I}::into_iter<I, Clause0_Item>(@1: I) -> I
 where
     [@TraitClause0]: Iterator<I, Clause0_Item>,
+= <opaque>
+
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self, Clause0_Item>(@1: &'_0 mut Self) -> Option<Clause0_Item>
+where
+    [@TraitClause0]: Iterator<Self, Clause0_Item>,
 = <opaque>
 
 fn UNIT_METADATA()

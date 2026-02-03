@@ -87,6 +87,9 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::ops::function::Fn
 #[lang_item("fn")]
 pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
@@ -102,6 +105,16 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 Self, @2: Args) -> Clause0_Clause1_Clause1_Output
 where
     [@TraitClause0]: Fn<Self, Args, Clause0_Clause1_Clause1_Output>,
+= <opaque>
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Clause0_Clause1_Output>(@1: &'_0 mut Self, @2: Args) -> Clause0_Clause1_Output
+where
+    [@TraitClause0]: FnMut<Self, Args, Clause0_Clause1_Output>,
+= <opaque>
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args, Clause0_Output>(@1: Self, @2: Args) -> Clause0_Output
+where
+    [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
 = <opaque>
 
 // Full name: core::option::Option

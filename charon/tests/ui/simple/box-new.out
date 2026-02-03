@@ -43,6 +43,16 @@ pub trait Allocator<Self>
     vtable: core::alloc::Allocator::{vtable}
 }
 
+pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 Self, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+where
+    [@TraitClause0]: Allocator<Self>,
+= <opaque>
+
+pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(@1: &'_0 Self, @2: NonNull<u8>, @3: Layout)
+where
+    [@TraitClause0]: Allocator<Self>,
+= <opaque>
+
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
@@ -50,6 +60,9 @@ pub trait Destruct<Self>
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     vtable: core::marker::Destruct::{vtable}
 }
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]

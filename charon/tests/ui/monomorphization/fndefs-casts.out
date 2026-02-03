@@ -70,8 +70,20 @@ pub trait Fn::<for<'a> foo::<u32><'a>, (&'_ u32)>
     vtable: core::ops::function::Fn::{vtable}::<for<'a> foo::<u32><'a>, (&'_ u32)><()>
 }
 
+// Full name: core::ops::function::Fn::call::<for<'a> foo::<u32><'a>, (&'_ u32)>
+pub fn call::<for<'a> foo::<u32><'a>, (&'_ u32)><'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32))
+= <opaque>
+
 // Full name: core::ops::function::Fn::call
 pub fn call<'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32))
+= <opaque>
+
+// Full name: core::ops::function::FnMut::call_mut::<for<'a> foo::<u32><'a>, (&'_ u32)>
+pub fn call_mut::<for<'a> foo::<u32><'a>, (&'_ u32)><'_0>(@1: &'_0 mut for<'a> foo::<u32><'a>, @2: (&'_ u32))
+= <opaque>
+
+// Full name: core::ops::function::FnOnce::call_once::<for<'a> foo::<u32><'a>, (&'_ u32)>
+pub fn call_once::<for<'a> foo::<u32><'a>, (&'_ u32)>(@1: for<'a> foo::<u32><'a>, @2: (&'_ u32))
 = <opaque>
 
 fn UNIT_METADATA()

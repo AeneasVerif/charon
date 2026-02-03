@@ -10,6 +10,13 @@ pub trait PartialEq<Self, Rhs>
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
+// Full name: core::cmp::PartialEq::eq
+#[lang_item("cmp_partialeq_eq")]
+pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 Self, @2: &'_1 Rhs) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
+
 // Full name: core::fmt::Error
 pub struct Error {}
 
@@ -45,6 +52,12 @@ pub trait Display<Self>
     fn fmt<'_0_1, '_1_1, '_2_1> = fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
     vtable: core::fmt::Display::{vtable}
 }
+
+// Full name: core::fmt::Display::fmt
+pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+where
+    [@TraitClause0]: Display<Self>,
+= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -92,6 +105,24 @@ pub trait Fn<Self, Args>
     fn call<'_0_1> = call<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
+
+// Full name: core::ops::function::Fn::call
+pub fn call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+where
+    [@TraitClause0]: Fn<Self, Args>,
+= <opaque>
+
+// Full name: core::ops::function::FnMut::call_mut
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+= <opaque>
+
+// Full name: core::ops::function::FnOnce::call_once
+pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]

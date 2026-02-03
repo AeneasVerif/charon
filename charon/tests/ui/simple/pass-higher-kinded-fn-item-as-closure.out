@@ -20,6 +20,10 @@ pub trait Destruct<Self>
     vtable: core::marker::Destruct::{vtable}
 }
 
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -63,6 +67,23 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args, Self_Clause1_Clause1_Output>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
+
+pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 Self, @2: Args) -> Clause0_Clause1_Clause1_Output
+where
+    [@TraitClause0]: Fn<Self, Args, Clause0_Clause1_Clause1_Output>,
+= <opaque>
+
+// Full name: core::ops::function::FnMut::call_mut
+pub fn call_mut<'_0, Self, Args, Clause0_Clause1_Output>(@1: &'_0 mut Self, @2: Args) -> Clause0_Clause1_Output
+where
+    [@TraitClause0]: FnMut<Self, Args, Clause0_Clause1_Output>,
+= <opaque>
+
+// Full name: core::ops::function::FnOnce::call_once
+pub fn call_once<Self, Args, Clause0_Output>(@1: Self, @2: Args) -> Clause0_Output
+where
+    [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
+= <opaque>
 
 // Full name: test_crate::flabada
 pub fn flabada<'a>(@1: &'a ()) -> &'a ()
