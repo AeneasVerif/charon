@@ -288,7 +288,7 @@ and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
       | TAdt tref -> const_aggregate_to_string env tref variant_id fields
       | _ -> "malformed constant"
     end
-  | CArray fields | CSlice fields ->
+  | CArray fields ->
       "["
       ^ String.concat ", " (List.map (constant_expr_to_string env) fields)
       ^ "]"

@@ -357,7 +357,6 @@ and constant_expr_kind =
 
           We eliminate this case in a micro-pass. *)
   | CArray of constant_expr list
-  | CSlice of constant_expr list
   | CGlobal of global_decl_ref
       (** The value is a top-level constant/static.
 

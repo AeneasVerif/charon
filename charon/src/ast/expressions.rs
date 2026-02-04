@@ -612,7 +612,6 @@ pub enum ConstantExprKind {
     /// We eliminate this case in a micro-pass.
     Adt(Option<VariantId>, Vec<ConstantExpr>),
     Array(Vec<ConstantExpr>),
-    Slice(Vec<ConstantExpr>),
     /// The value is a top-level constant/static.
     ///
     /// We eliminate this case in a micro-pass.
