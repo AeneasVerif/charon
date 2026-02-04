@@ -80,6 +80,10 @@ pub struct Error {
 }
 
 impl Error {
+    pub fn new(span: Span, msg: String) -> Self {
+        Self { span, msg }
+    }
+
     pub(crate) fn render(&self, krate: &TranslatedCrate, level: Level) -> String {
         use annotate_snippets::*;
         let span = self.span.data;
