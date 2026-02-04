@@ -1,9 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<Str>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<Str>
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -29,29 +25,9 @@ impl Destruct::<String> {
     non-dyn-compatible
 }
 
-// Full name: alloc::string::ToString::<Str>
-#[lang_item("ToString")]
-pub trait ToString::<Str>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<Str>
-    fn to_string<'_0_1> = alloc::string::ToString::to_string::<Str><'_0_1>
-    vtable: alloc::string::ToString::{vtable}::<Str>
-}
-
-#[lang_item("to_string_method")]
-pub fn alloc::string::ToString::to_string::<Str><'_0>(@1: &'_0 Str) -> String
-= <opaque>
-
 // Full name: alloc::string::{impl ToString::<Str>}::to_string::<Str>
 pub fn {impl ToString::<Str>}::to_string::<Str><'_0>(@1: &'_0 Str) -> String
 = <opaque>
-
-// Full name: alloc::string::{impl ToString::<Str>}::<Str>
-impl ToString::<Str> {
-    parent_clause0 = {built_in impl MetaSized::<Str>}
-    fn to_string<'_0_1> = {impl ToString::<Str>}::to_string::<Str><'_0_1>
-    vtable: {impl ToString::<Str>}::{vtable}::<Str>
-}
 
 // Full name: test_crate::main
 fn main()

@@ -90,28 +90,10 @@ unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
     return
 }
 
-// Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
-    fn drop_in_place = {impl Destruct for String}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
 pub fn new() -> String
 = <opaque>
-
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}
-impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause3]: Destruct<T>,
-    [@TraitClause4]: Destruct<A>,
-{
-    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]
-    non-dyn-compatible
-}
 
 // Full name: test_crate::use_string
 fn use_string(@1: String)

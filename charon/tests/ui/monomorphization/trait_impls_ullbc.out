@@ -1,26 +1,8 @@
 # Final ULLBC before serialization:
 
-// Full name: core::cmp::PartialEq::<bool, bool>
-#[lang_item("eq")]
-pub trait PartialEq::<bool, bool>
-{
-    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq::<bool, bool><'_0_1, '_1_1>
-    vtable: core::cmp::PartialEq::{vtable}::<bool, bool>
-}
-
-#[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq::<bool, bool><'_0, '_1>(@1: &'_0 bool, @2: &'_1 bool) -> bool
-= <opaque>
-
 // Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}::eq
 pub fn {impl PartialEq::<bool, bool>}::eq<'_0, '_1>(@1: &'_0 bool, @2: &'_1 bool) -> bool
 = <opaque>
-
-// Full name: core::cmp::impls::{impl PartialEq::<bool, bool>}
-impl PartialEq::<bool, bool> {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq::<bool, bool>}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq::<bool, bool>}::{vtable}
-}
 
 fn UNIT_METADATA()
 {
