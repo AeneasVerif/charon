@@ -53,6 +53,15 @@ impl ItemRef {
         def_id: RDefId,
         generics: ty::GenericArgsRef<'tcx>,
     ) -> ItemRef {
+        let hax_def_id = def_id.sinto(s);
+        Self::translate_from_hax_def_id(s, hax_def_id, generics)
+    }
+
+    pub fn translate_from_hax_def_id<'tcx, S: UnderOwnerState<'tcx>>(
+        s: &S,
+        def_id: DefId,
+        generics: ty::GenericArgsRef<'tcx>,
+    ) -> ItemRef {
         Self::translate_maybe_resolve_impl(
             s,
             s.base().options.item_ref_use_concrete_impl,
@@ -74,13 +83,14 @@ impl ItemRef {
         s: &S,
         // Whether to resolve trait references.
         resolve_trait_ref: bool,
-        mut def_id: RDefId,
+        mut hax_def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
     ) -> ItemRef {
         use rustc_infer::infer::canonical::ir::TypeVisitableExt;
         let tcx = s.base().tcx;
         let typing_env = s.typing_env();
-        let key = (def_id, generics, resolve_trait_ref);
+        let mut def_id = hax_def_id.underlying_rust_def_id();
+        let key = (hax_def_id.clone(), generics, resolve_trait_ref);
         // Normalize the generics. This is crucial for `rustc_args()` because if we don't we might
         // get a `Option<T>` ItemRef with `rustc_args() = Option<<Self as Iterator>::Item>`, but
         // because the mapping is global we'd return these args in item contexts where they aren't
@@ -106,7 +116,7 @@ impl ItemRef {
         // point directly to the implemented item.
         if let Some(tinfo) = &trait_info
             && let ImplExprAtom::Concrete(impl_ref) = &tinfo.r#impl
-            && let impl_def_id = impl_ref.def_id.as_rust_def_id().unwrap()
+            && let impl_def_id = impl_ref.def_id.real_rust_def_id()
             && let Some(implemented_item) = tcx
                 .associated_items(impl_def_id)
                 .in_definition_order()
@@ -114,11 +124,11 @@ impl ItemRef {
         {
             let trait_def_id = tcx.parent(def_id);
             def_id = implemented_item.def_id;
+            hax_def_id = def_id.sinto(s);
             generics = generics.rebase_onto(tcx, trait_def_id, impl_ref.rustc_args(s));
             trait_info = None;
         }
 
-        let hax_def_id = def_id.sinto(s);
         let mut hax_generics = generics.sinto(s);
         let mut impl_exprs = solve_item_required_traits(s, def_id, generics);
 
@@ -199,7 +209,7 @@ impl ItemRef {
         }
         let tcx = s.base().tcx;
         let typing_env = s.typing_env();
-        let def_id = self.def_id.as_rust_def_id().unwrap();
+        let def_id = self.def_id.real_rust_def_id();
         let generics = self.rustc_args(s);
         let tref = ty::TraitRef::new(tcx, def_id, generics);
         rustc_utils::assoc_tys_for_trait(tcx, typing_env, tref)
@@ -212,10 +222,9 @@ impl ItemRef {
 
     /// Erase lifetimes from the generic arguments of this item.
     pub fn erase<'tcx, S: UnderOwnerState<'tcx>>(&self, s: &S) -> Self {
-        let def_id = self.def_id.underlying_rust_def_id();
         let args = self.rustc_args(s);
         let args = erase_and_norm(s.base().tcx, s.typing_env(), args);
-        Self::translate(s, def_id, args).with_def_id(s, &self.def_id)
+        Self::translate_from_hax_def_id(s, self.def_id.clone(), args)
     }
 
     pub fn contents(&self) -> &ItemRefContents {

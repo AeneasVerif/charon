@@ -106,7 +106,7 @@ mod types {
         /// Cache the `Ty` translations.
         pub tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
-        pub item_refs: HashMap<(RDefId, ty::GenericArgsRef<'tcx>, bool), ItemRef>,
+        pub item_refs: HashMap<(DefId, ty::GenericArgsRef<'tcx>, bool), ItemRef>,
         /// Cache the trait resolution engine for each item.
         pub predicate_searcher: Option<crate::traits::PredicateSearcher<'tcx>>,
         /// Cache of trait refs to resolved impl expressions.

@@ -384,7 +384,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
-        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        let rdefid = item.def_id.real_rust_def_id();
         let hax_state = &self.hax_state;
         let ty_env = hax_state.typing_env();
         let ty = tcx
@@ -483,7 +483,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         let tcx = self.t_ctx.tcx;
-        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        let rdefid = item.def_id.real_rust_def_id();
         let hax_state = self.hax_state_with_id();
         assert_eq!(hax_state.owner_id(), rdefid);
         let ty_env = hax_state.typing_env();

@@ -68,6 +68,9 @@ pub enum DefKind {
 
 pub use rustc_middle::mir::Promoted as PromotedId;
 
+/// The crate name under which synthetic items are exported under.
+const SYNTHETIC_CRATE_NAME: &str = "<synthetic>";
+
 /// Reflects [`rustc_hir::def_id::DefId`], augmented to also give ids to promoted constants (which
 /// have their own ad-hoc numbering scheme in rustc for now).
 #[derive(Clone, PartialEq, Eq)]
@@ -78,10 +81,44 @@ pub struct DefId {
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub struct DefIdContents {
     pub parent: Option<DefId>,
-    pub base: RDefId,
-    pub promoted: Option<PromotedId>,
+    pub base: DefIdBase,
     /// The kind of definition this `DefId` points to.
     pub kind: crate::DefKind,
+}
+
+#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
+pub enum DefIdBase {
+    Real(RDefId),
+    Promoted(RDefId, PromotedId),
+    Synthetic(SyntheticItem, RDefId),
+}
+
+impl DefIdBase {
+    pub fn underlying_def_id(self) -> Option<RDefId> {
+        match self {
+            Self::Real(did) | Self::Promoted(did, ..) => Some(did),
+            Self::Synthetic(.., did) => Some(did),
+        }
+    }
+    pub fn as_real_def_id(self) -> Option<RDefId> {
+        match self {
+            Self::Real(did) => Some(did),
+            _ => None,
+        }
+    }
+    pub fn as_promoted(self) -> Option<(RDefId, PromotedId)> {
+        match self {
+            Self::Promoted(did, promoted) => Some((did, promoted)),
+            _ => None,
+        }
+    }
+    pub fn as_synthetic(self) -> Option<SyntheticItem> {
+        if let Self::Synthetic(v, _) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
 }
 
 impl DefIdContents {
@@ -91,33 +128,55 @@ impl DefIdContents {
     }
 }
 
-/// Returns the [`SyntheticItem`] encoded by a [rustc `DefId`](RDefId), if any.
-pub fn def_id_as_synthetic<'tcx>(
-    def_id: RDefId,
-    s: &impl BaseState<'tcx>,
-) -> Option<SyntheticItem> {
-    s.with_global_cache(|c| c.reverse_synthetic_map.get(&def_id).copied())
-}
-
 impl DefId {
     /// The rustc def_id corresponding to this item, if there is one. Promoted constants don't have
     /// a rustc def_id.
     pub fn as_rust_def_id(&self) -> Option<RDefId> {
-        match self.promoted {
-            None => Some(self.underlying_rust_def_id()),
-            Some(_) => None,
-        }
+        self.base.as_real_def_id()
+    }
+    /// The rustc def_id of this item. Panics if this is not a real rustc item.
+    pub fn real_rust_def_id(&self) -> RDefId {
+        self.as_rust_def_id().unwrap()
     }
     /// The def_id of this item or its parent if this is a promoted constant.
     pub fn underlying_rust_def_id(&self) -> RDefId {
-        self.base
+        self.base.underlying_def_id().unwrap()
     }
 
     pub fn is_local(&self) -> bool {
-        self.base.is_local()
+        self.base
+            .underlying_def_id()
+            .is_some_and(|did| did.is_local())
     }
     pub fn promoted_id(&self) -> Option<PromotedId> {
-        self.promoted
+        self.base.as_promoted().map(|(_, p)| p)
+    }
+
+    fn make<'tcx, S: BaseState<'tcx>>(s: &S, def_id: RDefId) -> Self {
+        let base = match s.with_global_cache(|c| c.reverse_synthetic_map.get(&def_id).copied()) {
+            None => DefIdBase::Real(def_id),
+            Some(synthetic) => return Self::make_synthetic(s, synthetic, def_id),
+        };
+        let tcx = s.base().tcx;
+        let contents = DefIdContents {
+            parent: tcx.opt_parent(def_id).sinto(s),
+            base,
+            kind: get_def_kind(tcx, def_id).sinto(s),
+        };
+        contents.make_def_id(s)
+    }
+
+    pub fn make_synthetic<'tcx, S: BaseState<'tcx>>(
+        s: &S,
+        synthetic: SyntheticItem,
+        def_id: RDefId,
+    ) -> Self {
+        let contents = DefIdContents {
+            parent: Some(rustc_span::def_id::CRATE_DEF_ID.to_def_id().sinto(s)),
+            base: DefIdBase::Synthetic(synthetic, def_id),
+            kind: DefKind::Struct,
+        };
+        contents.make_def_id(s)
     }
 
     /// Returns the [`SyntheticItem`] encoded by a [rustc `DefId`](RDefId), if
@@ -125,32 +184,28 @@ impl DefId {
     ///
     /// Note that this method relies on rustc indexes, which are session
     /// specific. See [`Self`] documentation.
-    pub fn as_synthetic<'tcx>(&self, s: &impl BaseState<'tcx>) -> Option<SyntheticItem> {
-        def_id_as_synthetic(self.underlying_rust_def_id(), s)
+    pub fn as_synthetic<'tcx>(&self, _s: &impl BaseState<'tcx>) -> Option<SyntheticItem> {
+        self.base.as_synthetic()
     }
 
     pub fn crate_name<'tcx>(&self, s: &impl BaseState<'tcx>) -> Symbol {
         let tcx = s.base().tcx;
-        if def_id_as_synthetic(self.base, s).is_some() {
-            Symbol::intern(SYNTHETIC_CRATE_NAME)
-        } else {
-            tcx.crate_name(self.base.krate)
+        match self.base {
+            DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => {
+                tcx.crate_name(def_id.krate)
+            }
+            DefIdBase::Synthetic(..) => Symbol::intern(SYNTHETIC_CRATE_NAME),
         }
     }
 
     /// The `PathItem` corresponding to this item.
     pub fn path_item<'tcx>(&self, s: &impl BaseState<'tcx>) -> DisambiguatedDefPathItem {
-        match self.promoted {
-            Some(id) => DisambiguatedDefPathItem {
-                data: DefPathItem::PromotedConst,
-                // Reuse the promoted id as disambiguator, like for inline consts.
-                disambiguator: id.as_u32(),
-            },
-            None => {
+        match self.base {
+            DefIdBase::Real(def_id) => {
                 let tcx = s.base().tcx;
                 // Set the def_id so the `CrateRoot` path item can fetch the crate name.
-                let state_with_id = s.with_owner_id(self.base);
-                tcx.def_path(self.base)
+                let state_with_id = s.with_owner_id(def_id);
+                tcx.def_path(def_id)
                     .data
                     .last()
                     .map(|x| x.sinto(&state_with_id))
@@ -161,6 +216,15 @@ impl DefId {
                         },
                     })
             }
+            DefIdBase::Promoted(_, id) => DisambiguatedDefPathItem {
+                data: DefPathItem::PromotedConst,
+                // Reuse the promoted id as disambiguator, like for inline consts.
+                disambiguator: id.as_u32(),
+            },
+            DefIdBase::Synthetic(synthetic, ..) => DisambiguatedDefPathItem {
+                disambiguator: 0,
+                data: DefPathItem::TypeNs(Symbol::intern(&synthetic.name())),
+            },
         }
     }
 
@@ -173,8 +237,7 @@ impl DefId {
     ) -> Self {
         let contents = DefIdContents {
             parent: Some(self.clone()),
-            base: self.base,
-            promoted: Some(promoted_id),
+            base: DefIdBase::Promoted(self.real_rust_def_id(), promoted_id),
             kind: DefKind::PromotedConst,
         };
         contents.make_def_id(s)
@@ -190,19 +253,19 @@ impl std::ops::Deref for DefId {
 
 impl std::fmt::Debug for DefId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // Use the more legible rustc debug implementation.
-        write!(f, "{:?}", self.underlying_rust_def_id())?;
-        if let Some(promoted) = self.promoted_id() {
-            write!(f, "::promoted#{}", promoted.as_u32())?;
+        match self.base {
+            DefIdBase::Real(def_id) => write!(f, "{def_id:?}"),
+            DefIdBase::Promoted(def_id, promoted) => {
+                write!(f, "{def_id:?}::promoted#{}", promoted.as_u32())
+            }
+            DefIdBase::Synthetic(item, _) => write!(f, "{}", item.name()),
         }
-        Ok(())
     }
 }
 
 impl std::hash::Hash for DefId {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.base.hash(state);
-        self.promoted_id().hash(state);
     }
 }
 
@@ -217,26 +280,12 @@ pub(crate) fn get_def_kind<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> hir::
     tcx.def_kind(def_id)
 }
 
-/// The crate name under which synthetic items are exported under.
-pub(super) const SYNTHETIC_CRATE_NAME: &str = "<synthetic>";
-
-fn translate_def_id<'tcx, S: BaseState<'tcx>>(s: &S, def_id: RDefId) -> DefId {
-    let tcx = s.base().tcx;
-    let contents = DefIdContents {
-        parent: tcx.opt_parent(def_id).sinto(s),
-        base: def_id,
-        promoted: None,
-        kind: get_def_kind(tcx, def_id).sinto(s),
-    };
-    contents.make_def_id(s)
-}
-
 impl<'s, S: BaseState<'s>> SInto<S, DefId> for RDefId {
     fn sinto(&self, s: &S) -> DefId {
         if let Some(def_id) = s.with_item_cache(*self, |cache| cache.def_id.clone()) {
             return def_id;
         }
-        let def_id = translate_def_id(s, *self);
+        let def_id = DefId::make(s, *self);
         s.with_item_cache(*self, |cache| cache.def_id = Some(def_id.clone()));
         def_id
     }

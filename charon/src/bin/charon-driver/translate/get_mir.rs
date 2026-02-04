@@ -58,9 +58,8 @@ fn get_mir_for_def_id_and_level<'tcx>(
     def_id: &hax::DefId,
     level: MirLevel,
 ) -> Option<mir::Body<'tcx>> {
-    let rust_def_id = def_id.underlying_rust_def_id();
-    match def_id.promoted_id() {
-        None => {
+    match def_id.base {
+        hax::DefIdBase::Real(rust_def_id) => {
             if let Some(local_def_id) = rust_def_id.as_local() {
                 match level {
                     MirLevel::Built => {
@@ -112,6 +111,9 @@ fn get_mir_for_def_id_and_level<'tcx>(
             };
             Some(body)
         }
-        Some(promoted_id) => Some(hax::get_promoted_mir(tcx, rust_def_id, promoted_id)),
+        hax::DefIdBase::Promoted(rust_def_id, promoted_id) => {
+            Some(hax::get_promoted_mir(tcx, rust_def_id, promoted_id))
+        }
+        _ => unreachable!(),
     }
 }
