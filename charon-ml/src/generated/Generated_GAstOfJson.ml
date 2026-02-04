@@ -392,6 +392,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("index_to_function_calls", index_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
           ("raw_consts", raw_consts);
+          ("unsized_strings", unsized_strings);
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
           ("reconstruct_asserts", reconstruct_asserts);
           ("unbind_item_vars", unbind_item_vars);
@@ -438,6 +439,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
         let* raw_consts = bool_of_json ctx raw_consts in
+        let* unsized_strings = bool_of_json ctx unsized_strings in
         let* reconstruct_fallible_operations =
           bool_of_json ctx reconstruct_fallible_operations
         in
@@ -481,6 +483,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              index_to_function_calls;
              treat_box_as_builtin;
              raw_consts;
+             unsized_strings;
              reconstruct_fallible_operations;
              reconstruct_asserts;
              unbind_item_vars;
@@ -582,9 +585,6 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Array", array) ] ->
         let* array = list_of_json constant_expr_of_json ctx array in
         Ok (CArray array)
-    | `Assoc [ ("Slice", slice) ] ->
-        let* slice = list_of_json constant_expr_of_json ctx slice in
-        Ok (CSlice slice)
     | `Assoc [ ("Global", global) ] ->
         let* global = global_decl_ref_of_json ctx global in
         Ok (CGlobal global)

@@ -434,6 +434,10 @@ type cli_options = {
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
+  unsized_strings : bool;
+      (** Replace string literal constants with a constant u8 array that gets
+          unsized, expliciting the fact a string constant has a hidden
+          reference. *)
   reconstruct_fallible_operations : bool;
       (** Replace "bound checks followed by UB-on-overflow operation" with the
           corresponding panic-on-overflow operation. This loses unwinding

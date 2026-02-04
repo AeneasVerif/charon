@@ -9,15 +9,20 @@ use charon_lib::ast::*;
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_constant_literal_to_constant_expr_kind(
         &mut self,
-        span: Span,
+        _span: Span,
         v: &hax::ConstantLiteral,
     ) -> Result<ConstantExprKind, Error> {
         let lit = match v {
             hax::ConstantLiteral::ByteStr(bs) => Literal::ByteStr(bs.clone()),
-            hax::ConstantLiteral::Str(..) => {
-                // This should have been handled in the `&str` case. If we get here, there's a
-                // `str` value not behind a reference.
-                raise_error!(self, span, "found a `str` constants not behind a reference")
+            hax::ConstantLiteral::Str(str) => {
+                // We should only get here if we actually want to translate the data
+                // backing the string, when we represent strings as unsized [u8]s
+                assert!(self.t_ctx.options.unsized_strings);
+
+                let str_bytes = str.as_bytes();
+                return Ok(ConstantExprKind::RawMemory(
+                    str_bytes.iter().map(|b| Byte::Value(*b)).collect(),
+                ));
             }
             hax::ConstantLiteral::Char(c) => Literal::Char(*c),
             hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
@@ -111,7 +116,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             },
             hax::ConstantExprKind::Borrow(v)
                 if let hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
-                    v.contents.as_ref() =>
+                    v.contents.as_ref()
+                    && !self.t_ctx.options.unsized_strings =>
             {
                 ConstantExprKind::Literal(Literal::Str(s.clone()))
             }
@@ -128,6 +134,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         val.ty = Ty::mk_array(subty.clone(), len.clone());
                         Some(UnsizingMetadata::Length(Box::new(len)))
                     }
+
+                    (hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)), _) => {
+                        let len = ConstantExpr::mk_usize(ScalarValue::Unsigned(
+                            UIntTy::Usize,
+                            s.len() as u128,
+                        ));
+                        // the sub-constant is an array, that has it's reference unsized
+                        let subty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into();
+                        val.ty = Ty::mk_array(subty, len.clone());
+                        Some(UnsizingMetadata::Length(Box::new(len)))
+                    }
+
                     _ => None,
                 };
                 ConstantExprKind::Ref(Box::new(val), metadata)

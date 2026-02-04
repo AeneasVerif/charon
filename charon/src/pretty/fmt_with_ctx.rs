@@ -1217,6 +1217,16 @@ impl Display for RawAttribute {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for Byte {
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Byte::Value(x) => write!(f, "{:#4x}", x),
+            Byte::Uninit => write!(f, "--"),
+            Byte::Provenance(p, ofs) => write!(f, "{:?}[{}]", p, ofs),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1279,7 +1289,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
                 write!(f, "fnptr({})", fp.with_ctx(ctx))
             }
             ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
-            ConstantExprKind::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),
+            ConstantExprKind::RawMemory(bytes) => {
+                let bytes = bytes.iter().map(|v| v.with_ctx(ctx)).format(", ");
+                write!(f, "RawMemory({})", bytes)
+            }
             ConstantExprKind::Opaque(cause) => write!(f, "Opaque({cause})"),
         }
     }
