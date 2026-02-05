@@ -60,6 +60,102 @@ let crate_get_item_meta (m : crate) (id : item_id) : Types.item_meta option =
         (fun (d : trait_impl) -> d.item_meta)
         (TraitImplId.Map.find_opt id m.trait_impls)
 
+class ['self] iter_crate =
+  object (self : 'self)
+    inherit [_] iter_statement
+
+    method visit_expr_body env (body : expr_body) : unit =
+      let { span; locals; bound_body_regions; body } = body in
+      self#visit_int env bound_body_regions;
+      self#visit_span env span;
+      self#visit_locals env locals;
+      self#visit_block env body
+
+    method visit_fun_decl env (decl : fun_decl) : unit =
+      let {
+        def_id;
+        item_meta;
+        generics;
+        signature;
+        src;
+        is_global_initializer;
+        body;
+      } =
+        decl
+      in
+      self#visit_fun_decl_id env def_id;
+      self#visit_item_meta env item_meta;
+      self#visit_generic_params env generics;
+      self#visit_fun_sig env signature;
+      self#visit_item_source env src;
+      self#visit_option self#visit_global_decl_id env is_global_initializer;
+      self#visit_option self#visit_expr_body env body
+
+    method visit_declaration_group env (g : declaration_group) : unit =
+      match g with
+      | TypeGroup g -> self#visit_type_declaration_group env g
+      | FunGroup g -> self#visit_fun_declaration_group env g
+      | GlobalGroup g -> self#visit_global_declaration_group env g
+      | TraitDeclGroup g -> self#visit_trait_declaration_group env g
+      | TraitImplGroup g -> self#visit_trait_impl_group env g
+      | MixedGroup g -> self#visit_mixed_declaration_group env g
+
+    method visit_type_declaration_group env (g : type_declaration_group) : unit
+        =
+      let ids = g_declaration_group_to_list g in
+      List.iter (self#visit_type_decl_id env) ids
+
+    method visit_fun_declaration_group env (g : fun_declaration_group) : unit =
+      let ids = g_declaration_group_to_list g in
+      List.iter (self#visit_fun_decl_id env) ids
+
+    method visit_global_declaration_group env (g : global_declaration_group) :
+        unit =
+      let ids = g_declaration_group_to_list g in
+      List.iter (self#visit_global_decl_id env) ids
+
+    method visit_trait_declaration_group env (g : trait_declaration_group) :
+        unit =
+      let ids = g_declaration_group_to_list g in
+      List.iter (self#visit_trait_decl_id env) ids
+
+    method visit_trait_impl_group env (g : trait_impl_group) : unit =
+      let ids = g_declaration_group_to_list g in
+      List.iter (self#visit_trait_impl_id env) ids
+
+    method visit_mixed_declaration_group env (g : mixed_declaration_group) :
+        unit =
+      let ids = g_declaration_group_to_list g in
+      List.iter (self#visit_item_id env) ids
+
+    method visit_cli_options env (option : cli_options) : unit = ()
+
+    method visit_crate env (crate : crate) : unit =
+      let {
+        name;
+        options;
+        target_information;
+        declarations;
+        type_decls;
+        fun_decls;
+        global_decls;
+        trait_decls;
+        trait_impls;
+        unit_metadata;
+      } =
+        crate
+      in
+      self#visit_string env name;
+      self#visit_cli_options env options;
+      List.iter (self#visit_declaration_group env) declarations;
+      TypeDeclId.Map.iter (fun _ -> self#visit_type_decl env) type_decls;
+      FunDeclId.Map.iter (fun _ -> self#visit_fun_decl env) fun_decls;
+      GlobalDeclId.Map.iter (fun _ -> self#visit_global_decl env) global_decls;
+      TraitDeclId.Map.iter (fun _ -> self#visit_trait_decl env) trait_decls;
+      TraitImplId.Map.iter (fun _ -> self#visit_trait_impl env) trait_impls;
+      self#visit_global_decl_ref env unit_metadata
+  end
+
 (** This visitor keeps track of the last (most precise) span it found, together
     with the id of the declaration it is currently exploring (the environment it
     carries is a pair (item_id, span)). *)

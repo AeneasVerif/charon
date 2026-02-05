@@ -36,8 +36,21 @@ module type Id = sig
   type generator
 
   module Ord : C.OrderedType with type t = id
-  module Set : C.Set with type elt = id
-  module Map : C.Map with type key = id
+
+  module Set : sig
+    include C.Set
+
+    val add_in_place : id -> t ref -> unit
+  end
+  with type elt = id
+
+  module Map : sig
+    include C.Map
+
+    val add_in_place : id -> 'a -> 'a t ref -> unit
+  end
+  with type key = id
+
   module InjSubst : C.InjMap with type key = id and type elem = id
 
   val zero : id
@@ -147,8 +160,18 @@ module IdGen () : Id = struct
     let show_t = show_id
   end
 
-  module Set = C.MakeSet (Ord)
-  module Map = C.MakeMap (Ord)
+  module Set = struct
+    include C.MakeSet (Ord)
+
+    let add_in_place id s = s := add id !s
+  end
+
+  module Map = struct
+    include C.MakeMap (Ord)
+
+    let add_in_place id x m = m := add id x !m
+  end
+
   module InjSubst = C.MakeInjMap (Ord) (Ord)
 
   let zero = 0
