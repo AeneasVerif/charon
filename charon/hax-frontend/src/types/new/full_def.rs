@@ -121,7 +121,7 @@ where
             diagnostic_item = Default::default();
         }
         DefIdBase::Real(rust_def_id) => {
-            kind = translate_full_def_kind(s, rust_def_id, args);
+            kind = translate_full_def_kind(s, def_id, args);
 
             let def_kind = get_def_kind(tcx, rust_def_id);
             source_span = rust_def_id.as_local().map(|ldid| tcx.source_span(ldid));
@@ -203,8 +203,7 @@ impl DefId {
     where
         S: BaseState<'tcx>,
     {
-        let rust_def_id = self.underlying_rust_def_id();
-        let s = &s.with_owner_id(rust_def_id);
+        let s = &s.with_hax_owner(self);
         let cache_key = (self.promoted_id(), args);
         if let Some(def) = s.with_cache(|cache| cache.full_defs.get(&cache_key).cloned()) {
             return def;
@@ -235,8 +234,8 @@ impl ItemRef {
         S: BaseState<'tcx>,
     {
         let tcx = s.base().tcx;
+        let s = &s.with_hax_owner(&self.def_id);
         let def_id = self.def_id.underlying_rust_def_id();
-        let s = &s.with_owner_id(def_id);
         let args = self.rustc_args(s);
         crate::drop_glue_shim(tcx, def_id, Some(args))
     }
@@ -248,9 +247,9 @@ impl ItemRef {
         S: BaseState<'tcx>,
     {
         let tcx = s.base().tcx;
-        let def_id = self.def_id.real_rust_def_id();
-        let s = &s.with_owner_id(def_id);
+        let s = &s.with_hax_owner(&self.def_id);
         let args = self.rustc_args(s);
+        let def_id = self.def_id.real_rust_def_id();
         let closure_ty = inst_binder(tcx, s.typing_env(), Some(args), tcx.type_of(def_id));
         crate::closure_once_shim(tcx, closure_ty)
     }
@@ -519,7 +518,7 @@ fn gen_vtable_sig<'tcx>(
     }
 
     // Move into the context of the container (trait decl or impl) instead of the method.
-    let s = &s.with_owner_id(container_id);
+    let s = &s.with_rustc_owner(container_id);
     let args = {
         let container_generics = tcx.generics_of(container_id);
         args.map(|args| args.truncate_to(tcx, container_generics))
@@ -611,13 +610,14 @@ fn gen_closure_sig<'tcx>(
 // may contain a type/const/trait reference.
 fn translate_full_def_kind<'tcx, S>(
     s: &S,
-    def_id: RDefId,
+    def_id: &DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> FullDefKind
 where
     S: BaseState<'tcx>,
 {
-    let s = &s.with_owner_id(def_id);
+    let s = &s.with_hax_owner(def_id);
+    let def_id = def_id.real_rust_def_id();
     let tcx = s.base().tcx;
     let type_of_self = || inst_binder(tcx, s.typing_env(), args, tcx.type_of(def_id));
     let args_or_default =
@@ -762,7 +762,7 @@ where
                                         ty::GenericArgs::identity_for_item(tcx, impl_assoc.def_id);
                                     // Subtlety: we have to add the GAT arguments (if any) to the trait ref arguments.
                                     let args = item_args.rebase_onto(tcx, def_id, trait_ref.args);
-                                    let state_with_id = s.with_owner_id(impl_assoc.def_id);
+                                    let state_with_id = s.with_rustc_owner(impl_assoc.def_id);
                                     solve_item_implied_traits(&state_with_id, decl_def_id, args)
                                 };
 
@@ -779,7 +779,7 @@ where
                                         ty::GenericArgs::identity_for_item(tcx, decl_def_id);
                                     let args = item_args.rebase_onto(tcx, def_id, trait_ref.args);
                                     // TODO: is it the right `def_id`?
-                                    let state_with_id = s.with_owner_id(def_id);
+                                    let state_with_id = s.with_rustc_owner(def_id);
                                     solve_item_implied_traits(&state_with_id, decl_def_id, args)
                                 } else {
                                     // FIXME: For GATs, we need a param_env that has the arguments of

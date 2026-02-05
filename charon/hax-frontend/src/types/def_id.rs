@@ -204,7 +204,7 @@ impl DefId {
             DefIdBase::Real(def_id) => {
                 let tcx = s.base().tcx;
                 // Set the def_id so the `CrateRoot` path item can fetch the crate name.
-                let state_with_id = s.with_owner_id(def_id);
+                let state_with_id = s.with_hax_owner(self);
                 tcx.def_path(def_id)
                     .data
                     .last()

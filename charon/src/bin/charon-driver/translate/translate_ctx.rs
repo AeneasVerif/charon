@@ -204,8 +204,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
         use hax::BaseState;
-        let def_id = item_src.def_id().underlying_rust_def_id();
-        let hax_state_with_id = t_ctx.hax_state.clone().with_owner_id(def_id);
+        let hax_state_with_id = t_ctx.hax_state.clone().with_hax_owner(&item_src.def_id());
         ItemTransCtx {
             item_src,
             item_id,

@@ -1512,7 +1512,7 @@ impl AssocItem {
     ) -> AssocItem {
         let tcx = s.base().tcx;
         // We want to solve traits in the context of this item.
-        let s = &s.with_owner_id(item.def_id);
+        let s = &s.with_rustc_owner(item.def_id);
         let item_args =
             item_args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, item.def_id));
         let container_id = item.container_id(tcx);
