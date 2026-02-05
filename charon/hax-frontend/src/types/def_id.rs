@@ -80,7 +80,6 @@ pub struct DefId {
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub struct DefIdContents {
-    pub parent: Option<DefId>,
     pub base: DefIdBase,
     /// The kind of definition this `DefId` points to.
     pub kind: crate::DefKind,
@@ -159,7 +158,6 @@ impl DefId {
         };
         let tcx = s.base().tcx;
         let contents = DefIdContents {
-            parent: tcx.opt_parent(def_id).sinto(s),
             base,
             kind: get_def_kind(tcx, def_id).sinto(s),
         };
@@ -172,7 +170,6 @@ impl DefId {
         def_id: RDefId,
     ) -> Self {
         let contents = DefIdContents {
-            parent: Some(rustc_span::def_id::CRATE_DEF_ID.to_def_id().sinto(s)),
             base: DefIdBase::Synthetic(synthetic, def_id),
             kind: DefKind::Struct,
         };
@@ -186,6 +183,15 @@ impl DefId {
     /// specific. See [`Self`] documentation.
     pub fn as_synthetic<'tcx>(&self, _s: &impl BaseState<'tcx>) -> Option<SyntheticItem> {
         self.base.as_synthetic()
+    }
+
+    pub fn parent<'tcx>(&self, s: &impl BaseState<'tcx>) -> Option<DefId> {
+        match self.base {
+            DefIdBase::Real(def_id) => s.tcx().opt_parent(def_id),
+            DefIdBase::Promoted(def_id, _) => Some(def_id),
+            DefIdBase::Synthetic(..) => Some(rustc_span::def_id::CRATE_DEF_ID.to_def_id()),
+        }
+        .sinto(s)
     }
 
     pub fn crate_name<'tcx>(&self, s: &impl BaseState<'tcx>) -> Symbol {
@@ -236,7 +242,6 @@ impl DefId {
         promoted_id: PromotedId,
     ) -> Self {
         let contents = DefIdContents {
-            parent: Some(self.clone()),
             base: DefIdBase::Promoted(self.real_rust_def_id(), promoted_id),
             kind: DefKind::PromotedConst,
         };

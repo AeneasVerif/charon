@@ -85,15 +85,12 @@ where
             diagnostic_item = Default::default();
         }
         DefIdBase::Promoted(rust_def_id, promoted_id) => {
-            let parent_def = def_id
-                .parent
-                .as_ref()
-                .unwrap()
-                .full_def_maybe_instantiated(s, args);
+            let parent_def_id = rust_def_id.sinto(s);
+            let parent_def = parent_def_id.full_def_maybe_instantiated(s, args);
             let parent_param_env = parent_def.param_env().unwrap();
             let param_env = ParamEnv {
                 generics: TyGenerics {
-                    parent: def_id.parent.clone(),
+                    parent: Some(parent_def_id),
                     parent_count: parent_param_env.generics.count_total_params(),
                     params: vec![],
                     has_self: false,
@@ -1098,9 +1095,9 @@ impl FullDef {
                 ..
             } => self.param_env().unwrap().parent.clone(),
             Closure { .. } | Ctor { .. } | Variant { .. } => {
-                let parent = self.def_id().parent.as_ref().unwrap();
+                let parent = self.def_id().parent(s).unwrap();
                 // The parent has the same generics as this item.
-                Some(self.this().with_def_id(s, parent))
+                Some(self.this().with_def_id(s, &parent))
             }
             _ => None,
         }
