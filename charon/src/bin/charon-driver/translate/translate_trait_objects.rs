@@ -312,12 +312,17 @@ impl ItemTransCtx<'_, '_> {
                     }
                 }
                 TrVTableField::Method(item_name, sig) => {
-                    // It's ok to translate the method signature in the context of the trait because
-                    // `vtable_sig: Some(_)` ensures the method has no generics of its own.
-                    let sig = self.translate_poly_fun_sig(span, &sig)?;
-                    let ty = TyKind::FnPtr(sig).into_ty();
                     let field_name = format!("method_{}", item_name.0);
-                    (field_name, ty)
+                    if self.monomorphize_mode() {
+                        let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
+                        (field_name, erased_ptr_ty)
+                    } else {
+                        // It's ok to translate the method signature in the context of the trait because
+                        // `vtable_sig: Some(_)` ensures the method has no generics of its own.
+                        let sig = self.translate_poly_fun_sig(span, &sig)?;
+                        let ty = TyKind::FnPtr(sig).into_ty();
+                        (field_name, ty)
+                    }
                 }
                 TrVTableField::SuperTrait(_, clause) => {
                     let vtbl_struct =
