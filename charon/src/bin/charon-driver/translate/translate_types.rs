@@ -5,7 +5,7 @@ use rustc_span::sym;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::ids::{IndexMap, IndexVec};
-use hax::{HasOwnerId, HasParamEnv, Visibility};
+use hax::{HasOwner, HasParamEnv, Visibility};
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
@@ -384,7 +384,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
-        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        let rdefid = item.def_id.real_rust_def_id();
         let hax_state = &self.hax_state;
         let ty_env = hax_state.typing_env();
         let ty = tcx
@@ -483,9 +483,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         let tcx = self.t_ctx.tcx;
-        let rdefid = item.def_id.as_rust_def_id().unwrap();
+        let rdefid = item.def_id.real_rust_def_id();
         let hax_state = self.hax_state_with_id();
-        assert_eq!(hax_state.owner_id(), rdefid);
+        assert_eq!(hax_state.owner(), item.def_id);
         let ty_env = hax_state.typing_env();
         let ty = tcx
             .type_of(rdefid)

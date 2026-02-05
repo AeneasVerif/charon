@@ -325,7 +325,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let def_id = item.def_id();
         trace!("Computing name for `{def_id:?}`");
 
-        let parent_name = if let Some(parent_id) = &def_id.parent {
+        let parent_name = if let Some(parent_id) = def_id.parent(&self.hax_state) {
             let def = self.hax_def_for_item(item)?;
             if matches!(item, RustcItem::Mono(..))
                 && let Some(parent_item) = def.typing_parent(&self.hax_state)
@@ -568,8 +568,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
     pub(crate) fn is_extern_item(&mut self, def: &hax::FullDef) -> bool {
         def.def_id()
-            .parent
-            .as_ref()
+            .parent(&self.hax_state)
             .is_some_and(|parent| matches!(parent.kind, hax::DefKind::ForeignMod { .. }))
     }
 
