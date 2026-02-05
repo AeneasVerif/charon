@@ -630,6 +630,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.translate_item(span, item, TransItemSourceKind::TraitDecl)
     }
 
+    // Used for translate_predicate with dynamic trait type in Mono mode
+    pub(crate) fn translate_trait_decl_ref_poly(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+    ) -> Result<TraitDeclRef, Error> {
+        let item_src = TransItemSource::polymorphic(&item.def_id, TransItemSourceKind::TraitDecl);
+        let id: ItemId = self.register_and_enqueue(span, item_src);
+        let generics = self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
+        let id = id
+            .try_into()
+            .expect("translated trait decl should be a trait decl id");
+        Ok(TraitDeclRef {
+            id,
+            generics: Box::new(generics),
+        })
+    }
+
     pub(crate) fn translate_trait_impl_ref(
         &mut self,
         span: Span,
