@@ -222,6 +222,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         matches!(self.item_src.item, RustcItem::Mono(..))
     }
 
+    /// Whether monomorphization is enabled.
+    pub fn monomorphize_mode(&self) -> bool {
+        self.t_ctx.options.monomorphize_with_hax
+    }
+
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.t_ctx.span_err(span, msg, level)
     }

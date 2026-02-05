@@ -296,15 +296,20 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Size => ("size".into(), usize_ty()),
                 TrVTableField::Align => ("align".into(), usize_ty()),
                 TrVTableField::Drop => {
-                    let self_ty =
-                        TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
-                    let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
-                    let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(FunSig {
-                        is_unsafe: true,
-                        inputs: [self_ptr].into(),
-                        output: Ty::mk_unit(),
-                    })));
-                    ("drop".into(), drop_ty)
+                    if self.monomorphize_mode() {
+                        let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
+                        ("drop".into(), erased_ptr_ty)
+                    } else {
+                        let self_ty =
+                            TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
+                        let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
+                        let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(FunSig {
+                            is_unsafe: true,
+                            inputs: [self_ptr].into(),
+                            output: Ty::mk_unit(),
+                        })));
+                        ("drop".into(), drop_ty)
+                    }
                 }
                 TrVTableField::Method(item_name, sig) => {
                     // It's ok to translate the method signature in the context of the trait because
