@@ -175,8 +175,7 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
     /// Create a state with the given owner.
     fn with_hax_owner(&self, owner: &DefId) -> StateWithOwner<'tcx> {
         let mut base = self.base();
-        let owner_id = owner.underlying_rust_def_id();
-        base.opt_def_id = Some(owner_id);
+        base.opt_def_id = owner.underlying_rust_def_id();
         State {
             owner: owner.clone(),
             base,
@@ -194,7 +193,7 @@ impl<'tcx, T: HasBase<'tcx> + Clone> BaseState<'tcx> for T {}
 /// State of anything below an `owner`.
 pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwner {
     fn owner_id(&self) -> RDefId {
-        self.owner().underlying_rust_def_id()
+        self.owner().as_def_id_even_synthetic()
     }
     fn with_base(&self, base: types::Base<'tcx>) -> StateWithOwner<'tcx> {
         State {

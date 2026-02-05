@@ -89,7 +89,7 @@ impl ItemRef {
         use rustc_infer::infer::canonical::ir::TypeVisitableExt;
         let tcx = s.base().tcx;
         let typing_env = s.typing_env();
-        let mut def_id = hax_def_id.underlying_rust_def_id();
+        let mut def_id = hax_def_id.as_def_id_even_synthetic();
         let key = (hax_def_id.clone(), generics, resolve_trait_ref);
         // Normalize the generics. This is crucial for `rustc_args()` because if we don't we might
         // get a `Option<T>` ItemRef with `rustc_args() = Option<<Self as Iterator>::Item>`, but

@@ -134,17 +134,14 @@ where
         }
     }
 
-    let rust_def_id = def_id.underlying_rust_def_id();
+    let rust_def_id = def_id.as_def_id_even_synthetic();
     let source_text = source_span
         .filter(|source_span| source_span.ctxt().is_root())
         .and_then(|source_span| tcx.sess.source_map().span_to_snippet(source_span).ok());
     let this = if can_have_generics(tcx, rust_def_id) {
         let args_or_default =
             args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, rust_def_id));
-        let item = translate_item_ref(s, rust_def_id, args_or_default);
-        // Tricky: hax's DefId has more info (could be a promoted const), we must be careful to use
-        // the input DefId instead of the one derived from `rust_def_id`.
-        item.with_def_id(s, def_id)
+        ItemRef::translate_from_hax_def_id(s, def_id.clone(), args_or_default)
     } else {
         ItemRef::dummy_without_generics(s, def_id.clone())
     };
@@ -167,18 +164,21 @@ impl DefId {
     pub fn def_span<'tcx>(&self, s: &impl BaseState<'tcx>) -> Span {
         use DefKind::*;
         let tcx = s.base().tcx;
-        let def_id = self.underlying_rust_def_id();
-        if let ForeignMod = &self.kind {
-            // These kind causes `def_span` to panic.
-            rustc_span::DUMMY_SP
-        } else if let Some(ldid) = def_id.as_local()
-            && let hir_id = tcx.local_def_id_to_hir_id(ldid)
-            && matches!(tcx.hir_node(hir_id), rustc_hir::Node::Synthetic)
-        {
-            // Synthetic items (those we create ourselves) make `def_span` panic.
-            rustc_span::DUMMY_SP
+        if let Some(def_id) = self.underlying_rust_def_id() {
+            if let ForeignMod = &self.kind {
+                // These kind causes `def_span` to panic.
+                rustc_span::DUMMY_SP
+            } else if let Some(ldid) = def_id.as_local()
+                && let hir_id = tcx.local_def_id_to_hir_id(ldid)
+                && matches!(tcx.hir_node(hir_id), rustc_hir::Node::Synthetic)
+            {
+                // Synthetic items (those we create ourselves) make `def_span` panic.
+                rustc_span::DUMMY_SP
+            } else {
+                tcx.def_span(def_id)
+            }
         } else {
-            tcx.def_span(def_id)
+            rustc_span::DUMMY_SP
         }
         .sinto(s)
     }
@@ -232,7 +232,7 @@ impl ItemRef {
     {
         let tcx = s.base().tcx;
         let s = &s.with_hax_owner(&self.def_id);
-        let def_id = self.def_id.underlying_rust_def_id();
+        let def_id = self.def_id.as_def_id_even_synthetic();
         let args = self.rustc_args(s);
         crate::drop_glue_shim(tcx, def_id, Some(args))
     }

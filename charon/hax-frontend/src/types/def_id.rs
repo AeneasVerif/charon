@@ -99,7 +99,7 @@ impl DefIdBase {
             Self::Synthetic(.., did) => Some(did),
         }
     }
-    pub fn as_real_def_id(self) -> Option<RDefId> {
+    pub fn as_real(self) -> Option<RDefId> {
         match self {
             Self::Real(did) => Some(did),
             _ => None,
@@ -108,6 +108,12 @@ impl DefIdBase {
     pub fn as_promoted(self) -> Option<(RDefId, PromotedId)> {
         match self {
             Self::Promoted(did, promoted) => Some((did, promoted)),
+            _ => None,
+        }
+    }
+    pub fn as_real_or_promoted(self) -> Option<RDefId> {
+        match self {
+            Self::Real(did) | Self::Promoted(did, ..) => Some(did),
             _ => None,
         }
     }
@@ -131,14 +137,20 @@ impl DefId {
     /// The rustc def_id corresponding to this item, if there is one. Promoted constants don't have
     /// a rustc def_id.
     pub fn as_rust_def_id(&self) -> Option<RDefId> {
-        self.base.as_real_def_id()
+        self.base.as_real()
     }
     /// The rustc def_id of this item. Panics if this is not a real rustc item.
     pub fn real_rust_def_id(&self) -> RDefId {
         self.as_rust_def_id().unwrap()
     }
     /// The def_id of this item or its parent if this is a promoted constant.
-    pub fn underlying_rust_def_id(&self) -> RDefId {
+    pub fn underlying_rust_def_id(&self) -> Option<RDefId> {
+        self.base.as_real_or_promoted()
+    }
+    /// The def_id of this item, or its parent if this is a promoted constant, or a made-up `DefId`
+    /// for synthetic items. The method is explicitly named to phase out `DefId`s for synthetic
+    /// items.
+    pub fn as_def_id_even_synthetic(&self) -> RDefId {
         self.base.underlying_def_id().unwrap()
     }
 
