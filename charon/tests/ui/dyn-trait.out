@@ -142,38 +142,12 @@ pub struct Global {}
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::ToString
-#[lang_item("ToString")]
-pub trait ToString<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn to_string<'_0_1> = alloc::string::ToString::to_string<'_0_1, Self>[Self]
-    vtable: alloc::string::ToString::{vtable}
-}
-
-#[lang_item("to_string_method")]
-pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 Self) -> String
-where
-    [@TraitClause0]: ToString<Self>,
-= <opaque>
-
 // Full name: alloc::string::{impl ToString for T}::to_string
 pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 T) -> String
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Display<T>,
 = <opaque>
-
-// Full name: alloc::string::{impl ToString for T}
-impl<T> ToString for T
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Display<T>,
-{
-    parent_clause0 = @TraitClause0
-    fn to_string<'_0_1> = {impl ToString for T}::to_string<'_0_1, T>[@TraitClause0, @TraitClause1]
-    vtable: {impl ToString for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
-}
 
 // Full name: test_crate::construct
 fn construct<T>(@1: T) -> alloc::boxed::Box<(dyn Display + 'static)>[{built_in impl MetaSized for (dyn Display)}, {built_in impl Sized for Global}]

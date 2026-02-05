@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+// Full name: core::ops::arith::{impl Add<i32> for &'_0 i32}::add
+pub fn {impl Add<i32> for &'_0 i32}::add<'_0>(@1: &'_0 i32, @2: i32) -> i32
+= <opaque>
+
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
@@ -13,38 +17,6 @@ pub trait Sized<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
-
-// Full name: core::ops::arith::Add
-#[lang_item("add")]
-pub trait Add<Self, Rhs>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Rhs>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
-    type Output
-    fn add = core::ops::arith::Add::add<Self, Rhs>[Self]
-    vtable: core::ops::arith::Add::{vtable}<Rhs, Self::Output>
-}
-
-// Full name: core::ops::arith::{impl Add<i32> for &'_0 i32}::add
-pub fn {impl Add<i32> for &'_0 i32}::add<'_0>(@1: &'_0 i32, @2: i32) -> i32
-= <opaque>
-
-// Full name: core::ops::arith::{impl Add<i32> for &'_0 i32}
-impl<'_0> Add<i32> for &'_0 i32 {
-    parent_clause0 = {built_in impl MetaSized for &'_ i32}
-    parent_clause1 = {built_in impl Sized for i32}
-    parent_clause2 = {built_in impl Sized for i32}
-    type Output = i32
-    fn add = {impl Add<i32> for &'_0 i32}::add<'_0>
-    vtable: {impl Add<i32> for &'_0 i32}::{vtable}<'_0>
-}
-
-#[lang_item("add")]
-pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0::Output
-where
-    [@TraitClause0]: Add<Self, Rhs>,
-= <opaque>
 
 fn UNIT_METADATA()
 {

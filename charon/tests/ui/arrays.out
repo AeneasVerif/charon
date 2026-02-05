@@ -31,20 +31,6 @@ where
     [@TraitClause2]: Index<[T], I, Clause2_Output>,
 = <opaque>
 
-// Full name: core::array::{impl Index<I, Clause2_Output> for [T; N]}
-impl<T, I, Clause2_Output, const N : usize> Index<I, Clause2_Output> for [T; N]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Index<[T], I, Clause2_Output>,
-{
-    parent_clause0 = {built_in impl MetaSized for [T; N]}
-    parent_clause1 = @TraitClause1::parent_clause0
-    parent_clause2 = @TraitClause2::parent_clause2
-    fn index<'_0_1> = {impl Index<I, Clause2_Output> for [T; N]}::index<'_0_1, T, I, Clause2_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl Index<I, Clause2_Output> for [T; N]}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
-}
-
 // Full name: core::ops::index::IndexMut
 #[lang_item("index_mut")]
 pub trait IndexMut<Self, Idx, Self_Clause1_Output>
@@ -63,20 +49,6 @@ where
     [@TraitClause1]: Sized<I>,
     [@TraitClause2]: IndexMut<[T], I, Clause2_Clause1_Output>,
 = <opaque>
-
-// Full name: core::array::{impl IndexMut<I, Clause2_Clause1_Output> for [T; N]}
-impl<T, I, Clause2_Clause1_Output, const N : usize> IndexMut<I, Clause2_Clause1_Output> for [T; N]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: IndexMut<[T], I, Clause2_Clause1_Output>,
-{
-    parent_clause0 = {built_in impl MetaSized for [T; N]}
-    parent_clause1 = {impl Index<I, Clause2_Output> for [T; N]}<T, I, Clause2_Clause1_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause1]
-    parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0_1> = {impl IndexMut<I, Clause2_Clause1_Output> for [T; N]}::index_mut<'_0_1, T, I, Clause2_Clause1_Output, N>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl IndexMut<I, Clause2_Clause1_Output> for [T; N]}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
-}
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]

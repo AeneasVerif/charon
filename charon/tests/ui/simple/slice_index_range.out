@@ -89,23 +89,6 @@ pub fn MAX() -> usize
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
 
-// Full name: core::ops::index::Index
-#[lang_item("index")]
-pub trait Index<Self, Idx>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: MetaSized<Idx>
-    parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
-    type Output
-    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
-    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
-}
-
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
-where
-    [@TraitClause0]: Index<Self, Idx>,
-= <method_without_default_body>
-
 // Full name: core::ops::range::RangeInclusive
 #[lang_item("RangeInclusive")]
 pub struct RangeInclusive<Idx>
@@ -241,21 +224,6 @@ where
 
     _0 = @TraitClause2::index<'3>(move index_2, move self_1)
     return
-}
-
-// Full name: core::slice::index::{impl Index<I> for [T]}
-impl<T, I> Index<I> for [T]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: SliceIndex<I, [T]>,
-{
-    parent_clause0 = {built_in impl MetaSized for [T]}
-    parent_clause1 = @TraitClause1::parent_clause0
-    parent_clause2 = @TraitClause2::parent_clause3
-    type Output = @TraitClause2::Output
-    fn index<'_0_1> = {impl Index<I> for [T]}::index<'_0_1, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl Index<I> for [T]}::{vtable}<T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 // Full name: core::slice::index::slice_index_fail
@@ -576,8 +544,8 @@ where
     _16 = slice_index_fail(move start_3, move end_4, move len_6)
 }
 
-// Full name: core::slice::index::{impl#3}::get_unchecked_mut::precondition_check
-fn {impl#3}::get_unchecked_mut::precondition_check(@1: usize, @2: usize, @3: usize)
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check
+fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(@1: usize, @2: usize, @3: usize)
 {
     let _0: (); // return
     let start_1: usize; // arg #1
@@ -681,7 +649,7 @@ where
     if move _4 {
         storage_live(_6)
         _6 = copy slice_2.metadata
-        _5 = {impl#3}::get_unchecked_mut::precondition_check(copy self_10, copy exclusive_end_3, move _6)
+        _5 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(copy self_10, copy exclusive_end_3, move _6)
         storage_dead(_6)
     } else {
     }
@@ -698,8 +666,8 @@ where
     return
 }
 
-// Full name: core::slice::index::{impl#3}::get_unchecked::precondition_check
-fn {impl#3}::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check
+fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
 {
     let _0: (); // return
     let start_1: usize; // arg #1
@@ -803,7 +771,7 @@ where
     if move _4 {
         storage_live(_6)
         _6 = copy slice_2.metadata
-        _5 = {impl#3}::get_unchecked::precondition_check(copy self_10, copy exclusive_end_3, move _6)
+        _5 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(copy self_10, copy exclusive_end_3, move _6)
         storage_dead(_6)
     } else {
     }

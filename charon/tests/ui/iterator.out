@@ -41,16 +41,11 @@ where
     non-dyn-compatible
 }
 
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
+// Full name: core::array::iter::{impl IntoIterator for [T; N]}::into_iter
+pub fn {impl IntoIterator for [T; N]}::into_iter<T, const N : usize>(@1: [T; N]) -> IntoIter<T, N>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-{
-  Ok(T),
-  Err(E),
-}
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -145,13 +140,6 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
-// Full name: core::num::nonzero::private::Sealed
-pub trait Sealed<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::num::nonzero::private::Sealed::{vtable}
-}
-
 // Full name: core::clone::Clone
 #[lang_item("clone")]
 pub trait Clone<Self>
@@ -169,6 +157,24 @@ pub trait Copy<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
     non-dyn-compatible
+}
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::num::nonzero::private::Sealed
+pub trait Sealed<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::num::nonzero::private::Sealed::{vtable}
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
@@ -1506,27 +1512,6 @@ where
     vtable: {impl Iterator for IntoIter<T, N>[@TraitClause0]}::{vtable}<T, N>[@TraitClause0]
 }
 
-// Full name: core::array::iter::{impl IntoIterator for [T; N]}::into_iter
-pub fn {impl IntoIterator for [T; N]}::into_iter<T, const N : usize>(@1: [T; N]) -> IntoIter<T, N>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: core::array::iter::{impl IntoIterator for [T; N]}
-impl<T, const N : usize> IntoIterator for [T; N]
-where
-    [@TraitClause0]: Sized<T>,
-{
-    parent_clause0 = {built_in impl MetaSized for [T; N]}
-    parent_clause1 = @TraitClause0
-    parent_clause2 = {built_in impl Sized for IntoIter<T, N>[@TraitClause0]}
-    parent_clause3 = {impl Iterator for IntoIter<T, N>[@TraitClause0]}<T, N>[@TraitClause0]
-    type Item = T
-    type IntoIter = IntoIter<T, N>[@TraitClause0]
-    fn into_iter = {impl IntoIterator for [T; N]}::into_iter<T, N>[@TraitClause0]
-    vtable: {impl IntoIterator for [T; N]}::{vtable}<T, N>[@TraitClause0]
-}
-
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
 where
@@ -1652,27 +1637,9 @@ where
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
 
-// Full name: core::ops::arith::AddAssign
-#[lang_item("add_assign")]
-pub trait AddAssign<Self, Rhs>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Rhs>
-    fn add_assign<'_0_1> = core::ops::arith::AddAssign::add_assign<'_0_1, Self, Rhs>[Self]
-    vtable: core::ops::arith::AddAssign::{vtable}<Rhs>
-}
-
 // Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
 pub fn {impl AddAssign<&'_0 i32> for i32}::add_assign<'_0, '_1>(@1: &'_1 mut i32, @2: &'_0 i32)
 = <opaque>
-
-// Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}
-impl<'_0> AddAssign<&'_0 i32> for i32 {
-    parent_clause0 = {built_in impl MetaSized for i32}
-    parent_clause1 = {built_in impl Sized for &'_ i32}
-    fn add_assign<'_0_1> = {impl AddAssign<&'_0 i32> for i32}::add_assign<'_0, '_0_1>
-    vtable: {impl AddAssign<&'_0 i32> for i32}::{vtable}<'_0>
-}
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size
 pub fn size<'_0, Self>(@1: &'_0 Self) -> usize
@@ -1719,22 +1686,6 @@ where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Iterator<I>,
 = <opaque>
-
-// Full name: core::iter::traits::collect::{impl IntoIterator for I}
-impl<I> IntoIterator for I
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I>,
-{
-    parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = @TraitClause1::parent_clause1
-    parent_clause2 = @TraitClause0
-    parent_clause3 = @TraitClause1
-    type Item = @TraitClause1::Item
-    type IntoIter = I
-    fn into_iter = {impl IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
-    vtable: {impl IntoIterator for I}::{vtable}<I>[@TraitClause0, @TraitClause1]
-}
 
 // Full name: core::iter::traits::collect::Extend::extend
 pub fn extend<'_0, Self, A, T>(@1: &'_0 mut Self, @2: T)
@@ -2518,11 +2469,6 @@ where
 = <opaque>
 
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
-= <opaque>
-
-pub fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut Self, @2: Rhs)
-where
-    [@TraitClause0]: AddAssign<Self, Rhs>,
 = <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut
