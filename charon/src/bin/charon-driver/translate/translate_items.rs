@@ -205,8 +205,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl =
-                    bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?;
+                let fun_decl = if mono {
+                    bt_ctx.translate_vtable_instance_init_mono(id, item_meta, &def, impl_kind)?
+                } else {
+                    bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?
+                };
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::VTableMethod => {

@@ -716,6 +716,54 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
+    fn add_method_to_vtable_value_mono(
+        &mut self,
+        span: Span,
+        impl_def: &hax::FullDef,
+        item: &hax::ImplAssocItem,
+        mut mk_cast_field: impl FnMut((String, Ty, FnPtr)),
+    ) -> Result<(), Error> {
+        // Exit if the item isn't a vtable safe method.
+        let vtable_sig = match self.poly_hax_def(&item.decl_def_id)?.kind() {
+            hax::FullDefKind::AssocFn {
+                vtable_sig: Some(vtable_sig),
+                ..
+            } => vtable_sig.clone(),
+            _ => return Ok(()),
+        };
+
+        let method_shim = match &item.value {
+            hax::ImplAssocItemValue::Provided {
+                def_id: item_def_id,
+                ..
+            } => {
+                // The method is vtable safe so it has no generics, hence we can reuse the impl
+                // generics -- the lifetime binder will be added as `Erased` in `translate_fn_ptr`.
+                let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
+                let shim_ref =
+                    self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
+                shim_ref
+                // ConstantExprKind::FnDef(shim_ref)
+            }
+            hax::ImplAssocItemValue::DefaultedFn { .. } => {
+                error!("shim for default methods aren't yet supported");
+                return Ok(());
+            }
+            _ => return Ok(()),
+        };
+
+        let name = self.translate_trait_item_name(item.def_id())?;
+
+        let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
+        let method_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
+
+        mk_cast_field((name.to_string(), method_ty, method_shim));
+
+        // mk_field(const_kind);
+
+        Ok(())
+    }
+
     fn add_supertraits_to_vtable_value(
         &mut self,
         span: Span,
@@ -848,10 +896,6 @@ impl ItemTransCtx<'_, '_> {
         ));
         aggregate_fields.push(Operand::Move(align_local));
 
-        if self.monomorphize_mode() {
-            trace!("MONO: gen_vtable_instance_init_body");
-        }
-
         // Helper to fill in the remaining fields with constant values.
         let mut mk_field = |kind| {
             let ty = field_ty_iter.next().unwrap();
@@ -870,6 +914,164 @@ impl ItemTransCtx<'_, '_> {
         self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
 
         if field_ty_iter.next().is_some() {
+            raise_error!(
+                self,
+                span,
+                "Missed some fields in vtable value construction"
+            )
+        }
+
+        // Construct the final struct.
+        builder.push_statement(StatementKind::Assign(
+            ret_place,
+            Rvalue::Aggregate(
+                AggregateKind::Adt(vtable_struct_ref.clone(), None, None),
+                aggregate_fields,
+            ),
+        ));
+
+        Ok(Body::Unstructured(builder.build()))
+    }
+
+    /// Generate the body of the vtable instance function.
+    /// This is for `impl Trait for T` implementation, it does NOT handle builtin impls.
+    /// ```ignore
+    /// let ret@0 : VTable;
+    /// ret@0 = VTable { ... };
+    /// return;
+    /// ```
+    fn gen_vtable_instance_init_body_mono(
+        &mut self,
+        span: Span,
+        impl_def: &hax::FullDef,
+        vtable_struct_ref: TypeDeclRef,
+    ) -> Result<Body, Error> {
+        let hax::FullDefKind::TraitImpl {
+            trait_pred, items, ..
+        } = impl_def.kind()
+        else {
+            unreachable!()
+        };
+        // let trait_def = self.hax_def(&trait_pred.trait_ref)?;
+        let trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+        let implemented_trait = self.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)?;
+        // let implemented_trait = self.translate_trait_decl_ref(span, trait_def.this())?;
+        // The type this impl is for.
+        let self_ty = &implemented_trait.generics.types[0];
+
+        let mut builder = BodyBuilder::new(span, 0);
+        let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
+        let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
+
+        // Retreive the expected field types from the struct definition. This avoids complicated
+        // substitutions.
+        let field_tys = {
+            let vtable_decl_id = vtable_struct_ref.id.as_adt().unwrap().clone();
+            let ItemRef::Type(vtable_def) = self.t_ctx.get_or_translate(vtable_decl_id.into())?
+            else {
+                unreachable!()
+            };
+            let fields = match &vtable_def.kind {
+                TypeDeclKind::Struct(fields) => fields,
+                TypeDeclKind::Opaque => return Ok(Body::Opaque),
+                TypeDeclKind::Error(error) => return Err(Error::new(span, error.clone())),
+                _ => unreachable!(),
+            };
+            fields
+                .iter()
+                .map(|f| &f.ty)
+                .cloned()
+                .map(|ty| ty.substitute(&vtable_struct_ref.generics))
+                .collect_vec()
+        };
+
+        let mut aggregate_fields = vec![];
+        // For each vtable field, assign the desired value to a new local.
+        let mut field_ty_iter = field_tys.into_iter();
+
+        let size_ty = field_ty_iter.next().unwrap();
+        let size_local = builder.new_var(Some("size".to_string()), size_ty);
+        builder.push_statement(StatementKind::Assign(
+            size_local.clone(),
+            Rvalue::NullaryOp(NullOp::SizeOf, self_ty.clone()),
+        ));
+        aggregate_fields.push(Operand::Move(size_local));
+
+        let align_ty = field_ty_iter.next().unwrap();
+        let align_local = builder.new_var(Some("align".to_string()), align_ty);
+        builder.push_statement(StatementKind::Assign(
+            align_local.clone(),
+            Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
+        ));
+        aggregate_fields.push(Operand::Move(align_local));
+
+        if self.monomorphize_mode() {
+            trace!("MONO: gen_vtable_instance_init_body");
+        }
+
+        let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
+            panic!()
+        };
+        let Some(dyn_self) = dyn_self else {
+            panic!("MONO: Trying to generate a vtable for a non-dyn-compatible trait")
+        };
+
+        let mut mk_cast_field = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
+            let ty = field_ty_iter.next().unwrap();
+            let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
+            let shim = Rvalue::Use(Operand::Const(Box::new(ConstantExpr {
+                kind: ConstantExprKind::FnDef(method_shim.clone()),
+                ty: method_ty.clone(),
+            })));
+            let cast_local = builder.new_var(
+                Some("erased_".to_string() + method_name.as_str()),
+                ty.clone(),
+            );
+            let cast = Rvalue::UnaryOp(
+                UnOp::Cast(CastKind::RawPtr(
+                    method_local.ty().clone(),
+                    cast_local.ty().clone(),
+                )),
+                Operand::Move(method_local.clone()),
+            );
+
+            builder.push_statement(StatementKind::Assign(method_local.clone(), shim));
+            builder.push_statement(StatementKind::Assign(cast_local.clone(), cast));
+            aggregate_fields.push(Operand::Move(cast_local));
+        };
+
+        // `*mut dyn Trait`
+        let ref_dyn_self =
+            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
+
+        // `*mut dyn Trait -> ()`
+        let signature = FunSig {
+            is_unsafe: true,
+            inputs: vec![ref_dyn_self.clone()],
+            output: Ty::mk_unit(),
+        };
+        let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
+
+        let drop_shim: FnPtr =
+            self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
+
+        mk_cast_field(("drop".to_string(), drop_ty.clone(), drop_shim));
+
+        for item in items {
+            self.add_method_to_vtable_value_mono(span, impl_def, item, &mut mk_cast_field)?;
+        }
+
+        // Helper to fill in the remaining fields with constant values.
+        let mut mk_field = |kind| {
+            let ty = field_ty_iter.next().unwrap();
+            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
+        };
+
+        self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
+
+        if let Some(f) = field_ty_iter.next() {
+            error!("Aggregate fileds: {:?}", aggregate_fields);
+            error!("Additional field: {:?}", f);
             raise_error!(
                 self,
                 span,
@@ -934,6 +1136,57 @@ impl ItemTransCtx<'_, '_> {
             generics: self.into_generics(),
             signature: sig,
             src: ItemSource::VTableInstance { impl_ref },
+            is_global_initializer: Some(init_for),
+            body,
+        })
+    }
+
+    pub(crate) fn translate_vtable_instance_init_mono(
+        mut self,
+        init_func_id: FunDeclId,
+        item_meta: ItemMeta,
+        impl_def: &hax::FullDef,
+        impl_kind: &TraitImplSource,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+        // self.check_no_monomorphize(span)?;
+
+        let vtable_struct_ref = self.get_vtable_instance_info_mono(span, impl_def)?;
+        let init_for = self.register_item(
+            span,
+            impl_def.this(),
+            TransItemSourceKind::VTableInstance(*impl_kind),
+        );
+
+        // Signature: `() -> VTable`.
+        let sig = FunSig {
+            is_unsafe: false,
+            inputs: vec![],
+            output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
+        };
+
+        let body = match impl_kind {
+            _ if item_meta.opacity.with_private_contents().is_opaque() => Body::Opaque,
+            TraitImplSource::Normal => {
+                self.gen_vtable_instance_init_body_mono(span, impl_def, vtable_struct_ref)?
+            }
+            _ => {
+                raise_error!(
+                    self,
+                    span,
+                    "Don't know how to generate a vtable for a virtual impl {impl_kind:?}"
+                );
+            }
+        };
+
+        trace!("MONO: after body");
+
+        Ok(FunDecl {
+            def_id: init_func_id,
+            item_meta: item_meta,
+            generics: self.into_generics(),
+            signature: sig,
+            src: ItemSource::VTableInstanceMono,
             is_global_initializer: Some(init_for),
             body,
         })
