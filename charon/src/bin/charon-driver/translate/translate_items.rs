@@ -12,6 +12,10 @@ use std::ops::ControlFlow;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
+        if self.monomorphize_mode() && matches!(item_src.kind, TransItemSourceKind::TraitImpl(..)) {
+            trace!("MONO: translate_item")
+        }
+
         let trans_id = self.register_no_enqueue(&None, item_src);
         let def_id = item_src.def_id();
         if let Some(trans_id) = trans_id {
@@ -309,6 +313,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             timpl
                 .methods
                 .retain(|(name, _)| method_is_used(trait_id, *name));
+        }
+    }
+
+    pub fn monomorphize_mode(&self) -> bool {
+        self.options.monomorphize_with_hax
+    }
+
+    pub fn check_mono_no_trait_impl(&self) {
+        if self.monomorphize_mode() && self.translated.trait_impls.slot_count() != 0 {
+            error!("Trait Impl should not be translated in Mono mode");
         }
     }
 }

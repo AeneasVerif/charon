@@ -224,7 +224,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Whether monomorphization is enabled.
     pub fn monomorphize_mode(&self) -> bool {
-        self.t_ctx.options.monomorphize_with_hax
+        self.t_ctx.monomorphize_mode()
     }
 
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {

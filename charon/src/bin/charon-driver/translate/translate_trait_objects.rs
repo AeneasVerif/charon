@@ -593,7 +593,7 @@ impl ItemTransCtx<'_, '_> {
         impl_kind: &TraitImplSource,
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
-        self.check_no_monomorphize(span)?;
+        // self.check_no_monomorphize(span)?;
 
         let (impl_ref, vtable_struct_ref) =
             self.get_vtable_instance_info(span, impl_def, impl_kind)?;
@@ -785,6 +785,10 @@ impl ItemTransCtx<'_, '_> {
             Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
         ));
         aggregate_fields.push(Operand::Move(align_local));
+
+        if self.monomorphize_mode() {
+            trace!("MONO: gen_vtable_instance_init_body");
+        }
 
         // Helper to fill in the remaining fields with constant values.
         let mut mk_field = |kind| {
