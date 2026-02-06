@@ -22,6 +22,16 @@ pub enum SyntheticItem {
     Tuple(usize),
 }
 
+impl SyntheticItem {
+    pub fn name(&self) -> String {
+        match self {
+            SyntheticItem::Array => "<array>".to_string(),
+            SyntheticItem::Slice => "<slice>".to_string(),
+            SyntheticItem::Tuple(n) => format!("<tuple_{n}>"),
+        }
+    }
+}
+
 impl<'tcx> GlobalCache<'tcx> {
     pub fn get_synthetic_def_id(
         &mut self,
@@ -34,11 +44,7 @@ impl<'tcx> GlobalCache<'tcx> {
         let tcx = s.base().tcx;
         let mut disambiguator_state = DisambiguatorState::new();
 
-        let name = match item {
-            SyntheticItem::Array => "<array>",
-            SyntheticItem::Slice => "<slice>",
-            SyntheticItem::Tuple(n) => &format!("<tuple_{n}>"),
-        };
+        let name = &item.name();
         // Create a fake item, to which we'll assign generics and a param_env, which we can
         // then use to generate the `FullDefKind` we want.
         let feed = tcx.create_def(
@@ -176,5 +182,17 @@ impl<'tcx> GlobalCache<'tcx> {
         feed.feed_hir();
 
         def_id
+    }
+}
+
+impl ItemRef {
+    pub fn translate_synthetic<'tcx, S: UnderOwnerState<'tcx>>(
+        s: &S,
+        synthetic: SyntheticItem,
+        generics: ty::GenericArgsRef<'tcx>,
+    ) -> ItemRef {
+        let def_id = s.with_global_cache(|c| c.get_synthetic_def_id(s, synthetic));
+        let hax_def_id = DefId::make_synthetic(s, synthetic, def_id);
+        ItemRef::translate_from_hax_def_id(s, hax_def_id, generics)
     }
 }

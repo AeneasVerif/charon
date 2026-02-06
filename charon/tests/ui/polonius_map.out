@@ -147,23 +147,6 @@ impl Hash for u32 {
     non-dyn-compatible
 }
 
-// Full name: core::ops::index::Index
-#[lang_item("index")]
-pub trait Index<Self, Idx>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: MetaSized<Idx>
-    parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
-    type Output
-    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
-    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
-}
-
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
-where
-    [@TraitClause0]: Index<Self, Idx>,
-= <opaque>
-
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -223,28 +206,6 @@ where
     [@TraitClause8]: Hash<Q>,
     [@TraitClause9]: BuildHasher<S>,
 = <opaque>
-
-// Full name: std::collections::hash::map::{impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}
-impl<'_0, K, Q, V, S> Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]
-where
-    [@TraitClause0]: Sized<K>,
-    [@TraitClause1]: MetaSized<Q>,
-    [@TraitClause2]: Sized<V>,
-    [@TraitClause3]: Sized<S>,
-    [@TraitClause4]: Eq<K>,
-    [@TraitClause5]: Hash<K>,
-    [@TraitClause6]: Borrow<K, Q>,
-    [@TraitClause7]: Eq<Q>,
-    [@TraitClause8]: Hash<Q>,
-    [@TraitClause9]: BuildHasher<S>,
-{
-    parent_clause0 = {built_in impl MetaSized for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}
-    parent_clause1 = {built_in impl MetaSized for &'_ Q}
-    parent_clause2 = @TraitClause2::parent_clause0
-    type Output = V
-    fn index<'_0_1> = {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::index<'_0, '_0_1, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
-    vtable: {impl Index<&'_0 Q> for HashMap<K, V, S>[@TraitClause0, @TraitClause2, @TraitClause3]}::{vtable}<'_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8, @TraitClause9]
-}
 
 // Full name: std::hash::random::RandomState
 pub opaque type RandomState

@@ -31,13 +31,6 @@ where
 pub fn {impl Default for u32}::default() -> u32
 = <opaque>
 
-// Full name: core::default::{impl Default for u32}
-impl Default for u32 {
-    parent_clause0 = {built_in impl Sized for u32}
-    fn default = {impl Default for u32}::default
-    non-dyn-compatible
-}
-
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>

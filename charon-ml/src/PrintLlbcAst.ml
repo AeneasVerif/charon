@@ -155,6 +155,10 @@ module Crate = struct
     let env = crate_to_fmt_env m in
     fun_decl_to_string env "" "  " d
 
+  let crate_type_decl_id_to_string (m : crate) (id : type_decl_id) : string =
+    let env = crate_to_fmt_env m in
+    type_decl_id_to_string env id
+
   let crate_to_string (m : crate) : string =
     let env = crate_to_fmt_env m in
 

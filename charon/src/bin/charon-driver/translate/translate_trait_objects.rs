@@ -755,8 +755,11 @@ impl ItemTransCtx<'_, '_> {
             else {
                 unreachable!()
             };
-            let TypeDeclKind::Struct(fields) = &vtable_def.kind else {
-                unreachable!()
+            let fields = match &vtable_def.kind {
+                TypeDeclKind::Struct(fields) => fields,
+                TypeDeclKind::Opaque => return Ok(Body::Opaque),
+                TypeDeclKind::Error(error) => return Err(Error::new(span, error.clone())),
+                _ => unreachable!(),
             };
             fields
                 .iter()

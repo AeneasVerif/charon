@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use paste::paste;
+use rustc_middle::ty::TyCtxt;
 
 macro_rules! mk_aux {
     ($state:ident {$($lts:lifetime)*} $field:ident {$($field_type:tt)+} {$($gen:tt)*} {$($gen_full:tt)*} {$($params:tt)*} {$($fields:tt)*}) => {
@@ -106,7 +107,7 @@ mod types {
         /// Cache the `Ty` translations.
         pub tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
-        pub item_refs: HashMap<(RDefId, ty::GenericArgsRef<'tcx>, bool), ItemRef>,
+        pub item_refs: HashMap<(DefId, ty::GenericArgsRef<'tcx>, bool), ItemRef>,
         /// Cache the trait resolution engine for each item.
         pub predicate_searcher: Option<crate::traits::PredicateSearcher<'tcx>>,
         /// Cache of trait refs to resolved impl expressions.
@@ -145,7 +146,7 @@ mod types {
 mk!(
     struct State<'tcx> {
         base: {'tcx} types::Base,
-        owner_id: {} rustc_hir::def_id::DefId,
+        owner: {} DefId,
         binder: {'tcx} types::UnitBinder,
     }
 );
@@ -153,39 +154,50 @@ mk!(
 pub use self::types::*;
 
 pub type StateWithBase<'tcx> = State<Base<'tcx>, (), ()>;
-pub type StateWithOwner<'tcx> = State<Base<'tcx>, rustc_hir::def_id::DefId, ()>;
-pub type StateWithBinder<'tcx> =
-    State<Base<'tcx>, rustc_hir::def_id::DefId, types::UnitBinder<'tcx>>;
+pub type StateWithOwner<'tcx> = State<Base<'tcx>, DefId, ()>;
+pub type StateWithBinder<'tcx> = State<Base<'tcx>, DefId, types::UnitBinder<'tcx>>;
 
 impl<'tcx> StateWithBase<'tcx> {
     pub fn new(tcx: rustc_middle::ty::TyCtxt<'tcx>, options: crate::options::Options) -> Self {
         Self {
             base: Base::new(tcx, options),
-            owner_id: (),
+            owner: (),
             binder: (),
         }
     }
 }
 
 pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
-    /// Updates the OnwerId in a state, making sure to override `opt_def_id` in base as well.
-    fn with_owner_id(&self, owner_id: rustc_hir::def_id::DefId) -> StateWithOwner<'tcx> {
+    fn tcx(&self) -> TyCtxt<'tcx> {
+        self.base().tcx
+    }
+
+    /// Create a state with the given owner.
+    fn with_hax_owner(&self, owner: &DefId) -> StateWithOwner<'tcx> {
         let mut base = self.base();
-        base.opt_def_id = Some(owner_id);
+        base.opt_def_id = owner.underlying_rust_def_id();
         State {
-            owner_id,
+            owner: owner.clone(),
             base,
             binder: (),
         }
+    }
+    /// Create a state with the given owner.
+    fn with_rustc_owner(&self, owner_id: RDefId) -> StateWithOwner<'tcx> {
+        let owner = &owner_id.sinto(self);
+        Self::with_hax_owner(self, owner)
     }
 }
 impl<'tcx, T: HasBase<'tcx> + Clone> BaseState<'tcx> for T {}
 
 /// State of anything below an `owner`.
-pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwnerId {
+pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwner {
+    fn owner_id(&self) -> RDefId {
+        self.owner().as_def_id_even_synthetic()
+    }
     fn with_base(&self, base: types::Base<'tcx>) -> StateWithOwner<'tcx> {
         State {
-            owner_id: self.owner_id(),
+            owner: self.owner().clone(),
             base,
             binder: (),
         }
@@ -193,12 +205,12 @@ pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwnerId {
     fn with_binder(&self, binder: types::UnitBinder<'tcx>) -> StateWithBinder<'tcx> {
         State {
             base: self.base(),
-            owner_id: self.owner_id(),
+            owner: self.owner().clone(),
             binder,
         }
     }
 }
-impl<'tcx, T: BaseState<'tcx> + HasOwnerId> UnderOwnerState<'tcx> for T {}
+impl<'tcx, T: BaseState<'tcx> + HasOwner> UnderOwnerState<'tcx> for T {}
 
 /// State of anything below a binder.
 pub trait UnderBinderState<'tcx> = UnderOwnerState<'tcx> + HasBinder<'tcx>;

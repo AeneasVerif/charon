@@ -21,7 +21,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             hax::BuiltinTraitData::Other => match &trait_def.lang_item {
                 _ if self
                     .tcx
-                    .trait_is_auto(trait_def.def_id().underlying_rust_def_id()) =>
+                    .trait_is_auto(trait_def.def_id().real_rust_def_id()) =>
                 {
                     BuiltinImplData::Auto
                 }

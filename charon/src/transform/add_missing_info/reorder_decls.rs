@@ -339,10 +339,6 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
                     ItemSource::TraitDecl { trait_ref, .. } => {
                         visitor.insert_edge(trait_ref.id);
                     }
-                    ItemSource::TraitImpl { impl_ref, .. } => {
-                        // Keep the impl around without recording a dependency.
-                        visitor.insert_node(impl_ref.id);
-                    }
                     _ => (),
                 }
             }
@@ -398,13 +394,6 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
 fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
     // Build the graph of dependencies between items.
     let graph = compute_declarations_graph(ctx);
-
-    // Remove unreachable items.
-    for id in ctx.translated.all_ids() {
-        if !graph.contains_node(id) {
-            ctx.translated.remove_item(id);
-        }
-    }
 
     // Pre-sort files to limit the number of costly string comparisons. Maps file ids to an index
     // that reflects ordering on the crates (with `core` and `std` sorted first) and file names.

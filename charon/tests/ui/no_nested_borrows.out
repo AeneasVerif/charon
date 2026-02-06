@@ -23,37 +23,6 @@ pub trait Destruct<Self>
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
-// Full name: core::ops::deref::Deref
-#[lang_item("deref")]
-pub trait Deref<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self::Target>
-    type Target
-    fn deref<'_0_1> = core::ops::deref::Deref::deref<'_0_1, Self>[Self]
-    vtable: core::ops::deref::Deref::{vtable}<Self::Target>
-}
-
-#[lang_item("deref_method")]
-pub fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 Self) -> &'_0 @TraitClause0::Target
-where
-    [@TraitClause0]: Deref<Self>,
-= <opaque>
-
-// Full name: core::ops::deref::DerefMut
-#[lang_item("deref_mut")]
-pub trait DerefMut<Self>
-{
-    parent_clause0 : [@TraitClause0]: Deref<Self>
-    fn deref_mut<'_0_1> = core::ops::deref::DerefMut::deref_mut<'_0_1, Self>[Self]
-    vtable: core::ops::deref::DerefMut::{vtable}<Self::parent_clause0::Target>
-}
-
-#[lang_item("deref_mut_method")]
-pub fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut Self) -> &'_0 mut @TraitClause0::parent_clause0::Target
-where
-    [@TraitClause0]: DerefMut<Self>,
-= <opaque>
-
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -82,35 +51,12 @@ where
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-    parent_clause0 = @TraitClause0
-    type Target = T
-    fn deref<'_0_1> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0_1, T, A>[@TraitClause0, @TraitClause1]
-    vtable: {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
-}
-
 // Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut
 pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0, T, A>(@1: &'_0 mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]) -> &'_0 mut T
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
 = <opaque>
-
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<T, A>[@TraitClause0, @TraitClause1]
-    fn deref_mut<'_0_1> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0_1, T, A>[@TraitClause0, @TraitClause1]
-    vtable: {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::{vtable}<T, A>[@TraitClause0, @TraitClause1]
-}
 
 fn UNIT_METADATA()
 {

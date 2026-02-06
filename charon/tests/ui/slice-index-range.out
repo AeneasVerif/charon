@@ -32,21 +32,6 @@ where
     [@TraitClause2]: Index<[T], I>,
 = <opaque>
 
-// Full name: core::array::{impl Index<I> for [T; N]}
-impl<T, I, const N : usize> Index<I> for [T; N]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Index<[T], I>,
-{
-    parent_clause0 = {built_in impl MetaSized for [T; N]}
-    parent_clause1 = @TraitClause1::parent_clause0
-    parent_clause2 = @TraitClause2::parent_clause2
-    type Output = @TraitClause2::Output
-    fn index<'_0_1> = {impl Index<I> for [T; N]}::index<'_0_1, T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
-    vtable: {impl Index<I> for [T; N]}::{vtable}<T, I, N>[@TraitClause0, @TraitClause1, @TraitClause2]
-}
-
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>

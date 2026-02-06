@@ -308,28 +308,6 @@ where
     vtable: {impl Iterator for Range<A>[@TraitClause0]}::{vtable}<A>[@TraitClause0, @TraitClause1]
 }
 
-// Full name: core::iter::traits::collect::IntoIterator
-#[lang_item("IntoIterator")]
-pub trait IntoIterator<Self>
-where
-    Self::parent_clause3::Item = Self::Item,
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
-    parent_clause2 : [@TraitClause2]: Sized<Self::IntoIter>
-    parent_clause3 : [@TraitClause3]: Iterator<Self::IntoIter>
-    type Item
-    type IntoIter
-    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
-    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
-}
-
-#[lang_item("into_iter")]
-pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
-where
-    [@TraitClause0]: IntoIterator<Self>,
-= <opaque>
-
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
 pub fn {impl IntoIterator for I}::into_iter<I>(@1: I) -> I
 where
@@ -337,59 +315,10 @@ where
     [@TraitClause1]: Iterator<I>,
 = <opaque>
 
-// Full name: core::iter::traits::collect::{impl IntoIterator for I}
-impl<I> IntoIterator for I
-where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I>,
-{
-    parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = @TraitClause1::parent_clause1
-    parent_clause2 = @TraitClause0
-    parent_clause3 = @TraitClause1
-    type Item = @TraitClause1::Item
-    type IntoIter = I
-    fn into_iter = {impl IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
-    vtable: {impl IntoIterator for I}::{vtable}<I>[@TraitClause0, @TraitClause1]
-}
-
 #[lang_item("next")]
 pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: Iterator<Self>,
-= <opaque>
-
-// Full name: core::ops::index::Index
-#[lang_item("index")]
-pub trait Index<Self, Idx>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: MetaSized<Idx>
-    parent_clause2 : [@TraitClause2]: MetaSized<Self::Output>
-    type Output
-    fn index<'_0_1> = core::ops::index::Index::index<'_0_1, Self, Idx>[Self]
-    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
-}
-
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
-where
-    [@TraitClause0]: Index<Self, Idx>,
-= <opaque>
-
-// Full name: core::ops::index::IndexMut
-#[lang_item("index_mut")]
-pub trait IndexMut<Self, Idx>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Index<Self, Idx>
-    parent_clause2 : [@TraitClause2]: MetaSized<Idx>
-    fn index_mut<'_0_1> = core::ops::index::IndexMut::index_mut<'_0_1, Self, Idx>[Self]
-    vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::parent_clause1::Output>
-}
-
-pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut Self, @2: Idx) -> &'_0 mut @TraitClause0::parent_clause1::Output
-where
-    [@TraitClause0]: IndexMut<Self, Idx>,
 = <opaque>
 
 // Full name: core::slice::index::private_slice_index::Sealed
@@ -525,31 +454,6 @@ where
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
-// Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index
-pub fn {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0, T, I, A>(@1: &'_0 Vec<T>[@TraitClause0, @TraitClause2], @2: I) -> &'_0 @TraitClause3::Output
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: SliceIndex<I, [T]>,
-= <opaque>
-
-// Full name: alloc::vec::{impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}
-impl<T, I, A> Index<I> for Vec<T>[@TraitClause0, @TraitClause2]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: SliceIndex<I, [T]>,
-{
-    parent_clause0 = {built_in impl MetaSized for Vec<T>[@TraitClause0, @TraitClause2]}
-    parent_clause1 = @TraitClause1::parent_clause0
-    parent_clause2 = @TraitClause3::parent_clause3
-    type Output = @TraitClause3::Output
-    fn index<'_0_1> = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index<'_0_1, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-    vtable: {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}::{vtable}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-}
-
 // Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut
 pub fn {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause2], @2: I) -> &'_0 mut @TraitClause3::Output
 where
@@ -558,21 +462,6 @@ where
     [@TraitClause2]: Sized<A>,
     [@TraitClause3]: SliceIndex<I, [T]>,
 = <opaque>
-
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}
-impl<T, I, A> IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: SliceIndex<I, [T]>,
-{
-    parent_clause0 = {built_in impl MetaSized for Vec<T>[@TraitClause0, @TraitClause2]}
-    parent_clause1 = {impl Index<I> for Vec<T>[@TraitClause0, @TraitClause2]}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-    parent_clause2 = @TraitClause1::parent_clause0
-    fn index_mut<'_0_1> = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0_1, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-    vtable: {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::{vtable}<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-}
 
 fn UNIT_METADATA()
 {

@@ -30,15 +30,6 @@ where
     [@TraitClause0]: PartialEq<A, B>,
 = <opaque>
 
-// Full name: core::cmp::impls::{impl PartialEq<&'_0 B> for &'_1 A}
-impl<'_0, '_1, A, B> PartialEq<&'_0 B> for &'_1 A
-where
-    [@TraitClause0]: PartialEq<A, B>,
-{
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'_0, '_1, '_0_1, '_1_1, A, B>[@TraitClause0]
-    vtable: {impl PartialEq<&'_0 B> for &'_1 A}::{vtable}<'_0, '_1, A, B>[@TraitClause0]
-}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
