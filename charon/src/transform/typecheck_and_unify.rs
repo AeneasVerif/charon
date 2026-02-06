@@ -251,7 +251,7 @@ impl TypeCheckVisitor<'_> {
 
     fn assert_clause_matches(
         &mut self,
-        params_fmt: &FmtCtx<'_>,
+        _params_fmt: &FmtCtx<'_>,
         tclause: Substituted<'_, TraitParam>,
         tref: &TraitRef,
     ) {
@@ -259,15 +259,22 @@ impl TypeCheckVisitor<'_> {
             if self
                 .match_poly_trait_decl_refs(&clause.trait_, &tref.trait_decl_ref)
                 .is_err()
-                || self.match_trait_ref_against_itself(tref).is_err()
             {
                 let args_fmt = &self.val_fmt_ctx();
-                let tclause = tclause.val.with_ctx(params_fmt);
+                let clause = clause.with_ctx(args_fmt);
                 let tref_pred = tref.trait_decl_ref.with_ctx(args_fmt);
                 let tref = tref.with_ctx(args_fmt);
                 self.error(format!(
                     "Mismatched trait clause:\
-                    \nexpected: {tclause}\
+                    \nexpected: {clause}\
+                    \n     got: {tref}: {tref_pred}"
+                ));
+            } else if self.match_trait_ref_against_itself(tref).is_err() {
+                let args_fmt = &self.val_fmt_ctx();
+                let tref_pred = tref.trait_decl_ref.with_ctx(args_fmt);
+                let tref = tref.with_ctx(args_fmt);
+                self.error(format!(
+                    "Incoherent trait reference:\
                     \n     got: {tref}: {tref_pred}"
                 ));
             }
@@ -348,10 +355,11 @@ impl TypeCheckVisitor<'_> {
 
     fn assert_matches_method(
         &mut self,
-        trait_id: TraitDeclId,
+        trait_ref: &TraitRef,
         method_name: TraitItemName,
         args: &mut GenericArgs,
     ) {
+        let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
         let target = &GenericsSource::Method(trait_id, method_name);
         let Some(trait_decl) = self.ctx.translated.trait_decls.get(trait_id) else {
             return;
@@ -359,11 +367,12 @@ impl TypeCheckVisitor<'_> {
         let Some(bound_fn) = trait_decl.methods().find(|m| m.name() == method_name) else {
             return;
         };
-        let params = &bound_fn.params;
-        let fmt1 = self.ctx.into_fmt();
-        let fmt2 = fmt1.push_binder(Cow::Borrowed(&trait_decl.generics));
-        let fmt = fmt2.push_binder(Cow::Borrowed(params));
-        let _ = self.assert_matches(&fmt, params, args, target);
+        if let Ok(bound_fn) = Substituted::new_for_trait_ref(bound_fn, trait_ref).try_substitute() {
+            let fmt1 = self.ctx.into_fmt();
+            let fmt2 = fmt1.push_binder(Cow::Borrowed(&trait_decl.generics));
+            let fmt = fmt2.push_binder(Cow::Borrowed(&bound_fn.params));
+            let _ = self.assert_matches(&fmt, &bound_fn.params, args, target);
+        }
     }
 }
 
@@ -424,9 +433,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
                     return;
                 }
 
-                let erased_generics = x.trait_decl_ref.clone().erase().generics;
-                let substituted_clauses =
-                    Substituted::new(&tdecl.implied_clauses, &erased_generics);
+                let substituted_clauses = Substituted::new_for_trait_ref(&tdecl.implied_clauses, x);
                 let fmt = &self.ctx.into_fmt();
                 self.assert_clauses_match(
                     fmt,
@@ -480,8 +487,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
             // TODO: check builtin generics.
             FnPtrKind::Fun(FunId::Builtin(_)) => {}
             FnPtrKind::Trait(trait_ref, method_name, _) => {
-                let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
-                self.assert_matches_method(trait_id, *method_name, &mut x.generics);
+                self.assert_matches_method(trait_ref, *method_name, &mut x.generics);
             }
         }
     }
@@ -520,6 +526,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
         self.assert_matches_item(x.id, &mut x.generics);
     }
     fn enter_trait_decl_ref(&mut self, x: &mut TraitDeclRef) {
+        // TODO: don't we need to pass the trait_self for correctness here?
         self.assert_matches_item(x.id, &mut x.generics);
     }
     fn enter_trait_impl_ref(&mut self, x: &mut TraitImplRef) {
@@ -532,9 +539,18 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
 
         let fmt1 = self.ctx.into_fmt();
         let tdecl_fmt = fmt1.push_binder(Cow::Borrowed(&tdecl.generics));
+        let impl_tref_kind = TraitRefKind::TraitImpl(TraitImplRef {
+            id: timpl.def_id,
+            generics: Box::new(timpl.generics.identity_args()),
+        });
+        let implied_clauses = Substituted::new_for_trait(
+            &tdecl.implied_clauses,
+            &timpl.impl_trait.generics,
+            &impl_tref_kind,
+        );
         self.assert_clauses_match(
             &tdecl_fmt,
-            Substituted::new(&tdecl.implied_clauses, &timpl.impl_trait.generics),
+            implied_clauses,
             &timpl.implied_trait_refs,
             "trait parent clauses",
             &GenericsSource::item(timpl.impl_trait.id),

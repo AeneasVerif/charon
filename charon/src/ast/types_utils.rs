@@ -3,6 +3,7 @@ use crate::ast::*;
 use crate::ids::IndexMap;
 use derive_generic_visitor::*;
 use itertools::Itertools;
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::convert::Infallible;
 use std::fmt::Debug;
@@ -1323,32 +1324,65 @@ pub trait TyVisitable: Sized + AstVisitable {
 
 /// A value of type `T` applied to some `GenericArgs`, except we havent applied them yet to avoid a
 /// deep clone.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Substituted<'a, T> {
     pub val: &'a T,
-    pub generics: &'a GenericArgs,
+    pub generics: Cow<'a, GenericArgs>,
+    pub trait_self: Option<&'a TraitRefKind>,
 }
 
 impl<'a, T> Substituted<'a, T> {
     pub fn new(val: &'a T, generics: &'a GenericArgs) -> Self {
-        Self { val, generics }
+        Self {
+            val,
+            generics: Cow::Borrowed(generics),
+            trait_self: None,
+        }
+    }
+    pub fn new_for_trait(
+        val: &'a T,
+        generics: &'a GenericArgs,
+        trait_self: &'a TraitRefKind,
+    ) -> Self {
+        Self {
+            val,
+            generics: Cow::Borrowed(generics),
+            trait_self: Some(trait_self),
+        }
+    }
+    pub fn new_for_trait_ref(val: &'a T, tref: &'a TraitRef) -> Self {
+        Self {
+            val,
+            generics: Cow::Owned(*tref.trait_decl_ref.clone().erase().generics),
+            trait_self: Some(&tref.kind),
+        }
     }
 
     pub fn rebind<U>(&self, val: &'a U) -> Substituted<'a, U> {
-        Substituted::new(val, self.generics)
+        Substituted {
+            val,
+            generics: self.generics.clone(),
+            trait_self: self.trait_self.clone(),
+        }
     }
 
     pub fn substitute(&self) -> T
     where
         T: TyVisitable + Clone,
     {
-        self.val.clone().substitute(self.generics)
+        self.try_substitute().unwrap()
     }
     pub fn try_substitute(&self) -> Result<T, GenericsMismatch>
     where
         T: TyVisitable + Clone,
     {
-        self.val.clone().try_substitute(self.generics)
+        match self.trait_self {
+            None => self.val.clone().try_substitute(&self.generics),
+            Some(trait_self) => self
+                .val
+                .clone()
+                .try_substitute_with_self(&self.generics, trait_self),
+        }
     }
 
     pub fn iter<Item: 'a>(&self) -> impl Iterator<Item = Substituted<'a, Item>>
