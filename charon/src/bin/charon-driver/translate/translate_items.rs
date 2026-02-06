@@ -194,8 +194,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Global(id)) = trans_id else {
                     unreachable!()
                 };
-                let global_decl =
-                    bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
+                let global_decl = if mono {
+                    bt_ctx.translate_vtable_instance_mono(id, item_meta, &def, impl_kind)?
+                } else {
+                    bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?
+                };
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
