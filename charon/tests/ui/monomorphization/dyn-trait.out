@@ -1,7 +1,20 @@
+ERROR in translate_item_aux at src/bin/charon-driver/translate/translate_items.rs:135:
+TraitImpl other than Normal is not supported in Mono
+error: `dyn Trait` is not yet supported with `--monomorphize`
+ --> /rustc/library/core/src/fmt/mod.rs:1186:1
+
+note: the error occurred when translating `core::fmt::Display::{vtable}::<alloc::string::String>`, which is (transitively) used at the following location(s):
+  --> tests/ui/monomorphization/dyn-trait.rs:12:27
+   |
+12 |     let _ = dyn_to_string(&str);
+   |                           ----
+error: Item `core::fmt::Display` caused errors; ignoring.
+ --> /rustc/library/core/src/fmt/mod.rs:1186:1
+
 error: `dyn Trait` is not yet supported with `--monomorphize`
  --> /rustc/library/alloc/src/string.rs:2669:1
 
-note: the error occurred when translating `alloc::string::{impl core::fmt::Display::<alloc::string::String>}::{vtable}`, which is (transitively) used at the following location(s):
+note: the error occurred when translating `alloc::string::{impl#2}::{vtable}`, which is (transitively) used at the following location(s):
   --> tests/ui/monomorphization/dyn-trait.rs:12:27
    |
 12 |     let _ = dyn_to_string(&str);
@@ -9,4 +22,6 @@ note: the error occurred when translating `alloc::string::{impl core::fmt::Displ
 error: Item `alloc::string::{impl#25}` caused errors; ignoring.
  --> /rustc/library/alloc/src/string.rs:2669:1
 
-ERROR Charon failed to translate this code (2 errors)
+ERROR in check_mono_no_trait_impl at src/bin/charon-driver/translate/translate_items.rs:335:
+Trait Impl should not be translated in Mono mode
+ERROR Charon failed to translate this code (4 errors)

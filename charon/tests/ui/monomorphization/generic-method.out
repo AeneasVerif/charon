@@ -11,13 +11,7 @@ trait Foo::<u64>
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Foo::<u64>}
-impl Foo::<u64> {
-    parent_clause0 = {built_in impl MetaSized::<u64>}
-    non-dyn-compatible
-}
-
-// Full name: test_crate::{impl Foo::<u64>}::bar::<bool>
+// Full name: test_crate::{impl#0}::bar::<bool>
 fn bar::<bool>() -> u64
 {
     let _0: u64; // return
