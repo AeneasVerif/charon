@@ -28,11 +28,16 @@ let call_to_string (env : 'a fmt_env) (indent : string) (call : call) : string =
   let dest = place_to_string env call.dest in
   indent ^ dest ^ " := move " ^ func ^ args
 
-let assertion_to_string (env : 'a fmt_env) (indent : string) (a : assertion) :
-    string =
+let assertion_to_string (env : 'a fmt_env) (a : assertion) : string =
   let cond = operand_to_string env a.cond in
-  if a.expected then indent ^ "assert(" ^ cond ^ ")"
-  else indent ^ "assert(¬" ^ cond ^ ")"
+  if a.expected then "assert(" ^ cond ^ ")" else "assert(¬" ^ cond ^ ")"
+
+let abort_kind_to_string (env : 'a fmt_env) (a : abort_kind) : string =
+  match a with
+  | Panic None -> "panic"
+  | Panic (Some name) -> "panic(" ^ name_to_string env name ^ ")"
+  | UndefinedBehavior -> "undefined_behavior"
+  | UnwindTerminate -> "unwind_terminate"
 
 (** Small helper *)
 let fun_sig_with_name_to_string (env : 'a fmt_env) (indent : string)

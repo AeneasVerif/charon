@@ -122,6 +122,7 @@ pub enum TerminatorKind {
     },
     /// Assert that the given condition holds, and if not, unwind to the given block. This is used for
     /// bounds checks, overflow checks, etc.
+    #[charon::rename("TAssert")]
     Assert {
         assert: Assert,
         target: BlockId,

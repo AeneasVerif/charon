@@ -1308,6 +1308,7 @@ fn generate_ml(
                     "FunSig",
                     "CopyNonOverlapping",
                     "Error",
+                    "AbortKind",
                 ]),
                 // These have to be kept separate to avoid field name clashes
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {

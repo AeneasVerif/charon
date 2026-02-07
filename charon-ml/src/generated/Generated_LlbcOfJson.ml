@@ -72,9 +72,13 @@ and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = trait_ref_of_json ctx x_1 in
         let* x_2 = drop_kind_of_json ctx x_2 in
         Ok (Drop (x_0, x_1, x_2))
-    | `Assoc [ ("Assert", assert_) ] ->
+    | `Assoc
+        [
+          ("Assert", `Assoc [ ("assert", assert_); ("on_failure", on_failure) ]);
+        ] ->
         let* assert_ = assertion_of_json ctx assert_ in
-        Ok (Assert assert_)
+        let* on_failure = abort_kind_of_json ctx on_failure in
+        Ok (Assert (assert_, on_failure))
     | `Assoc [ ("Call", call) ] ->
         let* call = call_of_json ctx call in
         Ok (Call call)
