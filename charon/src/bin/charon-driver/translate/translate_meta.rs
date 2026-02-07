@@ -416,6 +416,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
+            TransItemSourceKind::VTableDropPreShim => {
+                name.name.push(PathElem::Ident(
+                    "{vtable_drop_preshim}".into(),
+                    Disambiguator::ZERO,
+                ));
+            }
         }
         Ok(name)
     }
