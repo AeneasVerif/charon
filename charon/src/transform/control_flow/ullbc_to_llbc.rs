@@ -932,7 +932,9 @@ impl<'a> ReconstructCtx<'a> {
             src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
             src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
             src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
-            src::StatementKind::Assert(assert) => tgt::StatementKind::Assert(assert),
+            src::StatementKind::Assert { assert, on_failure } => {
+                tgt::StatementKind::Assert { assert, on_failure }
+            }
             src::StatementKind::Nop => tgt::StatementKind::Nop,
         };
         tgt::Statement::new(src_span, st)
@@ -1012,6 +1014,20 @@ impl<'a> ReconstructCtx<'a> {
                 let mut block = self.translate_jump(terminator.span, *target);
                 block.statements.insert(0, st);
                 block
+            }
+            src::TerminatorKind::Assert {
+                assert,
+                target,
+                on_unwind,
+            } => {
+                let unwind_block = &self.body.body[*on_unwind];
+                let on_failure = unwind_block.as_abort().unwrap_or(AbortKind::Panic(None));
+                let st = tgt::StatementKind::Assert {
+                    assert: assert.clone(),
+                    on_failure,
+                };
+                let target = self.translate_jump(terminator.span, *target);
+                tgt::Statement::new(src_span, st).into_block().merge(target)
             }
             src::TerminatorKind::Goto { target } => self.translate_jump(terminator.span, *target),
             src::TerminatorKind::Switch { discr, targets } => {

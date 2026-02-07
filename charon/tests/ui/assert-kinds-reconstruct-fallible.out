@@ -24,7 +24,7 @@ fn main()
         storage_live(_2);
         _2 = const 0 : usize;
         _3 = copy _2 < const 3 : usize;
-        assert(move _3 == true) (bounds_check);
+        assert(move _3 == true) (bounds_check) else panic;
         storage_dead(_2);
         storage_dead(_1);
         storage_live(_4);

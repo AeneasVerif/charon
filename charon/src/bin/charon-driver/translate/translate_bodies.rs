@@ -272,7 +272,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
 
         // Translate the terminator
         let terminator = block.terminator.as_ref().unwrap();
-        let terminator = self.translate_terminator(source_scopes, terminator, &mut statements)?;
+        let terminator = self.translate_terminator(source_scopes, terminator)?;
 
         Ok(BlockData {
             statements,
@@ -846,12 +846,14 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             // This asserts the operand true on pain of UB. We treat it like a normal assertion.
             mir::StatementKind::Intrinsic(mir::NonDivergingIntrinsic::Assume(op)) => {
                 let op = self.translate_operand(span, op)?;
-                Some(StatementKind::Assert(Assert {
-                    cond: op,
-                    expected: true,
+                Some(StatementKind::Assert {
+                    assert: Assert {
+                        cond: op,
+                        expected: true,
+                        check_kind: None,
+                    },
                     on_failure: AbortKind::UndefinedBehavior,
-                    check_kind: None,
-                }))
+                })
             }
             mir::StatementKind::Intrinsic(mir::NonDivergingIntrinsic::CopyNonOverlapping(
                 mir::CopyNonOverlapping { src, dst, count },
@@ -891,7 +893,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         &mut self,
         source_scopes: &rustc_index::IndexVec<mir::SourceScope, mir::SourceScopeData>,
         terminator: &mir::Terminator<'tcx>,
-        statements: &mut Vec<Statement>,
     ) -> Result<Terminator, Error> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
         let span = self.translate_span_from_source_info(source_scopes, &terminator.source_info);
@@ -938,18 +939,21 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                 expected,
                 msg,
                 target,
-                unwind: _, // We model unwinding as an effet, we don't represent it in control flow
+                unwind,
             } => {
+                let on_unwind = self.translate_unwind_action(span, unwind);
                 let kind = self.translate_assert_kind(span, msg)?;
                 let assert = Assert {
                     cond: self.translate_operand(span, cond)?,
                     expected: *expected,
-                    on_failure: AbortKind::Panic(None),
                     check_kind: Some(kind),
                 };
-                statements.push(Statement::new(span, StatementKind::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
-                ullbc_ast::TerminatorKind::Goto { target }
+                ullbc_ast::TerminatorKind::Assert {
+                    assert,
+                    target,
+                    on_unwind,
+                }
             }
             TerminatorKind::FalseEdge {
                 real_target,
@@ -1081,6 +1085,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         // call to a top-level function identified by its id, or if we
         // are using a local function pointer (i.e., the operand is a "move").
         let lval = self.translate_place(span, destination)?;
+        let on_unwind = self.translate_unwind_action(span, unwind);
         // Translate the function operand.
         let fn_operand = match op_ty.kind() {
             ty::TyKind::FnDef(def_id, generics) => {
@@ -1105,6 +1110,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                     // I don't know in which other cases it can be `None`.
                     assert!(target.is_none());
                     // We ignore the arguments
+                    // TODO: shouldn't we do something with the unwind edge?
                     return Ok(TerminatorKind::Abort(AbortKind::Panic(Some(name))));
                 } else {
                     let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
@@ -1132,7 +1138,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                 self.blocks.push(abort.into_block())
             }
         };
-        let on_unwind = self.translate_unwind_action(span, unwind);
 
         Ok(TerminatorKind::Call {
             call,

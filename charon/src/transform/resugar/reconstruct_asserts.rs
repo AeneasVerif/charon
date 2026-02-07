@@ -3,8 +3,6 @@
 //! introduce `if ... then { panic!(...) } else { ...}`.
 //! This pass introduces `assert` instead in order to make the code shorter.
 
-use std::collections::HashMap;
-
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
@@ -20,19 +18,7 @@ impl UllbcPass for Transform {
         // Start by computing the set of blocks which are actually panics.
         // Remark: doing this in two steps because reading the blocks at random
         // while doing in-place updates is not natural to do in Rust.
-        let panics: HashMap<BlockId, AbortKind> = b
-            .body
-            .iter_indexed()
-            .filter_map(|(bid, block)| {
-                if block.statements.iter().all(|st| st.kind.is_storage_live())
-                    && let TerminatorKind::Abort(abort) = &block.terminator.kind
-                {
-                    Some((bid, abort.clone()))
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let panics = b.as_abort_map();
 
         for block in b.body.iter_mut() {
             match &block.terminator.kind {
@@ -55,12 +41,14 @@ impl UllbcPass for Transform {
                     let (discr, _) = kind.as_switch().unwrap();
                     block.statements.push(Statement::new(
                         block.terminator.span,
-                        StatementKind::Assert(Assert {
-                            cond: discr.clone(),
-                            expected,
+                        StatementKind::Assert {
+                            assert: Assert {
+                                cond: discr.clone(),
+                                expected,
+                                check_kind: None,
+                            },
                             on_failure: abort.clone(),
-                            check_kind: None,
-                        }),
+                        },
                     ));
                 }
                 _ => (),

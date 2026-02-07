@@ -244,7 +244,7 @@ fn apply_to_once::<closure<'_, '_>>(@1: closure<'_, '_>) -> u8
     _0 = {impl FnOnce::<closure<'_, '_>, (u8, u8)>}::call_once<'0, '1>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct::<closure<'_, '_>>}<'2, '3>] f_1
+    conditional_drop[{impl Destruct::<closure<'_, '_>>}<'4, '5>] f_1
     return
 }
 

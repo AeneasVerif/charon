@@ -45,10 +45,15 @@ pub enum StatementKind {
     /// is implicitly deallocated at the end of the function.
     StorageDead(LocalId),
     Deinit(Place),
-    /// A runtime check for a condition. This can be either:
-    /// - Emitted for bounds/overflow/etc checks if `--reconstruct-fallible-operations` is not set;
-    /// - Reconstructed from `if b { panic() }` if `--reconstruct-assets` is set.
-    Assert(Assert),
+    /// A non-diverging runtime check for a condition. This can be either:
+    /// - Emitted for inlined "assumes" (which cause UB on failure)
+    /// - Reconstructed from `if b { panic() }` if `--reconstruct-asserts` is set.
+    /// This statement comes with the effect that happens when the check fails
+    /// (rather than representing it as an unwinding edge).
+    Assert {
+        assert: Assert,
+        on_failure: AbortKind,
+    },
     /// Does nothing. Useful for passes.
     Nop,
 }
@@ -112,6 +117,13 @@ pub enum TerminatorKind {
         kind: DropKind,
         place: Place,
         tref: TraitRef,
+        target: BlockId,
+        on_unwind: BlockId,
+    },
+    /// Assert that the given condition holds, and if not, unwind to the given block. This is used for
+    /// bounds checks, overflow checks, etc.
+    Assert {
+        assert: Assert,
         target: BlockId,
         on_unwind: BlockId,
     },

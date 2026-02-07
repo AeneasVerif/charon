@@ -454,16 +454,17 @@ pub enum BuiltinAssertKind {
 }
 
 /// (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by
-/// control-flow. The two kinds of abort are:
-/// - Panic (may unwind or not depending on compilation setting);
-/// - Undefined behavior:
+/// control-flow. The three kinds of abort are:
+/// - Panic
+/// - Undefined behavior (caused by an "assume")
+/// - Unwind termination
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub enum AbortKind {
-    /// A built-in panicking function.
+    /// A built-in panicking function, or a panic due to a failed built-in check (e.g. for out-of-bounds accesses).
     Panic(Option<Name>),
     /// Undefined behavior in the rust abstract machine.
     UndefinedBehavior,
-    /// Unwind had to stop for Abi reasons or because cleanup code panicked again.
+    /// Unwind had to stop for ABI reasons or because cleanup code panicked again.
     UnwindTerminate,
 }
 
@@ -510,8 +511,6 @@ pub struct Assert {
     /// The value that the operand should evaluate to for the assert to succeed.
     #[drive(skip)]
     pub expected: bool,
-    /// What kind of abort happens on assert failure.
-    pub on_failure: AbortKind,
     /// The kind of check performed by this assert. This is only used for error reporting, as the check
     /// is actually performed by the instructions preceding the assert.
     pub check_kind: Option<BuiltinAssertKind>,

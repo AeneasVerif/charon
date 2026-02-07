@@ -4,6 +4,7 @@ use smallvec::{SmallVec, smallvec};
 use crate::ids::IndexVec;
 use crate::meta::Span;
 use crate::ullbc_ast::*;
+use std::collections::HashMap;
 use std::mem;
 
 impl SwitchTargets {
@@ -60,9 +61,13 @@ impl Terminator {
         use TerminatorKind::*;
         match &self.kind {
             Abort(..) => true,
-            Goto { .. } | Switch { .. } | Return | Call { .. } | Drop { .. } | UnwindResume => {
-                false
-            }
+            Goto { .. }
+            | Switch { .. }
+            | Return
+            | Call { .. }
+            | Drop { .. }
+            | UnwindResume
+            | Assert { .. } => false,
         }
     }
 
@@ -84,6 +89,9 @@ impl Terminator {
             }
             | TerminatorKind::Drop {
                 target, on_unwind, ..
+            }
+            | TerminatorKind::Assert {
+                target, on_unwind, ..
             } => smallvec![*target, *on_unwind],
             TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
                 smallvec![]
@@ -100,6 +108,9 @@ impl Terminator {
                 target, on_unwind, ..
             }
             | TerminatorKind::Drop {
+                target, on_unwind, ..
+            }
+            | TerminatorKind::Assert {
                 target, on_unwind, ..
             } => smallvec![target, on_unwind],
             TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
@@ -132,6 +143,16 @@ impl BlockData {
         })
     }
 
+    pub fn as_abort(&self) -> Option<AbortKind> {
+        if self.statements.iter().all(|st| st.kind.is_storage_live())
+            && let TerminatorKind::Abort(abort) = &self.terminator.kind
+        {
+            Some(abort.clone())
+        } else {
+            None
+        }
+    }
+
     /// Build a block that's UB to reach.
     pub fn new_unreachable() -> Self {
         Terminator::new(
@@ -151,7 +172,9 @@ impl BlockData {
                 smallvec![*target]
             }
             TerminatorKind::Switch { targets, .. } => targets.targets(),
-            TerminatorKind::Call { target, .. } | TerminatorKind::Drop { target, .. } => {
+            TerminatorKind::Call { target, .. }
+            | TerminatorKind::Drop { target, .. }
+            | TerminatorKind::Assert { target, .. } => {
                 smallvec![*target]
             }
             TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
@@ -244,6 +267,15 @@ impl BlockData {
 }
 
 impl ExprBody {
+    /// Returns a map from blocks in this body to their abort kind, if they correspond to an
+    /// abort block (ie. a block with no statements and an [TerminatorKind::Abort] terminator).
+    pub fn as_abort_map(&self) -> HashMap<BlockId, AbortKind> {
+        self.body
+            .iter_indexed()
+            .filter_map(|(bid, block)| block.as_abort().map(|abort| (bid, abort)))
+            .collect()
+    }
+
     pub fn transform_sequences_fwd<F>(&mut self, mut f: F)
     where
         F: FnMut(BlockId, &mut Locals, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,

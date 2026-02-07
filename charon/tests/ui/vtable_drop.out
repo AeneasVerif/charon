@@ -167,7 +167,7 @@ where
     _3 = copy (*_8) checked.+ const 1 : i32
     _6 = copy (*self_1)
     _9 = transmute<NonNull<i32>[{built_in impl Destruct for i32}], *const i32>(copy ((*_6)).0)
-    assert(move _3.1 == false) (overflow)
+    assert(move _3.1 == false) (overflow) else panic
     _7 = copy (*self_1)
     _10 = transmute<NonNull<i32>[{built_in impl Destruct for i32}], *const i32>(copy ((*_7)).0)
     (*_10) = move _3.0
