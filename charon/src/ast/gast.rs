@@ -437,6 +437,22 @@ pub struct CopyNonOverlapping {
     pub count: Operand,
 }
 
+/// The kind of a built-in assertion, which may panic and unwind. These are removed
+/// by `reconstruct_fallible_operations` because they're implicit in the semantics of (U)LLBC.
+/// This kind should only be used for error-reporting purposes, as the check itself
+/// is performed in the instructions preceding the assert.
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+pub enum BuiltinAssertKind {
+    BoundsCheck { len: Operand, index: Operand },
+    Overflow(BinOp, Operand, Operand),
+    OverflowNeg(Operand),
+    DivisionByZero(Operand),
+    RemainderByZero(Operand),
+    MisalignedPointerDereference { required: Operand, found: Operand },
+    NullPointerDereference,
+    InvalidEnumConstruction(Operand),
+}
+
 /// (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by
 /// control-flow. The two kinds of abort are:
 /// - Panic (may unwind or not depending on compilation setting);
@@ -496,6 +512,9 @@ pub struct Assert {
     pub expected: bool,
     /// What kind of abort happens on assert failure.
     pub on_failure: AbortKind,
+    /// The kind of check performed by this assert. This is only used for error reporting, as the check
+    /// is actually performed by the instructions preceding the assert.
+    pub check_kind: Option<BuiltinAssertKind>,
 }
 
 /// A generic `*DeclRef`-shaped struct, used when we're generic over the type of item.

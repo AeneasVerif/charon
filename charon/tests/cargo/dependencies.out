@@ -97,7 +97,7 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
     storage_live(_4)
     _4 = copy y_3
     _5 = copy _4 checked.+ const 1 : u32
-    assert(move _5.1 == false)
+    assert(move _5.1 == false) (overflow)
     _0 = move _5.0
     storage_dead(_4)
     return

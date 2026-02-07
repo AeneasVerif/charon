@@ -850,6 +850,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                     cond: op,
                     expected: true,
                     on_failure: AbortKind::UndefinedBehavior,
+                    check_kind: None,
                 }))
             }
             mir::StatementKind::Intrinsic(mir::NonDivergingIntrinsic::CopyNonOverlapping(
@@ -935,14 +936,16 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             TerminatorKind::Assert {
                 cond,
                 expected,
-                msg: _,
+                msg,
                 target,
                 unwind: _, // We model unwinding as an effet, we don't represent it in control flow
             } => {
+                let kind = self.translate_assert_kind(span, msg)?;
                 let assert = Assert {
                     cond: self.translate_operand(span, cond)?,
                     expected: *expected,
                     on_failure: AbortKind::Panic(None),
+                    check_kind: Some(kind),
                 };
                 statements.push(Statement::new(span, StatementKind::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
@@ -1185,6 +1188,55 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             mir::UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
         };
         on_unwind
+    }
+
+    fn translate_assert_kind(
+        &mut self,
+        span: Span,
+        kind: &mir::AssertKind<mir::Operand<'tcx>>,
+    ) -> Result<BuiltinAssertKind, Error> {
+        match kind {
+            mir::AssertKind::BoundsCheck { len, index } => {
+                let len = self.translate_operand(span, len)?;
+                let index = self.translate_operand(span, index)?;
+                Ok(BuiltinAssertKind::BoundsCheck { len, index })
+            }
+            mir::AssertKind::Overflow(binop, left, right) => {
+                let binop = self.translate_binaryop_kind(span, *binop)?;
+                let left = self.translate_operand(span, left)?;
+                let right = self.translate_operand(span, right)?;
+                Ok(BuiltinAssertKind::Overflow(binop, left, right))
+            }
+            mir::AssertKind::OverflowNeg(operand) => {
+                let operand = self.translate_operand(span, operand)?;
+                Ok(BuiltinAssertKind::OverflowNeg(operand))
+            }
+            mir::AssertKind::DivisionByZero(operand) => {
+                let operand = self.translate_operand(span, operand)?;
+                Ok(BuiltinAssertKind::DivisionByZero(operand))
+            }
+            mir::AssertKind::RemainderByZero(operand) => {
+                let operand = self.translate_operand(span, operand)?;
+                Ok(BuiltinAssertKind::RemainderByZero(operand))
+            }
+            mir::AssertKind::MisalignedPointerDereference { required, found } => {
+                let required = self.translate_operand(span, required)?;
+                let found = self.translate_operand(span, found)?;
+                Ok(BuiltinAssertKind::MisalignedPointerDereference { required, found })
+            }
+            mir::AssertKind::NullPointerDereference => {
+                Ok(BuiltinAssertKind::NullPointerDereference)
+            }
+            mir::AssertKind::InvalidEnumConstruction(operand) => {
+                let operand = self.translate_operand(span, operand)?;
+                Ok(BuiltinAssertKind::InvalidEnumConstruction(operand))
+            }
+            mir::AssertKind::ResumedAfterDrop(..)
+            | mir::AssertKind::ResumedAfterPanic(..)
+            | mir::AssertKind::ResumedAfterReturn(..) => {
+                raise_error!(self, span, "Coroutines are not supported");
+            }
+        }
     }
 
     /// Evaluate function arguments in a context, and return the list of computed

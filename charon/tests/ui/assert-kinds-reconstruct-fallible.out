@@ -1,0 +1,55 @@
+# Final ULLBC before serialization:
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: [i32; 3 : usize]; // anonymous local
+    let _2: usize; // anonymous local
+    let _3: bool; // anonymous local
+    let _4: i32; // anonymous local
+    let _5: i32; // anonymous local
+    let x_6: i8; // local
+    let _7: i8; // anonymous local
+    let _8: i8; // anonymous local
+    let _9: i32; // anonymous local
+    let _10: i32; // anonymous local
+
+    bb0: {
+        storage_live(_3);
+        storage_live(_5);
+        _0 = ();
+        storage_live(_1);
+        _1 = [const 1 : i32, const 2 : i32, const 3 : i32];
+        storage_live(_2);
+        _2 = const 0 : usize;
+        _3 = copy _2 < const 3 : usize;
+        assert(move _3 == true) (bounds_check);
+        storage_dead(_2);
+        storage_dead(_1);
+        storage_live(_4);
+        _5 = const 5 : i32 panic.* const 10 : i32;
+        _4 = move _5;
+        storage_dead(_4);
+        storage_live(x_6);
+        x_6 = const 127 : i8;
+        storage_live(_7);
+        storage_live(_8);
+        _8 = copy x_6;
+        _7 = panic.-(move _8);
+        storage_dead(_8);
+        storage_dead(_7);
+        storage_live(_9);
+        _9 = const 1 : i32 panic./ const 0 : i32;
+        storage_dead(_9);
+        storage_live(_10);
+        _10 = const 1 : i32 panic.% const 0 : i32;
+        storage_dead(_10);
+        _0 = ();
+        storage_dead(x_6);
+        return;
+    }
+}
+
+
+

@@ -730,7 +730,7 @@ pub fn core::num::{isize}::MAX() -> isize
     storage_live(_1)
     _2 = cast<i32, u32>(const 1 : i32)
     _3 = move _2 < const 64 : u32
-    assert(move _3 == true)
+    assert(move _3 == true) (overflow)
     _1 = copy core::num::{usize}::MAX wrap.>> const 1 : i32
     _0 = cast<usize, isize>(move _1)
     storage_dead(_1)
@@ -778,7 +778,7 @@ where
             storage_live(_4)
             _4 = copy n_2
             _5 = copy _4 == const 0 : usize
-            assert(move _5 == false)
+            assert(move _5 == false) (division_by_zero)
             _0 = move _3 ub./ move _4
             storage_dead(_4)
             storage_dead(_3)
