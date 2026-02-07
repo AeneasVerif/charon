@@ -422,6 +422,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
+            TransItemSourceKind::VTableMethodPreShim(..) => {
+                name.name.push(PathElem::Ident(
+                    "{vtable_method_preshim}".into(),
+                    Disambiguator::ZERO,
+                ));
+            }
         }
         Ok(name)
     }

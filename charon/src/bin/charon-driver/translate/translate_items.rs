@@ -237,6 +237,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_vtable_drop_preshim(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            TransItemSourceKind::VTableMethodPreShim(name) => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_method_preshim(id, item_meta, &def, name)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
         }
         Ok(())
     }
