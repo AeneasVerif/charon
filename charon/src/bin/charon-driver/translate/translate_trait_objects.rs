@@ -1430,7 +1430,7 @@ impl ItemTransCtx<'_, '_> {
         impl_func_def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        self.check_no_monomorphize(span)?;
+        // self.check_no_monomorphize(span)?;
 
         let hax::FullDefKind::AssocFn {
             vtable_sig: Some(vtable_sig),
