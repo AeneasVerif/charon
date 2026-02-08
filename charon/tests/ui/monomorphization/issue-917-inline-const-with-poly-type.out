@@ -1,76 +1,78 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<(())>
+// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized::<(())>
+pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized::<(())>
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait Sized::<(())>
+pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<(())>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized::<closure::<()>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<closure::<()>>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
+}
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
+}
 
 // Full name: test_crate::foo::{const}::closure::<()>
 struct closure::<()> {}
-
-// Full name: core::marker::Destruct::<closure::<()>>
-#[lang_item("destruct")]
-pub trait Destruct::<closure::<()>>
-{
-    fn drop_in_place = drop_in_place::<closure::<()>>
-    vtable: core::marker::Destruct::{vtable}::<closure::<()>>
-}
-
-// Full name: core::marker::Destruct::drop_in_place::<closure::<()>>
-unsafe fn drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
-= <opaque>
-
-// Full name: core::marker::Tuple::<(())>
-#[lang_item("tuple_trait")]
-pub trait Tuple::<(())>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<(())>
-    vtable: core::marker::Tuple::{vtable}::<(())>
-}
-
-// Full name: core::ops::function::FnOnce::<closure::<()>, (())>
-#[lang_item("fn_once")]
-pub trait FnOnce::<closure::<()>, (())>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<closure::<()>>
-    parent_clause1 : [@TraitClause1]: Sized::<(())>
-    parent_clause2 : [@TraitClause2]: Tuple::<(())>
-    fn call_once = core::ops::function::FnOnce::call_once::<closure::<()>, (())>
-    vtable: core::ops::function::FnOnce::{vtable}::<closure::<()>, (())><()>
-}
-
-// Full name: core::ops::function::FnMut::<closure::<()>, (())>
-#[lang_item("fn_mut")]
-pub trait FnMut::<closure::<()>, (())>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<closure::<()>>
-    parent_clause1 : [@TraitClause1]: FnOnce::<closure::<()>, (())>
-    parent_clause2 : [@TraitClause2]: Sized::<(())>
-    parent_clause3 : [@TraitClause3]: Tuple::<(())>
-    fn call_mut<'_0_1> = call_mut::<closure::<()>, (())><'_0_1>
-    vtable: core::ops::function::FnMut::{vtable}::<closure::<()>, (())><()>
-}
 
 // Full name: core::ops::function::FnMut::call_mut
 pub fn call_mut<'_0>(@1: &'_0 mut closure::<()>, @2: (()))
 = <opaque>
 
-// Full name: core::ops::function::FnMut::call_mut::<closure::<()>, (())>
-pub fn call_mut::<closure::<()>, (())><'_0>(@1: &'_0 mut closure::<()>, @2: (()))
+// Full name: core::ops::function::FnMut::call_mut
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once::<closure::<()>, (())>(@1: closure::<()>, @2: (()))
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
 
 fn UNIT_METADATA()

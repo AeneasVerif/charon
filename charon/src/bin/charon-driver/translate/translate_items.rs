@@ -237,11 +237,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_vtable_drop_preshim(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::VTableMethodPreShim(name) => {
+            TransItemSourceKind::VTableMethodPreShim(trait_id, name) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_method_preshim(id, item_meta, &def, name)?;
+                let fun_decl =
+                    bt_ctx.translate_vtable_method_preshim(id, item_meta, &def, name, trait_id)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -433,7 +434,13 @@ impl ItemTransCtx<'_, '_> {
             } => {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, impl_, TraitImplSource::Normal)?;
-                let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
+                let trait_ref = if self.monomorphize_mode() {
+                    self.translate_trait_decl_ref_poly(span, implemented_trait_ref)?
+                } else {
+                    trace!("MONO_trait_ref: get_item_source TraitImplContainer");
+                    self.translate_trait_ref(span, implemented_trait_ref)?
+                };
+                // let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
                     // If the implementation is getting translated, that means the method is
@@ -457,7 +464,13 @@ impl ItemTransCtx<'_, '_> {
             hax::AssocItemContainer::TraitContainer { trait_ref, .. } => {
                 // The trait id should be Some(...): trait markers (that we may eliminate)
                 // don't have associated items.
-                let trait_ref = self.translate_trait_ref(span, trait_ref)?;
+                let trait_ref = if self.monomorphize_mode() {
+                    self.translate_trait_decl_ref_poly(span, trait_ref)?
+                } else {
+                    trace!("MONO_trait_ref: get_item_source TraitContainer");
+                    self.translate_trait_ref(span, trait_ref)?
+                };
+                // let trait_ref = self.translate_trait_ref(span, trait_ref)?;
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemSource::TraitDecl {
                     trait_ref,
@@ -943,7 +956,8 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Retrieve the information about the implemented trait.
-        let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
+        // let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)?;
         let trait_id = implemented_trait.id;
 
         // Explore the associated items
@@ -1503,6 +1517,7 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
 
+        trace!("MONO_trait_ref: translate_defaulted_method");
         // Retrieve the information about the implemented trait.
         let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         // A `TraitRef` that points to this impl with the correct generics.

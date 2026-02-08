@@ -46,6 +46,32 @@ fn transform_dyn_trait_call(
     };
     let trait_pred = trait_ref.trait_decl_ref.clone().erase();
 
+    // mono mode
+    if ctx.ctx.options.monomorphize_with_hax {
+        trace!("MONO: current trait_id: {}", trait_pred.id);
+        trace!("MONO: trait_decls:\n {:?}", ctx.ctx.translated.trait_decls);
+
+        let mut preshim = None;
+        for fun_decl in ctx.ctx.translated.fun_decls.iter() {
+            match fun_decl.src {
+                ItemSource::VTableMethodPreShim(t_id, m_name) => {
+                    if t_id == trait_pred.id && m_name == *method_name {
+                        preshim = Some(fun_decl);
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let Some(preshim) = preshim else {
+            panic!("MONO: preshim for {} is not translated", method_name);
+        };
+        let preshim_fn_ptr = FnPtr::new(preshim.def_id.into(), GenericArgs::empty());
+        call.func = FnOperand::Regular(preshim_fn_ptr);
+
+        return Ok(());
+    }
+
     // Get the type of the vtable struct.
     let vtable_decl_ref: TypeDeclRef = {
         // Get the trait declaration by its ID

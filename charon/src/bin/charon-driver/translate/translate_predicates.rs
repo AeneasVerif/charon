@@ -121,7 +121,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         trait_ref: &hax::TraitRef,
     ) -> Result<TraitDeclRef, Error> {
-        self.translate_trait_decl_ref(span, trait_ref)
+        if self.monomorphize_mode() {
+            self.translate_trait_decl_ref_poly(span, trait_ref)
+        } else {
+            self.translate_trait_decl_ref(span, trait_ref)
+        }
     }
 
     pub(crate) fn translate_predicate(

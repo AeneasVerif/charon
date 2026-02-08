@@ -1,88 +1,36 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<Global>
+// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized::<Global>
+pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized::<Global>
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait Sized::<Global>
+pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<Global>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized::<[String]>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<[String]>
-
-// Full name: alloc::string::String
-#[lang_item("String")]
-pub opaque type String
-
-// Full name: core::marker::Destruct::<[String; 4 : usize]>
+// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct::<[String; 4 : usize]>
+pub trait Destruct<Self>
 {
-    fn drop_in_place = drop_in_place::<[String; 4 : usize]>
-    vtable: core::marker::Destruct::{vtable}::<[String; 4 : usize]>
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
 }
 
-// Full name: core::marker::Destruct::<[String]>
-#[lang_item("destruct")]
-pub trait Destruct::<[String]>
-{
-    fn drop_in_place = drop_in_place::<[String]>
-    vtable: core::marker::Destruct::{vtable}::<[String]>
-}
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <missing>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: core::marker::Destruct::<Global>
-#[lang_item("destruct")]
-pub trait Destruct::<Global>
-{
-    fn drop_in_place = drop_in_place::<Global>
-    vtable: core::marker::Destruct::{vtable}::<Global>
-}
-
-// Full name: core::marker::Destruct::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}]>
-#[lang_item("destruct")]
-pub trait Destruct::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}]>
-{
-    fn drop_in_place = drop_in_place::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}]>
-    vtable: core::marker::Destruct::{vtable}::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}]>
-}
-
-// Full name: core::marker::Destruct::<(String, String)>
-#[lang_item("destruct")]
-pub trait Destruct::<(String, String)>
-{
-    fn drop_in_place = drop_in_place::<(String, String)>
-    vtable: core::marker::Destruct::{vtable}::<(String, String)>
-}
-
-// Full name: core::marker::Destruct::drop_in_place::<[String; 4 : usize]>
-unsafe fn drop_in_place::<[String; 4 : usize]>(@1: *mut [String; 4 : usize])
-= <missing>
-
-// Full name: core::marker::Destruct::drop_in_place::<[String]>
-unsafe fn drop_in_place::<[String]>(@1: *mut [String])
-= <missing>
-
-// Full name: core::marker::Destruct::drop_in_place::<Global>
-unsafe fn drop_in_place::<Global>(@1: *mut Global)
-= <missing>
-
-// Full name: core::marker::Destruct::drop_in_place::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}]>
-unsafe fn drop_in_place::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}]>(@1: *mut alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}])
-= <missing>
-
-// Full name: core::marker::Destruct::drop_in_place::<(String, String)>
-unsafe fn drop_in_place::<(String, String)>(@1: *mut (String, String))
-= <missing>
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
 
 // Full name: test_crate::drop_array
 fn drop_array(@1: [String; 4 : usize])
@@ -97,10 +45,10 @@ fn drop_array(@1: [String; 4 : usize])
 }
 
 // Full name: test_crate::drop_slice
-fn drop_slice(@1: alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}])
+fn drop_slice(@1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl#3}::<String>, {impl#4}])
 {
     let _0: (); // return
-    let _1: alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl#3}::<String>, {impl#4}]; // arg #1
+    let _1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl#3}::<String>, {impl#4}]; // arg #1
 
     _0 = ()
     _0 = ()

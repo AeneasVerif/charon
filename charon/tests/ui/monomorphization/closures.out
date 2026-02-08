@@ -1,52 +1,106 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<(u8)>
+// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized::<(u8)>
+pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized::<(u8)>
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait Sized::<(u8)>
+pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<(u8)>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized::<test_crate::main::closure<'_>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure<'_>>
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
 
-// Full name: core::marker::MetaSized::<test_crate::main::closure#1<'_>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure#1<'_>>
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
 
-// Full name: core::marker::MetaSized::<test_crate::main::closure#2>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure#2>
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: core::marker::Tuple::{vtable}
+}
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args, Self_Output>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self_Output>
+    fn call_once = call_once<Self, Args, Self_Output>[Self]
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args, Self_Clause1_Output>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args, Self_Clause1_Output>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args, Self_Clause1_Output>[Self]
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
+}
+
+// Full name: core::ops::function::Fn
+#[lang_item("fn")]
+pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnMut<Self, Args, Self_Clause1_Clause1_Output>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    fn call<'_0_1> = call<'_0_1, Self, Args, Self_Clause1_Clause1_Output>[Self]
+    vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
+}
+
+// Full name: core::ops::function::Fn::call
+pub fn call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 Self, @2: Args) -> Clause0_Clause1_Clause1_Output
+where
+    [@TraitClause0]: Fn<Self, Args, Clause0_Clause1_Clause1_Output>,
+= <opaque>
 
 struct test_crate::main::closure<'_0> {
   &'_0 u8,
 }
 
-// Full name: core::marker::Destruct::<test_crate::main::closure<'_>>
-#[lang_item("destruct")]
-pub trait Destruct::<test_crate::main::closure<'_>>
-{
-    fn drop_in_place = drop_in_place::<test_crate::main::closure<'_>>
-    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure<'_>>
-}
+// Full name: core::ops::function::Fn::call
+pub fn call<'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8)) -> u8
+= <opaque>
+
+// Full name: core::ops::function::FnMut::call_mut
+pub fn call_mut<'_0, Self, Args, Clause0_Clause1_Output>(@1: &'_0 mut Self, @2: Args) -> Clause0_Clause1_Output
+where
+    [@TraitClause0]: FnMut<Self, Args, Clause0_Clause1_Output>,
+= <opaque>
 
 struct test_crate::main::closure#1<'_0> {
   &'_0 mut u8,
 }
 
-// Full name: core::marker::Destruct::<test_crate::main::closure#1<'_>>
-#[lang_item("destruct")]
-pub trait Destruct::<test_crate::main::closure#1<'_>>
-{
-    fn drop_in_place = drop_in_place::<test_crate::main::closure#1<'_>>
-    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure#1<'_>>
-}
+// Full name: core::ops::function::FnMut::call_mut
+pub fn call_mut<'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8)) -> u8
+= <opaque>
+
+// Full name: core::ops::function::FnOnce::call_once
+pub fn call_once<Self, Args, Clause0_Output>(@1: Self, @2: Args) -> Clause0_Output
+where
+    [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
+= <opaque>
 
 // Full name: test_crate::Thing
 struct Thing {}
@@ -55,137 +109,8 @@ struct test_crate::main::closure#2 {
   Thing,
 }
 
-// Full name: core::marker::Destruct::<test_crate::main::closure#2>
-#[lang_item("destruct")]
-pub trait Destruct::<test_crate::main::closure#2>
-{
-    fn drop_in_place = drop_in_place::<test_crate::main::closure#2>
-    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure#2>
-}
-
-// Full name: core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>
-unsafe fn drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
-= <opaque>
-
-// Full name: core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>
-unsafe fn drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
-= <opaque>
-
-// Full name: core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>
-unsafe fn drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
-= <opaque>
-
-// Full name: core::marker::Tuple::<(u8)>
-#[lang_item("tuple_trait")]
-pub trait Tuple::<(u8)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<(u8)>
-    vtable: core::marker::Tuple::{vtable}::<(u8)>
-}
-
-// Full name: core::ops::function::FnOnce::<test_crate::main::closure<'_>, (u8)>
-#[lang_item("fn_once")]
-pub trait FnOnce::<test_crate::main::closure<'_>, (u8)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
-    parent_clause1 : [@TraitClause1]: Sized::<(u8)>
-    parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
-    fn call_once = call_once::<test_crate::main::closure<'_>, (u8)>
-    vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure<'_>, (u8)><u8>
-}
-
-// Full name: core::ops::function::FnMut::<test_crate::main::closure<'_>, (u8)>
-#[lang_item("fn_mut")]
-pub trait FnMut::<test_crate::main::closure<'_>, (u8)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
-    parent_clause1 : [@TraitClause1]: FnOnce::<test_crate::main::closure<'_>, (u8)>
-    parent_clause2 : [@TraitClause2]: Sized::<(u8)>
-    parent_clause3 : [@TraitClause3]: Tuple::<(u8)>
-    fn call_mut<'_0_1> = call_mut::<test_crate::main::closure<'_>, (u8)><'_0_1>
-    vtable: core::ops::function::FnMut::{vtable}::<test_crate::main::closure<'_>, (u8)><u8>
-}
-
-// Full name: core::ops::function::Fn::<test_crate::main::closure<'_>, (u8)>
-#[lang_item("fn")]
-pub trait Fn::<test_crate::main::closure<'_>, (u8)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
-    parent_clause1 : [@TraitClause1]: FnMut::<test_crate::main::closure<'_>, (u8)>
-    parent_clause2 : [@TraitClause2]: Sized::<(u8)>
-    parent_clause3 : [@TraitClause3]: Tuple::<(u8)>
-    fn call<'_0_1> = call::<test_crate::main::closure<'_>, (u8)><'_0_1>
-    vtable: core::ops::function::Fn::{vtable}::<test_crate::main::closure<'_>, (u8)><u8>
-}
-
-// Full name: core::ops::function::Fn::call::<test_crate::main::closure<'_>, (u8)>
-pub fn call::<test_crate::main::closure<'_>, (u8)><'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::Fn::call
-pub fn call<'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::<test_crate::main::closure#1<'_>, (u8)>
-#[lang_item("fn_once")]
-pub trait FnOnce::<test_crate::main::closure#1<'_>, (u8)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
-    parent_clause1 : [@TraitClause1]: Sized::<(u8)>
-    parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
-    fn call_once = call_once::<test_crate::main::closure#1<'_>, (u8)>
-    vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure#1<'_>, (u8)><u8>
-}
-
-// Full name: core::ops::function::FnMut::<test_crate::main::closure#1<'_>, (u8)>
-#[lang_item("fn_mut")]
-pub trait FnMut::<test_crate::main::closure#1<'_>, (u8)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
-    parent_clause1 : [@TraitClause1]: FnOnce::<test_crate::main::closure#1<'_>, (u8)>
-    parent_clause2 : [@TraitClause2]: Sized::<(u8)>
-    parent_clause3 : [@TraitClause3]: Tuple::<(u8)>
-    fn call_mut<'_0_1> = call_mut::<test_crate::main::closure#1<'_>, (u8)><'_0_1>
-    vtable: core::ops::function::FnMut::{vtable}::<test_crate::main::closure#1<'_>, (u8)><u8>
-}
-
-// Full name: core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8)>
-pub fn call_mut::<test_crate::main::closure#1<'_>, (u8)><'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8)>
-pub fn call_mut::<test_crate::main::closure<'_>, (u8)><'_0>(@1: &'_0 mut test_crate::main::closure<'_>, @2: (u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::<test_crate::main::closure#2, (u8)>
-#[lang_item("fn_once")]
-pub trait FnOnce::<test_crate::main::closure#2, (u8)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
-    parent_clause1 : [@TraitClause1]: Sized::<(u8)>
-    parent_clause2 : [@TraitClause2]: Tuple::<(u8)>
-    fn call_once = call_once::<test_crate::main::closure#2, (u8)>
-    vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure#2, (u8)><u8>
-}
-
-// Full name: core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8)>
-pub fn call_once::<test_crate::main::closure#2, (u8)>(@1: test_crate::main::closure#2, @2: (u8)) -> u8
-= <opaque>
-
 // Full name: core::ops::function::FnOnce::call_once
 pub fn call_once(@1: test_crate::main::closure#2, @2: (u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8)>
-pub fn call_once::<test_crate::main::closure#1<'_>, (u8)>(@1: test_crate::main::closure#1<'_>, @2: (u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8)>
-pub fn call_once::<test_crate::main::closure<'_>, (u8)>(@1: test_crate::main::closure<'_>, @2: (u8)) -> u8
 = <opaque>
 
 fn UNIT_METADATA()
@@ -210,10 +135,10 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
     _2 = &f_1
     storage_live(_3)
     _3 = (const 0 : u8)
-    _0 = {impl#2}<'2>::call<'3>(move _2, move _3)
+    _0 = {impl#2}<'3>::call<'4>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl#3}<'4>] f_1
+    conditional_drop[{impl#3}<'6>] f_1
     return
 }
 
@@ -229,10 +154,10 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::cl
     _2 = &mut f_1
     storage_live(_3)
     _3 = (const 0 : u8)
-    _0 = {impl#4}<'2>::call_mut<'3>(move _2, move _3)
+    _0 = {impl#4}<'3>::call_mut<'4>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl#4}<'4>] f_1
+    conditional_drop[{impl#4}<'6>] f_1
     return
 }
 

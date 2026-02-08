@@ -355,7 +355,26 @@ impl ItemTransCtx<'_, '_> {
         Ok(fields)
     }
 
-    fn translate_preshim(&mut self, span: Span, trait_def: &hax::FullDef) -> Result<(), Error> {
+    fn translate_preshim(
+        &mut self,
+        span: Span,
+        trait_def: &hax::FullDef,
+        // type_id: TypeDeclId,
+    ) -> Result<(), Error> {
+        let item_src =
+            TransItemSource::polymorphic(&trait_def.def_id(), TransItemSourceKind::TraitDecl);
+        let item_id = match self.t_ctx.id_map.get(&item_src) {
+            Some(tid) => *tid,
+            None => {
+                panic!("MONO: expected trait has not been translated");
+            }
+        };
+
+        let trait_id = item_id
+            .try_into()
+            .expect("MONO: The item_id should be a trait decl id");
+
+        // let a= self.translate_trait_decl_ref_poly(span, trait_def.this())?;
         // translate drop_preshim
         let _: FnPtr = self.translate_item(
             span,
@@ -380,7 +399,7 @@ impl ItemTransCtx<'_, '_> {
                     let _: FnPtr = self.translate_item(
                         span,
                         item_def.this(),
-                        TransItemSourceKind::VTableMethodPreShim(name),
+                        TransItemSourceKind::VTableMethodPreShim(trait_id, name),
                     )?;
                 }
             }
@@ -1666,6 +1685,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         assoc_func_def: &hax::FullDef,
         name: &TraitItemName,
+        trait_id: &TraitDeclId,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
         // self.check_no_monomorphize(span)?;
@@ -1717,7 +1737,7 @@ impl ItemTransCtx<'_, '_> {
                 ..GenericParams::empty()
             },
             signature: signature,
-            src: ItemSource::VTableMethodShim,
+            src: ItemSource::VTableMethodPreShim(*trait_id, *name),
             is_global_initializer: None,
             body,
         })

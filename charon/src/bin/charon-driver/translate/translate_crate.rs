@@ -80,7 +80,7 @@ pub enum TransItemSourceKind {
     /// The drop shim function to be used in the vtable as a field, the ID is an `impl`.
     VTableDropShim,
     VTableDropPreShim,
-    VTableMethodPreShim(TraitItemName),
+    VTableMethodPreShim(TraitDeclId, TraitItemName),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -755,6 +755,8 @@ pub fn translate<'tcx, 'ctx>(
     while let Some(item_src) = ctx.items_to_translate.pop_front() {
         if ctx.processed.insert(item_src.clone()) {
             ctx.translate_item(&item_src);
+            trace!("MONO: item translated:\n {:?}", item_src);
+            trace!("MONO: items_to_translate:\n {:?}", ctx.items_to_translate);
         }
     }
 

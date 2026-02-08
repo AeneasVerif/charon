@@ -1,20 +1,20 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
-
-// Full name: core::marker::Destruct::<String>
-#[lang_item("destruct")]
-pub trait Destruct::<String>
-{
-    fn drop_in_place = drop_in_place::<String>
-    vtable: core::marker::Destruct::{vtable}::<String>
-}
-
-// Full name: core::marker::Destruct::drop_in_place::<String>
-unsafe fn drop_in_place::<String>(@1: *mut String)
-= <opaque>
 
 // Full name: alloc::string::{impl#0}::to_string::<Str>
 pub fn {impl#0}::to_string::<Str><'_0>(@1: &'_0 Str) -> String

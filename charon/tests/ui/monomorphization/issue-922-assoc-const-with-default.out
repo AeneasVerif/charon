@@ -1,28 +1,50 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<()>
+// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized::<()>
+pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized::<()>
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait Sized::<()>
+pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<()>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
+
+// Full name: core::mem::size_of
+#[lang_item("mem_size_of")]
+pub fn size_of<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
 
 // Full name: core::mem::size_of::<()>
 #[lang_item("mem_size_of")]
 pub fn size_of::<()>() -> usize
 = <opaque>
 
-// Full name: test_crate::SizedTypeProperties::<()>
-pub trait SizedTypeProperties::<()>
+// Full name: test_crate::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized::<()>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     const IS_ZST : bool
     non-dyn-compatible
+}
+
+// Full name: test_crate::SizedTypeProperties::IS_ZST
+pub fn IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: bool; // return
+    let _1: usize; // anonymous local
+
+    storage_live(_1)
+    _1 = size_of<Self>[@TraitClause0::parent_clause0]()
+    _0 = move _1 == const 0 : usize
+    storage_dead(_1)
+    return
 }
 
 // Full name: test_crate::SizedTypeProperties::IS_ZST
@@ -37,6 +59,12 @@ pub fn IS_ZST() -> bool
     storage_dead(_1)
     return
 }
+
+// Full name: test_crate::SizedTypeProperties::IS_ZST
+pub const IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = IS_ZST()
 
 // Full name: test_crate::SizedTypeProperties::IS_ZST::<()>
 pub const IS_ZST::<()>: bool = IS_ZST()
