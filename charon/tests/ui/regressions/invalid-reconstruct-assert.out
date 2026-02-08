@@ -280,6 +280,7 @@ where
     }
 
     bb10: {
+        _39 = copy self_1.metadata;
         _36 = &raw const (*self_1)[copy index_22];
         _21 = &(*_36);
         storage_dead(_36);
@@ -315,6 +316,7 @@ where
 
     bb15: {
         storage_dead(_38);
+        _39 = copy self_1.metadata;
         _36 = &raw const (*self_1)[copy index_22];
         _21 = &(*_36);
         storage_dead(_36);

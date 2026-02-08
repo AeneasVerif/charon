@@ -246,10 +246,10 @@ impl BlockData {
 impl ExprBody {
     pub fn transform_sequences_fwd<F>(&mut self, mut f: F)
     where
-        F: FnMut(&mut Locals, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
+        F: FnMut(BlockId, &mut Locals, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
-        for block in &mut self.body {
-            block.transform_sequences_fwd(|seq| f(&mut self.locals, seq));
+        for (id, block) in &mut self.body.iter_mut_indexed() {
+            block.transform_sequences_fwd(|seq| f(id, &mut self.locals, seq));
         }
     }
 
