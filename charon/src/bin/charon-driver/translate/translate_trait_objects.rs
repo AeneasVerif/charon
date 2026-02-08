@@ -825,6 +825,12 @@ impl ItemTransCtx<'_, '_> {
                 let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
                 let shim_ref =
                     self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
+                // manually translate region params for dyn trait
+                assert!(self.binding_levels.len() == 1);
+                self.binding_levels.pop();
+                let def = self.poly_hax_def(&item_ref.def_id)?;
+                self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
+
                 shim_ref
                 // ConstantExprKind::FnDef(shim_ref)
             }
@@ -837,8 +843,18 @@ impl ItemTransCtx<'_, '_> {
 
         let name = self.translate_trait_item_name(item.def_id())?;
 
+        trace!(
+            "MONO: regions :\n {:?}",
+            self.outermost_generics().regions
+        );
+
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
-        let method_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
+        // Add regions. this is ad-hoc...
+        let method_ty = Ty::new(TyKind::FnPtr(RegionBinder {
+            regions: self.outermost_generics().regions.clone(),
+            skip_binder: signature.clone(),
+        }));
+        // let method_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
 
         mk_cast_field((name.to_string(), method_ty, method_shim));
 
@@ -1035,12 +1051,17 @@ impl ItemTransCtx<'_, '_> {
         else {
             unreachable!()
         };
+
         // let trait_def = self.hax_def(&trait_pred.trait_ref)?;
         let trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
         let implemented_trait = self.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)?;
         // let implemented_trait = self.translate_trait_decl_ref(span, trait_def.this())?;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
+
+        // add region generics for dyn trait
+        // self.translate_item_generics(span, &trait_def, &TransItemSourceKind::TraitDecl)?;
+        // self.push_generics_for_def(span, &trait_def)?;
 
         let mut builder = BodyBuilder::new(span, 0);
         let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
@@ -1262,12 +1283,11 @@ impl ItemTransCtx<'_, '_> {
             }
         };
 
-        trace!("MONO: after body");
-
         Ok(FunDecl {
             def_id: init_func_id,
             item_meta: item_meta,
-            generics: self.into_generics(),
+            generics: GenericParams::empty(),
+            // into_generics(),
             signature: sig,
             src: ItemSource::VTableInstanceMono,
             is_global_initializer: Some(init_for),
@@ -1687,6 +1707,11 @@ impl ItemTransCtx<'_, '_> {
         name: &TraitItemName,
         trait_id: &TraitDeclId,
     ) -> Result<FunDecl, Error> {
+        trace!(
+            "MONO: regions before:\n {:?}",
+            self.outermost_generics().regions
+        );
+
         let span = item_meta.span;
         // self.check_no_monomorphize(span)?;
 
@@ -1710,10 +1735,17 @@ impl ItemTransCtx<'_, '_> {
                 "MONO: expected trait ref of associative methods"
             );
         };
+
         let trait_def = self.poly_hax_def(&tref.def_id)?;
+
+        trace!(
+            "MONO: regions after:\n {:?}",
+            self.outermost_generics().regions
+        );
 
         // The signature of the shim function.
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
+
         // Add regions. this is ad-hoc...
         let method_ty = Ty::new(TyKind::FnPtr(RegionBinder {
             regions: self.outermost_generics().regions.clone(),
