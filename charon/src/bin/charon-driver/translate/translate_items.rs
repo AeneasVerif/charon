@@ -754,6 +754,13 @@ impl ItemTransCtx<'_, '_> {
                 hax::AssocKind::Const { .. } => TransItemSourceKind::Global,
                 hax::AssocKind::Type { .. } => TransItemSourceKind::Type,
             };
+
+            // skip all methods of trait decl
+            // question: what if the method has default implmentation?
+            if self.monomorphize_mode() && matches!(trans_kind, TransItemSourceKind::Fun) {
+                continue;
+            }
+
             let poly_item_def = self.poly_hax_def(item_def_id)?;
             let (item_src, item_def) = if self.monomorphize() {
                 if poly_item_def.has_own_generics_or_predicates() {
