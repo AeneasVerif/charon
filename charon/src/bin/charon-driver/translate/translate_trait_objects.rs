@@ -843,10 +843,7 @@ impl ItemTransCtx<'_, '_> {
 
         let name = self.translate_trait_item_name(item.def_id())?;
 
-        trace!(
-            "MONO: regions :\n {:?}",
-            self.outermost_generics().regions
-        );
+        trace!("MONO: regions :\n {:?}", self.outermost_generics().regions);
 
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
         // Add regions. this is ad-hoc...
@@ -892,13 +889,18 @@ impl ItemTransCtx<'_, '_> {
                 continue;
             }
 
-            let bound_tyref =
+            let bound_tyref = {
+                let mono = self.monomorphize_mode();
                 self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    let tyref = ctx
-                        .translate_vtable_struct_ref(span, tref)?
-                        .expect("parent trait should be dyn compatible");
+                    let tyref = if mono {
+                        ctx.translate_vtable_struct_ref_from_def_id_mono(span, &tref.def_id)?
+                    } else {
+                        ctx.translate_vtable_struct_ref(span, tref)?
+                            .expect("parent trait should be dyn compatible")
+                    };
                     Ok(tyref)
-                })?;
+                })?
+            };
             let vtable_def_ref = self.erase_region_binder(bound_tyref);
             let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
             let kind = match &impl_expr.r#impl {
@@ -1071,6 +1073,7 @@ impl ItemTransCtx<'_, '_> {
         // substitutions.
         let field_tys = {
             let vtable_decl_id = vtable_struct_ref.id.as_adt().unwrap().clone();
+
             let ItemRef::Type(vtable_def) = self.t_ctx.get_or_translate(vtable_decl_id.into())?
             else {
                 unreachable!()
