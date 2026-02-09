@@ -1,5 +1,5 @@
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
-use hax::{AssocItemContainer, ImplAssocItemValue, TraitPredicate};
+use hax::{AssocItemContainer , TraitPredicate};
 use itertools::Itertools;
 use rustc_span::kw;
 use std::mem;
@@ -1995,9 +1995,12 @@ impl ItemTransCtx<'_, '_> {
         let dyn_self = builder.new_var(Some("dyn_self".into()), shim_receiver.clone());
 
         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
-        let erased_drop_shim_ptr =
-            builder.new_var(Some("erased_drop_shim_ptr".into()), erased_ptr_ty.clone());
-        let drop_shim_ptr = builder.new_var(Some("drop_shim_ptr".into()), drop_ty.clone());
+        let erased_drop_shim_ptr = builder.new_var(
+            Some(format!("erased_{}_shim_ptr", name).into()),
+            erased_ptr_ty.clone(),
+        );
+        let drop_shim_ptr =
+            builder.new_var(Some(format!("{}_shim_ptr", name).into()), drop_ty.clone());
         // let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
 
         // Construct the `(*ptr.ptr_metadata).method_field` place.
