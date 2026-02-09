@@ -79,7 +79,17 @@ fn transform_dyn_trait_call(
         let Some(preshim) = preshim else {
             panic!("MONO: preshim for {} is not translated", method_name);
         };
-        let preshim_fn_ptr = FnPtr::new(preshim.def_id.into(), GenericArgs::empty());
+        // let preshim_fn_ptr = FnPtr::new(preshim.def_id.into(), GenericArgs::empty());
+        let preshim_args = GenericArgs::new(
+            preshim
+                .generics
+                .regions
+                .map_ref_indexed(|_, _| Region::Erased),
+            [].into(),
+            [].into(),
+            [].into(),
+        );
+        let preshim_fn_ptr = FnPtr::new(preshim.def_id.into(), preshim_args);
         call.func = FnOperand::Regular(preshim_fn_ptr);
 
         return Ok(());
