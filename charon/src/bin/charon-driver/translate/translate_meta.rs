@@ -439,20 +439,36 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         if let RustcItem::Mono(item_ref) = &src.item
             && !item_ref.generic_args.is_empty()
         {
-            let trans_id = self.register_no_enqueue(&None, src).unwrap();
-            let span = self.def_span(&item_ref.def_id);
-            let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
-            bt_ctx.binding_levels.push(BindingLevel::new(true));
-            let args = bt_ctx.translate_generic_args(
-                span,
-                &item_ref.generic_args,
-                &item_ref.impl_exprs,
-            )?;
-            name.name.push(PathElem::Instantiated(Box::new(Binder {
-                params: GenericParams::empty(),
-                skip_binder: args,
-                kind: BinderKind::Other,
-            })));
+            let is_preshim = matches!(
+                src.kind,
+                TransItemSourceKind::VTableDropPreShim
+                    | TransItemSourceKind::VTableMethodPreShim(..)
+            );
+            if !(is_preshim && item_ref.generic_args.len() == 1) {
+                let trans_id = self.register_no_enqueue(&None, src).unwrap();
+                let span = self.def_span(&item_ref.def_id);
+                let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
+                bt_ctx.binding_levels.push(BindingLevel::new(true));
+                let args = if is_preshim {
+                    trace!("MONO: test is_preshim");
+                    bt_ctx.translate_generic_args(
+                        span,
+                        &item_ref.generic_args[1..],
+                        &item_ref.impl_exprs,
+                    )?
+                } else {
+                    bt_ctx.translate_generic_args(
+                        span,
+                        &item_ref.generic_args,
+                        &item_ref.impl_exprs,
+                    )?
+                };
+                name.name.push(PathElem::Instantiated(Box::new(Binder {
+                    params: GenericParams::empty(),
+                    skip_binder: args,
+                    kind: BinderKind::Other,
+                })));
+            }
         }
         Ok(name)
     }

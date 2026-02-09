@@ -81,6 +81,7 @@ pub enum TransItemSourceKind {
     VTableDropShim,
     VTableDropPreShim,
     VTableMethodPreShim(TraitDeclId, TraitItemName),
+    // VTableMethodPreShim2(TraitDeclId, TraitItemName, Ty),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
