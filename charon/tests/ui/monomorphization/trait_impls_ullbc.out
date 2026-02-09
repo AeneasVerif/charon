@@ -1,7 +1,7 @@
 # Final ULLBC before serialization:
 
 // Full name: core::cmp::impls::{impl#0}::eq
-pub fn {impl#0}::eq<'_0, '_1>(@1: &'_0 bool, @2: &'_1 bool) -> bool
+pub fn eq<'_0, '_1>(@1: &'_0 bool, @2: &'_1 bool) -> bool
 = <opaque>
 
 fn UNIT_METADATA()
@@ -33,7 +33,7 @@ fn do_test::<bool>(@1: bool, @2: bool)
         _4 = &expected_2;
         storage_live(_5);
         _5 = &init_1;
-        _3 = {impl#0}::eq<'3, '4>(move _4, move _5) -> bb1 (unwind: bb2);
+        _3 = eq<'3, '4>(move _4, move _5) -> bb1 (unwind: bb2);
     }
 
     bb1: {

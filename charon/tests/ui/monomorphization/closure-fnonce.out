@@ -41,15 +41,8 @@ pub trait FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
-    fn call_once = call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
-
-// Full name: core::ops::function::FnOnce::call_once
-pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
-where
-    [@TraitClause0]: FnOnce<Self, Args>,
-= <opaque>
 
 // Full name: test_crate::NotCopy
 struct NotCopy {}

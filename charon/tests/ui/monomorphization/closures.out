@@ -40,7 +40,6 @@ pub trait FnOnce<Self, Args, Self_Output>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self_Output>
-    fn call_once = call_once<Self, Args, Self_Output>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
 }
 
@@ -52,7 +51,6 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args, Self_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args, Self_Clause1_Output>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
@@ -64,15 +62,8 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     parent_clause1 : [@TraitClause1]: FnMut<Self, Args, Self_Clause1_Clause1_Output>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call<'_0_1> = call<'_0_1, Self, Args, Self_Clause1_Clause1_Output>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
-
-// Full name: core::ops::function::Fn::call
-pub fn call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(@1: &'_0 Self, @2: Args) -> Clause0_Clause1_Clause1_Output
-where
-    [@TraitClause0]: Fn<Self, Args, Clause0_Clause1_Clause1_Output>,
-= <opaque>
 
 struct test_crate::main::closure<'_0> {
   &'_0 u8,
@@ -82,24 +73,12 @@ struct test_crate::main::closure<'_0> {
 pub fn call<'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8)) -> u8
 = <opaque>
 
-// Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0, Self, Args, Clause0_Clause1_Output>(@1: &'_0 mut Self, @2: Args) -> Clause0_Clause1_Output
-where
-    [@TraitClause0]: FnMut<Self, Args, Clause0_Clause1_Output>,
-= <opaque>
-
 struct test_crate::main::closure#1<'_0> {
   &'_0 mut u8,
 }
 
 // Full name: core::ops::function::FnMut::call_mut
 pub fn call_mut<'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once
-pub fn call_once<Self, Args, Clause0_Output>(@1: Self, @2: Args) -> Clause0_Output
-where
-    [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
 = <opaque>
 
 // Full name: test_crate::Thing

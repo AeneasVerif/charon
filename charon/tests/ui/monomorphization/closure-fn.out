@@ -41,7 +41,6 @@ pub trait FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
-    fn call_once = call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
@@ -53,7 +52,6 @@ pub trait FnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
@@ -65,7 +63,6 @@ pub trait Fn<Self, Args>
     parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    fn call<'_0_1> = call<'_0_1, Self, Args>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
@@ -79,26 +76,8 @@ struct closure<'_0, '_1> {
 pub fn call<'_0>(@1: &'_0 closure<'_, '_>, @2: (u8, u8)) -> u8
 = <opaque>
 
-// Full name: core::ops::function::Fn::call
-pub fn call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
-where
-    [@TraitClause0]: Fn<Self, Args>,
-= <opaque>
-
-// Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
-where
-    [@TraitClause0]: FnMut<Self, Args>,
-= <opaque>
-
 // Full name: core::ops::function::FnMut::call_mut
 pub fn call_mut<'_0>(@1: &'_0 mut closure<'_, '_>, @2: (u8, u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once
-pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
-where
-    [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
 
 // Full name: core::ops::function::FnOnce::call_once
