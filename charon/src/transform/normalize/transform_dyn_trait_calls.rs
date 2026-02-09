@@ -63,7 +63,7 @@ fn transform_dyn_trait_call(
         let mut preshim = None;
         for fun_decl in ctx.ctx.translated.fun_decls.iter() {
             match &fun_decl.src {
-                ItemSource::VTableMethodPreShim2(t_id, m_name, m_types) => {
+                ItemSource::VTableMethodPreShim(t_id, m_name, m_types) => {
                     trace!("MONO: m_types:\n {:?}", m_types);
                     if *t_id == trait_pred.id
                         && *m_name == *method_name

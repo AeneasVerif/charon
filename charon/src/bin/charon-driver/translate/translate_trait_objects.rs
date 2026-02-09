@@ -1990,7 +1990,7 @@ impl ItemTransCtx<'_, '_> {
                 ..GenericParams::empty()
             },
             signature: signature,
-            src: ItemSource::VTableMethodPreShim2(*trait_id, *name, types),
+            src: ItemSource::VTableMethodPreShim(*trait_id, *name, types),
             is_global_initializer: None,
             body,
         })

@@ -929,6 +929,7 @@ and item_source =
           the receiver to the known concrete type and calls the real method. *)
   | VTableInstanceMonoItem
   | VTableMethodPreShimItem of trait_decl_id * trait_item_name
+  | VTableMethodPreShim2Item of trait_decl_id * trait_item_name * ty list
 
 (** Simplified type layout information.
 
