@@ -564,6 +564,138 @@ impl ItemTransCtx<'_, '_> {
             repr: None,
         })
     }
+
+    pub(crate) fn translate_vtable_struct_mono(
+        mut self,
+        type_id: TypeDeclId,
+        item_meta: ItemMeta,
+        trait_def: &hax::FullDef,
+    ) -> Result<TypeDecl, Error> {
+        let span = item_meta.span;
+        if !self.trait_is_dyn_compatible(trait_def.def_id())? {
+            raise_error!(
+                self,
+                span,
+                "Trying to compute the vtable type \
+                for a non-dyn-compatible trait"
+            );
+        }
+        self.check_no_monomorphize(span)?;
+
+        let (hax::FullDefKind::Trait {
+            dyn_self,
+            implied_predicates,
+            ..
+        }
+        | hax::FullDefKind::TraitAlias {
+            dyn_self,
+            implied_predicates,
+            ..
+        }) = trait_def.kind()
+        else {
+            panic!()
+        };
+        let Some(dyn_self) = dyn_self else {
+            panic!("Trying to generate a vtable for a non-dyn-compatible trait")
+        };
+
+        // The `dyn Trait<Args..>` type for this trait.
+        let mut dyn_self = {
+            let dyn_self = self.translate_ty(span, dyn_self)?;
+            let TyKind::DynTrait(mut dyn_pred) = dyn_self.kind().clone() else {
+                panic!("incorrect `dyn_self`")
+            };
+
+            // Add one generic parameter for each associated type of this trait and its parents. We
+            // then use that in `dyn_self`
+            for (i, ty_constraint) in dyn_pred
+                .binder
+                .params
+                .trait_type_constraints
+                .iter_mut()
+                .enumerate()
+            {
+                let name = format!("Ty{i}");
+                let new_ty = self
+                    .the_only_binder_mut()
+                    .params
+                    .types
+                    .push_with(|index| TypeParam { index, name });
+                // Moving that type under two levels of binders: the `DynPredicate` binder and the
+                // type constraint binder.
+                let new_ty =
+                    TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::new(2), new_ty)).into_ty();
+                ty_constraint.skip_binder.ty = new_ty;
+            }
+            TyKind::DynTrait(dyn_pred).into_ty()
+        };
+
+        let mut field_map = IndexVec::new();
+        let mut supertrait_map: IndexMap<TraitClauseId, _> =
+            (0..implied_predicates.predicates.len())
+                .map(|_| None)
+                .collect();
+        let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
+            (TypeDeclKind::Opaque, None)
+        } else {
+            // First construct fields that use the real method signatures (which may use the `Self`
+            // type). We fixup the types and generics below.
+            let vtable_data = self.prepare_vtable_fields(trait_def, implied_predicates)?;
+            let fields = self.gen_vtable_struct_fields(span, &vtable_data)?;
+
+            // translate preshim functions that cast *const() fnptr
+            // back into their corresponding shim type
+            if self.monomorphize_mode() {
+                let _ = self.translate_preshim(span, trait_def);
+            }
+
+            let kind = TypeDeclKind::Struct(fields);
+            let layout = self.generate_naive_layout(span, &kind)?;
+            supertrait_map = vtable_data.supertrait_map;
+            field_map = vtable_data.fields.map_ref(|tr_field| match *tr_field {
+                TrVTableField::Size => VTableField::Size,
+                TrVTableField::Align => VTableField::Align,
+                TrVTableField::Drop => VTableField::Drop,
+                TrVTableField::Method(name, ..) => VTableField::Method(name),
+                TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(clause_id),
+            });
+            (kind, Some(layout))
+        };
+
+        // Replace any use of `Self` with `dyn Trait<...>`, and remove the `Self` type variable
+        // from the generic parameters.
+        let mut generics = self.into_generics();
+        {
+            dyn_self = dynify(dyn_self, None, false);
+            generics = dynify(generics, Some(dyn_self.clone()), false);
+            kind = dynify(kind, Some(dyn_self.clone()), true);
+            generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+            generics.types.iter_mut().for_each(|ty| {
+                ty.index -= 1;
+            });
+        }
+
+        let dyn_predicate = dyn_self
+            .kind()
+            .as_dyn_trait()
+            .expect("incorrect `dyn_self`");
+        Ok(TypeDecl {
+            def_id: type_id,
+            item_meta: item_meta,
+            // generics: generics,
+            generics: GenericParams::empty(),
+            src: ItemSource::VTableTy {
+                dyn_predicate: dyn_predicate.clone(),
+                field_map,
+                supertrait_map,
+            },
+            kind,
+            layout,
+            // A vtable struct is always sized
+            ptr_metadata: PtrMetadata::None,
+            repr: None,
+        })
+    }
 }
 
 //// Generate a vtable value.
@@ -807,7 +939,7 @@ impl ItemTransCtx<'_, '_> {
         mut mk_cast_field: impl FnMut((String, Ty, FnPtr)),
     ) -> Result<(), Error> {
         // Exit if the item isn't a vtable safe method.
-        let vtable_sig = match self.poly_hax_def(&item.decl_def_id)?.kind() {
+        match self.poly_hax_def(&item.decl_def_id)?.kind() {
             hax::FullDefKind::AssocFn {
                 vtable_sig: Some(vtable_sig),
                 ..
@@ -815,7 +947,7 @@ impl ItemTransCtx<'_, '_> {
             _ => return Ok(()),
         };
 
-        let method_shim = match &item.value {
+        let (method_shim, vtable_sig) = match &item.value {
             hax::ImplAssocItemValue::Provided {
                 def_id: item_def_id,
                 ..
@@ -825,13 +957,21 @@ impl ItemTransCtx<'_, '_> {
                 let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
                 let shim_ref =
                     self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
+                let assoc_fun_def = self.hax_def(&item_ref)?;
+                let vtable_sig = match assoc_fun_def.kind() {
+                    hax::FullDefKind::AssocFn { vtable_sig, .. } => vtable_sig.clone().unwrap(),
+                    _ => {
+                        panic!("MONO: only assoc fun is supported");
+                    }
+                };
+
                 // manually translate region params for dyn trait
                 assert!(self.binding_levels.len() == 1);
                 self.binding_levels.pop();
                 let def = self.poly_hax_def(&item_ref.def_id)?;
                 self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
 
-                shim_ref
+                (shim_ref, vtable_sig)
                 // ConstantExprKind::FnDef(shim_ref)
             }
             hax::ImplAssocItemValue::DefaultedFn { .. } => {
@@ -1054,8 +1194,8 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
 
-        // let trait_def = self.hax_def(&trait_pred.trait_ref)?;
-        let trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+        let trait_def = self.hax_def(&trait_pred.trait_ref)?;
+        // let trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
         let implemented_trait = self.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)?;
         // let implemented_trait = self.translate_trait_decl_ref(span, trait_def.this())?;
         // The type this impl is for.
@@ -1084,6 +1224,11 @@ impl ItemTransCtx<'_, '_> {
                 TypeDeclKind::Error(error) => return Err(Error::new(span, error.clone())),
                 _ => unreachable!(),
             };
+            trace!("MONO: check fields:\n {:?}", fields.iter());
+            trace!(
+                "MONO: check vtable_struct_ref.generics:\n {:?}",
+                vtable_struct_ref.generics
+            );
             fields
                 .iter()
                 .map(|f| &f.ty)
@@ -1174,7 +1319,9 @@ impl ItemTransCtx<'_, '_> {
             aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
         };
 
-        self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
+        let poly_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+
+        self.add_supertraits_to_vtable_value(span, &poly_trait_def, impl_def, &mut mk_field)?;
 
         if let Some(f) = field_ty_iter.next() {
             error!("Aggregate fileds: {:?}", aggregate_fields);

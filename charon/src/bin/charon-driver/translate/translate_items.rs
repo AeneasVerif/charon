@@ -187,7 +187,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Type(id)) = trans_id else {
                     unreachable!()
                 };
-                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
+                let ty_decl = if mono {
+                    bt_ctx.translate_vtable_struct_mono(id, item_meta, &def)?
+                } else {
+                    bt_ctx.translate_vtable_struct(id, item_meta, &def)?
+                };
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
             TransItemSourceKind::VTableInstance(impl_kind) => {
