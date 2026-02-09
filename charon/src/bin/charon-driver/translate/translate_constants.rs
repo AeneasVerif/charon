@@ -9,15 +9,20 @@ use charon_lib::ast::*;
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_constant_literal_to_constant_expr_kind(
         &mut self,
-        span: Span,
+        _span: Span,
         v: &hax::ConstantLiteral,
     ) -> Result<ConstantExprKind, Error> {
         let lit = match v {
             hax::ConstantLiteral::ByteStr(bs) => Literal::ByteStr(bs.clone()),
-            hax::ConstantLiteral::Str(..) => {
-                // This should have been handled in the `&str` case. If we get here, there's a
-                // `str` value not behind a reference.
-                raise_error!(self, span, "found a `str` constants not behind a reference")
+            hax::ConstantLiteral::Str(str) => {
+                // We should only get here if we actually want to translate the data
+                // backing the string, when we represent strings as unsized [u8]s
+                assert!(self.t_ctx.options.unsized_strings);
+
+                let str_bytes = str.as_bytes();
+                return Ok(ConstantExprKind::RawMemory(
+                    str_bytes.iter().map(|b| Byte::Value(*b)).collect(),
+                ));
             }
             hax::ConstantLiteral::Char(c) => Literal::Char(*c),
             hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
@@ -86,11 +91,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .map(|x| self.translate_constant_expr(span, x))
                     .try_collect()?;
 
-                if matches!(v.ty.kind(), hax::TyKind::Slice { .. }) {
-                    ConstantExprKind::Slice(fields)
-                } else {
-                    ConstantExprKind::Array(fields)
-                }
+                ConstantExprKind::Array(fields)
             }
             hax::ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
@@ -115,13 +116,39 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             },
             hax::ConstantExprKind::Borrow(v)
                 if let hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
-                    v.contents.as_ref() =>
+                    v.contents.as_ref()
+                    && !self.t_ctx.options.unsized_strings =>
             {
                 ConstantExprKind::Literal(Literal::Str(s.clone()))
             }
+
             hax::ConstantExprKind::Borrow(v) => {
-                let val = self.translate_constant_expr(span, v)?;
-                ConstantExprKind::Ref(Box::new(val))
+                let mut val = self.translate_constant_expr(span, v)?;
+                let metadata = match (v.contents.as_ref(), val.ty.kind()) {
+                    (hax::ConstantExprKind::Array { fields }, TyKind::Slice(subty)) => {
+                        let len = ConstantExpr::mk_usize(ScalarValue::Unsigned(
+                            UIntTy::Usize,
+                            fields.len() as u128,
+                        ));
+                        // the sub-constant is an array, that has it's reference unsized
+                        val.ty = Ty::mk_array(subty.clone(), len.clone());
+                        Some(UnsizingMetadata::Length(Box::new(len)))
+                    }
+
+                    (hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)), _) => {
+                        let len = ConstantExpr::mk_usize(ScalarValue::Unsigned(
+                            UIntTy::Usize,
+                            s.len() as u128,
+                        ));
+                        // the sub-constant is an array, that has it's reference unsized
+                        let subty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into();
+                        val.ty = Ty::mk_array(subty, len.clone());
+                        Some(UnsizingMetadata::Length(Box::new(len)))
+                    }
+
+                    _ => None,
+                };
+                ConstantExprKind::Ref(Box::new(val), metadata)
             }
             hax::ConstantExprKind::Cast { .. } => {
                 register_error!(
@@ -134,7 +161,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr(span, arg)?;
                 let rk = RefKind::mutable(mutability.is_mut());
-                ConstantExprKind::Ptr(rk, Box::new(arg))
+                ConstantExprKind::Ptr(rk, Box::new(arg), None)
             }
             hax::ConstantExprKind::ConstRef { id } => {
                 match self.lookup_const_generic_var(span, id) {

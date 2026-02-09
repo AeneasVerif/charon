@@ -810,6 +810,13 @@ impl Ty {
         }
     }
 
+    pub fn as_ref_or_ptr(&self) -> Option<&Ty> {
+        match self.kind() {
+            TyKind::RawPtr(ty, _) | TyKind::Ref(_, ty, _) => Some(ty),
+            _ => None,
+        }
+    }
+
     pub fn as_array_or_slice(&self) -> Option<&Ty> {
         match self.kind() {
             TyKind::Slice(ty) | TyKind::Array(ty, _) => Some(ty),

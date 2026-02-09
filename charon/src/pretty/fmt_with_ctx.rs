@@ -277,6 +277,29 @@ impl<C: AstFormatter> FmtWithCtx<C> for Call {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for UnsizingMetadata {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            UnsizingMetadata::Length(len) => write!(f, "{}", len.with_ctx(ctx)),
+            UnsizingMetadata::VTable(tref, vt) => {
+                write!(f, "{} with ", tref.with_ctx(ctx))?;
+                match vt {
+                    Some(vt) => write!(f, "{}", vt.with_ctx(ctx)),
+                    None => write!(f, "?"),
+                }
+            }
+            UnsizingMetadata::VTableUpcast(fields) => {
+                write!(f, " at [")?;
+                let fields = fields.iter().map(|x| format!("{}", x.index())).format(", ");
+                write!(f, "{fields}]")
+            }
+            UnsizingMetadata::Unknown => {
+                write!(f, "?")
+            }
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -284,31 +307,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
             CastKind::FnPtr(src, tgt) | CastKind::RawPtr(src, tgt) => {
                 write!(f, "cast<{}, {}>", src.with_ctx(ctx), tgt.with_ctx(ctx))
             }
-            CastKind::Unsize(src, tgt, meta) => {
-                write!(
-                    f,
-                    "unsize_cast<{}, {}",
-                    src.with_ctx(ctx),
-                    tgt.with_ctx(ctx),
-                )?;
-                match meta {
-                    UnsizingMetadata::Length(len) => write!(f, ", {}", len.with_ctx(ctx))?,
-                    UnsizingMetadata::VTable(tref, vt) => {
-                        write!(f, ", {} with ", tref.with_ctx(ctx))?;
-                        match vt {
-                            Some(vt) => write!(f, "{}", vt.with_ctx(ctx))?,
-                            None => write!(f, "?")?,
-                        }
-                    }
-                    UnsizingMetadata::VTableUpcast(fields) => {
-                        write!(f, ", ")?;
-                        let fields = fields.iter().map(|x| format!("{}", x.index())).format(", ");
-                        write!(f, " at [{}]", fields)?
-                    }
-                    UnsizingMetadata::Unknown => {}
-                }
-                write!(f, ">")
-            }
+            CastKind::Unsize(src, tgt, meta) => write!(
+                f,
+                "unsize_cast<{}, {}, {}>",
+                src.with_ctx(ctx),
+                tgt.with_ctx(ctx),
+                meta.with_ctx(ctx)
+            ),
             CastKind::Transmute(src, tgt) => {
                 write!(f, "transmute<{}, {}>", src.with_ctx(ctx), tgt.with_ctx(ctx))
             }
@@ -1212,6 +1217,16 @@ impl Display for RawAttribute {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for Byte {
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Byte::Value(x) => write!(f, "{:#4x}", x),
+            Byte::Uninit => write!(f, "--"),
+            Byte::Provenance(p, ofs) => write!(f, "{:?}[{}]", p, ofs),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1231,23 +1246,41 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "[{}]", values)
             }
-            ConstantExprKind::Slice(values) => {
-                let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
-                write!(f, "[{}]", values)
-            }
             ConstantExprKind::Global(global_ref) => {
                 write!(f, "{}", global_ref.with_ctx(ctx))
             }
             ConstantExprKind::TraitConst(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
-            ConstantExprKind::Ref(cv) => {
-                write!(f, "&{}", cv.with_ctx(ctx))
+            ConstantExprKind::Ref(cv, meta) => {
+                if let Some(meta) = meta {
+                    write!(
+                        f,
+                        "&{} with_metadata({})",
+                        cv.with_ctx(ctx),
+                        meta.with_ctx(ctx)
+                    )
+                } else {
+                    write!(f, "&{}", cv.with_ctx(ctx))
+                }
             }
-            ConstantExprKind::Ptr(rk, cv) => match rk {
-                RefKind::Mut => write!(f, "&raw mut {}", cv.with_ctx(ctx)),
-                RefKind::Shared => write!(f, "&raw const {}", cv.with_ctx(ctx)),
-            },
+            ConstantExprKind::Ptr(rk, cv, meta) => {
+                let rk = match rk {
+                    RefKind::Mut => "&raw mut",
+                    RefKind::Shared => "&raw const",
+                };
+                if let Some(meta) = meta {
+                    write!(
+                        f,
+                        "{} {} with_metadata({})",
+                        rk,
+                        cv.with_ctx(ctx),
+                        meta.with_ctx(ctx)
+                    )
+                } else {
+                    write!(f, "{} {}", rk, cv.with_ctx(ctx))
+                }
+            }
             ConstantExprKind::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
             ConstantExprKind::FnDef(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))
@@ -1256,7 +1289,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
                 write!(f, "fnptr({})", fp.with_ctx(ctx))
             }
             ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
-            ConstantExprKind::RawMemory(bytes) => write!(f, "RawMemory({bytes:?})"),
+            ConstantExprKind::RawMemory(bytes) => {
+                let bytes = bytes.iter().map(|v| v.with_ctx(ctx)).format(", ");
+                write!(f, "RawMemory({})", bytes)
+            }
             ConstantExprKind::Opaque(cause) => write!(f, "Opaque({cause})"),
         }
     }

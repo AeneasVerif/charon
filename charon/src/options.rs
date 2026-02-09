@@ -178,6 +178,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub raw_consts: bool,
+    /// Replace string literal constants with a constant u8 array that gets unsized,
+    /// expliciting the fact a string constant has a hidden reference.
+    #[clap(long)]
+    #[serde(default)]
+    pub unsized_strings: bool,
     /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
     /// panic-on-overflow operation. This loses unwinding information.
     #[clap(long)]
@@ -421,6 +426,9 @@ pub struct TranslateOptions {
     pub treat_box_as_builtin: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
+    /// Replace string literal constants with a constant u8 array that gets unsized,
+    /// expliciting the fact a string constant has a hidden reference.
+    pub unsized_strings: bool,
     /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
     /// panic-on-overflow operation. This loses unwinding information.
     pub reconstruct_fallible_operations: bool,
@@ -529,6 +537,7 @@ impl TranslateOptions {
             item_opacities,
             treat_box_as_builtin: options.treat_box_as_builtin,
             raw_consts: options.raw_consts,
+            unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,
             remove_associated_types,
