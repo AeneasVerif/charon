@@ -50,12 +50,25 @@ fn transform_dyn_trait_call(
     if ctx.ctx.options.monomorphize_with_hax {
         trace!("MONO: current trait_id: {}", trait_pred.id);
         trace!("MONO: trait_decls:\n {:?}", ctx.ctx.translated.trait_decls);
+        let types: Vec<_> = trait_ref
+            .trait_decl_ref
+            .skip_binder
+            .generics
+            .types
+            .iter()
+            .skip(1)
+            .collect();
+        trace!("MONO: trait_ref.generic_args:\n {:?}", types);
 
         let mut preshim = None;
         for fun_decl in ctx.ctx.translated.fun_decls.iter() {
-            match fun_decl.src {
-                ItemSource::VTableMethodPreShim(t_id, m_name) => {
-                    if t_id == trait_pred.id && m_name == *method_name {
+            match &fun_decl.src {
+                ItemSource::VTableMethodPreShim2(t_id, m_name, m_types) => {
+                    trace!("MONO: m_types:\n {:?}", m_types);
+                    if *t_id == trait_pred.id
+                        && *m_name == *method_name
+                        && m_types.iter().eq(types.iter().copied())
+                    {
                         preshim = Some(fun_decl);
                     }
                 }

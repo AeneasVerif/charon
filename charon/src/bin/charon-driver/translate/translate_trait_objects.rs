@@ -1,5 +1,5 @@
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
-use hax::{AssocItemContainer , TraitPredicate};
+use hax::{AssocItemContainer, GenericArg, TraitPredicate};
 use itertools::Itertools;
 use rustc_span::kw;
 use std::mem;
@@ -407,7 +407,7 @@ impl ItemTransCtx<'_, '_> {
 
                     let _: FnPtr = self.translate_item(
                         span,
-                        item_def.this(),
+                        trait_def.this(),
                         TransItemSourceKind::VTableMethodPreShim(trait_id, name),
                     )?;
                 }
@@ -890,6 +890,10 @@ impl ItemTransCtx<'_, '_> {
         let self_ty = implemented_trait.generics.types[0].clone();
 
         trace!("MONO: self_ty index:\n {:?}", self_ty);
+        trace!(
+            "MONO: impl_def.generic_args:\n {:?}",
+            impl_def.this().generic_args
+        );
 
         let trait_def = self.hax_def(&trait_pred.trait_ref)?;
         self.translate_preshim(span, &trait_def)?;
@@ -1880,43 +1884,46 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         fun_id: FunDeclId,
         item_meta: ItemMeta,
-        assoc_func_def: &hax::FullDef,
+        trait_def: &hax::FullDef,
         name: &TraitItemName,
         trait_id: &TraitDeclId,
     ) -> Result<FunDecl, Error> {
-        trace!(
-            "MONO: regions before:\n {:?}",
-            self.outermost_generics().regions
-        );
+        trace!("MONO: regions before:\n {:?}", self.outermost_generics());
 
         let span = item_meta.span;
         // self.check_no_monomorphize(span)?;
 
-        // let mut assoc_func_def = None;
+        let mut assoc_func_def = None;
 
-        // if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
-        //     for item in items {
-        //         let item_def_id = &item.def_id;
-        //         // This is ok because dyn-compatible methods don't have generics.
-        //         let item_def =
-        //             self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
-        //         if let hax::FullDefKind::AssocFn {
-        //             // sig,
-        //             // vtable_sig: Some(_),
-        //             ..
-        //         } = item_def.kind()
-        //         {
-        //             let fun_name = self.translate_trait_item_name(&item_def_id)?;
-        //             if fun_name == *name {
-        //                 assoc_func_def = Some(item_def);
-        //             }
-        //         }
-        //     }
-        // }
+        if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
+            for item in items {
+                let item_def_id = &item.def_id;
+                // This is ok because dyn-compatible methods don't have generics.
+                let item_def =
+                    self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
+                if let hax::FullDefKind::AssocFn {
+                    // sig,
+                    // vtable_sig: Some(_),
+                    ..
+                } = item_def.kind()
+                {
+                    let fun_name = self.translate_trait_item_name(&item_def_id)?;
+                    if fun_name == *name {
+                        assoc_func_def = Some(item_def);
+                    }
+                }
+            }
+        }
 
-        // let Some(assoc_func_def) = assoc_func_def else {
-        //     panic!("MONO: assoc_func_def is not found");
-        // };
+        let Some(assoc_func_def) = assoc_func_def else {
+            panic!("MONO: assoc_func_def is not found");
+        };
+
+        // manually translate region params for dyn trait
+        assert!(self.binding_levels.len() == 1);
+        self.binding_levels.pop();
+        let def = self.poly_hax_def(&assoc_func_def.def_id())?;
+        self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
 
         let hax::FullDefKind::AssocFn {
             vtable_sig: Some(vtable_sig),
@@ -1930,9 +1937,8 @@ impl ItemTransCtx<'_, '_> {
 
         // let dyn_self = vtable_sig.value.inputs[0].clone();
 
-        let AssocItemContainer::TraitImplContainer {
-            implemented_trait_ref: tref,
-            ..
+        let AssocItemContainer::TraitContainer {
+            trait_ref: tref, ..
         } = &associated_item.container
         else {
             raise_error!(
@@ -1966,6 +1972,15 @@ impl ItemTransCtx<'_, '_> {
             format!("method_{}", name.to_string()).as_str(),
         )?;
 
+        let mut types = vec![];
+        let generic_args = tref.generic_args.clone();
+        trace!("MONO: check generic_args:\n {:?}", generic_args);
+        for arg in generic_args.iter().skip(1) {
+            if let GenericArg::Type(hax_ty) = arg {
+                types.push(self.translate_ty(span, hax_ty)?);
+            }
+        }
+
         Ok(FunDecl {
             def_id: fun_id,
             item_meta,
@@ -1975,7 +1990,7 @@ impl ItemTransCtx<'_, '_> {
                 ..GenericParams::empty()
             },
             signature: signature,
-            src: ItemSource::VTableMethodPreShim(*trait_id, *name),
+            src: ItemSource::VTableMethodPreShim2(*trait_id, *name, types),
             is_global_initializer: None,
             body,
         })

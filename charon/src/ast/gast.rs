@@ -176,7 +176,7 @@ pub enum ItemSource {
     VTableMethodShim,
     VTableInstanceMono,
     VTableMethodPreShim(TraitDeclId, TraitItemName),
-    // VTableMethodPreShim2(TraitDeclId, TraitItemName, Ty),
+    VTableMethodPreShim2(TraitDeclId, TraitItemName, Vec<Ty>),
 }
 
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, PartialEq, Eq)]
