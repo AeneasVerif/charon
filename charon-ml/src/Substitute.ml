@@ -388,9 +388,6 @@ let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     types of the fields for the chosen variant. *)
 let type_decl_get_instantiated_field_types (def : type_decl)
     (opt_variant_id : VariantId.id option) (generics : generic_args) : ty list =
-  (* Check that there are no clauses - otherwise we might need
-     to normalize the types *)
-  assert (def.generics.trait_clauses = []);
   let subst = make_subst_from_generics def.generics generics Self in
   let fields = type_decl_get_fields def opt_variant_id in
   List.map (fun f -> ty_substitute subst f.field_ty) fields
