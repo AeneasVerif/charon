@@ -279,8 +279,16 @@ impl LlbcPass for Transform {
                 Switch(..) => {
                     let _ = visitor.visit_inner_with_mutability(st, false);
                 }
-                Nop | Error(..) | Assert(..) | Abort(..) | StorageDead(..) | StorageLive(..)
-                | Return | Break(..) | Continue(..) | Loop(..) => {
+                Nop
+                | Error(..)
+                | Assert { .. }
+                | Abort(..)
+                | StorageDead(..)
+                | StorageLive(..)
+                | Return
+                | Break(..)
+                | Continue(..)
+                | Loop(..) => {
                     let _ = st.drive_body_mut(&mut visitor);
                 }
             }

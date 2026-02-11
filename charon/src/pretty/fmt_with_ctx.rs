@@ -83,6 +83,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for BuiltinAssertKind {
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BuiltinAssertKind::BoundsCheck { .. } => write!(f, "bounds_check"),
+            BuiltinAssertKind::Overflow(..) => write!(f, "overflow"),
+            BuiltinAssertKind::OverflowNeg(..) => write!(f, "overflow_neg"),
+            BuiltinAssertKind::DivisionByZero(..) => write!(f, "division_by_zero"),
+            BuiltinAssertKind::RemainderByZero(..) => write!(f, "remainder_by_zero"),
+            BuiltinAssertKind::MisalignedPointerDereference { .. } => {
+                write!(f, "misaligned_pointer_dereference")
+            }
+            BuiltinAssertKind::NullPointerDereference => write!(f, "null_pointer_dereference"),
+            BuiltinAssertKind::InvalidEnumConstruction(..) => {
+                write!(f, "invalid_enum_construction")
+            }
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ItemId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match ctx
@@ -127,7 +146,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Assert {
             "assert({} == {})",
             self.cond.with_ctx(ctx),
             self.expected,
-        )
+        )?;
+        if let Some(check_kind) = &self.check_kind {
+            write!(f, " ({})", check_kind.with_ctx(ctx))?;
+        }
+        Ok(())
     }
 }
 
@@ -1563,7 +1586,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             StatementKind::Deinit(place) => {
                 write!(f, "{tab}deinit({})", place.with_ctx(ctx))
             }
-            StatementKind::Assert(assert) => write!(f, "{tab}{}", assert.with_ctx(ctx)),
+            StatementKind::Assert { assert, on_failure } => {
+                write!(
+                    f,
+                    "{tab}{} else {}",
+                    assert.with_ctx(ctx),
+                    on_failure.with_ctx(ctx)
+                )
+            }
             StatementKind::Nop => write!(f, "{tab}nop"),
         }
     }
@@ -1609,8 +1639,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 };
                 write!(f, "{kind}[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
             }
-            StatementKind::Assert(assert) => {
-                write!(f, "{}", assert.with_ctx(ctx),)
+            StatementKind::Assert { assert, on_failure } => {
+                write!(
+                    f,
+                    "{} else {}",
+                    assert.with_ctx(ctx),
+                    on_failure.with_ctx(ctx)
+                )
             }
             StatementKind::Call(call) => {
                 write!(f, "{}", call.with_ctx(ctx))
@@ -1747,6 +1782,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     "{kind}[{}] {} -> bb{target} (unwind: bb{on_unwind})",
                     tref.with_ctx(ctx),
                     place.with_ctx(ctx),
+                )
+            }
+            TerminatorKind::Assert {
+                assert,
+                target,
+                on_unwind,
+            } => {
+                write!(
+                    f,
+                    "assert {} -> bb{target} (unwind: bb{on_unwind})",
+                    assert.with_ctx(ctx),
                 )
             }
             TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),

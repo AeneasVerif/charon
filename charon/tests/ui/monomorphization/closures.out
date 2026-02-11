@@ -241,7 +241,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
     _0 = {impl Fn::<test_crate::main::closure<'_>, (u8)>}::call<'2, '3>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct::<test_crate::main::closure<'_>>}<'4>] f_1
+    conditional_drop[{impl Destruct::<test_crate::main::closure<'_>>}<'5>] f_1
     return
 }
 
@@ -308,7 +308,7 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::cl
     _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8)>}::call_mut<'2, '3>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'4>] f_1
+    conditional_drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'5>] f_1
     return
 }
 

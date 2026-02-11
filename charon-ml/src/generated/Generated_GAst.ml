@@ -23,14 +23,17 @@ type fn_ptr_kind = Types.fn_ptr_kind [@@deriving show, ord]
 type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 
 (** (U)LLBC is a language with side-effects: a statement may abort in a way that
-    isn't tracked by control-flow. The two kinds of abort are:
-    - Panic (may unwind or not depending on compilation setting);
-    - Undefined behavior: *)
+    isn't tracked by control-flow. The three kinds of abort are:
+    - Panic
+    - Undefined behavior (caused by an "assume")
+    - Unwind termination *)
 type abort_kind =
-  | Panic of name option  (** A built-in panicking function. *)
+  | Panic of name option
+      (** A built-in panicking function, or a panic due to a failed built-in
+          check (e.g. for out-of-bounds accesses). *)
   | UndefinedBehavior  (** Undefined behavior in the rust abstract machine. *)
   | UnwindTerminate
-      (** Unwind had to stop for Abi reasons or because cleanup code panicked
+      (** Unwind had to stop for ABI reasons or because cleanup code panicked
           again. *)
 
 (** Check the value of an operand and abort if the value is not expected. This
@@ -47,8 +50,32 @@ and assertion = {
   expected : bool;
       (** The value that the operand should evaluate to for the assert to
           succeed. *)
-  on_failure : abort_kind;  (** What kind of abort happens on assert failure. *)
+  check_kind : builtin_assert_kind option;
+      (** The kind of check performed by this assert. This is only used for
+          error reporting, as the check is actually performed by the
+          instructions preceding the assert. *)
 }
+
+(** The kind of a built-in assertion, which may panic and unwind. These are
+    removed by [reconstruct_fallible_operations] because they're implicit in the
+    semantics of (U)LLBC. This kind should only be used for error-reporting
+    purposes, as the check itself is performed in the instructions preceding the
+    assert. *)
+and builtin_assert_kind =
+  | BoundsCheck of operand * operand
+      (** Fields:
+          - [len]
+          - [index] *)
+  | Overflow of binop * operand * operand
+  | OverflowNeg of operand
+  | DivisionByZero of operand
+  | RemainderByZero of operand
+  | MisalignedPointerDereference of operand * operand
+      (** Fields:
+          - [required]
+          - [found] *)
+  | NullPointerDereference
+  | InvalidEnumConstruction of operand
 
 and call = { func : fn_operand; args : operand list; dest : place }
 and copy_non_overlapping = { src : operand; dst : operand; count : operand }

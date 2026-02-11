@@ -35,12 +35,16 @@ and statement_kind =
           the function's body, in which case it is implicitly deallocated at the
           end of the function. *)
   | Deinit of place
-  | Assert of assertion
-      (** A runtime check for a condition. This can be either:
-          - Emitted for bounds/overflow/etc checks if
-            [--reconstruct-fallible-operations] is not set;
-          - Reconstructed from [if b { panic() }] if [--reconstruct-assets] is
-            set. *)
+  | Assert of assertion * abort_kind
+      (** A non-diverging runtime check for a condition. This can be either:
+          - Emitted for inlined "assumes" (which cause UB on failure)
+          - Reconstructed from [if b { panic() }] if [--reconstruct-asserts] is
+            set. This statement comes with the effect that happens when the
+            check fails (rather than representing it as an unwinding edge).
+
+          Fields:
+          - [assert]
+          - [on_failure] *)
   | Nop  (** Does nothing. Useful for passes. *)
 
 and switch =
@@ -105,6 +109,14 @@ and terminator_kind =
           - [kind]
           - [place]
           - [tref]
+          - [target]
+          - [on_unwind] *)
+  | TAssert of assertion * block_id * block_id
+      (** Assert that the given condition holds, and if not, unwind to the given
+          block. This is used for bounds checks, overflow checks, etc.
+
+          Fields:
+          - [assert]
           - [target]
           - [on_unwind] *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)

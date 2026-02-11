@@ -42,8 +42,8 @@ use derive_generic_visitor::*;
     skip(()),
     // Types that we unconditionally explore.
     drive(
-        AbortKind, Assert, BinOp, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
-        CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
+        AbortKind, Assert, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
+        Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
@@ -148,7 +148,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
     visitor(drive_body_mut(&mut VisitBodyMut)),
     // Types that are ignored when encountered.
     skip(
-        AbortKind, BinOp, BorrowKind, ConstantExpr, FieldId, FieldProjKind,
+        AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
         TraitRef, LiteralTy, Literal, RegionId, ()

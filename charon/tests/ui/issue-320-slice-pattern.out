@@ -165,7 +165,7 @@ fn slice_pat3()
     _7 = move _8
     _9 = const 2 : usize
     _10 = move _7 >= move _9
-    assert(move _10 == true)
+    assert(move _10 == true) else panic(core::panicking::panic)
     storage_live(_a_4)
     storage_live(_17)
     _17 = &(*slice_1) with_metadata(copy slice_1.metadata)

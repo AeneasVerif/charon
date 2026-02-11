@@ -117,12 +117,14 @@ and assertion_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [ ("cond", cond); ("expected", expected); ("on_failure", on_failure) ]
+        [ ("cond", cond); ("expected", expected); ("check_kind", check_kind) ]
       ->
         let* cond = operand_of_json ctx cond in
         let* expected = bool_of_json ctx expected in
-        let* on_failure = abort_kind_of_json ctx on_failure in
-        Ok ({ cond; expected; on_failure } : assertion)
+        let* check_kind =
+          option_of_json builtin_assert_kind_of_json ctx check_kind
+        in
+        Ok ({ cond; expected; check_kind } : assertion)
     | _ -> Error "")
 
 and attr_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -248,6 +250,44 @@ and borrow_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "TwoPhaseMut" -> Ok BTwoPhaseMut
     | `String "Shallow" -> Ok BShallow
     | `String "UniqueImmutable" -> Ok BUniqueImmutable
+    | _ -> Error "")
+
+and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_assert_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("BoundsCheck", `Assoc [ ("len", len); ("index", index) ]) ] ->
+        let* len = operand_of_json ctx len in
+        let* index = operand_of_json ctx index in
+        Ok (BoundsCheck (len, index))
+    | `Assoc [ ("Overflow", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = binop_of_json ctx x_0 in
+        let* x_1 = operand_of_json ctx x_1 in
+        let* x_2 = operand_of_json ctx x_2 in
+        Ok (Overflow (x_0, x_1, x_2))
+    | `Assoc [ ("OverflowNeg", overflow_neg) ] ->
+        let* overflow_neg = operand_of_json ctx overflow_neg in
+        Ok (OverflowNeg overflow_neg)
+    | `Assoc [ ("DivisionByZero", division_by_zero) ] ->
+        let* division_by_zero = operand_of_json ctx division_by_zero in
+        Ok (DivisionByZero division_by_zero)
+    | `Assoc [ ("RemainderByZero", remainder_by_zero) ] ->
+        let* remainder_by_zero = operand_of_json ctx remainder_by_zero in
+        Ok (RemainderByZero remainder_by_zero)
+    | `Assoc
+        [
+          ( "MisalignedPointerDereference",
+            `Assoc [ ("required", required); ("found", found) ] );
+        ] ->
+        let* required = operand_of_json ctx required in
+        let* found = operand_of_json ctx found in
+        Ok (MisalignedPointerDereference (required, found))
+    | `String "NullPointerDereference" -> Ok NullPointerDereference
+    | `Assoc [ ("InvalidEnumConstruction", invalid_enum_construction) ] ->
+        let* invalid_enum_construction =
+          operand_of_json ctx invalid_enum_construction
+        in
+        Ok (InvalidEnumConstruction invalid_enum_construction)
     | _ -> Error "")
 
 and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :

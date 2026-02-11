@@ -195,7 +195,7 @@ fn into_inner(@1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}
     _10 = copy _8 == const 0 : usize
     _11 = copy _10 & copy _9
     _12 = ~(copy _11)
-    assert(copy _12 == true)
+    assert(copy _12 == true) (null_pointer_dereference) else undefined_behavior
     _x_2 = move (*_6)
     _0 = ()
     drop[{impl Destruct for String}] _x_2

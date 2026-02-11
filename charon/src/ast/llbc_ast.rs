@@ -51,7 +51,10 @@ pub enum StatementKind {
     /// that should only happen if the place has not been moved out of. See the docs of `DropKind`
     /// for more details; to get precise drops use `--precise-drops`.
     Drop(Place, TraitRef, #[drive(skip)] DropKind),
-    Assert(Assert),
+    Assert {
+        assert: Assert,
+        on_failure: AbortKind,
+    },
     Call(Call),
     /// Panic also handles "unreachable". We keep the name of the panicking function that was
     /// called.

@@ -324,18 +324,18 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(_4);
         storage_live(_5);
         _5 = Range { start: const 0 : i32, end: const 128 : i32 };
-        _4 = {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5) -> bb1 (unwind: bb2);
+        _4 = {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5) -> bb2 (unwind: bb1);
     }
 
     bb1: {
+        unwind_continue;
+    }
+
+    bb2: {
         storage_dead(_5);
         storage_live(iter_6);
         iter_6 = move _4;
         goto bb3;
-    }
-
-    bb2: {
-        unwind_continue;
     }
 
     bb3: {
@@ -344,7 +344,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(_9);
         _9 = &mut iter_6;
         _8 = &two-phase-mut (*_9);
-        _7 = {impl Iterator for Range<A>[@TraitClause0]}::next<'3, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8) -> bb4 (unwind: bb2);
+        _7 = {impl Iterator for Range<A>[@TraitClause0]}::next<'3, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8) -> bb4 (unwind: bb1);
     }
 
     bb4: {
@@ -364,7 +364,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         _14 = copy step_out_1;
         _13 = Range { start: const 0 : usize, end: move _14 };
         storage_dead(_14);
-        _12 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _13) -> bb8 (unwind: bb2);
+        _12 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _13) -> bb8 (unwind: bb1);
     }
 
     bb6: {
@@ -392,7 +392,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(_18);
         _18 = &mut iter_15;
         _17 = &two-phase-mut (*_18);
-        _16 = {impl Iterator for Range<A>[@TraitClause0]}::next<'5, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _17) -> bb10 (unwind: bb2);
+        _16 = {impl Iterator for Range<A>[@TraitClause0]}::next<'5, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _17) -> bb10 (unwind: bb1);
     }
 
     bb10: {
@@ -419,7 +419,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         _22 = copy step_in_2;
         _21 = Range { start: const 0 : usize, end: move _22 };
         storage_dead(_22);
-        _20 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _21) -> bb14 (unwind: bb2);
+        _20 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _21) -> bb14 (unwind: bb1);
     }
 
     bb13: {
@@ -439,7 +439,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(_26);
         _26 = &mut iter_23;
         _25 = &two-phase-mut (*_26);
-        _24 = {impl Iterator for Range<A>[@TraitClause0]}::next<'7, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _25) -> bb16 (unwind: bb2);
+        _24 = {impl Iterator for Range<A>[@TraitClause0]}::next<'7, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _25) -> bb16 (unwind: bb1);
     }
 
     bb16: {
