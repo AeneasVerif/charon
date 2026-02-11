@@ -70,18 +70,19 @@
 
         # A utility that extracts the llbc of a crate using charon. This uses
         # `crane` to handle dependencies and toolchain management.
-        extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? { } }:
+        extractCrateWithCharon = { name, src, charonArgs ? "", cargoArgs ? "", craneExtraArgs ? { } }:
           craneLib.buildPackage ({
-            inherit name;
+            name = "${name}.llbc";
             src = pkgs.lib.cleanSourceWith {
               inherit src;
               filter = path: type: (craneLib.filterCargoSources path type);
             };
             cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
             buildPhase = ''
-              ${charon}/bin/charon ${charonFlags} --dest $out/llbc
+              ${charon}/bin/charon cargo ${charonArgs} --dest-file $out -- ${cargoArgs}
             '';
             dontInstall = true;
+            doCheck = false;
           } // craneExtraArgs);
       in
       {
