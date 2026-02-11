@@ -317,7 +317,7 @@ impl ItemTransCtx<'_, '_> {
     /// Register the items inside this module or inherent impl.
     // TODO: we may want to accumulate the set of modules we found, to check that all
     // the opaque modules given as arguments actually exist
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub(crate) fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef) {
         if !item_meta.opacity.is_transparent() {
             return;
@@ -425,7 +425,7 @@ impl ItemTransCtx<'_, '_> {
     /// Note that we translate the types one by one: we don't need to take into
     /// account the fact that some types are mutually recursive at this point
     /// (we will need to take that into account when generating the code in a file).
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_type_decl(
         mut self,
         trans_id: TypeDeclId,
@@ -477,7 +477,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Translate one function.
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_fun_decl(
         mut self,
         def_id: FunDeclId,
@@ -569,7 +569,7 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Translate one global.
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_global(
         mut self,
         def_id: GlobalDeclId,
@@ -614,7 +614,7 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_trait_decl(
         mut self,
         def_id: TraitDeclId,
@@ -876,7 +876,7 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_trait_impl(
         mut self,
         def_id: TraitImplId,
@@ -1132,7 +1132,7 @@ impl ItemTransCtx<'_, '_> {
     ///     trait Alias<U>: Trait<Option<U>, Item = u32> + Clone {}
     ///     impl<U, Self: Trait<Option<U>, Item = u32> + Clone> Alias<U> for Self {}
     /// ```
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_trait_alias_blanket_impl(
         mut self,
         def_id: TraitImplId,
@@ -1331,7 +1331,7 @@ impl ItemTransCtx<'_, '_> {
 
     /// In case an impl does not override a trait method, this duplicates the original trait method
     /// and adjusts its generics to make the corresponding impl method.
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_defaulted_method(
         &mut self,
         def_id: FunDeclId,
