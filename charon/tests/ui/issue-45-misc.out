@@ -50,7 +50,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<U>,
-    [@TraitClause3]: FnMut<F, (T)>,
+    [@TraitClause3]: FnMut<F, (T,)>,
     @TraitClause3::parent_clause1::Output = U,
 = <opaque>
 
@@ -304,12 +304,12 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::map::closure
 struct closure {}
 
-// Full name: test_crate::map::{impl FnMut<(i32)> for closure}::call_mut
-fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32)) -> i32
+// Full name: test_crate::map::{impl FnMut<(i32,)> for closure}::call_mut
+fn {impl FnMut<(i32,)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: &'0 mut closure; // arg #1
-    let tupled_args_2: (i32); // arg #2
+    let tupled_args_2: (i32,); // arg #2
     let v_3: i32; // local
 
     storage_live(v_3)
@@ -328,39 +328,39 @@ impl Destruct for closure {
     non-dyn-compatible
 }
 
-// Full name: test_crate::map::{impl FnOnce<(i32)> for closure}::call_once
-fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
+// Full name: test_crate::map::{impl FnOnce<(i32,)> for closure}::call_once
+fn {impl FnOnce<(i32,)> for closure}::call_once(@1: closure, @2: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: closure; // arg #1
-    let _2: (i32); // arg #2
+    let _2: (i32,); // arg #2
     let _3: &'0 mut closure; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(i32)> for closure}::call_mut<'2>(move _3, move _2)
+    _0 = {impl FnMut<(i32,)> for closure}::call_mut<'2>(move _3, move _2)
     drop[{impl Destruct for closure}] _1
     return
 }
 
-// Full name: test_crate::map::{impl FnOnce<(i32)> for closure}
-impl FnOnce<(i32)> for closure {
+// Full name: test_crate::map::{impl FnOnce<(i32,)> for closure}
+impl FnOnce<(i32,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {built_in impl Sized for (i32)}
-    parent_clause2 = {built_in impl Tuple for (i32)}
+    parent_clause1 = {built_in impl Sized for (i32,)}
+    parent_clause2 = {built_in impl Tuple for (i32,)}
     parent_clause3 = {built_in impl Sized for i32}
     type Output = i32
-    fn call_once = {impl FnOnce<(i32)> for closure}::call_once
+    fn call_once = {impl FnOnce<(i32,)> for closure}::call_once
     non-dyn-compatible
 }
 
-// Full name: test_crate::map::{impl FnMut<(i32)> for closure}
-impl FnMut<(i32)> for closure {
+// Full name: test_crate::map::{impl FnMut<(i32,)> for closure}
+impl FnMut<(i32,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {impl FnOnce<(i32)> for closure}
-    parent_clause2 = {built_in impl Sized for (i32)}
-    parent_clause3 = {built_in impl Tuple for (i32)}
-    fn call_mut<'_0_1> = {impl FnMut<(i32)> for closure}::call_mut<'_0_1>
+    parent_clause1 = {impl FnOnce<(i32,)> for closure}
+    parent_clause2 = {built_in impl Sized for (i32,)}
+    parent_clause3 = {built_in impl Tuple for (i32,)}
+    fn call_mut<'_0_1> = {impl FnMut<(i32,)> for closure}::call_mut<'_0_1>
     non-dyn-compatible
 }
 
@@ -375,7 +375,7 @@ pub fn test_crate::map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
     _2 = copy x_1
     storage_live(_3)
     _3 = closure {  }
-    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move _2, move _3)
+    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,)> for closure}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return

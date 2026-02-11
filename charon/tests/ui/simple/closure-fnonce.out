@@ -71,18 +71,18 @@ const UNIT_METADATA: () = @Fun0()
 fn apply_to_zero_once<impl FnOnce(u8) -> u8>(@1: impl FnOnce(u8) -> u8) -> u8
 where
     [@TraitClause0]: Sized<impl FnOnce(u8) -> u8>,
-    [@TraitClause1]: FnOnce<impl FnOnce(u8) -> u8, (u8)>,
+    [@TraitClause1]: FnOnce<impl FnOnce(u8) -> u8, (u8,)>,
     @TraitClause1::Output = u8,
 {
     let _0: u8; // return
     let f_1: impl FnOnce(u8) -> u8; // arg #1
     let _2: impl FnOnce(u8) -> u8; // anonymous local
-    let _3: (u8); // anonymous local
+    let _3: (u8,); // anonymous local
 
     storage_live(_2)
     _2 = move f_1
     storage_live(_3)
-    _3 = (const 0 : u8)
+    _3 = (const 0 : u8,)
     _0 = @TraitClause1::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -117,12 +117,12 @@ struct closure {
   NotCopy,
 }
 
-// Full name: test_crate::main::{impl FnOnce<(u8)> for closure}::call_once
-fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
+// Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}::call_once
+fn {impl FnOnce<(u8,)> for closure}::call_once(@1: closure, @2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: closure; // arg #1
-    let tupled_args_2: (u8); // arg #2
+    let tupled_args_2: (u8,); // arg #2
     let x_3: u8; // local
     let _4: (); // anonymous local
     let _5: NotCopy; // anonymous local
@@ -146,14 +146,14 @@ fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8
     return
 }
 
-// Full name: test_crate::main::{impl FnOnce<(u8)> for closure}
-impl FnOnce<(u8)> for closure {
+// Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}
+impl FnOnce<(u8,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {built_in impl Sized for (u8)}
-    parent_clause2 = {built_in impl Tuple for (u8)}
+    parent_clause1 = {built_in impl Sized for (u8,)}
+    parent_clause2 = {built_in impl Tuple for (u8,)}
     parent_clause3 = {built_in impl Sized for u8}
     type Output = u8
-    fn call_once = {impl FnOnce<(u8)> for closure}::call_once
+    fn call_once = {impl FnOnce<(u8,)> for closure}::call_once
     non-dyn-compatible
 }
 
@@ -171,7 +171,7 @@ fn main()
     storage_live(_2)
     storage_live(_3)
     _3 = closure { 0: move z_1 }
-    _2 = apply_to_zero_once<closure>[{built_in impl Sized for closure}, {impl FnOnce<(u8)> for closure}](move _3)
+    _2 = apply_to_zero_once<closure>[{built_in impl Sized for closure}, {impl FnOnce<(u8,)> for closure}](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

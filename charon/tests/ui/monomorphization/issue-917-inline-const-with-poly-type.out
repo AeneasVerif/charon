@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<(())>
+// Full name: core::marker::MetaSized::<((),)>
 #[lang_item("meta_sized")]
-pub trait MetaSized::<(())>
+pub trait MetaSized::<((),)>
 
-// Full name: core::marker::Sized::<(())>
+// Full name: core::marker::Sized::<((),)>
 #[lang_item("sized")]
-pub trait Sized::<(())>
+pub trait Sized::<((),)>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<(())>
+    parent_clause0 : [@TraitClause0]: MetaSized::<((),)>
     non-dyn-compatible
 }
 
@@ -30,56 +30,56 @@ pub trait Destruct::<closure::<()>>
 unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(@1: *mut closure::<()>)
 = <opaque>
 
-// Full name: core::marker::Tuple::<(())>
+// Full name: core::marker::Tuple::<((),)>
 #[lang_item("tuple_trait")]
-pub trait Tuple::<(())>
+pub trait Tuple::<((),)>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<(())>
-    vtable: core::marker::Tuple::{vtable}::<(())>
+    parent_clause0 : [@TraitClause0]: MetaSized::<((),)>
+    vtable: core::marker::Tuple::{vtable}::<((),)>
 }
 
-// Full name: core::ops::function::FnOnce::<closure::<()>, (())>
+// Full name: core::ops::function::FnOnce::<closure::<()>, ((),)>
 #[lang_item("fn_once")]
-pub trait FnOnce::<closure::<()>, (())>
+pub trait FnOnce::<closure::<()>, ((),)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure::<()>>
-    parent_clause1 : [@TraitClause1]: Sized::<(())>
-    parent_clause2 : [@TraitClause2]: Tuple::<(())>
-    fn call_once = core::ops::function::FnOnce::call_once::<closure::<()>, (())>
-    vtable: core::ops::function::FnOnce::{vtable}::<closure::<()>, (())><()>
+    parent_clause1 : [@TraitClause1]: Sized::<((),)>
+    parent_clause2 : [@TraitClause2]: Tuple::<((),)>
+    fn call_once = core::ops::function::FnOnce::call_once::<closure::<()>, ((),)>
+    vtable: core::ops::function::FnOnce::{vtable}::<closure::<()>, ((),)><()>
 }
 
-// Full name: core::ops::function::FnMut::<closure::<()>, (())>
+// Full name: core::ops::function::FnMut::<closure::<()>, ((),)>
 #[lang_item("fn_mut")]
-pub trait FnMut::<closure::<()>, (())>
+pub trait FnMut::<closure::<()>, ((),)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure::<()>>
-    parent_clause1 : [@TraitClause1]: FnOnce::<closure::<()>, (())>
-    parent_clause2 : [@TraitClause2]: Sized::<(())>
-    parent_clause3 : [@TraitClause3]: Tuple::<(())>
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut::<closure::<()>, (())><'_0_1>
-    vtable: core::ops::function::FnMut::{vtable}::<closure::<()>, (())><()>
+    parent_clause1 : [@TraitClause1]: FnOnce::<closure::<()>, ((),)>
+    parent_clause2 : [@TraitClause2]: Sized::<((),)>
+    parent_clause3 : [@TraitClause3]: Tuple::<((),)>
+    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut::<closure::<()>, ((),)><'_0_1>
+    vtable: core::ops::function::FnMut::{vtable}::<closure::<()>, ((),)><()>
 }
 
-// Full name: core::ops::function::Fn::<closure::<()>, (())>
+// Full name: core::ops::function::Fn::<closure::<()>, ((),)>
 #[lang_item("fn")]
-pub trait Fn::<closure::<()>, (())>
+pub trait Fn::<closure::<()>, ((),)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<closure::<()>>
-    parent_clause1 : [@TraitClause1]: FnMut::<closure::<()>, (())>
-    parent_clause2 : [@TraitClause2]: Sized::<(())>
-    parent_clause3 : [@TraitClause3]: Tuple::<(())>
-    fn call<'_0_1> = core::ops::function::Fn::call::<closure::<()>, (())><'_0_1>
-    vtable: core::ops::function::Fn::{vtable}::<closure::<()>, (())><()>
+    parent_clause1 : [@TraitClause1]: FnMut::<closure::<()>, ((),)>
+    parent_clause2 : [@TraitClause2]: Sized::<((),)>
+    parent_clause3 : [@TraitClause3]: Tuple::<((),)>
+    fn call<'_0_1> = core::ops::function::Fn::call::<closure::<()>, ((),)><'_0_1>
+    vtable: core::ops::function::Fn::{vtable}::<closure::<()>, ((),)><()>
 }
 
-pub fn core::ops::function::Fn::call::<closure::<()>, (())><'_0>(@1: &'_0 closure::<()>, @2: (()))
+pub fn core::ops::function::Fn::call::<closure::<()>, ((),)><'_0>(@1: &'_0 closure::<()>, @2: ((),))
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut::<closure::<()>, (())><'_0>(@1: &'_0 mut closure::<()>, @2: (()))
+pub fn core::ops::function::FnMut::call_mut::<closure::<()>, ((),)><'_0>(@1: &'_0 mut closure::<()>, @2: ((),))
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once::<closure::<()>, (())>(@1: closure::<()>, @2: (()))
+pub fn core::ops::function::FnOnce::call_once::<closure::<()>, ((),)>(@1: closure::<()>, @2: ((),))
 = <opaque>
 
 fn UNIT_METADATA()
@@ -92,12 +92,12 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-// Full name: test_crate::foo::{const}::{impl Fn::<closure::<()>, (())>}::call::<()>
-fn {impl Fn::<closure::<()>, (())>}::call::<()><'_0>(@1: &'_0 closure::<()>, @2: (()))
+// Full name: test_crate::foo::{const}::{impl Fn::<closure::<()>, ((),)>}::call::<()>
+fn {impl Fn::<closure::<()>, ((),)>}::call::<()><'_0>(@1: &'_0 closure::<()>, @2: ((),))
 {
     let _0: (); // return
     let _1: &'0 closure::<()>; // arg #1
-    let tupled_args_2: (()); // arg #2
+    let tupled_args_2: ((),); // arg #2
     let x_3: (); // local
 
     storage_live(x_3)
@@ -107,18 +107,18 @@ fn {impl Fn::<closure::<()>, (())>}::call::<()><'_0>(@1: &'_0 closure::<()>, @2:
     return
 }
 
-// Full name: test_crate::foo::{const}::{impl FnMut::<closure::<()>, (())>}::call_mut::<()>
-fn {impl FnMut::<closure::<()>, (())>}::call_mut::<()><'_0>(@1: &'_0 mut closure::<()>, @2: (()))
+// Full name: test_crate::foo::{const}::{impl FnMut::<closure::<()>, ((),)>}::call_mut::<()>
+fn {impl FnMut::<closure::<()>, ((),)>}::call_mut::<()><'_0>(@1: &'_0 mut closure::<()>, @2: ((),))
 {
     let _0: (); // return
     let state_1: &'_0 mut closure::<()>; // arg #1
-    let args_2: (()); // arg #2
+    let args_2: ((),); // arg #2
     let _3: &'0 closure::<()>; // anonymous local
 
     _0 = ()
     storage_live(_3)
     _3 = &(*state_1)
-    _0 = {impl Fn::<closure::<()>, (())>}::call::<()><'2>(move _3, move args_2)
+    _0 = {impl Fn::<closure::<()>, ((),)>}::call::<()><'2>(move _3, move args_2)
     return
 }
 
@@ -141,18 +141,18 @@ impl Destruct::<closure::<()>> {
     non-dyn-compatible
 }
 
-// Full name: test_crate::foo::{const}::{impl FnOnce::<closure::<()>, (())>}::call_once::<()>
-fn {impl FnOnce::<closure::<()>, (())>}::call_once::<()>(@1: closure::<()>, @2: (()))
+// Full name: test_crate::foo::{const}::{impl FnOnce::<closure::<()>, ((),)>}::call_once::<()>
+fn {impl FnOnce::<closure::<()>, ((),)>}::call_once::<()>(@1: closure::<()>, @2: ((),))
 {
     let _0: (); // return
     let _1: closure::<()>; // arg #1
-    let _2: (()); // arg #2
+    let _2: ((),); // arg #2
     let _3: &'0 mut closure::<()>; // anonymous local
 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut::<closure::<()>, (())>}::call_mut::<()><'2>(move _3, move _2)
+    _0 = {impl FnMut::<closure::<()>, ((),)>}::call_mut::<()><'2>(move _3, move _2)
     drop[{impl Destruct::<closure::<()>>}::<()>] _1
     return
 }
@@ -162,15 +162,15 @@ fn as_fn::<()>(@1: ())
 {
     let _0: (); // return
     let arg1_1: (); // arg #1
-    let args_2: (()); // local
+    let args_2: ((),); // local
     let state_3: closure::<()>; // local
 
     _0 = ()
     storage_live(args_2)
     storage_live(state_3)
-    args_2 = (move arg1_1)
+    args_2 = (move arg1_1,)
     state_3 = closure::<()> {  }
-    _0 = {impl FnOnce::<closure::<()>, (())>}::call_once::<()>(move state_3, move args_2)
+    _0 = {impl FnOnce::<closure::<()>, ((),)>}::call_once::<()>(move state_3, move args_2)
     return
 }
 
@@ -204,32 +204,32 @@ fn foo::<()>(@1: ())
     return
 }
 
-// Full name: test_crate::foo::{const}::{impl FnOnce::<closure::<()>, (())>}::<()>
-impl FnOnce::<closure::<()>, (())> {
+// Full name: test_crate::foo::{const}::{impl FnOnce::<closure::<()>, ((),)>}::<()>
+impl FnOnce::<closure::<()>, ((),)> {
     parent_clause0 = {built_in impl MetaSized::<closure::<()>>}
-    parent_clause1 = {built_in impl Sized::<(())>}
-    parent_clause2 = {built_in impl Tuple::<(())>}
-    fn call_once = {impl FnOnce::<closure::<()>, (())>}::call_once::<()>
+    parent_clause1 = {built_in impl Sized::<((),)>}
+    parent_clause2 = {built_in impl Tuple::<((),)>}
+    fn call_once = {impl FnOnce::<closure::<()>, ((),)>}::call_once::<()>
     non-dyn-compatible
 }
 
-// Full name: test_crate::foo::{const}::{impl FnMut::<closure::<()>, (())>}::<()>
-impl FnMut::<closure::<()>, (())> {
+// Full name: test_crate::foo::{const}::{impl FnMut::<closure::<()>, ((),)>}::<()>
+impl FnMut::<closure::<()>, ((),)> {
     parent_clause0 = {built_in impl MetaSized::<closure::<()>>}
-    parent_clause1 = {impl FnOnce::<closure::<()>, (())>}::<()>
-    parent_clause2 = {built_in impl Sized::<(())>}
-    parent_clause3 = {built_in impl Tuple::<(())>}
-    fn call_mut<'_0_1> = {impl FnMut::<closure::<()>, (())>}::call_mut::<()><'_0_1>
+    parent_clause1 = {impl FnOnce::<closure::<()>, ((),)>}::<()>
+    parent_clause2 = {built_in impl Sized::<((),)>}
+    parent_clause3 = {built_in impl Tuple::<((),)>}
+    fn call_mut<'_0_1> = {impl FnMut::<closure::<()>, ((),)>}::call_mut::<()><'_0_1>
     non-dyn-compatible
 }
 
-// Full name: test_crate::foo::{const}::{impl Fn::<closure::<()>, (())>}::<()>
-impl Fn::<closure::<()>, (())> {
+// Full name: test_crate::foo::{const}::{impl Fn::<closure::<()>, ((),)>}::<()>
+impl Fn::<closure::<()>, ((),)> {
     parent_clause0 = {built_in impl MetaSized::<closure::<()>>}
-    parent_clause1 = {impl FnMut::<closure::<()>, (())>}::<()>
-    parent_clause2 = {built_in impl Sized::<(())>}
-    parent_clause3 = {built_in impl Tuple::<(())>}
-    fn call<'_0_1> = {impl Fn::<closure::<()>, (())>}::call::<()><'_0_1>
+    parent_clause1 = {impl FnMut::<closure::<()>, ((),)>}::<()>
+    parent_clause2 = {built_in impl Sized::<((),)>}
+    parent_clause3 = {built_in impl Tuple::<((),)>}
+    fn call<'_0_1> = {impl Fn::<closure::<()>, ((),)>}::call::<()><'_0_1>
     non-dyn-compatible
 }
 

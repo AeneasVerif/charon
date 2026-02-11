@@ -163,7 +163,7 @@ where
     let _0: (); // return
     let _1: (); // anonymous local
     let _2: Arguments<'0>; // anonymous local
-    let args_3: (&'1 U); // local
+    let args_3: (&'1 U,); // local
     let _4: &'1 U; // anonymous local
     let _5: U; // anonymous local
     let args_6: [Argument<'2>; 1 : usize]; // local
@@ -184,7 +184,7 @@ where
     storage_live(_5)
     _5 = @TraitClause4::default()
     _4 = &_5
-    args_3 = (move _4)
+    args_3 = (move _4,)
     storage_dead(_4)
     storage_live(args_6)
     storage_live(_7)

@@ -144,7 +144,7 @@ where
     let x_8: &'2 T; // local
     let _9: (); // anonymous local
     let _10: Arguments<'6>; // anonymous local
-    let args_11: (&'7 &'2 T); // local
+    let args_11: (&'7 &'2 T,); // local
     let _12: &'7 &'2 T; // anonymous local
     let args_13: [Argument<'8>; 1 : usize]; // local
     let _14: Argument<'8>; // anonymous local
@@ -186,7 +186,7 @@ where
         storage_live(args_11)
         storage_live(_12)
         _12 = &x_8
-        args_11 = (move _12)
+        args_11 = (move _12,)
         storage_dead(_12)
         storage_live(args_13)
         storage_live(_14)

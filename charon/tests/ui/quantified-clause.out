@@ -160,7 +160,7 @@ where
 fn foo<F>(@1: F)
 where
     [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: for<'a> FnMut<F, (&'a ())>,
+    [@TraitClause1]: for<'a> FnMut<F, (&'a (),)>,
     for<'a> @TraitClause1::parent_clause1::Output = (),
 {
     let _0: (); // return
@@ -187,9 +187,9 @@ where
 }
 
 // Full name: test_crate::f
-pub fn f<'a>(@1: &'a ()) -> Option<(&'a u8)>[{built_in impl Sized for (&'a u8)}]
+pub fn f<'a>(@1: &'a ()) -> Option<(&'a u8,)>[{built_in impl Sized for (&'a u8,)}]
 {
-    let _0: Option<(&'0 u8)>[{built_in impl Sized for (&'0 u8)}]; // return
+    let _0: Option<(&'0 u8,)>[{built_in impl Sized for (&'0 u8,)}]; // return
     let _1: &'3 (); // arg #1
 
     _0 = Option::None {  }

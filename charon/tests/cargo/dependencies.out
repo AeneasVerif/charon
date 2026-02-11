@@ -64,7 +64,7 @@ pub fn take<'_0, T, F>(@1: &'_0 mut T, @2: F)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: FnOnce<F, (T)>,
+    [@TraitClause2]: FnOnce<F, (T,)>,
     @TraitClause2::Output = T,
 = <opaque>
 
@@ -81,12 +81,12 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_cargo_dependencies::main::silly_incr::closure
 struct closure {}
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}::call_once
-fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}::call_once
+fn {impl FnOnce<(u32,)> for closure}::call_once(@1: closure, @2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: closure; // arg #1
-    let tupled_args_2: (u32); // arg #2
+    let tupled_args_2: (u32,); // arg #2
     let y_3: u32; // local
     let _4: u32; // anonymous local
     let _5: (u32, bool); // anonymous local
@@ -103,14 +103,14 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
     return
 }
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}
-impl FnOnce<(u32)> for closure {
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}
+impl FnOnce<(u32,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {built_in impl Sized for (u32)}
-    parent_clause2 = {built_in impl Tuple for (u32)}
+    parent_clause1 = {built_in impl Sized for (u32,)}
+    parent_clause2 = {built_in impl Tuple for (u32,)}
     parent_clause3 = {built_in impl Sized for u32}
     type Output = u32
-    fn call_once = {impl FnOnce<(u32)> for closure}::call_once
+    fn call_once = {impl FnOnce<(u32,)> for closure}::call_once
     non-dyn-compatible
 }
 
@@ -129,7 +129,7 @@ fn silly_incr<'_0>(@1: &'_0 mut u32)
     _3 = &two-phase-mut (*x_1)
     storage_live(_4)
     _4 = closure {  }
-    _2 = take<'2, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnOnce<(u32)> for closure}](move _3, move _4)
+    _2 = take<'2, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnOnce<(u32,)> for closure}](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)

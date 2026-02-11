@@ -3189,13 +3189,13 @@ pub fn handle_alloc_error(@1: Layout) -> !
 {
     let _0: !; // return
     let layout_1: Layout; // arg #1
-    let _2: (Layout); // anonymous local
+    let _2: (Layout,); // anonymous local
     let _3: Layout; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     _3 = copy layout_1
-    _2 = (move _3)
+    _2 = (move _3,)
     storage_dead(_3)
     _0 = ct_error(move _2.0)
 }

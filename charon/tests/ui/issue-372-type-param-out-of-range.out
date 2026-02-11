@@ -70,7 +70,7 @@ pub fn test_crate::{S<'a, K>[@TraitClause0]}::f<'a, K, F>()
 where
     [@TraitClause0]: Sized<K>,
     [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: for<'_0_1> FnMut<F, (&'_0_1 u32)>,
+    [@TraitClause2]: for<'_0_1> FnMut<F, (&'_0_1 u32,)>,
     for<'_0_1> @TraitClause2::parent_clause1::Output = (),
 {
     let _0: (); // return
@@ -85,7 +85,7 @@ pub fn g<'a, K, F>()
 where
     [@TraitClause0]: Sized<K>,
     [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: for<'b> FnMut<F, (&'b u32)>,
+    [@TraitClause2]: for<'b> FnMut<F, (&'b u32,)>,
     for<'b> @TraitClause2::parent_clause1::Output = (),
 {
     let _0: (); // return
@@ -101,7 +101,7 @@ pub struct T {}
 pub fn test_crate::{T}::f<F>()
 where
     [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: for<'_0_1> FnMut<F, (&'_0_1 u32)>,
+    [@TraitClause1]: for<'_0_1> FnMut<F, (&'_0_1 u32,)>,
     for<'_0_1> @TraitClause1::parent_clause1::Output = (),
 {
     let _0: (); // return

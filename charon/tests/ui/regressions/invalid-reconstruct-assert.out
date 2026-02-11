@@ -120,7 +120,7 @@ pub fn binary_search_by<'a, T, F>(@1: &'a [T], @2: F) -> Result<usize, usize>[{b
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: FnMut<F, (&'a T)>,
+    [@TraitClause2]: FnMut<F, (&'a T,)>,
     @TraitClause2::parent_clause1::Output = Ordering,
 {
     let _0: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // return
@@ -137,13 +137,13 @@ where
     let _11: usize; // anonymous local
     let cmp_12: Ordering; // local
     let _13: &'1 mut F; // anonymous local
-    let _14: (&'2 T); // anonymous local
+    let _14: (&'2 T,); // anonymous local
     let _15: &'2 T; // anonymous local
     let _16: usize; // anonymous local
     let _17: bool; // anonymous local
     let cmp_18: Ordering; // local
     let _19: &'1 mut F; // anonymous local
-    let _20: (&'2 T); // anonymous local
+    let _20: (&'2 T,); // anonymous local
     let _21: &'2 T; // anonymous local
     let index_22: usize; // local
     let cond_23: bool; // local
@@ -269,7 +269,7 @@ where
         storage_dead(_34);
         _15 = &(*_29);
         storage_dead(_29);
-        _14 = (copy _15);
+        _14 = (copy _15,);
         cmp_12 = @TraitClause2::call_mut<'6>(move _13, move _14) -> bb14 (unwind: bb13);
     }
 
@@ -285,7 +285,7 @@ where
         _21 = &(*_36);
         storage_dead(_36);
         storage_dead(index_22);
-        _20 = (copy _21);
+        _20 = (copy _21,);
         cmp_18 = @TraitClause2::call_mut<'9>(move _19, move _20) -> bb17 (unwind: bb13);
     }
 
@@ -325,7 +325,7 @@ where
         _21 = &(*_36);
         storage_dead(_36);
         storage_dead(index_22);
-        _20 = (copy _21);
+        _20 = (copy _21,);
         cmp_18 = @TraitClause2::call_mut<'12>(move _19, move _20) -> bb21 (unwind: bb13);
     }
 
@@ -457,12 +457,12 @@ where
 // Full name: test_crate::main::closure
 struct closure {}
 
-// Full name: test_crate::main::{impl FnMut<(&'_ u32)> for closure}::call_mut
-fn {impl FnMut<(&'_ u32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (&'_ u32)) -> Ordering
+// Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}::call_mut
+fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (&'_ u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: &'0 mut closure; // arg #1
-    let tupled_args_2: (&'_ u32); // arg #2
+    let tupled_args_2: (&'_ u32,); // arg #2
     let x_3: &'_ u32; // local
     let _4: &'_ u32; // anonymous local
     let _5: &'_ u32; // anonymous local
@@ -511,18 +511,18 @@ impl Destruct for closure {
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnOnce<(&'_ u32)> for closure}::call_once
-fn {impl FnOnce<(&'_ u32)> for closure}::call_once(@1: closure, @2: (&'_ u32)) -> Ordering
+// Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}::call_once
+fn {impl FnOnce<(&'_ u32,)> for closure}::call_once(@1: closure, @2: (&'_ u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: closure; // arg #1
-    let _2: (&'_ u32); // arg #2
+    let _2: (&'_ u32,); // arg #2
     let _3: &'0 mut closure; // anonymous local
 
     bb0: {
         storage_live(_3);
         _3 = &mut _1;
-        _0 = {impl FnMut<(&'_ u32)> for closure}::call_mut<'3>(move _3, move _2) -> bb2 (unwind: bb1);
+        _0 = {impl FnMut<(&'_ u32,)> for closure}::call_mut<'3>(move _3, move _2) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -550,24 +550,24 @@ fn {impl FnOnce<(&'_ u32)> for closure}::call_once(@1: closure, @2: (&'_ u32)) -
     }
 }
 
-// Full name: test_crate::main::{impl FnOnce<(&'_ u32)> for closure}
-impl FnOnce<(&'_ u32)> for closure {
+// Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}
+impl FnOnce<(&'_ u32,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {built_in impl Sized for (&'_ u32)}
-    parent_clause2 = {built_in impl Tuple for (&'_ u32)}
+    parent_clause1 = {built_in impl Sized for (&'_ u32,)}
+    parent_clause2 = {built_in impl Tuple for (&'_ u32,)}
     parent_clause3 = {built_in impl Sized for Ordering}
     type Output = Ordering
-    fn call_once = {impl FnOnce<(&'_ u32)> for closure}::call_once
+    fn call_once = {impl FnOnce<(&'_ u32,)> for closure}::call_once
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnMut<(&'_ u32)> for closure}
-impl FnMut<(&'_ u32)> for closure {
+// Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}
+impl FnMut<(&'_ u32,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {impl FnOnce<(&'_ u32)> for closure}
-    parent_clause2 = {built_in impl Sized for (&'_ u32)}
-    parent_clause3 = {built_in impl Tuple for (&'_ u32)}
-    fn call_mut<'_0_1> = {impl FnMut<(&'_ u32)> for closure}::call_mut<'_0_1>
+    parent_clause1 = {impl FnOnce<(&'_ u32,)> for closure}
+    parent_clause2 = {built_in impl Sized for (&'_ u32,)}
+    parent_clause3 = {built_in impl Tuple for (&'_ u32,)}
+    fn call_mut<'_0_1> = {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0_1>
     non-dyn-compatible
 }
 
@@ -604,7 +604,7 @@ fn main()
         storage_dead(_7);
         storage_live(_8);
         _8 = closure {  };
-        res_5 = binary_search_by<'2, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnMut<(&'_ u32)> for closure}](move _6, move _8) -> bb2 (unwind: bb1);
+        res_5 = binary_search_by<'2, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnMut<(&'_ u32,)> for closure}](move _6, move _8) -> bb2 (unwind: bb1);
     }
 
     bb1: {

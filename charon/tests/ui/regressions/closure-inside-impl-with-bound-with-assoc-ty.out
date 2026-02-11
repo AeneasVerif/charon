@@ -132,15 +132,15 @@ where
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call
-fn {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_0, F, Clause1_Repr>(@1: &'_0 closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1], @2: (()))
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl Fn<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call
+fn {impl Fn<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_0, F, Clause1_Repr>(@1: &'_0 closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1], @2: ((),))
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
     let _0: (); // return
     let _1: &'0 closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // arg #1
-    let tupled_args_2: (()); // arg #2
+    let tupled_args_2: ((),); // arg #2
     let _x_3: (); // local
 
     storage_live(_x_3)
@@ -150,21 +150,21 @@ where
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut
-fn {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_0, F, Clause1_Repr>(@1: &'_0 mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1], @2: (()))
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut
+fn {impl FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_0, F, Clause1_Repr>(@1: &'_0 mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1], @2: ((),))
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
     let _0: (); // return
     let state_1: &'_0 mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // arg #1
-    let args_2: (()); // arg #2
+    let args_2: ((),); // arg #2
     let _3: &'0 closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // anonymous local
 
     _0 = ()
     storage_live(_3)
     _3 = &(*state_1)
-    _0 = {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move args_2)
+    _0 = {impl Fn<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move args_2)
     return
 }
 
@@ -185,64 +185,64 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once
-fn {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once<F, Clause1_Repr>(@1: closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1], @2: (()))
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnOnce<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once
+fn {impl FnOnce<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once<F, Clause1_Repr>(@1: closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1], @2: ((),))
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
     let _0: (); // return
     let _1: closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // arg #1
-    let _2: (()); // arg #2
+    let _2: ((),); // arg #2
     let _3: &'0 mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // anonymous local
 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move _2)
+    _0 = {impl FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move _2)
     drop[{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]] _1
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
-impl<F, Clause1_Repr> FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnOnce<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
+impl<F, Clause1_Repr> FnOnce<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
     parent_clause0 = {built_in impl MetaSized for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
-    parent_clause1 = {built_in impl Sized for (())}
-    parent_clause2 = {built_in impl Tuple for (())}
+    parent_clause1 = {built_in impl Sized for ((),)}
+    parent_clause2 = {built_in impl Tuple for ((),)}
     parent_clause3 = {built_in impl Sized for ()}
-    fn call_once = {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    fn call_once = {impl FnOnce<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_once<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
-// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
-impl<F, Clause1_Repr> FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
+impl<F, Clause1_Repr> FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
     parent_clause0 = {built_in impl MetaSized for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
-    parent_clause1 = {impl FnOnce<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
-    parent_clause2 = {built_in impl Sized for (())}
-    parent_clause3 = {built_in impl Tuple for (())}
-    fn call_mut<'_0_1> = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_0_1, F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    parent_clause1 = {impl FnOnce<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    parent_clause2 = {built_in impl Sized for ((),)}
+    parent_clause3 = {built_in impl Tuple for ((),)}
+    fn call_mut<'_0_1> = {impl FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'_0_1, F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 
-// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
-impl<F, Clause1_Repr> Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::{impl Fn<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
+impl<F, Clause1_Repr> Fn<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
     parent_clause0 = {built_in impl MetaSized for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}
-    parent_clause1 = {impl FnMut<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
-    parent_clause2 = {built_in impl Sized for (())}
-    parent_clause3 = {built_in impl Tuple for (())}
-    fn call<'_0_1> = {impl Fn<(()), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_0_1, F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    parent_clause1 = {impl FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]
+    parent_clause2 = {built_in impl Sized for ((),)}
+    parent_clause3 = {built_in impl Tuple for ((),)}
+    fn call<'_0_1> = {impl Fn<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call<'_0_1, F, Clause1_Repr>[@TraitClause0, @TraitClause1]
     non-dyn-compatible
 }
 

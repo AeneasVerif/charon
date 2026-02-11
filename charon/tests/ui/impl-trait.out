@@ -289,14 +289,14 @@ where
     return
 }
 
-// Full name: test_crate::wrap::{impl FnOnce<(&'_ U)> for closure<U>[@TraitClause0]}::call_once
-fn {impl FnOnce<(&'_ U)> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1: closure<U>[@TraitClause0], @2: (&'_0 U)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
+// Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]}::call_once
+fn {impl FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1: closure<U>[@TraitClause0], @2: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
 where
     [@TraitClause0]: Sized<U>,
 {
     let _0: WrapClone<&'_ U>[{built_in impl Sized for &'0 U}, {impl Clone for &'_0 T}<'2, U>]; // return
     let _1: closure<U>[@TraitClause0]; // arg #1
-    let tupled_args_2: (&'_0 U); // arg #2
+    let tupled_args_2: (&'_0 U,); // arg #2
     let x_3: &'_ U; // local
     let _4: &'_ U; // anonymous local
 
@@ -309,17 +309,17 @@ where
     return
 }
 
-// Full name: test_crate::wrap::{impl FnOnce<(&'_ U)> for closure<U>[@TraitClause0]}
-impl<'_0, U> FnOnce<(&'_ U)> for closure<U>[@TraitClause0]
+// Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]}
+impl<'_0, U> FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]
 where
     [@TraitClause0]: Sized<U>,
 {
     parent_clause0 = {built_in impl MetaSized for closure<U>[@TraitClause0]}
-    parent_clause1 = {built_in impl Sized for (&'_ U)}
-    parent_clause2 = {built_in impl Tuple for (&'_ U)}
+    parent_clause1 = {built_in impl Sized for (&'_ U,)}
+    parent_clause2 = {built_in impl Tuple for (&'_ U,)}
     parent_clause3 = {built_in impl Sized for WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]}
     type Output = WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]
-    fn call_once = {impl FnOnce<(&'_ U)> for closure<U>[@TraitClause0]}::call_once<'_0, U>[@TraitClause0]
+    fn call_once = {impl FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]}::call_once<'_0, U>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -345,7 +345,7 @@ pub fn use_wrap()
     let f_1: closure<u32>[{built_in impl Sized for u32}]; // local
     let _2: WrapClone<&'0 u32>[{built_in impl Sized for &'0 u32}, {impl Clone for &'_0 T}<'0, u32>]; // anonymous local
     let _3: closure<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _4: (&'0 u32); // anonymous local
+    let _4: (&'0 u32,); // anonymous local
     let _5: &'0 u32; // anonymous local
     let _6: &'0 u32; // anonymous local
     let _7: &'0 u32; // anonymous local
@@ -369,8 +369,8 @@ pub fn use_wrap()
     _7 = move _8
     _6 = &(*_7)
     _5 = &(*_6)
-    _4 = (move _5)
-    _2 = {impl FnOnce<(&'_ U)> for closure<U>[@TraitClause0]}::call_once<'6, u32>[{built_in impl Sized for u32}](move _3, move _4)
+    _4 = (move _5,)
+    _2 = {impl FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]}::call_once<'6, u32>[{built_in impl Sized for u32}](move _3, move _4)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
