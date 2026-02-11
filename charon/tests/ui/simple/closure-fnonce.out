@@ -68,15 +68,15 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::apply_to_zero_once
-fn apply_to_zero_once<impl FnOnce(u8) -> u8>(@1: impl FnOnce(u8) -> u8) -> u8
+fn apply_to_zero_once<T0>(@1: T0) -> u8
 where
-    [@TraitClause0]: Sized<impl FnOnce(u8) -> u8>,
-    [@TraitClause1]: FnOnce<impl FnOnce(u8) -> u8, (u8,)>,
+    [@TraitClause0]: Sized<T0>,
+    [@TraitClause1]: FnOnce<T0, (u8,)>,
     @TraitClause1::Output = u8,
 {
     let _0: u8; // return
-    let f_1: impl FnOnce(u8) -> u8; // arg #1
-    let _2: impl FnOnce(u8) -> u8; // anonymous local
+    let f_1: T0; // arg #1
+    let _2: T0; // anonymous local
     let _3: (u8,); // anonymous local
 
     storage_live(_2)
@@ -86,7 +86,7 @@ where
     _0 = @TraitClause1::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for impl FnOnce(u8) -> u8}] f_1
+    conditional_drop[{built_in impl Destruct for T0}] f_1
     return
 }
 

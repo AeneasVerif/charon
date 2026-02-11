@@ -77,15 +77,15 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::apply_to_zero_mut
-fn apply_to_zero_mut<impl FnMut(u8) -> u8>(@1: impl FnMut(u8) -> u8) -> u8
+fn apply_to_zero_mut<T0>(@1: T0) -> u8
 where
-    [@TraitClause0]: Sized<impl FnMut(u8) -> u8>,
-    [@TraitClause1]: FnMut<impl FnMut(u8) -> u8, (u8,)>,
+    [@TraitClause0]: Sized<T0>,
+    [@TraitClause1]: FnMut<T0, (u8,)>,
     @TraitClause1::parent_clause1::Output = u8,
 {
     let _0: u8; // return
-    let f_1: impl FnMut(u8) -> u8; // arg #1
-    let _2: &'1 mut impl FnMut(u8) -> u8; // anonymous local
+    let f_1: T0; // arg #1
+    let _2: &'1 mut T0; // anonymous local
     let _3: (u8,); // anonymous local
 
     storage_live(_2)
@@ -95,7 +95,7 @@ where
     _0 = @TraitClause1::call_mut<'3>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for impl FnMut(u8) -> u8}] f_1
+    conditional_drop[{built_in impl Destruct for T0}] f_1
     return
 }
 

@@ -111,10 +111,19 @@ impl BindingLevel {
     }
 
     pub(crate) fn push_type_var(&mut self, rid: u32, name: hax::Symbol) -> TypeVarId {
-        let var_id = self.params.types.push_with(|index| TypeParam {
-            index,
-            name: name.to_string(),
-        });
+        // Type vars comping from `impl Trait` arguments have as their name the whole `impl Trait`
+        // expression. We turn it into an identifier.
+        let mut name = name.to_string();
+        if name
+            .chars()
+            .any(|c| !(c.is_ascii_alphanumeric() || c == '_'))
+        {
+            name = format!("T{rid}")
+        }
+        let var_id = self
+            .params
+            .types
+            .push_with(|index| TypeParam { index, name });
         self.type_vars_map.insert(rid, var_id);
         var_id
     }

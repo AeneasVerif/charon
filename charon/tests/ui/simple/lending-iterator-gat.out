@@ -198,22 +198,22 @@ where
 }
 
 // Full name: test_crate::for_each
-pub fn for_each<I, impl for<'a> FnMut(I::Item<'a>)>(@1: I, @2: impl for<'a> FnMut(I::Item<'a>))
+pub fn for_each<I, T1>(@1: I, @2: T1)
 where
     [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<impl for<'a> FnMut(I::Item<'a>)>,
+    [@TraitClause1]: Sized<T1>,
     [@TraitClause2]: LendingIterator<I>,
-    [@TraitClause3]: for<'a> FnMut<impl for<'a> FnMut(I::Item<'a>), (@TraitClause2::Item,)>,
+    [@TraitClause3]: for<'a> FnMut<T1, (@TraitClause2::Item,)>,
     for<'a> @TraitClause3::parent_clause1::Output = (),
 {
     let _0: (); // return
     let iter_1: I; // arg #1
-    let f_2: impl for<'a> FnMut(I::Item<'a>); // arg #2
+    let f_2: T1; // arg #2
     let _3: (); // anonymous local
     let _4: Option<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]; // anonymous local
     let _5: &'1 mut I; // anonymous local
     let item_6: @TraitClause2::Item; // local
-    let _7: &'3 mut impl for<'a> FnMut(I::Item<'a>); // anonymous local
+    let _7: &'3 mut T1; // anonymous local
     let _8: (@TraitClause2::Item,); // anonymous local
     let _9: @TraitClause2::Item; // anonymous local
 
@@ -254,7 +254,7 @@ where
     _0 = ()
     conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for impl for<'a> FnMut(I::Item<'a>)}] f_2
+    conditional_drop[{built_in impl Destruct for T1}] f_2
     conditional_drop[{built_in impl Destruct for I}] iter_1
     return
 }
