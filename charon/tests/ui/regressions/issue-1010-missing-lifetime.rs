@@ -1,3 +1,7 @@
+// This makes the arg lifetime early-bound wrt the closure signature.
+fn make_early<'a, T>(_: fn(&'a T)) {}
+
 fn main() {
-    let _ = |_x: &u8| ();
+    let _ = |_: &u8| ();
+    make_early(|_: &u16| ());
 }

@@ -1397,11 +1397,11 @@ pub fn test_map_option3(@1: Option<u32>[{built_in impl Sized for u32}]) -> Optio
 struct test_crate::test_regions::closure {}
 
 // Full name: test_crate::test_regions::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call
-fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1>(@1: &'_1 test_crate::test_regions::closure, @2: (&'_0 &'_ u32,)) -> u32
+fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '_2>(@1: &'_2 test_crate::test_regions::closure, @2: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_regions::closure; // arg #1
-    let tupled_args_2: (&'_0 &'_ u32,); // arg #2
+    let tupled_args_2: (&'_0 &'_1 u32,); // arg #2
     let x_3: &'2 &'3 u32; // local
 
     storage_live(x_3)
@@ -1431,7 +1431,7 @@ pub fn test_regions<'a>(@1: &'a u32) -> u32
     _6 = &x_1
     _5 = &(*_6)
     _4 = (move _5,)
-    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'23, '24>(move _3, move _4)
+    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'23, '24, '25>(move _3, move _4)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -1441,16 +1441,16 @@ pub fn test_regions<'a>(@1: &'a u32) -> u32
 }
 
 // Full name: test_crate::test_regions::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut
-fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1>(@1: &'_1 mut test_crate::test_regions::closure, @2: (&'_0 &'_ u32,)) -> u32
+fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut test_crate::test_regions::closure, @2: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_1 mut test_crate::test_regions::closure; // arg #1
-    let args_2: (&'_0 &'0 u32,); // arg #2
-    let _3: &'1 test_crate::test_regions::closure; // anonymous local
+    let state_1: &'_2 mut test_crate::test_regions::closure; // arg #1
+    let args_2: (&'_0 &'_1 u32,); // arg #2
+    let _3: &'0 test_crate::test_regions::closure; // anonymous local
 
     storage_live(_3)
     _3 = &(*state_1)
-    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '3>(move _3, move args_2)
+    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '2>(move _3, move args_2)
     return
 }
 
@@ -1465,7 +1465,7 @@ impl Destruct for test_crate::test_regions::closure {
 }
 
 // Full name: test_crate::test_regions::{impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_once
-fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_once<'_0>(@1: test_crate::test_regions::closure, @2: (&'_0 &'_ u32,)) -> u32
+fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_once<'_0, '_1>(@1: test_crate::test_regions::closure, @2: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::test_regions::closure; // arg #1
@@ -1474,49 +1474,49 @@ fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::cal
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '13>(move _3, move _2)
+    _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '14>(move _3, move _2)
     drop[{impl Destruct for test_crate::test_regions::closure}] _1
     return
 }
 
 // Full name: test_crate::test_regions::{impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}
-impl<'_0> FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure {
+impl<'_0, '_1> FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure {
     parent_clause0 = {built_in impl MetaSized for test_crate::test_regions::closure}
     parent_clause1 = {built_in impl Sized for (&'_ &'_ u32,)}
     parent_clause2 = {built_in impl Tuple for (&'_ &'_ u32,)}
     parent_clause3 = {built_in impl Sized for u32}
-    fn call_once = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_once<'_0>
+    fn call_once = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_once<'_0, '_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::test_regions::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}
-impl<'_0> FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure {
+impl<'_0, '_1> FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure {
     parent_clause0 = {built_in impl MetaSized for test_crate::test_regions::closure}
-    parent_clause1 = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}<'_0>
+    parent_clause1 = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}<'_0, '_1>
     parent_clause2 = {built_in impl Sized for (&'_ &'_ u32,)}
     parent_clause3 = {built_in impl Tuple for (&'_ &'_ u32,)}
-    fn call_mut<'_0_1> = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_0_1>
+    fn call_mut<'_0_1> = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::test_regions::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}
-impl<'_0> Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure {
+impl<'_0, '_1> Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure {
     parent_clause0 = {built_in impl MetaSized for test_crate::test_regions::closure}
-    parent_clause1 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}<'_0>
+    parent_clause1 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}<'_0, '_1>
     parent_clause2 = {built_in impl Sized for (&'_ &'_ u32,)}
     parent_clause3 = {built_in impl Tuple for (&'_ &'_ u32,)}
-    fn call<'_0_1> = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_0_1>
+    fn call<'_0_1> = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 
 struct test_crate::test_regions_casted::closure {}
 
 // Full name: test_crate::test_regions_casted::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call
-fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1>(@1: &'_1 test_crate::test_regions_casted::closure, @2: (&'_0 &'_ u32,)) -> u32
+fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '_2>(@1: &'_2 test_crate::test_regions_casted::closure, @2: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_regions_casted::closure; // arg #1
-    let tupled_args_2: (&'_0 &'_ u32,); // arg #2
+    let tupled_args_2: (&'_0 &'_1 u32,); // arg #2
     let x_3: &'2 &'3 u32; // local
 
     storage_live(x_3)
@@ -1526,16 +1526,16 @@ fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut
-fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1>(@1: &'_1 mut test_crate::test_regions_casted::closure, @2: (&'_0 &'_ u32,)) -> u32
+fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut test_crate::test_regions_casted::closure, @2: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_1 mut test_crate::test_regions_casted::closure; // arg #1
-    let args_2: (&'_0 &'0 u32,); // arg #2
-    let _3: &'1 test_crate::test_regions_casted::closure; // anonymous local
+    let state_1: &'_2 mut test_crate::test_regions_casted::closure; // arg #1
+    let args_2: (&'_0 &'_1 u32,); // arg #2
+    let _3: &'0 test_crate::test_regions_casted::closure; // anonymous local
 
     storage_live(_3)
     _3 = &(*state_1)
-    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '3>(move _3, move args_2)
+    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '2>(move _3, move args_2)
     return
 }
 
@@ -1550,7 +1550,7 @@ impl Destruct for test_crate::test_regions_casted::closure {
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once
-fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0>(@1: test_crate::test_regions_casted::closure, @2: (&'_0 &'_ u32,)) -> u32
+fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0, '_1>(@1: test_crate::test_regions_casted::closure, @2: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::test_regions_casted::closure; // arg #1
@@ -1559,23 +1559,23 @@ fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closur
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '13>(move _3, move _2)
+    _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '14>(move _3, move _2)
     drop[{impl Destruct for test_crate::test_regions_casted::closure}] _1
     return
 }
 
-fn test_crate::test_regions_casted::closure::as_fn<'_0>(@1: &'_0 &'_ u32) -> u32
+fn test_crate::test_regions_casted::closure::as_fn<'_0, '_1>(@1: &'_0 &'_1 u32) -> u32
 {
     let _0: u32; // return
-    let arg1_1: &'_0 &'0 u32; // arg #1
-    let args_2: (&'_0 &'1 u32,); // local
+    let arg1_1: &'_0 &'_1 u32; // arg #1
+    let args_2: (&'_0 &'_1 u32,); // local
     let state_3: test_crate::test_regions_casted::closure; // local
 
     storage_live(args_2)
     storage_live(state_3)
     args_2 = (move arg1_1,)
     state_3 = test_crate::test_regions_casted::closure {  }
-    _0 = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0>(move state_3, move args_2)
+    _0 = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0, '_1>(move state_3, move args_2)
     return
 }
 
@@ -1593,7 +1593,7 @@ pub fn test_regions_casted<'a>(@1: &'a u32) -> u32
     storage_live(f_2)
     storage_live(_3)
     _3 = test_crate::test_regions_casted::closure {  }
-    f_2 = cast<for<'_0_1> test_crate::test_regions_casted::closure::as_fn<'_0_1>, fn<'_0_1>(&'_0_1 &'13 u32) -> u32>(const test_crate::test_regions_casted::closure::as_fn<'15>)
+    f_2 = cast<for<'_0_1, '_1_1> test_crate::test_regions_casted::closure::as_fn<'_0_1, '_1_1>, fn<'_0_1>(&'_0_1 &'13 u32) -> u32>(const test_crate::test_regions_casted::closure::as_fn<'16, '17>)
     storage_dead(_3)
     storage_live(_4)
     _4 = copy f_2
@@ -1610,32 +1610,32 @@ pub fn test_regions_casted<'a>(@1: &'a u32) -> u32
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}
-impl<'_0> FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure {
+impl<'_0, '_1> FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure {
     parent_clause0 = {built_in impl MetaSized for test_crate::test_regions_casted::closure}
     parent_clause1 = {built_in impl Sized for (&'_ &'_ u32,)}
     parent_clause2 = {built_in impl Tuple for (&'_ &'_ u32,)}
     parent_clause3 = {built_in impl Sized for u32}
-    fn call_once = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0>
+    fn call_once = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0, '_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}
-impl<'_0> FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure {
+impl<'_0, '_1> FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure {
     parent_clause0 = {built_in impl MetaSized for test_crate::test_regions_casted::closure}
-    parent_clause1 = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}<'_0>
+    parent_clause1 = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}<'_0, '_1>
     parent_clause2 = {built_in impl Sized for (&'_ &'_ u32,)}
     parent_clause3 = {built_in impl Tuple for (&'_ &'_ u32,)}
-    fn call_mut<'_0_1> = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_0_1>
+    fn call_mut<'_0_1> = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::test_regions_casted::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}
-impl<'_0> Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure {
+impl<'_0, '_1> Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure {
     parent_clause0 = {built_in impl MetaSized for test_crate::test_regions_casted::closure}
-    parent_clause1 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}<'_0>
+    parent_clause1 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}<'_0, '_1>
     parent_clause2 = {built_in impl Sized for (&'_ &'_ u32,)}
     parent_clause3 = {built_in impl Tuple for (&'_ &'_ u32,)}
-    fn call<'_0_1> = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_0_1>
+    fn call<'_0_1> = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 

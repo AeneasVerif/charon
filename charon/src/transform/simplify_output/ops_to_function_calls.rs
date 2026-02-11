@@ -19,14 +19,13 @@ fn transform_st(s: &mut Statement) {
         ) => {
             if let (
                 TyKind::Ref(_, deref!(TyKind::Array(arr_ty, len)), kind1),
-                TyKind::Ref(_, deref!(TyKind::Slice(slice_ty)), kind2),
+                TyKind::Ref(_, deref!(TyKind::Slice(_)), kind2),
             ) = (src_ty.kind(), tgt_ty.kind())
             {
                 // In MIR terminology, we go from &[T; l] to &[T] which means we
                 // effectively "unsize" the type, as `l` no longer appears in the
                 // destination type. At runtime, the converse happens: the length
                 // materializes into the fat pointer.
-                assert!(arr_ty == slice_ty);
                 assert!(kind1 == kind2);
                 // We could avoid the clone operations below if we take the content of
                 // the statement. In practice, this shouldn't have much impact.
