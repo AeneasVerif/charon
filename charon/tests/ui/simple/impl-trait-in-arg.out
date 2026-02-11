@@ -1,0 +1,50 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::foo
+fn foo<impl Trait>(@1: impl Trait)
+where
+    [@TraitClause0]: Sized<impl Trait>,
+    [@TraitClause1]: Trait<impl Trait>,
+{
+    let _0: (); // return
+    let _1: impl Trait; // arg #1
+
+    _0 = ()
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for impl Trait}] _1
+    return
+}
+
+
+
