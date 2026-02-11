@@ -879,10 +879,8 @@ impl ItemTransCtx<'_, '_> {
         let span = item_meta.span;
         // self.check_no_monomorphize(span)?;
 
-        let (trait_pred, items) = match impl_def.kind() {
-            hax::FullDefKind::TraitImpl {
-                trait_pred, items, ..
-            } => (trait_pred, items),
+        let trait_pred = match impl_def.kind() {
+            hax::FullDefKind::TraitImpl { trait_pred, .. } => trait_pred,
             _ => unreachable!(),
         };
 

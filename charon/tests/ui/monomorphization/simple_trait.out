@@ -1,0 +1,143 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+fn UNIT_METADATA()
+{
+    let _0: (); // return
+
+    _0 = ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn(*mut (dyn Trait)),
+  method_comsume: fn<'_0_1>(&'_0_1 (dyn Trait)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn comsume<'_0_1> = test_crate::Trait::comsume<'_0_1, Self>[Self]
+    vtable: test_crate::Trait::{vtable}
+}
+
+fn test_crate::Trait::comsume<'_0, Self>(@1: &'_0 Self)
+where
+    [@TraitClause0]: Trait<Self>,
+= <method_without_default_body>
+
+// Full name: test_crate::{impl Trait for i32}::comsume
+fn {impl Trait for i32}::comsume<'_0>(@1: &'_0 i32)
+{
+    let _0: (); // return
+    let self_1: &'0 i32; // arg #1
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for i32}::comsume::{vtable_method}
+fn {vtable_method}<'_0>(@1: &'_0 (dyn Trait))
+{
+    let _0: (); // return
+    let _1: &'_0 (dyn Trait + '0); // arg #1
+    let _2: &'_0 i32; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn Trait + '1), &'_0 i32>(move _1)
+    _0 = {impl Trait for i32}::comsume<'_0>(move _2)
+    return
+}
+
+// Full name: test_crate::{impl Trait for i32}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}(@1: *mut (dyn Trait))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Trait + '0); // arg #1
+    let target_self_2: *mut i32; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Trait + '1), *mut i32>(move dyn_self_1)
+    return
+}
+
+// Full name: test_crate::{impl Trait for i32}::{vtable}
+fn {impl Trait for i32}::{vtable}() -> test_crate::Trait::{vtable}
+{
+    let ret_0: test_crate::Trait::{vtable}; // return
+    let size_1: usize; // local
+    let align_2: usize; // local
+
+    storage_live(size_1)
+    size_1 = size_of<i32>
+    storage_live(align_2)
+    align_2 = align_of<i32>
+    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}, method_comsume: const {vtable_method}<'1>, super_trait_0: const Opaque(missing supertrait vtable) }
+    return
+}
+
+// Full name: test_crate::{impl Trait for i32}::{vtable}
+static {impl Trait for i32}::{vtable}: test_crate::Trait::{vtable} = {impl Trait for i32}::{vtable}()
+
+// Full name: test_crate::{impl Trait for i32}
+impl Trait for i32 {
+    parent_clause0 = {built_in impl MetaSized for i32}
+    fn comsume<'_0_1> = {impl Trait for i32}::comsume<'_0_1>
+    vtable: {impl Trait for i32}::{vtable}
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let b_1: &'0 (dyn Trait + '1); // local
+    let _2: &'2 i32; // anonymous local
+    let _3: &'2 i32; // anonymous local
+    let _4: (); // anonymous local
+    let _5: &'0 (dyn Trait + '1); // anonymous local
+    let _6: &'2 i32; // anonymous local
+    let _7: &'_ i32; // anonymous local
+    let _8: i32; // anonymous local
+
+    storage_live(_7)
+    storage_live(_8)
+    _8 = const 42 : i32
+    _7 = &_8
+    storage_live(_6)
+    _0 = ()
+    storage_live(b_1)
+    storage_live(_2)
+    storage_live(_3)
+    _6 = move _7
+    _3 = &(*_6)
+    _2 = &(*_3)
+    b_1 = unsize_cast<&'2 i32, &'0 (dyn Trait + '1), {impl Trait for i32} with {impl Trait for i32}::{vtable}>(move _2)
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &(*b_1) with_metadata(copy b_1.metadata)
+    _4 = (copy ((*_5.metadata)).method_comsume)(move _5)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
+    storage_dead(b_1)
+    return
+}
+
+
+
