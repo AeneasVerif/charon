@@ -437,8 +437,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if let hax::FullDefKind::Closure { args, .. } = def.kind() {
             // Add the lifetime generics coming from the upvars. We translate the upvar types early
             // to know what lifetimes are needed.
-            let closure_upvar_tys = self.translate_closure_upvar_tys(span, args)?;
-            self.the_only_binder_mut().closure_upvar_tys = Some(closure_upvar_tys);
+            let upvar_tys = self.translate_closure_upvar_tys(span, args)?;
+            // Add new lifetimes params to replace the erased ones.
+            let upvar_tys = upvar_tys.replace_erased_regions(|| {
+                let region_id = self.the_only_binder_mut().push_upvar_region();
+                Region::Var(DeBruijnVar::new_at_zero(region_id))
+            });
+            self.the_only_binder_mut().closure_upvar_tys = Some(upvar_tys);
+
             // Add the lifetime generics coming from the higher-kindedness of the signature.
             if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
             | TransItemSourceKind::ClosureMethod(..)

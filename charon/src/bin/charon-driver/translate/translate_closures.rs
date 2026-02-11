@@ -225,24 +225,18 @@ impl ItemTransCtx<'_, '_> {
         Ok(TyKind::Adt(tref).into_ty())
     }
 
-    /// Translate the types of the captured variables. Importantly, this adds lifetime parameters
-    /// to the environment, so will be run early as part of setting up generics for closure-related
-    /// items.
+    /// Translate the types of the captured variables. Should be called only in
+    /// `translate_item_generics`. If you need these types, fetch them in
+    /// `outermost_binder().closure_upvar_tys`.
     pub fn translate_closure_upvar_tys(
         &mut self,
         span: Span,
         args: &hax::ClosureArgs,
     ) -> Result<IndexVec<FieldId, Ty>, Error> {
-        let upvar_tys: IndexVec<FieldId, Ty> = args
-            .upvar_tys
+        args.upvar_tys
             .iter()
             .map(|ty| self.translate_ty(span, ty))
-            .try_collect()?;
-        let upvar_tys = upvar_tys.replace_erased_regions(|| {
-            let region_id = self.the_only_binder_mut().push_upvar_region();
-            Region::Var(DeBruijnVar::new_at_zero(region_id))
-        });
-        Ok(upvar_tys)
+            .try_collect()
     }
 
     pub fn translate_closure_adt(
