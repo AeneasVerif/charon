@@ -19,8 +19,8 @@ pub struct Global {}
 // Full name: test_crate::test_static
 fn test_static(@1: &'static u32) -> &'static u32
 {
-    let _0: &'0 u32; // return
-    let x_1: &'0 u32; // arg #1
+    let _0: &'1 u32; // return
+    let x_1: &'2 u32; // arg #1
 
     _0 = copy x_1
     return

@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<(&'_ u32)>
+// Full name: core::marker::MetaSized::<(&'_ u32,)>
 #[lang_item("meta_sized")]
-pub trait MetaSized::<(&'_ u32)>
+pub trait MetaSized::<(&'_ u32,)>
 
-// Full name: core::marker::Sized::<(&'_ u32)>
+// Full name: core::marker::Sized::<(&'_ u32,)>
 #[lang_item("sized")]
-pub trait Sized::<(&'_ u32)>
+pub trait Sized::<(&'_ u32,)>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ u32)>
+    parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ u32,)>
     non-dyn-compatible
 }
 
@@ -16,74 +16,74 @@ pub trait Sized::<(&'_ u32)>
 #[lang_item("meta_sized")]
 pub trait MetaSized::<for<'a> foo::<u32><'a>>
 
-// Full name: core::marker::Tuple::<(&'_ u32)>
+// Full name: core::marker::Tuple::<(&'_ u32,)>
 #[lang_item("tuple_trait")]
-pub trait Tuple::<(&'_ u32)>
+pub trait Tuple::<(&'_ u32,)>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ u32)>
-    vtable: core::marker::Tuple::{vtable}::<(&'_ u32)>
+    parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ u32,)>
+    vtable: core::marker::Tuple::{vtable}::<(&'_ u32,)>
 }
 
 // Full name: test_crate::foo::<u32>
 fn foo::<u32><'a>(@1: &'a u32)
 {
     let _0: (); // return
-    let x_1: &'0 u32; // arg #1
+    let x_1: &'1 u32; // arg #1
 
     _0 = ()
     _0 = ()
     return
 }
 
-// Full name: core::ops::function::FnOnce::<for<'a> foo::<u32><'a>, (&'_ u32)>
+// Full name: core::ops::function::FnOnce::<for<'a> foo::<u32><'a>, (&'_ u32,)>
 #[lang_item("fn_once")]
-pub trait FnOnce::<for<'a> foo::<u32><'a>, (&'_ u32)>
+pub trait FnOnce::<for<'a> foo::<u32><'a>, (&'_ u32,)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<for<'a> foo::<u32><'a>>
-    parent_clause1 : [@TraitClause1]: Sized::<(&'_ u32)>
-    parent_clause2 : [@TraitClause2]: Tuple::<(&'_ u32)>
-    fn call_once = call_once::<for<'a> foo::<u32><'a>, (&'_ u32)>
-    vtable: core::ops::function::FnOnce::{vtable}::<for<'a> foo::<u32><'a>, (&'_ u32)><()>
+    parent_clause1 : [@TraitClause1]: Sized::<(&'_ u32,)>
+    parent_clause2 : [@TraitClause2]: Tuple::<(&'_ u32,)>
+    fn call_once = call_once::<for<'a> foo::<u32><'a>, (&'_ u32,)>
+    vtable: core::ops::function::FnOnce::{vtable}::<for<'a> foo::<u32><'a>, (&'_ u32,)><()>
 }
 
-// Full name: core::ops::function::FnMut::<for<'a> foo::<u32><'a>, (&'_ u32)>
+// Full name: core::ops::function::FnMut::<for<'a> foo::<u32><'a>, (&'_ u32,)>
 #[lang_item("fn_mut")]
-pub trait FnMut::<for<'a> foo::<u32><'a>, (&'_ u32)>
+pub trait FnMut::<for<'a> foo::<u32><'a>, (&'_ u32,)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<for<'a> foo::<u32><'a>>
-    parent_clause1 : [@TraitClause1]: FnOnce::<for<'a> foo::<u32><'a>, (&'_ u32)>
-    parent_clause2 : [@TraitClause2]: Sized::<(&'_ u32)>
-    parent_clause3 : [@TraitClause3]: Tuple::<(&'_ u32)>
-    fn call_mut<'_0_1> = call_mut::<for<'a> foo::<u32><'a>, (&'_ u32)><'_0_1>
-    vtable: core::ops::function::FnMut::{vtable}::<for<'a> foo::<u32><'a>, (&'_ u32)><()>
+    parent_clause1 : [@TraitClause1]: FnOnce::<for<'a> foo::<u32><'a>, (&'_ u32,)>
+    parent_clause2 : [@TraitClause2]: Sized::<(&'_ u32,)>
+    parent_clause3 : [@TraitClause3]: Tuple::<(&'_ u32,)>
+    fn call_mut<'_0_1> = call_mut::<for<'a> foo::<u32><'a>, (&'_ u32,)><'_0_1>
+    vtable: core::ops::function::FnMut::{vtable}::<for<'a> foo::<u32><'a>, (&'_ u32,)><()>
 }
 
-// Full name: core::ops::function::Fn::<for<'a> foo::<u32><'a>, (&'_ u32)>
+// Full name: core::ops::function::Fn::<for<'a> foo::<u32><'a>, (&'_ u32,)>
 #[lang_item("fn")]
-pub trait Fn::<for<'a> foo::<u32><'a>, (&'_ u32)>
+pub trait Fn::<for<'a> foo::<u32><'a>, (&'_ u32,)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<for<'a> foo::<u32><'a>>
-    parent_clause1 : [@TraitClause1]: FnMut::<for<'a> foo::<u32><'a>, (&'_ u32)>
-    parent_clause2 : [@TraitClause2]: Sized::<(&'_ u32)>
-    parent_clause3 : [@TraitClause3]: Tuple::<(&'_ u32)>
-    fn call<'_0_1> = call::<for<'a> foo::<u32><'a>, (&'_ u32)><'_0_1>
-    vtable: core::ops::function::Fn::{vtable}::<for<'a> foo::<u32><'a>, (&'_ u32)><()>
+    parent_clause1 : [@TraitClause1]: FnMut::<for<'a> foo::<u32><'a>, (&'_ u32,)>
+    parent_clause2 : [@TraitClause2]: Sized::<(&'_ u32,)>
+    parent_clause3 : [@TraitClause3]: Tuple::<(&'_ u32,)>
+    fn call<'_0_1> = call::<for<'a> foo::<u32><'a>, (&'_ u32,)><'_0_1>
+    vtable: core::ops::function::Fn::{vtable}::<for<'a> foo::<u32><'a>, (&'_ u32,)><()>
 }
 
-// Full name: core::ops::function::Fn::call::<for<'a> foo::<u32><'a>, (&'_ u32)>
-pub fn call::<for<'a> foo::<u32><'a>, (&'_ u32)><'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32))
+// Full name: core::ops::function::Fn::call::<for<'a> foo::<u32><'a>, (&'_ u32,)>
+pub fn call::<for<'a> foo::<u32><'a>, (&'_ u32,)><'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32,))
 = <opaque>
 
 // Full name: core::ops::function::Fn::call
-pub fn call<'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32))
+pub fn call<'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32,))
 = <opaque>
 
-// Full name: core::ops::function::FnMut::call_mut::<for<'a> foo::<u32><'a>, (&'_ u32)>
-pub fn call_mut::<for<'a> foo::<u32><'a>, (&'_ u32)><'_0>(@1: &'_0 mut for<'a> foo::<u32><'a>, @2: (&'_ u32))
+// Full name: core::ops::function::FnMut::call_mut::<for<'a> foo::<u32><'a>, (&'_ u32,)>
+pub fn call_mut::<for<'a> foo::<u32><'a>, (&'_ u32,)><'_0>(@1: &'_0 mut for<'a> foo::<u32><'a>, @2: (&'_ u32,))
 = <opaque>
 
-// Full name: core::ops::function::FnOnce::call_once::<for<'a> foo::<u32><'a>, (&'_ u32)>
-pub fn call_once::<for<'a> foo::<u32><'a>, (&'_ u32)>(@1: for<'a> foo::<u32><'a>, @2: (&'_ u32))
+// Full name: core::ops::function::FnOnce::call_once::<for<'a> foo::<u32><'a>, (&'_ u32,)>
+pub fn call_once::<for<'a> foo::<u32><'a>, (&'_ u32,)>(@1: for<'a> foo::<u32><'a>, @2: (&'_ u32,))
 = <opaque>
 
 fn UNIT_METADATA()
@@ -100,7 +100,7 @@ const UNIT_METADATA: () = @Fun1()
 fn foo::<u8><'a>(@1: &'a u8)
 {
     let _0: (); // return
-    let x_1: &'0 u8; // arg #1
+    let x_1: &'1 u8; // arg #1
 
     _0 = ()
     _0 = ()
@@ -111,7 +111,7 @@ fn foo::<u8><'a>(@1: &'a u8)
 fn foo::<char><'a>(@1: &'a char)
 {
     let _0: (); // return
-    let x_1: &'0 char; // arg #1
+    let x_1: &'1 char; // arg #1
 
     _0 = ()
     _0 = ()
@@ -123,12 +123,12 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(@1: for<'a> foo::<u32><'a>)
 {
     let _0: (); // return
     let c_1: for<'a> foo::<u32><'a>; // arg #1
-    let _2: &'0 for<'a> foo::<u32><'a>; // anonymous local
-    let _3: (&'1 u32); // anonymous local
-    let _4: &'1 u32; // anonymous local
-    let _5: &'1 u32; // anonymous local
-    let _6: &'1 u32; // anonymous local
-    let _7: &'_ u32; // anonymous local
+    let _2: &'1 for<'a> foo::<u32><'a>; // anonymous local
+    let _3: (&'4 u32,); // anonymous local
+    let _4: &'5 u32; // anonymous local
+    let _5: &'6 u32; // anonymous local
+    let _6: &'7 u32; // anonymous local
+    let _7: &'11 u32; // anonymous local
     let _8: u32; // anonymous local
 
     storage_live(_7)
@@ -145,8 +145,8 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(@1: for<'a> foo::<u32><'a>)
     _6 = move _7
     _5 = &(*_6)
     _4 = &(*_5)
-    _3 = (move _4)
-    _0 = {built_in impl Fn::<for<'a> foo::<u32><'a>, (&'_ u32)>}::call<'3>(move _2, move _3)
+    _3 = (move _4,)
+    _0 = {built_in impl Fn::<for<'a> foo::<u32><'a>, (&'_ u32,)>}::call<'10>(move _2, move _3)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
@@ -164,38 +164,38 @@ fn main()
     let a_4: u8; // local
     let _5: (); // anonymous local
     let _6: fn<'_0_1>(&'_0_1 u8); // anonymous local
-    let _7: &'0 u8; // anonymous local
-    let _8: &'0 u8; // anonymous local
+    let _7: &'1 u8; // anonymous local
+    let _8: &'2 u8; // anonymous local
     let b_9: u8; // local
     let _10: (); // anonymous local
     let _11: fn<'_0_1>(&'_0_1 u8); // anonymous local
-    let _12: &'0 u8; // anonymous local
-    let _13: &'0 u8; // anonymous local
+    let _12: &'3 u8; // anonymous local
+    let _13: &'4 u8; // anonymous local
     let _14: (); // anonymous local
     let _15: fn<'_0_1>(&'_0_1 u8); // anonymous local
-    let _16: &'0 u8; // anonymous local
-    let _17: &'0 u8; // anonymous local
+    let _16: &'5 u8; // anonymous local
+    let _17: &'6 u8; // anonymous local
     let _18: (); // anonymous local
     let _19: fn<'_0_1>(&'_0_1 u8); // anonymous local
-    let _20: &'0 u8; // anonymous local
-    let _21: &'0 u8; // anonymous local
+    let _20: &'7 u8; // anonymous local
+    let _21: &'8 u8; // anonymous local
     let _22: (); // anonymous local
     let _23: fn<'_0_1>(&'_0_1 char); // anonymous local
-    let _24: &'1 char; // anonymous local
-    let _25: &'1 char; // anonymous local
+    let _24: &'10 char; // anonymous local
+    let _25: &'11 char; // anonymous local
     let _26: (); // anonymous local
-    let _27: &'1 char; // anonymous local
-    let _28: &'_ char; // anonymous local
+    let _27: &'12 char; // anonymous local
+    let _28: &'25 char; // anonymous local
     let _29: char; // anonymous local
 
     storage_live(_27)
     _0 = ()
     storage_live(fooint1_1)
-    fooint1_1 = cast<for<'a> foo::<u8><'a>, fn<'_0_1>(&'_0_1 u8)>(const foo::<u8><'4>)
+    fooint1_1 = cast<for<'a> foo::<u8><'a>, fn<'_0_1>(&'_0_1 u8)>(const foo::<u8><'15>)
     storage_live(fooint2_2)
-    fooint2_2 = cast<for<'a> foo::<u8><'a>, fn<'_0_1>(&'_0_1 u8)>(const foo::<u8><'6>)
+    fooint2_2 = cast<for<'a> foo::<u8><'a>, fn<'_0_1>(&'_0_1 u8)>(const foo::<u8><'17>)
     storage_live(foochar_3)
-    foochar_3 = cast<for<'a> foo::<char><'a>, fn<'_0_1>(&'_0_1 char)>(const foo::<char><'9>)
+    foochar_3 = cast<for<'a> foo::<char><'a>, fn<'_0_1>(&'_0_1 char)>(const foo::<char><'20>)
     storage_live(a_4)
     a_4 = const 11 : u8
     storage_live(_5)
@@ -266,7 +266,7 @@ fn main()
     storage_dead(_25)
     storage_dead(_22)
     storage_live(_26)
-    _26 = takes_closure::<for<'a> foo::<u32><'a>>(const foo::<u32><'12>)
+    _26 = takes_closure::<for<'a> foo::<u32><'a>>(const foo::<u32><'24>)
     storage_dead(_26)
     _0 = ()
     storage_dead(b_9)

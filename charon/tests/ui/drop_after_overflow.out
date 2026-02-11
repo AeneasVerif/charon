@@ -60,15 +60,15 @@ struct Foo {}
 pub fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut Foo)
 {
     let _0: (); // return
-    let self_1: &'0 mut Foo; // arg #1
+    let self_1: &'1 mut Foo; // arg #1
     let _2: (); // anonymous local
-    let _3: Arguments<'1>; // anonymous local
+    let _3: Arguments<'3>; // anonymous local
 
     bb0: {
         _0 = ();
         storage_live(_2);
         storage_live(_3);
-        _3 = from_str<'2>(const "Dropping Foo\n") -> bb2 (unwind: bb1);
+        _3 = from_str<'4>(const "Dropping Foo\n") -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -76,7 +76,7 @@ pub fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut Foo)
     }
 
     bb2: {
-        _2 = _print<'5>(move _3) -> bb3 (unwind: bb1);
+        _2 = _print<'8>(move _3) -> bb3 (unwind: bb1);
     }
 
     bb3: {
@@ -92,8 +92,8 @@ unsafe fn {impl Destruct for Foo}::drop_in_place(@1: *mut Foo)
 {
     let _0: (); // return
     let _1: *mut Foo; // arg #1
-    let _2: &'0 mut Foo; // anonymous local
-    let _3: &'0 mut Foo; // anonymous local
+    let _2: &'1 mut Foo; // anonymous local
+    let _3: &'2 mut Foo; // anonymous local
     let _4: (); // anonymous local
 
     bb0: {
@@ -103,7 +103,7 @@ unsafe fn {impl Destruct for Foo}::drop_in_place(@1: *mut Foo)
         _0 = ();
         _2 = &mut (*_1);
         _3 = &mut (*_2);
-        _4 = {impl Drop for Foo}::drop<'2>(move _3) -> bb2 (unwind: bb1);
+        _4 = {impl Drop for Foo}::drop<'4>(move _3) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -135,7 +135,7 @@ fn main()
     let f_1: Foo; // local
     let _2: u8; // anonymous local
     let _3: (u8, bool); // anonymous local
-    let f_ref_4: &'0 Foo; // local
+    let f_ref_4: &'1 Foo; // local
 
     bb0: {
         storage_live(_3);

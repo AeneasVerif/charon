@@ -156,16 +156,16 @@ where
 fn {impl Super<i32> for i32}::super_method<'_0>(@1: &'_0 i32, @2: i32) -> i32
 {
     let _0: i32; // return
-    let self_1: &'0 i32; // arg #1
+    let self_1: &'1 i32; // arg #1
     let arg_2: i32; // arg #2
-    let _3: &'0 i32; // anonymous local
+    let _3: &'2 i32; // anonymous local
     let _4: i32; // anonymous local
 
     storage_live(_3)
     _3 = copy self_1
     storage_live(_4)
     _4 = copy arg_2
-    _0 = {impl Add<i32> for &'_0 i32}::add<'1>(move _3, move _4)
+    _0 = {impl Add<i32> for &'_0 i32}::add<'3>(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -228,7 +228,7 @@ impl Super<i32> for i32 {
 fn {impl Internal for i32}::internal_method<'_0>(@1: &'_0 i32) -> i32
 {
     let _0: i32; // return
-    let self_1: &'0 i32; // arg #1
+    let self_1: &'1 i32; // arg #1
     let _2: i32; // anonymous local
     let _3: i32; // anonymous local
 
@@ -298,7 +298,7 @@ impl Internal for i32 {
 fn {impl Left for i32}::left_method<'_0>(@1: &'_0 i32) -> i32
 {
     let _0: i32; // return
-    let self_1: &'0 i32; // arg #1
+    let self_1: &'1 i32; // arg #1
     let _2: i32; // anonymous local
     let _3: i32; // anonymous local
 
@@ -372,16 +372,16 @@ impl Left for i32 {
 fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 i32) -> i32
 {
     let _0: i32; // return
-    let self_1: &'0 i32; // arg #1
+    let self_1: &'1 i32; // arg #1
     let _2: i32; // anonymous local
     let _3: i32; // anonymous local
     let _4: i32; // anonymous local
     let _5: i32; // anonymous local
     let _6: i32; // anonymous local
-    let _7: &'0 i32; // anonymous local
+    let _7: &'2 i32; // anonymous local
     let _8: i32; // anonymous local
     let _9: i32; // anonymous local
-    let _10: &'0 i32; // anonymous local
+    let _10: &'3 i32; // anonymous local
     let _11: i32; // anonymous local
 
     storage_live(_5)
@@ -397,7 +397,7 @@ fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 i32) -> i32
     storage_live(_6)
     storage_live(_7)
     _7 = &(*self_1)
-    _6 = {impl Internal for i32}::internal_method<'2>(move _7)
+    _6 = {impl Internal for i32}::internal_method<'5>(move _7)
     storage_dead(_7)
     _8 = copy _3 panic.+ copy _6
     _2 = move _8
@@ -406,7 +406,7 @@ fn {impl Right<i32> for i32}::right_method<'_0>(@1: &'_0 i32) -> i32
     storage_live(_9)
     storage_live(_10)
     _10 = &(*self_1)
-    _9 = {impl Super<i32> for i32}::super_method<'4>(move _10, const 10 : i32)
+    _9 = {impl Super<i32> for i32}::super_method<'7>(move _10, const 10 : i32)
     storage_dead(_10)
     _11 = copy _2 panic.+ copy _9
     _0 = move _11
@@ -481,21 +481,21 @@ impl Right<i32> for i32 {
 fn {impl Join<i32> for i32}::join_method<'_0>(@1: &'_0 i32) -> (i32, i32)
 {
     let _0: (i32, i32); // return
-    let self_1: &'0 i32; // arg #1
+    let self_1: &'1 i32; // arg #1
     let _2: i32; // anonymous local
-    let _3: &'0 i32; // anonymous local
+    let _3: &'2 i32; // anonymous local
     let _4: i32; // anonymous local
-    let _5: &'0 i32; // anonymous local
+    let _5: &'3 i32; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = {impl Left for i32}::left_method<'2>(move _3)
+    _2 = {impl Left for i32}::left_method<'5>(move _3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self_1)
-    _4 = {impl Right<i32> for i32}::right_method<'4>(move _5)
+    _4 = {impl Right<i32> for i32}::right_method<'7>(move _5)
     storage_dead(_5)
     _0 = (move _2, move _4)
     storage_dead(_4)
@@ -567,13 +567,13 @@ impl Join<i32> for i32 {
 fn main()
 {
     let _0: (); // return
-    let v_1: &'0 (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '1); // local
-    let _2: &'2 i32; // anonymous local
-    let _3: &'2 i32; // anonymous local
+    let v_1: &'3 (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '4); // local
+    let _2: &'6 i32; // anonymous local
+    let _3: &'7 i32; // anonymous local
     let _4: (i32, i32); // anonymous local
-    let _5: &'0 (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '1); // anonymous local
-    let _6: &'2 i32; // anonymous local
-    let _7: &'_ i32; // anonymous local
+    let _5: &'8 (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '9); // anonymous local
+    let _6: &'10 i32; // anonymous local
+    let _7: &'19 i32; // anonymous local
     let _8: i32; // anonymous local
 
     storage_live(_7)
@@ -588,7 +588,7 @@ fn main()
     _6 = move _7
     _3 = &(*_6)
     _2 = &(*_3)
-    v_1 = unsize_cast<&'2 i32, &'0 (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '1), {impl Join<i32> for i32} with {impl Join<i32> for i32}::{vtable}>(move _2)
+    v_1 = unsize_cast<&'6 i32, &'12 (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '13), {impl Join<i32> for i32} with {impl Join<i32> for i32}::{vtable}>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)

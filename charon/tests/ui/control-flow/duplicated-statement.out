@@ -4,7 +4,7 @@
 fn rej_sample<'_0>(@1: &'_0 [u8]) -> usize
 {
     let _0: usize; // return
-    let a_1: &'0 [u8]; // arg #1
+    let a_1: &'1 [u8]; // arg #1
     let sampled_2: usize; // local
     let _3: bool; // anonymous local
     let _4: u8; // anonymous local

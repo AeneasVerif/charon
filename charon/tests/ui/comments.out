@@ -96,7 +96,7 @@ fn function_call(@1: u32)
 pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
 {
     let _0: u32; // return
-    let s_1: &'0 [u32]; // arg #1
+    let s_1: &'1 [u32]; // arg #1
     let sum_2: u32; // local
     let i_3: usize; // local
     let _4: (); // anonymous local
@@ -106,7 +106,7 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
     let _8: bool; // anonymous local
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
-    let _11: &'0 [u32]; // anonymous local
+    let _11: &'2 [u32]; // anonymous local
     let _12: u32; // anonymous local
     let _13: usize; // anonymous local
     let _14: u32; // anonymous local
@@ -155,7 +155,7 @@ pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
         storage_live(_10)
         storage_live(_11)
         _11 = &(*s_1) with_metadata(copy s_1.metadata)
-        _10 = len<'2, u32>[{built_in impl Sized for u32}](move _11)
+        _10 = len<'4, u32>[{built_in impl Sized for u32}](move _11)
         storage_dead(_11)
         _8 = move _9 < move _10
         if move _8 {
@@ -320,24 +320,24 @@ fn foo()
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
     let a_15: [u32; 10 : usize]; // local
-    let _16: (&'0 u32, &'0 u32); // anonymous local
-    let _17: &'0 u32; // anonymous local
+    let _16: (&'3 u32, &'4 u32); // anonymous local
+    let _17: &'5 u32; // anonymous local
     let _18: usize; // anonymous local
-    let _19: &'0 u32; // anonymous local
-    let left_val_20: &'0 u32; // local
-    let right_val_21: &'0 u32; // local
+    let _19: &'6 u32; // anonymous local
+    let left_val_20: &'7 u32; // local
+    let right_val_21: &'8 u32; // local
     let _22: bool; // anonymous local
     let _23: u32; // anonymous local
     let _24: u32; // anonymous local
     let kind_25: AssertKind; // local
     let _26: AssertKind; // anonymous local
-    let _27: &'0 u32; // anonymous local
-    let _28: &'0 u32; // anonymous local
-    let _29: &'0 u32; // anonymous local
-    let _30: &'0 u32; // anonymous local
-    let _31: Option<Arguments<'1>>[{built_in impl Sized for Arguments<'1>}]; // anonymous local
-    let _32: &'0 u32; // anonymous local
-    let _33: &'_ u32; // anonymous local
+    let _27: &'9 u32; // anonymous local
+    let _28: &'10 u32; // anonymous local
+    let _29: &'11 u32; // anonymous local
+    let _30: &'12 u32; // anonymous local
+    let _31: Option<Arguments<'19>>[{built_in impl Sized for Arguments<'19>}]; // anonymous local
+    let _32: &'22 u32; // anonymous local
+    let _33: &'31 u32; // anonymous local
     let _34: u32; // anonymous local
     let _35: &'_ [u32; 10 : usize]; // anonymous local
     let _36: &'_ u32; // anonymous local
@@ -515,7 +515,7 @@ pub fn fake_read(@1: u32)
 fn fool()
 {
     let _0: (); // return
-    let _1: &'0 Str; // anonymous local
+    let _1: &'1 Str; // anonymous local
 
     _0 = ()
     storage_live(_1)

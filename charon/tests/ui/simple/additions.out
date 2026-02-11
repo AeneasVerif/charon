@@ -42,13 +42,13 @@ where
     [@TraitClause1]: Destruct<Self>,
 {
     let _0: (); // return
-    let self_1: &'0 mut Self; // arg #1
-    let source_2: &'1 Self; // arg #2
+    let self_1: &'1 mut Self; // arg #1
+    let source_2: &'3 Self; // arg #2
     let _3: Self; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = @TraitClause0::clone<'3>(move source_2)
+    _3 = @TraitClause0::clone<'5>(move source_2)
     drop[@TraitClause1] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -59,7 +59,7 @@ where
 pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
 {
     let _0: u8; // return
-    let self_1: &'0 u8; // arg #1
+    let self_1: &'1 u8; // arg #1
 
     _0 = copy (*self_1)
     return
@@ -71,13 +71,13 @@ where
     [@TraitClause0]: Destruct<u8>,
 {
     let _0: (); // return
-    let self_1: &'0 mut u8; // arg #1
-    let source_2: &'1 u8; // arg #2
+    let self_1: &'1 mut u8; // arg #1
+    let source_2: &'3 u8; // arg #2
     let _3: u8; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = {impl Clone for u8}::clone<'3>(move source_2)
+    _3 = {impl Clone for u8}::clone<'5>(move source_2)
     drop[@TraitClause0] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)

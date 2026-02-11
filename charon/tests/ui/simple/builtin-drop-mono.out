@@ -81,7 +81,7 @@ unsafe fn {impl Destruct::<[String]>}::drop_in_place::<String>(@1: *mut [String]
 {
     let _0: (); // return
     let _1: *mut [String]; // arg #1
-    let _2: &'0 mut [String]; // anonymous local
+    let _2: &'1 mut [String]; // anonymous local
     let _3: usize; // anonymous local
     let _4: usize; // anonymous local
     let _5: *mut String; // anonymous local
@@ -181,7 +181,7 @@ unsafe fn {impl Destruct::<[String; 4 : usize]>}::drop_in_place::<String, 4 : us
 {
     let _0: (); // return
     let _1: *mut [String; 4 : usize]; // arg #1
-    let _2: &'0 mut [String; 4 : usize]; // anonymous local
+    let _2: &'1 mut [String; 4 : usize]; // anonymous local
     let _3: *mut [String; 4 : usize]; // anonymous local
     let _4: *mut [String]; // anonymous local
     let _5: usize; // anonymous local
@@ -233,7 +233,7 @@ unsafe fn {impl Destruct::<(String, String)>}::drop_in_place::<String, String>(@
 {
     let _0: (); // return
     let _1: *mut (String, String); // arg #1
-    let _2: &'0 mut (String, String); // anonymous local
+    let _2: &'1 mut (String, String); // anonymous local
 
     storage_live(_2)
     _0 = ()

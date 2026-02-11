@@ -1482,7 +1482,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 match kind {
                     AggregateKind::Adt(ty_ref, variant_id, field_id) => {
                         match ty_ref.id {
-                            TypeId::Tuple => write!(f, "({})", ops_s),
+                            TypeId::Tuple => {
+                                let trailing_comma = if ops.len() == 1 { "," } else { "" };
+                                write!(f, "({ops_s}{trailing_comma})")
+                            }
                             TypeId::Builtin(BuiltinTy::Box) => write!(f, "Box({})", ops_s),
                             TypeId::Builtin(BuiltinTy::Str) => {
                                 write!(f, "[{}]", ops_s)
@@ -2052,7 +2055,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::Adt(tref) => match tref.id {
                 TypeId::Tuple => {
                     let generics = tref.generics.fmt_explicits(ctx).format(", ");
-                    write!(f, "({generics})")
+                    let trailing_comma = if tref.generics.types.slot_count() == 1 {
+                        ","
+                    } else {
+                        ""
+                    };
+                    write!(f, "({generics}{trailing_comma})")
                 }
                 _ => write!(f, "{}", tref.with_ctx(ctx)),
             },

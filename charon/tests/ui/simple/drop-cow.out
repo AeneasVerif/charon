@@ -96,7 +96,7 @@ where
 {
     let _0: (); // return
     let _1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
-    let _2: &'0 mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // anonymous local
+    let _2: &'1 mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -134,11 +134,11 @@ where
     B : 'a,
 {
     let _0: (); // return
-    let _1: Cow<'0, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
+    let _1: Cow<'1, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}<'2, B>[@TraitClause0, @TraitClause1, @TraitClause2]] _1
+    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}<'4, B>[@TraitClause0, @TraitClause1, @TraitClause2]] _1
     return
 }
 

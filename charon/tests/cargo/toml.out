@@ -28,7 +28,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let _0: bool; // return
-    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
+    let self_1: &'1 Option<T>[@TraitClause0]; // arg #1
     let _2: isize; // anonymous local
 
     storage_live(_2)
@@ -52,9 +52,9 @@ fn main()
 {
     let _0: (); // return
     let _1: bool; // anonymous local
-    let _2: &'0 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
-    let _3: &'0 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
-    let _4: &'_ Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let _2: &'1 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let _3: &'2 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let _4: &'6 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
     let _5: Option<bool>[{built_in impl Sized for bool}]; // anonymous local
 
     storage_live(_4)
@@ -67,7 +67,7 @@ fn main()
     storage_live(_2)
     _3 = move _4
     _2 = &(*_3)
-    _1 = is_some<'2, bool>[{built_in impl Sized for bool}](move _2)
+    _1 = is_some<'5, bool>[{built_in impl Sized for bool}](move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

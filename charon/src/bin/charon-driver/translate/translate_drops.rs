@@ -61,7 +61,7 @@ impl ItemTransCtx<'_, '_> {
 
     /// Translate the body of the fake `Destruct::drop_in_place` method we're adding to the
     /// `Destruct` trait. It contains the drop glue for the type.
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_drop_in_place_method(
         mut self,
         def_id: FunDeclId,
@@ -169,7 +169,7 @@ impl ItemTransCtx<'_, '_> {
         (method_name, method_binder)
     }
 
-    #[tracing::instrument(skip(self, item_meta))]
+    #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_implicit_destruct_impl(
         mut self,
         impl_id: TraitImplId,

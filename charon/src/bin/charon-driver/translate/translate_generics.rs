@@ -358,8 +358,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Add the generics and predicates of this item and its parents to the current context.
-    #[tracing::instrument(skip(self, span))]
+    #[tracing::instrument(skip(self, span, def))]
     fn push_generics_for_def(&mut self, span: Span, def: &hax::FullDef) -> Result<(), Error> {
+        trace!("{:?}", def.param_env());
         // Add generics from the parent item, recursively (recursivity is important for closures,
         // as they can be nested).
         if let Some(parent_item) = def.typing_parent(self.hax_state()) {

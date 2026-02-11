@@ -88,7 +88,7 @@ unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
 {
     let _0: (); // return
     let _1: *mut String; // arg #1
-    let _2: &'0 mut String; // anonymous local
+    let _2: &'1 mut String; // anonymous local
 
     storage_live(_2)
     _0 = ()

@@ -108,7 +108,7 @@ enum Foo {
 pub fn {impl Eq for Foo}::assert_receiver_is_total_eq<'_0>(@1: &'_0 Foo)
 {
     let _0: (); // return
-    let self_1: &'0 Foo; // arg #1
+    let self_1: &'1 Foo; // arg #1
 
     _0 = ()
     _0 = ()
@@ -119,12 +119,12 @@ pub fn {impl Eq for Foo}::assert_receiver_is_total_eq<'_0>(@1: &'_0 Foo)
 pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(@1: &'_0 Foo, @2: &'_1 Foo) -> bool
 {
     let _0: bool; // return
-    let self_1: &'0 Foo; // arg #1
-    let other_2: &'0 Foo; // arg #2
+    let self_1: &'1 Foo; // arg #1
+    let other_2: &'2 Foo; // arg #2
     let __self_discr_3: isize; // local
-    let _4: &'0 Foo; // anonymous local
+    let _4: &'3 Foo; // anonymous local
     let __arg1_discr_5: isize; // local
-    let _6: &'0 Foo; // anonymous local
+    let _6: &'4 Foo; // anonymous local
     let _7: isize; // anonymous local
     let _8: isize; // anonymous local
 
@@ -181,12 +181,12 @@ impl ConstParamTy_ for Foo {
 pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(@1: &'_0 Foo, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 {
     let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
-    let self_1: &'0 Foo; // arg #1
-    let f_2: &'1 mut Formatter<'2>; // arg #2
-    let _3: &'1 mut Formatter<'2>; // anonymous local
-    let _4: &'3 Str; // anonymous local
-    let _5: &'3 Str; // anonymous local
-    let _6: &'3 Str; // anonymous local
+    let self_1: &'1 Foo; // arg #1
+    let f_2: &'5 mut Formatter<'6>; // arg #2
+    let _3: &'7 mut Formatter<'8>; // anonymous local
+    let _4: &'10 Str; // anonymous local
+    let _5: &'11 Str; // anonymous local
+    let _6: &'12 Str; // anonymous local
 
     storage_live(_3)
     _3 = &two-phase-mut (*f_2) with_metadata(copy f_2.metadata)
@@ -205,7 +205,7 @@ pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(@1: &'_0 Foo, @2: &'_1 mut Forma
             storage_dead(_6)
         },
     }
-    _0 = core::fmt::{Formatter<'a>}::write_str<'4, '7, '8>(move _3, move _4)
+    _0 = core::fmt::{Formatter<'a>}::write_str<'16, '19, '20>(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return

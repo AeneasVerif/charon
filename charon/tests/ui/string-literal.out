@@ -94,7 +94,7 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::FOO
 fn FOO() -> &'static Str
 {
-    let _0: &'0 Str; // return
+    let _0: &'1 Str; // return
 
     _0 = const "hello"
     return
@@ -106,11 +106,11 @@ static FOO: &'static Str = FOO()
 // Full name: test_crate::BAR
 fn BAR() -> &'static [u8]
 {
-    let _0: &'0 [u8]; // return
-    let _1: &'1 [u8; 5 : usize]; // anonymous local
-    let _2: &'1 [u8; 5 : usize]; // anonymous local
+    let _0: &'1 [u8]; // return
+    let _1: &'3 [u8; 5 : usize]; // anonymous local
+    let _2: &'4 [u8; 5 : usize]; // anonymous local
     let _3: [u8; 5 : usize]; // anonymous local
-    let _4: &'1 [u8; 5 : usize]; // anonymous local
+    let _4: &'5 [u8; 5 : usize]; // anonymous local
 
     storage_live(_1)
     storage_live(_2)
@@ -134,8 +134,8 @@ fn main()
 {
     let _0: (); // return
     let _s_1: String; // local
-    let _2: &'0 Str; // anonymous local
-    let _3: &'0 Str; // anonymous local
+    let _2: &'1 Str; // anonymous local
+    let _3: &'2 Str; // anonymous local
 
     _0 = ()
     storage_live(_s_1)
@@ -143,7 +143,7 @@ fn main()
     storage_live(_3)
     _3 = const "Hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    _s_1 = {impl ToString for T}::to_string<'2, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _2)
+    _s_1 = {impl ToString for T}::to_string<'5, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

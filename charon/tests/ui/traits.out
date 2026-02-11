@@ -149,7 +149,7 @@ where
 {
     let _0: (); // return
     let _1: *mut (A, B); // arg #1
-    let _2: &'0 mut (A, B); // anonymous local
+    let _2: &'1 mut (A, B); // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -178,7 +178,7 @@ where
     [@TraitClause0]: BoolTrait<Self>,
 {
     let _0: bool; // return
-    let self_1: &'0 Self; // arg #1
+    let self_1: &'1 Self; // arg #1
 
     _0 = const true
     return
@@ -188,7 +188,7 @@ where
 pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
 {
     let _0: bool; // return
-    let self_1: &'0 bool; // arg #1
+    let self_1: &'1 bool; // arg #1
 
     _0 = copy (*self_1)
     return
@@ -198,7 +198,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
 pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
 {
     let _0: bool; // return
-    let self_1: &'0 bool; // arg #1
+    let self_1: &'1 bool; // arg #1
 
     _0 = const true
     return
@@ -218,18 +218,18 @@ pub fn test_bool_trait_bool(@1: bool) -> bool
     let _0: bool; // return
     let x_1: bool; // arg #1
     let _2: bool; // anonymous local
-    let _3: &'0 bool; // anonymous local
-    let _4: &'0 bool; // anonymous local
+    let _3: &'1 bool; // anonymous local
+    let _4: &'2 bool; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = {impl BoolTrait for bool}::get_bool<'2>(move _3)
+    _2 = {impl BoolTrait for bool}::get_bool<'4>(move _3)
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         _4 = &x_1
-        _0 = {impl BoolTrait for bool}::ret_true<'4>(move _4)
+        _0 = {impl BoolTrait for bool}::ret_true<'6>(move _4)
         storage_dead(_4)
     } else {
         storage_dead(_3)
@@ -245,7 +245,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let _0: bool; // return
-    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
+    let self_1: &'1 Option<T>[@TraitClause0]; // arg #1
 
     match (*self_1) {
         Option::None => {
@@ -265,7 +265,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let _0: bool; // return
-    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
+    let self_1: &'1 Option<T>[@TraitClause0]; // arg #1
 
     _0 = const true
     return
@@ -290,18 +290,18 @@ where
     let _0: bool; // return
     let x_1: Option<T>[@TraitClause0]; // arg #1
     let _2: bool; // anonymous local
-    let _3: &'0 Option<T>[@TraitClause0]; // anonymous local
-    let _4: &'0 Option<T>[@TraitClause0]; // anonymous local
+    let _3: &'1 Option<T>[@TraitClause0]; // anonymous local
+    let _4: &'2 Option<T>[@TraitClause0]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'2, T>[@TraitClause0](move _3)
+    _2 = {impl BoolTrait for Option<T>[@TraitClause0]}::get_bool<'4, T>[@TraitClause0](move _3)
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         _4 = &x_1
-        _0 = {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'4, T>[@TraitClause0](move _4)
+        _0 = {impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'6, T>[@TraitClause0](move _4)
         storage_dead(_4)
     } else {
         storage_dead(_3)
@@ -320,11 +320,11 @@ where
 {
     let _0: bool; // return
     let x_1: T; // arg #1
-    let _2: &'0 T; // anonymous local
+    let _2: &'1 T; // anonymous local
 
     storage_live(_2)
     _2 = &x_1
-    _0 = @TraitClause1::get_bool<'2>(move _2)
+    _0 = @TraitClause1::get_bool<'3>(move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] x_1
     return
@@ -663,7 +663,7 @@ struct TestType1 {
 fn {impl TestTrait for TestType1}::test<'_0>(@1: &'_0 TestType1) -> bool
 {
     let _0: bool; // return
-    let self_1: &'0 TestType1; // arg #1
+    let self_1: &'1 TestType1; // arg #1
     let _2: u64; // anonymous local
 
     storage_live(_2)
@@ -679,14 +679,14 @@ where
     [@TraitClause1]: ToU64<T>,
 {
     let _0: bool; // return
-    let self_1: &'0 TestType<T>[@TraitClause0]; // arg #1
+    let self_1: &'1 TestType<T>[@TraitClause0]; // arg #1
     let x_2: T; // arg #2
     let x_3: u64; // local
     let _4: T; // anonymous local
     let y_5: TestType1; // local
     let _6: bool; // anonymous local
     let _7: u64; // anonymous local
-    let _8: &'1 TestType1; // anonymous local
+    let _8: &'3 TestType1; // anonymous local
 
     storage_live(x_3)
     storage_live(_4)
@@ -708,7 +708,7 @@ where
         storage_dead(_7)
         storage_live(_8)
         _8 = &y_5
-        _0 = {impl TestTrait for TestType1}::test<'3>(move _8)
+        _0 = {impl TestTrait for TestType1}::test<'5>(move _8)
         storage_dead(_8)
     } else {
         storage_dead(_7)
@@ -816,8 +816,8 @@ where
 pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(@1: &'_0 mut u64, @2: &'_1 [u8; 32 : usize])
 {
     let _0: (); // return
-    let _1: &'0 mut u64; // arg #1
-    let _2: &'1 [u8; 32 : usize]; // arg #2
+    let _1: &'1 mut u64; // arg #1
+    let _2: &'3 [u8; 32 : usize]; // arg #2
 
     _0 = ()
     _0 = ()
@@ -902,7 +902,7 @@ where
     T : 'a,
 {
     let _0: (); // return
-    let _x_1: &'0 T; // arg #1
+    let _x_1: &'1 T; // arg #1
 
     _0 = ()
     _0 = ()
@@ -969,12 +969,12 @@ where
     [@TraitClause1]: ChildTrait<T>,
 {
     let _0: String; // return
-    let x_1: &'0 T; // arg #1
-    let _2: &'0 T; // anonymous local
+    let x_1: &'1 T; // arg #1
+    let _2: &'2 T; // anonymous local
 
     storage_live(_2)
     _2 = &(*x_1)
-    _0 = @TraitClause1::parent_clause1::get_name<'2>(move _2)
+    _0 = @TraitClause1::parent_clause1::get_name<'4>(move _2)
     storage_dead(_2)
     return
 }
@@ -986,12 +986,12 @@ where
     [@TraitClause1]: ChildTrait<T>,
 {
     let _0: @TraitClause1::parent_clause1::W; // return
-    let x_1: &'0 T; // arg #1
-    let _2: &'0 T; // anonymous local
+    let x_1: &'1 T; // arg #1
+    let _2: &'2 T; // anonymous local
 
     storage_live(_2)
     _2 = &(*x_1)
-    _0 = @TraitClause1::parent_clause1::get_w<'2>(move _2)
+    _0 = @TraitClause1::parent_clause1::get_w<'4>(move _2)
     storage_dead(_2)
     return
 }
@@ -1217,12 +1217,12 @@ where
     [@TraitClause1]: GetTrait<T>,
 {
     let _0: @TraitClause1::W; // return
-    let x_1: &'0 T; // arg #1
-    let _2: &'0 T; // anonymous local
+    let x_1: &'1 T; // arg #1
+    let _2: &'2 T; // anonymous local
 
     storage_live(_2)
     _2 = &(*x_1)
-    _0 = @TraitClause1::get_w<'2>(move _2)
+    _0 = @TraitClause1::get_w<'4>(move _2)
     storage_dead(_2)
     return
 }
@@ -1383,8 +1383,8 @@ impl RecursiveImpl for () {
 // Full name: test_crate::flabada
 pub fn flabada<'a>(@1: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
-    let _0: Wrapper<(bool, &'0 ())>[{built_in impl Sized for (bool, &'0 ())}]; // return
-    let _x_1: &'0 (); // arg #1
+    let _0: Wrapper<(bool, &'9 ())>[{built_in impl Sized for (bool, &'9 ())}]; // return
+    let _x_1: &'12 (); // arg #1
 
     panic(core::panicking::panic)
 }
@@ -1392,7 +1392,7 @@ pub fn flabada<'a>(@1: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
 pub fn test_crate::call<'a, F>(@1: F)
 where
     [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Fn<F, (&'a ())>,
+    [@TraitClause1]: Fn<F, (&'a (),)>,
     @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'_ ())}],
 {
     let _0: (); // return
@@ -1412,7 +1412,7 @@ pub fn flibidi()
 
     _0 = ()
     storage_live(_1)
-    _1 = test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 ())> for for<'a> flabada<'a>}](const flabada<'35>)
+    _1 = test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 (),)> for for<'a> flabada<'a>}](const flabada<'92>)
     storage_dead(_1)
     _0 = ()
     return

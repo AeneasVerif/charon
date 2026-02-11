@@ -125,7 +125,7 @@ where
 {
     let _0: (); // return
     let _1: *mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]; // arg #1
-    let _2: &'0 mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]; // anonymous local
+    let _2: &'1 mut test_crate::foo::closure<T>[@TraitClause0, @TraitClause1]; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -220,7 +220,7 @@ fn bar()
 fn {impl Fn<()> for test_crate::bar::closure}::call<'_0>(@1: &'_0 test_crate::bar::closure, @2: ())
 {
     let _0: (); // return
-    let _1: &'0 test_crate::bar::closure; // arg #1
+    let _1: &'1 test_crate::bar::closure; // arg #1
     let tupled_args_2: (); // arg #2
 
     _0 = ()
@@ -248,7 +248,7 @@ unsafe fn {impl Destruct for test_crate::bar::closure}::drop_in_place(@1: *mut t
 {
     let _0: (); // return
     let _1: *mut test_crate::bar::closure; // arg #1
-    let _2: &'0 mut test_crate::bar::closure; // anonymous local
+    let _2: &'1 mut test_crate::bar::closure; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -268,12 +268,12 @@ fn {impl FnOnce<()> for test_crate::bar::closure}::call_once(@1: test_crate::bar
     let _0: (); // return
     let _1: test_crate::bar::closure; // arg #1
     let _2: (); // arg #2
-    let _3: &'0 mut test_crate::bar::closure; // anonymous local
+    let _3: &'1 mut test_crate::bar::closure; // anonymous local
 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'2>(move _3, move _2)
+    _0 = {impl FnMut<()> for test_crate::bar::closure}::call_mut<'3>(move _3, move _2)
     drop[{impl Destruct for test_crate::bar::closure}] _1
     return
 }

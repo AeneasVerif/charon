@@ -255,8 +255,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let _0: (); // return
-    let x_1: &'0 mut T; // arg #1
-    let y_2: &'1 T; // arg #2
+    let x_1: &'1 mut T; // arg #1
+    let y_2: &'3 T; // arg #2
     let _3: (); // anonymous local
     let _4: *const T; // anonymous local
     let _5: *mut T; // anonymous local

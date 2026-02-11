@@ -27,14 +27,14 @@ fn choose<'a, T>(@1: bool, @2: &'a mut T, @3: &'a mut T) -> &'a mut T
 where
     [@TraitClause0]: Sized<T>,
 {
-    let _0: &'0 mut T; // return
+    let _0: &'1 mut T; // return
     let b_1: bool; // arg #1
-    let x_2: &'0 mut T; // arg #2
-    let y_3: &'0 mut T; // arg #3
-    let _4: &'0 mut T; // anonymous local
-    let _5: &'0 mut T; // anonymous local
+    let x_2: &'2 mut T; // arg #2
+    let y_3: &'3 mut T; // arg #3
+    let _4: &'4 mut T; // anonymous local
+    let _5: &'5 mut T; // anonymous local
     let _6: bool; // anonymous local
-    let _7: &'0 mut T; // anonymous local
+    let _7: &'6 mut T; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
@@ -62,11 +62,11 @@ pub fn choose_test()
     let _0: (); // return
     let x_1: i32; // local
     let y_2: i32; // local
-    let z_3: &'0 mut i32; // local
-    let _4: &'0 mut i32; // anonymous local
-    let _5: &'0 mut i32; // anonymous local
-    let _6: &'0 mut i32; // anonymous local
-    let _7: &'0 mut i32; // anonymous local
+    let z_3: &'1 mut i32; // local
+    let _4: &'2 mut i32; // anonymous local
+    let _5: &'3 mut i32; // anonymous local
+    let _6: &'4 mut i32; // anonymous local
+    let _7: &'5 mut i32; // anonymous local
     let _8: i32; // anonymous local
     let _9: bool; // anonymous local
     let _10: i32; // anonymous local
@@ -92,7 +92,7 @@ pub fn choose_test()
     storage_live(_7)
     _7 = &mut y_2
     _6 = &two-phase-mut (*_7)
-    z_3 = choose<'2, i32>[{built_in impl Sized for i32}](const true, move _4, move _6)
+    z_3 = choose<'7, i32>[{built_in impl Sized for i32}](const true, move _4, move _6)
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_7)

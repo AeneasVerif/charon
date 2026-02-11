@@ -34,8 +34,8 @@ fn main()
 {
     let _0: (); // return
     let a_1: String; // local
-    let _2: &'0 Str; // anonymous local
-    let _3: &'0 Str; // anonymous local
+    let _2: &'1 Str; // anonymous local
+    let _3: &'2 Str; // anonymous local
 
     _0 = ()
     storage_live(a_1)
@@ -43,7 +43,7 @@ fn main()
     storage_live(_3)
     _3 = const "Hello, world!"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    a_1 = {impl ToString::<Str>}::to_string::<Str><'2>(move _2)
+    a_1 = {impl ToString::<Str>}::to_string::<Str><'5>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

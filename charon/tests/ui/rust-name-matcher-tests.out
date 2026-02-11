@@ -176,9 +176,9 @@ fn get<'_0, T>(@1: &'_0 Generic<T>[@TraitClause0]) -> &'_0 T
 where
     [@TraitClause0]: Sized<T>,
 {
-    let _0: &'0 T; // return
-    let self_1: &'1 Generic<T>[@TraitClause0]; // arg #1
-    let _2: &'0 T; // anonymous local
+    let _0: &'1 T; // return
+    let self_1: &'3 Generic<T>[@TraitClause0]; // arg #1
+    let _2: &'4 T; // anonymous local
 
     storage_live(_2)
     _2 = &((*self_1)).value
@@ -192,19 +192,19 @@ fn use_generic()
 {
     let _0: (); // return
     let _int_generic_1: Generic<i32>[{built_in impl Sized for i32}]; // local
-    let _str_generic_2: Generic<&'0 Str>[{built_in impl Sized for &'0 Str}]; // local
-    let _3: &'3 i32; // anonymous local
-    let _4: &'4 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _str_generic_2: Generic<&'6 Str>[{built_in impl Sized for &'6 Str}]; // local
+    let _3: &'10 i32; // anonymous local
+    let _4: &'12 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     _0 = ()
     storage_live(_int_generic_1)
     _int_generic_1 = new<i32>[{built_in impl Sized for i32}](const 42 : i32)
     storage_live(_str_generic_2)
-    _str_generic_2 = new<&'0 Str>[{built_in impl Sized for &'0 Str}](const "hello")
+    _str_generic_2 = new<&'13 Str>[{built_in impl Sized for &'13 Str}](const "hello")
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic_1
-    _3 = get<'8, i32>[{built_in impl Sized for i32}](move _4)
+    _3 = get<'20, i32>[{built_in impl Sized for i32}](move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

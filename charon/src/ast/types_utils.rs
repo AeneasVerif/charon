@@ -1156,7 +1156,9 @@ pub trait TyVisitable: Sized + AstVisitable {
                     {
                         *r = new_r.move_under_binders(self.depth);
                     }
-                    Region::Erased if let Some(new_r) = self.v.visit_erased_region() => {
+                    Region::Erased | Region::Body(..)
+                        if let Some(new_r) = self.v.visit_erased_region() =>
+                    {
                         *r = new_r.move_under_binders(self.depth);
                     }
                     _ => (),

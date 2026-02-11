@@ -80,19 +80,19 @@ const UNIT_METADATA: () = @Fun0()
 fn apply_to_zero_mut<impl FnMut(u8) -> u8>(@1: impl FnMut(u8) -> u8) -> u8
 where
     [@TraitClause0]: Sized<impl FnMut(u8) -> u8>,
-    [@TraitClause1]: FnMut<impl FnMut(u8) -> u8, (u8)>,
+    [@TraitClause1]: FnMut<impl FnMut(u8) -> u8, (u8,)>,
     @TraitClause1::parent_clause1::Output = u8,
 {
     let _0: u8; // return
     let f_1: impl FnMut(u8) -> u8; // arg #1
-    let _2: &'0 mut impl FnMut(u8) -> u8; // anonymous local
-    let _3: (u8); // anonymous local
+    let _2: &'1 mut impl FnMut(u8) -> u8; // anonymous local
+    let _3: (u8,); // anonymous local
 
     storage_live(_2)
     _2 = &mut f_1
     storage_live(_3)
-    _3 = (const 0 : u8)
-    _0 = @TraitClause1::call_mut<'2>(move _2, move _3)
+    _3 = (const 0 : u8,)
+    _0 = @TraitClause1::call_mut<'3>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for impl FnMut(u8) -> u8}] f_1
@@ -104,12 +104,12 @@ struct closure<'_0> {
   &'_0 mut u8,
 }
 
-// Full name: test_crate::main::{impl FnMut<(u8)> for closure<'_0>}::call_mut
-fn {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut closure<'_0>, @2: (u8)) -> u8
+// Full name: test_crate::main::{impl FnMut<(u8,)> for closure<'_0>}::call_mut
+fn {impl FnMut<(u8,)> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut closure<'_0>, @2: (u8,)) -> u8
 {
     let _0: u8; // return
-    let _1: &'0 mut closure<'_0>; // arg #1
-    let tupled_args_2: (u8); // arg #2
+    let _1: &'1 mut closure<'_0>; // arg #1
+    let tupled_args_2: (u8,); // arg #2
     let x_3: u8; // local
     let _4: u8; // anonymous local
     let _5: u8; // anonymous local
@@ -143,39 +143,39 @@ impl<'_0> Destruct for closure<'_0> {
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnOnce<(u8)> for closure<'_0>}::call_once
-fn {impl FnOnce<(u8)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: (u8)) -> u8
+// Full name: test_crate::main::{impl FnOnce<(u8,)> for closure<'_0>}::call_once
+fn {impl FnOnce<(u8,)> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: closure<'_0>; // arg #1
-    let _2: (u8); // arg #2
-    let _3: &'0 mut closure<'_0>; // anonymous local
+    let _2: (u8,); // arg #2
+    let _3: &'1 mut closure<'_0>; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '4>(move _3, move _2)
+    _0 = {impl FnMut<(u8,)> for closure<'_0>}::call_mut<'_0, '5>(move _3, move _2)
     drop[{impl Destruct for closure<'_0>}<'_0>] _1
     return
 }
 
-// Full name: test_crate::main::{impl FnOnce<(u8)> for closure<'_0>}
-impl<'_0> FnOnce<(u8)> for closure<'_0> {
+// Full name: test_crate::main::{impl FnOnce<(u8,)> for closure<'_0>}
+impl<'_0> FnOnce<(u8,)> for closure<'_0> {
     parent_clause0 = {built_in impl MetaSized for closure<'_0>}
-    parent_clause1 = {built_in impl Sized for (u8)}
-    parent_clause2 = {built_in impl Tuple for (u8)}
+    parent_clause1 = {built_in impl Sized for (u8,)}
+    parent_clause2 = {built_in impl Tuple for (u8,)}
     parent_clause3 = {built_in impl Sized for u8}
     type Output = u8
-    fn call_once = {impl FnOnce<(u8)> for closure<'_0>}::call_once<'_0>
+    fn call_once = {impl FnOnce<(u8,)> for closure<'_0>}::call_once<'_0>
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnMut<(u8)> for closure<'_0>}
-impl<'_0> FnMut<(u8)> for closure<'_0> {
+// Full name: test_crate::main::{impl FnMut<(u8,)> for closure<'_0>}
+impl<'_0> FnMut<(u8,)> for closure<'_0> {
     parent_clause0 = {built_in impl MetaSized for closure<'_0>}
-    parent_clause1 = {impl FnOnce<(u8)> for closure<'_0>}<'_0>
-    parent_clause2 = {built_in impl Sized for (u8)}
-    parent_clause3 = {built_in impl Tuple for (u8)}
-    fn call_mut<'_0_1> = {impl FnMut<(u8)> for closure<'_0>}::call_mut<'_0, '_0_1>
+    parent_clause1 = {impl FnOnce<(u8,)> for closure<'_0>}<'_0>
+    parent_clause2 = {built_in impl Sized for (u8,)}
+    parent_clause3 = {built_in impl Tuple for (u8,)}
+    fn call_mut<'_0_1> = {impl FnMut<(u8,)> for closure<'_0>}::call_mut<'_0, '_0_1>
     non-dyn-compatible
 }
 
@@ -185,8 +185,8 @@ fn main()
     let _0: (); // return
     let z_1: u8; // local
     let _2: u8; // anonymous local
-    let _3: closure<'0>; // anonymous local
-    let _4: &'1 mut u8; // anonymous local
+    let _3: closure<'1>; // anonymous local
+    let _4: &'3 mut u8; // anonymous local
 
     _0 = ()
     storage_live(z_1)
@@ -197,7 +197,7 @@ fn main()
     _4 = &mut z_1
     _3 = closure { 0: move _4 }
     storage_dead(_4)
-    _2 = apply_to_zero_mut<closure<'0>>[{built_in impl Sized for closure<'0>}, {impl FnMut<(u8)> for closure<'_0>}<'0>](move _3)
+    _2 = apply_to_zero_mut<closure<'5>>[{built_in impl Sized for closure<'5>}, {impl FnMut<(u8,)> for closure<'_0>}<'5>](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

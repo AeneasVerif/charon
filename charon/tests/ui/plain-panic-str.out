@@ -12,11 +12,11 @@ pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
 fn main()
 {
     let _0: (); // return
-    let _1: Arguments<'0>; // anonymous local
+    let _1: Arguments<'1>; // anonymous local
 
     _0 = ()
     storage_live(_1)
-    _1 = from_str<'1>(const "O no")
+    _1 = from_str<'2>(const "O no")
     panic(core::panicking::panic_fmt)
 }
 
