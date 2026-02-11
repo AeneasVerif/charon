@@ -108,7 +108,7 @@ unsafe fn {impl Destruct for (A,)}::drop_in_place<A>(@1: *mut (A,))
 {
     let _0: (); // return
     let _1: *mut (A,); // arg #1
-    let _2: &'0 mut (A,); // anonymous local
+    let _2: &'1 mut (A,); // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -135,7 +135,7 @@ where
     [@TraitClause0]: Thing<Self>,
 {
     let _0: (); // return
-    let _1: &'0 closure<Self>[@TraitClause0]; // arg #1
+    let _1: &'1 closure<Self>[@TraitClause0]; // arg #1
     let tupled_args_2: (@TraitClause0::Item,); // arg #2
     let _3: @TraitClause0::Item; // anonymous local
 
@@ -154,11 +154,11 @@ where
 {
     let _0: (); // return
     let i_1: @TraitClause0::Item; // arg #1
-    let _2: &'0 closure<Self>[@TraitClause0]; // anonymous local
+    let _2: &'1 closure<Self>[@TraitClause0]; // anonymous local
     let _3: (@TraitClause0::Item,); // anonymous local
     let _4: @TraitClause0::Item; // anonymous local
-    let _5: &'0 closure<Self>[@TraitClause0]; // anonymous local
-    let _6: &'_ closure<Self>[@TraitClause0]; // anonymous local
+    let _5: &'2 closure<Self>[@TraitClause0]; // anonymous local
+    let _6: &'6 closure<Self>[@TraitClause0]; // anonymous local
     let _7: closure<Self>[@TraitClause0]; // anonymous local
 
     storage_live(_6)
@@ -174,7 +174,7 @@ where
     storage_live(_4)
     _4 = move i_1
     _3 = (move _4,)
-    _0 = {impl Fn<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call<'2, Self>[@TraitClause0](move _2, move _3)
+    _0 = {impl Fn<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call<'5, Self>[@TraitClause0](move _2, move _3)
     conditional_drop[{built_in impl Destruct for @TraitClause0::Item}] _4
     storage_dead(_4)
     storage_dead(_3)
@@ -223,12 +223,12 @@ where
     let _0: (); // return
     let _1: closure<Self>[@TraitClause0]; // arg #1
     let _2: (@TraitClause0::Item,); // arg #2
-    let _3: &'0 mut closure<Self>[@TraitClause0]; // anonymous local
+    let _3: &'1 mut closure<Self>[@TraitClause0]; // anonymous local
 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call_mut<'2, Self>[@TraitClause0](move _3, move _2)
+    _0 = {impl FnMut<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call_mut<'3, Self>[@TraitClause0](move _3, move _2)
     drop[{impl Destruct for closure<Self>[@TraitClause0]}<Self>[@TraitClause0]] _1
     return
 }

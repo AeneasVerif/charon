@@ -52,7 +52,7 @@ struct Foo {}
 pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return
-    let self_1: &'0 Foo; // arg #1
+    let self_1: &'1 Foo; // arg #1
 
     _0 = copy (*self_1)
     return

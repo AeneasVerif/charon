@@ -200,8 +200,8 @@ fn iter(@1: usize)
     let _4: usize; // anonymous local
     let iter_5: Range<usize>; // local
     let _6: Option<usize>; // anonymous local
-    let _7: &'0 mut Range<usize>; // anonymous local
-    let _8: &'0 mut Range<usize>; // anonymous local
+    let _7: &'1 mut Range<usize>; // anonymous local
+    let _8: &'2 mut Range<usize>; // anonymous local
     let i_9: usize; // local
 
     _0 = ()
@@ -221,7 +221,7 @@ fn iter(@1: usize)
         storage_live(_8)
         _8 = &mut iter_5
         _7 = &two-phase-mut (*_8)
-        _6 = {impl Iterator<A> for Range<A>}::next<'2, usize>[{impl Step for usize}](move _7)
+        _6 = {impl Iterator<A> for Range<A>}::next<'4, usize>[{impl Step for usize}](move _7)
         storage_dead(_7)
         match _6 {
             Option::None => {

@@ -76,13 +76,13 @@ where
     let _0: (); // return
     let x_1: @TraitClause1::LifetimeGat; // arg #1
     let _2: @TraitClause1::LifetimeGat; // anonymous local
-    let _3: &'0 @TraitClause1::LifetimeGat; // anonymous local
+    let _3: &'1 @TraitClause1::LifetimeGat; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = (@TraitClause1::LifetimeGat::[@TraitClause1])::clone<'2>(move _3)
+    _2 = (@TraitClause1::LifetimeGat::[@TraitClause1])::clone<'3>(move _3)
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for @TraitClause1::LifetimeGat}] _2
     storage_dead(_2)
@@ -100,13 +100,13 @@ where
     let _0: (); // return
     let x_1: @TraitClause1::NonLifetimeGat; // arg #1
     let _2: @TraitClause1::NonLifetimeGat; // anonymous local
-    let _3: &'0 @TraitClause1::NonLifetimeGat; // anonymous local
+    let _3: &'1 @TraitClause1::NonLifetimeGat; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = (@TraitClause1::NonLifetimeGat::[@TraitClause1])::clone<'2>(move _3)
+    _2 = (@TraitClause1::NonLifetimeGat::[@TraitClause1])::clone<'3>(move _3)
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for @TraitClause1::NonLifetimeGat}] _2
     storage_dead(_2)

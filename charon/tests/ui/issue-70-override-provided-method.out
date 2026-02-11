@@ -103,13 +103,13 @@ fn main()
 {
     let _0: (); // return
     let _1: bool; // anonymous local
-    let _2: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _3: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _4: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _5: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _6: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _2: &'1 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _3: &'2 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _4: &'3 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _5: &'4 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _6: &'11 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _8: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _8: &'12 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _9: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     storage_live(_6)
@@ -130,7 +130,7 @@ fn main()
     storage_live(_3)
     _4 = move _8
     _3 = &(*_4)
-    _1 = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'3, '4, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move _2, move _3)
+    _1 = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'9, '10, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
@@ -153,8 +153,8 @@ impl StructuralPartialEq for Foo {
 pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(@1: &'_0 Foo, @2: &'_1 Foo) -> bool
 {
     let _0: bool; // return
-    let self_1: &'0 Foo; // arg #1
-    let other_2: &'0 Foo; // arg #2
+    let self_1: &'1 Foo; // arg #1
+    let other_2: &'2 Foo; // arg #2
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
@@ -178,12 +178,12 @@ impl PartialEq<Foo> for Foo {
 pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 Foo, @2: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
     let _0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
-    let self_1: &'0 Foo; // arg #1
-    let other_2: &'0 Foo; // arg #2
-    let _3: &'1 u32; // anonymous local
-    let _4: &'1 u32; // anonymous local
-    let _5: &'1 u32; // anonymous local
-    let _6: &'1 u32; // anonymous local
+    let self_1: &'1 Foo; // arg #1
+    let other_2: &'2 Foo; // arg #2
+    let _3: &'4 u32; // anonymous local
+    let _4: &'5 u32; // anonymous local
+    let _5: &'6 u32; // anonymous local
+    let _6: &'7 u32; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
@@ -193,7 +193,7 @@ pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(@1: &'_0 Foo, @2: &
     storage_live(_6)
     _6 = &((*other_2)).0
     _5 = &(*_6)
-    _0 = {impl PartialOrd<u32> for u32}::partial_cmp<'4, '5>(move _3, move _5)
+    _0 = {impl PartialOrd<u32> for u32}::partial_cmp<'10, '11>(move _3, move _5)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)

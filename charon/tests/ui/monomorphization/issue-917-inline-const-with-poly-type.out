@@ -96,7 +96,7 @@ const UNIT_METADATA: () = @Fun0()
 fn {impl Fn::<closure::<()>, ((),)>}::call::<()><'_0>(@1: &'_0 closure::<()>, @2: ((),))
 {
     let _0: (); // return
-    let _1: &'0 closure::<()>; // arg #1
+    let _1: &'1 closure::<()>; // arg #1
     let tupled_args_2: ((),); // arg #2
     let x_3: (); // local
 
@@ -127,7 +127,7 @@ unsafe fn {impl Destruct::<closure::<()>>}::drop_in_place::<()>(@1: *mut closure
 {
     let _0: (); // return
     let _1: *mut closure::<()>; // arg #1
-    let _2: &'0 mut closure::<()>; // anonymous local
+    let _2: &'1 mut closure::<()>; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -147,12 +147,12 @@ fn {impl FnOnce::<closure::<()>, ((),)>}::call_once::<()>(@1: closure::<()>, @2:
     let _0: (); // return
     let _1: closure::<()>; // arg #1
     let _2: ((),); // arg #2
-    let _3: &'0 mut closure::<()>; // anonymous local
+    let _3: &'1 mut closure::<()>; // anonymous local
 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut::<closure::<()>, ((),)>}::call_mut::<()><'2>(move _3, move _2)
+    _0 = {impl FnMut::<closure::<()>, ((),)>}::call_mut::<()><'3>(move _3, move _2)
     drop[{impl Destruct::<closure::<()>>}::<()>] _1
     return
 }

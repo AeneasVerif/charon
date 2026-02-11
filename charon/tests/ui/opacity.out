@@ -76,7 +76,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let _0: bool; // return
-    let self_1: &'0 Option<T>[@TraitClause0]; // arg #1
+    let self_1: &'1 Option<T>[@TraitClause0]; // arg #1
     let _2: isize; // anonymous local
 
     storage_live(_2)
@@ -100,16 +100,16 @@ fn foo()
 {
     let _0: (); // return
     let _1: bool; // anonymous local
-    let _2: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _2: &'1 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _3: u64; // anonymous local
-    let _4: &'1 [i32]; // anonymous local
-    let _5: &'2 i32; // anonymous local
-    let _6: &'2 i32; // anonymous local
-    let _7: &'2 i32; // anonymous local
-    let _8: &'0 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _9: &'_ Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _4: &'3 [i32]; // anonymous local
+    let _5: &'5 i32; // anonymous local
+    let _6: &'6 i32; // anonymous local
+    let _7: &'7 i32; // anonymous local
+    let _8: &'8 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _9: &'15 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _10: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _11: &'_ i32; // anonymous local
+    let _11: &'16 i32; // anonymous local
     let _12: i32; // anonymous local
 
     storage_live(_9)
@@ -123,7 +123,7 @@ fn foo()
     storage_live(_2)
     _8 = move _9
     _2 = &(*_8)
-    _1 = is_some<'4, i32>[{built_in impl Sized for i32}](move _2)
+    _1 = is_some<'11, i32>[{built_in impl Sized for i32}](move _2)
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_3)
@@ -139,7 +139,7 @@ fn foo()
     _7 = move _11
     _6 = &(*_7)
     _5 = &(*_6)
-    _4 = from_ref<'6, i32>[{built_in impl Sized for i32}](move _5)
+    _4 = from_ref<'14, i32>[{built_in impl Sized for i32}](move _5)
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)

@@ -20,11 +20,11 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::overflow
 fn overflow() -> &'static u32
 {
-    let _0: &'0 u32; // return
-    let _1: &'0 u32; // anonymous local
+    let _0: &'1 u32; // return
+    let _1: &'2 u32; // anonymous local
     let _2: u32; // anonymous local
-    let _3: &'0 u32; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let _3: &'3 u32; // anonymous local
+    let _4: &'5 u32; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
 

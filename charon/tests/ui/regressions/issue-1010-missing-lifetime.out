@@ -114,9 +114,9 @@ fn main()
 fn {impl Fn<(&'_ u8,)> for closure}::call<'_0, '_1>(@1: &'_1 closure, @2: (&'_0 u8,))
 {
     let _0: (); // return
-    let _1: &'0 closure; // arg #1
+    let _1: &'1 closure; // arg #1
     let tupled_args_2: (&'_0 u8,); // arg #2
-    let _x_3: &'_ u8; // local
+    let _x_3: &'2 u8; // local
 
     storage_live(_x_3)
     _0 = ()
@@ -155,13 +155,13 @@ fn {impl FnOnce<(&'_ u8,)> for closure}::call_once<'_0>(@1: closure, @2: (&'_0 u
 {
     let _0: (); // return
     let _1: closure; // arg #1
-    let _2: (&'_ u8,); // arg #2
-    let _3: &'0 mut closure; // anonymous local
+    let _2: (&'0 u8,); // arg #2
+    let _3: &'2 mut closure; // anonymous local
 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ u8,)> for closure}::call_mut<'_0, '4>(move _3, move _2)
+    _0 = {impl FnMut<(&'_ u8,)> for closure}::call_mut<'_0, '8>(move _3, move _2)
     drop[{impl Destruct for closure}] _1
     return
 }

@@ -27,11 +27,11 @@ fn constant()
 {
     let _0: (); // return
     let _val_1: usize; // local
-    let _ref_2: &'0 usize; // local
-    let _ref_mut_3: &'1 mut usize; // local
+    let _ref_2: &'1 usize; // local
+    let _ref_mut_3: &'3 mut usize; // local
     let _4: usize; // anonymous local
-    let _5: &'0 usize; // anonymous local
-    let _6: &'_ usize; // anonymous local
+    let _5: &'4 usize; // anonymous local
+    let _6: &'6 usize; // anonymous local
     let _7: usize; // anonymous local
 
     storage_live(_6)
@@ -74,14 +74,14 @@ fn shared_static()
 {
     let _0: (); // return
     let _val_1: usize; // local
-    let _2: &'0 usize; // anonymous local
-    let _ref_3: &'0 usize; // local
-    let _4: &'0 usize; // anonymous local
+    let _2: &'1 usize; // anonymous local
+    let _ref_3: &'2 usize; // local
+    let _4: &'3 usize; // anonymous local
     let _ptr_5: *const usize; // local
-    let _6: &'0 usize; // anonymous local
-    let _7: &'0 usize; // anonymous local
-    let _8: &'0 usize; // anonymous local
-    let _9: &'0 usize; // anonymous local
+    let _6: &'4 usize; // anonymous local
+    let _7: &'5 usize; // anonymous local
+    let _8: &'6 usize; // anonymous local
+    let _9: &'7 usize; // anonymous local
 
     _0 = ()
     storage_live(_val_1)
@@ -130,9 +130,9 @@ fn mut_static()
     let _0: (); // return
     let _val_1: usize; // local
     let _2: *mut usize; // anonymous local
-    let _ref_3: &'0 usize; // local
+    let _ref_3: &'1 usize; // local
     let _4: *mut usize; // anonymous local
-    let _ref_mut_5: &'1 mut usize; // local
+    let _ref_mut_5: &'3 mut usize; // local
     let _6: *mut usize; // anonymous local
     let _ptr_7: *const usize; // local
     let _8: *mut usize; // anonymous local
@@ -208,7 +208,7 @@ static FOO: Foo = FOO()
 fn method<'_0>(@1: &'_0 Foo)
 {
     let _0: (); // return
-    let self_1: &'0 Foo; // arg #1
+    let self_1: &'1 Foo; // arg #1
 
     _0 = ()
     _0 = ()
@@ -219,9 +219,9 @@ fn method<'_0>(@1: &'_0 Foo)
 fn non_copy_static()
 {
     let _0: (); // return
-    let _1: &'0 Foo; // anonymous local
-    let _2: &'0 Foo; // anonymous local
-    let _3: &'0 Foo; // anonymous local
+    let _1: &'1 Foo; // anonymous local
+    let _2: &'2 Foo; // anonymous local
+    let _3: &'3 Foo; // anonymous local
 
     _0 = ()
     storage_live(_1)
@@ -230,7 +230,7 @@ fn non_copy_static()
     _3 = &FOO
     _2 = move _3
     _1 = &(*_2)
-    _0 = method<'2>(move _1)
+    _0 = method<'5>(move _1)
     storage_dead(_1)
     storage_dead(_2)
     return

@@ -13,11 +13,11 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::foo
 pub fn foo() -> &'static [u32]
 {
-    let _0: &'0 [u32]; // return
-    let _1: &'1 [u32; 4 : usize]; // anonymous local
-    let _2: &'1 [u32; 4 : usize]; // anonymous local
-    let _3: &'1 [u32; 4 : usize]; // anonymous local
-    let _4: &'_ [u32; 4 : usize]; // anonymous local
+    let _0: &'1 [u32]; // return
+    let _1: &'3 [u32; 4 : usize]; // anonymous local
+    let _2: &'4 [u32; 4 : usize]; // anonymous local
+    let _3: &'5 [u32; 4 : usize]; // anonymous local
+    let _4: &'8 [u32; 4 : usize]; // anonymous local
     let _5: [u32; 4 : usize]; // anonymous local
 
     storage_live(_4)

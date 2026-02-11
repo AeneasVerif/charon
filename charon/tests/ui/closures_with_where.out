@@ -113,7 +113,7 @@ where
     [@TraitClause1]: Ops<T, K>,
 {
     let _0: T; // return
-    let _1: &'0 mut closure<T, K>[@TraitClause0, @TraitClause1]; // arg #1
+    let _1: &'1 mut closure<T, K>[@TraitClause0, @TraitClause1]; // arg #1
     let tupled_args_2: (usize,); // arg #2
     let i_3: usize; // local
     let _4: usize; // anonymous local
@@ -153,11 +153,11 @@ where
     let _0: T; // return
     let _1: closure<T, K>[@TraitClause0, @TraitClause1]; // arg #1
     let _2: (usize,); // arg #2
-    let _3: &'0 mut closure<T, K>[@TraitClause0, @TraitClause1]; // anonymous local
+    let _3: &'1 mut closure<T, K>[@TraitClause0, @TraitClause1]; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'2, T, K>[@TraitClause0, @TraitClause1](move _3, move _2)
+    _0 = {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'3, T, K>[@TraitClause0, @TraitClause1](move _3, move _2)
     drop[{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1]] _1
     return
 }

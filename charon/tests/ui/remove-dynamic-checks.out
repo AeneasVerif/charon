@@ -40,7 +40,7 @@ pub fn add_u32(@1: u32, @2: u32) -> u32
 pub fn incr<'_0>(@1: &'_0 mut u32)
 {
     let _0: (); // return
-    let x_1: &'0 mut u32; // arg #1
+    let x_1: &'1 mut u32; // arg #1
     let _2: u32; // anonymous local
 
     storage_live(_2)
@@ -598,7 +598,7 @@ fn shr_i32_manual_cast(@1: i32, @2: i32) -> i32
 fn index_slice_ignore_value<'_0>(@1: &'_0 [u32])
 {
     let _0: (); // return
-    let x_1: &'0 [u32]; // arg #1
+    let x_1: &'1 [u32]; // arg #1
     let _2: usize; // anonymous local
 
     _0 = ()
@@ -812,7 +812,7 @@ fn div_signed_with_constant() -> i32
 fn div_unsigned_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
 {
     let _0: (); // return
-    let result_1: &'0 mut [u32]; // arg #1
+    let result_1: &'1 mut [u32]; // arg #1
     let x_2: u32; // arg #2
     let _3: u32; // anonymous local
     let _4: usize; // anonymous local
@@ -839,7 +839,7 @@ fn div_unsigned_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
 fn div_signed_to_slice<'_0>(@1: &'_0 mut [i32], @2: i32)
 {
     let _0: (); // return
-    let result_1: &'0 mut [i32]; // arg #1
+    let result_1: &'1 mut [i32]; // arg #1
     let x_2: i32; // arg #2
     let _3: i32; // anonymous local
     let _4: usize; // anonymous local
@@ -866,7 +866,7 @@ fn div_signed_to_slice<'_0>(@1: &'_0 mut [i32], @2: i32)
 fn add_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
 {
     let _0: (); // return
-    let result_1: &'0 mut [u32]; // arg #1
+    let result_1: &'1 mut [u32]; // arg #1
     let x_2: u32; // arg #2
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
@@ -896,7 +896,7 @@ fn add_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
 fn add_to_slice2<'_0>(@1: &'_0 mut [u8], @2: usize, @3: u8)
 {
     let _0: (); // return
-    let result_1: &'0 mut [u8]; // arg #1
+    let result_1: &'1 mut [u8]; // arg #1
     let i_2: usize; // arg #2
     let x_3: u8; // arg #3
     let _4: u8; // anonymous local

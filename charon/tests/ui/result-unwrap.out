@@ -93,8 +93,8 @@ pub fn {impl Display for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut For
 pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 {
     let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
-    let self_1: &'0 u32; // arg #1
-    let f_2: &'1 mut Formatter<'2>; // arg #2
+    let self_1: &'1 u32; // arg #1
+    let f_2: &'5 mut Formatter<'6>; // arg #2
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
@@ -110,7 +110,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Forma
         },
         _ => {
             storage_dead(_3)
-            _0 = {impl LowerHex for u32}::fmt<'6, '7, '8>(move self_1, move f_2)
+            _0 = {impl LowerHex for u32}::fmt<'12, '13, '14>(move self_1, move f_2)
             return
         },
     }
@@ -125,12 +125,12 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Forma
         },
         _ => {
             storage_dead(_5)
-            _0 = {impl UpperHex for u32}::fmt<'18, '19, '20>(move self_1, move f_2)
+            _0 = {impl UpperHex for u32}::fmt<'24, '25, '26>(move self_1, move f_2)
             return
         },
     }
     storage_dead(_5)
-    _0 = {impl Display for u32}::fmt<'12, '13, '14>(move self_1, move f_2)
+    _0 = {impl Display for u32}::fmt<'18, '19, '20>(move self_1, move f_2)
     return
 }
 
@@ -164,8 +164,8 @@ where
     let self_1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
     let e_2: E; // local
     let _3: !; // anonymous local
-    let _4: &'0 (dyn Debug + '1); // anonymous local
-    let _5: &'2 E; // anonymous local
+    let _4: &'3 (dyn Debug + '4); // anonymous local
+    let _5: &'6 E; // anonymous local
 
     storage_live(_3)
     storage_live(_5)
@@ -177,8 +177,8 @@ where
             e_2 = move (self_1 as variant Result::Err).0
             storage_live(_4)
             _5 = &e_2
-            _4 = unsize_cast<&'2 E, &'0 (dyn Debug + '1), @TraitClause2 with ?>(copy _5)
-            _3 = unwrap_failed<'5, '6>(const "called `Result::unwrap()` on an `Err` value", move _4)
+            _4 = unsize_cast<&'6 E, &'7 (dyn Debug + '8), @TraitClause2 with ?>(copy _5)
+            _3 = unwrap_failed<'11, '12>(const "called `Result::unwrap()` on an `Err` value", move _4)
         },
     }
     t_0 = move (self_1 as variant Result::Ok).0

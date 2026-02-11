@@ -13,11 +13,11 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::SOME_INT
 fn SOME_INT() -> &'static &'static i32
 {
-    let _0: &'0 &'1 i32; // return
-    let _1: &'0 &'1 i32; // anonymous local
-    let _2: &'0 &'1 i32; // anonymous local
-    let _3: &'_ &'_ i32; // anonymous local
-    let _4: &'_ i32; // anonymous local
+    let _0: &'3 &'4 i32; // return
+    let _1: &'5 &'6 i32; // anonymous local
+    let _2: &'8 &'9 i32; // anonymous local
+    let _3: &'14 &'15 i32; // anonymous local
+    let _4: &'16 i32; // anonymous local
     let _5: i32; // anonymous local
 
     storage_live(_3)

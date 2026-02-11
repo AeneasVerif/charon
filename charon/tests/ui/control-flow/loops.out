@@ -1202,23 +1202,23 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
     let _5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let iter_6: Range<i32>[{built_in impl Sized for i32}]; // local
     let _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _8: &'0 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _9: &'0 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _8: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _9: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _10: usize; // anonymous local
     let _11: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _13: usize; // anonymous local
     let iter_14: Range<usize>[{built_in impl Sized for usize}]; // local
     let _15: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _16: &'1 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _17: &'1 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _16: &'4 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _17: &'5 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _18: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _19: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _20: usize; // anonymous local
     let iter_21: Range<usize>[{built_in impl Sized for usize}]; // local
     let _22: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _23: &'1 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _24: &'1 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _23: &'6 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _24: &'7 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _25: usize; // anonymous local
 
     storage_live(_10)
@@ -1238,7 +1238,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(_9)
         _9 = &mut iter_6
         _8 = &two-phase-mut (*_9)
-        _7 = {impl Iterator for Range<A>[@TraitClause0]}::next<'3, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8)
+        _7 = {impl Iterator for Range<A>[@TraitClause0]}::next<'9, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8)
         storage_dead(_8)
         match _7 {
             Option::None => {
@@ -1273,7 +1273,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(_17)
         _17 = &mut iter_14
         _16 = &two-phase-mut (*_17)
-        _15 = {impl Iterator for Range<A>[@TraitClause0]}::next<'5, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _16)
+        _15 = {impl Iterator for Range<A>[@TraitClause0]}::next<'11, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _16)
         storage_dead(_16)
         match _15 {
             Option::None => {
@@ -1298,7 +1298,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
             storage_live(_24)
             _24 = &mut iter_21
             _23 = &two-phase-mut (*_24)
-            _22 = {impl Iterator for Range<A>[@TraitClause0]}::next<'7, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _23)
+            _22 = {impl Iterator for Range<A>[@TraitClause0]}::next<'13, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _23)
             storage_dead(_23)
             match _22 {
                 Option::None => {
@@ -1343,8 +1343,8 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
     let _7: u32; // anonymous local
     let iter_8: Range<u32>[{built_in impl Sized for u32}]; // local
     let _9: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _10: &'0 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _11: &'0 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let _10: &'1 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let _11: &'2 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
     let i_12: u32; // local
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
@@ -1371,7 +1371,7 @@ pub fn loop_inside_if(@1: bool, @2: u32) -> u32
             storage_live(_11)
             _11 = &mut iter_8
             _10 = &two-phase-mut (*_11)
-            _9 = {impl Iterator for Range<A>[@TraitClause0]}::next<'2, u32>[{built_in impl Sized for u32}, {impl Step for u32}](move _10)
+            _9 = {impl Iterator for Range<A>[@TraitClause0]}::next<'4, u32>[{built_in impl Sized for u32}, {impl Step for u32}](move _10)
             storage_dead(_10)
             match _9 {
                 Option::None => {
@@ -1521,14 +1521,14 @@ pub fn sum_array<const N : usize>(@1: [u32; N]) -> u32
 pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
-    let v_1: &'0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
+    let v_1: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
     let i_2: usize; // local
     let _3: bool; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
-    let _6: &'1 Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
-    let _7: &'2 mut u32; // anonymous local
-    let _8: &'0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
+    let _6: &'3 Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
+    let _7: &'5 mut u32; // anonymous local
+    let _8: &'6 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
 
@@ -1543,7 +1543,7 @@ pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in
         storage_live(_5)
         storage_live(_6)
         _6 = &(*v_1)
-        _5 = alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _6)
+        _5 = alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'8, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _6)
         storage_dead(_6)
         _3 = move _4 < move _5
         if move _3 {
@@ -1557,7 +1557,7 @@ pub fn clear<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in
         _8 = &mut (*v_1)
         storage_live(_9)
         _9 = copy i_2
-        _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'6, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
+        _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'10, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
         (*_7) = const 0 : u32
@@ -1587,15 +1587,15 @@ where
 // Full name: test_crate::get_elem_mut
 pub fn get_elem_mut<'_0>(@1: &'_0 mut List<usize>[{built_in impl Sized for usize}], @2: usize) -> &'_0 mut usize
 {
-    let _0: &'0 mut usize; // return
-    let ls_1: &'1 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
+    let _0: &'1 mut usize; // return
+    let ls_1: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
     let x_2: usize; // arg #2
-    let y_3: &'0 mut usize; // local
-    let tl_4: &'2 mut alloc::boxed::Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
+    let y_3: &'4 mut usize; // local
+    let tl_4: &'6 mut alloc::boxed::Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
-    let _8: &'1 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _8: &'7 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
 
     loop {
         match (*ls_1) {
@@ -1643,14 +1643,14 @@ pub fn list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut List<T>[@TraitClause0], @2
 where
     [@TraitClause0]: Sized<T>,
 {
-    let _0: &'0 mut T; // return
-    let ls_1: &'1 mut List<T>[@TraitClause0]; // arg #1
+    let _0: &'1 mut T; // return
+    let ls_1: &'3 mut List<T>[@TraitClause0]; // arg #1
     let i_2: u32; // arg #2
-    let x_3: &'0 mut T; // local
-    let tl_4: &'2 mut alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let x_3: &'4 mut T; // local
+    let tl_4: &'6 mut alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
-    let _7: &'1 mut List<T>[@TraitClause0]; // anonymous local
+    let _7: &'7 mut List<T>[@TraitClause0]; // anonymous local
     let _8: u32; // anonymous local
 
     storage_live(_8)

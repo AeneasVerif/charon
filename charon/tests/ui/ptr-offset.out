@@ -134,9 +134,9 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     let count_2: isize; // arg #2
     let size_3: usize; // arg #3
     let _4: bool; // anonymous local
-    let msg_5: &'0 Str; // local
+    let msg_5: &'1 Str; // local
     let _6: !; // anonymous local
-    let _7: Arguments<'1>; // anonymous local
+    let _7: Arguments<'3>; // anonymous local
     let rhs_8: isize; // local
     let self_9: usize; // local
     let _10: i64; // anonymous local
@@ -155,12 +155,12 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     let _23: u64; // anonymous local
     let _24: NonNull<u8>; // anonymous local
     let _25: *const u8; // anonymous local
-    let _26: NonNull<Argument<'2>>; // anonymous local
+    let _26: NonNull<Argument<'6>>; // anonymous local
     let _27: usize; // anonymous local
     let _28: usize; // anonymous local
     let _29: usize; // anonymous local
     let _30: *const Str; // anonymous local
-    let _31: &'3 [u8]; // anonymous local
+    let _31: &'8 [u8]; // anonymous local
 
     storage_live(msg_5)
     storage_live(_6)
@@ -239,19 +239,19 @@ fn precondition_check(@1: *const (), @2: isize, @3: usize)
     storage_live(_28)
     storage_live(_29)
     storage_live(_31)
-    _31 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _31 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _29 = copy _31.metadata
     storage_dead(_31)
     _28 = move _29 wrap.<< const 1 : i32
     storage_dead(_29)
     _27 = move _28 | const 1 : usize
     storage_dead(_28)
-    _26 = transmute<usize, NonNull<Argument<'2>>>(move _27)
+    _26 = transmute<usize, NonNull<Argument<'12>>>(move _27)
     storage_dead(_27)
     _7 = Arguments { 0: move _24, 1: move _26 }
     storage_dead(_26)
     storage_dead(_24)
-    _6 = panic_nounwind_fmt<'6>(move _7, const false)
+    _6 = panic_nounwind_fmt<'15>(move _7, const false)
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset
@@ -302,8 +302,8 @@ fn main()
     let _0: (); // return
     let s_1: [i32; 2 : usize]; // local
     let ptr_2: *const i32; // local
-    let _3: &'0 [i32]; // anonymous local
-    let _4: &'1 [i32; 2 : usize]; // anonymous local
+    let _3: &'1 [i32]; // anonymous local
+    let _4: &'3 [i32; 2 : usize]; // anonymous local
     let _5: bool; // anonymous local
     let _6: i32; // anonymous local
     let _7: *const i32; // anonymous local
@@ -318,7 +318,7 @@ fn main()
     _4 = &s_1
     _3 = @ArrayToSliceShared<'_, i32, 2 : usize>(move _4)
     storage_dead(_4)
-    ptr_2 = as_ptr<'3, i32>[{built_in impl Sized for i32}](move _3)
+    ptr_2 = as_ptr<'6, i32>[{built_in impl Sized for i32}](move _3)
     storage_dead(_3)
     storage_live(_5)
     storage_live(_6)

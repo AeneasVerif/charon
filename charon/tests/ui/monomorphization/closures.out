@@ -186,7 +186,7 @@ const UNIT_METADATA: () = @Fun1()
 fn {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'_0, '_1>(@1: &'_1 test_crate::main::closure<'_0>, @2: (u8,)) -> u8
 {
     let _0: u8; // return
-    let _1: &'0 test_crate::main::closure<'_0>; // arg #1
+    let _1: &'2 test_crate::main::closure<'_0>; // arg #1
     let tupled_args_2: (u8,); // arg #2
     let x_3: u8; // local
     let _4: u8; // anonymous local
@@ -212,7 +212,7 @@ unsafe fn {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>(@
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure<'_0>; // arg #1
-    let _2: &'1 mut test_crate::main::closure<'_0>; // anonymous local
+    let _2: &'2 mut test_crate::main::closure<'_0>; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -230,18 +230,18 @@ impl<'_0> Destruct::<test_crate::main::closure<'_>> {
 fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<'_>) -> u8
 {
     let _0: u8; // return
-    let f_1: test_crate::main::closure<'_>; // arg #1
-    let _2: &'0 test_crate::main::closure<'_>; // anonymous local
+    let f_1: test_crate::main::closure<'0>; // arg #1
+    let _2: &'3 test_crate::main::closure<'4>; // anonymous local
     let _3: (u8,); // anonymous local
 
     storage_live(_2)
     _2 = &f_1
     storage_live(_3)
     _3 = (const 0 : u8,)
-    _0 = {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'2, '3>(move _2, move _3)
+    _0 = {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'6, '7>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct::<test_crate::main::closure<'_>>}<'5>] f_1
+    conditional_drop[{impl Destruct::<test_crate::main::closure<'_>>}<'9>] f_1
     return
 }
 
@@ -249,7 +249,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
 fn {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '_1>(@1: &'_1 mut test_crate::main::closure#1<'_0>, @2: (u8,)) -> u8
 {
     let _0: u8; // return
-    let _1: &'0 mut test_crate::main::closure#1<'_0>; // arg #1
+    let _1: &'2 mut test_crate::main::closure#1<'_0>; // arg #1
     let tupled_args_2: (u8,); // arg #2
     let x_3: u8; // local
     let _4: u8; // anonymous local
@@ -279,7 +279,7 @@ unsafe fn {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure#1<'_0>; // arg #1
-    let _2: &'1 mut test_crate::main::closure#1<'_0>; // anonymous local
+    let _2: &'2 mut test_crate::main::closure#1<'_0>; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -297,18 +297,18 @@ impl<'_0> Destruct::<test_crate::main::closure#1<'_>> {
 fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::closure#1<'_>) -> u8
 {
     let _0: u8; // return
-    let f_1: test_crate::main::closure#1<'_>; // arg #1
-    let _2: &'0 mut test_crate::main::closure#1<'_>; // anonymous local
+    let f_1: test_crate::main::closure#1<'0>; // arg #1
+    let _2: &'3 mut test_crate::main::closure#1<'4>; // anonymous local
     let _3: (u8,); // anonymous local
 
     storage_live(_2)
     _2 = &mut f_1
     storage_live(_3)
     _3 = (const 0 : u8,)
-    _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'2, '3>(move _2, move _3)
+    _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'6, '7>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'5>] f_1
+    conditional_drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'9>] f_1
     return
 }
 
@@ -346,7 +346,7 @@ unsafe fn {impl Destruct::<test_crate::main::closure#2>}::drop_in_place(@1: *mut
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure#2; // arg #1
-    let _2: &'0 mut test_crate::main::closure#2; // anonymous local
+    let _2: &'1 mut test_crate::main::closure#2; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -385,12 +385,12 @@ fn main()
     let _0: (); // return
     let z_1: u8; // local
     let _2: u8; // anonymous local
-    let _3: test_crate::main::closure<'0>; // anonymous local
-    let _4: &'1 u8; // anonymous local
+    let _3: test_crate::main::closure<'1>; // anonymous local
+    let _4: &'3 u8; // anonymous local
     let z_5: u8; // local
     let _6: u8; // anonymous local
-    let _7: test_crate::main::closure#1<'2>; // anonymous local
-    let _8: &'3 mut u8; // anonymous local
+    let _7: test_crate::main::closure#1<'5>; // anonymous local
+    let _8: &'7 mut u8; // anonymous local
     let z_9: Thing; // local
     let _10: u8; // anonymous local
     let _11: test_crate::main::closure#2; // anonymous local
@@ -453,11 +453,11 @@ fn {impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}::call_once<'_0>(@1: tes
     let _0: u8; // return
     let _1: test_crate::main::closure<'_0>; // arg #1
     let _2: (u8,); // arg #2
-    let _3: &'1 mut test_crate::main::closure<'_0>; // anonymous local
+    let _3: &'2 mut test_crate::main::closure<'_0>; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '4>(move _3, move _2)
+    _0 = {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '5>(move _3, move _2)
     drop[{impl Destruct::<test_crate::main::closure<'_>>}<'_0>] _1
     return
 }
@@ -497,11 +497,11 @@ fn {impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}::call_once<'_0>(@1: t
     let _0: u8; // return
     let _1: test_crate::main::closure#1<'_0>; // arg #1
     let _2: (u8,); // arg #2
-    let _3: &'1 mut test_crate::main::closure#1<'_0>; // anonymous local
+    let _3: &'2 mut test_crate::main::closure#1<'_0>; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '4>(move _3, move _2)
+    _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '5>(move _3, move _2)
     drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'_0>] _1
     return
 }

@@ -189,8 +189,8 @@ where
 // Full name: test_crate::f
 pub fn f<'a>(@1: &'a ()) -> Option<(&'a u8,)>[{built_in impl Sized for (&'a u8,)}]
 {
-    let _0: Option<(&'0 u8,)>[{built_in impl Sized for (&'0 u8,)}]; // return
-    let _1: &'3 (); // arg #1
+    let _0: Option<(&'9 u8,)>[{built_in impl Sized for (&'9 u8,)}]; // return
+    let _1: &'13 (); // arg #1
 
     _0 = Option::None {  }
     return

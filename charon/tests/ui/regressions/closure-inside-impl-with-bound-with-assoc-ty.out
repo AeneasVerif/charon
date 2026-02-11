@@ -139,7 +139,7 @@ where
     [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
     let _0: (); // return
-    let _1: &'0 closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // arg #1
+    let _1: &'1 closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // arg #1
     let tupled_args_2: ((),); // arg #2
     let _x_3: (); // local
 
@@ -194,12 +194,12 @@ where
     let _0: (); // return
     let _1: closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // arg #1
     let _2: ((),); // arg #2
-    let _3: &'0 mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // anonymous local
+    let _3: &'1 mut closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // anonymous local
 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'2, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move _2)
+    _0 = {impl FnMut<((),), ()> for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}::call_mut<'3, F, Clause1_Repr>[@TraitClause0, @TraitClause1](move _3, move _2)
     drop[{impl Destruct for closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]}<F, Clause1_Repr>[@TraitClause0, @TraitClause1]] _1
     return
 }

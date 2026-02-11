@@ -20,9 +20,9 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::wrap_shared_in_option
 pub fn wrap_shared_in_option<'a, T>(@1: &'a T) -> Option<&'a T>
 {
-    let _0: Option<&'0 T>; // return
-    let x_1: &'0 T; // arg #1
-    let _2: &'0 T; // anonymous local
+    let _0: Option<&'2 T>; // return
+    let x_1: &'3 T; // arg #1
+    let _2: &'4 T; // anonymous local
 
     storage_live(_2)
     _2 = &(*x_1)

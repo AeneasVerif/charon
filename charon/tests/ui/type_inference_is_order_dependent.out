@@ -162,19 +162,19 @@ where
 {
     let _0: (); // return
     let _1: (); // anonymous local
-    let _2: Arguments<'0>; // anonymous local
-    let args_3: (&'1 U,); // local
-    let _4: &'1 U; // anonymous local
+    let _2: Arguments<'1>; // anonymous local
+    let args_3: (&'4 U,); // local
+    let _4: &'5 U; // anonymous local
     let _5: U; // anonymous local
-    let args_6: [Argument<'2>; 1 : usize]; // local
-    let _7: Argument<'2>; // anonymous local
-    let _8: &'1 U; // anonymous local
-    let _9: &'3 [u8; 4 : usize]; // anonymous local
-    let _10: &'3 [u8; 4 : usize]; // anonymous local
-    let _11: &'4 [Argument<'2>; 1 : usize]; // anonymous local
-    let _12: &'4 [Argument<'2>; 1 : usize]; // anonymous local
+    let args_6: [Argument<'8>; 1 : usize]; // local
+    let _7: Argument<'9>; // anonymous local
+    let _8: &'10 U; // anonymous local
+    let _9: &'12 [u8; 4 : usize]; // anonymous local
+    let _10: &'13 [u8; 4 : usize]; // anonymous local
+    let _11: &'16 [Argument<'17>; 1 : usize]; // anonymous local
+    let _12: &'18 [Argument<'19>; 1 : usize]; // anonymous local
     let _13: [u8; 4 : usize]; // anonymous local
-    let _14: &'3 [u8; 4 : usize]; // anonymous local
+    let _14: &'25 [u8; 4 : usize]; // anonymous local
 
     _0 = ()
     storage_live(_1)
@@ -190,7 +190,7 @@ where
     storage_live(_7)
     storage_live(_8)
     _8 = &(*args_3.0)
-    _7 = new_debug<'5, '7, U>[@TraitClause1, @TraitClause5](move _8)
+    _7 = new_debug<'21, '23, U>[@TraitClause1, @TraitClause5](move _8)
     storage_dead(_8)
     args_6 = [move _7]
     storage_dead(_7)
@@ -206,12 +206,12 @@ where
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'8, 4 : usize, 1 : usize>(move _9, move _11)
+    _2 = new<'27, 4 : usize, 1 : usize>(move _9, move _11)
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
-    _1 = _print<'10>(move _2)
+    _1 = _print<'29>(move _2)
     storage_dead(_2)
     storage_dead(args_6)
     conditional_drop[{built_in impl Destruct for U}] _5

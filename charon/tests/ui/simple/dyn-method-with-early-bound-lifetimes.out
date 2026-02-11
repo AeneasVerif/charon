@@ -31,7 +31,7 @@ where
 fn test_crate::foo<'_0>(@1: &'_0 (dyn Trait + '_0))
 {
     let _0: (); // return
-    let x_1: &'0 (dyn Trait + '1); // arg #1
+    let x_1: &'3 (dyn Trait + '4); // arg #1
 
     _0 = ()
     _0 = ()

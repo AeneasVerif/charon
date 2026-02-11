@@ -51,20 +51,20 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Any<T>,
 {
-    let _0: &'0 (dyn Any + '1); // return
-    let x_1: &'2 T; // arg #1
-    let _2: &'0 (dyn Any + '1); // anonymous local
-    let _3: &'0 (dyn Any + '1); // anonymous local
-    let _4: &'2 T; // anonymous local
+    let _0: &'3 (dyn Any + '4); // return
+    let x_1: &'6 T; // arg #1
+    let _2: &'7 (dyn Any + '8); // anonymous local
+    let _3: &'9 (dyn Any + '10); // anonymous local
+    let _4: &'11 T; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = &(*x_1)
-    _3 = unsize_cast<&'2 T, &'0 (dyn Any + '1), @TraitClause1 with ?>(move _4)
+    _3 = unsize_cast<&'11 T, &'12 (dyn Any + '13), @TraitClause1 with ?>(move _4)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    _0 = unsize_cast<&'0 (dyn Any + '1), &'0 (dyn Any + '1),  at []>(move _2)
+    _0 = unsize_cast<&'7 (dyn Any + '8), &'15 (dyn Any + '16),  at []>(move _2)
     storage_dead(_3)
     storage_dead(_2)
     return

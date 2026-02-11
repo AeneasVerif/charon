@@ -184,15 +184,15 @@ struct Point {
 pub fn {impl Drop for Point}::drop<'_0>(@1: &'_0 mut Point)
 {
     let _0: (); // return
-    let self_1: &'0 mut Point; // arg #1
+    let self_1: &'1 mut Point; // arg #1
     let _2: (); // anonymous local
-    let _3: Arguments<'1>; // anonymous local
+    let _3: Arguments<'3>; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = from_str<'2>(const "Dropping Point\n")
-    _2 = _print<'5>(move _3)
+    _3 = from_str<'4>(const "Dropping Point\n")
+    _2 = _print<'8>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -204,8 +204,8 @@ unsafe fn {impl Destruct for Point}::drop_in_place(@1: *mut Point)
 {
     let _0: (); // return
     let _1: *mut Point; // arg #1
-    let _2: &'0 mut Point; // anonymous local
-    let _3: &'0 mut Point; // anonymous local
+    let _2: &'1 mut Point; // anonymous local
+    let _3: &'2 mut Point; // anonymous local
     let _4: (); // anonymous local
     let drop_arg_5: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
     let drop_ret_6: (); // local
@@ -218,7 +218,7 @@ unsafe fn {impl Destruct for Point}::drop_in_place(@1: *mut Point)
     _0 = ()
     _2 = &mut (*_1)
     _3 = &mut (*_2)
-    _4 = {impl Drop for Point}::drop<'2>(move _3)
+    _4 = {impl Drop for Point}::drop<'4>(move _3)
     storage_live(drop_arg_5)
     drop_arg_5 = &raw mut ((*_2)).x
     storage_live(drop_ret_6)
