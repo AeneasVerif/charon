@@ -43,8 +43,6 @@ where
 {
     let tcx = s.base().tcx;
     let source_span;
-    let attributes;
-    let visibility;
     let lang_item;
     let diagnostic_item;
     let kind;
@@ -79,8 +77,6 @@ where
             };
 
             source_span = None;
-            attributes = Default::default();
-            visibility = Default::default();
             lang_item = Default::default();
             diagnostic_item = Default::default();
         }
@@ -111,19 +107,13 @@ where
                 value: None,
             };
 
-            // None of these make sense for a promoted constant.
-            attributes = Default::default();
-            visibility = Default::default();
             lang_item = Default::default();
             diagnostic_item = Default::default();
         }
         DefIdBase::Real(rust_def_id) => {
             kind = translate_full_def_kind(s, def_id, args);
 
-            let def_kind = get_def_kind(tcx, rust_def_id);
             source_span = rust_def_id.as_local().map(|ldid| tcx.source_span(ldid));
-            attributes = get_def_attrs(tcx, rust_def_id, def_kind).to_vec();
-            visibility = get_def_visibility(tcx, rust_def_id, def_kind);
             lang_item = s
                 .base()
                 .tcx
@@ -134,6 +124,8 @@ where
         }
     }
 
+    let attributes = def_id.attrs(tcx).to_vec();
+    let visibility = def_id.visibility(tcx);
     let rust_def_id = def_id.as_def_id_even_synthetic();
     let source_text = source_span
         .filter(|source_span| source_span.ctxt().is_root())
