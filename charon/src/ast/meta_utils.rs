@@ -1,7 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::meta]
 use crate::meta::*;
 use crate::names::{Disambiguator, Name, PathElem};
-use itertools::Itertools;
 use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::iter::Iterator;
@@ -135,101 +134,6 @@ impl FileName {
             FileName::Virtual(path_buf) | FileName::Local(path_buf) => path_buf.to_string_lossy(),
             FileName::NotReal(path) => Cow::Borrowed(path),
         }
-    }
-}
-
-impl Attribute {
-    /// Parse a raw attribute to recognize our special `charon::*`, `aeneas::*` and `verify::*` attributes.
-    pub fn parse_from_raw(raw_attr: RawAttribute) -> Result<Self, String> {
-        // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
-        // try to parse it. Otherwise we return `Unknown`.
-        let path = raw_attr.path.split("::").collect_vec();
-        let attr_name = if let &[path_start, attr_name] = path.as_slice()
-            && (path_start == "charon" || path_start == "aeneas" || path_start == "verify")
-        {
-            attr_name
-        } else {
-            return Ok(Self::Unknown(raw_attr));
-        };
-
-        match Self::parse_special_attr(attr_name, &raw_attr)? {
-            Some(parsed) => Ok(parsed),
-            None => Err(format!(
-                "Unrecognized attribute: `{}`",
-                raw_attr.to_string()
-            )),
-        }
-    }
-
-    /// Parse a `charon::*`, `aeneas::*` or `verify::*` attribute.
-    fn parse_special_attr(
-        attr_name: &str,
-        raw_attr: &RawAttribute,
-    ) -> Result<Option<Self>, String> {
-        let args = raw_attr.args.as_deref();
-        let parsed = match attr_name {
-            // `#[charon::opaque]`
-            "opaque" if args.is_none() => Self::Opaque,
-            // `#[charon::opaque]`
-            "exclude" if args.is_none() => Self::Exclude,
-            // `#[charon::rename("new_name")]`
-            "rename" if let Some(attr) = args => {
-                let Some(attr) = attr
-                    .strip_prefix("\"")
-                    .and_then(|attr| attr.strip_suffix("\""))
-                else {
-                    return Err(format!(
-                        "the new name should be between quotes: `rename(\"{attr}\")`."
-                    ));
-                };
-
-                if attr.is_empty() {
-                    return Err(format!("attribute `rename` should not be empty"));
-                }
-
-                let first_char = attr.chars().nth(0).unwrap();
-                let is_identifier = (first_char.is_alphabetic() || first_char == '_')
-                    && attr.chars().all(|c| c.is_alphanumeric() || c == '_');
-                if !is_identifier {
-                    return Err(format!(
-                        "attribute `rename` should contain a valid identifier"
-                    ));
-                }
-
-                Self::Rename(attr.to_string())
-            }
-            // `#[charon::variants_prefix("T")]`
-            "variants_prefix" if let Some(attr) = args => {
-                let Some(attr) = attr
-                    .strip_prefix("\"")
-                    .and_then(|attr| attr.strip_suffix("\""))
-                else {
-                    return Err(format!(
-                        "the name should be between quotes: `variants_prefix(\"{attr}\")`."
-                    ));
-                };
-
-                Self::VariantsPrefix(attr.to_string())
-            }
-            // `#[charon::variants_suffix("T")]`
-            "variants_suffix" if let Some(attr) = args => {
-                let Some(attr) = attr
-                    .strip_prefix("\"")
-                    .and_then(|attr| attr.strip_suffix("\""))
-                else {
-                    return Err(format!(
-                        "the name should be between quotes: `variants_suffix(\"{attr}\")`."
-                    ));
-                };
-
-                Self::VariantsSuffix(attr.to_string())
-            }
-            // `#[verify::start_from]`
-            // TODO: warn if applied to a module
-            "start_from" => Self::Unknown(raw_attr.clone()),
-            _ => return Ok(None),
-        };
-        Ok(Some(parsed))
     }
 }
 
