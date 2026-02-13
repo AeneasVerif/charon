@@ -480,7 +480,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 // Attributes
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Parse a raw attribute to recognize our special `charon::*`, `aeneas::*` and `verify::*` attributes.
-    fn parse_attr_from_raw(&mut self, raw_attr: RawAttribute) -> Result<Attribute, String> {
+    fn parse_attr_from_raw(
+        &mut self,
+        def_id: &hax::DefId,
+        raw_attr: RawAttribute,
+    ) -> Result<Attribute, String> {
         // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
         // try to parse it. Otherwise we return `Unknown`.
         let path = raw_attr.path.split("::").collect_vec();
@@ -492,7 +496,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             return Ok(Attribute::Unknown(raw_attr));
         };
 
-        match self.parse_special_attr(attr_name, &raw_attr)? {
+        match self.parse_special_attr(def_id, attr_name, &raw_attr)? {
             Some(parsed) => Ok(parsed),
             None => Err(format!(
                 "Unrecognized attribute: `{}`",
@@ -504,6 +508,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Parse a `charon::*`, `aeneas::*` or `verify::*` attribute.
     fn parse_special_attr(
         &mut self,
+        def_id: &hax::DefId,
         attr_name: &str,
         raw_attr: &RawAttribute,
     ) -> Result<Option<Attribute>, String> {
@@ -566,8 +571,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 Attribute::VariantsSuffix(attr.to_string())
             }
             // `#[verify::start_from]`
-            // TODO: warn if applied to a module
-            "start_from" => Attribute::Unknown(raw_attr.clone()),
+            "start_from" => {
+                if matches!(def_id.kind, hax::DefKind::Mod) {
+                    return Err(format!("`start_from` on modules has no effect"));
+                }
+                Attribute::Unknown(raw_attr.clone())
+            }
             _ => return Ok(None),
         };
         Ok(Some(parsed))
@@ -575,7 +584,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
-    pub(crate) fn translate_attribute(&mut self, attr: &rustc_hir::Attribute) -> Option<Attribute> {
+    pub(crate) fn translate_attribute(
+        &mut self,
+        def_id: &hax::DefId,
+        attr: &rustc_hir::Attribute,
+    ) -> Option<Attribute> {
         use rustc_hir as hir;
         use rustc_hir::attrs as hir_attrs;
         match attr {
@@ -596,7 +609,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         }
                     },
                 };
-                match self.parse_attr_from_raw(raw_attr) {
+                match self.parse_attr_from_raw(def_id, raw_attr) {
                     Ok(a) => Some(a),
                     Err(msg) => {
                         let span = self.translate_span(&attr.span.sinto(&self.hax_state));
@@ -630,7 +643,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let attributes = def
             .attributes
             .iter()
-            .filter_map(|attr| self.translate_attribute(&attr))
+            .filter_map(|attr| self.translate_attribute(def.def_id(), &attr))
             .collect_vec();
 
         let rename = {
