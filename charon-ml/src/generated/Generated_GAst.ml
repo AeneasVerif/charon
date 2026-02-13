@@ -412,6 +412,13 @@ type cli_options = {
           will translate these items and any items they refer to, according to
           the opacity rules. When absent, we start from the path [crate] (which
           translates the whole crate). *)
+  start_from_attribute : string option;
+      (** Use all the items annotated with the given attribute as starting
+          points for translation (except modules). If an attribute name is not
+          specified, [verify::start_from] is used. *)
+  start_from_pub : bool;
+      (** Use all the [pub] items as starting points for translation (except
+          modules). *)
   included : string list;
       (** Whitelist of items to translate. These use the name-matcher syntax. *)
   opaque : string list;

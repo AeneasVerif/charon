@@ -1,6 +1,7 @@
 //@ known-failure
 //@ charon-arg=--start-from=start_from_errors::module1
 //@ charon-arg=--start-from=module2
+//@ charon-arg=--start-from=crate::module3
 //@ charon-arg=--start-from=std::iter:once
 //@ charon-arg=--start-from=std::ops::Deref::Target
 //@ charon-arg=--start-from={impl crate::Type}
@@ -12,6 +13,9 @@
 
 mod module1 {}
 mod module2 {}
+
+#[charon::start_from]
+mod module3 {}
 
 struct Type;
 impl Type {
