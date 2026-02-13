@@ -152,7 +152,7 @@ impl Attribute {
             return Ok(Self::Unknown(raw_attr));
         };
 
-        match Self::parse_special_attr(attr_name, raw_attr.args.as_deref())? {
+        match Self::parse_special_attr(attr_name, &raw_attr)? {
             Some(parsed) => Ok(parsed),
             None => Err(format!(
                 "Unrecognized attribute: `{}`",
@@ -162,7 +162,11 @@ impl Attribute {
     }
 
     /// Parse a `charon::*`, `aeneas::*` or `verify::*` attribute.
-    fn parse_special_attr(attr_name: &str, args: Option<&str>) -> Result<Option<Self>, String> {
+    fn parse_special_attr(
+        attr_name: &str,
+        raw_attr: &RawAttribute,
+    ) -> Result<Option<Self>, String> {
+        let args = raw_attr.args.as_deref();
         let parsed = match attr_name {
             // `#[charon::opaque]`
             "opaque" if args.is_none() => Self::Opaque,
@@ -220,6 +224,9 @@ impl Attribute {
 
                 Self::VariantsSuffix(attr.to_string())
             }
+            // `#[verify::start_from]`
+            // TODO: warn if applied to a module
+            "start_from" => Self::Unknown(raw_attr.clone()),
             _ => return Ok(None),
         };
         Ok(Some(parsed))

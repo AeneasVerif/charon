@@ -14,13 +14,14 @@
 //! are opaque (this can be controlled with `--include`, `--opaque` and `--exclude`). If an item is
 //! opaque, its signature/"outer shell" will be translated (e.g. for functions that's the
 //! signature) but not its contents.
+use itertools::Itertools;
 use rustc_middle::ty::TyCtxt;
 use std::cell::RefCell;
 use std::path::PathBuf;
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::options::{CliOpts, TranslateOptions};
+use charon_lib::options::{CliOpts, StartFrom, TranslateOptions};
 use charon_lib::transform::TransformCtx;
 use hax::SInto;
 use macros::VariantIndexArity;
@@ -694,20 +695,54 @@ pub fn translate<'tcx, 'ctx>(
     ctx.register_target_info();
 
     // Start translating from the selected items.
-    for pat in ctx.options.start_from.clone() {
-        match super::resolve_path::def_path_def_ids(&ctx.hax_state, &pat) {
-            Ok(resolved) => {
-                for def_id in resolved {
-                    let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
-                    ctx.enqueue_module_item(&def_id);
+    for start_from in ctx.options.start_from.clone() {
+        match start_from {
+            StartFrom::Pattern(pat) => {
+                match super::resolve_path::def_path_def_ids(&ctx.hax_state, &pat) {
+                    Ok(resolved) => {
+                        for def_id in resolved {
+                            let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
+                            ctx.enqueue_module_item(&def_id);
+                        }
+                    }
+                    Err(err) => {
+                        register_error!(
+                            ctx,
+                            Span::dummy(),
+                            "when processing starting pattern `{pat}`: {err}"
+                        );
+                    }
                 }
             }
-            Err(err) => {
-                register_error!(
-                    ctx,
-                    Span::dummy(),
-                    "when processing starting pattern `{pat}`: {err}"
-                );
+            StartFrom::Attribute(attr_name) => {
+                let attr_path = attr_name
+                    .split("::")
+                    .map(|x| rustc_span::Symbol::intern(x))
+                    .collect_vec();
+                let mut add_if_attr_matches = |ldid: rustc_hir::def_id::LocalDefId| {
+                    let def_id: hax::DefId = ldid.to_def_id().sinto(&ctx.hax_state);
+                    if !matches!(def_id.kind, hax::DefKind::Mod)
+                        && def_id.attrs(tcx).iter().any(|a| a.path_matches(&attr_path))
+                    {
+                        ctx.enqueue_module_item(&def_id);
+                    }
+                };
+                for ldid in tcx.hir_crate_items(()).definitions() {
+                    add_if_attr_matches(ldid)
+                }
+            }
+            StartFrom::Pub => {
+                let mut add_if_matches = |ldid: rustc_hir::def_id::LocalDefId| {
+                    let def_id: hax::DefId = ldid.to_def_id().sinto(&ctx.hax_state);
+                    if !matches!(def_id.kind, hax::DefKind::Mod)
+                        && def_id.visibility(tcx) == Some(true)
+                    {
+                        ctx.enqueue_module_item(&def_id);
+                    }
+                };
+                for ldid in tcx.hir_crate_items(()).definitions() {
+                    add_if_matches(ldid)
+                }
             }
         }
     }

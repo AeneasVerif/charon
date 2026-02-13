@@ -2,6 +2,8 @@
 use annotate_snippets::Level;
 use clap::ValueEnum;
 use indoc::indoc;
+use itertools::Itertools;
+use macros::EnumAsGetters;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -57,6 +59,7 @@ pub struct CliOpts {
     #[clap(long = "rustc-arg")]
     #[serde(default)]
     pub rustc_args: Vec<String>,
+
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
     /// skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't
     /// currently support `dyn Trait`.
@@ -82,6 +85,23 @@ pub struct CliOpts {
     #[clap(long, value_delimiter = ',')]
     #[serde(default)]
     pub start_from: Vec<String>,
+    /// Use all the items annotated with the given attribute as starting points for translation
+    /// (except modules).
+    /// If an attribute name is not specified, `verify::start_from` is used.
+    #[clap(
+        long,
+        value_name("ATTRIBUTE"),
+        num_args(0..=1),
+        require_equals(true),
+        default_missing_value("verify::start_from"),
+    )]
+    #[serde(default)]
+    pub start_from_attribute: Option<String>,
+    /// Use all the `pub` items as starting points for translation (except modules).
+    #[clap(long)]
+    #[serde(default)]
+    pub start_from_pub: bool,
+
     /// Whitelist of items to translate. These use the name-matcher syntax.
     #[clap(
         long,
@@ -392,10 +412,37 @@ impl CliOpts {
     }
 }
 
+/// Predicates that determine wihch items to use as starting point for translation.
+#[derive(Debug, Clone, EnumAsGetters)]
+pub enum StartFrom {
+    /// Item identified by a pattern/path.
+    Pattern(NamePattern),
+    /// Item annotated with the given attribute.
+    Attribute(String),
+    /// Item marked `pub`. Note that this does not take accessibility into account; a
+    /// non-reexported `pub` item will be included here.
+    Pub,
+}
+
+impl StartFrom {
+    pub fn matches(&self, ctx: &TranslatedCrate, item_meta: &ItemMeta) -> bool {
+        match self {
+            StartFrom::Pattern(pattern) => pattern.matches(ctx, &item_meta.name),
+            StartFrom::Attribute(attr) => item_meta
+                .attr_info
+                .attributes
+                .iter()
+                .filter_map(|a| a.as_unknown())
+                .any(|raw_attr| raw_attr.path == *attr),
+            StartFrom::Pub => item_meta.attr_info.public,
+        }
+    }
+}
+
 /// The options that control translation and transformation.
 pub struct TranslateOptions {
     /// Items from which to start translation.
-    pub start_from: Vec<NamePattern>,
+    pub start_from: Vec<StartFrom>,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
@@ -468,15 +515,21 @@ impl TranslateOptions {
             mir_level = std::cmp::max(mir_level, MirLevel::Elaborated);
         }
 
-        let start_from = if options.start_from.is_empty() {
-            vec![parse_pattern("crate").unwrap()]
-        } else {
-            options
-                .start_from
-                .iter()
-                .filter_map(|path| parse_pattern(&path).ok())
-                .collect()
-        };
+        let mut start_from = options
+            .start_from
+            .iter()
+            .filter_map(|path| parse_pattern(&path).ok())
+            .map(StartFrom::Pattern)
+            .collect_vec();
+        if let Some(attr) = options.start_from_attribute.clone() {
+            start_from.push(StartFrom::Attribute(attr));
+        }
+        if options.start_from_pub {
+            start_from.push(StartFrom::Pub);
+        }
+        if start_from.is_empty() {
+            start_from.push(StartFrom::Pattern(parse_pattern("crate").unwrap()))
+        }
 
         let item_opacities = {
             use ItemOpacity::*;

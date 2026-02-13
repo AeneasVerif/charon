@@ -417,6 +417,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("monomorphize", monomorphize);
           ("monomorphize_mut", monomorphize_mut);
           ("start_from", start_from);
+          ("start_from_attribute", start_from_attribute);
+          ("start_from_pub", start_from_pub);
           ("include", include_);
           ("opaque", opaque);
           ("exclude", exclude);
@@ -458,6 +460,10 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           option_of_json monomorphize_mut_of_json ctx monomorphize_mut
         in
         let* start_from = list_of_json string_of_json ctx start_from in
+        let* start_from_attribute =
+          option_of_json string_of_json ctx start_from_attribute
+        in
+        let* start_from_pub = bool_of_json ctx start_from_pub in
         let* included = list_of_json string_of_json ctx include_ in
         let* opaque = list_of_json string_of_json ctx opaque in
         let* exclude = list_of_json string_of_json ctx exclude in
@@ -508,6 +514,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              monomorphize;
              monomorphize_mut;
              start_from;
+             start_from_attribute;
+             start_from_pub;
              included;
              opaque;
              exclude;
