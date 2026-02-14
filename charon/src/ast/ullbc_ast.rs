@@ -44,7 +44,6 @@ pub enum StatementKind {
     /// a no-op. A local may not have a `StorageDead` in the function's body, in which case it
     /// is implicitly deallocated at the end of the function.
     StorageDead(LocalId),
-    Deinit(Place),
     /// A non-diverging runtime check for a condition. This can be either:
     /// - Emitted for inlined "assumes" (which cause UB on failure)
     /// - Reconstructed from `if b { panic() }` if `--reconstruct-asserts` is set.

@@ -44,7 +44,6 @@ pub enum StatementKind {
     /// a no-op. A local may not have a `StorageDead` in the function's body, in which case it
     /// is implicitly deallocated at the end of the function.
     StorageDead(LocalId),
-    Deinit(Place),
     /// Drop the value at the given place.
     ///
     /// Depending on `DropKind`, this may be a real call to `drop_in_place`, or a conditional call

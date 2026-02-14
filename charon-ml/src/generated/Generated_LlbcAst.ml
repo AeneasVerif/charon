@@ -42,7 +42,6 @@ and statement_kind =
           deallocated, this is a no-op. A local may not have a [StorageDead] in
           the function's body, in which case it is implicitly deallocated at the
           end of the function. *)
-  | Deinit of place
   | Drop of place * trait_ref * drop_kind
       (** Drop the value at the given place.
 

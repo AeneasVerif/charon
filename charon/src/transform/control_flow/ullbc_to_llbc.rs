@@ -931,7 +931,6 @@ impl<'a> ReconstructCtx<'a> {
             }
             src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
             src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
-            src::StatementKind::Deinit(place) => tgt::StatementKind::Deinit(place),
             src::StatementKind::Assert { assert, on_failure } => {
                 tgt::StatementKind::Assert { assert, on_failure }
             }

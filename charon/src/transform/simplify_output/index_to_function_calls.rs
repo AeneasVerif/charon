@@ -268,12 +268,7 @@ impl LlbcPass for Transform {
             };
             use StatementKind::*;
             match &mut st.kind {
-                Assign(..)
-                | SetDiscriminant(..)
-                | CopyNonOverlapping(_)
-                | Drop(..)
-                | Deinit(..)
-                | Call(..) => {
+                Assign(..) | SetDiscriminant(..) | CopyNonOverlapping(_) | Drop(..) | Call(..) => {
                     let _ = visitor.visit_inner_with_mutability(st, true);
                 }
                 Switch(..) => {
