@@ -289,6 +289,7 @@ fn main()
     _3 = &raw const a_1
     _2 = from_raw_parts<[u32], [u32; 2 : usize]>[{built_in impl Sized for [u32; 2 : usize]}, {impl#0}<[u32; 2 : usize]>[{built_in impl Pointee for [u32; 2 : usize] where Metadata  = ()}]](move _3, const 2 : usize)
     storage_dead(_3)
+    _ = _2
     storage_dead(_2)
     _0 = ()
     storage_dead(a_1)

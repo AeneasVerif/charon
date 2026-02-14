@@ -130,6 +130,7 @@ fn {impl Fn<()> for closure}::call<'_0>(@1: &'_0 closure, @2: ())
     storage_live(_3)
     _4 = move _5
     _3 = &(*_4)
+    _ = _3
     storage_dead(_3)
     _0 = ()
     return

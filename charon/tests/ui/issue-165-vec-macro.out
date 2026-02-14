@@ -180,6 +180,7 @@ pub fn bar()
     storage_dead(_3)
     _1 = into_vec<Foo, Global>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}](move _2)
     storage_dead(_2)
+    _ = _1
     conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<Foo, Global>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
     _0 = ()

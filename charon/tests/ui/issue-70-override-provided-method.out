@@ -133,6 +133,7 @@ fn main()
     _1 = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'9, '10, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

@@ -56,6 +56,7 @@ fn main()
     _2 = &(*_3)
     _1 = foo<'6>(move _2)
     storage_dead(_2)
+    _ = _1
     storage_dead(_3)
     storage_dead(_1)
     _0 = ()

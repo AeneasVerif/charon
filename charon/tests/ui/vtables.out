@@ -1308,6 +1308,7 @@ fn main()
         _18 = (move _19, move _25)
         storage_dead(_25)
         storage_dead(_19)
+        _ = _18
         storage_live(left_val_26)
         left_val_26 = copy _18.0
         storage_live(right_val_27)
@@ -1457,6 +1458,7 @@ fn main()
         _57 = (move _58, move _64)
         storage_dead(_64)
         storage_dead(_58)
+        _ = _57
         storage_live(left_val_65)
         left_val_65 = copy _57.0
         storage_live(right_val_66)

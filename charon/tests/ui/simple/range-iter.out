@@ -213,6 +213,7 @@ fn iter(@1: usize)
     storage_dead(_4)
     _2 = {impl IntoIterator<Clause0_Item, I> for I}::into_iter<Range<usize>, usize>[{impl Iterator<A> for Range<A>}<usize>[{impl Step for usize}]](move _3)
     storage_dead(_3)
+    _ = _2
     storage_live(iter_5)
     iter_5 = move _2
     loop {
@@ -223,6 +224,7 @@ fn iter(@1: usize)
         _7 = &two-phase-mut (*_8)
         _6 = {impl Iterator<A> for Range<A>}::next<'4, usize>[{impl Step for usize}](move _7)
         storage_dead(_7)
+        _ = _6
         match _6 {
             Option::None => {
                 break 0

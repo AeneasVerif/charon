@@ -161,6 +161,7 @@ fn main()
     _2 = closure {  }
     _1 = catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, {impl FnOnce<()> for closure}, {built_in impl UnwindSafe for closure}](move _2)
     storage_dead(_2)
+    _ = _1
     conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<(), alloc::boxed::Box<(dyn Any + Send + '48)>[{built_in impl MetaSized for (dyn Any + Send + '49)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '54)>[{built_in impl MetaSized for (dyn Any + Send + '55)}, {built_in impl Sized for Global}]}]] _1
     storage_dead(_1)
     _0 = ()

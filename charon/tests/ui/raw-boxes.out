@@ -3432,6 +3432,7 @@ unsafe fn foo()
     _5 = alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new<i32>[{built_in impl Sized for i32}](const 42 : i32)
     _4 = leak<'2, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}](move _5)
     storage_dead(_5)
+    _ = _4
     storage_dead(_4)
     storage_live(b_6)
     storage_live(_7)

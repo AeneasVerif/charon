@@ -191,6 +191,7 @@ pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(@1: &'_0 Foo, @2: &'_1 mut Forma
     storage_live(_3)
     _3 = &two-phase-mut (*f_2) with_metadata(copy f_2.metadata)
     storage_live(_4)
+    _ = self_1
     match (*self_1) {
         Foo::A => {
             storage_live(_5)
@@ -239,6 +240,7 @@ fn bar<const N : usize>()
     _2 = ()
     _1 = @ArrayRepeat<(), {const}<N>>(move _2)
     storage_dead(_2)
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

@@ -206,6 +206,7 @@ fn use_generic()
     _4 = &_int_generic_1
     _3 = get<'20, i32>[{built_in impl Sized for i32}](move _4)
     storage_dead(_4)
+    _ = _3
     storage_dead(_3)
     _0 = ()
     storage_dead(_str_generic_2)

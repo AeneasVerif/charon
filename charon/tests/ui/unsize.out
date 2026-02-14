@@ -188,6 +188,7 @@ fn foo()
     _3 = &(*_4)
     _2 = @ArrayToSliceShared<'_, i32, 2 : usize>(move _3)
     storage_dead(_3)
+    _ = _2
     storage_dead(_4)
     storage_dead(_2)
     storage_live(_5)
@@ -199,6 +200,7 @@ fn foo()
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<[i32; 2 : usize], Global>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]] _6
     storage_dead(_7)
     storage_dead(_6)
+    _ = _5
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<[i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] _5
     storage_dead(_5)
     storage_live(_8)
@@ -210,6 +212,7 @@ fn foo()
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<[i32; 2 : usize], Global>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]] _9
     storage_dead(_10)
     storage_dead(_9)
+    _ = _8
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<[i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] _8
     storage_dead(_8)
     storage_live(string_11)
@@ -221,6 +224,7 @@ fn foo()
     _13 = &(*_14)
     _12 = unsize_cast<&'11 String, &'26 (dyn Display + '27), {impl Display for String} with {impl Display for String}::{vtable}>(move _13)
     storage_dead(_13)
+    _ = _12
     storage_dead(_14)
     storage_dead(_12)
     storage_live(_15)
@@ -235,6 +239,7 @@ fn foo()
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] _16
     storage_dead(_17)
     storage_dead(_16)
+    _ = _15
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<(dyn Display + '38), Global>[{built_in impl MetaSized for (dyn Display + '40)}, {built_in impl Sized for Global}]] _15
     storage_dead(_15)
     storage_live(_19)
@@ -249,6 +254,7 @@ fn foo()
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] _20
     storage_dead(_21)
     storage_dead(_20)
+    _ = _19
     conditional_drop[{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}<(dyn Display + '60), Global>[{built_in impl MetaSized for (dyn Display + '62)}, {built_in impl Sized for Global}]] _19
     storage_dead(_19)
     _0 = ()

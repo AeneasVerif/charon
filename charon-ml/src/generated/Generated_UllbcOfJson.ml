@@ -60,6 +60,9 @@ and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("StorageDead", storage_dead) ] ->
         let* storage_dead = local_id_of_json ctx storage_dead in
         Ok (StorageDead storage_dead)
+    | `Assoc [ ("PlaceMention", place_mention) ] ->
+        let* place_mention = place_of_json ctx place_mention in
+        Ok (PlaceMention place_mention)
     | `Assoc
         [
           ("Assert", `Assoc [ ("assert", assert_); ("on_failure", on_failure) ]);

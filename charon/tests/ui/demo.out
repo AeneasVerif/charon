@@ -206,6 +206,7 @@ where
     let _11: u32; // anonymous local
 
     storage_live(_11)
+    _ = l_1
     match (*l_1) {
         CList::CCons => {
         },
@@ -273,6 +274,7 @@ where
     storage_live(_16)
     storage_live(_3)
     storage_live(_4)
+    _ = l_1
     match (*l_1) {
         CList::CCons => {
         },
@@ -344,6 +346,7 @@ where
 
     storage_live(_7)
     loop {
+        _ = l_1
         match (*l_1) {
             CList::CCons => {
                 storage_live(x_3)
@@ -439,6 +442,7 @@ where
 
     storage_live(_2)
     storage_live(_3)
+    _ = l_1
     match (*l_1) {
         CList::CCons => {
             storage_live(tl_4)

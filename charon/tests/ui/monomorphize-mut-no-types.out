@@ -187,6 +187,7 @@ where
     _3 = &(*_15)
     _2 = identity<&'69 u32>[{built_in impl Sized for &'69 u32}](move _3)
     storage_dead(_3)
+    _ = _2
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
@@ -195,6 +196,7 @@ where
     _5 = &mut _6
     _4 = test_crate::identity::<&_ mut _><'74, u32>[{built_in impl core::marker::Sized::<&_ mut _><'74> for u32}](move _5)
     storage_dead(_5)
+    _ = _4
     storage_dead(_6)
     storage_dead(_4)
     storage_live(_7)
@@ -207,6 +209,7 @@ where
     storage_dead(_9)
     _7 = test_crate::identity::<Option<&_ mut _>><'84, u32>[{built_in impl core::marker::Sized::<Option<&_ mut _>><'84> for u32}](move _8)
     storage_dead(_8)
+    _ = _7
     storage_dead(_10)
     storage_dead(_7)
     storage_live(_11)
@@ -220,6 +223,7 @@ where
     storage_dead(_13)
     _11 = test_crate::identity::<Option<Option<&_ mut _>>><'131, A>[{built_in impl core::marker::Sized::<Option<Option<&_ mut _>>><'131> for A}](move _12)
     storage_dead(_12)
+    _ = _11
     storage_dead(_11)
     _0 = ()
     conditional_drop[{built_in impl Destruct for A}] x_1

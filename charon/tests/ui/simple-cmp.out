@@ -48,6 +48,7 @@ fn main()
     _3 = {impl Ord for i32}::cmp<'6, '7>(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
+    _ = _3
     storage_dead(_6)
     storage_dead(_3)
     _0 = ()

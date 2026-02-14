@@ -16,6 +16,7 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = Ordering::Less {  }
+    _ = _1
     match _1 {
         Ordering::Less => {
             _0 = ()

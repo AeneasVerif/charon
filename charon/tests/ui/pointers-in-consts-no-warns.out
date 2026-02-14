@@ -27,6 +27,7 @@ pub fn bar()
     _0 = ()
     storage_live(_1)
     _1 = cast<usize, *const ()>(const 43 : usize)
+    _ = _1
     _2 = const Opaque(`ConstantExprKind::Cast {{..}}`) == copy _1
     if move _2 {
         _0 = ()

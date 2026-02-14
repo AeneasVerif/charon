@@ -41,6 +41,7 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = {impl Ord for u64}::min[{built_in impl Sized for u64}, {built_in impl Destruct for u64}](const 1 : u64, const 2 : u64)
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

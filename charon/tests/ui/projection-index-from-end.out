@@ -30,6 +30,7 @@ fn slice_pattern_end<'_0>(@1: &'_0 [()])
     storage_live(_4)
     storage_live(_5)
     _0 = ()
+    _ = x_1
     _3 = copy x_1.metadata
     _2 = move _3
     _4 = const 1 : usize

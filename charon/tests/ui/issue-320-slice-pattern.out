@@ -28,6 +28,7 @@ fn slice_pat1()
     _0 = ()
     storage_live(array_1)
     array_1 = @ArrayRepeat<i32, 4 : usize>(const 0 : i32)
+    _ = array_1
     storage_live(_a_2)
     storage_live(_5)
     _5 = &array_1
@@ -85,6 +86,7 @@ fn slice_pat2()
     _2 = &(*_6)
     array_ref_1 = &(*_2)
     storage_dead(_2)
+    _ = array_ref_1
     storage_live(_a_3)
     storage_live(_9)
     _9 = &(*array_ref_1)
@@ -161,6 +163,7 @@ fn slice_pat3()
     slice_1 = @ArrayToSliceShared<'_, i32, 4 : usize>(move _2)
     storage_dead(_2)
     storage_dead(_3)
+    _ = slice_1
     _8 = copy slice_1.metadata
     _7 = move _8
     _9 = const 2 : usize
@@ -227,6 +230,7 @@ fn slice_pat4<'_0>(@1: &'_0 [u32])
     storage_live(_4)
     storage_live(_5)
     _0 = ()
+    _ = x_1
     _3 = copy x_1.metadata
     _2 = move _3
     _4 = const 1 : usize
@@ -272,6 +276,7 @@ fn slice_pat5<'_0>(@1: &'_0 Unsized)
     storage_live(_5)
     storage_live(_6)
     _0 = ()
+    _ = ((*x_1)).0
     _3 = &raw const ((*x_1)).0 with_metadata(copy x_1.metadata)
     _4 = copy _3.metadata
     _2 = move _4

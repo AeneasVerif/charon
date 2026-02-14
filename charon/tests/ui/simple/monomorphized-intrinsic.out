@@ -60,6 +60,7 @@ fn main()
     _12 = E2::A {  }
     _11 = &_12
     storage_dead(_2)
+    _ = _1
     storage_dead(_3)
     storage_dead(_1)
     storage_live(_4)
@@ -70,6 +71,7 @@ fn main()
     _5 = &(*_6)
     _4 = @discriminant((*_5))
     storage_dead(_5)
+    _ = _4
     storage_dead(_6)
     storage_dead(_4)
     _0 = ()

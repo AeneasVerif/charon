@@ -73,6 +73,7 @@ where
     let x_2: &'3 T; // local
     let _3: &'4 T; // anonymous local
 
+    _ = self_1
     match (*self_1) {
         Option::None => {
         },
@@ -143,6 +144,7 @@ fn call_fn_in_opaque_module()
     _0 = ()
     storage_live(_1)
     _1 = fn_in_opaque_module()
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

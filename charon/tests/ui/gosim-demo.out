@@ -162,6 +162,7 @@ where
     _3 = copy slice_1
     _2 = {impl IntoIterator for &'a [T]}::into_iter<'47, T>[@TraitClause0](move _3)
     storage_dead(_3)
+    _ = _2
     storage_live(iter_4)
     iter_4 = move _2
     loop {
@@ -172,6 +173,7 @@ where
         _6 = &two-phase-mut (*_7)
         _5 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'49, '51, T>[@TraitClause0](move _6)
         storage_dead(_6)
+        _ = _5
         match _5 {
             Option::None => {
                 break 0

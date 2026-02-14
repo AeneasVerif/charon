@@ -1051,6 +1051,7 @@ pub fn const_slice()
     _2 = &(*_3)
     _1 = @ArrayToSliceShared<'_, u32, 2 : usize>(move _2)
     storage_dead(_2)
+    _ = _1
     storage_dead(_3)
     storage_dead(_1)
     _0 = ()
@@ -2211,6 +2212,7 @@ fn slice_pattern_1(@1: [(); 1 : usize])
     let _4: &'_ (); // anonymous local
 
     _0 = ()
+    _ = x_1
     storage_live(_named_2)
     storage_live(_3)
     _3 = &x_1
@@ -2240,6 +2242,7 @@ where
     let _10: &'_ mut &'2 mut T; // anonymous local
 
     _0 = ()
+    _ = x_1
     storage_live(_a_2)
     storage_live(_5)
     _5 = &mut x_1
@@ -2275,6 +2278,7 @@ fn slice_pattern_3<'_0>(@1: &'_0 [(); 1 : usize])
     let _4: &'_ (); // anonymous local
 
     _0 = ()
+    _ = x_1
     storage_live(_named_2)
     storage_live(_3)
     _3 = &(*x_1)
@@ -2304,6 +2308,7 @@ fn slice_pattern_4<'_0>(@1: &'_0 [()])
     storage_live(_4)
     storage_live(_5)
     _0 = ()
+    _ = x_1
     _3 = copy x_1.metadata
     _2 = move _3
     _4 = const 1 : usize

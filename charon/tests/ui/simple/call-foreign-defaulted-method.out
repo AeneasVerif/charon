@@ -47,6 +47,7 @@ fn main()
     _2 = &(*_3)
     _1 = {impl Trait for ()}::defaulted<'5>(move _2)
     storage_dead(_2)
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

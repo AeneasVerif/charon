@@ -112,6 +112,7 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 Enum, @2: &'_1 Enu
         _10 = (move _11, move _12)
         storage_dead(_12)
         storage_dead(_11)
+        _ = _10
         match (*_10.0) {
             Enum::Some => {
                 match (*_10.1) {

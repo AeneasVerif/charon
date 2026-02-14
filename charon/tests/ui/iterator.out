@@ -5187,6 +5187,7 @@ fn main()
     storage_dead(_5)
     _3 = {impl IntoIterator for I}::into_iter<IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7 : usize>[{built_in impl Sized for i32}]}, {impl Iterator for IntoIter<T, N>[@TraitClause0]}<i32, 7 : usize>[{built_in impl Sized for i32}]](move _4)
     storage_dead(_4)
+    _ = _3
     storage_live(iter_6)
     iter_6 = move _3
     loop {
@@ -5197,6 +5198,7 @@ fn main()
         _8 = &two-phase-mut (*_9)
         _7 = {impl Iterator for IntoIter<T, N>[@TraitClause0]}::next<'87, i32, 7 : usize>[{built_in impl Sized for i32}](move _8)
         storage_dead(_8)
+        _ = _7
         match _7 {
             Option::None => {
                 break 0
@@ -5233,6 +5235,7 @@ fn main()
     storage_dead(_15)
     _13 = {impl IntoIterator for I}::into_iter<Iter<'91, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'91, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Iter<'a, T>[@TraitClause0]}<'91, i32>[{built_in impl Sized for i32}]](move _14)
     storage_dead(_14)
+    _ = _13
     storage_live(iter_17)
     iter_17 = move _13
     loop {
@@ -5243,6 +5246,7 @@ fn main()
         _19 = &two-phase-mut (*_20)
         _18 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'100, '102, i32>[{built_in impl Sized for i32}](move _19)
         storage_dead(_19)
+        _ = _18
         match _18 {
             Option::None => {
                 break 0
@@ -5281,6 +5285,7 @@ fn main()
     storage_dead(_27)
     _25 = {impl IntoIterator for I}::into_iter<Chunks<'113, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'113, i32>[{built_in impl Sized for i32}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'113, i32>[{built_in impl Sized for i32}]](move _26)
     storage_dead(_26)
+    _ = _25
     storage_live(iter_29)
     iter_29 = move _25
     loop {
@@ -5291,6 +5296,7 @@ fn main()
         _31 = &two-phase-mut (*_32)
         _30 = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'122, '124, i32>[{built_in impl Sized for i32}](move _31)
         storage_dead(_31)
+        _ = _30
         match _30 {
             Option::None => {
                 break 0
@@ -5319,6 +5325,7 @@ fn main()
     storage_dead(_36)
     _34 = {impl IntoIterator for I}::into_iter<ChunksExact<'128, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'128, i32>[{built_in impl Sized for i32}]}, {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}<'128, i32>[{built_in impl Sized for i32}]](move _35)
     storage_dead(_35)
+    _ = _34
     storage_live(iter_38)
     iter_38 = move _34
     loop {
@@ -5329,6 +5336,7 @@ fn main()
         _40 = &two-phase-mut (*_41)
         _39 = {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'137, '139, i32>[{built_in impl Sized for i32}](move _40)
         storage_dead(_40)
+        _ = _39
         match _39 {
             Option::None => {
                 break 0
@@ -5356,6 +5364,7 @@ fn main()
     _44 = (move _45, move _46)
     storage_dead(_46)
     storage_dead(_45)
+    _ = _44
     storage_live(left_val_47)
     left_val_47 = copy _44.0
     storage_live(right_val_48)

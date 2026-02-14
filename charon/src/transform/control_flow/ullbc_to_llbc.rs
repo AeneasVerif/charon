@@ -934,6 +934,7 @@ impl<'a> ReconstructCtx<'a> {
             src::StatementKind::Assert { assert, on_failure } => {
                 tgt::StatementKind::Assert { assert, on_failure }
             }
+            src::StatementKind::PlaceMention(place) => tgt::StatementKind::PlaceMention(place),
             src::StatementKind::Nop => tgt::StatementKind::Nop,
         };
         tgt::Statement::new(src_span, st)

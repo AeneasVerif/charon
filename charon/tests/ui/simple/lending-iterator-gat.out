@@ -161,6 +161,7 @@ where
     let _4: Option<&'22 T>[{built_in impl Sized for &'22 T}]; // anonymous local
     let _5: &'25 T; // anonymous local
 
+    _ = self_1
     match (*self_1) {
         Option::Some => {
         },
@@ -225,6 +226,7 @@ where
         _5 = &two-phase-mut iter_1
         _4 = @TraitClause2::next<'5>(move _5)
         storage_dead(_5)
+        _ = _4
         match _4 {
             Option::Some => {
             },
@@ -410,6 +412,7 @@ pub fn main()
     _9 = (move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
+    _ = _9
     storage_live(left_val_12)
     left_val_12 = copy _9.0
     storage_live(right_val_13)

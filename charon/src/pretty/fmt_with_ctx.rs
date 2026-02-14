@@ -1586,7 +1586,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             StatementKind::StorageDead(var_id) => {
                 write!(f, "{tab}storage_dead({})", var_id.with_ctx(ctx))
             }
-
+            StatementKind::PlaceMention(place) => {
+                write!(f, "{tab}_ = {}", place.with_ctx(ctx))
+            }
             StatementKind::Assert { assert, on_failure } => {
                 write!(
                     f,
@@ -1630,7 +1632,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::StorageDead(var_id) => {
                 write!(f, "storage_dead({})", var_id.with_ctx(ctx))
             }
-
+            StatementKind::PlaceMention(place) => {
+                write!(f, "_ = {}", place.with_ctx(ctx))
+            }
             StatementKind::Drop(place, tref, kind) => {
                 let kind = match kind {
                     DropKind::Precise => "drop",

@@ -333,6 +333,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
 
     bb2: {
         storage_dead(_5);
+        _ = _4;
         storage_live(iter_6);
         iter_6 = move _4;
         goto bb3;
@@ -349,6 +350,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
 
     bb4: {
         storage_dead(_8);
+        _ = _7;
         _10 = @discriminant(_7);
         switch move _10 -> 0 : isize: bb5, 1 : isize: bb6, otherwise: bb7;
     }
@@ -381,6 +383,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
 
     bb8: {
         storage_dead(_13);
+        _ = _12;
         storage_live(iter_15);
         iter_15 = move _12;
         goto bb9;
@@ -397,6 +400,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
 
     bb10: {
         storage_dead(_17);
+        _ = _16;
         _19 = @discriminant(_16);
         switch move _19 -> 0 : isize: bb11, 1 : isize: bb12, otherwise: bb13;
     }
@@ -428,6 +432,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
 
     bb14: {
         storage_dead(_21);
+        _ = _20;
         storage_live(iter_23);
         iter_23 = move _20;
         goto bb15;
@@ -444,6 +449,7 @@ pub fn nested_loops_enum(@1: usize, @2: usize) -> usize
 
     bb16: {
         storage_dead(_25);
+        _ = _24;
         _27 = @discriminant(_24);
         switch move _27 -> 0 : isize: bb17, 1 : isize: bb18, otherwise: bb19;
     }

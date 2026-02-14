@@ -305,6 +305,7 @@ fn call_fn()
     _2 = Option::None {  }
     _1 = external_use_item<'18, &'18 bool, Option<&'18 bool>[{built_in impl Sized for &'_ bool}], &'33 bool>[{built_in impl Sized for &'18 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'_ T}]> for &'a T}<'18, bool>[{built_in impl Sized for bool}], {impl test_crate::Foo<'a, T> for Option<T>[@TraitClause0]}<'18, &'33 bool>[{built_in impl Sized for &'33 bool}, {impl Copy for &'_0 T}<'33, bool>]](move _2)
     storage_dead(_2)
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

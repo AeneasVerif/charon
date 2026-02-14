@@ -200,6 +200,7 @@ fn main()
     _16 = &_17
     storage_dead(_3)
     storage_dead(_2)
+    _ = _1
     storage_dead(_4)
     storage_dead(_1)
     storage_live(_5)
@@ -214,6 +215,7 @@ fn main()
     _5 = {impl MyCompare<&'a ()> for &'a ()}::compare<'13>(move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
+    _ = _5
     storage_dead(_8)
     storage_dead(_5)
     _0 = ()

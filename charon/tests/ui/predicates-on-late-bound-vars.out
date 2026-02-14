@@ -162,6 +162,7 @@ fn foo()
     _3 = &ref_b_1
     _2 = try_borrow<'12, bool>[{built_in impl MetaSized for bool}](move _3)
     storage_dead(_3)
+    _ = _2
     conditional_drop[{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}<Ref<'22, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'22, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] _2
     storage_dead(_2)
     _0 = ()

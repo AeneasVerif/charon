@@ -190,6 +190,7 @@ fn main()
     _5 = (move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
+    _ = _5
     storage_live(left_val_8)
     left_val_8 = copy _5.0
     storage_live(right_val_9)

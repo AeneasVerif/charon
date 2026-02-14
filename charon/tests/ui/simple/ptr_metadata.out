@@ -301,6 +301,7 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = null<u8>[{impl Thin for Self}<u8>[{built_in impl Pointee for u8 where Metadata  = ()}]]()
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

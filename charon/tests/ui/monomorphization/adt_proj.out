@@ -17,6 +17,7 @@ fn main()
     _0 = ()
     storage_live(res_1)
     res_1 = Result::<u32, u32>::Ok { 0: const 0 : u32 }
+    _ = res_1
     match res_1 {
         Result::<u32, u32>::Ok => {
         },

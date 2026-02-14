@@ -247,6 +247,7 @@ where
     let _0: bool; // return
     let self_1: &'1 Option<T>[@TraitClause0]; // arg #1
 
+    _ = self_1
     match (*self_1) {
         Option::None => {
         },

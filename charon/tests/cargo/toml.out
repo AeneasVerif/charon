@@ -69,6 +69,7 @@ fn main()
     _2 = &(*_3)
     _1 = is_some<'5, bool>[{built_in impl Sized for bool}](move _2)
     storage_dead(_2)
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

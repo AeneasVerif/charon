@@ -36,6 +36,7 @@ module Ast = struct
         indent ^ "storage_live " ^ local_id_to_string env var_id
     | StorageDead var_id ->
         indent ^ "storage_dead " ^ local_id_to_string env var_id
+    | PlaceMention place -> indent ^ "_ := " ^ place_to_string env place
     | CopyNonOverlapping { src; dst; count } ->
         indent ^ "copy_non_overlapping(" ^ operand_to_string env src ^ ", "
         ^ operand_to_string env dst ^ ", "

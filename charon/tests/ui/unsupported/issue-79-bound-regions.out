@@ -93,6 +93,7 @@ fn main()
     storage_dead(_7)
     _4 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'26, '28, i32>[{built_in impl Sized for i32}](move _5)
     storage_dead(_5)
+    _ = _4
     storage_dead(_6)
     storage_dead(_4)
     _0 = ()

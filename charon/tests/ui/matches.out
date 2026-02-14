@@ -37,6 +37,7 @@ pub fn test1(@1: E1) -> bool
     let _0: bool; // return
     let x_1: E1; // arg #1
 
+    _ = x_1
     match x_1 {
         E1::V1 | E1::V2 => {
         },
@@ -76,6 +77,7 @@ pub fn test2(@1: E2) -> u32
     let x_1: E2; // arg #1
     let n_2: u32; // local
 
+    _ = x_1
     match x_1 {
         E2::V1 => {
             storage_live(n_2)
@@ -100,44 +102,50 @@ pub fn test3(@1: E2) -> u32
 {
     let _0: u32; // return
     let x_1: E2; // arg #1
-    let y_2: u32; // local
-    let n_3: u32; // local
-    let z_4: u32; // local
-    let _5: u32; // anonymous local
+    let _2: (); // anonymous local
+    let y_3: u32; // local
+    let n_4: u32; // local
+    let z_5: u32; // local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
+    let _8: u32; // anonymous local
 
-    storage_live(_7)
-    storage_live(y_2)
+    storage_live(_8)
+    storage_live(_2)
+    _2 = ()
+    _ = _2
+    storage_dead(_2)
+    storage_live(y_3)
+    _ = x_1
     match x_1 {
         E2::V1 => {
-            storage_live(n_3)
-            n_3 = copy (x_1 as variant E2::V1).0
-            y_2 = copy n_3
-            storage_dead(n_3)
+            storage_live(n_4)
+            n_4 = copy (x_1 as variant E2::V1).0
+            y_3 = copy n_4
+            storage_dead(n_4)
         },
         E2::V2 => {
-            storage_live(n_3)
-            n_3 = copy (x_1 as variant E2::V2).0
-            y_2 = copy n_3
-            storage_dead(n_3)
+            storage_live(n_4)
+            n_4 = copy (x_1 as variant E2::V2).0
+            y_3 = copy n_4
+            storage_dead(n_4)
         },
         E2::V3 => {
-            y_2 = const 0 : u32
+            y_3 = const 0 : u32
         },
     }
-    storage_live(z_4)
-    z_4 = id<u32>[{built_in impl Sized for u32}](const 3 : u32)
-    storage_live(_5)
-    _5 = copy y_2
+    storage_live(z_5)
+    z_5 = id<u32>[{built_in impl Sized for u32}](const 3 : u32)
     storage_live(_6)
-    _6 = copy z_4
-    _7 = copy _5 panic.+ copy _6
-    _0 = move _7
+    _6 = copy y_3
+    storage_live(_7)
+    _7 = copy z_5
+    _8 = copy _6 panic.+ copy _7
+    _0 = move _8
+    storage_dead(_7)
     storage_dead(_6)
-    storage_dead(_5)
-    storage_dead(z_4)
-    storage_dead(y_2)
+    storage_dead(z_5)
+    storage_dead(y_3)
     return
 }
 

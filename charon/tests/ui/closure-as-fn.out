@@ -107,6 +107,7 @@ fn {impl Fn<()> for closure}::call<'_0>(@1: &'_0 closure, @2: ())
     _0 = ()
     storage_live(_3)
     _3 = const 1 : i32 panic./ const 0 : i32
+    _ = _3
     storage_dead(_3)
     _0 = ()
     return

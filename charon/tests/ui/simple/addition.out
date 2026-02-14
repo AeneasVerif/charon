@@ -12,6 +12,7 @@ fn main()
     storage_live(_1)
     _2 = const 1 : i32 panic.+ const 2 : i32
     _1 = move _2
+    _ = _1
     storage_dead(_1)
     _0 = ()
     return

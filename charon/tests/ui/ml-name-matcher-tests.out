@@ -299,6 +299,7 @@ fn foo()
     _15 = [const false]
     _14 = &_15
     storage_dead(_2)
+    _ = _1
     storage_dead(_1)
     storage_live(slice_3)
     storage_live(_4)
@@ -319,6 +320,7 @@ fn foo()
     storage_dead(_9)
     storage_dead(_8)
     _6 = &(*_7) with_metadata(copy _7.metadata)
+    _ = _6
     storage_dead(_6)
     _0 = ()
     storage_dead(_7)

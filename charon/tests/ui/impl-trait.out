@@ -179,6 +179,7 @@ fn use_foo()
     storage_dead(_5)
     _2 = {impl Clone for u32}::clone<'8>(move _3)
     storage_dead(_3)
+    _ = _2
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
@@ -254,6 +255,7 @@ where
     storage_dead(_5)
     _2 = @TraitClause1::parent_clause2::parent_clause2::clone<'8>(move _3)
     storage_dead(_3)
+    _ = _2
     conditional_drop[{built_in impl Destruct for @TraitClause1::parent_clause2::Type}] _2
     storage_dead(_4)
     storage_dead(_2)
@@ -374,6 +376,7 @@ pub fn use_wrap()
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
+    _ = _2
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
