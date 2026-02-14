@@ -685,27 +685,9 @@ and match_generic_args (ctx : 'fun_body ctx) (c : match_config) (m : maps)
         List.map (fun x -> MCg x) generics.const_generics;
       ]
   in
-  if List.length pgenerics = 0 then true (* Generics can be omitted *)
-  else begin
-    (* Regions can be omitted *)
-    let any_region_pat =
-      List.exists
-        (function
-          | GRegion _ -> true
-          | _ -> false)
-        pgenerics
-    in
-    let pgenerics =
-      if (not (List.length generics.regions = 0)) && not any_region_pat then
-        List.append
-          (List.map (fun _ -> GRegion (RVar None)) generics.regions)
-          pgenerics
-      else pgenerics
-    in
-    if List.length pgenerics = List.length merged_generics then
-      List.for_all2 (match_generic_arg ctx c m) pgenerics merged_generics
-    else false
-  end
+  if List.length pgenerics = List.length merged_generics then
+    List.for_all2 (match_generic_arg ctx c m) pgenerics merged_generics
+  else false
 
 and match_generic_arg (ctx : 'fun_body ctx) (c : match_config) (m : maps)
     (pg : generic_arg) (g : mexpr) : bool =
