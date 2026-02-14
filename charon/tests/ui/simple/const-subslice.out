@@ -42,7 +42,6 @@ fn main()
     _5 = copy z_2
     _4 = cast<*const u8, usize>(move _5)
     storage_dead(_5)
-    _ = _4
     storage_dead(_4)
     _0 = ()
     storage_dead(z_2)

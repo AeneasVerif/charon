@@ -596,7 +596,6 @@ fn main()
     _5 = &(*v_1) with_metadata(copy v_1.metadata)
     _4 = (copy ((*_5.metadata)).method_join_method)(move _5)
     storage_dead(_5)
-    _ = _4
     storage_dead(_4)
     _0 = ()
     storage_dead(v_1)

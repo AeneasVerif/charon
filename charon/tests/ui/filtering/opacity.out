@@ -125,7 +125,6 @@ fn foo()
     _2 = &(*_8)
     _1 = is_some<'11, i32>[{built_in impl Sized for i32}](move _2)
     storage_dead(_2)
-    _ = _1
     storage_dead(_1)
     storage_live(_3)
     _3 = {impl Into<U> for T}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const 42 : u32)
@@ -133,7 +132,6 @@ fn foo()
     storage_live(_12)
     _12 = const 0 : i32
     _11 = &_12
-    _ = _3
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -143,7 +141,6 @@ fn foo()
     _5 = &(*_6)
     _4 = from_ref<'14, i32>[{built_in impl Sized for i32}](move _5)
     storage_dead(_5)
-    _ = _4
     storage_dead(_6)
     storage_dead(_4)
     _0 = ()

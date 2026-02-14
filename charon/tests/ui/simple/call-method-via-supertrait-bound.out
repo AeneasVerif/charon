@@ -104,7 +104,6 @@ where
     _3 = &x_1
     _2 = {impl HasMethod for T}::method<'3, T>[@TraitClause0, @TraitClause1::parent_clause1](move _3)
     storage_dead(_3)
-    _ = _2
     storage_dead(_2)
     _0 = ()
     conditional_drop[{built_in impl Destruct for T}] x_1

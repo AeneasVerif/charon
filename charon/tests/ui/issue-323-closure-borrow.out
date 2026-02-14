@@ -109,7 +109,6 @@ fn new<'_0>(@1: &'_0 mut Rng)
     _3 = &uniq (*rng_1)
     _2 = closure { 0: move _3 }
     storage_dead(_3)
-    _ = _2
     storage_dead(_2)
     _0 = ()
     return

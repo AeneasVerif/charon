@@ -117,7 +117,6 @@ fn main()
     _4 = @discriminant(_3)
     _2 = cast<isize, isize>(move _4)
     storage_dead(_3)
-    _ = _2
     storage_dead(_2)
     storage_live(_5)
     storage_live(_6)
@@ -125,7 +124,6 @@ fn main()
     _7 = @discriminant(_6)
     _5 = cast<isize, u8>(move _7)
     storage_dead(_6)
-    _ = _5
     storage_dead(_5)
     storage_live(x_8)
     x_8 = Ordering::Greater {  }
@@ -135,7 +133,6 @@ fn main()
     _11 = @discriminant(_10)
     _9 = cast<isize, isize>(move _11)
     storage_dead(_10)
-    _ = _9
     storage_dead(_9)
     _0 = ()
     storage_dead(x_8)

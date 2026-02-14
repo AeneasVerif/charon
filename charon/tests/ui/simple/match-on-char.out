@@ -9,7 +9,6 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = const x
-    _ = _1
     switch copy _1 {
         a => {
             _0 = ()

@@ -308,7 +308,6 @@ fn call_unsafe_fn()
     _3 = copy x_1
     _2 = read<u32>[{built_in impl Sized for u32}](move _3)
     storage_dead(_3)
-    _ = _2
     storage_dead(_2)
     _0 = ()
     storage_dead(x_1)
@@ -327,7 +326,6 @@ fn deref_raw_ptr()
     x_1 = null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     storage_live(_2)
     _2 = copy (*x_1)
-    _ = _2
     storage_dead(_2)
     _0 = ()
     storage_dead(x_1)

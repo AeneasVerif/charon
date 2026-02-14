@@ -60,7 +60,6 @@ fn main()
 
     bb3: {
         _4 = move _5.0;
-        _ = _4;
         storage_dead(_4);
         storage_live(x_6);
         x_6 = const 127 : i8;
@@ -74,7 +73,6 @@ fn main()
     bb4: {
         _7 = wrap.-(move _8);
         storage_dead(_8);
-        _ = _7;
         storage_dead(_7);
         storage_live(_10);
         _11 = const 0 : i32 == const 0 : i32;
@@ -90,7 +88,6 @@ fn main()
 
     bb6: {
         _10 = const 1 : i32 ub./ const 0 : i32;
-        _ = _10;
         storage_dead(_10);
         storage_live(_15);
         _16 = const 0 : i32 == const 0 : i32;
@@ -106,7 +103,6 @@ fn main()
 
     bb8: {
         _15 = const 1 : i32 ub.% const 0 : i32;
-        _ = _15;
         storage_dead(_15);
         _0 = ();
         storage_dead(x_6);

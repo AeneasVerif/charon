@@ -347,7 +347,6 @@ fn foo()
     storage_live(_3)
     // Call `default` and destructure the result
     _3 = {impl Default for Foo}::default()
-    _ = _3
     storage_live(x_1)
     x_1 = copy (_3).x
     storage_live(y_2)
@@ -370,7 +369,6 @@ fn foo()
     // Call `default` and destructure the result
     // This is the long field
     _10 = {impl Default for Bar}::default()
-    _ = _10
     storage_live(x_8)
     x_8 = copy (_10).x
     storage_live(super_long_field_name_9)
@@ -413,7 +411,6 @@ fn foo()
     _16 = (move _17, move _19)
     storage_dead(_19)
     storage_dead(_17)
-    _ = _16
     storage_live(left_val_20)
     left_val_20 = copy _16.0
     storage_live(right_val_21)
@@ -509,9 +506,8 @@ pub fn fake_read(@1: u32)
     let x_1: u32; // arg #1
 
     _0 = ()
-    // This statement is translated to a `fake_read`.
-    _ = x_1
     _0 = ()
+    // This statement is translated to a `fake_read`.
     return
 }
 
@@ -524,7 +520,6 @@ fn fool()
     _0 = ()
     storage_live(_1)
     _1 = const "\n    // Fooled ya"
-    _ = _1
     storage_dead(_1)
     // Fooled ya";
     _0 = ()

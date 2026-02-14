@@ -172,7 +172,6 @@ fn main()
     _3 = copy f_1
     _2 = Some<u8>[{built_in impl Sized for u8}](const 42 : u8)
     storage_dead(_3)
-    _ = _2
     storage_dead(_2)
     storage_live(f_4)
     storage_live(_5)
@@ -184,7 +183,6 @@ fn main()
     _7 = copy f_4
     _6 = (move _7)(const 42 : u8)
     storage_dead(_7)
-    _ = _6
     storage_dead(_6)
     storage_live(f_8)
     f_8 = const Foo
@@ -196,7 +194,6 @@ fn main()
     _9 = Foo(const 42 : u32, move _11)
     storage_dead(_11)
     storage_dead(_10)
-    _ = _9
     conditional_drop[{impl Destruct for Foo}] _9
     storage_live(_18)
     storage_live(_19)
@@ -216,7 +213,6 @@ fn main()
     _13 = Variant<'12, i32>[{built_in impl Sized for i32}](move _15)
     storage_dead(_15)
     storage_dead(_14)
-    _ = _13
     storage_dead(_16)
     storage_dead(_13)
     _0 = ()

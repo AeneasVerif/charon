@@ -13,23 +13,18 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = const 255 : u8 ub.+ const 1 : u8
-    _ = _1
     storage_dead(_1)
     storage_live(_2)
     _2 = const 0 : u8 ub.- const 1 : u8
-    _ = _2
     storage_dead(_2)
     storage_live(_3)
     _3 = const 255 : u8 ub.* const 2 : u8
-    _ = _3
     storage_dead(_3)
     storage_live(_4)
     _4 = const 255 : u8 ub.<< const 9 : i32
-    _ = _4
     storage_dead(_4)
     storage_live(_5)
     _5 = const 255 : u8 ub.>> const 9 : i32
-    _ = _5
     storage_dead(_5)
     _0 = ()
     return

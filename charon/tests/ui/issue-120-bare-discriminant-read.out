@@ -107,7 +107,6 @@ where
     let _0: isize; // return
     let opt_1: Option<T>[@TraitClause0]; // arg #1
 
-    _ = opt_1
     match opt_1 {
         Option::None => {
             _0 = const 0 : isize

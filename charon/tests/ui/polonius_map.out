@@ -294,7 +294,6 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut HashMap<u32, u32, RandomState>[{built_in 
     _2 = get<'28, '29, u32, u32, RandomState, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, {built_in impl MetaSized for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Hash for u32}, {impl Eq for u32}](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
-    _ = _2
     match _2 {
         Option::None => {
             storage_live(_7)

@@ -195,7 +195,6 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = test_crate::main::closure {  }
-    _ = _1
     storage_dead(_1)
     storage_live(_2)
     storage_live(_3)

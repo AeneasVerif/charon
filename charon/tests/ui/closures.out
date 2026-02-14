@@ -205,7 +205,6 @@ where
     let _6: (T,); // anonymous local
     let _7: T; // anonymous local
 
-    _ = x_1
     match x_1 {
         Option::None => {
             _0 = Option::None {  }
@@ -251,7 +250,6 @@ where
     let _5: fn<'_0_1>(&'_0_1 T) -> T; // anonymous local
     let _6: &'4 T; // anonymous local
 
-    _ = x_1
     match (*x_1) {
         Option::None => {
         },

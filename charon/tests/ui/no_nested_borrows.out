@@ -483,7 +483,6 @@ where
     let _0: bool; // return
     let l_1: &'1 List<T>[@TraitClause0]; // arg #1
 
-    _ = l_1
     match (*l_1) {
         List::Cons => {
         },
@@ -508,7 +507,6 @@ where
     let _4: T; // anonymous local
     let _5: List<T>[@TraitClause0]; // anonymous local
 
-    _ = l_1
     match l_1 {
         List::Cons => {
         },

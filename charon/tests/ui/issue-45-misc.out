@@ -413,7 +413,6 @@ fn cbd(@1: [u8; 33 : usize])
     _3 = Range { start: const 0 : u8, end: const 3 : u8 }
     _2 = {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[@TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move _3)
     storage_dead(_3)
-    _ = _2
     storage_live(iter_4)
     iter_4 = move _2
     loop {
@@ -424,7 +423,6 @@ fn cbd(@1: [u8; 33 : usize])
         _6 = &two-phase-mut (*_7)
         _5 = {impl Iterator for Range<A>[@TraitClause0]}::next<'4, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move _6)
         storage_dead(_6)
-        _ = _5
         match _5 {
             Option::None => {
                 break 0
@@ -507,7 +505,6 @@ fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
         _4 = (move _5, move _8)
         storage_dead(_8)
         storage_dead(_5)
-        _ = _4
         storage_live(left_val_11)
         left_val_11 = copy _4.0
         storage_live(right_val_12)

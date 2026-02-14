@@ -84,7 +84,6 @@ where
     _3 = &x_1
     _2 = (@TraitClause1::LifetimeGat::[@TraitClause1])::clone<'3>(move _3)
     storage_dead(_3)
-    _ = _2
     conditional_drop[{built_in impl Destruct for @TraitClause1::LifetimeGat}] _2
     storage_dead(_2)
     _0 = ()
@@ -109,7 +108,6 @@ where
     _3 = &x_1
     _2 = (@TraitClause1::NonLifetimeGat::[@TraitClause1])::clone<'3>(move _3)
     storage_dead(_3)
-    _ = _2
     conditional_drop[{built_in impl Destruct for @TraitClause1::NonLifetimeGat}] _2
     storage_dead(_2)
     _0 = ()

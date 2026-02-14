@@ -47,15 +47,12 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = const 255 : u8 wrap.+ const 1 : u8
-    _ = _1
     storage_dead(_1)
     storage_live(_2)
     _2 = const 0 : u8 wrap.- const 1 : u8
-    _ = _2
     storage_dead(_2)
     storage_live(_3)
     _3 = const 255 : u8 wrap.* const 2 : u8
-    _ = _3
     storage_dead(_3)
     storage_live(_4)
     _4 = wrapping_add(const 255 : u8, const 1 : u8)

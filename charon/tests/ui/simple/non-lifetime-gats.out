@@ -154,7 +154,6 @@ pub fn main()
     _0 = ()
     storage_live(_1)
     _1 = make_pointer<BoxFamily, i32>[{built_in impl Sized for BoxFamily}, {built_in impl Sized for i32}, {impl PointerFamily for BoxFamily}](const 42 : i32)
-    _ = _1
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
     _0 = ()

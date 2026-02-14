@@ -238,7 +238,6 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
     storage_dead(_6)
     _4 = {impl IntoIterator for I}::into_iter<Chunks<'26, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'26, u8>[{built_in impl Sized for u8}]}, {impl Iterator for Chunks<'a, T>[@TraitClause0]}<'26, u8>[{built_in impl Sized for u8}]](move _5)
     storage_dead(_5)
-    _ = _4
     storage_live(iter_7)
     iter_7 = move _4
     loop {
@@ -249,7 +248,6 @@ fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
         _9 = &two-phase-mut (*_10)
         _8 = {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'35, '37, u8>[{built_in impl Sized for u8}](move _9)
         storage_dead(_9)
-        _ = _8
         match _8 {
             Option::None => {
                 break 0

@@ -77,7 +77,6 @@ fn foo(@1: Option<u32>[{built_in impl Sized for u32}])
     storage_live(_3)
     _0 = ()
     storage_live(_2)
-    _ = opt_1
     match opt_1 {
         Option::Some => {
             storage_live(x_5)

@@ -867,7 +867,11 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             }
             mir::StatementKind::PlaceMention(place) => {
                 let place = self.translate_place(span, place)?;
-                Some(StatementKind::PlaceMention(place))
+                if place.is_local() {
+                    None
+                } else {
+                    Some(StatementKind::PlaceMention(place))
+                }
             }
             // This is for the stacked borrows memory model.
             mir::StatementKind::Retag(_, _) => None,

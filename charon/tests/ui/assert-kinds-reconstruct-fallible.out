@@ -27,7 +27,6 @@ fn main()
         storage_live(_3);
         _4 = const 5 : i32 panic.* const 10 : i32;
         _3 = move _4;
-        _ = _3;
         storage_dead(_3);
         storage_live(x_5);
         x_5 = const 127 : i8;
@@ -36,15 +35,12 @@ fn main()
         _7 = copy x_5;
         _6 = panic.-(move _7);
         storage_dead(_7);
-        _ = _6;
         storage_dead(_6);
         storage_live(_8);
         _8 = const 1 : i32 panic./ const 0 : i32;
-        _ = _8;
         storage_dead(_8);
         storage_live(_9);
         _9 = const 1 : i32 panic.% const 0 : i32;
-        _ = _9;
         storage_dead(_9);
         _0 = ();
         storage_dead(x_5);
