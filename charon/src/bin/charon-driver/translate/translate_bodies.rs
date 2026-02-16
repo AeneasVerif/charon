@@ -867,6 +867,8 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             }
             mir::StatementKind::PlaceMention(place) => {
                 let place = self.translate_place(span, place)?;
+                // We only translate this for places with projections, as
+                // no UB can arise from simply mentioning a local variable.
                 if place.is_local() {
                     None
                 } else {
