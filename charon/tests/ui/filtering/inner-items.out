@@ -1,0 +1,55 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::foo
+fn foo()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::Bar
+struct Bar {}
+
+// Full name: test_crate::{Bar}::bar
+fn bar<'_0>(@1: &'_0 Bar)
+{
+    let _0: (); // return
+    let self_1: &'1 Bar; // arg #1
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::module::_
+fn _()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::module::_
+const _: () = _()
+
+// Full name: test_crate::module::baz
+fn baz()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::module::opaque
+fn opaque()
+= <opaque>
+
+
+
