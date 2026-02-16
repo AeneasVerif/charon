@@ -182,7 +182,7 @@ impl RustcItem {
     }
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx> {
+impl<'tcx> TranslateCtx<'tcx> {
     /// Returns the default translation kind for the given `DefId`. Returns `None` for items that
     /// we don't translate. Errors on unexpected items.
     pub fn base_kind_for_item(&mut self, def_id: &hax::DefId) -> Option<TransItemSourceKind> {

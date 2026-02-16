@@ -5,6 +5,7 @@ use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
+use hax::SInto;
 use itertools::Itertools;
 use rustc_span::sym;
 use std::mem;
@@ -72,6 +73,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let item_meta = self.translate_item_meta(&def, item_src, name, opacity);
         if item_meta.opacity.is_invisible() {
             return Ok(());
+        }
+
+        // For items in the current crate that have bodies, also enqueue items defined in that
+        // body.
+        if !item_meta.opacity.is_opaque()
+            && let Some(def_id) = def.def_id().as_rust_def_id()
+            && let Some(ldid) = def_id.as_local()
+            && let node = self.tcx.hir_node_by_def_id(ldid)
+            && let Some(body_id) = node.body_id()
+        {
+            use rustc_hir::intravisit;
+            #[allow(non_local_definitions)]
+            impl<'tcx> intravisit::Visitor<'tcx> for TranslateCtx<'tcx> {
+                fn visit_nested_item(&mut self, id: rustc_hir::ItemId) {
+                    let def_id = id.owner_id.def_id.to_def_id();
+                    let def_id = def_id.sinto(&self.hax_state);
+                    self.enqueue_module_item(&def_id);
+                }
+            }
+            let body = self.tcx.hir_body(body_id);
+            intravisit::walk_body(self, body);
         }
 
         // Initialize the item translation context
