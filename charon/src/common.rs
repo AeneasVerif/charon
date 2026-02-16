@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use macros::EnumAsGetters;
 
 pub static TAB_INCR: &str = "    ";
 
@@ -51,6 +52,38 @@ macro_rules! impl_from_enum {
 /// Yield `None` then infinitely many `Some(x)`.
 pub fn repeat_except_first<T: Clone>(x: T) -> impl Iterator<Item = Option<T>> {
     [None].into_iter().chain(std::iter::repeat(Some(x)))
+}
+
+/// An enum to manage potentially-cyclic computations.
+#[derive(Debug, EnumAsGetters)]
+pub enum CycleDetector<T> {
+    /// We haven't analyzed this yet.
+    Unprocessed,
+    /// Sentinel value that we set when starting the computation on an item. If we ever encounter
+    /// this, we know we encountered a loop that we can't handle.
+    Processing,
+    /// Sentinel value we put when encountering a cycle, so we can know that happened.
+    Cyclic,
+    /// The final result of the computation.
+    Processed(T),
+}
+
+impl<T> CycleDetector<T> {
+    /// If this item hadn't been processed, return `true` and record it as `Processing`, otherwise
+    /// return `false`. If this item is already processing, record a cycle.
+    pub fn start_processing(&mut self) -> bool {
+        match self {
+            CycleDetector::Unprocessed => {
+                *self = CycleDetector::Processing;
+                true
+            }
+            CycleDetector::Processing => {
+                *self = CycleDetector::Cyclic;
+                false
+            }
+            CycleDetector::Cyclic | CycleDetector::Processed(_) => false,
+        }
+    }
 }
 
 pub mod type_map {
