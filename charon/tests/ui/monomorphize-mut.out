@@ -180,7 +180,7 @@ where
 }
 
 // Full name: test_crate::Iter
-struct Iter<'a, T>
+struct Iter<mut 'a, T>
 where
     [@TraitClause0]: Sized<T>,
     T : 'a,
@@ -201,7 +201,7 @@ where
 }
 
 // Full name: test_crate::IterWrapper
-struct IterWrapper<'a, T>
+struct IterWrapper<mut 'a, T>
 where
     [@TraitClause0]: Sized<T>,
     T : 'a,
@@ -221,7 +221,7 @@ where
 }
 
 // Full name: core::slice::iter::IterMut
-pub opaque type IterMut<'a, T>
+pub opaque type IterMut<mut 'a, T>
 where
     [@TraitClause0]: Sized<T>,
     T : 'a,

@@ -450,6 +450,15 @@ and global_decl_ref = { id : global_decl_id; generics : generic_args }
     to use the pointer address as a hash value. *)
 and 'a0 hash_consed = 'a0 (* Not actually hash-consed on the OCaml side *)
 
+(** The nature of locations where a given lifetime parameter is used. If this
+    lifetime ever flows to be used as the lifetime of a mutable reference
+    [&'a mut] then we consider it mutable. *)
+and lifetime_mutability =
+  | LtMutable  (** A lifetime that is used for a mutable reference. *)
+  | LtShared  (** A lifetime used only in shared references. *)
+  | LtUnknown
+      (** A lifetime for which we couldn't/didn't compute mutability. *)
+
 (** .0 outlives .1 *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
@@ -486,6 +495,11 @@ and region_param = {
       (** Index identifying the variable among other variables bound at the same
           level. *)
   name : string option;  (** Region name *)
+  mutability : lifetime_mutability;
+      (** Whether this lifetime is (recursively) used in a [&'a mut T] type.
+          Only [true] if this lifetime parameter belongs to an ADT. This is a
+          global analysis that looks even into opaque items. When unsure, err on
+          the side of assuming mutability. *)
 }
 
 (** The value of a trait associated type. *)

@@ -1343,6 +1343,15 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             : layout)
     | _ -> Error "")
 
+and lifetime_mutability_of_json (ctx : of_json_ctx) (js : json) :
+    (lifetime_mutability, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Mutable" -> Ok LtMutable
+    | `String "Shared" -> Ok LtShared
+    | `String "Unknown" -> Ok LtUnknown
+    | _ -> Error "")
+
 and literal_of_json (ctx : of_json_ctx) (js : json) : (literal, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1664,10 +1673,11 @@ and region_param_of_json (ctx : of_json_ctx) (js : json) :
     (region_param, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name) ] ->
+    | `Assoc [ ("index", index); ("name", name); ("mutability", mutability) ] ->
         let* index = region_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
-        Ok ({ index; name } : region_param)
+        let* mutability = lifetime_mutability_of_json ctx mutability in
+        Ok ({ index; name; mutability } : region_param)
     | _ -> Error "")
 
 and repr_algorithm_of_json (ctx : of_json_ctx) (js : json) :

@@ -17,14 +17,14 @@ pub trait Sized<Self>
 pub struct Global {}
 
 // Full name: test_crate::A
-struct A<'a, 'b> {
+struct A<mut 'a, mut 'b> {
   x: &'a mut u32,
   y: &'b u32,
   z: alloc::boxed::Box<&'b mut u32>[{built_in impl MetaSized for &'_ mut u32}, {built_in impl Sized for Global}],
 }
 
 // Full name: test_crate::B
-struct B<'a, 'b> {
+struct B<mut 'a, mut 'b> {
   A<'a, 'b>,
 }
 

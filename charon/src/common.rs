@@ -84,6 +84,16 @@ impl<T> CycleDetector<T> {
             CycleDetector::Cyclic | CycleDetector::Processed(_) => false,
         }
     }
+
+    pub fn done_processing(&mut self, x: T) {
+        *self = CycleDetector::Processed(x)
+    }
+}
+
+impl<T> Default for CycleDetector<T> {
+    fn default() -> Self {
+        Self::Unprocessed
+    }
 }
 
 pub mod type_map {
