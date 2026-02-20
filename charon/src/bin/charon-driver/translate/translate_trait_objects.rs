@@ -598,51 +598,15 @@ impl ItemTransCtx<'_, '_> {
         self.check_no_monomorphize(span)?;
 
         let (hax::FullDefKind::Trait {
-            dyn_self,
             implied_predicates,
             ..
         }
         | hax::FullDefKind::TraitAlias {
-            dyn_self,
             implied_predicates,
             ..
         }) = trait_def.kind()
         else {
             panic!()
-        };
-        let Some(dyn_self) = dyn_self else {
-            panic!("Trying to generate a vtable for a non-dyn-compatible trait")
-        };
-
-        // The `dyn Trait<Args..>` type for this trait.
-        let mut dyn_self = {
-            let dyn_self = self.translate_ty(span, dyn_self)?;
-            let TyKind::DynTrait(mut dyn_pred) = dyn_self.kind().clone() else {
-                panic!("incorrect `dyn_self`")
-            };
-
-            // Add one generic parameter for each associated type of this trait and its parents. We
-            // then use that in `dyn_self`
-            for (i, ty_constraint) in dyn_pred
-                .binder
-                .params
-                .trait_type_constraints
-                .iter_mut()
-                .enumerate()
-            {
-                let name = format!("Ty{i}");
-                let new_ty = self
-                    .the_only_binder_mut()
-                    .params
-                    .types
-                    .push_with(|index| TypeParam { index, name });
-                // Moving that type under two levels of binders: the `DynPredicate` binder and the
-                // type constraint binder.
-                let new_ty =
-                    TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::new(2), new_ty)).into_ty();
-                ty_constraint.skip_binder.ty = new_ty;
-            }
-            TyKind::DynTrait(dyn_pred).into_ty()
         };
 
         let mut field_map = IndexVec::new();
@@ -650,7 +614,7 @@ impl ItemTransCtx<'_, '_> {
             (0..implied_predicates.predicates.len())
                 .map(|_| None)
                 .collect();
-        let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
+        let (kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
             (TypeDeclKind::Opaque, None)
         } else {
             // First construct fields that use the real method signatures (which may use the `Self`
@@ -677,23 +641,18 @@ impl ItemTransCtx<'_, '_> {
             (kind, Some(layout))
         };
 
-        // Replace any use of `Self` with `dyn Trait<...>`, and remove the `Self` type variable
-        // from the generic parameters.
-        let mut generics = self.into_generics();
-        {
-            dyn_self = dynify(dyn_self, None, false);
-            generics = dynify(generics, Some(dyn_self.clone()), false);
-            kind = dynify(kind, Some(dyn_self.clone()), true);
-            generics.types.remove_and_shift_ids(TypeVarId::ZERO);
-            generics.types.iter_mut().for_each(|ty| {
-                ty.index -= 1;
-            });
-        }
-        let dyn_predicate = dyn_self
-            .kind()
-            .as_dyn_trait()
-            .expect("incorrect `dyn_self`");
-        trace!("MONO: dyn_predicate:\n {:?}", dyn_predicate);
+        // In mono mode we erase the vtable declaration generics.
+        let dyn_predicate = DynPredicate {
+            binder: Binder {
+                params: GenericParams::empty(),
+                skip_binder: TyKind::Error(
+                    "mono vtable dyn predicate is intentionally erased".to_string(),
+                )
+                .into_ty(),
+                kind: BinderKind::Dyn,
+            },
+        };
+
         Ok(TypeDecl {
             def_id: type_id,
             item_meta: item_meta,
