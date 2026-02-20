@@ -381,9 +381,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         self.options.monomorphize_with_hax
     }
 
-    pub fn check_mono_no_trait_impl(&self) {
-        if self.monomorphize_mode() && self.translated.trait_impls.slot_count() != 0 {
-            error!("Trait Impl should not be translated in Mono mode");
+    pub fn check_mono_no_trait_impl(&mut self) {
+        if self.monomorphize_mode() {
+            self.translated.trait_impls.clear();
+            if self.translated.trait_impls.slot_count() != 0 {
+                error!("Trait Impl should not be translated in Mono mode");
+            }
         }
     }
 }
