@@ -220,6 +220,12 @@ impl ItemTransCtx<'_, '_> {
             .types
             .remove_and_shift_ids(TypeVarId::ZERO);
 
+        // In mono mode we keep a unique vtable type per trait declaration, with no generic arguments.
+        if self.monomorphize_mode() {
+            vtable_ref.generics = Box::new(GenericArgs::empty());
+            return Ok(Some(vtable_ref));
+        }
+
         // The vtable type also takes associated types as parameters.
         let assoc_tys: Vec<_> = tref
             .trait_associated_types(self.hax_state_with_id())
@@ -683,11 +689,11 @@ impl ItemTransCtx<'_, '_> {
                 ty.index -= 1;
             });
         }
-
         let dyn_predicate = dyn_self
             .kind()
             .as_dyn_trait()
             .expect("incorrect `dyn_self`");
+        trace!("MONO: dyn_predicate:\n {:?}", dyn_predicate);
         Ok(TypeDecl {
             def_id: type_id,
             item_meta: item_meta,

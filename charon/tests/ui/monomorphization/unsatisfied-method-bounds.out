@@ -28,7 +28,7 @@ trait MyIterator<Self>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Self::Item>
     type Item
-    vtable: test_crate::MyIterator::{vtable}<Self::Item>
+    vtable: test_crate::MyIterator::{vtable}
 }
 
 // Full name: test_crate::A

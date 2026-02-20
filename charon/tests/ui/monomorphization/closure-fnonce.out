@@ -41,7 +41,7 @@ pub trait FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
-    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+    vtable: core::ops::function::FnOnce::{vtable}
 }
 
 // Full name: test_crate::NotCopy

@@ -29,7 +29,7 @@ pub trait FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     parent_clause3 : [@TraitClause3]: Sized<Self::Output>
     type Output
-    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+    vtable: core::ops::function::FnOnce::{vtable}
 }
 
 // Full name: core::ops::function::FnMut
@@ -40,7 +40,7 @@ pub trait FnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
+    vtable: core::ops::function::FnMut::{vtable}
 }
 
 // Full name: core::ops::function::Fn
@@ -51,7 +51,7 @@ pub trait Fn<Self, Args>
     parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: Sized<Args>
     parent_clause3 : [@TraitClause3]: Tuple<Args>
-    vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
+    vtable: core::ops::function::Fn::{vtable}
 }
 
 // Full name: test_crate::foo::<u32>
