@@ -124,6 +124,32 @@ impl ItemTransCtx<'_, '_> {
 
         self.register_predicates(&binder.predicates, PredicateOrigin::Dyn)?;
 
+        // As illustrated inside translate_trait_decl, associated items take an extra explicit `Self: Trait` clause in Hax.
+        // Therefore, in mono mode, projection predicates in dyn binders may refer to clause vars with an
+        // extra slot (e.g. `Bound(0, 1)` instead of `Bound(0, 0)`).
+        // Hence, we normalize them so that associated type constraints point to trait clauses in the scope.
+        if self.monomorphize_mode() {
+            struct ShiftDynClauseVars;
+            impl VarsVisitor for ShiftDynClauseVars {
+                fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+                    if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v
+                        && let Some(new_id) = clause_id.index().checked_sub(1)
+                    {
+                        return Some(TraitRefKind::Clause(DeBruijnVar::Bound(
+                            DeBruijnId::ZERO,
+                            TraitClauseId::new(new_id),
+                        )));
+                    }
+                    None
+                }
+            }
+
+            self.innermost_generics_mut()
+                .trait_type_constraints
+                .iter_mut()
+                .for_each(|pred| pred.visit_vars(&mut ShiftDynClauseVars));
+        }
+
         let params = self.binding_levels.pop().unwrap().params;
         Ok(Binder {
             params: params,
@@ -598,12 +624,10 @@ impl ItemTransCtx<'_, '_> {
         self.check_no_monomorphize(span)?;
 
         let (hax::FullDefKind::Trait {
-            implied_predicates,
-            ..
+            implied_predicates, ..
         }
         | hax::FullDefKind::TraitAlias {
-            implied_predicates,
-            ..
+            implied_predicates, ..
         }) = trait_def.kind()
         else {
             panic!()
