@@ -41,7 +41,7 @@ where
 fn {impl Trait for i32}::comsume<'_0>(@1: &'_0 i32)
 {
     let _0: (); // return
-    let self_1: &'0 i32; // arg #1
+    let self_1: &'1 i32; // arg #1
 
     _0 = ()
     _0 = ()
@@ -104,13 +104,13 @@ impl Trait for i32 {
 fn main()
 {
     let _0: (); // return
-    let b_1: &'0 (dyn Trait + '1); // local
-    let _2: &'2 i32; // anonymous local
-    let _3: &'2 i32; // anonymous local
+    let b_1: &'3 (dyn Trait + '4); // local
+    let _2: &'6 i32; // anonymous local
+    let _3: &'7 i32; // anonymous local
     let _4: (); // anonymous local
-    let _5: &'0 (dyn Trait + '1); // anonymous local
-    let _6: &'2 i32; // anonymous local
-    let _7: &'_ i32; // anonymous local
+    let _5: &'8 (dyn Trait + '9); // anonymous local
+    let _6: &'10 i32; // anonymous local
+    let _7: &'19 i32; // anonymous local
     let _8: i32; // anonymous local
 
     storage_live(_7)
@@ -125,7 +125,7 @@ fn main()
     _6 = move _7
     _3 = &(*_6)
     _2 = &(*_3)
-    b_1 = unsize_cast<&'2 i32, &'0 (dyn Trait + '1), {impl Trait for i32} with {impl Trait for i32}::{vtable}>(move _2)
+    b_1 = unsize_cast<&'6 i32, &'12 (dyn Trait + '13), {impl Trait for i32} with {impl Trait for i32}::{vtable}>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)

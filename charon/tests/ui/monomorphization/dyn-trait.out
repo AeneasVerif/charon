@@ -1,4 +1,4 @@
-ERROR in translate_item_aux at src/bin/charon-driver/translate/translate_items.rs:135:
+ERROR in translate_item_aux at src/bin/charon-driver/translate/translate_items.rs:157:
 TraitImpl other than Normal is not supported in Mono
 
 thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:1838:13:
@@ -23,6 +23,6 @@ note: the error occurred when translating `core::fmt::Display::{vtable_method_pr
    |
 12 |     let _ = dyn_to_string(&str);
    |                           ----
-ERROR in check_mono_no_trait_impl at src/bin/charon-driver/translate/translate_items.rs:364:
+ERROR in check_mono_no_trait_impl at src/bin/charon-driver/translate/translate_items.rs:386:
 Trait Impl should not be translated in Mono mode
 ERROR Charon failed to translate this code (2 errors)
