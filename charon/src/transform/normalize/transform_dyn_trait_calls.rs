@@ -17,6 +17,8 @@
 //! @0 := (move (*@receiver.ptr_metadata).method_check)(move (@receiver), move (@args)) // Call through function pointer
 //! ```
 
+use itertools::Itertools;
+
 use super::super::ctx::UllbcPass;
 use crate::{
     errors::Error,
@@ -50,14 +52,61 @@ fn transform_dyn_trait_call(
     if ctx.ctx.options.monomorphize_with_hax {
         trace!("MONO: current trait_id: {}", trait_pred.id);
         trace!("MONO: trait_decls:\n {:?}", ctx.ctx.translated.trait_decls);
-        let types: Vec<_> = trait_ref
+        let mut receiver_types = None;
+        let mut types: Vec<_> = trait_ref
             .trait_decl_ref
             .skip_binder
             .generics
             .types
-            .iter()
+            .clone()
+            .into_iter()
             .skip(1)
-            .collect();
+            .collect_vec();
+        // trace!("MONO: trait_ref.generic_args:\n {:?}", types);
+
+        if let Some(Operand::Copy(receiver) | Operand::Move(receiver)) = call.args.first() {
+            receiver_types = match receiver.ty().kind() {
+                TyKind::Ref(_, dyn_ty, _) | TyKind::RawPtr(dyn_ty, _) => match dyn_ty.kind() {
+                    TyKind::DynTrait(pred) => {
+                        trace!(
+                            "MONO: inside:\n {:?}",
+                            pred.binder.params.trait_type_constraints
+                        );
+                        let trait_type_constraints: Vec<_> = pred
+                            .binder
+                            .params
+                            .trait_type_constraints
+                            .clone()
+                            .into_iter()
+                            .collect();
+                        Some(
+                            trait_type_constraints
+                                .iter()
+                                .map(|ttc| ttc.skip_binder.ty.clone())
+                                .collect_vec(),
+                        )
+                    }
+                    _ => None,
+                },
+                TyKind::DynTrait(pred) => {
+                    let trait_type_constraints: Vec<_> =
+                        pred.binder.params.trait_type_constraints.iter().collect();
+                    // None
+                    Some(
+                        trait_type_constraints
+                            .iter()
+                            .map(|ttc| ttc.skip_binder.ty.clone())
+                            .collect_vec(),
+                    )
+                }
+                _ => None,
+            };
+        }
+
+        if let Some(mut receiver_types) = receiver_types {
+            types.append(&mut receiver_types);
+        }
+
         trace!("MONO: trait_ref.generic_args:\n {:?}", types);
 
         let mut preshim = None;
@@ -65,9 +114,8 @@ fn transform_dyn_trait_call(
             match &fun_decl.src {
                 ItemSource::VTableMethodPreShim(t_id, m_name, m_types) => {
                     trace!("MONO: m_types:\n {:?}", m_types);
-                    if *t_id == trait_pred.id
-                        && *m_name == *method_name
-                        && m_types.iter().eq(types.iter().copied())
+                    if *t_id == trait_pred.id && *m_name == *method_name && *m_types == types
+                    // m_types.iter().eq(types.iter().copied())
                     {
                         preshim = Some(fun_decl);
                     }
