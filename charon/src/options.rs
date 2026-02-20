@@ -2,6 +2,8 @@
 use annotate_snippets::Level;
 use clap::ValueEnum;
 use indoc::indoc;
+use itertools::Itertools;
+use macros::EnumAsGetters;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -57,6 +59,7 @@ pub struct CliOpts {
     #[clap(long = "rustc-arg")]
     #[serde(default)]
     pub rustc_args: Vec<String>,
+
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
     /// skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't
     /// currently support `dyn Trait`.
@@ -82,6 +85,23 @@ pub struct CliOpts {
     #[clap(long, value_delimiter = ',')]
     #[serde(default)]
     pub start_from: Vec<String>,
+    /// Use all the items annotated with the given attribute as starting points for translation
+    /// (except modules).
+    /// If an attribute name is not specified, `verify::start_from` is used.
+    #[clap(
+        long,
+        value_name("ATTRIBUTE"),
+        num_args(0..=1),
+        require_equals(true),
+        default_missing_value("verify::start_from"),
+    )]
+    #[serde(default)]
+    pub start_from_attribute: Option<String>,
+    /// Use all the `pub` items as starting points for translation (except modules).
+    #[clap(long)]
+    #[serde(default)]
+    pub start_from_pub: bool,
+
     /// Whitelist of items to translate. These use the name-matcher syntax.
     #[clap(
         long,
@@ -178,6 +198,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub raw_consts: bool,
+    /// Replace string literal constants with a constant u8 array that gets unsized,
+    /// expliciting the fact a string constant has a hidden reference.
+    #[clap(long)]
+    #[serde(default)]
+    pub unsized_strings: bool,
     /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
     /// panic-on-overflow operation. This loses unwinding information.
     #[clap(long)]
@@ -387,10 +412,37 @@ impl CliOpts {
     }
 }
 
+/// Predicates that determine wihch items to use as starting point for translation.
+#[derive(Debug, Clone, EnumAsGetters)]
+pub enum StartFrom {
+    /// Item identified by a pattern/path.
+    Pattern(NamePattern),
+    /// Item annotated with the given attribute.
+    Attribute(String),
+    /// Item marked `pub`. Note that this does not take accessibility into account; a
+    /// non-reexported `pub` item will be included here.
+    Pub,
+}
+
+impl StartFrom {
+    pub fn matches(&self, ctx: &TranslatedCrate, item_meta: &ItemMeta) -> bool {
+        match self {
+            StartFrom::Pattern(pattern) => pattern.matches(ctx, &item_meta.name),
+            StartFrom::Attribute(attr) => item_meta
+                .attr_info
+                .attributes
+                .iter()
+                .filter_map(|a| a.as_unknown())
+                .any(|raw_attr| raw_attr.path == *attr),
+            StartFrom::Pub => item_meta.attr_info.public,
+        }
+    }
+}
+
 /// The options that control translation and transformation.
 pub struct TranslateOptions {
     /// Items from which to start translation.
-    pub start_from: Vec<NamePattern>,
+    pub start_from: Vec<StartFrom>,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
@@ -421,6 +473,9 @@ pub struct TranslateOptions {
     pub treat_box_as_builtin: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
+    /// Replace string literal constants with a constant u8 array that gets unsized,
+    /// expliciting the fact a string constant has a hidden reference.
+    pub unsized_strings: bool,
     /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
     /// panic-on-overflow operation. This loses unwinding information.
     pub reconstruct_fallible_operations: bool,
@@ -460,15 +515,21 @@ impl TranslateOptions {
             mir_level = std::cmp::max(mir_level, MirLevel::Elaborated);
         }
 
-        let start_from = if options.start_from.is_empty() {
-            vec![parse_pattern("crate").unwrap()]
-        } else {
-            options
-                .start_from
-                .iter()
-                .filter_map(|path| parse_pattern(&path).ok())
-                .collect()
-        };
+        let mut start_from = options
+            .start_from
+            .iter()
+            .filter_map(|path| parse_pattern(&path).ok())
+            .map(StartFrom::Pattern)
+            .collect_vec();
+        if let Some(attr) = options.start_from_attribute.clone() {
+            start_from.push(StartFrom::Attribute(attr));
+        }
+        if options.start_from_pub {
+            start_from.push(StartFrom::Pub);
+        }
+        if start_from.is_empty() {
+            start_from.push(StartFrom::Pattern(parse_pattern("crate").unwrap()))
+        }
 
         let item_opacities = {
             use ItemOpacity::*;
@@ -529,6 +590,7 @@ impl TranslateOptions {
             item_opacities,
             treat_box_as_builtin: options.treat_box_as_builtin,
             raw_consts: options.raw_consts,
+            unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,
             remove_associated_types,

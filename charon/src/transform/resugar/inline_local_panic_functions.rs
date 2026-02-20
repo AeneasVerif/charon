@@ -55,6 +55,7 @@ impl UllbcPass for Transform {
                                     }),
                                 ..
                             },
+                        on_unwind: _, // TODO: shouldn't we use this?
                         ..
                     } = &block.terminator.kind
                         && panic_fns.contains(fun_id)

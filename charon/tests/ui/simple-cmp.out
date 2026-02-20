@@ -29,9 +29,9 @@ fn main()
     let x_1: i32; // local
     let y_2: i32; // local
     let _3: Ordering; // anonymous local
-    let _4: &'0 i32; // anonymous local
-    let _5: &'0 i32; // anonymous local
-    let _6: &'0 i32; // anonymous local
+    let _4: &'1 i32; // anonymous local
+    let _5: &'2 i32; // anonymous local
+    let _6: &'3 i32; // anonymous local
 
     _0 = ()
     storage_live(x_1)
@@ -45,7 +45,7 @@ fn main()
     storage_live(_6)
     _6 = &y_2
     _5 = &(*_6)
-    _3 = {impl Ord for i32}::cmp<'3, '4>(move _4, move _5)
+    _3 = {impl Ord for i32}::cmp<'6, '7>(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_6)

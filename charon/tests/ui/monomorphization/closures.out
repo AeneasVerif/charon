@@ -70,7 +70,7 @@ struct test_crate::main::closure<'_0> {
 }
 
 // Full name: core::ops::function::Fn::call
-pub fn call<'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8)) -> u8
+pub fn call<'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8,)) -> u8
 = <opaque>
 
 struct test_crate::main::closure#1<'_0> {
@@ -78,7 +78,7 @@ struct test_crate::main::closure#1<'_0> {
 }
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8)) -> u8
+pub fn call_mut<'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8,)) -> u8
 = <opaque>
 
 // Full name: test_crate::Thing
@@ -89,7 +89,7 @@ struct test_crate::main::closure#2 {
 }
 
 // Full name: core::ops::function::FnOnce::call_once
-pub fn call_once(@1: test_crate::main::closure#2, @2: (u8)) -> u8
+pub fn call_once(@1: test_crate::main::closure#2, @2: (u8,)) -> u8
 = <opaque>
 
 fn UNIT_METADATA()
@@ -106,18 +106,18 @@ const UNIT_METADATA: () = @Fun1()
 fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<'_>) -> u8
 {
     let _0: u8; // return
-    let f_1: test_crate::main::closure<'_>; // arg #1
-    let _2: &'0 test_crate::main::closure<'_>; // anonymous local
-    let _3: (u8); // anonymous local
+    let f_1: test_crate::main::closure<'0>; // arg #1
+    let _2: &'3 test_crate::main::closure<'4>; // anonymous local
+    let _3: (u8,); // anonymous local
 
     storage_live(_2)
     _2 = &f_1
     storage_live(_3)
-    _3 = (const 0 : u8)
-    _0 = {impl#2}<'3>::call<'4>(move _2, move _3)
+    _3 = (const 0 : u8,)
+    _0 = {impl#2}<'8>::call<'9>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl#3}<'6>] f_1
+    conditional_drop[{impl#3}<'15>] f_1
     return
 }
 
@@ -125,18 +125,18 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
 fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::closure#1<'_>) -> u8
 {
     let _0: u8; // return
-    let f_1: test_crate::main::closure#1<'_>; // arg #1
-    let _2: &'0 mut test_crate::main::closure#1<'_>; // anonymous local
-    let _3: (u8); // anonymous local
+    let f_1: test_crate::main::closure#1<'0>; // arg #1
+    let _2: &'3 mut test_crate::main::closure#1<'4>; // anonymous local
+    let _3: (u8,); // anonymous local
 
     storage_live(_2)
     _2 = &mut f_1
     storage_live(_3)
-    _3 = (const 0 : u8)
-    _0 = {impl#4}<'3>::call_mut<'4>(move _2, move _3)
+    _3 = (const 0 : u8,)
+    _0 = {impl#4}<'8>::call_mut<'9>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl#4}<'6>] f_1
+    conditional_drop[{impl#4}<'15>] f_1
     return
 }
 
@@ -146,12 +146,12 @@ fn apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate::main::closu
     let _0: u8; // return
     let f_1: test_crate::main::closure#2; // arg #1
     let _2: test_crate::main::closure#2; // anonymous local
-    let _3: (u8); // anonymous local
+    let _3: (u8,); // anonymous local
 
     storage_live(_2)
     _2 = move f_1
     storage_live(_3)
-    _3 = (const 0 : u8)
+    _3 = (const 0 : u8,)
     _0 = {impl#5}::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -165,12 +165,12 @@ fn main()
     let _0: (); // return
     let z_1: u8; // local
     let _2: u8; // anonymous local
-    let _3: test_crate::main::closure<'0>; // anonymous local
-    let _4: &'1 u8; // anonymous local
+    let _3: test_crate::main::closure<'1>; // anonymous local
+    let _4: &'3 u8; // anonymous local
     let z_5: u8; // local
     let _6: u8; // anonymous local
-    let _7: test_crate::main::closure#1<'2>; // anonymous local
-    let _8: &'3 mut u8; // anonymous local
+    let _7: test_crate::main::closure#1<'5>; // anonymous local
+    let _8: &'7 mut u8; // anonymous local
     let z_9: Thing; // local
     let _10: u8; // anonymous local
     let _11: test_crate::main::closure#2; // anonymous local

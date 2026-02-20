@@ -50,7 +50,7 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<U>,
-    [@TraitClause3]: FnMut<F, (T)>,
+    [@TraitClause3]: FnMut<F, (T,)>,
     @TraitClause3::parent_clause1::Output = U,
 = <opaque>
 
@@ -304,12 +304,12 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::map::closure
 struct closure {}
 
-// Full name: test_crate::map::{impl FnMut<(i32)> for closure}::call_mut
-fn {impl FnMut<(i32)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32)) -> i32
+// Full name: test_crate::map::{impl FnMut<(i32,)> for closure}::call_mut
+fn {impl FnMut<(i32,)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32,)) -> i32
 {
     let _0: i32; // return
-    let _1: &'0 mut closure; // arg #1
-    let tupled_args_2: (i32); // arg #2
+    let _1: &'1 mut closure; // arg #1
+    let tupled_args_2: (i32,); // arg #2
     let v_3: i32; // local
 
     storage_live(v_3)
@@ -328,39 +328,39 @@ impl Destruct for closure {
     non-dyn-compatible
 }
 
-// Full name: test_crate::map::{impl FnOnce<(i32)> for closure}::call_once
-fn {impl FnOnce<(i32)> for closure}::call_once(@1: closure, @2: (i32)) -> i32
+// Full name: test_crate::map::{impl FnOnce<(i32,)> for closure}::call_once
+fn {impl FnOnce<(i32,)> for closure}::call_once(@1: closure, @2: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: closure; // arg #1
-    let _2: (i32); // arg #2
-    let _3: &'0 mut closure; // anonymous local
+    let _2: (i32,); // arg #2
+    let _3: &'1 mut closure; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(i32)> for closure}::call_mut<'2>(move _3, move _2)
+    _0 = {impl FnMut<(i32,)> for closure}::call_mut<'3>(move _3, move _2)
     drop[{impl Destruct for closure}] _1
     return
 }
 
-// Full name: test_crate::map::{impl FnOnce<(i32)> for closure}
-impl FnOnce<(i32)> for closure {
+// Full name: test_crate::map::{impl FnOnce<(i32,)> for closure}
+impl FnOnce<(i32,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {built_in impl Sized for (i32)}
-    parent_clause2 = {built_in impl Tuple for (i32)}
+    parent_clause1 = {built_in impl Sized for (i32,)}
+    parent_clause2 = {built_in impl Tuple for (i32,)}
     parent_clause3 = {built_in impl Sized for i32}
     type Output = i32
-    fn call_once = {impl FnOnce<(i32)> for closure}::call_once
+    fn call_once = {impl FnOnce<(i32,)> for closure}::call_once
     non-dyn-compatible
 }
 
-// Full name: test_crate::map::{impl FnMut<(i32)> for closure}
-impl FnMut<(i32)> for closure {
+// Full name: test_crate::map::{impl FnMut<(i32,)> for closure}
+impl FnMut<(i32,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {impl FnOnce<(i32)> for closure}
-    parent_clause2 = {built_in impl Sized for (i32)}
-    parent_clause3 = {built_in impl Tuple for (i32)}
-    fn call_mut<'_0_1> = {impl FnMut<(i32)> for closure}::call_mut<'_0_1>
+    parent_clause1 = {impl FnOnce<(i32,)> for closure}
+    parent_clause2 = {built_in impl Sized for (i32,)}
+    parent_clause3 = {built_in impl Tuple for (i32,)}
+    fn call_mut<'_0_1> = {impl FnMut<(i32,)> for closure}::call_mut<'_0_1>
     non-dyn-compatible
 }
 
@@ -375,7 +375,7 @@ pub fn test_crate::map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
     _2 = copy x_1
     storage_live(_3)
     _3 = closure {  }
-    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32)> for closure}](move _2, move _3)
+    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,)> for closure}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -399,8 +399,8 @@ fn cbd(@1: [u8; 33 : usize])
     let _3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let iter_4: Range<u8>[{built_in impl Sized for u8}]; // local
     let _5: Option<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _6: &'0 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _7: &'0 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let _6: &'1 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
+    let _7: &'2 mut Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let i_8: u8; // local
     let _9: u8; // anonymous local
     let _10: usize; // anonymous local
@@ -421,7 +421,7 @@ fn cbd(@1: [u8; 33 : usize])
         storage_live(_7)
         _7 = &mut iter_4
         _6 = &two-phase-mut (*_7)
-        _5 = {impl Iterator for Range<A>[@TraitClause0]}::next<'2, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move _6)
+        _5 = {impl Iterator for Range<A>[@TraitClause0]}::next<'4, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move _6)
         storage_dead(_6)
         match _5 {
             Option::None => {
@@ -460,28 +460,28 @@ fn cbd(@1: [u8; 33 : usize])
 fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
 {
     let _0: (); // return
-    let lhs_1: &'0 [u8]; // arg #1
-    let rhs_2: &'0 [u8]; // arg #2
+    let lhs_1: &'1 [u8]; // arg #1
+    let rhs_2: &'2 [u8]; // arg #2
     let _3: bool; // anonymous local
-    let _4: (&'1 usize, &'1 usize); // anonymous local
-    let _5: &'1 usize; // anonymous local
+    let _4: (&'6 usize, &'7 usize); // anonymous local
+    let _5: &'8 usize; // anonymous local
     let _6: usize; // anonymous local
-    let _7: &'0 [u8]; // anonymous local
-    let _8: &'1 usize; // anonymous local
+    let _7: &'9 [u8]; // anonymous local
+    let _8: &'10 usize; // anonymous local
     let _9: usize; // anonymous local
-    let _10: &'0 [u8]; // anonymous local
-    let left_val_11: &'1 usize; // local
-    let right_val_12: &'1 usize; // local
+    let _10: &'11 [u8]; // anonymous local
+    let left_val_11: &'12 usize; // local
+    let right_val_12: &'13 usize; // local
     let _13: bool; // anonymous local
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
     let kind_16: AssertKind; // local
     let _17: AssertKind; // anonymous local
-    let _18: &'1 usize; // anonymous local
-    let _19: &'1 usize; // anonymous local
-    let _20: &'1 usize; // anonymous local
-    let _21: &'1 usize; // anonymous local
-    let _22: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
+    let _18: &'14 usize; // anonymous local
+    let _19: &'15 usize; // anonymous local
+    let _20: &'16 usize; // anonymous local
+    let _21: &'17 usize; // anonymous local
+    let _22: Option<Arguments<'24>>[{built_in impl Sized for Arguments<'24>}]; // anonymous local
 
     _0 = ()
     storage_live(_3)
@@ -492,14 +492,14 @@ fn select<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 [u8])
         storage_live(_6)
         storage_live(_7)
         _7 = &(*lhs_1) with_metadata(copy lhs_1.metadata)
-        _6 = core::slice::{[T]}::len<'6, u8>[{built_in impl Sized for u8}](move _7)
+        _6 = core::slice::{[T]}::len<'28, u8>[{built_in impl Sized for u8}](move _7)
         storage_dead(_7)
         _5 = &_6
         storage_live(_8)
         storage_live(_9)
         storage_live(_10)
         _10 = &(*rhs_2) with_metadata(copy rhs_2.metadata)
-        _9 = core::slice::{[T]}::len<'8, u8>[{built_in impl Sized for u8}](move _10)
+        _9 = core::slice::{[T]}::len<'30, u8>[{built_in impl Sized for u8}](move _10)
         storage_dead(_10)
         _8 = &_9
         _4 = (move _5, move _8)

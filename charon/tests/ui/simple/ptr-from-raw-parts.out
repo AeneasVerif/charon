@@ -250,13 +250,13 @@ pub trait Freeze<Self>
 pub trait Unpin<Self>
 
 // Full name: core::ptr::metadata::from_raw_parts
-pub fn from_raw_parts<T, impl Thin>(@1: *const impl Thin, @2: {built_in impl Pointee for T}::Metadata) -> *const T
+pub fn from_raw_parts<T, T1>(@1: *const T1, @2: {built_in impl Pointee for T}::Metadata) -> *const T
 where
-    [@TraitClause0]: Sized<impl Thin>,
-    [@TraitClause1]: Thin<impl Thin>,
+    [@TraitClause0]: Sized<T1>,
+    [@TraitClause1]: Thin<T1>,
 {
     let _0: *const T; // return
-    let data_pointer_1: *const impl Thin; // arg #1
+    let data_pointer_1: *const T1; // arg #1
     let metadata_2: {built_in impl Pointee for T}::Metadata; // arg #2
 
     _0 = @PtrFromPartsShared<'_, T>(copy data_pointer_1, copy metadata_2)

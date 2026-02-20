@@ -27,16 +27,16 @@ fn main()
 {
     let _0: (); // return
     let _1: isize; // anonymous local
-    let _2: &'0 E1; // anonymous local
-    let _3: &'0 E1; // anonymous local
+    let _2: &'1 E1; // anonymous local
+    let _3: &'2 E1; // anonymous local
     let _4: isize; // anonymous local
-    let _5: &'1 E2; // anonymous local
-    let _6: &'1 E2; // anonymous local
-    let _7: &'1 E2; // anonymous local
-    let _8: &'0 E1; // anonymous local
-    let _9: &'_ E1; // anonymous local
+    let _5: &'4 E2; // anonymous local
+    let _6: &'5 E2; // anonymous local
+    let _7: &'6 E2; // anonymous local
+    let _8: &'7 E1; // anonymous local
+    let _9: &'14 E1; // anonymous local
     let _10: E1; // anonymous local
-    let _11: &'_ E2; // anonymous local
+    let _11: &'15 E2; // anonymous local
     let _12: E2; // anonymous local
 
     storage_live(_9)

@@ -18,7 +18,7 @@ const UNIT_METADATA: () = @Fun0()
 pub fn {impl Trait for ()}::defaulted<'_0>(@1: &'_0 ())
 {
     let _0: (); // return
-    let self_1: &'0 (); // arg #1
+    let self_1: &'1 (); // arg #1
 
     _0 = ()
     _0 = ()
@@ -30,9 +30,9 @@ fn main()
 {
     let _0: (); // return
     let _1: (); // anonymous local
-    let _2: &'0 (); // anonymous local
-    let _3: &'0 (); // anonymous local
-    let _4: &'_ (); // anonymous local
+    let _2: &'1 (); // anonymous local
+    let _3: &'2 (); // anonymous local
+    let _4: &'6 (); // anonymous local
     let _5: (); // anonymous local
 
     storage_live(_4)
@@ -45,7 +45,7 @@ fn main()
     storage_live(_2)
     _3 = move _4
     _2 = &(*_3)
-    _1 = {impl Trait for ()}::defaulted<'2>(move _2)
+    _1 = {impl Trait for ()}::defaulted<'5>(move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
@@ -65,7 +65,7 @@ where
     [@TraitClause0]: Trait<Self>,
 {
     let _0: (); // return
-    let self_1: &'0 Self; // arg #1
+    let self_1: &'1 Self; // arg #1
 
     _0 = ()
     _0 = ()

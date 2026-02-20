@@ -90,7 +90,7 @@ where
 {
     let _0: (); // return
     let _1: *mut [T; N]; // arg #1
-    let _2: &'0 mut [T; N]; // anonymous local
+    let _2: &'1 mut [T; N]; // anonymous local
     let _3: *mut [T; N]; // anonymous local
     let _4: *mut [T]; // anonymous local
     let _5: usize; // anonymous local
@@ -149,7 +149,7 @@ where
 {
     let _0: (); // return
     let _1: *mut [T]; // arg #1
-    let _2: &'0 mut [T]; // anonymous local
+    let _2: &'1 mut [T]; // anonymous local
     let _3: usize; // anonymous local
     let _4: usize; // anonymous local
     let _5: *mut T; // anonymous local
@@ -203,7 +203,7 @@ where
 {
     let _0: (); // return
     let _1: *mut (A, B); // arg #1
-    let _2: &'0 mut (A, B); // anonymous local
+    let _2: &'1 mut (A, B); // anonymous local
 
     storage_live(_2)
     _0 = ()

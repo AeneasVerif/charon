@@ -14,14 +14,14 @@ const UNIT_METADATA: () = @Fun0()
 fn main()
 {
     let _0: (); // return
-    let y_1: &'0 [u8]; // local
+    let y_1: &'1 [u8]; // local
     let z_2: *const u8; // local
     let _3: *const [u8]; // anonymous local
     let _4: usize; // anonymous local
     let _5: *const u8; // anonymous local
     let _6: [u8; 3 : usize]; // anonymous local
     let _7: &'_ [u8; 3 : usize]; // anonymous local
-    let _8: &'0 [u8]; // anonymous local
+    let _8: &'2 [u8]; // anonymous local
 
     _0 = ()
     storage_live(y_1)

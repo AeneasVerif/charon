@@ -4,7 +4,7 @@
 pub fn incr<'_0>(@1: &'_0 mut [u32])
 {
     let _0: (); // return
-    let s_1: &'0 mut [u32]; // arg #1
+    let s_1: &'1 mut [u32]; // arg #1
     let _2: usize; // anonymous local
     let _3: u32; // anonymous local
     let _4: &'_ [u32]; // anonymous local

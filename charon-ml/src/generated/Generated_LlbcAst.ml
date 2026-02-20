@@ -50,7 +50,10 @@ and statement_kind =
           or a conditional call that should only happen if the place has not
           been moved out of. See the docs of [DropKind] for more details; to get
           precise drops use [--precise-drops]. *)
-  | Assert of assertion
+  | Assert of assertion * abort_kind
+      (** Fields:
+          - [assert]
+          - [on_failure] *)
   | Call of call
   | Abort of abort_kind
       (** Panic also handles "unreachable". We keep the name of the panicking

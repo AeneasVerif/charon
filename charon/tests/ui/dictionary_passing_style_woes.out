@@ -162,11 +162,11 @@ where
 {
     let _0: Clause1_Clause1_Assoc; // return
     let x_1: T; // arg #1
-    let _2: &'0 T; // anonymous local
+    let _2: &'1 T; // anonymous local
 
     storage_live(_2)
     _2 = &x_1
-    _0 = @TraitClause1::parent_clause1::method<'2>(move _2)
+    _0 = @TraitClause1::parent_clause1::method<'3>(move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] x_1
     return
@@ -180,11 +180,11 @@ where
 {
     let _0: Clause1_Clause1_Assoc; // return
     let x_1: T; // arg #1
-    let _2: &'0 T; // anonymous local
+    let _2: &'1 T; // anonymous local
 
     storage_live(_2)
     _2 = &x_1
-    _0 = @TraitClause1::parent_clause1::method<'2>(move _2)
+    _0 = @TraitClause1::parent_clause1::method<'3>(move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}] x_1
     return

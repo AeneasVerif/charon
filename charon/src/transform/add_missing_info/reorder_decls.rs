@@ -302,7 +302,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
             ctx.options
                 .start_from
                 .iter()
-                .any(|pat| pat.matches(&ctx.translated, &item.item_meta().name))
+                .any(|pat| pat.matches(&ctx.translated, item.item_meta()))
         })
         .map(|item| item.id())
         .collect();

@@ -23,8 +23,8 @@ fn do_test::<bool>(@1: bool, @2: bool)
     let init_1: bool; // arg #1
     let expected_2: bool; // arg #2
     let _3: bool; // anonymous local
-    let _4: &'0 bool; // anonymous local
-    let _5: &'0 bool; // anonymous local
+    let _4: &'1 bool; // anonymous local
+    let _5: &'2 bool; // anonymous local
 
     bb0: {
         _0 = ();
@@ -33,15 +33,15 @@ fn do_test::<bool>(@1: bool, @2: bool)
         _4 = &expected_2;
         storage_live(_5);
         _5 = &init_1;
-        _3 = eq<'3, '4>(move _4, move _5) -> bb1 (unwind: bb2);
+        _3 = eq<'5, '6>(move _4, move _5) -> bb2 (unwind: bb1);
     }
 
     bb1: {
-        if move _3 -> bb3 else -> bb4;
+        unwind_continue;
     }
 
     bb2: {
-        unwind_continue;
+        if move _3 -> bb3 else -> bb4;
     }
 
     bb3: {
@@ -68,17 +68,17 @@ fn main()
     bb0: {
         _0 = ();
         storage_live(_1);
-        _1 = do_test::<bool>(const true, const true) -> bb1 (unwind: bb2);
+        _1 = do_test::<bool>(const true, const true) -> bb2 (unwind: bb1);
     }
 
     bb1: {
-        storage_dead(_1);
-        _0 = ();
-        return;
+        unwind_continue;
     }
 
     bb2: {
-        unwind_continue;
+        storage_dead(_1);
+        _0 = ();
+        return;
     }
 }
 

@@ -134,33 +134,33 @@ where
     [@TraitClause1]: Debug<T>,
 {
     let _0: (); // return
-    let slice_1: &'0 [T]; // arg #1
-    let _2: Iter<'1, T>[@TraitClause0]; // anonymous local
-    let _3: &'0 [T]; // anonymous local
-    let iter_4: Iter<'1, T>[@TraitClause0]; // local
-    let _5: Option<&'2 T>[{built_in impl Sized for &'2 T}]; // anonymous local
-    let _6: &'5 mut Iter<'1, T>[@TraitClause0]; // anonymous local
-    let _7: &'5 mut Iter<'1, T>[@TraitClause0]; // anonymous local
-    let x_8: &'2 T; // local
+    let slice_1: &'1 [T]; // arg #1
+    let _2: Iter<'3, T>[@TraitClause0]; // anonymous local
+    let _3: &'4 [T]; // anonymous local
+    let iter_4: Iter<'5, T>[@TraitClause0]; // local
+    let _5: Option<&'12 T>[{built_in impl Sized for &'12 T}]; // anonymous local
+    let _6: &'17 mut Iter<'18, T>[@TraitClause0]; // anonymous local
+    let _7: &'19 mut Iter<'20, T>[@TraitClause0]; // anonymous local
+    let x_8: &'21 T; // local
     let _9: (); // anonymous local
-    let _10: Arguments<'6>; // anonymous local
-    let args_11: (&'7 &'2 T); // local
-    let _12: &'7 &'2 T; // anonymous local
-    let args_13: [Argument<'8>; 1 : usize]; // local
-    let _14: Argument<'8>; // anonymous local
-    let _15: &'7 &'2 T; // anonymous local
-    let _16: &'9 [u8; 7 : usize]; // anonymous local
-    let _17: &'9 [u8; 7 : usize]; // anonymous local
-    let _18: &'10 [Argument<'8>; 1 : usize]; // anonymous local
-    let _19: &'10 [Argument<'8>; 1 : usize]; // anonymous local
+    let _10: Arguments<'23>; // anonymous local
+    let args_11: (&'28 &'29 T,); // local
+    let _12: &'30 &'31 T; // anonymous local
+    let args_13: [Argument<'34>; 1 : usize]; // local
+    let _14: Argument<'35>; // anonymous local
+    let _15: &'36 &'37 T; // anonymous local
+    let _16: &'39 [u8; 7 : usize]; // anonymous local
+    let _17: &'40 [u8; 7 : usize]; // anonymous local
+    let _18: &'43 [Argument<'44>; 1 : usize]; // anonymous local
+    let _19: &'45 [Argument<'46>; 1 : usize]; // anonymous local
     let _20: [u8; 7 : usize]; // anonymous local
-    let _21: &'9 [u8; 7 : usize]; // anonymous local
+    let _21: &'71 [u8; 7 : usize]; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice_1
-    _2 = {impl IntoIterator for &'a [T]}::into_iter<'11, T>[@TraitClause0](move _3)
+    _2 = {impl IntoIterator for &'a [T]}::into_iter<'47, T>[@TraitClause0](move _3)
     storage_dead(_3)
     storage_live(iter_4)
     iter_4 = move _2
@@ -170,7 +170,7 @@ where
         storage_live(_7)
         _7 = &mut iter_4
         _6 = &two-phase-mut (*_7)
-        _5 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'12, '14, T>[@TraitClause0](move _6)
+        _5 = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'49, '51, T>[@TraitClause0](move _6)
         storage_dead(_6)
         match _5 {
             Option::None => {
@@ -186,13 +186,13 @@ where
         storage_live(args_11)
         storage_live(_12)
         _12 = &x_8
-        args_11 = (move _12)
+        args_11 = (move _12,)
         storage_dead(_12)
         storage_live(args_13)
         storage_live(_14)
         storage_live(_15)
         _15 = &(*args_11.0)
-        _14 = new_debug<'15, '21, &'2 T>[{built_in impl Sized for &'2 T}, {impl Debug for &'_0 T}<'2, T>[@TraitClause1]](move _15)
+        _14 = new_debug<'59, '69, &'60 T>[{built_in impl Sized for &'60 T}, {impl Debug for &'_0 T}<'60, T>[@TraitClause1]](move _15)
         storage_dead(_15)
         args_13 = [move _14]
         storage_dead(_14)
@@ -208,12 +208,12 @@ where
         storage_live(_19)
         _19 = &args_13
         _18 = &(*_19)
-        _10 = new<'22, 7 : usize, 1 : usize>(move _16, move _18)
+        _10 = new<'73, 7 : usize, 1 : usize>(move _16, move _18)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_16)
-        _9 = _eprint<'24>(move _10)
+        _9 = _eprint<'75>(move _10)
         storage_dead(_10)
         storage_dead(args_13)
         storage_dead(args_11)
@@ -236,11 +236,11 @@ fn main()
 {
     let _0: (); // return
     let _1: (); // anonymous local
-    let _2: &'0 [i32]; // anonymous local
-    let _3: &'1 [i32; 3 : usize]; // anonymous local
-    let _4: &'1 [i32; 3 : usize]; // anonymous local
-    let _5: &'1 [i32; 3 : usize]; // anonymous local
-    let _6: &'_ [i32; 3 : usize]; // anonymous local
+    let _2: &'1 [i32]; // anonymous local
+    let _3: &'3 [i32; 3 : usize]; // anonymous local
+    let _4: &'4 [i32; 3 : usize]; // anonymous local
+    let _5: &'5 [i32; 3 : usize]; // anonymous local
+    let _6: &'10 [i32; 3 : usize]; // anonymous local
     let _7: [i32; 3 : usize]; // anonymous local
 
     storage_live(_6)
@@ -258,7 +258,7 @@ fn main()
     _3 = &(*_4)
     _2 = @ArrayToSliceShared<'_, i32, 3 : usize>(move _3)
     storage_dead(_3)
-    _1 = debug_slice<'3, i32>[{built_in impl Sized for i32}, {impl Debug for i32}](move _2)
+    _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, {impl Debug for i32}](move _2)
     storage_dead(_2)
     storage_dead(_4)
     storage_dead(_1)

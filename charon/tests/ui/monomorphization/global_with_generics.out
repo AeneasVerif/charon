@@ -49,8 +49,8 @@ fn main()
 {
     let _0: (); // return
     let _b_1: bool; // local
-    let _2: &'0 Foo::<bool>; // anonymous local
-    let _3: &'0 Foo::<bool>; // anonymous local
+    let _2: &'1 Foo::<bool>; // anonymous local
+    let _3: &'2 Foo::<bool>; // anonymous local
 
     _0 = ()
     storage_live(_b_1)

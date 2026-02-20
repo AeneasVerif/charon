@@ -14,12 +14,12 @@ const UNIT_METADATA: () = @Fun0()
 fn slice_pattern_end<'_0>(@1: &'_0 [()])
 {
     let _0: (); // return
-    let x_1: &'0 [()]; // arg #1
+    let x_1: &'1 [()]; // arg #1
     let _2: usize; // anonymous local
     let _3: usize; // anonymous local
     let _4: usize; // anonymous local
     let _5: bool; // anonymous local
-    let _named_6: &'1 (); // local
+    let _named_6: &'3 (); // local
     let _7: &'_ [()]; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local

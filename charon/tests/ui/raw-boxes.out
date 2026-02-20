@@ -139,7 +139,7 @@ pub struct Arguments<'a> {
 fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
 {
     let _0: !; // return
-    let fmt_1: Arguments<'0>; // arg #1
+    let fmt_1: Arguments<'1>; // arg #1
     let force_no_backtrace_2: bool; // arg #2
 
     panic(core::panicking::panic_fmt)
@@ -149,10 +149,10 @@ fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
 pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
 {
     let _0: !; // return
-    let fmt_1: Arguments<'0>; // arg #1
+    let fmt_1: Arguments<'1>; // arg #1
     let force_no_backtrace_2: bool; // arg #2
-    let _3: (Arguments<'0>, bool); // anonymous local
-    let _4: Arguments<'0>; // anonymous local
+    let _3: (Arguments<'3>, bool); // anonymous local
+    let _4: Arguments<'4>; // anonymous local
     let _5: bool; // anonymous local
 
     storage_live(_3)
@@ -163,7 +163,7 @@ pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = compiletime<'2>(move _3.0, move _3.1)
+    _0 = compiletime<'6>(move _3.0, move _3.1)
 }
 
 // Full name: core::marker::Destruct
@@ -197,7 +197,7 @@ pub trait Copy<Self>
 pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
 {
     let _0: usize; // return
-    let self_1: &'0 usize; // arg #1
+    let self_1: &'1 usize; // arg #1
 
     _0 = copy (*self_1)
     return
@@ -209,13 +209,13 @@ where
     [@TraitClause0]: Destruct<usize>,
 {
     let _0: (); // return
-    let self_1: &'0 mut usize; // arg #1
-    let source_2: &'1 usize; // arg #2
+    let self_1: &'1 mut usize; // arg #1
+    let source_2: &'3 usize; // arg #2
     let _3: usize; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = {impl Clone for usize}::clone<'3>(move source_2)
+    _3 = {impl Clone for usize}::clone<'5>(move source_2)
     drop[@TraitClause0] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -253,18 +253,18 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
 {
     let _0: (); // return
     let align_1: usize; // arg #1
-    let msg_2: &'0 Str; // local
+    let msg_2: &'1 Str; // local
     let _3: !; // anonymous local
-    let _4: Arguments<'1>; // anonymous local
+    let _4: Arguments<'3>; // anonymous local
     let _5: u32; // anonymous local
     let _6: NonNull<u8>; // anonymous local
     let _7: *const u8; // anonymous local
-    let _8: NonNull<Argument<'2>>; // anonymous local
+    let _8: NonNull<Argument<'6>>; // anonymous local
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
     let _12: *const Str; // anonymous local
-    let _13: &'3 [u8]; // anonymous local
+    let _13: &'8 [u8]; // anonymous local
 
     storage_live(msg_2)
     storage_live(_3)
@@ -291,19 +291,19 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
             storage_live(_10)
             storage_live(_11)
             storage_live(_13)
-            _13 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+            _13 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
             _11 = copy _13.metadata
             storage_dead(_13)
             _10 = move _11 wrap.<< const 1 : i32
             storage_dead(_11)
             _9 = move _10 | const 1 : usize
             storage_dead(_10)
-            _8 = transmute<usize, NonNull<Argument<'2>>>(move _9)
+            _8 = transmute<usize, NonNull<Argument<'12>>>(move _9)
             storage_dead(_9)
             _4 = Arguments { template: move _6, args: move _8 }
             storage_dead(_8)
             storage_dead(_6)
-            _3 = panic_nounwind_fmt<'6>(move _4, const false)
+            _3 = panic_nounwind_fmt<'15>(move _4, const false)
         },
     }
     storage_dead(_5)
@@ -439,17 +439,17 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     let size_1: usize; // arg #1
     let align_2: usize; // arg #2
     let _3: bool; // anonymous local
-    let msg_4: &'0 Str; // local
+    let msg_4: &'1 Str; // local
     let _5: !; // anonymous local
-    let _6: Arguments<'1>; // anonymous local
+    let _6: Arguments<'3>; // anonymous local
     let _7: NonNull<u8>; // anonymous local
     let _8: *const u8; // anonymous local
-    let _9: NonNull<Argument<'2>>; // anonymous local
+    let _9: NonNull<Argument<'6>>; // anonymous local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
     let _12: usize; // anonymous local
     let _13: *const Str; // anonymous local
-    let _14: &'3 [u8]; // anonymous local
+    let _14: &'8 [u8]; // anonymous local
 
     storage_live(msg_4)
     storage_live(_5)
@@ -473,19 +473,19 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
         storage_live(_11)
         storage_live(_12)
         storage_live(_14)
-        _14 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+        _14 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
         _12 = copy _14.metadata
         storage_dead(_14)
         _11 = move _12 wrap.<< const 1 : i32
         storage_dead(_12)
         _10 = move _11 | const 1 : usize
         storage_dead(_11)
-        _9 = transmute<usize, NonNull<Argument<'2>>>(move _10)
+        _9 = transmute<usize, NonNull<Argument<'12>>>(move _10)
         storage_dead(_10)
         _6 = Arguments { template: move _7, args: move _9 }
         storage_dead(_9)
         storage_dead(_7)
-        _5 = panic_nounwind_fmt<'6>(move _6, const false)
+        _5 = panic_nounwind_fmt<'15>(move _6, const false)
     }
     storage_dead(_3)
     return
@@ -544,21 +544,21 @@ pub fn is_aligned_to<T>(@1: *const T, @2: usize) -> bool
     let _0: bool; // return
     let self_1: *const T; // arg #1
     let align_2: usize; // arg #2
-    let _3: Arguments<'0>; // anonymous local
+    let _3: Arguments<'1>; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
     let _7: u32; // anonymous local
     let _8: *const (); // anonymous local
-    let s_9: &'1 Str; // local
+    let s_9: &'3 Str; // local
     let _10: NonNull<u8>; // anonymous local
     let _11: *const u8; // anonymous local
-    let _12: NonNull<Argument<'2>>; // anonymous local
+    let _12: NonNull<Argument<'6>>; // anonymous local
     let _13: usize; // anonymous local
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
     let _16: *const Str; // anonymous local
-    let _17: &'3 [u8]; // anonymous local
+    let _17: &'8 [u8]; // anonymous local
 
     storage_live(_7)
     _7 = ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy align_2)
@@ -583,14 +583,14 @@ pub fn is_aligned_to<T>(@1: *const T, @2: usize) -> bool
             storage_live(_14)
             storage_live(_15)
             storage_live(_17)
-            _17 = transmute<&'1 Str, &'3 [u8]>(const "is_aligned_to: align is not a power-of-two")
+            _17 = transmute<&'11 Str, &'10 [u8]>(const "is_aligned_to: align is not a power-of-two")
             _15 = copy _17.metadata
             storage_dead(_17)
             _14 = move _15 wrap.<< const 1 : i32
             storage_dead(_15)
             _13 = move _14 | const 1 : usize
             storage_dead(_14)
-            _12 = transmute<usize, NonNull<Argument<'2>>>(move _13)
+            _12 = transmute<usize, NonNull<Argument<'12>>>(move _13)
             storage_dead(_13)
             _3 = Arguments { template: move _10, args: move _12 }
             storage_dead(_12)
@@ -623,20 +623,20 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     let align_2: usize; // arg #2
     let zero_size_3: bool; // arg #3
     let _4: bool; // anonymous local
-    let msg_5: &'0 Str; // local
+    let msg_5: &'1 Str; // local
     let _6: !; // anonymous local
-    let _7: Arguments<'1>; // anonymous local
+    let _7: Arguments<'3>; // anonymous local
     let _8: bool; // anonymous local
     let _9: bool; // anonymous local
     let _10: usize; // anonymous local
     let _11: NonNull<u8>; // anonymous local
     let _12: *const u8; // anonymous local
-    let _13: NonNull<Argument<'2>>; // anonymous local
+    let _13: NonNull<Argument<'6>>; // anonymous local
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
     let _16: usize; // anonymous local
     let _17: *const Str; // anonymous local
-    let _18: &'3 [u8]; // anonymous local
+    let _18: &'8 [u8]; // anonymous local
 
     storage_live(msg_5)
     storage_live(_6)
@@ -682,19 +682,19 @@ fn core::ptr::write_bytes::precondition_check(@1: *const (), @2: usize, @3: bool
     storage_live(_15)
     storage_live(_16)
     storage_live(_18)
-    _18 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _18 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _16 = copy _18.metadata
     storage_dead(_18)
     _15 = move _16 wrap.<< const 1 : i32
     storage_dead(_16)
     _14 = move _15 | const 1 : usize
     storage_dead(_15)
-    _13 = transmute<usize, NonNull<Argument<'2>>>(move _14)
+    _13 = transmute<usize, NonNull<Argument<'12>>>(move _14)
     storage_dead(_14)
     _7 = Arguments { template: move _11, args: move _13 }
     storage_dead(_13)
     storage_dead(_11)
-    _6 = panic_nounwind_fmt<'6>(move _7, const false)
+    _6 = panic_nounwind_fmt<'15>(move _7, const false)
 }
 
 // Full name: core::ops::control_flow::ControlFlow
@@ -730,7 +730,7 @@ pub fn core::num::{isize}::MAX() -> isize
     storage_live(_1)
     _2 = cast<i32, u32>(const 1 : i32)
     _3 = move _2 < const 64 : u32
-    assert(move _3 == true)
+    assert(move _3 == true) (overflow) else panic
     _1 = copy core::num::{usize}::MAX wrap.>> const 1 : i32
     _0 = cast<usize, isize>(move _1)
     storage_dead(_1)
@@ -778,7 +778,7 @@ where
             storage_live(_4)
             _4 = copy n_2
             _5 = copy _4 == const 0 : usize
-            assert(move _5 == false)
+            assert(move _5 == false) (division_by_zero) else panic
             _0 = move _3 ub./ move _4
             storage_dead(_4)
             storage_dead(_3)
@@ -924,7 +924,7 @@ where
     [@TraitClause0]: Allocator<Self>,
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Self; // arg #1
+    let self_1: &'1 Self; // arg #1
     let layout_2: Layout; // arg #2
     let _3: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
     let self_4: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // local
@@ -949,7 +949,7 @@ where
     storage_live(_13)
     storage_live(_3)
     storage_live(self_4)
-    self_4 = @TraitClause0::allocate<'2>(move self_1, move layout_2)
+    self_4 = @TraitClause0::allocate<'3>(move self_1, move layout_2)
     storage_live(v_10)
     match self_4 {
         Result::Ok => {
@@ -1011,16 +1011,16 @@ where
 // Full name: core::fmt::{Arguments<'a>}::from_str
 pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
 {
-    let _0: Arguments<'0>; // return
-    let s_1: &'1 Str; // arg #1
+    let _0: Arguments<'1>; // return
+    let s_1: &'3 Str; // arg #1
     let _2: NonNull<u8>; // anonymous local
     let _3: *const u8; // anonymous local
-    let _4: NonNull<Argument<'2>>; // anonymous local
+    let _4: NonNull<Argument<'6>>; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
     let _8: *const Str; // anonymous local
-    let _9: &'3 [u8]; // anonymous local
+    let _9: &'8 [u8]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
@@ -1035,14 +1035,14 @@ pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
     storage_live(_6)
     storage_live(_7)
     storage_live(_9)
-    _9 = transmute<&'1 Str, &'3 [u8]>(copy s_1)
+    _9 = transmute<&'3 Str, &'9 [u8]>(copy s_1)
     _7 = copy _9.metadata
     storage_dead(_9)
     _6 = move _7 wrap.<< const 1 : i32
     storage_dead(_7)
     _5 = move _6 | const 1 : usize
     storage_dead(_6)
-    _4 = transmute<usize, NonNull<Argument<'2>>>(move _5)
+    _4 = transmute<usize, NonNull<Argument<'10>>>(move _5)
     storage_dead(_5)
     _0 = Arguments { template: move _2, args: move _4 }
     storage_dead(_4)
@@ -1055,18 +1055,18 @@ pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
 pub fn panic_nounwind(@1: &'static Str) -> !
 {
     let _0: !; // return
-    let expr_1: &'0 Str; // arg #1
+    let expr_1: &'1 Str; // arg #1
     let _2: !; // anonymous local
-    let _3: Arguments<'1>; // anonymous local
-    let _4: &'0 Str; // anonymous local
+    let _3: Arguments<'3>; // anonymous local
+    let _4: &'4 Str; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = copy expr_1
-    _3 = from_str<'2>(move _4)
+    _3 = from_str<'5>(move _4)
     storage_dead(_4)
-    _2 = panic_nounwind_fmt<'4>(move _3, const false)
+    _2 = panic_nounwind_fmt<'7>(move _3, const false)
 }
 
 // Full name: core::intrinsics::cold_path
@@ -1166,9 +1166,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     let is_zst_10: bool; // local
     let _11: bool; // anonymous local
     let ptr_12: *const (); // local
-    let msg_13: &'0 Str; // local
+    let msg_13: &'1 Str; // local
     let _14: !; // anonymous local
-    let _15: Arguments<'1>; // anonymous local
+    let _15: Arguments<'3>; // anonymous local
     let _16: bool; // anonymous local
     let _17: bool; // anonymous local
     let _18: usize; // anonymous local
@@ -1177,12 +1177,12 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     let _21: usize; // anonymous local
     let _22: NonNull<u8>; // anonymous local
     let _23: *const u8; // anonymous local
-    let _24: NonNull<Argument<'2>>; // anonymous local
+    let _24: NonNull<Argument<'6>>; // anonymous local
     let _25: usize; // anonymous local
     let _26: usize; // anonymous local
     let _27: usize; // anonymous local
     let _28: *const Str; // anonymous local
-    let _29: &'3 [u8]; // anonymous local
+    let _29: &'8 [u8]; // anonymous local
 
     storage_live(zero_size_7)
     storage_live(ptr_12)
@@ -1398,19 +1398,19 @@ fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut ()
     storage_live(_26)
     storage_live(_27)
     storage_live(_29)
-    _29 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _29 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _27 = copy _29.metadata
     storage_dead(_29)
     _26 = move _27 wrap.<< const 1 : i32
     storage_dead(_27)
     _25 = move _26 | const 1 : usize
     storage_dead(_26)
-    _24 = transmute<usize, NonNull<Argument<'2>>>(move _25)
+    _24 = transmute<usize, NonNull<Argument<'12>>>(move _25)
     storage_dead(_25)
     _15 = Arguments { template: move _22, args: move _24 }
     storage_dead(_24)
     storage_dead(_22)
-    _14 = panic_nounwind_fmt<'6>(move _15, const false)
+    _14 = panic_nounwind_fmt<'15>(move _15, const false)
 }
 
 pub unsafe fn core::alloc::Allocator::grow<'_0, Self>(@1: &'_0 Self, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
@@ -1418,7 +1418,7 @@ where
     [@TraitClause0]: Allocator<Self>,
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Self; // arg #1
+    let self_1: &'1 Self; // arg #1
     let ptr_2: NonNull<u8>; // arg #2
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
@@ -1444,7 +1444,7 @@ where
     storage_live(_14)
     storage_live(_5)
     storage_live(self_6)
-    self_6 = @TraitClause0::allocate<'4>(copy self_1, move new_layout_4)
+    self_6 = @TraitClause0::allocate<'9>(copy self_1, move new_layout_4)
     storage_live(v_12)
     match self_6 {
         Result::Ok => {
@@ -1491,7 +1491,7 @@ where
     storage_dead(count_10)
     storage_dead(dst_9)
     storage_dead(src_8)
-    _11 = @TraitClause0::deallocate<'6>(move self_1, move ptr_2, move old_layout_3)
+    _11 = @TraitClause0::deallocate<'11>(move self_1, move ptr_2, move old_layout_3)
     _0 = Result::Ok { 0: copy new_ptr_7 }
     return
 }
@@ -1501,7 +1501,7 @@ where
     [@TraitClause0]: Allocator<Self>,
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Self; // arg #1
+    let self_1: &'1 Self; // arg #1
     let ptr_2: NonNull<u8>; // arg #2
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
@@ -1527,7 +1527,7 @@ where
     storage_live(_14)
     storage_live(_5)
     storage_live(self_6)
-    self_6 = @TraitClause0::allocate_zeroed<'4>(copy self_1, move new_layout_4)
+    self_6 = @TraitClause0::allocate_zeroed<'9>(copy self_1, move new_layout_4)
     storage_live(v_12)
     match self_6 {
         Result::Ok => {
@@ -1574,7 +1574,7 @@ where
     storage_dead(count_10)
     storage_dead(dst_9)
     storage_dead(src_8)
-    _11 = @TraitClause0::deallocate<'6>(move self_1, move ptr_2, move old_layout_3)
+    _11 = @TraitClause0::deallocate<'11>(move self_1, move ptr_2, move old_layout_3)
     _0 = Result::Ok { 0: copy new_ptr_7 }
     return
 }
@@ -1584,7 +1584,7 @@ where
     [@TraitClause0]: Allocator<Self>,
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Self; // arg #1
+    let self_1: &'1 Self; // arg #1
     let ptr_2: NonNull<u8>; // arg #2
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
@@ -1610,7 +1610,7 @@ where
     storage_live(_14)
     storage_live(_5)
     storage_live(self_6)
-    self_6 = @TraitClause0::allocate<'4>(copy self_1, copy new_layout_4)
+    self_6 = @TraitClause0::allocate<'9>(copy self_1, copy new_layout_4)
     storage_live(v_12)
     match self_6 {
         Result::Ok => {
@@ -1657,7 +1657,7 @@ where
     storage_dead(count_10)
     storage_dead(dst_9)
     storage_dead(src_8)
-    _11 = @TraitClause0::deallocate<'6>(move self_1, move ptr_2, move old_layout_3)
+    _11 = @TraitClause0::deallocate<'11>(move self_1, move ptr_2, move old_layout_3)
     _0 = Result::Ok { 0: copy new_ptr_7 }
     return
 }
@@ -1667,8 +1667,8 @@ where
     [@TraitClause0]: Allocator<Self>,
     [@TraitClause1]: Sized<Self>,
 {
-    let _0: &'0 Self; // return
-    let self_1: &'0 Self; // arg #1
+    let _0: &'1 Self; // return
+    let self_1: &'2 Self; // arg #1
 
     _0 = copy self_1
     return
@@ -1686,13 +1686,13 @@ where
     [@TraitClause1]: Destruct<Self>,
 {
     let _0: (); // return
-    let self_1: &'0 mut Self; // arg #1
-    let source_2: &'1 Self; // arg #2
+    let self_1: &'1 mut Self; // arg #1
+    let source_2: &'3 Self; // arg #2
     let _3: Self; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = @TraitClause0::clone<'3>(move source_2)
+    _3 = @TraitClause0::clone<'5>(move source_2)
     drop[@TraitClause1] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -1711,7 +1711,7 @@ pub struct NonZeroUsizeInner {
 pub fn {impl Clone for NonZeroUsizeInner}::clone<'_0>(@1: &'_0 NonZeroUsizeInner) -> NonZeroUsizeInner
 {
     let _0: NonZeroUsizeInner; // return
-    let self_1: &'0 NonZeroUsizeInner; // arg #1
+    let self_1: &'1 NonZeroUsizeInner; // arg #1
 
     _0 = copy (*self_1)
     return
@@ -1723,13 +1723,13 @@ where
     [@TraitClause0]: Destruct<NonZeroUsizeInner>,
 {
     let _0: (); // return
-    let self_1: &'0 mut NonZeroUsizeInner; // arg #1
-    let source_2: &'1 NonZeroUsizeInner; // arg #2
+    let self_1: &'1 mut NonZeroUsizeInner; // arg #1
+    let source_2: &'3 NonZeroUsizeInner; // arg #2
     let _3: NonZeroUsizeInner; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = {impl Clone for NonZeroUsizeInner}::clone<'3>(move source_2)
+    _3 = {impl Clone for NonZeroUsizeInner}::clone<'5>(move source_2)
     drop[@TraitClause0] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -1807,18 +1807,18 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
 {
     let _0: (); // return
     let ptr_1: *mut (); // arg #1
-    let msg_2: &'0 Str; // local
+    let msg_2: &'1 Str; // local
     let _3: !; // anonymous local
-    let _4: Arguments<'1>; // anonymous local
+    let _4: Arguments<'3>; // anonymous local
     let _5: usize; // anonymous local
     let _6: NonNull<u8>; // anonymous local
     let _7: *const u8; // anonymous local
-    let _8: NonNull<Argument<'2>>; // anonymous local
+    let _8: NonNull<Argument<'6>>; // anonymous local
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
     let _12: *const Str; // anonymous local
-    let _13: &'3 [u8]; // anonymous local
+    let _13: &'8 [u8]; // anonymous local
 
     storage_live(msg_2)
     storage_live(_3)
@@ -1849,36 +1849,36 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(@1: *mut
     storage_live(_10)
     storage_live(_11)
     storage_live(_13)
-    _13 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _13 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _11 = copy _13.metadata
     storage_dead(_13)
     _10 = move _11 wrap.<< const 1 : i32
     storage_dead(_11)
     _9 = move _10 | const 1 : usize
     storage_dead(_10)
-    _8 = transmute<usize, NonNull<Argument<'2>>>(move _9)
+    _8 = transmute<usize, NonNull<Argument<'12>>>(move _9)
     storage_dead(_9)
     _4 = Arguments { template: move _6, args: move _8 }
     storage_dead(_8)
     storage_dead(_6)
-    _3 = panic_nounwind_fmt<'6>(move _4, const false)
+    _3 = panic_nounwind_fmt<'15>(move _4, const false)
 }
 
 fn core::hint::assert_unchecked::precondition_check(@1: bool)
 {
     let _0: (); // return
     let cond_1: bool; // arg #1
-    let msg_2: &'0 Str; // local
+    let msg_2: &'1 Str; // local
     let _3: !; // anonymous local
-    let _4: Arguments<'1>; // anonymous local
+    let _4: Arguments<'3>; // anonymous local
     let _5: NonNull<u8>; // anonymous local
     let _6: *const u8; // anonymous local
-    let _7: NonNull<Argument<'2>>; // anonymous local
+    let _7: NonNull<Argument<'6>>; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
     let _11: *const Str; // anonymous local
-    let _12: &'3 [u8]; // anonymous local
+    let _12: &'8 [u8]; // anonymous local
 
     storage_live(msg_2)
     storage_live(_3)
@@ -1900,19 +1900,19 @@ fn core::hint::assert_unchecked::precondition_check(@1: bool)
         storage_live(_9)
         storage_live(_10)
         storage_live(_12)
-        _12 = transmute<&'0 Str, &'3 [u8]>(const "unsafe precondition(s) violated: hint::assert_unchecked must never be called when the condition is false\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+        _12 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: hint::assert_unchecked must never be called when the condition is false\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
         _10 = copy _12.metadata
         storage_dead(_12)
         _9 = move _10 wrap.<< const 1 : i32
         storage_dead(_10)
         _8 = move _9 | const 1 : usize
         storage_dead(_9)
-        _7 = transmute<usize, NonNull<Argument<'2>>>(move _8)
+        _7 = transmute<usize, NonNull<Argument<'12>>>(move _8)
         storage_dead(_8)
         _4 = Arguments { template: move _5, args: move _7 }
         storage_dead(_7)
         storage_dead(_5)
-        _3 = panic_nounwind_fmt<'6>(move _4, const false)
+        _3 = panic_nounwind_fmt<'15>(move _4, const false)
     }
     return
 }
@@ -1945,7 +1945,7 @@ pub struct Global {}
 fn alloc_impl<'_0>(@1: &'_0 Global, @2: Layout, @3: bool) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
+    let self_1: &'1 Global; // arg #1
     let layout_2: Layout; // arg #2
     let zeroed_3: bool; // arg #3
     let size_4: usize; // local
@@ -2153,7 +2153,7 @@ fn alloc_impl<'_0>(@1: &'_0 Global, @2: Layout, @3: bool) -> Result<NonNull<[u8]
 unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout, @5: bool) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
+    let self_1: &'1 Global; // arg #1
     let ptr_2: NonNull<u8>; // arg #2
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
@@ -2256,7 +2256,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
                 storage_dead(_7)
                 storage_live(_26)
                 storage_live(self_27)
-                self_27 = alloc_impl<'7>(move self_1, move new_layout_4, move zeroed_5)
+                self_27 = alloc_impl<'22>(move self_1, move new_layout_4, move zeroed_5)
                 storage_live(v_52)
                 match self_27 {
                     Result::Ok => {
@@ -2319,7 +2319,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
             _36 = ub_checks<bool>
             if copy _36 {
             } else {
-                assert(copy cond_11 == true)
+                assert(copy cond_11 == true) else undefined_behavior
                 storage_dead(cond_11)
                 storage_live(ptr_13)
                 storage_live(self_14)
@@ -2439,7 +2439,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
                 return
             }
             _35 = core::hint::assert_unchecked::precondition_check(copy cond_11)
-            assert(copy cond_11 == true)
+            assert(copy cond_11 == true) else undefined_behavior
             storage_dead(cond_11)
             storage_live(ptr_13)
             storage_live(self_14)
@@ -2556,7 +2556,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
             return
         },
     }
-    _0 = alloc_impl<'5>(move self_1, move new_layout_4, move zeroed_5)
+    _0 = alloc_impl<'20>(move self_1, move new_layout_4, move zeroed_5)
     return
 }
 
@@ -2564,7 +2564,7 @@ unsafe fn grow_impl<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layou
 pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
+    let self_1: &'1 Global; // arg #1
     let ptr_2: NonNull<u8>; // arg #2
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
@@ -2683,7 +2683,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
                 _47 = ub_checks<bool>
                 if copy _47 {
                     _46 = core::hint::assert_unchecked::precondition_check(copy cond_12)
-                    assert(copy cond_12 == true)
+                    assert(copy cond_12 == true) else undefined_behavior
                     storage_dead(cond_12)
                     storage_live(ptr_15)
                     storage_live(self_16)
@@ -2723,7 +2723,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
                         },
                     }
                 } else {
-                    assert(copy cond_12 == true)
+                    assert(copy cond_12 == true) else undefined_behavior
                     storage_dead(cond_12)
                     storage_live(ptr_15)
                     storage_live(self_16)
@@ -2876,7 +2876,7 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
                 storage_dead(_9)
                 storage_live(_24)
                 storage_live(self_25)
-                self_25 = alloc_impl<'5>(move self_1, move new_layout_4, const false)
+                self_25 = alloc_impl<'23>(move self_1, move new_layout_4, const false)
                 storage_live(v_60)
                 match self_25 {
                     Result::Ok => {
@@ -3058,12 +3058,12 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
 pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
+    let self_1: &'1 Global; // arg #1
     let ptr_2: NonNull<u8>; // arg #2
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
 
-    _0 = grow_impl<'2>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const true)
+    _0 = grow_impl<'3>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const true)
     return
 }
 
@@ -3071,12 +3071,12 @@ pub unsafe fn {impl Allocator for Global}::grow_zeroed<'_0>(@1: &'_0 Global, @2:
 pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout, @4: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
+    let self_1: &'1 Global; // arg #1
     let ptr_2: NonNull<u8>; // arg #2
     let old_layout_3: Layout; // arg #3
     let new_layout_4: Layout; // arg #4
 
-    _0 = grow_impl<'2>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const false)
+    _0 = grow_impl<'3>(move self_1, move ptr_2, move old_layout_3, move new_layout_4, const false)
     return
 }
 
@@ -3084,7 +3084,7 @@ pub unsafe fn {impl Allocator for Global}::grow<'_0>(@1: &'_0 Global, @2: NonNul
 pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout)
 {
     let _0: (); // return
-    let self_1: &'0 Global; // arg #1
+    let self_1: &'1 Global; // arg #1
     let ptr_2: NonNull<u8>; // arg #2
     let layout_3: Layout; // arg #3
     let _4: usize; // anonymous local
@@ -3119,10 +3119,10 @@ pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 Global, @2: 
 pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
+    let self_1: &'1 Global; // arg #1
     let layout_2: Layout; // arg #2
 
-    _0 = alloc_impl<'2>(move self_1, move layout_2, const true)
+    _0 = alloc_impl<'3>(move self_1, move layout_2, const true)
     return
 }
 
@@ -3130,10 +3130,10 @@ pub fn {impl Allocator for Global}::allocate_zeroed<'_0>(@1: &'_0 Global, @2: La
 pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 {
     let _0: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // return
-    let self_1: &'0 Global; // arg #1
+    let self_1: &'1 Global; // arg #1
     let layout_2: Layout; // arg #2
 
-    _0 = alloc_impl<'2>(move self_1, move layout_2, const false)
+    _0 = alloc_impl<'3>(move self_1, move layout_2, const false)
     return
 }
 
@@ -3142,8 +3142,8 @@ pub fn {impl Allocator for Global}::by_ref<'_0>(@1: &'_0 Global) -> &'_0 Global
 where
     [@TraitClause0]: Sized<Global>,
 {
-    let _0: &'0 Global; // return
-    let self_1: &'0 Global; // arg #1
+    let _0: &'1 Global; // return
+    let self_1: &'2 Global; // arg #1
 
     _0 = copy self_1
     return
@@ -3177,10 +3177,10 @@ fn ct_error(@1: Layout) -> !
 {
     let _0: !; // return
     let _1: Layout; // arg #1
-    let _2: Arguments<'0>; // anonymous local
+    let _2: Arguments<'1>; // anonymous local
 
     storage_live(_2)
-    _2 = from_str<'1>(const "allocation failed")
+    _2 = from_str<'2>(const "allocation failed")
     panic(core::panicking::panic_fmt)
 }
 
@@ -3189,13 +3189,13 @@ pub fn handle_alloc_error(@1: Layout) -> !
 {
     let _0: !; // return
     let layout_1: Layout; // arg #1
-    let _2: (Layout); // anonymous local
+    let _2: (Layout,); // anonymous local
     let _3: Layout; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     _3 = copy layout_1
-    _2 = (move _3)
+    _2 = (move _3,)
     storage_dead(_3)
     _0 = ct_error(move _2.0)
 }
@@ -3215,7 +3215,7 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
     let _8: (); // anonymous local
     let _9: Alignment; // anonymous local
     let _10: *mut [u8]; // anonymous local
-    let _11: &'_ Global; // anonymous local
+    let _11: &'4 Global; // anonymous local
     let _12: Global; // anonymous local
 
     storage_live(layout_3)
@@ -3387,7 +3387,7 @@ where
     [@TraitClause2]: Allocator<A>,
     A : 'a,
 {
-    let _0: &'0 mut T; // return
+    let _0: &'1 mut T; // return
     let b_1: Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
     let _2: *mut T; // anonymous local
     let _3: *const T; // anonymous local
@@ -3411,7 +3411,7 @@ unsafe fn foo()
     let b_1: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // local
     let p_2: *mut i32; // local
     let _3: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
-    let _4: &'0 mut i32; // anonymous local
+    let _4: &'1 mut i32; // anonymous local
     let _5: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // anonymous local
     let b_6: Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}]; // local
     let _7: *mut i32; // anonymous local
@@ -3430,7 +3430,7 @@ unsafe fn foo()
     storage_live(_4)
     storage_live(_5)
     _5 = alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new<i32>[{built_in impl Sized for i32}](const 42 : i32)
-    _4 = leak<'1, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}](move _5)
+    _4 = leak<'2, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {impl Allocator for Global}](move _5)
     storage_dead(_5)
     storage_dead(_4)
     storage_live(b_6)

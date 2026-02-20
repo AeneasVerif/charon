@@ -165,14 +165,14 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 {
-    let _0: &'0 mut T; // return
-    let self_1: &'1 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
+    let _0: &'1 mut T; // return
+    let self_1: &'3 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
     let value_2: T; // arg #2
     let len_3: usize; // local
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: (); // anonymous local
-    let _7: &'3 mut RawVec<T, A>[@TraitClause0, @TraitClause1]; // anonymous local
+    let _7: &'7 mut RawVec<T, A>[@TraitClause0, @TraitClause1]; // anonymous local
     let end_8: *mut T; // local
     let self_9: *mut T; // local
     let src_10: T; // local
@@ -201,7 +201,7 @@ where
         storage_dead(_5)
         storage_live(_7)
         _7 = &two-phase-mut ((*self_1)).buf
-        _6 = grow_one<'6, T, A>[@TraitClause0, @TraitClause1](move _7)
+        _6 = grow_one<'11, T, A>[@TraitClause0, @TraitClause1](move _7)
         storage_dead(_7)
     } else {
         storage_dead(_5)
@@ -230,13 +230,13 @@ where
     [@TraitClause1]: Sized<A>,
 {
     let _0: (); // return
-    let self_1: &'0 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
+    let self_1: &'1 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
     let value_2: T; // arg #2
-    let _3: &'1 mut T; // anonymous local
+    let _3: &'3 mut T; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = push_mut<'3, T, A>[@TraitClause0, @TraitClause1](move self_1, move value_2)
+    _3 = push_mut<'5, T, A>[@TraitClause0, @TraitClause1](move self_1, move value_2)
     storage_dead(_3)
     return
 }
@@ -245,13 +245,13 @@ where
 fn vec<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
-    let x_1: &'0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
-    let _2: &'0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
+    let x_1: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
+    let _2: &'2 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
     _0 = ()
     storage_live(_2)
     _2 = &two-phase-mut (*x_1)
-    _0 = push<'2, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _2, const 42 : u32)
+    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _2, const 42 : u32)
     storage_dead(_2)
     return
 }

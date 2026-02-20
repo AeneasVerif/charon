@@ -111,10 +111,19 @@ impl BindingLevel {
     }
 
     pub(crate) fn push_type_var(&mut self, rid: u32, name: hax::Symbol) -> TypeVarId {
-        let var_id = self.params.types.push_with(|index| TypeParam {
-            index,
-            name: name.to_string(),
-        });
+        // Type vars comping from `impl Trait` arguments have as their name the whole `impl Trait`
+        // expression. We turn it into an identifier.
+        let mut name = name.to_string();
+        if name
+            .chars()
+            .any(|c| !(c.is_ascii_alphanumeric() || c == '_'))
+        {
+            name = format!("T{rid}")
+        }
+        let var_id = self
+            .params
+            .types
+            .push_with(|index| TypeParam { index, name });
         self.type_vars_map.insert(rid, var_id);
         var_id
     }
@@ -358,8 +367,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Add the generics and predicates of this item and its parents to the current context.
-    #[tracing::instrument(skip(self, span))]
+    #[tracing::instrument(skip(self, span, def))]
     fn push_generics_for_def(&mut self, span: Span, def: &hax::FullDef) -> Result<(), Error> {
+        trace!("{:?}", def.param_env());
         // Add generics from the parent item, recursively (recursivity is important for closures,
         // as they can be nested).
         if let Some(parent_item) = def.typing_parent(self.hax_state()) {
@@ -427,8 +437,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if let hax::FullDefKind::Closure { args, .. } = def.kind() {
             // Add the lifetime generics coming from the upvars. We translate the upvar types early
             // to know what lifetimes are needed.
-            let closure_upvar_tys = self.translate_closure_upvar_tys(span, args)?;
-            self.the_only_binder_mut().closure_upvar_tys = Some(closure_upvar_tys);
+            let upvar_tys = self.translate_closure_upvar_tys(span, args)?;
+            // Add new lifetimes params to replace the erased ones.
+            let upvar_tys = upvar_tys.replace_erased_regions(|| {
+                let region_id = self.the_only_binder_mut().push_upvar_region();
+                Region::Var(DeBruijnVar::new_at_zero(region_id))
+            });
+            self.the_only_binder_mut().closure_upvar_tys = Some(upvar_tys);
+
             // Add the lifetime generics coming from the higher-kindedness of the signature.
             if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
             | TransItemSourceKind::ClosureMethod(..)

@@ -7,6 +7,13 @@ use std::collections::HashMap;
 mod util;
 use util::*;
 
+fn translate_with_options(
+    code: impl std::fmt::Display,
+    options: &[&str],
+) -> anyhow::Result<TranslatedCrate> {
+    util::translate_rust_text(code, options)
+}
+
 fn translate(code: impl std::fmt::Display) -> anyhow::Result<TranslatedCrate> {
     util::translate_rust_text(code, &[])
 }
@@ -79,7 +86,7 @@ fn file_name() -> anyhow::Result<()> {
 
 #[test]
 fn spans() -> anyhow::Result<()> {
-    let crate_data = translate(
+    let crate_data = translate_with_options(
         "
         pub fn sum(s: &[u32]) -> u32 {
             let mut sum = 0;
@@ -91,6 +98,7 @@ fn spans() -> anyhow::Result<()> {
             sum
         }
         ",
+        &["--reconstruct-fallible-operations"],
     )?;
     let function = &crate_data.fun_decls[1];
     // Span of the whole function.

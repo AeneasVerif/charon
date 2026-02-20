@@ -60,8 +60,8 @@ where
     [@TraitClause1]: Hasher<H>,
 {
     let _0: (); // return
-    let self_1: &'0 u32; // arg #1
-    let _state_2: &'1 mut H; // arg #2
+    let self_1: &'1 u32; // arg #1
+    let _state_2: &'3 mut H; // arg #2
 
     _0 = ()
     _0 = ()
@@ -81,11 +81,11 @@ fn main()
     let _0: (); // return
     let hasher_1: DefaultHasher; // local
     let _2: (); // anonymous local
-    let _3: &'0 u32; // anonymous local
-    let _4: &'1 mut DefaultHasher; // anonymous local
-    let _5: &'1 mut DefaultHasher; // anonymous local
-    let _6: &'0 u32; // anonymous local
-    let _7: &'_ u32; // anonymous local
+    let _3: &'1 u32; // anonymous local
+    let _4: &'3 mut DefaultHasher; // anonymous local
+    let _5: &'4 mut DefaultHasher; // anonymous local
+    let _6: &'5 u32; // anonymous local
+    let _7: &'11 u32; // anonymous local
     let _8: u32; // anonymous local
 
     storage_live(_7)
@@ -104,7 +104,7 @@ fn main()
     storage_live(_5)
     _5 = &mut hasher_1
     _4 = &two-phase-mut (*_5)
-    _2 = {impl Hash for u32}::hash<'4, '5, DefaultHasher>[{built_in impl Sized for DefaultHasher}, {impl Hasher for DefaultHasher}](move _3, move _4)
+    _2 = {impl Hash for u32}::hash<'9, '10, DefaultHasher>[{built_in impl Sized for DefaultHasher}, {impl Hasher for DefaultHasher}](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_5)

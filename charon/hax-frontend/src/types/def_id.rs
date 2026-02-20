@@ -261,6 +261,72 @@ impl DefId {
     }
 }
 
+impl DefId {
+    /// Gets the visibility (`pub` or not) of the definition. Returns `None` for defs that don't have a
+    /// meaningful visibility.
+    pub fn visibility<'tcx>(&self, tcx: ty::TyCtxt<'tcx>) -> Option<bool> {
+        use DefKind::*;
+        match self.kind {
+            AssocConst
+            | AssocFn
+            | Const
+            | Enum
+            | Field
+            | Fn
+            | ForeignTy
+            | Macro { .. }
+            | Mod
+            | Static { .. }
+            | Struct
+            | Trait
+            | TraitAlias
+            | TyAlias { .. }
+            | Union
+            | Use
+            | Variant => {
+                let def_id = self.as_rust_def_id()?;
+                Some(tcx.visibility(def_id).is_public())
+            }
+            // These kinds don't have visibility modifiers (which would cause `visibility` to panic).
+            AnonConst
+            | AssocTy
+            | Closure
+            | ConstParam
+            | Ctor { .. }
+            | ExternCrate
+            | ForeignMod
+            | GlobalAsm
+            | Impl { .. }
+            | InlineConst
+            | PromotedConst
+            | LifetimeParam
+            | OpaqueTy
+            | SyntheticCoroutineBody
+            | TyParam => None,
+        }
+    }
+
+    /// Gets the attributes of the definition.
+    pub fn attrs<'tcx>(&self, tcx: ty::TyCtxt<'tcx>) -> &'tcx [rustc_hir::Attribute] {
+        use DefKind::*;
+        match self.kind {
+            // These kinds cause `get_attrs` to panic.
+            ConstParam | LifetimeParam | TyParam | ForeignMod | InlineConst => &[],
+            _ => {
+                if let Some(def_id) = self.as_rust_def_id() {
+                    if let Some(ldid) = def_id.as_local() {
+                        tcx.hir_attrs(tcx.local_def_id_to_hir_id(ldid))
+                    } else {
+                        tcx.attrs_for_def(def_id)
+                    }
+                } else {
+                    &[]
+                }
+            }
+        }
+    }
+}
+
 impl std::ops::Deref for DefId {
     type Target = DefIdContents;
     fn deref(&self) -> &Self::Target {

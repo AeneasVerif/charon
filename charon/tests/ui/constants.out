@@ -368,8 +368,8 @@ pub fn S2() -> u32
 {
     let _0: u32; // return
     let _1: u32; // anonymous local
-    let _2: &'0 u32; // anonymous local
-    let _3: &'0 u32; // anonymous local
+    let _2: &'1 u32; // anonymous local
+    let _3: &'2 u32; // anonymous local
 
     storage_live(_1)
     storage_live(_2)

@@ -507,9 +507,116 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
 // Attributes
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
+    /// Parse a raw attribute to recognize our special `charon::*`, `aeneas::*` and `verify::*` attributes.
+    fn parse_attr_from_raw(
+        &mut self,
+        def_id: &hax::DefId,
+        raw_attr: RawAttribute,
+    ) -> Result<Attribute, String> {
+        // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
+        // try to parse it. Otherwise we return `Unknown`.
+        let path = raw_attr.path.split("::").collect_vec();
+        let attr_name = if let &[path_start, attr_name] = path.as_slice()
+            && (path_start == "charon" || path_start == "aeneas" || path_start == "verify")
+        {
+            attr_name
+        } else {
+            return Ok(Attribute::Unknown(raw_attr));
+        };
+
+        match self.parse_special_attr(def_id, attr_name, &raw_attr)? {
+            Some(parsed) => Ok(parsed),
+            None => Err(format!(
+                "Unrecognized attribute: `{}`",
+                raw_attr.to_string()
+            )),
+        }
+    }
+
+    /// Parse a `charon::*`, `aeneas::*` or `verify::*` attribute.
+    fn parse_special_attr(
+        &mut self,
+        def_id: &hax::DefId,
+        attr_name: &str,
+        raw_attr: &RawAttribute,
+    ) -> Result<Option<Attribute>, String> {
+        let args = raw_attr.args.as_deref();
+        let parsed = match attr_name {
+            // `#[charon::opaque]`
+            "opaque" if args.is_none() => Attribute::Opaque,
+            // `#[charon::opaque]`
+            "exclude" if args.is_none() => Attribute::Exclude,
+            // `#[charon::rename("new_name")]`
+            "rename" if let Some(attr) = args => {
+                let Some(attr) = attr
+                    .strip_prefix("\"")
+                    .and_then(|attr| attr.strip_suffix("\""))
+                else {
+                    return Err(format!(
+                        "the new name should be between quotes: `rename(\"{attr}\")`."
+                    ));
+                };
+
+                if attr.is_empty() {
+                    return Err(format!("attribute `rename` should not be empty"));
+                }
+
+                let first_char = attr.chars().nth(0).unwrap();
+                let is_identifier = (first_char.is_alphabetic() || first_char == '_')
+                    && attr.chars().all(|c| c.is_alphanumeric() || c == '_');
+                if !is_identifier {
+                    return Err(format!(
+                        "attribute `rename` should contain a valid identifier"
+                    ));
+                }
+
+                Attribute::Rename(attr.to_string())
+            }
+            // `#[charon::variants_prefix("T")]`
+            "variants_prefix" if let Some(attr) = args => {
+                let Some(attr) = attr
+                    .strip_prefix("\"")
+                    .and_then(|attr| attr.strip_suffix("\""))
+                else {
+                    return Err(format!(
+                        "the name should be between quotes: `variants_prefix(\"{attr}\")`."
+                    ));
+                };
+
+                Attribute::VariantsPrefix(attr.to_string())
+            }
+            // `#[charon::variants_suffix("T")]`
+            "variants_suffix" if let Some(attr) = args => {
+                let Some(attr) = attr
+                    .strip_prefix("\"")
+                    .and_then(|attr| attr.strip_suffix("\""))
+                else {
+                    return Err(format!(
+                        "the name should be between quotes: `variants_suffix(\"{attr}\")`."
+                    ));
+                };
+
+                Attribute::VariantsSuffix(attr.to_string())
+            }
+            // `#[verify::start_from]`
+            "start_from" => {
+                if matches!(def_id.kind, hax::DefKind::Mod) {
+                    return Err(format!("`start_from` on modules has no effect"));
+                }
+                Attribute::Unknown(raw_attr.clone())
+            }
+            _ => return Ok(None),
+        };
+        Ok(Some(parsed))
+    }
+
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
-    pub(crate) fn translate_attribute(&mut self, attr: &rustc_hir::Attribute) -> Option<Attribute> {
+    pub(crate) fn translate_attribute(
+        &mut self,
+        def_id: &hax::DefId,
+        attr: &rustc_hir::Attribute,
+    ) -> Option<Attribute> {
         use rustc_hir as hir;
         use rustc_hir::attrs as hir_attrs;
         match attr {
@@ -530,7 +637,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         }
                     },
                 };
-                match Attribute::parse_from_raw(raw_attr) {
+                match self.parse_attr_from_raw(def_id, raw_attr) {
                     Ok(a) => Some(a),
                     Err(msg) => {
                         let span = self.translate_span(&attr.span.sinto(&self.hax_state));
@@ -564,7 +671,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let attributes = def
             .attributes
             .iter()
-            .filter_map(|attr| self.translate_attribute(&attr))
+            .filter_map(|attr| self.translate_attribute(def.def_id(), &attr))
             .collect_vec();
 
         let rename = {

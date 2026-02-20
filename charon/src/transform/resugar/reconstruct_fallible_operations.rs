@@ -4,13 +4,64 @@
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
 
+use std::collections::HashSet;
+
 use derive_generic_visitor::*;
 
 use crate::ast::*;
+use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::{ExprBody, Statement, StatementKind};
+use crate::ullbc_ast::{BlockId, ExprBody, Statement, StatementKind};
 
 use crate::transform::ctx::UllbcPass;
+
+type LocalUses = IndexVec<BlockId, HashSet<LocalId>>;
+
+/// Compute for each block the locals that are assumed to have been initialized/defined before entering it.
+fn compute_uses(body: &ExprBody) -> LocalUses {
+    #[derive(Visitor)]
+    struct UsedLocalsVisitor<'a>(&'a mut HashSet<LocalId>);
+
+    impl VisitBody for UsedLocalsVisitor<'_> {
+        fn visit_place(&mut self, x: &Place) -> ::std::ops::ControlFlow<Self::Break> {
+            if let Some(local_id) = x.as_local() {
+                self.0.insert(local_id);
+            }
+            self.visit_inner(x)
+        }
+    }
+
+    body.body.map_ref(|block| {
+        let mut uses = HashSet::new();
+        let mut visitor = UsedLocalsVisitor(&mut uses);
+
+        // do a simple live variable analysis by walking the block backwards
+        for statement in block.statements.iter().rev() {
+            match &statement.kind {
+                StatementKind::Assign(place, rval) => {
+                    // We clear the assigned place, but it may be re-added
+                    // if it's used in rval
+                    if let Some(local_id) = place.as_local() {
+                        visitor.0.remove(&local_id);
+                    }
+                    let _ = rval.drive_body(&mut visitor);
+                }
+                StatementKind::StorageLive(local) | StatementKind::StorageDead(local) => {
+                    // A `StorageLive` re-sets the local to be uninitialised,
+                    // so any usage after this point doesn't matter
+                    // Similarly, a `StorageDead` means the local is de-initialised,
+                    // so we can ignore any usage after this point
+                    visitor.0.remove(&local);
+                }
+                _ => {
+                    let _ = statement.drive_body(&mut visitor);
+                }
+            }
+        }
+
+        uses
+    })
+}
 
 /// Whether the value uses the given local in a place.
 fn uses_local<T: BodyVisitable>(x: &T, local: LocalId) -> bool {
@@ -28,6 +79,18 @@ fn uses_local<T: BodyVisitable>(x: &T, local: LocalId) -> bool {
                 }
             }
             self.visit_inner(x)
+        }
+
+        fn visit_ullbc_statement(
+            &mut self,
+            x: &ullbc_ast::Statement,
+        ) -> ::std::ops::ControlFlow<Self::Break> {
+            match x.kind {
+                StatementKind::StorageDead(_) | StatementKind::StorageLive(_) => {
+                    ControlFlow::Continue(())
+                }
+                _ => self.visit_inner(x),
+            }
         }
     }
 
@@ -84,6 +147,8 @@ fn equiv_op(op_l: &Operand, op_r: &Operand) -> bool {
 /// this is the only use of this statement).
 fn remove_dynamic_checks(
     _ctx: &mut TransformCtx,
+    uses: &LocalUses,
+    block_id: BlockId,
     locals: &mut Locals,
     statements: &mut [Statement],
 ) {
@@ -108,11 +173,15 @@ fn remove_dynamic_checks(
             },
             Statement {
                 kind:
-                    StatementKind::Assert(Assert {
-                        cond: Operand::Move(cond),
-                        expected: true,
+                    StatementKind::Assert {
+                        assert:
+                            Assert {
+                                cond: Operand::Move(cond),
+                                expected: true,
+                                ..
+                            },
                         ..
-                    }),
+                    },
                 ..
             },
             rest @ ..,
@@ -153,11 +222,15 @@ fn remove_dynamic_checks(
             },
             Statement {
                 kind:
-                    StatementKind::Assert(Assert {
-                        cond: Operand::Move(cond),
-                        expected: true,
+                    StatementKind::Assert {
+                        assert:
+                            Assert {
+                                cond: Operand::Move(cond),
+                                expected: true,
+                                check_kind: Some(BuiltinAssertKind::BoundsCheck { .. }),
+                            },
                         ..
-                    }),
+                    },
                 ..
             },
             rest @ ..,
@@ -196,11 +269,20 @@ fn remove_dynamic_checks(
             },
             Statement {
                 kind:
-                    StatementKind::Assert(Assert {
-                        cond: Operand::Move(cond),
-                        expected: false,
+                    StatementKind::Assert {
+                        assert:
+                            Assert {
+                                cond: Operand::Move(cond),
+                                expected: false,
+                                check_kind:
+                                    Some(
+                                        BuiltinAssertKind::DivisionByZero(_)
+                                        | BuiltinAssertKind::RemainderByZero(_)
+                                        | BuiltinAssertKind::OverflowNeg(_),
+                                    ),
+                            },
                         ..
-                    }),
+                    },
                 ..
             },
             rest @ ..,
@@ -247,11 +329,15 @@ fn remove_dynamic_checks(
             },
             Statement {
                 kind:
-                    StatementKind::Assert(Assert {
-                        cond: Operand::Move(cond),
-                        expected: false,
+                    StatementKind::Assert {
+                        assert:
+                            Assert {
+                                cond: Operand::Move(cond),
+                                expected: false,
+                                check_kind: Some(BuiltinAssertKind::Overflow(..)),
+                            },
                         ..
-                    }),
+                    },
                 ..
             },
             rest @ ..,
@@ -278,11 +364,15 @@ fn remove_dynamic_checks(
             },
             Statement {
                 kind:
-                    StatementKind::Assert(Assert {
-                        cond: Operand::Move(cond),
-                        expected: true,
+                    StatementKind::Assert {
+                        assert:
+                            Assert {
+                                cond: Operand::Move(cond),
+                                expected: true,
+                                check_kind: Some(BuiltinAssertKind::Overflow(..)),
+                            },
                         ..
-                    }),
+                    },
                 ..
             },
             rest @ ..,
@@ -323,11 +413,19 @@ fn remove_dynamic_checks(
             },
             Statement {
                 kind:
-                    StatementKind::Assert(Assert {
-                        cond: Operand::Move(cond),
-                        expected: true,
+                    StatementKind::Assert {
+                        assert:
+                            Assert {
+                                cond: Operand::Move(cond),
+                                expected: true,
+                                check_kind:
+                                    Some(
+                                        BuiltinAssertKind::Overflow(..)
+                                        | BuiltinAssertKind::BoundsCheck { .. },
+                                    ),
+                            },
                         ..
-                    }),
+                    },
                 ..
             },
             rest @ ..,
@@ -410,11 +508,15 @@ fn remove_dynamic_checks(
             let followed_by_assert = if let [
                 Statement {
                     kind:
-                        StatementKind::Assert(Assert {
-                            cond: Operand::Move(assert_cond),
-                            expected: false,
+                        StatementKind::Assert {
+                            assert:
+                                Assert {
+                                    cond: Operand::Move(assert_cond),
+                                    expected: false,
+                                    check_kind: Some(BuiltinAssertKind::Overflow(..)),
+                                },
                             ..
-                        }),
+                        },
                     ..
                 },
                 ..,
@@ -470,7 +572,20 @@ fn remove_dynamic_checks(
 
     // Remove the statements we're not keeping.
     let keep_len = statements_to_keep.len();
-    for i in 0..statements.len() - keep_len {
+    let removed_len = statements.len() - keep_len;
+    for i in 0..removed_len {
+        // If the statement we're removing assigns to a local that
+        // is used elsewhere (in the leftover statements or in another block),
+        // we don't remove it.
+        if let StatementKind::Assign(place, _) = &statements[i].kind
+            && let Some(local) = place.as_local()
+            && let mut statements_to_keep = statements[removed_len..].as_ref().iter()
+            && let mut other_blocks = uses.iter_indexed().filter(|(bid, _)| *bid != block_id)
+            && (other_blocks.any(|(_, used)| used.contains(&local))
+                || statements_to_keep.any(|st| uses_local(st, local)))
+        {
+            continue;
+        };
         statements[i].kind = StatementKind::Nop;
     }
 }
@@ -482,8 +597,9 @@ impl UllbcPass for Transform {
     }
 
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.transform_sequences_fwd(|locals, seq| {
-            remove_dynamic_checks(ctx, locals, seq);
+        let local_uses: LocalUses = compute_uses(b);
+        b.transform_sequences_fwd(|id, locals, seq| {
+            remove_dynamic_checks(ctx, &local_uses, id, locals, seq);
             Vec::new()
         });
     }

@@ -25,4 +25,10 @@ error: when processing starting pattern `{impl crate::Trait for crate::Type}::mi
 error: when processing starting pattern `crate::{impl crate::Trait for crate::Type}`: `--start-from` only supports impl patterns if they're the first element of the path
  --> /rustc/library/core/src/ops/deref.rs:0:1
 
-ERROR Charon failed to translate this code (10 errors)
+error: Error parsing attribute: `start_from` on modules has no effect
+  --> tests/ui/filtering/start_from_errors.rs:17:1
+   |
+17 | #[charon::start_from]
+   | ^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (11 errors)

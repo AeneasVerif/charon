@@ -68,22 +68,22 @@ impl StructuralPartialEq for Enum {
 pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 Enum, @2: &'_1 Enum) -> bool
 {
     let _0: bool; // return
-    let self_1: &'0 Enum; // arg #1
-    let other_2: &'0 Enum; // arg #2
+    let self_1: &'1 Enum; // arg #1
+    let other_2: &'2 Enum; // arg #2
     let __self_discr_3: isize; // local
-    let _4: &'0 Enum; // anonymous local
+    let _4: &'3 Enum; // anonymous local
     let __arg1_discr_5: isize; // local
-    let _6: &'0 Enum; // anonymous local
+    let _6: &'4 Enum; // anonymous local
     let _7: bool; // anonymous local
     let _8: isize; // anonymous local
     let _9: isize; // anonymous local
-    let _10: (&'0 Enum, &'0 Enum); // anonymous local
-    let _11: &'0 Enum; // anonymous local
-    let _12: &'0 Enum; // anonymous local
-    let __self_0_13: &'1 u8; // local
-    let __arg1_0_14: &'1 u8; // local
-    let _15: &'2 &'1 u8; // anonymous local
-    let _16: &'2 &'1 u8; // anonymous local
+    let _10: (&'7 Enum, &'8 Enum); // anonymous local
+    let _11: &'9 Enum; // anonymous local
+    let _12: &'10 Enum; // anonymous local
+    let __self_0_13: &'12 u8; // local
+    let __arg1_0_14: &'13 u8; // local
+    let _15: &'16 &'17 u8; // anonymous local
+    let _16: &'18 &'19 u8; // anonymous local
 
     storage_live(__self_discr_3)
     storage_live(_4)
@@ -124,7 +124,7 @@ pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(@1: &'_0 Enum, @2: &'_1 Enu
                         _15 = &__self_0_13
                         storage_live(_16)
                         _16 = &__arg1_0_14
-                        _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'7, '8, '11, '12, u8, u8>[{impl PartialEq<u8> for u8}](move _15, move _16)
+                        _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'28, '29, '32, '33, u8, u8>[{impl PartialEq<u8> for u8}](move _15, move _16)
                         storage_dead(_16)
                         storage_dead(_15)
                         storage_dead(__arg1_0_14)

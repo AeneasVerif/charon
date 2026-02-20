@@ -64,8 +64,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let _0: isize; // return
-    let opt_1: &'0 Option<T>[@TraitClause0]; // arg #1
-    let _2: &'0 Option<T>[@TraitClause0]; // anonymous local
+    let opt_1: &'1 Option<T>[@TraitClause0]; // arg #1
+    let _2: &'2 Option<T>[@TraitClause0]; // anonymous local
 
     storage_live(_2)
     _2 = &(*opt_1)
@@ -82,15 +82,15 @@ where
     let _0: bool; // return
     let opt_1: Option<T>[@TraitClause0]; // arg #1
     let _2: isize; // anonymous local
-    let _3: &'0 Option<T>[@TraitClause0]; // anonymous local
-    let _4: &'0 Option<T>[@TraitClause0]; // anonymous local
+    let _3: &'1 Option<T>[@TraitClause0]; // anonymous local
+    let _4: &'2 Option<T>[@TraitClause0]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = &opt_1
     _3 = &(*_4)
-    _2 = discriminant_value<'2, T>[@TraitClause0](move _3)
+    _2 = discriminant_value<'4, T>[@TraitClause0](move _3)
     storage_dead(_3)
     _0 = move _2 != const 0 : isize
     storage_dead(_2)

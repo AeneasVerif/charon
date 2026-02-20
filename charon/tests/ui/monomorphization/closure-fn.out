@@ -98,15 +98,15 @@ const UNIT_METADATA: () = @Fun1()
 fn apply_to::<closure<'_, '_>><'_0>(@1: &'_0 closure<'_, '_>) -> u8
 {
     let _0: u8; // return
-    let f_1: &'0 closure<'_, '_>; // arg #1
-    let _2: &'0 closure<'_, '_>; // anonymous local
+    let f_1: &'3 closure<'4, '5>; // arg #1
+    let _2: &'6 closure<'7, '8>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
     _2 = &(*f_1)
     storage_live(_3)
     _3 = (const 10 : u8, const 20 : u8)
-    _0 = {impl#2}<'4, '5>::call<'6>(move _2, move _3)
+    _0 = {impl#2}<'16, '17>::call<'18>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -116,15 +116,15 @@ fn apply_to::<closure<'_, '_>><'_0>(@1: &'_0 closure<'_, '_>) -> u8
 fn apply_to_mut::<closure<'_, '_>><'_0>(@1: &'_0 mut closure<'_, '_>) -> u8
 {
     let _0: u8; // return
-    let f_1: &'0 mut closure<'_, '_>; // arg #1
-    let _2: &'0 mut closure<'_, '_>; // anonymous local
+    let f_1: &'3 mut closure<'4, '5>; // arg #1
+    let _2: &'6 mut closure<'7, '8>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
     _2 = &mut (*f_1)
     storage_live(_3)
     _3 = (const 10 : u8, const 20 : u8)
-    _0 = {impl#1}<'4, '5>::call_mut<'6>(move _2, move _3)
+    _0 = {impl#1}<'16, '17>::call_mut<'18>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -134,18 +134,18 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(@1: &'_0 mut closure<'_, '_>) -> u8
 fn apply_to_once::<closure<'_, '_>>(@1: closure<'_, '_>) -> u8
 {
     let _0: u8; // return
-    let f_1: closure<'_, '_>; // arg #1
-    let _2: closure<'_, '_>; // anonymous local
+    let f_1: closure<'0, '1>; // arg #1
+    let _2: closure<'2, '3>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
     _2 = move f_1
     storage_live(_3)
     _3 = (const 10 : u8, const 20 : u8)
-    _0 = {impl#0}<'2, '3>::call_once(move _2, move _3)
+    _0 = {impl#0}<'8, '9>::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl#1}<'6, '7>] f_1
+    conditional_drop[{impl#1}<'20, '21>] f_1
     return
 }
 
@@ -155,20 +155,20 @@ fn main()
     let _0: (); // return
     let v_1: u8; // local
     let z_2: u8; // local
-    let f_3: closure<'0, '1>; // local
-    let _4: &'2 u8; // anonymous local
-    let _5: &'2 u8; // anonymous local
+    let f_3: closure<'2, '3>; // local
+    let _4: &'5 u8; // anonymous local
+    let _5: &'6 u8; // anonymous local
     let _6: u8; // anonymous local
-    let _7: &'3 closure<'0, '1>; // anonymous local
+    let _7: &'10 closure<'11, '12>; // anonymous local
     let _8: (u8, u8); // anonymous local
     let _9: u8; // anonymous local
-    let _10: &'3 closure<'0, '1>; // anonymous local
-    let _11: &'3 closure<'0, '1>; // anonymous local
+    let _10: &'13 closure<'14, '15>; // anonymous local
+    let _11: &'16 closure<'17, '18>; // anonymous local
     let _12: u8; // anonymous local
-    let _13: &'4 mut closure<'0, '1>; // anonymous local
-    let _14: &'4 mut closure<'0, '1>; // anonymous local
+    let _13: &'22 mut closure<'23, '24>; // anonymous local
+    let _14: &'25 mut closure<'26, '27>; // anonymous local
     let _15: u8; // anonymous local
-    let _16: closure<'0, '1>; // anonymous local
+    let _16: closure<'28, '29>; // anonymous local
 
     _0 = ()
     storage_live(v_1)
@@ -188,7 +188,7 @@ fn main()
     _7 = &f_3
     storage_live(_8)
     _8 = (const 10 : u8, const 20 : u8)
-    _6 = {impl#2}<'10, '11>::call<'12>(move _7, move _8)
+    _6 = {impl#2}<'37, '38>::call<'39>(move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)
@@ -197,7 +197,7 @@ fn main()
     storage_live(_11)
     _11 = &f_3
     _10 = &(*_11)
-    _9 = apply_to::<closure<'_, '_>><'14>(move _10)
+    _9 = apply_to::<closure<'_, '_>><'43>(move _10)
     storage_dead(_10)
     storage_dead(_11)
     storage_dead(_9)
@@ -206,7 +206,7 @@ fn main()
     storage_live(_14)
     _14 = &mut f_3
     _13 = &two-phase-mut (*_14)
-    _12 = apply_to_mut::<closure<'_, '_>><'16>(move _13)
+    _12 = apply_to_mut::<closure<'_, '_>><'47>(move _13)
     storage_dead(_13)
     storage_dead(_14)
     storage_dead(_12)

@@ -14,7 +14,7 @@ const UNIT_METADATA: () = @Fun1()
 pub fn method<'_0>(@1: &'_0 bool)
 {
     let _0: (); // return
-    let self_1: &'0 bool; // arg #1
+    let self_1: &'1 bool; // arg #1
 
     _0 = ()
     _0 = ()
@@ -26,12 +26,12 @@ fn do_test::<bool>(@1: bool)
 {
     let _0: (); // return
     let x_1: bool; // arg #1
-    let _2: &'0 bool; // anonymous local
+    let _2: &'1 bool; // anonymous local
 
     _0 = ()
     storage_live(_2)
     _2 = &x_1
-    _0 = method<'2>(move _2)
+    _0 = method<'3>(move _2)
     storage_dead(_2)
     return
 }

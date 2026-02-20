@@ -37,7 +37,7 @@ struct A {}
 fn test_crate::MyIterator::method<'_0>(@1: &'_0 A)
 {
     let _0: (); // return
-    let self_1: &'0 A; // arg #1
+    let self_1: &'1 A; // arg #1
 
     _0 = ()
     _0 = ()
@@ -50,7 +50,7 @@ struct B {}
 fn test_crate::MyIterator::method<'_0>(@1: &'_0 B)
 {
     let _0: (); // return
-    let self_1: &'0 B; // arg #1
+    let self_1: &'1 B; // arg #1
 
     _0 = ()
     _0 = ()
@@ -62,14 +62,14 @@ fn main()
 {
     let _0: (); // return
     let _1: (); // anonymous local
-    let _2: &'0 A; // anonymous local
+    let _2: &'1 A; // anonymous local
     let _3: (); // anonymous local
-    let _4: &'1 B; // anonymous local
-    let _5: &'1 B; // anonymous local
-    let _6: &'0 A; // anonymous local
-    let _7: &'_ A; // anonymous local
+    let _4: &'3 B; // anonymous local
+    let _5: &'4 B; // anonymous local
+    let _6: &'5 A; // anonymous local
+    let _7: &'12 A; // anonymous local
     let _8: A; // anonymous local
-    let _9: &'_ B; // anonymous local
+    let _9: &'13 B; // anonymous local
     let _10: B; // anonymous local
 
     storage_live(_7)
@@ -83,7 +83,7 @@ fn main()
     storage_live(_2)
     _6 = move _7
     _2 = &(*_6)
-    _1 = {impl#0}::method<'3>(move _2)
+    _1 = {impl#0}::method<'8>(move _2)
     storage_live(_9)
     storage_live(_10)
     _10 = B {  }
@@ -94,7 +94,7 @@ fn main()
     storage_live(_4)
     _5 = move _9
     _4 = &(*_5)
-    _3 = {impl#1}::method<'5>(move _4)
+    _3 = {impl#1}::method<'11>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

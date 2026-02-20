@@ -17,13 +17,13 @@ fn main()
 {
     let _0: (); // return
     let _1: (); // anonymous local
-    let _2: Arguments<'0>; // anonymous local
+    let _2: Arguments<'1>; // anonymous local
 
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 = from_str<'1>(const "Hello, world!\n")
-    _1 = _print<'4>(move _2)
+    _2 = from_str<'2>(const "Hello, world!\n")
+    _1 = _print<'6>(move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

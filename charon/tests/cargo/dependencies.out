@@ -64,7 +64,7 @@ pub fn take<'_0, T, F>(@1: &'_0 mut T, @2: F)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: FnOnce<F, (T)>,
+    [@TraitClause2]: FnOnce<F, (T,)>,
     @TraitClause2::Output = T,
 = <opaque>
 
@@ -81,12 +81,12 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_cargo_dependencies::main::silly_incr::closure
 struct closure {}
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}::call_once
-fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}::call_once
+fn {impl FnOnce<(u32,)> for closure}::call_once(@1: closure, @2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: closure; // arg #1
-    let tupled_args_2: (u32); // arg #2
+    let tupled_args_2: (u32,); // arg #2
     let y_3: u32; // local
     let _4: u32; // anonymous local
     let _5: (u32, bool); // anonymous local
@@ -97,20 +97,20 @@ fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
     storage_live(_4)
     _4 = copy y_3
     _5 = copy _4 checked.+ const 1 : u32
-    assert(move _5.1 == false)
+    assert(move _5.1 == false) (overflow) else panic
     _0 = move _5.0
     storage_dead(_4)
     return
 }
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}
-impl FnOnce<(u32)> for closure {
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}
+impl FnOnce<(u32,)> for closure {
     parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {built_in impl Sized for (u32)}
-    parent_clause2 = {built_in impl Tuple for (u32)}
+    parent_clause1 = {built_in impl Sized for (u32,)}
+    parent_clause2 = {built_in impl Tuple for (u32,)}
     parent_clause3 = {built_in impl Sized for u32}
     type Output = u32
-    fn call_once = {impl FnOnce<(u32)> for closure}::call_once
+    fn call_once = {impl FnOnce<(u32,)> for closure}::call_once
     non-dyn-compatible
 }
 
@@ -118,9 +118,9 @@ impl FnOnce<(u32)> for closure {
 fn silly_incr<'_0>(@1: &'_0 mut u32)
 {
     let _0: (); // return
-    let x_1: &'0 mut u32; // arg #1
+    let x_1: &'1 mut u32; // arg #1
     let _2: (); // anonymous local
-    let _3: &'0 mut u32; // anonymous local
+    let _3: &'2 mut u32; // anonymous local
     let _4: closure; // anonymous local
 
     _0 = ()
@@ -129,7 +129,7 @@ fn silly_incr<'_0>(@1: &'_0 mut u32)
     _3 = &two-phase-mut (*x_1)
     storage_live(_4)
     _4 = closure {  }
-    _2 = take<'2, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnOnce<(u32)> for closure}](move _3, move _4)
+    _2 = take<'4, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnOnce<(u32,)> for closure}](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
@@ -143,25 +143,25 @@ fn main()
     let _0: (); // return
     let x_1: u32; // local
     let _2: (); // anonymous local
-    let _3: &'0 mut u32; // anonymous local
-    let _4: &'0 mut u32; // anonymous local
-    let _5: (&'1 u32, &'1 u32); // anonymous local
-    let _6: &'1 u32; // anonymous local
-    let _7: &'1 u32; // anonymous local
-    let left_val_8: &'1 u32; // local
-    let right_val_9: &'1 u32; // local
+    let _3: &'1 mut u32; // anonymous local
+    let _4: &'2 mut u32; // anonymous local
+    let _5: (&'6 u32, &'7 u32); // anonymous local
+    let _6: &'8 u32; // anonymous local
+    let _7: &'9 u32; // anonymous local
+    let left_val_8: &'10 u32; // local
+    let right_val_9: &'11 u32; // local
     let _10: bool; // anonymous local
     let _11: u32; // anonymous local
     let _12: u32; // anonymous local
     let kind_13: AssertKind; // local
     let _14: AssertKind; // anonymous local
-    let _15: &'1 u32; // anonymous local
-    let _16: &'1 u32; // anonymous local
-    let _17: &'1 u32; // anonymous local
-    let _18: &'1 u32; // anonymous local
-    let _19: Option<Arguments<'2>>[{built_in impl Sized for Arguments<'2>}]; // anonymous local
-    let _20: &'1 u32; // anonymous local
-    let _21: &'_ u32; // anonymous local
+    let _15: &'12 u32; // anonymous local
+    let _16: &'13 u32; // anonymous local
+    let _17: &'14 u32; // anonymous local
+    let _18: &'15 u32; // anonymous local
+    let _19: Option<Arguments<'22>>[{built_in impl Sized for Arguments<'22>}]; // anonymous local
+    let _20: &'25 u32; // anonymous local
+    let _21: &'36 u32; // anonymous local
     let _22: u32; // anonymous local
 
     storage_live(_20)
@@ -173,7 +173,7 @@ fn main()
     storage_live(_4)
     _4 = &mut x_1
     _3 = &two-phase-mut (*_4)
-    _2 = silly_incr<'6>(move _3)
+    _2 = silly_incr<'27>(move _3)
     storage_live(_21)
     storage_live(_22)
     _22 = const 1 : u32

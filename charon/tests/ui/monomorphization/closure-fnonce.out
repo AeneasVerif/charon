@@ -53,7 +53,7 @@ struct closure {
 }
 
 // Full name: core::ops::function::FnOnce::call_once
-pub fn call_once(@1: closure, @2: (u8)) -> u8
+pub fn call_once(@1: closure, @2: (u8,)) -> u8
 = <opaque>
 
 // Full name: test_crate::apply_to_zero_once::<closure>
@@ -62,12 +62,12 @@ fn apply_to_zero_once::<closure>(@1: closure) -> u8
     let _0: u8; // return
     let f_1: closure; // arg #1
     let _2: closure; // anonymous local
-    let _3: (u8); // anonymous local
+    let _3: (u8,); // anonymous local
 
     storage_live(_2)
     _2 = move f_1
     storage_live(_3)
-    _3 = (const 0 : u8)
+    _3 = (const 0 : u8,)
     _0 = {impl#0}::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)

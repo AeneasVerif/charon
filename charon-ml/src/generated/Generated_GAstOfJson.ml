@@ -117,12 +117,14 @@ and assertion_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [ ("cond", cond); ("expected", expected); ("on_failure", on_failure) ]
+        [ ("cond", cond); ("expected", expected); ("check_kind", check_kind) ]
       ->
         let* cond = operand_of_json ctx cond in
         let* expected = bool_of_json ctx expected in
-        let* on_failure = abort_kind_of_json ctx on_failure in
-        Ok ({ cond; expected; on_failure } : assertion)
+        let* check_kind =
+          option_of_json builtin_assert_kind_of_json ctx check_kind
+        in
+        Ok ({ cond; expected; check_kind } : assertion)
     | _ -> Error "")
 
 and attr_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -248,6 +250,44 @@ and borrow_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "TwoPhaseMut" -> Ok BTwoPhaseMut
     | `String "Shallow" -> Ok BShallow
     | `String "UniqueImmutable" -> Ok BUniqueImmutable
+    | _ -> Error "")
+
+and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_assert_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("BoundsCheck", `Assoc [ ("len", len); ("index", index) ]) ] ->
+        let* len = operand_of_json ctx len in
+        let* index = operand_of_json ctx index in
+        Ok (BoundsCheck (len, index))
+    | `Assoc [ ("Overflow", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = binop_of_json ctx x_0 in
+        let* x_1 = operand_of_json ctx x_1 in
+        let* x_2 = operand_of_json ctx x_2 in
+        Ok (Overflow (x_0, x_1, x_2))
+    | `Assoc [ ("OverflowNeg", overflow_neg) ] ->
+        let* overflow_neg = operand_of_json ctx overflow_neg in
+        Ok (OverflowNeg overflow_neg)
+    | `Assoc [ ("DivisionByZero", division_by_zero) ] ->
+        let* division_by_zero = operand_of_json ctx division_by_zero in
+        Ok (DivisionByZero division_by_zero)
+    | `Assoc [ ("RemainderByZero", remainder_by_zero) ] ->
+        let* remainder_by_zero = operand_of_json ctx remainder_by_zero in
+        Ok (RemainderByZero remainder_by_zero)
+    | `Assoc
+        [
+          ( "MisalignedPointerDereference",
+            `Assoc [ ("required", required); ("found", found) ] );
+        ] ->
+        let* required = operand_of_json ctx required in
+        let* found = operand_of_json ctx found in
+        Ok (MisalignedPointerDereference (required, found))
+    | `String "NullPointerDereference" -> Ok NullPointerDereference
+    | `Assoc [ ("InvalidEnumConstruction", invalid_enum_construction) ] ->
+        let* invalid_enum_construction =
+          operand_of_json ctx invalid_enum_construction
+        in
+        Ok (InvalidEnumConstruction invalid_enum_construction)
     | _ -> Error "")
 
 and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -377,6 +417,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("monomorphize", monomorphize);
           ("monomorphize_mut", monomorphize_mut);
           ("start_from", start_from);
+          ("start_from_attribute", start_from_attribute);
+          ("start_from_pub", start_from_pub);
           ("include", include_);
           ("opaque", opaque);
           ("exclude", exclude);
@@ -392,6 +434,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("index_to_function_calls", index_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
           ("raw_consts", raw_consts);
+          ("unsized_strings", unsized_strings);
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
           ("reconstruct_asserts", reconstruct_asserts);
           ("unbind_item_vars", unbind_item_vars);
@@ -417,6 +460,10 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           option_of_json monomorphize_mut_of_json ctx monomorphize_mut
         in
         let* start_from = list_of_json string_of_json ctx start_from in
+        let* start_from_attribute =
+          option_of_json string_of_json ctx start_from_attribute
+        in
+        let* start_from_pub = bool_of_json ctx start_from_pub in
         let* included = list_of_json string_of_json ctx include_ in
         let* opaque = list_of_json string_of_json ctx opaque in
         let* exclude = list_of_json string_of_json ctx exclude in
@@ -438,6 +485,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
         let* raw_consts = bool_of_json ctx raw_consts in
+        let* unsized_strings = bool_of_json ctx unsized_strings in
         let* reconstruct_fallible_operations =
           bool_of_json ctx reconstruct_fallible_operations
         in
@@ -466,6 +514,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              monomorphize;
              monomorphize_mut;
              start_from;
+             start_from_attribute;
+             start_from_pub;
              included;
              opaque;
              exclude;
@@ -481,6 +531,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              index_to_function_calls;
              treat_box_as_builtin;
              raw_consts;
+             unsized_strings;
              reconstruct_fallible_operations;
              reconstruct_asserts;
              unbind_item_vars;
@@ -582,9 +633,6 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Array", array) ] ->
         let* array = list_of_json constant_expr_of_json ctx array in
         Ok (CArray array)
-    | `Assoc [ ("Slice", slice) ] ->
-        let* slice = list_of_json constant_expr_of_json ctx slice in
-        Ok (CSlice slice)
     | `Assoc [ ("Global", global) ] ->
         let* global = global_decl_ref_of_json ctx global in
         Ok (CGlobal global)
@@ -592,13 +640,15 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = trait_ref_of_json ctx x_0 in
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (CTraitConst (x_0, x_1))
-    | `Assoc [ ("Ref", ref) ] ->
-        let* ref = box_of_json constant_expr_of_json ctx ref in
-        Ok (CRef ref)
-    | `Assoc [ ("Ptr", `List [ x_0; x_1 ]) ] ->
+    | `Assoc [ ("Ref", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = box_of_json constant_expr_of_json ctx x_0 in
+        let* x_1 = option_of_json unsizing_metadata_of_json ctx x_1 in
+        Ok (CRef (x_0, x_1))
+    | `Assoc [ ("Ptr", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = ref_kind_of_json ctx x_0 in
         let* x_1 = box_of_json constant_expr_of_json ctx x_1 in
-        Ok (CPtr (x_0, x_1))
+        let* x_2 = option_of_json unsizing_metadata_of_json ctx x_2 in
+        Ok (CPtr (x_0, x_1, x_2))
     | `Assoc [ ("Var", var) ] ->
         let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
         Ok (CVar var)

@@ -79,7 +79,7 @@ where
     [@TraitClause1]: Foo<()>,
 {
     let _0: (); // return
-    let self_1: &'0 T; // arg #1
+    let self_1: &'1 T; // arg #1
 
     _0 = ()
     _0 = ()
@@ -158,11 +158,11 @@ where
 fn main()
 {
     let _0: (); // return
-    let _m_1: &'0 (dyn Broken<Assoc = ()> + '1); // local
-    let _2: &'2 (); // anonymous local
-    let _3: &'2 (); // anonymous local
-    let _4: &'2 (); // anonymous local
-    let _5: &'_ (); // anonymous local
+    let _m_1: &'3 (dyn Broken<Assoc = ()> + '4); // local
+    let _2: &'6 (); // anonymous local
+    let _3: &'7 (); // anonymous local
+    let _4: &'8 (); // anonymous local
+    let _5: &'12 (); // anonymous local
     let _6: (); // anonymous local
 
     storage_live(_5)
@@ -177,7 +177,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _m_1 = unsize_cast<&'2 (), &'0 (dyn Broken<Assoc = ()> + '1), {impl Broken for T}<()>[{built_in impl Sized for ()}] with {impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
+    _m_1 = unsize_cast<&'6 (), &'10 (dyn Broken<Assoc = ()> + '11), {impl Broken for T}<()>[{built_in impl Sized for ()}] with {impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

@@ -47,6 +47,12 @@ Options:
       --start-from <START_FROM>
           A list of item paths to use as starting points for the translation. We will translate these items and any items they refer to, according to the opacity rules. When absent, we start from the path `crate` (which translates the whole crate)
 
+      --start-from-attribute[=<ATTRIBUTE>]
+          Use all the items annotated with the given attribute as starting points for translation (except modules). If an attribute name is not specified, `verify::start_from` is used
+
+      --start-from-pub
+          Use all the `pub` items as starting points for translation (except modules)
+
       --include <INCLUDE>
           Whitelist of items to translate. These use the name-matcher syntax (note: this differs
           a bit from the ocaml NameMatcher).
@@ -109,6 +115,9 @@ Options:
 
       --raw-consts
           Do not inline or evaluate constants
+
+      --unsized-strings
+          Replace string literal constants with a constant u8 array that gets unsized, expliciting the fact a string constant has a hidden reference
 
       --reconstruct-fallible-operations
           Replace "bound checks followed by UB-on-overflow operation" with the corresponding panic-on-overflow operation. This loses unwinding information

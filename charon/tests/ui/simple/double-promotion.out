@@ -35,12 +35,12 @@ where
 fn main()
 {
     let _0: (); // return
-    let _1: &'0 Ref<'1, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _2: &'0 Ref<'1, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _3: &'_ Ref<'_, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _4: Ref<'_, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _5: &'3 (); // anonymous local
-    let _6: &'3 (); // anonymous local
+    let _1: &'3 Ref<'4, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let _2: &'9 Ref<'10, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let _3: &'14 Ref<'15, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let _4: Ref<'16, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let _5: &'18 (); // anonymous local
+    let _6: &'19 (); // anonymous local
     let _7: (); // anonymous local
 
     storage_live(_3)

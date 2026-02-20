@@ -59,7 +59,7 @@ pub trait FnMut<Self, Args>
 struct closure::<()> {}
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0>(@1: &'_0 mut closure::<()>, @2: (()))
+pub fn call_mut<'_0>(@1: &'_0 mut closure::<()>, @2: ((),))
 = <opaque>
 
 fn UNIT_METADATA()
@@ -73,17 +73,17 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::foo::{const}::{impl#0}::call_once::<()>
-fn call_once::<()>(@1: closure::<()>, @2: (()))
+fn call_once::<()>(@1: closure::<()>, @2: ((),))
 {
     let _0: (); // return
     let _1: closure::<()>; // arg #1
-    let _2: (()); // arg #2
-    let _3: &'0 mut closure::<()>; // anonymous local
+    let _2: ((),); // arg #2
+    let _3: &'1 mut closure::<()>; // anonymous local
 
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl#1}::<()>::call_mut<'2>(move _3, move _2)
+    _0 = {impl#1}::<()>::call_mut<'3>(move _3, move _2)
     drop[{impl#1}::<()>] _1
     return
 }
@@ -93,13 +93,13 @@ fn as_fn::<()>(@1: ())
 {
     let _0: (); // return
     let arg1_1: (); // arg #1
-    let args_2: (()); // local
+    let args_2: ((),); // local
     let state_3: closure::<()>; // local
 
     _0 = ()
     storage_live(args_2)
     storage_live(state_3)
-    args_2 = (move arg1_1)
+    args_2 = (move arg1_1,)
     state_3 = closure::<()> {  }
     _0 = call_once::<()>(move state_3, move args_2)
     return

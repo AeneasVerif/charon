@@ -357,7 +357,6 @@ and constant_expr_kind =
 
           We eliminate this case in a micro-pass. *)
   | CArray of constant_expr list
-  | CSlice of constant_expr list
   | CGlobal of global_decl_ref
       (** The value is a top-level constant/static.
 
@@ -389,11 +388,11 @@ and constant_expr_kind =
 
           Remark: trait constants can not be used in types, they are necessarily
           values. *)
-  | CRef of constant_expr
+  | CRef of constant_expr * unsizing_metadata option
       (** A shared reference to a constant value.
 
           We eliminate this case in a micro-pass. *)
-  | CPtr of ref_kind * constant_expr
+  | CPtr of ref_kind * constant_expr * unsizing_metadata option
       (** A pointer to a mutable static.
 
           We eliminate this case in a micro-pass. *)
@@ -428,6 +427,7 @@ and dyn_predicate = {
           this trait in the [dyn Trait] pointer metadata. *)
 }
 
+and field_id = (FieldId.id[@visitors.opaque])
 and fn_ptr = { kind : fn_ptr_kind; generics : generic_args }
 
 and fn_ptr_kind =
@@ -758,6 +758,22 @@ and type_id =
 (** A type variable in a signature or binder. *)
 and type_param = (type_var_id, string) indexed_var
 
+and unsizing_metadata =
+  | MetaLength of constant_expr  (** Cast from [[T; N]] to [[T]]. *)
+  | MetaVTable of trait_ref * global_decl_ref option
+      (** Cast from a sized value to a [dyn Trait] value. The [TraitRef] gives
+          the trait for which we're getting a vtable (this is the _principal_
+          trait of the [dyn Trait] target). The second field is the vtable
+          instance, if we could resolve it. *)
+  | MetaVTableUpcast of field_id list
+      (** Cast from [dyn Trait] to [dyn OtherTrait]. The fields indicate how to
+          retreive the vtable: it's always either the same we already had, or
+          the vtable for a (possibly nested) supertrait.
+
+          Note that we cheat in one case: when upcasting to a marker trait (e.g.
+          [dyn Trait -> dyn Sized]), we keep the current vtable. *)
+  | MetaUnknown
+
 and variant_id = (VariantId.id[@visitors.opaque])
 [@@deriving
   show,
@@ -827,8 +843,6 @@ and field = {
   field_name : string option;
   field_ty : ty;
 }
-
-and field_id = (FieldId.id[@visitors.opaque])
 
 (** There are two kinds of [impl] blocks:
     {ul

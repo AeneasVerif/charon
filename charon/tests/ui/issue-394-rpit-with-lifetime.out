@@ -107,7 +107,7 @@ struct closure<'a> {}
 fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(@1: &'_1 mut closure<'a>, @2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
-    let _1: &'0 mut closure<'a>; // arg #1
+    let _1: &'1 mut closure<'a>; // arg #1
     let tupled_args_2: (); // arg #2
 
     _0 = Option::None {  }
@@ -130,11 +130,11 @@ fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(@1: closure<'a>, @2: ()) -> 
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: closure<'a>; // arg #1
     let _2: (); // arg #2
-    let _3: &'0 mut closure<'a>; // anonymous local
+    let _3: &'1 mut closure<'a>; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for closure<'a>}::call_mut<'a, '4>(move _3, move _2)
+    _0 = {impl FnMut<()> for closure<'a>}::call_mut<'a, '5>(move _3, move _2)
     drop[{impl Destruct for closure<'a>}<'a>] _1
     return
 }
@@ -163,12 +163,12 @@ impl<'a> FnMut<()> for closure<'a> {
 // Full name: test_crate::sparse_transitions
 fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for closure<'_>}]
 {
-    let _0: FromFn<closure<'0>>[{built_in impl Sized for closure<'0>}]; // return
-    let _1: closure<'0>; // anonymous local
+    let _0: FromFn<closure<'6>>[{built_in impl Sized for closure<'6>}]; // return
+    let _1: closure<'9>; // anonymous local
 
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<u8, closure<'0>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'0>}, {impl FnMut<()> for closure<'a>}<'0>](move _1)
+    _0 = from_fn<u8, closure<'11>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'11>}, {impl FnMut<()> for closure<'a>}<'11>](move _1)
     storage_dead(_1)
     return
 }

@@ -94,59 +94,59 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::apply_to
-fn apply_to<'_0, impl Fn(u8, u8) -> u8>(@1: &'_0 impl Fn(u8, u8) -> u8) -> u8
+fn apply_to<'_0, T0>(@1: &'_0 T0) -> u8
 where
-    [@TraitClause0]: Sized<impl Fn(u8, u8) -> u8>,
-    [@TraitClause1]: Fn<impl Fn(u8, u8) -> u8, (u8, u8)>,
+    [@TraitClause0]: Sized<T0>,
+    [@TraitClause1]: Fn<T0, (u8, u8)>,
     @TraitClause1::parent_clause1::parent_clause1::Output = u8,
 {
     let _0: u8; // return
-    let f_1: &'0 impl Fn(u8, u8) -> u8; // arg #1
-    let _2: &'0 impl Fn(u8, u8) -> u8; // anonymous local
+    let f_1: &'1 T0; // arg #1
+    let _2: &'2 T0; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
     _2 = &(*f_1)
     storage_live(_3)
     _3 = (const 10 : u8, const 20 : u8)
-    _0 = @TraitClause1::call<'2>(move _2, move _3)
+    _0 = @TraitClause1::call<'4>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::apply_to_mut
-fn apply_to_mut<'_0, impl FnMut(u8, u8) -> u8>(@1: &'_0 mut impl FnMut(u8, u8) -> u8) -> u8
+fn apply_to_mut<'_0, T0>(@1: &'_0 mut T0) -> u8
 where
-    [@TraitClause0]: Sized<impl FnMut(u8, u8) -> u8>,
-    [@TraitClause1]: FnMut<impl FnMut(u8, u8) -> u8, (u8, u8)>,
+    [@TraitClause0]: Sized<T0>,
+    [@TraitClause1]: FnMut<T0, (u8, u8)>,
     @TraitClause1::parent_clause1::Output = u8,
 {
     let _0: u8; // return
-    let f_1: &'0 mut impl FnMut(u8, u8) -> u8; // arg #1
-    let _2: &'0 mut impl FnMut(u8, u8) -> u8; // anonymous local
+    let f_1: &'1 mut T0; // arg #1
+    let _2: &'2 mut T0; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
     _2 = &mut (*f_1)
     storage_live(_3)
     _3 = (const 10 : u8, const 20 : u8)
-    _0 = @TraitClause1::call_mut<'2>(move _2, move _3)
+    _0 = @TraitClause1::call_mut<'4>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::apply_to_once
-fn apply_to_once<impl FnOnce(u8, u8) -> u8>(@1: impl FnOnce(u8, u8) -> u8) -> u8
+fn apply_to_once<T0>(@1: T0) -> u8
 where
-    [@TraitClause0]: Sized<impl FnOnce(u8, u8) -> u8>,
-    [@TraitClause1]: FnOnce<impl FnOnce(u8, u8) -> u8, (u8, u8)>,
+    [@TraitClause0]: Sized<T0>,
+    [@TraitClause1]: FnOnce<T0, (u8, u8)>,
     @TraitClause1::Output = u8,
 {
     let _0: u8; // return
-    let f_1: impl FnOnce(u8, u8) -> u8; // arg #1
-    let _2: impl FnOnce(u8, u8) -> u8; // anonymous local
+    let f_1: T0; // arg #1
+    let _2: T0; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
@@ -156,7 +156,7 @@ where
     _0 = @TraitClause1::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for impl FnOnce(u8, u8) -> u8}] f_1
+    conditional_drop[{built_in impl Destruct for T0}] f_1
     return
 }
 
@@ -170,7 +170,7 @@ struct closure<'_0, '_1> {
 fn {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'_0, '_1, '_2>(@1: &'_2 closure<'_0, '_1>, @2: (u8, u8)) -> u8
 {
     let _0: u8; // return
-    let _1: &'0 closure<'_0, '_1>; // arg #1
+    let _1: &'1 closure<'_0, '_1>; // arg #1
     let tupled_args_2: (u8, u8); // arg #2
     let x_3: u8; // local
     let y_4: u8; // local
@@ -246,11 +246,11 @@ fn {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}::call_once<'_0, '_1>(@1: closur
     let _0: u8; // return
     let _1: closure<'_0, '_1>; // arg #1
     let _2: (u8, u8); // arg #2
-    let _3: &'0 mut closure<'_0, '_1>; // anonymous local
+    let _3: &'1 mut closure<'_0, '_1>; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '6>(move _3, move _2)
+    _0 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '7>(move _3, move _2)
     drop[{impl Destruct for closure<'_0, '_1>}<'_0, '_1>] _1
     return
 }
@@ -292,20 +292,20 @@ fn main()
     let _0: (); // return
     let v_1: u8; // local
     let z_2: u8; // local
-    let f_3: closure<'0, '1>; // local
-    let _4: &'2 u8; // anonymous local
-    let _5: &'2 u8; // anonymous local
+    let f_3: closure<'2, '3>; // local
+    let _4: &'5 u8; // anonymous local
+    let _5: &'6 u8; // anonymous local
     let _6: u8; // anonymous local
-    let _7: &'3 closure<'0, '1>; // anonymous local
+    let _7: &'10 closure<'11, '12>; // anonymous local
     let _8: (u8, u8); // anonymous local
     let _9: u8; // anonymous local
-    let _10: &'3 closure<'0, '1>; // anonymous local
-    let _11: &'3 closure<'0, '1>; // anonymous local
+    let _10: &'13 closure<'14, '15>; // anonymous local
+    let _11: &'16 closure<'17, '18>; // anonymous local
     let _12: u8; // anonymous local
-    let _13: &'4 mut closure<'0, '1>; // anonymous local
-    let _14: &'4 mut closure<'0, '1>; // anonymous local
+    let _13: &'22 mut closure<'23, '24>; // anonymous local
+    let _14: &'25 mut closure<'26, '27>; // anonymous local
     let _15: u8; // anonymous local
-    let _16: closure<'0, '1>; // anonymous local
+    let _16: closure<'28, '29>; // anonymous local
 
     _0 = ()
     storage_live(v_1)
@@ -325,7 +325,7 @@ fn main()
     _7 = &f_3
     storage_live(_8)
     _8 = (const 10 : u8, const 20 : u8)
-    _6 = {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'10, '11, '12>(move _7, move _8)
+    _6 = {impl Fn<(u8, u8)> for closure<'_0, '_1>}::call<'37, '38, '39>(move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)
@@ -334,7 +334,7 @@ fn main()
     storage_live(_11)
     _11 = &f_3
     _10 = &(*_11)
-    _9 = apply_to<'22, closure<'0, '1>>[{built_in impl Sized for closure<'0, '1>}, {impl Fn<(u8, u8)> for closure<'_0, '_1>}<'0, '1>](move _10)
+    _9 = apply_to<'59, closure<'42, '43>>[{built_in impl Sized for closure<'42, '43>}, {impl Fn<(u8, u8)> for closure<'_0, '_1>}<'42, '43>](move _10)
     storage_dead(_10)
     storage_dead(_11)
     storage_dead(_9)
@@ -343,14 +343,14 @@ fn main()
     storage_live(_14)
     _14 = &mut f_3
     _13 = &two-phase-mut (*_14)
-    _12 = apply_to_mut<'32, closure<'0, '1>>[{built_in impl Sized for closure<'0, '1>}, {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'0, '1>](move _13)
+    _12 = apply_to_mut<'79, closure<'62, '63>>[{built_in impl Sized for closure<'62, '63>}, {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'62, '63>](move _13)
     storage_dead(_13)
     storage_dead(_14)
     storage_dead(_12)
     storage_live(_15)
     storage_live(_16)
     _16 = copy f_3
-    _15 = apply_to_once<closure<'0, '1>>[{built_in impl Sized for closure<'0, '1>}, {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'0, '1>](move _16)
+    _15 = apply_to_once<closure<'80, '81>>[{built_in impl Sized for closure<'80, '81>}, {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'80, '81>](move _16)
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()

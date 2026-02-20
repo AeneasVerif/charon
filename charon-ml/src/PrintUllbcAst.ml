@@ -27,7 +27,11 @@ module Ast = struct
         indent ^ "set_discriminant(" ^ place_to_string env p ^ ", "
         ^ variant_id_to_pretty_string variant_id
         ^ ")"
-    | Assert a -> assertion_to_string env indent a
+    | Assert (asrt, abort_kind) ->
+        indent
+        ^ assertion_to_string env asrt
+        ^ " else "
+        ^ abort_kind_to_string env abort_kind
     | StorageLive var_id ->
         indent ^ "storage_live " ^ local_id_to_string env var_id
     | StorageDead var_id ->
@@ -75,6 +79,11 @@ module Ast = struct
     | Drop (_, p, _, tgt, unwind) ->
         indent ^ "drop " ^ place_to_string env p ^ " -> "
         ^ block_id_to_string tgt ^ "(unwind:" ^ block_id_to_string unwind ^ ")"
+    | TAssert (asrt, tgt, unwind) ->
+        indent
+        ^ assertion_to_string env asrt
+        ^ " -> " ^ block_id_to_string tgt ^ "(unwind:"
+        ^ block_id_to_string unwind ^ ")"
     | Abort _ -> indent ^ "panic"
     | Return -> indent ^ "return"
     | UnwindResume -> indent ^ "unwind_continue"

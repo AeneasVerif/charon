@@ -41,7 +41,7 @@ where
     [@TraitClause0]: BoolTrait<Self>,
 {
     let _0: bool; // return
-    let self_1: &'0 Self; // arg #1
+    let self_1: &'1 Self; // arg #1
 
     _0 = const true
     return
@@ -51,7 +51,7 @@ where
 pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
 {
     let _0: bool; // return
-    let self_1: &'0 bool; // arg #1
+    let self_1: &'1 bool; // arg #1
 
     _0 = copy (*self_1)
     return
@@ -61,7 +61,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 bool) -> bool
 pub fn {impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 bool) -> bool
 {
     let _0: bool; // return
-    let self_1: &'0 bool; // arg #1
+    let self_1: &'1 bool; // arg #1
 
     _0 = const true
     return
@@ -83,18 +83,18 @@ where
     let _0: bool; // return
     let x_1: bool; // arg #1
     let _2: bool; // anonymous local
-    let _3: &'0 bool; // anonymous local
-    let _4: &'0 bool; // anonymous local
+    let _3: &'1 bool; // anonymous local
+    let _4: &'2 bool; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = {impl BoolTrait for bool}::get_bool<'2>(move _3)
+    _2 = {impl BoolTrait for bool}::get_bool<'4>(move _3)
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         _4 = &x_1
-        _0 = {impl BoolTrait for bool}::ret_true<'4>(move _4)
+        _0 = {impl BoolTrait for bool}::ret_true<'6>(move _4)
         storage_dead(_4)
     } else {
         storage_dead(_3)

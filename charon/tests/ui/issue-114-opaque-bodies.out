@@ -76,12 +76,12 @@ where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 {
     let _0: bool; // return
-    let self_1: &'0 Self; // arg #1
-    let other_2: &'1 Rhs; // arg #2
+    let self_1: &'1 Self; // arg #1
+    let other_2: &'3 Rhs; // arg #2
     let _3: bool; // anonymous local
 
     storage_live(_3)
-    _3 = @TraitClause0::eq<'4, '5>(move self_1, move other_2)
+    _3 = @TraitClause0::eq<'6, '7>(move self_1, move other_2)
     _0 = ~(move _3)
     storage_dead(_3)
     return
