@@ -1881,6 +1881,7 @@ impl ItemTransCtx<'_, '_> {
         // self.check_no_monomorphize(span)?;
 
         let mut assoc_func_def = None;
+        let mut assoc_types = None;
 
         if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
             for item in items {
@@ -1899,6 +1900,20 @@ impl ItemTransCtx<'_, '_> {
                         assoc_func_def = Some(item_def);
                     }
                 }
+                else if let hax::FullDefKind::AssocTy {
+                    implied_predicates, ..}
+                    = item_def.kind() {
+                    trace!("MONO: show:\n {:?}", item_def.kind());
+                    let predicates = &implied_predicates.predicates;
+                    if let Some((c, _)) = predicates.first() {
+                        if let hax::ClauseKind::Trait(p) = &c.kind.value {
+                            assoc_types = Some(p.trait_ref.generic_args.clone());
+                        }
+                    }
+                }
+                // let hax::FullDefKind::AssocTy { param_env, implied_predicates, associated_item, value }
+                //   = item_def.kind() {
+                // }
             }
         }
 
@@ -1935,6 +1950,8 @@ impl ItemTransCtx<'_, '_> {
             );
         };
 
+        trace!("MONO: tref associate types:\n {:?}", tref);
+
         let trait_def = self.poly_hax_def(&tref.def_id)?;
 
         trace!(
@@ -1967,6 +1984,15 @@ impl ItemTransCtx<'_, '_> {
                 types.push(self.translate_ty(span, hax_ty)?);
             }
         }
+        if let Some(assoc_types) = assoc_types {
+            for arg in assoc_types.iter() {
+                if let GenericArg::Type(hax_ty) = arg {
+                    types.push(self.translate_ty(span, hax_ty)?);
+                }
+            }
+        }
+
+        trace!("MONO: check assoc types:\n {:?}", types);
 
         Ok(FunDecl {
             def_id: fun_id,

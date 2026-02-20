@@ -444,24 +444,50 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 TransItemSourceKind::VTableDropPreShim
                     | TransItemSourceKind::VTableMethodPreShim(..)
             );
-            if !(is_preshim && item_ref.generic_args.len() == 1) {
-                let trans_id = self.register_no_enqueue(&None, src).unwrap();
-                let span = self.def_span(&item_ref.def_id);
-                let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
-                bt_ctx.binding_levels.push(BindingLevel::new(true));
+            trace!("MONO: name for generic_args:\n {:?}", item_ref.generic_args);
+
+            let trans_id = self.register_no_enqueue(&None, src).unwrap();
+            let span = self.def_span(&item_ref.def_id);
+            let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
+            bt_ctx.binding_levels.push(BindingLevel::new(true));
+
+            let trait_def = bt_ctx.t_ctx.hax_def_for_item(&src.item)?;
+            let mut assoc_types = None;
+
+            if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
+                for item in items {
+                    let item_def_id = &item.def_id;
+                    // This is ok because dyn-compatible methods don't have generics.
+                    let item_def = bt_ctx.hax_def(
+                        &trait_def
+                            .this()
+                            .with_def_id(bt_ctx.hax_state(), item_def_id),
+                    )?;
+                    if let hax::FullDefKind::AssocTy {
+                        implied_predicates, ..
+                    } = item_def.kind()
+                    {
+                        let predicates = &implied_predicates.predicates;
+                        if let Some((c, _)) = predicates.first() {
+                            if let hax::ClauseKind::Trait(p) = &c.kind.value {
+                                assoc_types = Some(p.trait_ref.generic_args.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            let mut substs = item_ref.generic_args.clone();
+
+            if !(is_preshim && item_ref.generic_args.len() == 1 && matches!(assoc_types, None)) {
                 let args = if is_preshim {
                     trace!("MONO: test is_preshim");
-                    bt_ctx.translate_generic_args(
-                        span,
-                        &item_ref.generic_args[1..],
-                        &item_ref.impl_exprs,
-                    )?
+                    if let Some(mut assoc_types) = assoc_types {
+                        substs.append(&mut assoc_types);
+                    }
+                    trace!("MONO: name for assoc:\n {:?}", substs);
+                    bt_ctx.translate_generic_args(span, &substs[1..], &item_ref.impl_exprs)?
                 } else {
-                    bt_ctx.translate_generic_args(
-                        span,
-                        &item_ref.generic_args,
-                        &item_ref.impl_exprs,
-                    )?
+                    bt_ctx.translate_generic_args(span, &substs, &item_ref.impl_exprs)?
                 };
                 name.name.push(PathElem::Instantiated(Box::new(Binder {
                     params: GenericParams::empty(),
