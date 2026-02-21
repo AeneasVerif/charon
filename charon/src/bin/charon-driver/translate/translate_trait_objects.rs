@@ -450,8 +450,7 @@ impl ItemTransCtx<'_, '_> {
                 let item_def =
                     self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
                 if let hax::FullDefKind::AssocFn {
-                    // sig,
-                    // vtable_sig: Some(_),
+                    vtable_sig: Some(_),
                     ..
                 } = item_def.kind()
                 {
@@ -648,6 +647,8 @@ impl ItemTransCtx<'_, '_> {
                 for a non-dyn-compatible trait"
             );
         }
+
+        // In mono mode, trait def remains poly.
         self.check_no_monomorphize(span)?;
 
         let (hax::FullDefKind::Trait {
