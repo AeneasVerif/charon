@@ -407,6 +407,33 @@ impl ItemTransCtx<'_, '_> {
             .try_into()
             .expect("MONO: The item_id should be a trait decl id");
 
+        let mut preshim_types = vec![];
+        for arg in trait_def.this().generic_args.iter().skip(1) {
+            if let GenericArg::Type(hax_ty) = arg {
+                preshim_types.push(self.translate_ty(span, hax_ty)?);
+            }
+        }
+        if let hax::FullDefKind::Trait {
+            dyn_self: Some(dyn_self),
+            ..
+        } = trait_def.kind()
+        {
+            let dyn_self = self.translate_ty(span, dyn_self)?;
+            if let TyKind::DynTrait(pred) = dyn_self.kind() {
+                for ttc in &pred.binder.params.trait_type_constraints {
+                    preshim_types.push(ttc.skip_binder.ty.clone());
+                }
+            }
+        }
+
+        if !self
+            .t_ctx
+            .translated_preshims
+            .insert((trait_id, preshim_types))
+        {
+            return Ok(());
+        }
+
         // let a= self.translate_trait_decl_ref_poly(span, trait_def.this())?;
         // translate drop_preshim
         let _: FnPtr = self.translate_item(

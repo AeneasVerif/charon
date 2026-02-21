@@ -64,6 +64,8 @@ pub struct TranslateCtx<'tcx> {
     pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
+    /// Cache translated dyn-trait preshims by generic and associated types.
+    pub translated_preshims: HashSet<(TraitDeclId, Vec<Ty>)>,
 }
 
 /// Tracks whether a method is used (i.e. called or (non-opaquely) implemented).
