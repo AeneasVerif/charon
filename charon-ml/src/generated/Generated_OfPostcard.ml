@@ -1048,10 +1048,6 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* x_1 = ty_of_postcard ctx st in
          let* x_2 = box_of_postcard constant_expr_of_postcard ctx st in
          Ok (Repeat (x_0, x_1, x_2))
-     | 10 ->
-         let* x_0 = operand_of_postcard ctx st in
-         let* x_1 = ty_of_postcard ctx st in
-         Ok (ShallowInitBox (x_0, x_1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and scalar_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
