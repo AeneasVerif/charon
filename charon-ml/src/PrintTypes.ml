@@ -229,9 +229,9 @@ and trait_impl_ref_to_string (env : 'a fmt_env) (iref : trait_impl_ref) : string
 
 and provenance_to_string (env : 'a fmt_env) (pv : provenance) : string =
   match pv with
-  | Global gref -> "prov_global(" ^ global_decl_ref_to_string env gref ^ ")"
-  | Function fn_ref -> "prov_fn(" ^ fun_decl_ref_to_string env fn_ref ^ ")"
-  | Unknown -> "prov_unknown"
+  | ProvGlobal gref -> "prov_global(" ^ global_decl_ref_to_string env gref ^ ")"
+  | ProvFunction fn_ref -> "prov_fn(" ^ fun_decl_ref_to_string env fn_ref ^ ")"
+  | ProvUnknown -> "prov_unknown"
 
 and byte_to_string (env : 'a fmt_env) (cv : byte) : string =
   match cv with

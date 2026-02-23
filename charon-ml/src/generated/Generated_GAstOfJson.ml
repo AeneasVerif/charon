@@ -1584,11 +1584,11 @@ and provenance_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Global", global) ] ->
         let* global = global_decl_ref_of_json ctx global in
-        Ok (Global global)
+        Ok (ProvGlobal global)
     | `Assoc [ ("Function", function_) ] ->
         let* function_ = fun_decl_ref_of_json ctx function_ in
-        Ok (Function function_)
-    | `String "Unknown" -> Ok Unknown
+        Ok (ProvFunction function_)
+    | `String "Unknown" -> Ok ProvUnknown
     | _ -> Error "")
 
 and ptr_metadata_of_json (ctx : of_json_ctx) (js : json) :

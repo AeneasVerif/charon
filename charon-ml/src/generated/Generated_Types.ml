@@ -454,9 +454,9 @@ and 'a0 hash_consed = 'a0 (* Not actually hash-consed on the OCaml side *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
 and provenance =
-  | Global of global_decl_ref
-  | Function of fun_decl_ref
-  | Unknown
+  | ProvGlobal of global_decl_ref
+  | ProvFunction of fun_decl_ref
+  | ProvUnknown
 
 and ref_kind = RMut | RShared
 
