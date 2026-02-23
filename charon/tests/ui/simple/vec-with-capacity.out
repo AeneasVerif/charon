@@ -31,12 +31,16 @@ pub trait Destruct<Self>
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
+// Full name: core::ptr::alignment::Alignment
+pub opaque type Alignment
+
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     const SIZE : usize
     const ALIGN : usize
+    const ALIGNMENT : Alignment
     const IS_ZST : bool
     const LAYOUT : Layout
     const MAX_SLICE_LEN : usize
@@ -70,6 +74,18 @@ pub const ALIGN<Self>: usize
 where
     [@TraitClause0]: SizedTypeProperties<Self>,
  = ALIGN()
+
+// Full name: core::mem::SizedTypeProperties::ALIGNMENT
+pub fn ALIGNMENT<Self>() -> Alignment
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+= <opaque>
+
+// Full name: core::mem::SizedTypeProperties::ALIGNMENT
+pub const ALIGNMENT<Self>: Alignment
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGNMENT()
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub fn IS_ZST<Self>() -> bool
@@ -115,6 +131,7 @@ where
     parent_clause0 = @TraitClause0
     const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]

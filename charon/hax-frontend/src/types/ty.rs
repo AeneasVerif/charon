@@ -72,7 +72,7 @@ pub struct ExistentialProjection {
 /// Reflects [`ty::BoundTyKind`]
 
 #[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundTyKind, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundTyKind<'tcx>, state: S as s)]
 pub enum BoundTyKind {
     Anon,
     #[custom_arm(&FROM_TYPE::Param(def_id) => TO_TYPE::Param(def_id.sinto(s), s.base().tcx.item_name(def_id).sinto(s)),)]
@@ -82,7 +82,7 @@ pub enum BoundTyKind {
 /// Reflects [`ty::BoundTy`]
 
 #[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundTy, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundTy<'tcx>, state: S as s)]
 pub struct BoundTy {
     pub var: BoundVar,
     pub kind: BoundTyKind,
@@ -93,10 +93,10 @@ sinto_as_usize!(rustc_middle::ty, BoundVar);
 /// Reflects [`ty::BoundRegionKind`]
 
 #[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundRegionKind, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundRegionKind<'tcx>, state: S as s)]
 pub enum BoundRegionKind {
     Anon,
-    NamedAnon(Symbol),
+    NamedForPrinting(Symbol),
     #[custom_arm(&FROM_TYPE::Named(def_id) => TO_TYPE::Named(def_id.sinto(s), s.base().tcx.item_name(def_id).sinto(s)),)]
     Named(DefId, Symbol),
     ClosureEnv,
@@ -105,7 +105,7 @@ pub enum BoundRegionKind {
 /// Reflects [`ty::BoundRegion`]
 
 #[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundRegion, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundRegion<'tcx>, state: S as s)]
 pub struct BoundRegion {
     pub var: BoundVar,
     pub kind: BoundRegionKind,
@@ -1291,7 +1291,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Predicate> for ty::Predicate<'tcx>
 
 /// Reflects [`ty::BoundVariableKind`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundVariableKind, state: S as tcx)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundVariableKind<'tcx>, state: S as tcx)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum BoundVariableKind {
     Ty(BoundTyKind),
@@ -1445,7 +1445,7 @@ impl ClosureArgs {
         struct RegionUnEraserVisitor<'tcx> {
             tcx: ty::TyCtxt<'tcx>,
             depth: u32,
-            bound_vars: Vec<ty::BoundVariableKind>,
+            bound_vars: Vec<ty::BoundVariableKind<'tcx>>,
         }
 
         impl<'tcx> ty::TypeFolder<ty::TyCtxt<'tcx>> for RegionUnEraserVisitor<'tcx> {

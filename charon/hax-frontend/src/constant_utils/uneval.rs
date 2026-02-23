@@ -114,9 +114,8 @@ pub fn eval_ty_constant<'tcx, S: UnderOwnerState<'tcx>>(
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> {
     #[tracing::instrument(level = "trace", skip(s))]
     fn sinto(&self, s: &S) -> ConstantExpr {
-        use rustc_middle::query::Key;
         let tcx = s.base().tcx;
-        let span = self.default_span(tcx);
+        let span = rustc_span::DUMMY_SP;
         match self.kind() {
             ty::ConstKind::Param(p) => {
                 let ty = p.find_const_ty_from_env(s.param_env());
@@ -135,10 +134,9 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                     val.sinto(s)
                 } else {
                     use crate::rustc_middle::query::Key;
-                    let span = span.substitute_dummy(
-                        tcx.def_ident_span(ucv.def)
-                            .unwrap_or_else(|| ucv.def.default_span(tcx)),
-                    );
+                    let span = tcx
+                        .def_ident_span(ucv.def)
+                        .unwrap_or_else(|| ucv.def.default_span(tcx));
                     let item = translate_item_ref(s, ucv.def, ucv.args);
                     let kind = ConstantExprKind::NamedGlobal(item);
                     let ty = tcx.type_of(ucv.def).instantiate(tcx, ucv.args);

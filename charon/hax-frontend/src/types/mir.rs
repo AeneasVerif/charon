@@ -75,8 +75,7 @@ pub mod mir_kinds {
                 id: DefId,
                 f: impl FnOnce(&Body<'tcx>) -> T,
             ) -> Option<T> {
-                tcx.is_ctfe_mir_available(id)
-                    .then(|| f(tcx.mir_for_ctfe(id)))
+                (!tcx.is_trivial_const(id)).then(|| f(tcx.mir_for_ctfe(id)))
             }
         }
 
