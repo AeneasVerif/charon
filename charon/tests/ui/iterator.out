@@ -2648,6 +2648,12 @@ where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
+// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Result<[&'a T; N], IntoIter<&'a T, N>[{built_in impl Sized for &'_ T}]>[{built_in impl Sized for [&'_ T; N]}, {built_in impl Sized for IntoIter<&'_ T, N>[{built_in impl Sized for &'_ T}]}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
 pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
 where
@@ -3272,13 +3278,6 @@ where
     [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>,
 = <opaque>
 
-// Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(@1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Result<[&'a T; N], IntoIter<&'a T, N>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]>[{built_in impl Sized for [&'a T; N]}, {built_in impl Sized for IntoIter<&'a T, N>[{impl Iterator for Iter<'a, T>[@TraitClause0]}<'a, T>[@TraitClause0]::parent_clause1]}]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<Iter<'a, T>[@TraitClause0]>,
-= <opaque>
-
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}
 impl<'a, T> Iterator for Iter<'a, T>[@TraitClause0]
 where
@@ -3288,7 +3287,7 @@ where
     parent_clause1 = {built_in impl Sized for &'_ T}
     type Item = &'a T
     fn next<'_0_1> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
-    fn next_chunk<'_0_1, const N : usize, [@TraitClause0_1]: Sized<Iter<'a, T>[@TraitClause0]>> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_0_1, T, N>[@TraitClause0, @TraitClause0_1]
+    fn next_chunk<'_0_1, const N : usize> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_0_1, T, N>[@TraitClause0]
     fn size_hint<'_0_1> = {impl Iterator for Iter<'a, T>[@TraitClause0]}::size_hint<'a, '_0_1, T>[@TraitClause0]
     fn count = {impl Iterator for Iter<'a, T>[@TraitClause0]}::count<'a, T>[@TraitClause0]
     fn last = {impl Iterator for Iter<'a, T>[@TraitClause0]}::last<'a, T>[@TraitClause0]

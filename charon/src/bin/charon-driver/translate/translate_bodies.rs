@@ -669,7 +669,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     }
                     mir::CastKind::PointerCoercion(
                         ty::adjustment::PointerCoercion::UnsafeFnPointer
-                        | ty::adjustment::PointerCoercion::ReifyFnPointer,
+                        | ty::adjustment::PointerCoercion::ReifyFnPointer(_),
                         ..,
                     ) => CastKind::FnPtr(src_ty, tgt_ty),
                     mir::CastKind::Transmute => CastKind::Transmute(src_ty, tgt_ty),

@@ -45,12 +45,23 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    vtable: core::marker::Destruct::{vtable}
+}
+
 pub fn core::array::{[T; N]}::map<T, F, U, const N : usize>(@1: [T; N], @2: F) -> [U; N]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<U>,
     [@TraitClause3]: FnMut<F, (T,)>,
+    [@TraitClause4]: Destruct<F>,
+    [@TraitClause5]: Destruct<U>,
+    [@TraitClause6]: Destruct<T>,
     @TraitClause3::parent_clause1::Output = U,
 = <opaque>
 
@@ -257,14 +268,6 @@ where
     [@TraitClause0]: Iterator<Self>,
 = <opaque>
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
-}
-
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
 
@@ -304,6 +307,16 @@ const UNIT_METADATA: () = @Fun0()
 // Full name: test_crate::map::closure
 struct closure {}
 
+// Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
+unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+= <missing>
+
+// Full name: test_crate::map::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::map::{impl FnMut<(i32,)> for closure}::call_mut
 fn {impl FnMut<(i32,)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i32,)) -> i32
 {
@@ -316,16 +329,6 @@ fn {impl FnMut<(i32,)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (i3
     v_3 = move tupled_args_2.0
     _0 = copy v_3
     return
-}
-
-// Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
-= <missing>
-
-// Full name: test_crate::map::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
-    non-dyn-compatible
 }
 
 // Full name: test_crate::map::{impl FnOnce<(i32,)> for closure}::call_once
@@ -375,7 +378,7 @@ pub fn test_crate::map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
     _2 = copy x_1
     storage_live(_3)
     _3 = closure {  }
-    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,)> for closure}](move _2, move _3)
+    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,)> for closure}, {impl Destruct for closure}, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return

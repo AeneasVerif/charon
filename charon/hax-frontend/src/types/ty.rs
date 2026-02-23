@@ -126,7 +126,7 @@ pub struct Placeholder<T> {
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>, T: SInto<S, U>, U> SInto<S, Placeholder<U>>
-    for ty::Placeholder<T>
+    for ty::Placeholder<ty::TyCtxt<'tcx>, T>
 {
     fn sinto(&self, s: &S) -> Placeholder<U> {
         Placeholder {
