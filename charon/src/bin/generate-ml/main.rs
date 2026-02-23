@@ -1358,16 +1358,6 @@ fn generate_ml(
             markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     ancestors: &["trait_impl"],
-                    name: "statement",
-                    reduce: false,
-                    extra_types: &[],
-                })), &[
-                    "charon_lib::ast::ullbc_ast::Statement",
-                    "charon_lib::ast::ullbc_ast::SwitchTargets",
-                ]),
-                // TODO: Can't merge with above because of field name clashes (`content` and `span`).
-                (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    ancestors: &["statement"],
                     name: "ullbc_ast",
                     reduce: false,
                     extra_types: &[],
