@@ -256,7 +256,7 @@ where
     storage_dead(self_9)
     storage_live(src_10)
     src_10 = move value_2
-    (*end_8) = copy src_10
+    (*end_8) = move src_10
     storage_dead(src_10)
     ((*self_1)).len = copy len_3 wrap.+ const 1 : usize
     _0 = &mut (*end_8)
