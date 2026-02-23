@@ -222,10 +222,10 @@ where
     let _7: bool; // anonymous local
 
     storage_live(_4)
-    storage_live(_7)
     _0 = ()
+    storage_live(_7)
     _7 = ub_checks<bool>
-    if copy _7 {
+    if move _7 {
         storage_live(_5)
         _5 = cast<*const T, *const ()>(copy src_1)
         storage_live(_6)

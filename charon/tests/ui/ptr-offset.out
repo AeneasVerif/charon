@@ -269,7 +269,7 @@ where
     storage_live(_3)
     storage_live(_5)
     _5 = ub_checks<bool>
-    if copy _5 {
+    if move _5 {
         storage_live(_4)
         _4 = cast<*const T, *const ()>(copy self_1)
         _3 = precondition_check(move _4, copy count_2, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE)

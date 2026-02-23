@@ -528,48 +528,47 @@ where
     let _0: *mut [T]; // return
     let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice_2: *mut [T]; // arg #2
-    let _3: bool; // anonymous local
-    let _4: (); // anonymous local
+    let _3: (); // anonymous local
+    let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
-    let _7: usize; // anonymous local
-    let new_len_8: usize; // local
-    let _9: usize; // anonymous local
-    let offset_10: usize; // local
+    let new_len_7: usize; // local
+    let _8: usize; // anonymous local
+    let offset_9: usize; // local
+    let _10: *mut T; // anonymous local
     let _11: *mut T; // anonymous local
-    let _12: *mut T; // anonymous local
+    let _12: bool; // anonymous local
 
-    storage_live(_4)
-    storage_live(new_len_8)
-    storage_live(offset_10)
     storage_live(_3)
-    _3 = ub_checks<bool>
-    if move _3 {
+    storage_live(new_len_7)
+    storage_live(offset_9)
+    storage_live(_12)
+    _12 = ub_checks<bool>
+    if move _12 {
+        storage_live(_4)
+        _4 = copy (self_1).start
         storage_live(_5)
-        _5 = copy (self_1).start
+        _5 = copy (self_1).end
         storage_live(_6)
-        _6 = copy (self_1).end
-        storage_live(_7)
-        _7 = copy slice_2.metadata
-        _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(move _5, move _6, move _7)
-        storage_dead(_7)
+        _6 = copy slice_2.metadata
+        _3 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(move _4, move _5, move _6)
         storage_dead(_6)
         storage_dead(_5)
+        storage_dead(_4)
     } else {
     }
-    storage_dead(_3)
-    storage_live(_9)
-    _9 = copy (self_1).end
-    offset_10 = copy (self_1).start
-    new_len_8 = move _9 ub.- copy offset_10
-    storage_dead(_9)
+    storage_live(_8)
+    _8 = copy (self_1).end
+    offset_9 = copy (self_1).start
+    new_len_7 = move _8 ub.- copy offset_9
+    storage_dead(_8)
+    storage_live(_10)
     storage_live(_11)
-    storage_live(_12)
-    _11 = cast<*mut [T], *mut T>(copy slice_2)
-    _12 = copy _11 offset copy offset_10
-    _0 = @PtrFromPartsMut<'_, [T]>(copy _12, copy new_len_8)
-    storage_dead(_12)
+    _10 = cast<*mut [T], *mut T>(copy slice_2)
+    _11 = copy _10 offset copy offset_9
+    _0 = @PtrFromPartsMut<'_, [T]>(copy _11, copy new_len_7)
     storage_dead(_11)
+    storage_dead(_10)
     return
 }
 
@@ -648,48 +647,47 @@ where
     let _0: *const [T]; // return
     let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice_2: *const [T]; // arg #2
-    let _3: bool; // anonymous local
-    let _4: (); // anonymous local
+    let _3: (); // anonymous local
+    let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
-    let _7: usize; // anonymous local
-    let new_len_8: usize; // local
-    let _9: usize; // anonymous local
-    let offset_10: usize; // local
+    let new_len_7: usize; // local
+    let _8: usize; // anonymous local
+    let offset_9: usize; // local
+    let _10: *const T; // anonymous local
     let _11: *const T; // anonymous local
-    let _12: *const T; // anonymous local
+    let _12: bool; // anonymous local
 
-    storage_live(_4)
-    storage_live(new_len_8)
-    storage_live(offset_10)
     storage_live(_3)
-    _3 = ub_checks<bool>
-    if move _3 {
+    storage_live(new_len_7)
+    storage_live(offset_9)
+    storage_live(_12)
+    _12 = ub_checks<bool>
+    if move _12 {
+        storage_live(_4)
+        _4 = copy (self_1).start
         storage_live(_5)
-        _5 = copy (self_1).start
+        _5 = copy (self_1).end
         storage_live(_6)
-        _6 = copy (self_1).end
-        storage_live(_7)
-        _7 = copy slice_2.metadata
-        _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(move _5, move _6, move _7)
-        storage_dead(_7)
+        _6 = copy slice_2.metadata
+        _3 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(move _4, move _5, move _6)
         storage_dead(_6)
         storage_dead(_5)
+        storage_dead(_4)
     } else {
     }
-    storage_dead(_3)
-    storage_live(_9)
-    _9 = copy (self_1).end
-    offset_10 = copy (self_1).start
-    new_len_8 = move _9 ub.- copy offset_10
-    storage_dead(_9)
+    storage_live(_8)
+    _8 = copy (self_1).end
+    offset_9 = copy (self_1).start
+    new_len_7 = move _8 ub.- copy offset_9
+    storage_dead(_8)
+    storage_live(_10)
     storage_live(_11)
-    storage_live(_12)
-    _11 = cast<*const [T], *const T>(copy slice_2)
-    _12 = copy _11 offset copy offset_10
-    _0 = @PtrFromPartsShared<'_, [T]>(copy _12, copy new_len_8)
-    storage_dead(_12)
+    _10 = cast<*const [T], *const T>(copy slice_2)
+    _11 = copy _10 offset copy offset_9
+    _0 = @PtrFromPartsShared<'_, [T]>(copy _11, copy new_len_7)
     storage_dead(_11)
+    storage_dead(_10)
     return
 }
 

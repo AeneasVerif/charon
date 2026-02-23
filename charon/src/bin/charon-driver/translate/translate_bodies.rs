@@ -560,6 +560,28 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     }
                 }
             }
+            mir::Operand::RuntimeChecks(check) => {
+                let op = match check {
+                    mir::RuntimeChecks::UbChecks => NullOp::UbChecks,
+                    mir::RuntimeChecks::OverflowChecks => NullOp::OverflowChecks,
+                    mir::RuntimeChecks::ContractChecks => NullOp::ContractChecks,
+                };
+                let local = self.locals.new_var(None, Ty::mk_bool());
+                self.statements.push(Statement {
+                    span,
+                    kind: StatementKind::StorageLive(local.as_local().unwrap()),
+                    comments_before: vec![],
+                });
+                self.statements.push(Statement {
+                    span,
+                    kind: StatementKind::Assign(
+                        local.clone(),
+                        Rvalue::NullaryOp(op, Ty::mk_bool()),
+                    ),
+                    comments_before: vec![],
+                });
+                Operand::Move(local)
+            }
         })
     }
 
@@ -765,14 +787,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 self.translate_operand(span, left)?,
                 self.translate_operand(span, right)?,
             )),
-            mir::Rvalue::NullaryOp(mir::NullOp::RuntimeChecks(check)) => {
-                let op = match check {
-                    mir::RuntimeChecks::UbChecks => NullOp::UbChecks,
-                    mir::RuntimeChecks::OverflowChecks => NullOp::OverflowChecks,
-                    mir::RuntimeChecks::ContractChecks => NullOp::ContractChecks,
-                };
-                Ok(Rvalue::NullaryOp(op, LiteralTy::Bool.into()))
-            }
             mir::Rvalue::UnaryOp(unop, operand) => {
                 let operand = self.translate_operand(span, operand)?;
                 let unop = match unop {
@@ -784,7 +798,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                 p.project(ProjectionElem::PtrMetadata, tgt_ty.clone()),
                             )));
                         }
-                        Operand::Const(_) => panic!("const metadata"),
+                        Operand::Const(_) => {
+                            panic!("unexpected metadata operand")
+                        }
                     },
                 };
                 Ok(Rvalue::UnaryOp(unop, operand))
