@@ -2476,10 +2476,6 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
             _45 = transmute<*mut u8, usize>(copy raw_ptr_14)
             switch move _45 {
                 0 : usize => {
-                    storage_dead(_45)
-                    storage_live(_68)
-                    _68 = Option::None {  }
-                    self_18 = move _68
                 },
                 _ => {
                     storage_dead(_45)
@@ -2496,68 +2492,64 @@ pub unsafe fn {impl Allocator for Global}::shrink<'_0>(@1: &'_0 Global, @2: NonN
                     _43 = NonNull { pointer: copy _44 }
                     self_18 = Option::Some { 0: move _43 }
                     storage_dead(_43)
-                },
-            }
-            storage_live(v_48)
-            match self_18 {
-                Option::None => {
-                    storage_live(_69)
-                    _69 = AllocError {  }
-                    storage_live(_70)
-                    _70 = Result::Err { 0: move _69 }
-                    self_17 = move _70
-                },
-                Option::Some => {
+                    storage_live(v_48)
                     v_48 = move (self_18 as variant Option::Some).0
                     self_17 = Result::Ok { 0: copy v_48 }
-                },
-            }
-            storage_dead(v_48)
-            storage_dead(self_18)
-            storage_live(v_49)
-            match self_17 {
-                Result::Ok => {
-                },
-                Result::Err => {
+                    storage_dead(v_48)
+                    storage_dead(self_18)
+                    storage_live(v_49)
+                    v_49 = move (self_17 as variant Result::Ok).0
+                    _16 = ControlFlow::Continue { 0: copy v_49 }
                     storage_dead(v_49)
                     storage_dead(self_17)
-                    storage_live(_71)
-                    _71 = AllocError {  }
-                    storage_live(_72)
-                    _72 = Result::Err { 0: move _71 }
-                    _0 = move _72
+                    ptr_19 = copy (_16 as variant ControlFlow::Continue).0
                     storage_dead(_16)
+                    storage_live(_20)
+                    storage_live(ptr_50)
+                    storage_live(data_51)
+                    data_51 = transmute<NonNull<u8>, *mut u8>(copy ptr_19)
+                    ptr_50 = *mut  (copy data_51, copy new_size_5)
+                    storage_dead(data_51)
+                    storage_live(_54)
+                    storage_live(_65)
+                    _65 = ub_checks<bool>
+                    if move _65 {
+                        storage_live(_53)
+                        _53 = transmute<NonNull<u8>, *mut ()>(copy ptr_19)
+                        _52 = core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move _53)
+                        storage_dead(_53)
+                    } else {
+                    }
+                    _54 = cast<*mut [u8], *const [u8]>(copy ptr_50)
+                    _20 = NonNull { pointer: copy _54 }
+                    storage_dead(_54)
+                    storage_dead(ptr_50)
+                    _0 = Result::Ok { 0: move _20 }
+                    storage_dead(_20)
                     return
                 },
             }
-            v_49 = move (self_17 as variant Result::Ok).0
-            _16 = ControlFlow::Continue { 0: copy v_49 }
+            storage_dead(_45)
+            storage_live(_68)
+            _68 = Option::None {  }
+            self_18 = move _68
+            storage_live(v_48)
+            storage_live(_69)
+            _69 = AllocError {  }
+            storage_live(_70)
+            _70 = Result::Err { 0: move _69 }
+            self_17 = move _70
+            storage_dead(v_48)
+            storage_dead(self_18)
+            storage_live(v_49)
             storage_dead(v_49)
             storage_dead(self_17)
-            ptr_19 = copy (_16 as variant ControlFlow::Continue).0
+            storage_live(_71)
+            _71 = AllocError {  }
+            storage_live(_72)
+            _72 = Result::Err { 0: move _71 }
+            _0 = move _72
             storage_dead(_16)
-            storage_live(_20)
-            storage_live(ptr_50)
-            storage_live(data_51)
-            data_51 = transmute<NonNull<u8>, *mut u8>(copy ptr_19)
-            ptr_50 = *mut  (copy data_51, copy new_size_5)
-            storage_dead(data_51)
-            storage_live(_54)
-            storage_live(_65)
-            _65 = ub_checks<bool>
-            if move _65 {
-                storage_live(_53)
-                _53 = transmute<NonNull<u8>, *mut ()>(copy ptr_19)
-                _52 = core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move _53)
-                storage_dead(_53)
-            } else {
-            }
-            _54 = cast<*mut [u8], *const [u8]>(copy ptr_50)
-            _20 = NonNull { pointer: copy _54 }
-            storage_dead(_54)
-            storage_dead(ptr_50)
-            _0 = Result::Ok { 0: move _20 }
-            storage_dead(_20)
             return
         },
     }

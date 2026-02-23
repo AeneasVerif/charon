@@ -182,9 +182,9 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
         (ty::ValTreeKind::Branch(valtrees), ty::Str) => {
             let bytes = valtrees
                 .iter()
-                .map(|x| match &***x {
-                    ty::ValTreeKind::Leaf(leaf) => leaf.to_u8(),
-                    _ => fatal!(
+                .map(|x| match x.try_to_leaf() {
+                    Some(leaf) => leaf.to_u8(),
+                    None => fatal!(
                         s[span],
                         "Expected a flat list of leaves while translating \
                             a str literal, got a arbitrary valtree."
@@ -193,41 +193,32 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
                 .collect();
             ConstantExprKind::Literal(ConstantLiteral::byte_str(bytes))
         }
-        (
-            ty::ValTreeKind::Branch(_),
-            ty::Array(..) | ty::Slice(..) | ty::Tuple(..) | ty::Adt(..),
-        ) => {
-            let contents: rustc_middle::ty::DestructuredConst = s
-                .base()
-                .tcx
-                .destructure_const(ty::Const::new_value(s.base().tcx, valtree, ty));
-            let fields = contents.fields.iter().copied();
+        (ty::ValTreeKind::Branch(fields), ty::Array(..) | ty::Slice(..) | ty::Tuple(..)) => {
+            let fields = fields.iter().copied().map(|field| field.sinto(s)).collect();
             match ty.kind() {
-                ty::Array(..) | ty::Slice(..) => ConstantExprKind::Array {
-                    fields: fields.map(|field| field.sinto(s)).collect(),
-                },
-                ty::Tuple(_) => ConstantExprKind::Tuple {
-                    fields: fields.map(|field| field.sinto(s)).collect(),
-                },
-                ty::Adt(def, _) => {
-                    let variant_idx = contents
-                        .variant
-                        .s_expect(s, "destructed const of adt without variant idx");
-                    let variant_def = &def.variant(variant_idx);
-
-                    ConstantExprKind::Adt {
-                        kind: get_variant_kind(def, variant_idx, s),
-                        fields: fields
-                            .into_iter()
-                            .zip(&variant_def.fields)
-                            .map(|(value, field)| ConstantFieldExpr {
-                                field: field.did.sinto(s),
-                                value: value.sinto(s),
-                            })
-                            .collect(),
-                    }
-                }
+                ty::Array(..) | ty::Slice(..) => ConstantExprKind::Array { fields },
+                ty::Tuple(_) => ConstantExprKind::Tuple { fields },
                 _ => unreachable!(),
+            }
+        }
+        (ty::ValTreeKind::Branch(_), ty::Adt(def, _)) => {
+            let contents: rustc_middle::ty::DestructuredAdtConst =
+                ty::Value { valtree, ty }.destructure_adt_const();
+
+            let fields = contents.fields.iter().copied();
+            let variant_idx = contents.variant;
+            let variant_def = &def.variant(variant_idx);
+
+            ConstantExprKind::Adt {
+                kind: get_variant_kind(def, variant_idx, s),
+                fields: fields
+                    .into_iter()
+                    .zip(&variant_def.fields)
+                    .map(|(value, field)| ConstantFieldExpr {
+                        field: field.did.sinto(s),
+                        value: value.sinto(s),
+                    })
+                    .collect(),
             }
         }
         (ty::ValTreeKind::Leaf(x), ty::RawPtr(_, _)) => {
