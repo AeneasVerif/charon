@@ -285,34 +285,21 @@ struct PartialMonomorphizer<'a> {
 
 impl<'a> PartialMonomorphizer<'a> {
     pub fn new(ctx: &'a mut TransformCtx, instantiate_types: bool) -> Self {
-        use petgraph::graphmap::DiGraphMap;
-        use petgraph::visit::Dfs;
-        use petgraph::visit::Walker;
-
-        // Compute the types that contain `&mut` (even indirectly).
-        let infected_types: HashSet<_> = {
-            // We build a graph that has one node per type decl plus a special `None` node. If type A
-            // contains a reference to type B we add a B->A edge; if it contains a mutable reference we
-            // add a None->A edge. Then a type contains `&mut` iff it is reachable from the `None`
-            // node.
-            let mut graph: DiGraphMap<Option<TypeDeclId>, ()> = Default::default();
-            for (id, tdecl) in ctx.translated.type_decls.iter_indexed() {
-                tdecl.dyn_visit(|x: &Ty| match x.kind() {
-                    TyKind::Ref(_, _, RefKind::Mut) => {
-                        graph.add_edge(None, Some(id), ());
-                    }
-                    TyKind::Adt(tref) if let TypeId::Adt(other_id) = tref.id => {
-                        graph.add_edge(Some(other_id), Some(id), ());
-                    }
-                    _ => {}
-                });
-            }
-            let start = graph.add_node(None);
-            Dfs::new(&graph, start)
-                .iter(&graph)
-                .filter_map(|opt_id| opt_id)
-                .collect()
-        };
+        // Compute the types that contain `&mut` (even indirectly). We actually can ignore
+        // `&'static mut`, so we simply rely on our "lifetime mutability" computation.
+        let infected_types: HashSet<_> = ctx
+            .translated
+            .type_decls
+            .iter()
+            .filter(|tdecl| {
+                tdecl
+                    .generics
+                    .regions
+                    .iter()
+                    .any(|r| r.mutability.is_mutable())
+            })
+            .map(|tdecl| tdecl.def_id)
+            .collect();
 
         // Record the generic params of all items.
         let generic_params: HashMap<ItemId, GenericParams> = ctx

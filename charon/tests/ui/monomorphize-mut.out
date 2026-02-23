@@ -95,6 +95,24 @@ where
 }
 
 #[lang_item("meta_sized")]
+pub trait core::marker::MetaSized::<IterMut<_, _>[@TraitClause0]><'_0, T0>
+where
+    [@TraitClause0]: Sized<T0>,
+    T0 : '_0,
+    T0 : '_0,
+
+#[lang_item("sized")]
+pub trait core::marker::Sized::<IterMut<_, _>[@TraitClause0]><'_0, T0>
+where
+    [@TraitClause0]: Sized<T0>,
+    T0 : '_0,
+    T0 : '_0,
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<IterMut<_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    non-dyn-compatible
+}
+
+#[lang_item("meta_sized")]
 pub trait core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>
 where
     [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
@@ -152,6 +170,24 @@ where
     non-dyn-compatible
 }
 
+// Full name: core::slice::iter::IterMut
+pub opaque type IterMut<mut 'a, T>
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
+    T : 'a,
+
+#[lang_item("destruct")]
+pub trait core::marker::Destruct::<IterMut<_, _>[@TraitClause0]><'_0, T0>
+where
+    [@TraitClause0]: Sized<T0>,
+    T0 : '_0,
+    T0 : '_0,
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<IterMut<_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    non-dyn-compatible
+}
+
 // Full name: core::marker::Destruct::drop_in_place
 unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <opaque>
@@ -168,6 +204,13 @@ unsafe fn core::marker::Destruct::drop_in_place::<core::option::Option::<core::o
 where
     [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
     [@TraitClause1]: core::marker::Sized::<&_ mut _><'_0, T0>,
+= <opaque>
+
+unsafe fn core::marker::Destruct::drop_in_place::<IterMut<_, _>[@TraitClause0]><'_0, T0>(@1: *mut IterMut<'_0, T0>[@TraitClause0])
+where
+    [@TraitClause0]: Sized<T0>,
+    T0 : '_0,
+    T0 : '_0,
 = <opaque>
 
 #[lang_item("Option")]
@@ -219,13 +262,6 @@ where
   None,
   Some(IterWrapper<'_0, T0>[@TraitClause1]),
 }
-
-// Full name: core::slice::iter::IterMut
-pub opaque type IterMut<mut 'a, T>
-where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
-    T : 'a,
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -353,6 +389,21 @@ where
 
     _0 = move x_1
     conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0>[@TraitClause1, @TraitClause2] for T0}] x_1
+    return
+}
+
+fn test_crate::identity::<IterMut<_, _>[@TraitClause1]><'_0, T0>(@1: IterMut<'_0, T0>[@TraitClause1]) -> IterMut<'_0, T0>[@TraitClause1]
+where
+    [@TraitClause0]: core::marker::Sized::<IterMut<_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
+    [@TraitClause1]: Sized<T0>,
+    T0 : '_0,
+    T0 : '_0,
+{
+    let _0: IterMut<'_0, T0>[@TraitClause1]; // return
+    let x_1: IterMut<'_0, T0>[@TraitClause1]; // arg #1
+
+    _0 = move x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[@TraitClause0]><'_0>[@TraitClause1] for T0}] x_1
     return
 }
 
@@ -672,7 +723,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = move x_1
-    _2 = identity<IterMut<'4, bool>[{built_in impl Sized for bool}]>[{built_in impl Sized for IterMut<'4, bool>[{built_in impl Sized for bool}]}](move _3)
+    _2 = test_crate::identity::<IterMut<_, _>[@TraitClause1]><'4, bool>[{built_in impl core::marker::Sized::<IterMut<_, _>[@TraitClause0]><'4>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
