@@ -36,13 +36,6 @@ type literal_type = Values.literal_type [@@deriving show, ord, eq]
 type trait_type_constraint_id = TraitTypeConstraintId.id
 [@@deriving show, ord, eq]
 
-(** We define these types to control the name of the visitor functions *)
-type ('id, 'name) indexed_var = {
-  index : 'id;  (** Unique index identifying the variable *)
-  name : 'name;  (** Variable name *)
-}
-[@@deriving show, ord, eq]
-
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
 type de_bruijn_id = int
@@ -140,53 +133,16 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
-(** Ancestor for iter visitor for {!type: Types.ty} *)
-class ['self] iter_ty_base_base =
-  object (self : 'self)
-    inherit [_] iter_type_vars
-
-    method visit_indexed_var :
-        'id 'name.
-        ('env -> 'id -> unit) ->
-        ('env -> 'name -> unit) ->
-        'env ->
-        ('id, 'name) indexed_var ->
-        unit =
-      fun visit_index visit_name env x ->
-        let { index; name } = x in
-        visit_index env index;
-        visit_name env name
-  end
-
-(** Ancestor for map visitor for {!type: Types.ty} *)
-class virtual ['self] map_ty_base_base =
-  object (self : 'self)
-    inherit [_] map_type_vars
-
-    method visit_indexed_var :
-        'id 'name.
-        ('env -> 'id -> 'id) ->
-        ('env -> 'name -> 'name) ->
-        'env ->
-        ('id, 'name) indexed_var ->
-        ('id, 'name) indexed_var =
-      fun visit_index visit_name env x ->
-        let { index; name } = x in
-        let index = visit_index env index in
-        let name = visit_name env name in
-        { index; name }
-  end
-
 (* Ancestors for the ty visitors *)
 class ['self] iter_ty_base =
   object (self : 'self)
-    inherit [_] iter_ty_base_base
+    inherit [_] iter_type_vars
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
   end
 
 class ['self] map_ty_base =
   object (self : 'self)
-    inherit [_] map_ty_base_base
+    inherit [_] map_type_vars
     method visit_span : 'env -> span -> span = fun _ x -> x
   end
 
@@ -525,7 +481,12 @@ and 'a0 region_binder = {
 and region_id = (RegionId.id[@visitors.opaque])
 
 (** A region variable in a signature or binder. *)
-and region_param = (region_id, string option) indexed_var
+and region_param = {
+  index : region_id;
+      (** Index identifying the variable among other variables bound at the same
+          level. *)
+  name : string option;  (** Region name *)
+}
 
 (** The value of a trait associated type. *)
 and trait_assoc_ty_impl = { value : ty }
@@ -756,7 +717,12 @@ and type_id =
           as it allows for more uniform treatment throughout the codebase. *)
 
 (** A type variable in a signature or binder. *)
-and type_param = (type_var_id, string) indexed_var
+and type_param = {
+  index : type_var_id;
+      (** Index identifying the variable among other variables bound at the same
+          level. *)
+  name : string;  (** Variable name *)
+}
 
 and unsizing_metadata =
   | MetaLength of constant_expr  (** Cast from [[T; N]] to [[T]]. *)

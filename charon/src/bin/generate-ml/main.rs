@@ -1062,10 +1062,6 @@ fn generate_ml(
     let manual_type_impls = &[
         // Hand-written because we replace the `FileId` with the corresponding file.
         ("FileId", "file"),
-        // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
-        // TODO: remove the need for this hack.
-        ("RegionParam", "(region_id, string option) indexed_var"),
-        ("TypeParam", "(type_var_id, string) indexed_var"),
         (
             "HashConsed",
             "'a0 (* Not actually hash-consed on the OCaml side *)",
@@ -1251,7 +1247,7 @@ fn generate_ml(
                 // Can't merge into above because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    ancestors: &["ty_base_base"],
+                    ancestors: &["type_vars"],
                     name: "ty",
                     reduce: false,
                     extra_types: &["span"],
