@@ -16,6 +16,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {
@@ -120,6 +131,16 @@ pub opaque type Unique<T>
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
+unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+= <opaque>
+
+// Full name: alloc::alloc::Global::{impl Destruct for Global}
+impl Destruct for Global {
+    fn drop_in_place = {impl Destruct for Global}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: alloc::raw_vec::RawVec
 opaque type RawVec<T, A>
 where
@@ -136,6 +157,7 @@ fn grow_one<'_0, T, A>(@1: &'_0 mut RawVec<T, A>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<A>,
 = <opaque>
 
 // Full name: alloc::vec::Vec
@@ -164,6 +186,7 @@ pub fn push_mut<'_0, T, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], @2
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<A>,
 {
     let _0: &'1 mut T; // return
     let self_1: &'3 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
@@ -201,7 +224,7 @@ where
         storage_dead(_5)
         storage_live(_7)
         _7 = &two-phase-mut ((*self_1)).buf
-        _6 = grow_one<'11, T, A>[@TraitClause0, @TraitClause1](move _7)
+        _6 = grow_one<'11, T, A>[@TraitClause0, @TraitClause1, @TraitClause3](move _7)
         storage_dead(_7)
     } else {
         storage_dead(_5)
@@ -228,6 +251,7 @@ pub fn push<'_0, T, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], @2: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<A>,
 {
     let _0: (); // return
     let self_1: &'1 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
@@ -236,7 +260,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = push_mut<'5, T, A>[@TraitClause0, @TraitClause1](move self_1, move value_2)
+    _3 = push_mut<'5, T, A>[@TraitClause0, @TraitClause1, @TraitClause3](move self_1, move value_2)
     storage_dead(_3)
     return
 }
@@ -251,7 +275,7 @@ fn vec<'_0>(@1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl 
     _0 = ()
     storage_live(_2)
     _2 = &two-phase-mut (*x_1)
-    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _2, const 42 : u32)
+    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, {impl Destruct for Global}](move _2, const 42 : u32)
     storage_dead(_2)
     return
 }

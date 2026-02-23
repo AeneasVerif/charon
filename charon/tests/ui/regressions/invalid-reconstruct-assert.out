@@ -17,7 +17,7 @@ pub fn {impl Ord for u32}::cmp<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> Ordering
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::MetaSized
@@ -47,7 +47,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnOnce
@@ -188,7 +188,7 @@ where
         size_3 = copy self_1.metadata;
         storage_live(_4);
         _4 = copy size_3;
-        switch move _4 -> 0 : usize: bb1, otherwise: bb2;
+        switch copy _4 -> 0 : usize: bb1, otherwise: bb2;
     }
 
     bb1: {
@@ -328,7 +328,7 @@ where
         storage_dead(_20);
         storage_dead(_19);
         _39 = @discriminant(cmp_18);
-        switch move _39 -> 0 : i8: bb21, otherwise: bb22;
+        switch copy _39 -> 0 : i8: bb21, otherwise: bb22;
     }
 
     bb18: {

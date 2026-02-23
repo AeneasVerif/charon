@@ -263,7 +263,7 @@ pub trait Pointee<Self>
     parent_clause7 : [@TraitClause7]: Unpin<Self::Metadata>
     parent_clause8 : [@TraitClause8]: Freeze<Self::Metadata>
     type Metadata
-    vtable: core::ptr::metadata::Pointee::{vtable}<Self::Metadata>
+    non-dyn-compatible
 }
 
 // Full name: core::ptr::metadata::Thin
@@ -272,7 +272,7 @@ where
     Self::parent_clause0::Metadata = (),
 {
     parent_clause0 : [@TraitClause0]: Pointee<Self>
-    vtable: core::ptr::metadata::Thin::{vtable}<()>
+    non-dyn-compatible
 }
 
 // Full name: core::ptr::metadata::Thin::{impl Thin for Self}

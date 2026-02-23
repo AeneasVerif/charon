@@ -5,7 +5,7 @@
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: {vtable}
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)

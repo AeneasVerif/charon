@@ -9,7 +9,7 @@ pub opaque type String
 pub trait Destruct::<String>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<String>
-    vtable: core::marker::Destruct::{vtable}::<String>
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)

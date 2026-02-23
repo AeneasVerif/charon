@@ -104,14 +104,14 @@ where
 pub trait Destruct<Self>
 {
     fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 #[lang_item("Option")]
@@ -129,7 +129,7 @@ where
     [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 #[lang_item("Option")]
@@ -149,7 +149,7 @@ where
     [@TraitClause1]: core::marker::Sized::<&_ mut _><'_0, T0>,
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>[@TraitClause0, @TraitClause1]
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct::drop_in_place

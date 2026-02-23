@@ -23,7 +23,7 @@ where
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[@TraitClause0]}::drop_in_place
@@ -112,7 +112,7 @@ where
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnOnce

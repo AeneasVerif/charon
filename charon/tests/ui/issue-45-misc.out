@@ -9,7 +9,7 @@ pub trait MetaSized<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Sized
@@ -50,7 +50,7 @@ pub trait FnMut<Self, Args>
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 pub fn core::array::{[T; N]}::map<T, F, U, const N : usize>(@1: [T; N], @2: F) -> [U; N]

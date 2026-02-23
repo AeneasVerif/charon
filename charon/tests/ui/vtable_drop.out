@@ -1,13 +1,11 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::Destruct::{vtable}
-
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 opaque type core::marker::MetaSized::{vtable}
@@ -117,7 +115,6 @@ struct test_crate::Modifiable::{vtable}<T> {
   drop: unsafe fn(*mut (dyn Modifiable<T>)),
   method_modify: fn<'_0_1, '_1_1>(&'_0_1 mut (dyn Modifiable<T>), &'_1_1 T) -> T,
   super_trait_0: &'static core::marker::MetaSized::{vtable},
-  super_trait_1: &'static core::marker::Destruct::{vtable},
 }
 
 // Full name: test_crate::Modifiable
@@ -229,7 +226,7 @@ where
     size_1 = size_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>
     storage_live(align_2)
     align_2 = align_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>
-    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0, @TraitClause1, @TraitClause2], method_modify: const {vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1, @TraitClause2], super_trait_0: const Opaque(missing supertrait vtable), super_trait_1: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0, @TraitClause1, @TraitClause2], method_modify: const {vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1, @TraitClause2], super_trait_0: const Opaque(missing supertrait vtable) }
     return
 }
 
