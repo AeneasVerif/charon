@@ -1532,14 +1532,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::Repeat(op, _ty, cg) => {
                 write!(f, "[{}; {}]", op.with_ctx(ctx), cg.with_ctx(ctx))
             }
-            Rvalue::ShallowInitBox(op, ty) => {
-                write!(
-                    f,
-                    "shallow_init_box::<{}>({})",
-                    ty.with_ctx(ctx),
-                    op.with_ctx(ctx)
-                )
-            }
         }
     }
 }

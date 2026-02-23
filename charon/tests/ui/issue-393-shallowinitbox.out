@@ -1,10 +1,161 @@
-error: Could not reconstruct `Box` initialization; branching during `Box` initialization is not supported.
- --> tests/ui/issue-393-shallowinitbox.rs:2:1
-  |
-2 | / pub fn next(b: bool) -> Option<Vec<u8>> {
-3 | |     let vec = vec![if b { 42 } else { return None }];
-4 | |     Some(vec)
-5 | | }
-  | |_^
+# Final LLBC before serialization:
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+= <opaque>
+
+// Full name: core::mem::manually_drop::ManuallyDrop
+#[lang_item("manually_drop")]
+pub opaque type ManuallyDrop<T>
+where
+    [@TraitClause0]: MetaSized<T>,
+
+// Full name: core::mem::maybe_dangling::MaybeDangling
+pub opaque type MaybeDangling<P>
+where
+    [@TraitClause0]: MetaSized<P>,
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item("maybe_uninit")]
+pub opaque type MaybeUninit<T>
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+= <opaque>
+
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: MetaSized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: alloc::vec::Vec
+#[lang_item("Vec")]
+pub opaque type Vec<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+
+// Full name: alloc::boxed::box_assume_init_into_vec_unsafe
+#[lang_item("box_assume_init_into_vec_unsafe")]
+pub fn box_assume_init_into_vec_unsafe<T, const N : usize>(@1: alloc::boxed::Box<MaybeUninit<[T; N]>[{built_in impl Sized for [T; N]}]>[{built_in impl MetaSized for MaybeUninit<[T; N]>[{built_in impl Sized for [T; N]}]}, {built_in impl Sized for Global}]) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new_uninit
+pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, {built_in impl Sized for Global}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+= <opaque>
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::next
+pub fn next(@1: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]
+{
+    let _0: Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]; // return
+    let b_1: bool; // arg #1
+    let vec_2: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let _3: alloc::boxed::Box<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _4: alloc::boxed::Box<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _5: u8; // anonymous local
+    let _6: bool; // anonymous local
+    let _7: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
+
+    storage_live(vec_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = new_uninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]()
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy b_1
+    if move _6 {
+    } else {
+        _0 = Option::None {  }
+        storage_dead(_6)
+        storage_dead(_5)
+        conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]] _4
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(vec_2)
+        return
+    }
+    _5 = const 42 : u8
+    storage_dead(_6)
+    ((((*_4)).1).0).0 = [move _5]
+    storage_dead(_5)
+    _3 = move _4
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]] _4
+    storage_dead(_4)
+    vec_2 = box_assume_init_into_vec_unsafe<u8, 1 : usize>[{built_in impl Sized for u8}](move _3)
+    storage_dead(_3)
+    storage_live(_7)
+    _7 = move vec_2
+    _0 = Option::Some { 0: move _7 }
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _7
+    storage_dead(_7)
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] vec_2
+    storage_dead(vec_2)
+    return
+}
+
+
+

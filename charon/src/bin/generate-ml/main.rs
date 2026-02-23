@@ -6,7 +6,6 @@
 //!
 //! To run it, call `cargo run --bin generate-ml`. It is also run by `make generate-ml` in the
 //! crate root. Don't forget to format the output code after regenerating.
-#![feature(if_let_guard)]
 
 use anyhow::{Context, Result, bail};
 use assert_cmd::cargo::CommandCargoExt;

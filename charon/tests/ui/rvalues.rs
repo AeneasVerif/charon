@@ -46,10 +46,6 @@ fn fn_casts() {
     let _ = closure as unsafe fn(u8);
 }
 
-fn boxes() {
-    let _ = std::boxed::box_new(42);
-}
-
 // We force stealing to get the optimized_mir of the function. Optimizing the whole file would
 // remove most of our (indeed useless) assignments.
 static STEAL: [(); transmute([1, 0]) as usize] = [(); 1];

@@ -911,11 +911,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     }
                 }
             }
-            mir::Rvalue::ShallowInitBox(op, ty) => {
-                let op = self.translate_operand(span, op)?;
-                let ty = self.translate_rustc_ty(span, ty)?;
-                Ok(Rvalue::ShallowInitBox(op, ty))
-            }
             mir::Rvalue::ThreadLocalRef(_) => {
                 raise_error!(
                     self,

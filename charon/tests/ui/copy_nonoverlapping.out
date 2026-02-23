@@ -184,7 +184,8 @@ where
     undefined_behavior
 }
 
-pub fn core::intrinsics::align_of<T>() -> usize
+// Full name: core::intrinsics::align_of
+pub fn align_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -203,6 +204,130 @@ impl Copy for usize {
 // Full name: core::marker::Destruct::drop_in_place
 unsafe fn drop_in_place<Self>(@1: *mut Self)
 = <missing>
+
+// Full name: core::ptr::alignment::AlignmentEnum
+enum AlignmentEnum {
+  _Align1Shl0,
+  _Align1Shl1,
+  _Align1Shl2,
+  _Align1Shl3,
+  _Align1Shl4,
+  _Align1Shl5,
+  _Align1Shl6,
+  _Align1Shl7,
+  _Align1Shl8,
+  _Align1Shl9,
+  _Align1Shl10,
+  _Align1Shl11,
+  _Align1Shl12,
+  _Align1Shl13,
+  _Align1Shl14,
+  _Align1Shl15,
+  _Align1Shl16,
+  _Align1Shl17,
+  _Align1Shl18,
+  _Align1Shl19,
+  _Align1Shl20,
+  _Align1Shl21,
+  _Align1Shl22,
+  _Align1Shl23,
+  _Align1Shl24,
+  _Align1Shl25,
+  _Align1Shl26,
+  _Align1Shl27,
+  _Align1Shl28,
+  _Align1Shl29,
+  _Align1Shl30,
+  _Align1Shl31,
+  _Align1Shl32,
+  _Align1Shl33,
+  _Align1Shl34,
+  _Align1Shl35,
+  _Align1Shl36,
+  _Align1Shl37,
+  _Align1Shl38,
+  _Align1Shl39,
+  _Align1Shl40,
+  _Align1Shl41,
+  _Align1Shl42,
+  _Align1Shl43,
+  _Align1Shl44,
+  _Align1Shl45,
+  _Align1Shl46,
+  _Align1Shl47,
+  _Align1Shl48,
+  _Align1Shl49,
+  _Align1Shl50,
+  _Align1Shl51,
+  _Align1Shl52,
+  _Align1Shl53,
+  _Align1Shl54,
+  _Align1Shl55,
+  _Align1Shl56,
+  _Align1Shl57,
+  _Align1Shl58,
+  _Align1Shl59,
+  _Align1Shl60,
+  _Align1Shl61,
+  _Align1Shl62,
+  _Align1Shl63,
+}
+
+// Full name: core::ptr::alignment::Alignment
+pub struct Alignment {
+  _inner_repr_trick: AlignmentEnum,
+}
+
+// Full name: core::mem::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const SIZE : usize
+    const ALIGN : usize
+    const ALIGNMENT : Alignment
+    const IS_ZST : bool
+    const LAYOUT : Layout
+    const MAX_SLICE_LEN : usize
+    non-dyn-compatible
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub fn SIZE<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: usize; // return
+
+    _0 = size_of<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub const SIZE<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = SIZE()
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub fn ALIGN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: usize; // return
+
+    _0 = align_of<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub const ALIGN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGN()
 
 // Full name: core::panicking::panic_nounwind_fmt
 pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
@@ -286,79 +411,6 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usiz
     return
 }
 
-// Full name: core::ptr::alignment::AlignmentEnum
-enum AlignmentEnum {
-  _Align1Shl0,
-  _Align1Shl1,
-  _Align1Shl2,
-  _Align1Shl3,
-  _Align1Shl4,
-  _Align1Shl5,
-  _Align1Shl6,
-  _Align1Shl7,
-  _Align1Shl8,
-  _Align1Shl9,
-  _Align1Shl10,
-  _Align1Shl11,
-  _Align1Shl12,
-  _Align1Shl13,
-  _Align1Shl14,
-  _Align1Shl15,
-  _Align1Shl16,
-  _Align1Shl17,
-  _Align1Shl18,
-  _Align1Shl19,
-  _Align1Shl20,
-  _Align1Shl21,
-  _Align1Shl22,
-  _Align1Shl23,
-  _Align1Shl24,
-  _Align1Shl25,
-  _Align1Shl26,
-  _Align1Shl27,
-  _Align1Shl28,
-  _Align1Shl29,
-  _Align1Shl30,
-  _Align1Shl31,
-  _Align1Shl32,
-  _Align1Shl33,
-  _Align1Shl34,
-  _Align1Shl35,
-  _Align1Shl36,
-  _Align1Shl37,
-  _Align1Shl38,
-  _Align1Shl39,
-  _Align1Shl40,
-  _Align1Shl41,
-  _Align1Shl42,
-  _Align1Shl43,
-  _Align1Shl44,
-  _Align1Shl45,
-  _Align1Shl46,
-  _Align1Shl47,
-  _Align1Shl48,
-  _Align1Shl49,
-  _Align1Shl50,
-  _Align1Shl51,
-  _Align1Shl52,
-  _Align1Shl53,
-  _Align1Shl54,
-  _Align1Shl55,
-  _Align1Shl56,
-  _Align1Shl57,
-  _Align1Shl58,
-  _Align1Shl59,
-  _Align1Shl60,
-  _Align1Shl61,
-  _Align1Shl62,
-  _Align1Shl63,
-}
-
-// Full name: core::ptr::alignment::Alignment
-pub struct Alignment {
-  _inner_repr_trick: AlignmentEnum,
-}
-
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -438,6 +490,61 @@ where
     _2 = unwrap_failed()
 }
 
+// Full name: core::mem::SizedTypeProperties::ALIGNMENT
+pub fn ALIGNMENT<Self>() -> Alignment
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: Alignment; // return
+    let _1: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
+
+    storage_live(_1)
+    _1 = new(const @TraitClause0::ALIGN)
+    _0 = unwrap<Alignment>[{built_in impl Sized for Alignment}](move _1)
+    storage_dead(_1)
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::ALIGNMENT
+pub const ALIGNMENT<Self>: Alignment
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGNMENT()
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub fn IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: bool; // return
+
+    _0 = const @TraitClause0::SIZE == const 0 : usize
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub const IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = IS_ZST()
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub fn LAYOUT<Self>() -> Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: Layout; // return
+
+    _0 = from_size_align_unchecked(const @TraitClause0::SIZE, const @TraitClause0::ALIGN)
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub const LAYOUT<Self>: Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = LAYOUT()
+
 pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
@@ -461,19 +568,6 @@ pub fn core::num::{isize}::MAX() -> isize
 }
 
 pub const core::num::{isize}::MAX: isize = core::num::{isize}::MAX()
-
-// Full name: core::mem::SizedTypeProperties
-pub trait SizedTypeProperties<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    const SIZE : usize
-    const ALIGN : usize
-    const ALIGNMENT : Alignment
-    const IS_ZST : bool
-    const LAYOUT : Layout
-    const MAX_SLICE_LEN : usize
-    non-dyn-compatible
-}
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub fn MAX_SLICE_LEN<Self>() -> usize
@@ -515,106 +609,6 @@ where
     [@TraitClause0]: SizedTypeProperties<Self>,
  = MAX_SLICE_LEN()
 
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub fn LAYOUT<Self>() -> Layout
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: Layout; // return
-
-    _0 = from_size_align_unchecked(const @TraitClause0::SIZE, const @TraitClause0::ALIGN)
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub const LAYOUT<Self>: Layout
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = LAYOUT()
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub fn IS_ZST<Self>() -> bool
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: bool; // return
-
-    _0 = const @TraitClause0::SIZE == const 0 : usize
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub const IS_ZST<Self>: bool
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = IS_ZST()
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub fn ALIGN<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: usize; // return
-
-    _0 = core::intrinsics::align_of<Self>[@TraitClause0::parent_clause0]()
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub const ALIGN<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = ALIGN()
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub fn SIZE<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: usize; // return
-
-    _0 = size_of<Self>[@TraitClause0::parent_clause0]()
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub const SIZE<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = SIZE()
-
-#[lang_item("mem_align_of")]
-pub fn core::mem::align_of<T>() -> usize
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    _0 = const {impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub fn ALIGNMENT<Self>() -> Alignment
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: Alignment; // return
-
-    _0 = of<Self>[@TraitClause0::parent_clause0]()
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub const ALIGNMENT<Self>: Alignment
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = ALIGNMENT()
-
 // Full name: core::mem::{impl SizedTypeProperties for T}
 impl<T> SizedTypeProperties for T
 where
@@ -628,28 +622,6 @@ where
     const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     non-dyn-compatible
-}
-
-// Full name: core::ptr::alignment::{Alignment}::of
-pub fn of<T>() -> Alignment
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: Alignment; // return
-    let _1: Alignment; // anonymous local
-    let _2: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
-    let _3: usize; // anonymous local
-
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = core::mem::align_of<T>[@TraitClause0]()
-    _2 = new(move _3)
-    storage_dead(_3)
-    _1 = unwrap<Alignment>[{built_in impl Sized for Alignment}](move _2)
-    storage_dead(_2)
-    _0 = move _1
-    return
 }
 
 fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut (), @3: usize, @4: usize, @5: usize)
