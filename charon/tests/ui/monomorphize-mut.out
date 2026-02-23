@@ -220,6 +220,13 @@ where
   Some(IterWrapper<'_0, T0>[@TraitClause1]),
 }
 
+// Full name: core::slice::iter::IterMut
+pub opaque type IterMut<'a, T>
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
+    T : 'a,
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -647,6 +654,27 @@ fn use_const_generic<'_0, '_1>(@1: test_crate::ArrayWrapper::<&_ mut _, 1 : usiz
     let _2: test_crate::ArrayWrapper::<&_ mut _, 2 : usize><'14, u32>[{built_in impl core::marker::Sized::<&_ mut _><'14> for u32}]; // arg #2
 
     _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::use_opaque_iter
+fn use_opaque_iter<'a, 'b, T>(@1: IterMut<'a, bool>[{built_in impl Sized for bool}])
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let _0: (); // return
+    let x_1: IterMut<'1, bool>[{built_in impl Sized for bool}]; // arg #1
+    let _2: IterMut<'2, bool>[{built_in impl Sized for bool}]; // anonymous local
+    let _3: IterMut<'3, bool>[{built_in impl Sized for bool}]; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = move x_1
+    _2 = identity<IterMut<'4, bool>[{built_in impl Sized for bool}]>[{built_in impl Sized for IterMut<'4, bool>[{built_in impl Sized for bool}]}](move _3)
+    storage_dead(_3)
+    storage_dead(_2)
     _0 = ()
     return
 }
