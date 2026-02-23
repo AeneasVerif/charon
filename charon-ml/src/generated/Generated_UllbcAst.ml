@@ -34,7 +34,11 @@ and statement_kind =
           deallocated, this is a no-op. A local may not have a [StorageDead] in
           the function's body, in which case it is implicitly deallocated at the
           end of the function. *)
-  | Deinit of place
+  | PlaceMention of place
+      (** A place is mentioned, but not accessed. The place itself must still be
+          valid though, so this statement is not a no-op: it can trigger UB if
+          the place's projections are not valid (e.g. because they go out of
+          bounds). *)
   | Assert of assertion * abort_kind
       (** A non-diverging runtime check for a condition. This can be either:
           - Emitted for inlined "assumes" (which cause UB on failure)

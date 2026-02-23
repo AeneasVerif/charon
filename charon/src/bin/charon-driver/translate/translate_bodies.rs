@@ -865,11 +865,21 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                     CopyNonOverlapping { src, dst, count },
                 )))
             }
+            mir::StatementKind::PlaceMention(place) => {
+                let place = self.translate_place(span, place)?;
+                // We only translate this for places with projections, as
+                // no UB can arise from simply mentioning a local variable.
+                if place.is_local() {
+                    None
+                } else {
+                    Some(StatementKind::PlaceMention(place))
+                }
+            }
             // This is for the stacked borrows memory model.
             mir::StatementKind::Retag(_, _) => None,
             // These two are only there to make borrow-checking accept less code, and are removed
             // in later MIRs.
-            mir::StatementKind::FakeRead(..) | mir::StatementKind::PlaceMention(..) => None,
+            mir::StatementKind::FakeRead(..) => None,
             // There are user-provided type annotations with no semantic effect (since we get a
             // fully-typechecked MIR (TODO: this isn't quite true with opaque types, we should
             // really use promoted MIR)).

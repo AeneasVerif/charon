@@ -50,6 +50,7 @@ fn main()
     }
 
     bb2: {
+        _ = _1[copy _2];
         storage_dead(_2);
         storage_dead(_1);
         storage_live(_4);
