@@ -24,11 +24,9 @@
     clippy::useless_format
 )]
 #![expect(incomplete_features)]
-#![feature(assert_matches)]
 #![feature(box_patterns)]
 #![feature(deref_patterns)]
 #![feature(deref_pure_trait)]
-#![feature(if_let_guard)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iterator_try_collect)]
 #![feature(register_tool)]
