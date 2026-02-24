@@ -25,7 +25,7 @@ pub opaque type String
 pub trait Destruct::<[String; 4 : usize]>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<[String; 4 : usize]>
-    vtable: core::marker::Destruct::{vtable}::<[String; 4 : usize]>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct::<String>
@@ -33,7 +33,7 @@ pub trait Destruct::<[String; 4 : usize]>
 pub trait Destruct::<String>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<String>
-    vtable: core::marker::Destruct::{vtable}::<String>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct::<[String]>
@@ -41,7 +41,7 @@ pub trait Destruct::<String>
 pub trait Destruct::<[String]>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<[String]>
-    vtable: core::marker::Destruct::{vtable}::<[String]>
+    non-dyn-compatible
 }
 
 // Full name: alloc::alloc::Global
@@ -53,7 +53,7 @@ pub struct Global {}
 pub trait Destruct::<Global>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<Global>
-    vtable: core::marker::Destruct::{vtable}::<Global>
+    non-dyn-compatible
 }
 
 fn UNIT_METADATA()
@@ -137,7 +137,7 @@ impl Destruct::<Global> {
 pub trait Destruct::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl Destruct::<[String]>}::<String>, {impl Destruct::<Global>}]>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl Destruct::<[String]>}::<String>, {impl Destruct::<Global>}]>
-    vtable: core::marker::Destruct::{vtable}::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[String]>}, {built_in impl Sized::<Global>}, {impl Destruct::<[String]>}::<String>, {impl Destruct::<Global>}]>
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct::<(String, String)>
@@ -145,7 +145,7 @@ pub trait Destruct::<alloc::boxed::Box<[String]>[{built_in impl MetaSized::<[Str
 pub trait Destruct::<(String, String)>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<(String, String)>
-    vtable: core::marker::Destruct::{vtable}::<(String, String)>
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place::<[String; 4 : usize]>(@1: *mut [String; 4 : usize])

@@ -29,7 +29,7 @@ struct closure {
 pub trait Destruct::<closure>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<closure>
-    vtable: core::marker::Destruct::{vtable}::<closure>
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place::<closure>(@1: *mut closure)
@@ -40,7 +40,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<closure>(@1: *mut closure)
 pub trait Tuple::<(u8,)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8,)>
-    vtable: core::marker::Tuple::{vtable}::<(u8,)>
+    non-dyn-compatible
 }
 
 // Full name: core::mem::drop::<NotCopy>

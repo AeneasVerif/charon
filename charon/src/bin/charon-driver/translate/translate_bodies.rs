@@ -82,6 +82,35 @@ impl<'tcx, 'tctx, 'ictx> DerefMut for BodyTransCtx<'tcx, 'tctx, 'ictx> {
     }
 }
 
+/// A translation context for function blocks.
+pub(crate) struct BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
+    /// The translation context for the item.
+    pub b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>,
+    /// List of currently translated statements
+    pub statements: Vec<Statement>,
+}
+
+impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
+    pub(crate) fn new(b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>) -> Self {
+        BlockTransCtx {
+            b_ctx,
+            statements: Vec::new(),
+        }
+    }
+}
+
+impl<'tcx, 'tctx, 'ictx, 'bctx> Deref for BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
+    type Target = BodyTransCtx<'tcx, 'tctx, 'ictx>;
+    fn deref(&self) -> &Self::Target {
+        self.b_ctx
+    }
+}
+impl<'tcx, 'tctx, 'ictx, 'bctx> DerefMut for BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.b_ctx
+    }
+}
+
 pub fn translate_variant_id(id: hax::VariantIdx) -> VariantId {
     VariantId::new(id.as_usize())
 }
@@ -188,37 +217,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         self.locals_map.insert(rid.as_usize(), local_id);
     }
 
-    fn translate_binaryop_kind(&mut self, _span: Span, binop: mir::BinOp) -> Result<BinOp, Error> {
-        Ok(match binop {
-            mir::BinOp::BitXor => BinOp::BitXor,
-            mir::BinOp::BitAnd => BinOp::BitAnd,
-            mir::BinOp::BitOr => BinOp::BitOr,
-            mir::BinOp::Eq => BinOp::Eq,
-            mir::BinOp::Lt => BinOp::Lt,
-            mir::BinOp::Le => BinOp::Le,
-            mir::BinOp::Ne => BinOp::Ne,
-            mir::BinOp::Ge => BinOp::Ge,
-            mir::BinOp::Gt => BinOp::Gt,
-            mir::BinOp::Add => BinOp::Add(OverflowMode::Wrap),
-            mir::BinOp::AddUnchecked => BinOp::Add(OverflowMode::UB),
-            mir::BinOp::Sub => BinOp::Sub(OverflowMode::Wrap),
-            mir::BinOp::SubUnchecked => BinOp::Sub(OverflowMode::UB),
-            mir::BinOp::Mul => BinOp::Mul(OverflowMode::Wrap),
-            mir::BinOp::MulUnchecked => BinOp::Mul(OverflowMode::UB),
-            mir::BinOp::Div => BinOp::Div(OverflowMode::UB),
-            mir::BinOp::Rem => BinOp::Rem(OverflowMode::UB),
-            mir::BinOp::AddWithOverflow => BinOp::AddChecked,
-            mir::BinOp::SubWithOverflow => BinOp::SubChecked,
-            mir::BinOp::MulWithOverflow => BinOp::MulChecked,
-            mir::BinOp::Shl => BinOp::Shl(OverflowMode::Wrap),
-            mir::BinOp::ShlUnchecked => BinOp::Shl(OverflowMode::UB),
-            mir::BinOp::Shr => BinOp::Shr(OverflowMode::Wrap),
-            mir::BinOp::ShrUnchecked => BinOp::Shr(OverflowMode::UB),
-            mir::BinOp::Cmp => BinOp::Cmp,
-            mir::BinOp::Offset => BinOp::Offset,
-        })
-    }
-
     /// Translate a function's local variables by adding them in the environment.
     fn translate_body_locals(&mut self, body: &mir::Body<'tcx>) -> Result<(), Error> {
         // Translate the parameters
@@ -259,24 +257,133 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         block: &mir::BasicBlockData<'tcx>,
     ) -> Result<BlockData, Error> {
         // Translate the statements
-        let mut statements = Vec::new();
+        let mut block_ctx = BlockTransCtx::new(self);
         for statement in &block.statements {
             trace!("statement: {:?}", statement);
-
-            // Some statements might be ignored, hence the optional returned value
-            let opt_statement = self.translate_statement(source_scopes, statement)?;
-            if let Some(statement) = opt_statement {
-                statements.push(statement)
-            }
+            block_ctx.translate_statement(source_scopes, statement)?;
         }
 
         // Translate the terminator
         let terminator = block.terminator.as_ref().unwrap();
-        let terminator = self.translate_terminator(source_scopes, terminator)?;
+        let terminator = block_ctx.translate_terminator(source_scopes, terminator)?;
 
         Ok(BlockData {
-            statements,
+            statements: block_ctx.statements,
             terminator,
+        })
+    }
+
+    /// Gather all the lines that start with `//` inside the given span.
+    fn translate_body_comments(
+        &mut self,
+        source_text: &Option<String>,
+        charon_span: Span,
+    ) -> Vec<(usize, Vec<String>)> {
+        if let Some(body_text) = source_text {
+            let mut comments = body_text
+                .lines()
+                // Iter through the lines of this body in reverse order.
+                .rev()
+                .enumerate()
+                // Compute the absolute line number
+                .map(|(i, line)| (charon_span.data.end.line - i, line))
+                // Extract the comment if this line starts with `//`
+                .map(|(line_nbr, line)| (line_nbr, line.trim_start().strip_prefix("//")))
+                .peekable()
+                .batching(|iter| {
+                    // Get the next line. This is not a comment: it's either the last line of the
+                    // body or a line that wasn't consumed by `peeking_take_while`.
+                    let (line_nbr, _first) = iter.next()?;
+                    // Collect all the comments before this line.
+                    let mut comments = iter
+                        // `peeking_take_while` ensures we don't consume a line that returns
+                        // `false`. It will be consumed by the next round of `batching`.
+                        .peeking_take_while(|(_, opt_comment)| opt_comment.is_some())
+                        .map(|(_, opt_comment)| opt_comment.unwrap())
+                        .map(|s| s.strip_prefix(" ").unwrap_or(s))
+                        .map(str::to_owned)
+                        .collect_vec();
+                    comments.reverse();
+                    Some((line_nbr, comments))
+                })
+                .filter(|(_, comments)| !comments.is_empty())
+                .collect_vec();
+            comments.reverse();
+            comments
+        } else {
+            Vec::new()
+        }
+    }
+
+    fn translate_body(
+        mut self,
+        mir_body: &mir::Body<'tcx>,
+        source_text: &Option<String>,
+    ) -> Result<Body, Error> {
+        // Compute the span information
+        let span = self.translate_span(&mir_body.span);
+
+        // Initialize the local variables
+        trace!("Translating the body locals");
+        self.locals.arg_count = mir_body.arg_count;
+        self.translate_body_locals(&mir_body)?;
+
+        // Translate the expression body
+        trace!("Translating the expression body");
+
+        // Register the start block
+        let id = self.translate_basic_block_id(rustc_index::Idx::new(mir::START_BLOCK.as_usize()));
+        assert!(id == START_BLOCK_ID);
+
+        // For as long as there are blocks in the stack, translate them
+        while let Some(mir_block_id) = self.blocks_stack.pop_front() {
+            let mir_block = mir_body.basic_blocks.get(mir_block_id).unwrap();
+            let block_id = self.translate_basic_block_id(mir_block_id);
+            let block = self.translate_basic_block(&mir_body.source_scopes, mir_block)?;
+            self.blocks.set_slot(block_id, block);
+        }
+
+        // Create the body
+        let comments = self.translate_body_comments(source_text, span);
+        Ok(Body::Unstructured(ExprBody {
+            span,
+            locals: self.locals,
+            bound_body_regions: self.i_ctx.lifetime_freshener.take().unwrap().slot_count(),
+            body: self.blocks.make_contiguous(),
+            comments,
+        }))
+    }
+}
+
+impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
+    fn translate_binaryop_kind(&mut self, _span: Span, binop: mir::BinOp) -> Result<BinOp, Error> {
+        Ok(match binop {
+            mir::BinOp::BitXor => BinOp::BitXor,
+            mir::BinOp::BitAnd => BinOp::BitAnd,
+            mir::BinOp::BitOr => BinOp::BitOr,
+            mir::BinOp::Eq => BinOp::Eq,
+            mir::BinOp::Lt => BinOp::Lt,
+            mir::BinOp::Le => BinOp::Le,
+            mir::BinOp::Ne => BinOp::Ne,
+            mir::BinOp::Ge => BinOp::Ge,
+            mir::BinOp::Gt => BinOp::Gt,
+            mir::BinOp::Add => BinOp::Add(OverflowMode::Wrap),
+            mir::BinOp::AddUnchecked => BinOp::Add(OverflowMode::UB),
+            mir::BinOp::Sub => BinOp::Sub(OverflowMode::Wrap),
+            mir::BinOp::SubUnchecked => BinOp::Sub(OverflowMode::UB),
+            mir::BinOp::Mul => BinOp::Mul(OverflowMode::Wrap),
+            mir::BinOp::MulUnchecked => BinOp::Mul(OverflowMode::UB),
+            mir::BinOp::Div => BinOp::Div(OverflowMode::UB),
+            mir::BinOp::Rem => BinOp::Rem(OverflowMode::UB),
+            mir::BinOp::AddWithOverflow => BinOp::AddChecked,
+            mir::BinOp::SubWithOverflow => BinOp::SubChecked,
+            mir::BinOp::MulWithOverflow => BinOp::MulChecked,
+            mir::BinOp::Shl => BinOp::Shl(OverflowMode::Wrap),
+            mir::BinOp::ShlUnchecked => BinOp::Shl(OverflowMode::UB),
+            mir::BinOp::Shr => BinOp::Shr(OverflowMode::Wrap),
+            mir::BinOp::ShrUnchecked => BinOp::Shr(OverflowMode::UB),
+            mir::BinOp::Cmp => BinOp::Cmp,
+            mir::BinOp::Offset => BinOp::Offset,
         })
     }
 
@@ -453,6 +560,28 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                     }
                 }
             }
+            mir::Operand::RuntimeChecks(check) => {
+                let op = match check {
+                    mir::RuntimeChecks::UbChecks => NullOp::UbChecks,
+                    mir::RuntimeChecks::OverflowChecks => NullOp::OverflowChecks,
+                    mir::RuntimeChecks::ContractChecks => NullOp::ContractChecks,
+                };
+                let local = self.locals.new_var(None, Ty::mk_bool());
+                self.statements.push(Statement {
+                    span,
+                    kind: StatementKind::StorageLive(local.as_local().unwrap()),
+                    comments_before: vec![],
+                });
+                self.statements.push(Statement {
+                    span,
+                    kind: StatementKind::Assign(
+                        local.clone(),
+                        Rvalue::NullaryOp(op, Ty::mk_bool()),
+                    ),
+                    comments_before: vec![],
+                });
+                Operand::Move(local)
+            }
         })
     }
 
@@ -562,7 +691,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                     }
                     mir::CastKind::PointerCoercion(
                         ty::adjustment::PointerCoercion::UnsafeFnPointer
-                        | ty::adjustment::PointerCoercion::ReifyFnPointer,
+                        | ty::adjustment::PointerCoercion::ReifyFnPointer(_),
                         ..,
                     ) => CastKind::FnPtr(src_ty, tgt_ty),
                     mir::CastKind::Transmute => CastKind::Transmute(src_ty, tgt_ty),
@@ -658,14 +787,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                 self.translate_operand(span, left)?,
                 self.translate_operand(span, right)?,
             )),
-            mir::Rvalue::NullaryOp(mir::NullOp::RuntimeChecks(check)) => {
-                let op = match check {
-                    mir::RuntimeChecks::UbChecks => NullOp::UbChecks,
-                    mir::RuntimeChecks::OverflowChecks => NullOp::OverflowChecks,
-                    mir::RuntimeChecks::ContractChecks => NullOp::ContractChecks,
-                };
-                Ok(Rvalue::NullaryOp(op, LiteralTy::Bool.into()))
-            }
             mir::Rvalue::UnaryOp(unop, operand) => {
                 let operand = self.translate_operand(span, operand)?;
                 let unop = match unop {
@@ -677,7 +798,9 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                                 p.project(ProjectionElem::PtrMetadata, tgt_ty.clone()),
                             )));
                         }
-                        Operand::Const(_) => panic!("const metadata"),
+                        Operand::Const(_) => {
+                            panic!("unexpected metadata operand")
+                        }
                     },
                 };
                 Ok(Rvalue::UnaryOp(unop, operand))
@@ -817,7 +940,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         &mut self,
         source_scopes: &rustc_index::IndexVec<mir::SourceScope, mir::SourceScopeData>,
         statement: &mir::Statement<'tcx>,
-    ) -> Result<Option<Statement>, Error> {
+    ) -> Result<(), Error> {
         trace!("About to translate statement (MIR) {:?}", statement);
         let span = self.translate_span_from_source_info(source_scopes, &statement.source_info);
 
@@ -895,7 +1018,12 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         };
 
         // Add the span information
-        Ok(t_statement.map(|kind| Statement::new(span, kind)))
+        let Some(t_statement) = t_statement else {
+            return Ok(());
+        };
+        let statement = Statement::new(span, t_statement);
+        self.statements.push(statement);
+        Ok(())
     }
 
     /// Translate a terminator
@@ -1268,87 +1396,6 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             t_args.push(op);
         }
         Ok(t_args)
-    }
-
-    /// Gather all the lines that start with `//` inside the given span.
-    fn translate_body_comments(
-        &mut self,
-        source_text: &Option<String>,
-        charon_span: Span,
-    ) -> Vec<(usize, Vec<String>)> {
-        if let Some(body_text) = source_text {
-            let mut comments = body_text
-                .lines()
-                // Iter through the lines of this body in reverse order.
-                .rev()
-                .enumerate()
-                // Compute the absolute line number
-                .map(|(i, line)| (charon_span.data.end.line - i, line))
-                // Extract the comment if this line starts with `//`
-                .map(|(line_nbr, line)| (line_nbr, line.trim_start().strip_prefix("//")))
-                .peekable()
-                .batching(|iter| {
-                    // Get the next line. This is not a comment: it's either the last line of the
-                    // body or a line that wasn't consumed by `peeking_take_while`.
-                    let (line_nbr, _first) = iter.next()?;
-                    // Collect all the comments before this line.
-                    let mut comments = iter
-                        // `peeking_take_while` ensures we don't consume a line that returns
-                        // `false`. It will be consumed by the next round of `batching`.
-                        .peeking_take_while(|(_, opt_comment)| opt_comment.is_some())
-                        .map(|(_, opt_comment)| opt_comment.unwrap())
-                        .map(|s| s.strip_prefix(" ").unwrap_or(s))
-                        .map(str::to_owned)
-                        .collect_vec();
-                    comments.reverse();
-                    Some((line_nbr, comments))
-                })
-                .filter(|(_, comments)| !comments.is_empty())
-                .collect_vec();
-            comments.reverse();
-            comments
-        } else {
-            Vec::new()
-        }
-    }
-
-    fn translate_body(
-        mut self,
-        mir_body: &mir::Body<'tcx>,
-        source_text: &Option<String>,
-    ) -> Result<Body, Error> {
-        // Compute the span information
-        let span = self.translate_span(&mir_body.span);
-
-        // Initialize the local variables
-        trace!("Translating the body locals");
-        self.locals.arg_count = mir_body.arg_count;
-        self.translate_body_locals(&mir_body)?;
-
-        // Translate the expression body
-        trace!("Translating the expression body");
-
-        // Register the start block
-        let id = self.translate_basic_block_id(rustc_index::Idx::new(mir::START_BLOCK.as_usize()));
-        assert!(id == START_BLOCK_ID);
-
-        // For as long as there are blocks in the stack, translate them
-        while let Some(mir_block_id) = self.blocks_stack.pop_front() {
-            let mir_block = mir_body.basic_blocks.get(mir_block_id).unwrap();
-            let block_id = self.translate_basic_block_id(mir_block_id);
-            let block = self.translate_basic_block(&mir_body.source_scopes, mir_block)?;
-            self.blocks.set_slot(block_id, block);
-        }
-
-        // Create the body
-        let comments = self.translate_body_comments(source_text, span);
-        Ok(Body::Unstructured(ExprBody {
-            span,
-            locals: self.locals,
-            bound_body_regions: self.i_ctx.lifetime_freshener.take().unwrap().slot_count(),
-            body: self.blocks.make_contiguous(),
-            comments,
-        }))
     }
 }
 

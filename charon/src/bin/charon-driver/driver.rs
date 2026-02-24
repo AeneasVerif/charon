@@ -54,7 +54,7 @@ fn set_skip_borrowck() {
 }
 fn skip_borrowck_if_set(providers: &mut Providers) {
     if SKIP_BORROWCK.load(Ordering::SeqCst) {
-        providers.mir_borrowck = |tcx, _def_id| {
+        providers.queries.mir_borrowck = |tcx, _def_id| {
             // Empty result, which is what is used for custom_mir bodies.
             Ok(tcx.arena.alloc(Default::default()))
         }

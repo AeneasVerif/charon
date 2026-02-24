@@ -272,7 +272,7 @@ pub trait Pointee<Self>
     parent_clause7 : [@TraitClause7]: Unpin<Self::Metadata>
     parent_clause8 : [@TraitClause8]: Freeze<Self::Metadata>
     type Metadata
-    vtable: core::ptr::metadata::Pointee::{vtable}<Self::Metadata>
+    non-dyn-compatible
 }
 
 // Full name: core::ptr::null

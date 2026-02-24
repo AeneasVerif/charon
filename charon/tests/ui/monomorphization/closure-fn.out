@@ -27,7 +27,7 @@ struct closure<'_0, '_1> {
 pub trait Destruct::<closure<'_, '_>>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<closure<'_, '_>>
-    vtable: core::marker::Destruct::{vtable}::<closure<'_, '_>>
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place::<closure<'_, '_>>(@1: *mut closure<'_, '_>)
@@ -38,7 +38,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<closure<'_, '_>>(@1: *mut clos
 pub trait Tuple::<(u8, u8)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8, u8)>
-    vtable: core::marker::Tuple::{vtable}::<(u8, u8)>
+    non-dyn-compatible
 }
 
 // Full name: core::ops::function::FnOnce::<closure<'_, '_>, (u8, u8)>

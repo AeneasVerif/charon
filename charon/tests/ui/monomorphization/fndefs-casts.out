@@ -21,7 +21,7 @@ pub trait MetaSized::<for<'a> foo::<u32><'a>>
 pub trait Tuple::<(&'_ u32,)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(&'_ u32,)>
-    vtable: core::marker::Tuple::{vtable}::<(&'_ u32,)>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo::<u32>

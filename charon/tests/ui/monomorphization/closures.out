@@ -33,7 +33,7 @@ struct test_crate::main::closure<'_0> {
 pub trait Destruct::<test_crate::main::closure<'_>>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>
-    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure<'_>>
+    non-dyn-compatible
 }
 
 struct test_crate::main::closure#1<'_0> {
@@ -45,7 +45,7 @@ struct test_crate::main::closure#1<'_0> {
 pub trait Destruct::<test_crate::main::closure#1<'_>>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>
-    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure#1<'_>>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::Thing
@@ -60,7 +60,7 @@ struct test_crate::main::closure#2 {
 pub trait Destruct::<test_crate::main::closure#2>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>
-    vtable: core::marker::Destruct::{vtable}::<test_crate::main::closure#2>
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
@@ -77,7 +77,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(@
 pub trait Tuple::<(u8,)>
 {
     parent_clause0 : [@TraitClause0]: MetaSized::<(u8,)>
-    vtable: core::marker::Tuple::{vtable}::<(u8,)>
+    non-dyn-compatible
 }
 
 // Full name: core::mem::drop::<Thing>

@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
@@ -28,7 +28,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::mem::size_of
@@ -554,7 +554,8 @@ where
     let _12: usize; // anonymous local
     let _13: usize; // anonymous local
     let _14: usize; // anonymous local
-    let _15: usize; // anonymous local
+    let _15: bool; // anonymous local
+    let _16: usize; // anonymous local
 
     storage_live(_9)
     storage_live(_12)
@@ -563,13 +564,15 @@ where
     size_1 = size_of<T>[@TraitClause0]()
     storage_live(align_2)
     align_2 = align_of<T>[@TraitClause0]()
-    storage_live(_15)
+    storage_live(_16)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
-    _15 = offset_of(Struct<T>[@TraitClause0].b)<usize>
+    _16 = offset_of(Struct<T>[@TraitClause0].b)<usize>
     storage_live(ub_3)
-    ub_3 = ub_checks<bool>
+    storage_live(_15)
+    _15 = ub_checks<bool>
+    ub_3 = move _15
     storage_live(offset_4)
-    offset_4 = move _15
+    offset_4 = move _16
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)

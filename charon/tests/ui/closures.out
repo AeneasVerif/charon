@@ -9,7 +9,7 @@ pub trait MetaSized<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Sized
@@ -44,6 +44,14 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
+
 // Full name: core::array::{[T; N]}::map
 pub fn map<T, F, U, const N : usize>(@1: [T; N], @2: F) -> [U; N]
 where
@@ -51,6 +59,9 @@ where
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<U>,
     [@TraitClause3]: FnMut<F, (T,), U>,
+    [@TraitClause4]: Destruct<F>,
+    [@TraitClause5]: Destruct<U>,
+    [@TraitClause6]: Destruct<T>,
 = <opaque>
 
 // Full name: core::clone::Clone
@@ -77,14 +88,6 @@ impl Clone for u32 {
     parent_clause0 = {built_in impl Sized for u32}
     fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
     non-dyn-compatible
-}
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
 }
 
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
@@ -1943,6 +1946,16 @@ where
 
 struct test_crate::test_array_map::closure {}
 
+// Full name: test_crate::test_array_map::closure::{impl Destruct for test_crate::test_array_map::closure}::drop_in_place
+unsafe fn {impl Destruct for test_crate::test_array_map::closure}::drop_in_place(@1: *mut test_crate::test_array_map::closure)
+= <missing>
+
+// Full name: test_crate::test_array_map::closure::{impl Destruct for test_crate::test_array_map::closure}
+impl Destruct for test_crate::test_array_map::closure {
+    fn drop_in_place = {impl Destruct for test_crate::test_array_map::closure}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::test_array_map::{impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut
 fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'_0>(@1: &'_0 mut test_crate::test_array_map::closure, @2: (i32,)) -> i32
 {
@@ -1955,16 +1968,6 @@ fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'
     v_3 = move tupled_args_2.0
     _0 = copy v_3
     return
-}
-
-// Full name: test_crate::test_array_map::closure::{impl Destruct for test_crate::test_array_map::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_array_map::closure}::drop_in_place(@1: *mut test_crate::test_array_map::closure)
-= <missing>
-
-// Full name: test_crate::test_array_map::closure::{impl Destruct for test_crate::test_array_map::closure}
-impl Destruct for test_crate::test_array_map::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_array_map::closure}::drop_in_place
-    non-dyn-compatible
 }
 
 // Full name: test_crate::test_array_map::{impl FnOnce<(i32,), i32> for test_crate::test_array_map::closure}::call_once
@@ -2014,7 +2017,7 @@ pub fn test_array_map(@1: [i32; 256 : usize]) -> [i32; 256 : usize]
     _2 = copy x_1
     storage_live(_3)
     _3 = test_crate::test_array_map::closure {  }
-    _0 = map<i32, test_crate::test_array_map::closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for test_crate::test_array_map::closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}](move _2, move _3)
+    _0 = map<i32, test_crate::test_array_map::closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for test_crate::test_array_map::closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}, {impl Destruct for test_crate::test_array_map::closure}, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return

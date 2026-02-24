@@ -27,13 +27,14 @@ where
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::bool::{bool}::then_some
 pub fn then_some<T>(@1: bool, @2: T) -> Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Destruct<T>,
 {
     let _0: Option<T>[@TraitClause0]; // return
     let self_1: bool; // arg #1
@@ -43,7 +44,7 @@ where
     if copy self_1 {
     } else {
         _0 = Option::None {  }
-        drop[{built_in impl Destruct for T}] t_2
+        drop[@TraitClause1] t_2
         return
     }
     storage_live(_3)
@@ -277,7 +278,7 @@ fn bool_to_opt(@1: bool) -> Option<()>[{built_in impl Sized for ()}]
     _2 = copy b_1
     storage_live(_3)
     _3 = ()
-    _0 = then_some<()>[{built_in impl Sized for ()}](move _2, move _3)
+    _0 = then_some<()>[{built_in impl Sized for ()}, {built_in impl Destruct for ()}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
