@@ -456,7 +456,6 @@ impl ItemTransCtx<'_, '_> {
                 {
                     let name = self.translate_trait_item_name(&item_def_id)?;
 
-
                     // let item_src = TransItemSource::polymorphic(item_def_id,
                     //         TransItemSourceKind::VTableMethodPreShim(trait_id, name),
                     //     );
