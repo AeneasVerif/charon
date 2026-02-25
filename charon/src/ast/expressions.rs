@@ -538,6 +538,7 @@ impl From<FunDeclRef> for FnPtr {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, Hash)]
+#[charon::variants_prefix("Prov")]
 pub enum Provenance {
     Global(GlobalDeclRef),
     Function(FunDeclRef),

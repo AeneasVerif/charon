@@ -245,7 +245,6 @@ impl ItemRef {
 }
 
 /// The combination of type generics and related predicates.
-
 #[derive(Clone, Debug)]
 pub struct ParamEnv {
     /// Generic parameters of the item.
@@ -256,8 +255,23 @@ pub struct ParamEnv {
     pub parent: Option<ItemRef>,
 }
 
-/// The kind of a constant item.
+impl ParamEnv {
+    pub fn for_each_generics<'tcx>(
+        &self,
+        s: &impl BaseState<'tcx>,
+        f: &mut impl FnMut(&GenericParamDef),
+    ) {
+        if let Some(parent) = &self.parent {
+            let def = parent.def_id.full_def(s);
+            def.param_env().unwrap().for_each_generics(s, f);
+        }
+        for param in &self.generics.params {
+            f(param)
+        }
+    }
+}
 
+/// The kind of a constant item.
 #[derive(Clone, Debug)]
 pub enum ConstKind {
     /// Top-level constant: `const CONST: usize = 42;`

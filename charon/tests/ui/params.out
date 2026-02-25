@@ -32,7 +32,7 @@ struct SStatic {
 }
 
 // Full name: test_crate::E0
-enum E0<'a, 'b, T1, T2>
+enum E0<mut 'a, mut 'b, T1, T2>
 where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Sized<T2>,
@@ -43,7 +43,7 @@ where
 }
 
 // Full name: test_crate::E1
-enum E1<'a, 'b, T1, T2>
+enum E1<mut 'a, mut 'b, T1, T2>
 where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Sized<T2>,
@@ -57,7 +57,7 @@ where
 }
 
 // Full name: test_crate::E2
-enum E2<'a, 'b, T1, T2>
+enum E2<mut 'a, mut 'b, T1, T2>
 where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Sized<T2>,
@@ -71,7 +71,7 @@ where
 }
 
 // Full name: test_crate::E3
-enum E3<'a, 'b, 'c, T1, T2>
+enum E3<mut 'a, mut 'b, 'c, T1, T2>
 where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Sized<T2>,
@@ -91,7 +91,7 @@ where
 }
 
 // Full name: test_crate::E4
-enum E4<'a, 'b, 'c, T1, T2, T3>
+enum E4<mut 'a, mut 'b, 'c, T1, T2, T3>
 where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Sized<T2>,
@@ -113,7 +113,7 @@ where
 }
 
 // Full name: test_crate::E5
-enum E5<'a, 'b, 'c, T1, T2, T3>
+enum E5<mut 'a, mut 'b, 'c, T1, T2, T3>
 where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Sized<T2>,
@@ -135,7 +135,7 @@ where
 }
 
 // Full name: test_crate::S1
-struct S1<'a, 'b, 'c, 'd>
+struct S1<mut 'a, mut 'b, mut 'c, 'd>
 where
     'c : 'a,
     'd : 'b,

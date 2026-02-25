@@ -77,9 +77,10 @@ use std::{
     mem,
 };
 
-use macros::EnumAsGetters;
-
-use crate::{ast::*, formatter::IntoFormatter, ids::IndexMap, pretty::FmtWithCtx, register_error};
+use crate::{
+    ast::*, common::CycleDetector, formatter::IntoFormatter, ids::IndexMap, pretty::FmtWithCtx,
+    register_error,
+};
 
 use crate::transform::{TransformCtx, ctx::TransformPass, utils::GenericsSource};
 
@@ -595,27 +596,13 @@ impl ItemModifications {
     }
 }
 
-/// An enum to manage potentially-cyclic computations.
-#[derive(Debug, EnumAsGetters)]
-enum Processing<T> {
-    /// We haven't analyzed this yet.
-    Unprocessed,
-    /// Sentinel value that we set when starting the computation on an item. If we ever encounter
-    /// this, we know we encountered a loop that we can't handle.
-    Processing,
-    /// Sentinel value we put when encountering a cycle, so we can know that happened.
-    Cyclic,
-    /// The final result of the computation.
-    Processed(T),
-}
-
 struct ComputeItemModifications<'a> {
     ctx: &'a TransformCtx,
     /// Records the modifications for each trait.
-    trait_modifications: IndexMap<TraitDeclId, Processing<ItemModifications>>,
+    trait_modifications: IndexMap<TraitDeclId, CycleDetector<ItemModifications>>,
     /// Records the set of known associated types for this trait impl, including parent impls and
     /// associated type constraints.
-    impl_assoc_tys: IndexMap<TraitImplId, Processing<TypeConstraintSet>>,
+    impl_assoc_tys: IndexMap<TraitImplId, CycleDetector<TypeConstraintSet>>,
 }
 
 impl<'a> ComputeItemModifications<'a> {
@@ -625,11 +612,11 @@ impl<'a> ComputeItemModifications<'a> {
             trait_modifications: ctx
                 .translated
                 .trait_decls
-                .map_ref_opt(|_| Some(Processing::Unprocessed)),
+                .map_ref_opt(|_| Some(CycleDetector::Unprocessed)),
             impl_assoc_tys: ctx
                 .translated
                 .trait_impls
-                .map_ref_opt(|_| Some(Processing::Unprocessed)),
+                .map_ref_opt(|_| Some(CycleDetector::Unprocessed)),
         }
     }
 
@@ -698,11 +685,8 @@ impl<'a> ComputeItemModifications<'a> {
         &mut self,
         id: TraitDeclId,
     ) -> impl Iterator<Item = &AssocTypePath> {
-        if let Processing::Unprocessed = self.trait_modifications[id] {
+        if self.trait_modifications[id].start_processing() {
             if let Some(tr) = self.ctx.translated.trait_decls.get(id) {
-                // Put the sentinel value to detect loops.
-                self.trait_modifications[id] = Processing::Processing;
-
                 // The heart of the recursion: we process the trait clauses, which recursively computes
                 // the extra parameters needed for each corresponding trait. Each of the referenced
                 // traits may need to be supplied extra type parameters. `replace_path` either finds
@@ -725,9 +709,9 @@ impl<'a> ComputeItemModifications<'a> {
                 }
 
                 let is_self_referential = match &self.trait_modifications[id] {
-                    Processing::Unprocessed | Processing::Processed(_) => unreachable!(),
-                    Processing::Processing => false,
-                    Processing::Cyclic => true,
+                    CycleDetector::Unprocessed | CycleDetector::Processed(_) => unreachable!(),
+                    CycleDetector::Processing => false,
+                    CycleDetector::Cyclic => true,
                 };
                 // These traits carry a built-in associated type that we can't replace with
                 // anything else than itself, so we keep it as an associated type.
@@ -761,21 +745,18 @@ impl<'a> ComputeItemModifications<'a> {
                     modifications.replace_path(path);
                 }
 
-                self.trait_modifications[id] = Processing::Processed(modifications);
+                self.trait_modifications[id] = CycleDetector::Processed(modifications);
             }
-        } else if let Processing::Processing = self.trait_modifications[id] {
-            // This is already being processed: we encountered a cycle.
-            self.trait_modifications[id] = Processing::Cyclic;
         }
 
         match &self.trait_modifications[id] {
-            Processing::Unprocessed => None,
-            Processing::Processing | Processing::Cyclic => {
+            CycleDetector::Unprocessed => None,
+            CycleDetector::Processing | CycleDetector::Cyclic => {
                 // We're recursively processing ourselves. We already know we won't add new type
                 // parameters, so we correctly return an empty iterator.
                 None
             }
-            Processing::Processed(modifs) => Some(modifs.required_extra_params()),
+            CycleDetector::Processed(modifs) => Some(modifs.required_extra_params()),
         }
         .into_iter()
         .flatten()
@@ -820,10 +801,10 @@ impl<'a> ComputeItemModifications<'a> {
     /// Returns the associated types values known for the given impl. If the impl is cyclic, the
     /// set will not be exhaustive.
     fn compute_assoc_tys_for_impl(&mut self, id: TraitImplId) -> Option<&TypeConstraintSet> {
-        if let Processing::Unprocessed = self.impl_assoc_tys[id] {
+        if let CycleDetector::Unprocessed = self.impl_assoc_tys[id] {
             if let Some(timpl) = self.ctx.translated.trait_impls.get(id) {
                 // Put the sentinel value to detect loops.
-                self.impl_assoc_tys[id] = Processing::Processing;
+                self.impl_assoc_tys[id] = CycleDetector::Processing;
 
                 let mut set = self.compute_constraint_set(&timpl.generics);
                 for (name, assoc_ty) in &timpl.types {
@@ -840,7 +821,7 @@ impl<'a> ComputeItemModifications<'a> {
                     }
                 }
 
-                self.impl_assoc_tys[id] = Processing::Processed(set);
+                self.impl_assoc_tys[id] = CycleDetector::Processed(set);
             }
         }
         self.impl_assoc_tys[id].as_processed()

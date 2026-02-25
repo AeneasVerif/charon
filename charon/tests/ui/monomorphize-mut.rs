@@ -68,3 +68,8 @@ fn use_const_generic(_: ArrayWrapper<1, &mut u32>, _: ArrayWrapper<2, &mut u32>)
 // fn call_method<X: Trait>(x: &X) {
 //     x.method::<&mut bool>();
 // }
+
+// Use opaque iter type
+fn use_opaque_iter<'a, 'b, T>(x: std::slice::IterMut<'a, bool>) {
+    let _ = identity(x);
+}

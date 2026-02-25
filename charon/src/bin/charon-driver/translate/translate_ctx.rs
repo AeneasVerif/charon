@@ -1,7 +1,7 @@
 //! The translation contexts.
 use super::translate_crate::RustcItem;
 pub use super::translate_crate::{TraitImplSource, TransItemSource, TransItemSourceKind};
-use super::translate_generics::BindingLevel;
+use super::translate_generics::{BindingLevel, LifetimeMutabilityComputer};
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::options::TranslateOptions;
@@ -64,6 +64,8 @@ pub struct TranslateCtx<'tcx> {
     pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
+    /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
+    pub lt_mutability_computer: LifetimeMutabilityComputer,
 }
 
 /// Tracks whether a method is used (i.e. called or (non-opaquely) implemented).

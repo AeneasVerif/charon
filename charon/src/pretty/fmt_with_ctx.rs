@@ -1399,6 +1399,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionDbVar {
 
 impl<C: AstFormatter> FmtWithCtx<C> for RegionParam {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.mutability.is_mutable() {
+            write!(f, "mut ")?;
+        }
         match &self.name {
             Some(name) => write!(f, "{name}"),
             None => {

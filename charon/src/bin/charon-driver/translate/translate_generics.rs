@@ -1,19 +1,22 @@
-use crate::translate::translate_ctx::TraitImplSource;
-
-use super::translate_ctx::{ItemTransCtx, TransItemSourceKind};
-use charon_lib::ast::*;
-use charon_lib::ids::IndexVec;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
+
+use hax::BaseState;
+use rustc_middle::ty;
+
+use super::translate_ctx::{ItemTransCtx, TraitImplSource, TransItemSourceKind};
+use charon_lib::ast::*;
+use charon_lib::common::CycleDetector;
+use charon_lib::ids::IndexVec;
 
 /// A level of binding for type-level variables. Each item has a top-level binding level
 /// corresponding to the parameters and clauses to the items. We may then encounter inner binding
 /// levels in the following cases:
 /// - `for<..>` binders in predicates;
 /// - `fn<..>` function pointer types;
-/// - `dyn Trait` types, represented as `dyn<T: Trait>` (TODO);
-/// - types in a trait declaration or implementation block (TODO);
-/// - methods in a trait declaration or implementation block (TODO).
+/// - `dyn Trait` types, represented as `dyn<T: Trait>`;
+/// - types in a trait declaration or implementation block;
+/// - methods in a trait declaration or implementation block.
 ///
 /// At each level, we store two things: a `GenericParams` that contains the parameters bound at
 /// this level, and various maps from the rustc-internal indices to our indices.
@@ -67,17 +70,22 @@ impl BindingLevel {
     }
 
     /// Important: we must push all the early-bound regions before pushing any other region.
-    pub(crate) fn push_early_region(&mut self, region: hax::EarlyParamRegion) -> RegionId {
+    pub(crate) fn push_early_region(
+        &mut self,
+        region: hax::EarlyParamRegion,
+        mutability: LifetimeMutability,
+    ) -> RegionId {
         let name = translate_region_name(region.name);
         // Check that there are no late-bound regions
         assert!(
             self.bound_region_vars.is_empty(),
             "Early regions must be translated before late ones"
         );
-        let rid = self
-            .params
-            .regions
-            .push_with(|index| RegionParam { index, name });
+        let rid = self.params.regions.push_with(|index| RegionParam {
+            index,
+            name,
+            mutability,
+        });
         self.early_region_vars.insert(region, rid);
         rid
     }
@@ -93,7 +101,7 @@ impl BindingLevel {
         let rid = self
             .params
             .regions
-            .push_with(|index| RegionParam { index, name });
+            .push_with(|index| RegionParam::new(index, name));
         self.bound_region_vars.push(rid);
         rid
     }
@@ -105,7 +113,7 @@ impl BindingLevel {
         let region_id = self
             .params
             .regions
-            .push_with(|index| RegionParam { index, name: None });
+            .push_with(|index| RegionParam::new(index, None));
         self.closure_upvar_regions.push(region_id);
         region_id
     }
@@ -324,7 +332,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     index: param.index,
                     name: param.name.clone(),
                 };
-                let _ = self.innermost_binder_mut().push_early_region(region);
+                let mutability = self
+                    .t_ctx
+                    .lt_mutability_computer
+                    .compute_lifetime_mutability(
+                        &self.hax_state,
+                        self.item_src.def_id(),
+                        param.index,
+                    );
+                let _ = self
+                    .innermost_binder_mut()
+                    .push_early_region(region, mutability);
             }
             hax::GenericParamDefKind::Type { .. } => {
                 let _ = self
@@ -459,7 +477,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .the_only_binder_mut()
                     .params
                     .regions
-                    .push_with(|index| RegionParam { index, name: None });
+                    .push_with(|index| RegionParam::new(index, None));
                 self.the_only_binder_mut().closure_call_method_region = Some(rid);
             }
         }
@@ -542,5 +560,112 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn into_generics(mut self) -> GenericParams {
         assert!(self.binding_levels.len() == 1);
         self.binding_levels.pop().unwrap().params
+    }
+}
+
+/// Struct to compute the "mutability" of each lifetime.
+#[derive(Default)]
+pub struct LifetimeMutabilityComputer {
+    lt_mutability: HashMap<hax::DefId, CycleDetector<HashSet<u32>>>,
+}
+
+impl LifetimeMutabilityComputer {
+    /// Compute the mutability of one lifetime.
+    pub(crate) fn compute_lifetime_mutability<'tcx>(
+        &mut self,
+        s: &impl BaseState<'tcx>,
+        item: &hax::DefId,
+        index: u32,
+    ) -> LifetimeMutability {
+        match self.compute_lifetime_mutabilities(s, item) {
+            Some(set) => {
+                if set.contains(&index) {
+                    LifetimeMutability::Mutable
+                } else {
+                    LifetimeMutability::Shared
+                }
+            }
+            None => LifetimeMutability::Unknown,
+        }
+    }
+
+    /// Compute the "mutability" of each lifetime, i.e. whether this lifetime is used in a `&'a mut
+    /// T` type or not. Returns a set of the known-mutable lifetimes for this ADT.
+    fn compute_lifetime_mutabilities<'tcx>(
+        &mut self,
+        s: &impl BaseState<'tcx>,
+        item: &hax::DefId,
+    ) -> Option<&HashSet<u32>> {
+        if !matches!(
+            item.kind,
+            hax::DefKind::Struct | hax::DefKind::Enum | hax::DefKind::Union
+        ) {
+            return None;
+        }
+        if self
+            .lt_mutability
+            .entry(item.clone())
+            .or_default()
+            .start_processing()
+        {
+            use hax::SInto;
+            use ty::{TypeSuperVisitable, TypeVisitable};
+
+            struct LtMutabilityVisitor<'a, S> {
+                s: &'a S,
+                computer: &'a mut LifetimeMutabilityComputer,
+                set: HashSet<u32>,
+            }
+            impl<'tcx, S: BaseState<'tcx>> ty::TypeVisitor<ty::TyCtxt<'tcx>> for LtMutabilityVisitor<'_, S> {
+                fn visit_ty(&mut self, ty: ty::Ty<'tcx>) {
+                    match ty.kind() {
+                        ty::Ref(r, _, ty::Mutability::Mut)
+                            if let ty::RegionKind::ReEarlyParam(r) = r.kind() =>
+                        {
+                            self.set.insert(r.index);
+                        }
+                        ty::Adt(adt, args) => {
+                            let item = adt.did().sinto(self.s);
+                            if let Some(mutabilities) =
+                                self.computer.compute_lifetime_mutabilities(self.s, &item)
+                            {
+                                for arg in args.iter() {
+                                    if let Some(r) = arg.as_region()
+                                        && let ty::RegionKind::ReEarlyParam(r) = r.kind()
+                                        && mutabilities.contains(&r.index)
+                                    {
+                                        self.set.insert(r.index);
+                                    }
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                    ty.super_visit_with(self)
+                }
+            }
+            let mut visitor = LtMutabilityVisitor {
+                s,
+                computer: self,
+                set: HashSet::new(),
+            };
+
+            let tcx = s.base().tcx;
+            let def_id = item.real_rust_def_id();
+            let adt_def = tcx.adt_def(def_id);
+            let generics = ty::GenericArgs::identity_for_item(tcx, def_id);
+            for variant in adt_def.variants() {
+                for field in &variant.fields {
+                    field.ty(tcx, generics).visit_with(&mut visitor);
+                }
+            }
+            let set = visitor.set;
+
+            self.lt_mutability
+                .get_mut(item)
+                .unwrap()
+                .done_processing(set);
+        }
+        self.lt_mutability.get(item)?.as_processed()
     }
 }
