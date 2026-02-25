@@ -11,12 +11,20 @@ fn option_mut<X, A>(mut x: A) {
 fn identity<T>(x: T) -> T {
     x
 }
+fn mutable_identity<T>(x: &mut T) -> &mut T {
+    identity(x)
+}
 fn use_id_mut<X, A>(mut x: A) {
     let _ = identity(&0u32);
     let _ = identity(&mut 0u32);
     let _ = identity(Some(&mut 0u32));
     // Make sure we do generics right.
     let _ = identity(Some(Some(&mut x)));
+    // Use a function pointer.
+    let _ = Some(&0u32).map(identity);
+    // These cause errors because of missing normalization :'(
+    // let _ = Some(&mut 0u32).map(identity);
+    // let _ = Some(&mut 0u32).map(mutable_identity);
 }
 
 // Each instantiation of one requires instantiating the next one.
