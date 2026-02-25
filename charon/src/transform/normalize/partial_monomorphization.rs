@@ -345,14 +345,10 @@ impl<'a> PartialMonomorphizer<'a> {
                 ty_infected || args_infected
             }
             TyKind::Adt(..) => false,
-            TyKind::FnDef(..) | TyKind::FnPtr(..) => {
-                register_error!(
-                    self.ctx,
-                    self.span,
-                    "function pointers are unsupported with `--monomorphize-mut`"
-                );
-                false
-            }
+            // A function pointer/item by itself doesn't carry any mutable reference, even if it
+            // uses some in its signature. Compare with closures: a closure without captures
+            // doesn't trigger partial mono regardless of its signature.
+            TyKind::FnDef(..) | TyKind::FnPtr(..) => false,
             TyKind::DynTrait(_) => {
                 register_error!(
                     self.ctx,

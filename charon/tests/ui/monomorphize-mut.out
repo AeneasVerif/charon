@@ -213,6 +213,43 @@ where
     T0 : '_0,
 = <opaque>
 
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    type Output
+    fn call_once = call_once<Self, Args>[Self]
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: core::ops::function::FnOnce::call_once
+pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
 #[lang_item("Option")]
 pub enum core::option::Option::<&_ mut &_ mut _><'_0, '_1, T0>
 where
@@ -262,6 +299,17 @@ where
   None,
   Some(IterWrapper<'_0, T0>[@TraitClause1]),
 }
+
+// Full name: core::option::{Option<T>[@TraitClause0]}::map
+pub fn map<T, U, F>(@1: Option<T>[@TraitClause0], @2: F) -> Option<U>[@TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: FnOnce<F, (T,)>,
+    [@TraitClause4]: Destruct<F>,
+    @TraitClause3::Output = U,
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -407,6 +455,30 @@ where
     return
 }
 
+// Full name: test_crate::mutable_identity
+fn mutable_identity<'_0, T>(@1: &'_0 mut T) -> &'_0 mut T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let _0: &'1 mut T; // return
+    let x_1: &'2 mut T; // arg #1
+    let _2: &'3 mut T; // anonymous local
+    let _3: &'4 mut T; // anonymous local
+    let _4: &'5 mut T; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &two-phase-mut (*x_1)
+    _3 = test_crate::identity::<&_ mut _><'6, T>[{built_in impl core::marker::Sized::<&_ mut _><'6> for T}](move _4)
+    _2 = &mut (*_3)
+    storage_dead(_4)
+    _0 = &mut (*_2)
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
 // Full name: test_crate::use_id_mut
 fn use_id_mut<X, A>(@1: A)
 where
@@ -428,21 +500,28 @@ where
     let _12: core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'54, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'54>[{built_in impl core::marker::Sized::<&_ mut _><'54> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'54> for A}]; // anonymous local
     let _13: core::option::Option::<&_ mut _><'63, A>[{built_in impl core::marker::Sized::<&_ mut _><'63> for A}]; // anonymous local
     let _14: &'66 mut A; // anonymous local
-    let _15: &'67 u32; // anonymous local
-    let _16: &'212 u32; // anonymous local
-    let _17: u32; // anonymous local
+    let _15: Option<&'72 u32>[{built_in impl Sized for &'72 u32}]; // anonymous local
+    let _16: Option<&'75 u32>[{built_in impl Sized for &'75 u32}]; // anonymous local
+    let _17: &'78 u32; // anonymous local
+    let _18: &'79 u32; // anonymous local
+    let _19: &'80 u32; // anonymous local
+    let _20: &'321 u32; // anonymous local
+    let _21: u32; // anonymous local
+    let _22: &'322 u32; // anonymous local
+    let _23: u32; // anonymous local
 
-    storage_live(_16)
-    storage_live(_17)
-    _17 = const 0 : u32
-    _16 = &_17
-    storage_live(_15)
+    storage_live(_20)
+    storage_live(_21)
+    _21 = const 0 : u32
+    _20 = &_21
+    storage_live(_18)
+    storage_live(_19)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _15 = move _16
-    _3 = &(*_15)
-    _2 = identity<&'69 u32>[{built_in impl Sized for &'69 u32}](move _3)
+    _19 = move _20
+    _3 = &(*_19)
+    _2 = identity<&'82 u32>[{built_in impl Sized for &'82 u32}](move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
@@ -450,7 +529,7 @@ where
     storage_live(_6)
     _6 = const 0 : u32
     _5 = &mut _6
-    _4 = test_crate::identity::<&_ mut _><'74, u32>[{built_in impl core::marker::Sized::<&_ mut _><'74> for u32}](move _5)
+    _4 = test_crate::identity::<&_ mut _><'87, u32>[{built_in impl core::marker::Sized::<&_ mut _><'87> for u32}](move _5)
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)
@@ -462,7 +541,7 @@ where
     _9 = &mut _10
     _8 = core::option::Option::<&_ mut _>::Some { 0: move _9 }
     storage_dead(_9)
-    _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'84, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'84>[{built_in impl core::marker::Sized::<&_ mut _><'84> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'84> for u32}](move _8)
+    _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'97, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'97>[{built_in impl core::marker::Sized::<&_ mut _><'97> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'97> for u32}](move _8)
     storage_dead(_8)
     storage_dead(_10)
     storage_dead(_7)
@@ -476,10 +555,28 @@ where
     storage_dead(_14)
     _12 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]>::Some { 0: move _13 }
     storage_dead(_13)
-    _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause1, @TraitClause2]><'131, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'131>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'131>[{built_in impl core::marker::Sized::<&_ mut _><'131> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'131> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'131>[{built_in impl core::marker::Sized::<&_ mut _><'131> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'131> for A}](move _12)
+    _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause1, @TraitClause2]><'144, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'144>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'144>[{built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'144>[{built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'144> for A}](move _12)
+    storage_live(_22)
+    storage_live(_23)
+    // Use a function pointer.
+    _23 = const 0 : u32
+    _22 = &_23
     storage_dead(_12)
     storage_dead(_11)
+    storage_live(_15)
+    storage_live(_16)
+    storage_live(_17)
+    _18 = move _22
+    _17 = &(*_18)
+    _16 = Option::Some { 0: move _17 }
+    storage_dead(_17)
+    _15 = map<&'231 u32, &'232 u32, identity<&'238 u32>[{built_in impl Sized for &'238 u32}]>[{built_in impl Sized for &'231 u32}, {built_in impl Sized for &'232 u32}, {built_in impl Sized for identity<&'255 u32>[{built_in impl Sized for &'255 u32}]}, {built_in impl FnOnce<(&'231 u32,)> for identity<&'273 u32>[{built_in impl Sized for &'273 u32}] where Output  = &'299 u32}, {built_in impl Destruct for identity<&'310 u32>[{built_in impl Sized for &'310 u32}]}](move _16, const identity<&'316 u32>[{built_in impl Sized for &'316 u32}])
+    storage_dead(_16)
+    storage_dead(_15)
     _0 = ()
+    // These cause errors because of missing normalization :'(
+    // let _ = Some(&mut 0u32).map(identity);
+    // let _ = Some(&mut 0u32).map(mutable_identity);
     conditional_drop[{built_in impl Destruct for A}] x_1
     return
 }
