@@ -265,7 +265,7 @@ struct PartialMonomorphizer<'a> {
     /// Tracks the closest span to emit useful errors.
     span: Span,
     /// Whether we partially-monomorphize type declarations.
-    instantiate_types: bool,
+    specialize_adts: bool,
     /// Types that contain mutable references.
     infected_types: HashSet<TypeDeclId>,
     /// Map of generic params for each item. We can't use `ctx.translated` because while iterating
@@ -284,7 +284,7 @@ struct PartialMonomorphizer<'a> {
 }
 
 impl<'a> PartialMonomorphizer<'a> {
-    pub fn new(ctx: &'a mut TransformCtx, instantiate_types: bool) -> Self {
+    pub fn new(ctx: &'a mut TransformCtx, specialize_adts: bool) -> Self {
         // Compute the types that contain `&mut` (even indirectly). We actually can ignore
         // `&'static mut`, so we simply rely on our "lifetime mutability" computation.
         let infected_types: HashSet<_> = ctx
@@ -313,7 +313,7 @@ impl<'a> PartialMonomorphizer<'a> {
         PartialMonomorphizer {
             ctx,
             span: Span::dummy(),
-            instantiate_types,
+            specialize_adts,
             infected_types,
             generic_params,
             to_process,
@@ -331,10 +331,9 @@ impl<'a> PartialMonomorphizer<'a> {
             | TyKind::RawPtr(ty, _)
             | TyKind::Array(ty, _)
             | TyKind::Slice(ty) => self.is_infected(ty),
-            TyKind::Adt(tref) => {
-                let ty_infected =
-                    matches!(&tref.id, TypeId::Adt(id) if self.infected_types.contains(id));
-                let args_infected = if tref.id.is_adt() && self.instantiate_types {
+            TyKind::Adt(tref) if let TypeId::Adt(id) = tref.id => {
+                let ty_infected = self.infected_types.contains(&id);
+                let args_infected = if self.specialize_adts {
                     // Since we make sure to only call the method on a processed type, any type
                     // with infected arguments would have been replaced with a fresh instantiated
                     // (and infected type). Hence we don't need to check the arguments here, only
@@ -345,6 +344,7 @@ impl<'a> PartialMonomorphizer<'a> {
                 };
                 ty_infected || args_infected
             }
+            TyKind::Adt(..) => false,
             TyKind::FnDef(..) | TyKind::FnPtr(..) => {
                 register_error!(
                     self.ctx,
@@ -481,7 +481,7 @@ impl VisitAstMut for PartialMonomorphizer<'_> {
     }
 
     fn exit_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
-        if self.instantiate_types
+        if self.specialize_adts
             && let TypeId::Adt(id) = x.id
             && let Some(new_decl_ref) = self.process_generics(id.into(), &x.generics)
         {
