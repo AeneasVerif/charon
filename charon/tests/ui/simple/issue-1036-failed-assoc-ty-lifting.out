@@ -1,0 +1,9 @@
+error: Could not compute the value of Self::Clause1::A (on Self) needed to update item reference test_crate::T2<@TypeBound(0, 0)>.
+       Constraints in scope:
+         - ClauseBound(0, 1)::A = @TypeBound(0, 1)
+ --> tests/ui/simple/issue-1036-failed-assoc-ty-lifting.rs:8:1
+  |
+8 | impl<I: T1> T2 for I {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
