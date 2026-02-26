@@ -211,6 +211,7 @@ and global_kind =
 (** An associated constant in a trait. *)
 type trait_assoc_const = {
   name : trait_item_name;
+  attr_info : attr_info;
   ty : ty;
   default : global_decl_ref option;
 }
@@ -218,6 +219,7 @@ type trait_assoc_const = {
 (** An associated type in a trait. *)
 and trait_assoc_ty = {
   name : trait_item_name;
+  attr_info : attr_info;
   default : ty option;
   implied_clauses : trait_param list;
       (** List of trait clauses that apply to this type. *)
@@ -296,6 +298,7 @@ and trait_decl = {
 (** A trait method. *)
 and trait_method = {
   name : trait_item_name;
+  attr_info : attr_info;
   item : fun_decl_ref;
       (** Each method declaration is represented by a function item. That
           function contains the signature of the method as well as information
