@@ -345,6 +345,9 @@ pub struct TraitDecl {
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitAssocConst {
     pub name: TraitItemName,
+    #[drive(skip)]
+    #[serde_state(stateless)]
+    pub attr_info: AttrInfo,
     pub ty: Ty,
     pub default: Option<GlobalDeclRef>,
 }
@@ -353,6 +356,9 @@ pub struct TraitAssocConst {
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitAssocTy {
     pub name: TraitItemName,
+    #[drive(skip)]
+    #[serde_state(stateless)]
+    pub attr_info: AttrInfo,
     pub default: Option<Ty>,
     /// List of trait clauses that apply to this type.
     pub implied_clauses: IndexMap<TraitClauseId, TraitParam>,
@@ -362,6 +368,9 @@ pub struct TraitAssocTy {
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitMethod {
     pub name: TraitItemName,
+    #[drive(skip)]
+    #[serde_state(stateless)]
+    pub attr_info: AttrInfo,
     /// Each method declaration is represented by a function item. That function contains the
     /// signature of the method as well as information like attributes. It has a body iff the
     /// method declaration has a default implementation; otherwise it has an `Opaque` body.

@@ -368,6 +368,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
                 for assoc_const in consts {
                     let TraitAssocConst {
                         name: _,
+                        attr_info: _,
                         ty,
                         default,
                     } = assoc_const;

@@ -1320,6 +1320,7 @@ impl TransformPass for Transform {
                         BinderKind::TraitType(tr.def_id, new_type_name.clone()),
                         TraitAssocTy {
                             name: new_type_name.clone(),
+                            attr_info: AttrInfo::dummy_public(),
                             default: None,
                             implied_clauses: Default::default(),
                         },
