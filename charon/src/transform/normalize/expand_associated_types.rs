@@ -1039,16 +1039,15 @@ impl UpdateItemBody<'_> {
             let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
                 ty.clone()
             } else {
-                if let Some(tref) = base_tref.to_path() {
-                    path = path.on_tref(&tref);
-                }
                 let fmt_ctx = &self.ctx.into_fmt();
                 let item_name = target.item_name(&self.ctx.translated, fmt_ctx);
+                let base_tref = base_tref.with_ctx(fmt_ctx);
+                let args = args.with_ctx(fmt_ctx);
                 register_error!(
                     self.ctx,
                     self.span,
-                    "Could not compute the value of {path} ({self_path:?}) needed to update \
-                    generics {args:?} for item {item_name}.\
+                    "Could not compute the value of {path} (on {base_tref}) needed to update \
+                    item reference {item_name}{args}.\
                     \nConstraints in scope:\n{}",
                     self.type_replacements
                         .iter()
