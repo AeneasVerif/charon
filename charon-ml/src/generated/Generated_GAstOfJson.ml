@@ -1770,10 +1770,6 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* x_1 = ty_of_json ctx x_1 in
         let* x_2 = box_of_json constant_expr_of_json ctx x_2 in
         Ok (Repeat (x_0, x_1, x_2))
-    | `Assoc [ ("ShallowInitBox", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = operand_of_json ctx x_0 in
-        let* x_1 = ty_of_json ctx x_1 in
-        Ok (ShallowInitBox (x_0, x_1))
     | _ -> Error "")
 
 and scalar_value_of_json (ctx : of_json_ctx) (js : json) :

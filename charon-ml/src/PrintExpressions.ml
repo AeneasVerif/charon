@@ -222,6 +222,4 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
       "[" ^ operand_to_string env v ^ ";"
       ^ constant_expr_to_string env len
       ^ "]"
-  | ShallowInitBox (op, _) ->
-      "shallow-init-box(" ^ operand_to_string env op ^ ")"
   | Aggregate (akind, ops) -> aggregate_to_string env akind ops

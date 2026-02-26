@@ -107,7 +107,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
-  usize,
+  type_error("Unsupported type: "pattern_type!(usize is 0..=core::::num::niche_types::UsizeNoHighBit::0::{constant#1})""),
 }
 
 // Full name: core::num::{usize}::MAX

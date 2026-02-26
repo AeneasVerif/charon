@@ -479,18 +479,6 @@ fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
     panic(core::panicking::panic_fmt)
 }
 
-// Full name: core::num::{usize}::MAX
-pub fn MAX() -> usize
-{
-    let _0: usize; // return
-
-    _0 = ~(const 0 : usize)
-    return
-}
-
-// Full name: core::num::{usize}::MAX
-pub const MAX: usize = MAX()
-
 // Full name: core::ops::range::RangeInclusive
 #[lang_item("RangeInclusive")]
 pub struct RangeInclusive<Idx>
@@ -1198,9 +1186,9 @@ where
     let slice_2: &'9 mut [T]; // arg #2
     let _3: bool; // anonymous local
     let self_4: usize; // local
-    let exclusive_end_5: usize; // local
-    let _6: bool; // anonymous local
-    let _7: usize; // anonymous local
+    let _5: usize; // anonymous local
+    let exclusive_end_6: usize; // local
+    let _7: bool; // anonymous local
     let _8: &'12 mut [T]; // anonymous local
     let _9: *mut [T]; // anonymous local
     let ptr_10: *mut [T]; // local
@@ -1214,13 +1202,15 @@ where
     let _18: Option<&'16 mut [T]>[{built_in impl Sized for &'18 mut [T]}]; // anonymous local
 
     storage_live(self_4)
-    storage_live(exclusive_end_5)
+    storage_live(_5)
+    storage_live(exclusive_end_6)
     storage_live(new_len_12)
     storage_live(self_15)
     storage_live(self_16)
     storage_live(_3)
     self_4 = copy (self_1).end
-    _3 = copy self_4 == copy MAX
+    _5 = copy slice_2.metadata
+    _3 = copy self_4 >= copy _5
     if move _3 {
         storage_live(_17)
         _17 = Option::None {  }
@@ -1228,28 +1218,25 @@ where
     } else {
         self_15 = move (self_1).start
         self_16 = move (self_1).exhausted
-        exclusive_end_5 = copy self_4 wrap.+ const 1 : usize
+        exclusive_end_6 = copy self_4 wrap.+ const 1 : usize
         if copy self_16 {
-            self_15 = copy exclusive_end_5
+            self_15 = copy exclusive_end_6
         } else {
         }
         storage_live(_8)
         storage_live(_11)
-        _11 = copy exclusive_end_5 < copy self_15
+        _11 = copy exclusive_end_6 < copy self_15
         if move _11 {
             storage_dead(_11)
             storage_live(_18)
             _18 = Option::None {  }
             _0 = move _18
         } else {
-            new_len_12 = copy exclusive_end_5 ub.- copy self_15
+            new_len_12 = copy exclusive_end_6 ub.- copy self_15
             storage_dead(_11)
-            storage_live(_6)
             storage_live(_7)
-            _7 = copy slice_2.metadata
-            _6 = copy exclusive_end_5 <= move _7
-            if move _6 {
-                storage_dead(_7)
+            _7 = copy exclusive_end_6 <= copy _5
+            if move _7 {
                 storage_live(_9)
                 storage_live(ptr_10)
                 ptr_10 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
@@ -1265,13 +1252,12 @@ where
                 _0 = Option::Some { 0: copy _8 }
                 storage_dead(_9)
             } else {
-                storage_dead(_7)
                 storage_live(_18)
                 _18 = Option::None {  }
                 _0 = move _18
             }
         }
-        storage_dead(_6)
+        storage_dead(_7)
         storage_dead(_8)
     }
     storage_dead(_3)
@@ -1288,9 +1274,9 @@ where
     let slice_2: &'9 [T]; // arg #2
     let _3: bool; // anonymous local
     let self_4: usize; // local
-    let exclusive_end_5: usize; // local
-    let _6: bool; // anonymous local
-    let _7: usize; // anonymous local
+    let _5: usize; // anonymous local
+    let exclusive_end_6: usize; // local
+    let _7: bool; // anonymous local
     let _8: &'12 [T]; // anonymous local
     let _9: *const [T]; // anonymous local
     let _10: *const [T]; // anonymous local
@@ -1304,13 +1290,15 @@ where
     let _18: Option<&'16 [T]>[{built_in impl Sized for &'18 [T]}]; // anonymous local
 
     storage_live(self_4)
-    storage_live(exclusive_end_5)
+    storage_live(_5)
+    storage_live(exclusive_end_6)
     storage_live(new_len_12)
     storage_live(self_15)
     storage_live(self_16)
     storage_live(_3)
     self_4 = copy (self_1).end
-    _3 = copy self_4 == copy MAX
+    _5 = copy slice_2.metadata
+    _3 = copy self_4 >= copy _5
     if move _3 {
         storage_live(_17)
         _17 = Option::None {  }
@@ -1318,28 +1306,25 @@ where
     } else {
         self_15 = move (self_1).start
         self_16 = move (self_1).exhausted
-        exclusive_end_5 = copy self_4 wrap.+ const 1 : usize
+        exclusive_end_6 = copy self_4 wrap.+ const 1 : usize
         if copy self_16 {
-            self_15 = copy exclusive_end_5
+            self_15 = copy exclusive_end_6
         } else {
         }
         storage_live(_8)
         storage_live(_11)
-        _11 = copy exclusive_end_5 < copy self_15
+        _11 = copy exclusive_end_6 < copy self_15
         if move _11 {
             storage_dead(_11)
             storage_live(_18)
             _18 = Option::None {  }
             _0 = move _18
         } else {
-            new_len_12 = copy exclusive_end_5 ub.- copy self_15
+            new_len_12 = copy exclusive_end_6 ub.- copy self_15
             storage_dead(_11)
-            storage_live(_6)
             storage_live(_7)
-            _7 = copy slice_2.metadata
-            _6 = copy exclusive_end_5 <= move _7
-            if move _6 {
-                storage_dead(_7)
+            _7 = copy exclusive_end_6 <= copy _5
+            if move _7 {
                 storage_live(_9)
                 storage_live(_10)
                 _10 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
@@ -1355,13 +1340,12 @@ where
                 _0 = Option::Some { 0: copy _8 }
                 storage_dead(_9)
             } else {
-                storage_dead(_7)
                 storage_live(_18)
                 _18 = Option::None {  }
                 _0 = move _18
             }
         }
-        storage_dead(_6)
+        storage_dead(_7)
         storage_dead(_8)
     }
     storage_dead(_3)

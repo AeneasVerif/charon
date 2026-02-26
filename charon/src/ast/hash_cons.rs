@@ -60,7 +60,6 @@ mod intern_table {
 
     pub fn intern<T: HashConsable>(inner: T) -> HashConsed<T> {
         // Fast read-only check.
-        #[expect(irrefutable_let_patterns)] // https://github.com/rust-lang/rust/issues/139369
         let arc = if let read_guard = INTERNED.read().unwrap()
             && let Some(set) = read_guard.get::<T>()
             && let Some(arc) = set.get(&inner)
