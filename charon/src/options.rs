@@ -147,11 +147,11 @@ pub struct CliOpts {
     #[serde(default)]
     pub translate_all_methods: bool,
 
-    /// Transforma the associate types of traits to be type parameters instead. This takes a list
+    /// Transform the associate types of traits to be type parameters instead. This takes a list
     /// of name patterns of the traits to transform, using the same syntax as `--include`.
-    #[clap(long)]
+    #[clap(long, alias = "remove-associated-types")]
     #[serde(default)]
-    pub remove_associated_types: Vec<String>,
+    pub lift_associated_types: Vec<String>,
     /// Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct`
     /// anywhere they show up. This can considerably speed up translation.
     #[clap(long)]
@@ -332,7 +332,7 @@ impl CliOpts {
                     self.ullbc = true;
                 }
                 Preset::Aeneas => {
-                    self.remove_associated_types.push("*".to_owned());
+                    self.lift_associated_types.push("*".to_owned());
                     self.treat_box_as_builtin = true;
                     self.ops_to_function_calls = true;
                     self.index_to_function_calls = true;
@@ -355,7 +355,7 @@ impl CliOpts {
                     self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
-                    self.remove_associated_types.push("*".to_owned());
+                    self.lift_associated_types.push("*".to_owned());
                     self.unbind_item_vars = true;
                     // Eurydice doesn't support opaque vtables it seems?
                     self.include.push("core::marker::MetaSized".to_owned());
@@ -394,7 +394,7 @@ impl CliOpts {
             )
         }
 
-        if self.remove_adt_clauses && self.remove_associated_types.is_empty() {
+        if self.remove_adt_clauses && self.lift_associated_types.is_empty() {
             anyhow::bail!(
                 "`--remove-adt-clauses` should be used with `--remove-associated-types='*'` \
                 to avoid missing clause errors",
@@ -487,7 +487,7 @@ pub struct TranslateOptions {
     /// field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
     /// List of traits for which we transform associated types to type parameters.
-    pub remove_associated_types: Vec<NamePattern>,
+    pub lift_associated_types: Vec<NamePattern>,
     /// Transform Drop to Call drop_in_place
     pub desugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
@@ -569,8 +569,8 @@ impl TranslateOptions {
                 .collect()
         };
 
-        let remove_associated_types = options
-            .remove_associated_types
+        let lift_associated_types = options
+            .lift_associated_types
             .iter()
             .filter_map(|s| parse_pattern(&s).ok())
             .collect();
@@ -593,7 +593,7 @@ impl TranslateOptions {
             unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,
-            remove_associated_types,
+            lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
             desugar_drops: options.desugar_drops,

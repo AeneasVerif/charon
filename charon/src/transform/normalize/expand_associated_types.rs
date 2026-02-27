@@ -723,7 +723,7 @@ impl<'a> ComputeItemModifications<'a> {
                     && self
                         .ctx
                         .options
-                        .remove_associated_types
+                        .lift_associated_types
                         .iter()
                         .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
                 let remove_assoc_types = !is_self_referential && remove_assoc_type;

@@ -86,8 +86,8 @@ Options:
       --translate-all-methods
           Usually we skip the provided methods that aren't used. When this flag is on, we translate them all
 
-      --remove-associated-types <REMOVE_ASSOCIATED_TYPES>
-          Transforma the associate types of traits to be type parameters instead. This takes a list of name patterns of the traits to transform, using the same syntax as `--include`
+      --lift-associated-types <LIFT_ASSOCIATED_TYPES>
+          Transform the associate types of traits to be type parameters instead. This takes a list of name patterns of the traits to transform, using the same syntax as `--include`
 
       --hide-marker-traits
           Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct` anywhere they show up. This can considerably speed up translation
