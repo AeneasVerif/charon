@@ -2,7 +2,7 @@
 
 // Full name: core::mem::drop
 #[lang_item("mem_drop")]
-pub fn drop<T>(@1: T)
+pub fn drop<T>(_1: T)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -17,7 +17,7 @@ struct Foo {
 }
 
 // Full name: test_crate::foo
-fn foo(@1: Foo)
+fn foo(_1: Foo)
 {
     let _0: (); // return
     let f_1: Foo; // arg #1

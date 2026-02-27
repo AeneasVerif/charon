@@ -36,7 +36,7 @@ pub trait Display<Self>
     vtable: core::fmt::Display::{vtable}
 }
 
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
 = <opaque>
@@ -49,7 +49,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -57,7 +57,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -81,7 +81,7 @@ where
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 
 // Full name: alloc::rc::Rc::{impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Rc<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for Rc<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Rc<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -97,7 +97,7 @@ where
     non-dyn-compatible
 }
 
-pub fn alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<T>(@1: T) -> Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]
+pub fn alloc::rc::{Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> Rc<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -107,7 +107,7 @@ where
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
@@ -121,11 +121,11 @@ pub fn alloc::string::{String}::new() -> String
 = <opaque>
 
 // Full name: alloc::string::{impl Clone for String}::clone
-pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 String) -> String
+pub fn {impl Clone for String}::clone<'_0>(_1: &'_0 String) -> String
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::fmt
-pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(@1: &'_0 String, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn {impl Display for String}::fmt<'_0, '_1, '_2>(_1: &'_0 String, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}

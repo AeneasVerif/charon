@@ -34,13 +34,13 @@ pub trait Display<Self>
     vtable: core::fmt::Display::{vtable}
 }
 
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Display<Self>,
 = <opaque>
 
 // Full name: core::fmt::{impl Display for Str}::fmt
-pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(@1: &'_0 Str, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(_1: &'_0 Str, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: core::fmt::{impl Display for Str}
@@ -57,7 +57,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::string::String
@@ -65,7 +65,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
@@ -75,7 +75,7 @@ impl Destruct for String {
 }
 
 // Full name: alloc::string::{impl ToString for T}::to_string
-pub fn {impl ToString for T}::to_string<'_0, T>(@1: &'_0 T) -> String
+pub fn {impl ToString for T}::to_string<'_0, T>(_1: &'_0 T) -> String
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Display<T>,

@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -96,17 +96,17 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args>(_1: &'_0 Self, _2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -116,7 +116,7 @@ where
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -298,7 +298,7 @@ fn ptr_casts()
 struct closure {}
 
 // Full name: test_crate::fn_casts::{impl Fn<(u8,)> for closure}::call
-fn {impl Fn<(u8,)> for closure}::call<'_0>(@1: &'_0 closure, @2: (u8,))
+fn {impl Fn<(u8,)> for closure}::call<'_0>(_1: &'_0 closure, _2: (u8,))
 {
     let _0: (); // return
     let _1: &'1 closure; // arg #1
@@ -313,7 +313,7 @@ fn {impl Fn<(u8,)> for closure}::call<'_0>(@1: &'_0 closure, @2: (u8,))
 }
 
 // Full name: test_crate::fn_casts::{impl FnMut<(u8,)> for closure}::call_mut
-fn {impl FnMut<(u8,)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (u8,))
+fn {impl FnMut<(u8,)> for closure}::call_mut<'_0>(_1: &'_0 mut closure, _2: (u8,))
 {
     let _0: (); // return
     let state_1: &'_0 mut closure; // arg #1
@@ -328,7 +328,7 @@ fn {impl FnMut<(u8,)> for closure}::call_mut<'_0>(@1: &'_0 mut closure, @2: (u8,
 }
 
 // Full name: test_crate::fn_casts::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
 = <missing>
 
 // Full name: test_crate::fn_casts::closure::{impl Destruct for closure}
@@ -338,7 +338,7 @@ impl Destruct for closure {
 }
 
 // Full name: test_crate::fn_casts::{impl FnOnce<(u8,)> for closure}::call_once
-fn {impl FnOnce<(u8,)> for closure}::call_once(@1: closure, @2: (u8,))
+fn {impl FnOnce<(u8,)> for closure}::call_once(_1: closure, _2: (u8,))
 {
     let _0: (); // return
     let _1: closure; // arg #1
@@ -354,7 +354,7 @@ fn {impl FnOnce<(u8,)> for closure}::call_once(@1: closure, @2: (u8,))
 }
 
 // Full name: test_crate::fn_casts::closure::as_fn
-fn as_fn(@1: u8)
+fn as_fn(_1: u8)
 {
     let _0: (); // return
     let arg1_1: u8; // arg #1
@@ -495,7 +495,7 @@ fn STEAL() -> [(); 1 : usize]
 static STEAL: [(); 1 : usize] = STEAL()
 
 // Full name: test_crate::transmute
-fn transmute(@1: [u32; 2 : usize]) -> u64
+fn transmute(_1: [u32; 2 : usize]) -> u64
 {
     let _0: u64; // return
     let x_1: [u32; 2 : usize]; // arg #1

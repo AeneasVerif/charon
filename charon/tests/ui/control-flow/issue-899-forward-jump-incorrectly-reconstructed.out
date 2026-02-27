@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::condition
-fn condition(@1: u32) -> bool
+fn condition(_1: u32) -> bool
 {
     let _0: bool; // return
     let _x_1: u32; // arg #1

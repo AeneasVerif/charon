@@ -33,7 +33,7 @@ struct Foo<T, Clause1_Type> {
 }
 
 // Full name: test_crate::foo
-fn foo(@1: Foo<u32, bool>)
+fn foo(_1: Foo<u32, bool>)
 {
     let _0: (); // return
     let _x_1: Foo<u32, bool>; // arg #1

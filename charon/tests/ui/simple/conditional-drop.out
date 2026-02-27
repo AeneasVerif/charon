@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -28,7 +28,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
@@ -38,7 +38,7 @@ impl Destruct for Global {
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -59,7 +59,7 @@ where
 }
 
 // Full name: test_crate::use_box
-fn use_box(@1: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}])
+fn use_box(_1: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}])
 {
     let _0: (); // return
     let _1: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]; // arg #1

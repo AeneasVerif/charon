@@ -96,13 +96,13 @@ pub trait T7<Self>
 }
 
 // Full name: test_crate::T7::g
-pub fn g<Self>(@1: u64)
+pub fn g<Self>(_1: u64)
 where
     [@TraitClause0]: T7<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::T6::f
-pub fn f<Self, T>(@1: u64)
+pub fn f<Self, T>(_1: u64)
 where
     [@TraitClause0]: T6<Self, T>,
 {

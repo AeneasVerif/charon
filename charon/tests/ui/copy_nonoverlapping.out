@@ -5,7 +5,7 @@
 pub opaque type Layout
 
 // Full name: core::alloc::layout::{Layout}::from_size_align_unchecked
-pub unsafe fn from_size_align_unchecked(@1: usize, @2: usize) -> Layout
+pub unsafe fn from_size_align_unchecked(_1: usize, _2: usize) -> Layout
 = <opaque>
 
 // Full name: core::marker::Destruct
@@ -39,12 +39,12 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <method_without_default_body>
 
-pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 Self)
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 Self)
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
@@ -64,7 +64,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
+pub fn {impl Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
 {
     let _0: usize; // return
     let self_1: &'1 usize; // arg #1
@@ -74,7 +74,7 @@ pub fn {impl Clone for usize}::clone<'_0>(@1: &'_0 usize) -> usize
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone_from
-pub fn {impl Clone for usize}::clone_from<'_0, '_1>(@1: &'_0 mut usize, @2: &'_1 usize)
+pub fn {impl Clone for usize}::clone_from<'_0, '_1>(_1: &'_0 mut usize, _2: &'_1 usize)
 where
     [@TraitClause0]: Destruct<usize>,
 {
@@ -153,7 +153,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::intrinsics::ctpop
-pub fn ctpop<T>(@1: T) -> u32
+pub fn ctpop<T>(_1: T) -> u32
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -165,7 +165,7 @@ where
 }
 
 // Full name: core::panicking::panic_nounwind_fmt::compiletime
-fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
+fn compiletime<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 {
     let _0: !; // return
     let fmt_1: Arguments<'1>; // arg #1
@@ -201,11 +201,11 @@ impl Copy for usize {
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <missing>
 
 // Full name: core::panicking::panic_nounwind_fmt
-pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
+pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 {
     let _0: !; // return
     let fmt_1: Arguments<'1>; // arg #1
@@ -225,7 +225,7 @@ pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
     _0 = compiletime<'6>(move _3.0, move _3.1)
 }
 
-fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usize)
+fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(_1: usize)
 {
     let _0: (); // return
     let align_1: usize; // arg #1
@@ -370,7 +370,7 @@ where
 }
 
 // Full name: core::ptr::alignment::{Alignment}::new
-pub fn new(@1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
+pub fn new(_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
 {
     let _0: Option<Alignment>[{built_in impl Sized for Alignment}]; // return
     let align_1: usize; // arg #1
@@ -418,7 +418,7 @@ fn unwrap_failed() -> !
 
 // Full name: core::option::{Option<T>[@TraitClause0]}::unwrap
 #[lang_item("option_unwrap")]
-pub fn unwrap<T>(@1: Option<T>[@TraitClause0]) -> T
+pub fn unwrap<T>(_1: Option<T>[@TraitClause0]) -> T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -652,12 +652,12 @@ where
     return
 }
 
-fn core::ptr::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut (), @3: usize, @4: usize, @5: usize)
+fn core::ptr::copy_nonoverlapping::precondition_check(_1: *const (), _2: *mut (), _3: usize, _4: usize, _5: usize)
 = <opaque>
 
 // Full name: core::ptr::copy_nonoverlapping
 #[lang_item("ptr_copy_nonoverlapping")]
-pub unsafe fn copy_nonoverlapping<T>(@1: *const T, @2: *mut T, @3: usize)
+pub unsafe fn copy_nonoverlapping<T>(_1: *const T, _2: *mut T, _3: usize)
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -699,7 +699,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::write
-fn write<'_0, '_1, T>(@1: &'_0 mut T, @2: &'_1 T)
+fn write<'_0, '_1, T>(_1: &'_0 mut T, _2: &'_1 T)
 where
     [@TraitClause0]: Sized<T>,
 {

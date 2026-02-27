@@ -8,7 +8,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::string::String
@@ -16,7 +16,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
@@ -31,7 +31,7 @@ pub fn new() -> String
 = <opaque>
 
 // Full name: test_crate::use_string
-fn use_string(@1: String)
+fn use_string(_1: String)
 {
     let _0: (); // return
     let _1: String; // arg #1

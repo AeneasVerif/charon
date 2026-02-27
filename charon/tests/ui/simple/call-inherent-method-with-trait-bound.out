@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: test_crate::Trait
@@ -47,7 +47,7 @@ where
 }
 
 // Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>(@1: *mut HashMap<S>[@TraitClause0])
+unsafe fn {impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>(_1: *mut HashMap<S>[@TraitClause0])
 where
     [@TraitClause0]: Sized<S>,
 = <missing>
@@ -62,7 +62,7 @@ where
 }
 
 // Full name: test_crate::{HashMap<S>[@TraitClause0]}::get
-pub fn get<S, Q, Clause2_Type>(@1: HashMap<S>[@TraitClause0], @2: Q)
+pub fn get<S, Q, Clause2_Type>(_1: HashMap<S>[@TraitClause0], _2: Q)
 where
     [@TraitClause0]: Sized<S>,
     [@TraitClause1]: Sized<Q>,
@@ -80,7 +80,7 @@ where
 }
 
 // Full name: test_crate::top_level_get
-pub fn top_level_get<S, Q, Clause2_Type>(@1: HashMap<S>[@TraitClause0], @2: Q)
+pub fn top_level_get<S, Q, Clause2_Type>(_1: HashMap<S>[@TraitClause0], _2: Q)
 where
     [@TraitClause0]: Sized<S>,
     [@TraitClause1]: Sized<Q>,
@@ -98,7 +98,7 @@ where
 }
 
 // Full name: test_crate::test1
-pub fn test1(@1: HashMap<()>[{built_in impl Sized for ()}])
+pub fn test1(_1: HashMap<()>[{built_in impl Sized for ()}])
 {
     let _0: (); // return
     let map_1: HashMap<()>[{built_in impl Sized for ()}]; // arg #1
@@ -121,7 +121,7 @@ pub fn test1(@1: HashMap<()>[{built_in impl Sized for ()}])
 }
 
 // Full name: test_crate::test2
-pub fn test2(@1: HashMap<()>[{built_in impl Sized for ()}])
+pub fn test2(_1: HashMap<()>[{built_in impl Sized for ()}])
 {
     let _0: (); // return
     let map_1: HashMap<()>[{built_in impl Sized for ()}]; // arg #1

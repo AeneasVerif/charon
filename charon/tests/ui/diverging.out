@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::my_panic
-fn my_panic(@1: u32) -> !
+fn my_panic(_1: u32) -> !
 {
     let _0: !; // return
     let _x_1: u32; // arg #1

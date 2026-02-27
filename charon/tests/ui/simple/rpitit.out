@@ -34,7 +34,7 @@ trait Foo<Self, T>
 }
 
 // Full name: test_crate::Foo::into_iter
-fn into_iter<Self, T, U>(@1: Self) -> @TraitClause0::
+fn into_iter<Self, T, U>(_1: Self) -> @TraitClause0::
 where
     [@TraitClause0]: Foo<Self, T>,
     [@TraitClause1]: Sized<U>,

@@ -43,12 +43,12 @@ pub trait Allocator<Self>
     vtable: core::alloc::Allocator::{vtable}
 }
 
-pub fn core::alloc::Allocator::allocate<'_0, Self>(@1: &'_0 Self, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+pub fn core::alloc::Allocator::allocate<'_0, Self>(_1: &'_0 Self, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
     [@TraitClause0]: Allocator<Self>,
 = <opaque>
 
-pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(@1: &'_0 Self, @2: NonNull<u8>, @3: Layout)
+pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(_1: &'_0 Self, _2: NonNull<u8>, _3: Layout)
 where
     [@TraitClause0]: Allocator<Self>,
 = <opaque>
@@ -61,7 +61,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -69,11 +69,11 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
-pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(@1: &'_0 Global, @2: NonNull<u8>, @3: Layout)
+pub unsafe fn {impl Allocator for Global}::deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn {impl Allocator for Global}::allocate<'_0>(@1: &'_0 Global, @2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+pub fn {impl Allocator for Global}::allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}
@@ -93,7 +93,7 @@ where
     [@TraitClause2]: Allocator<A>,
 
 // Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place
-unsafe fn {impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>(@1: *mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
+unsafe fn {impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>(_1: *mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -113,7 +113,7 @@ where
 
 // Full name: alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new
 #[lang_item("box_new")]
-pub fn new<T>(@1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]
+pub fn new<T>(_1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>

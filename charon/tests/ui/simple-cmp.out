@@ -9,7 +9,7 @@ pub enum Ordering {
 }
 
 // Full name: core::cmp::impls::{impl Ord for i32}::cmp
-pub fn {impl Ord for i32}::cmp<'_0, '_1>(@1: &'_0 i32, @2: &'_1 i32) -> Ordering
+pub fn {impl Ord for i32}::cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> Ordering
 = <opaque>
 
 fn UNIT_METADATA()

@@ -21,12 +21,12 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::ptr::const_ptr::{*const T}::cast
 #[lang_item("const_ptr_cast")]
-pub fn cast<T, U>(@1: *const T) -> *const U
+pub fn cast<T, U>(_1: *const T) -> *const U
 where
     [@TraitClause0]: Sized<U>,
 = <opaque>
@@ -50,13 +50,13 @@ trait Convert<Self, T>
     non-dyn-compatible
 }
 
-fn test_crate::Convert::method<Self, T>(@1: Self) -> T
+fn test_crate::Convert::method<Self, T>(_1: Self) -> T
 where
     [@TraitClause0]: Convert<Self, T>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method
-fn {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>(@1: &'a u32) -> &'a [u8; 4 : usize]
+fn {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>(_1: &'a u32) -> &'a [u8; 4 : usize]
 {
     let _0: &'1 [u8; 4 : usize]; // return
     let self_1: &'3 u32; // arg #1
@@ -86,7 +86,7 @@ impl<'a> Convert<&'a [u8; 4 : usize]> for &'a u32 {
 }
 
 // Full name: test_crate::convert
-fn convert<T, U>(@1: T) -> U
+fn convert<T, U>(_1: T) -> U
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
@@ -105,7 +105,7 @@ where
 }
 
 // Full name: test_crate::to_bytes_by_ref
-pub fn to_bytes_by_ref<'b>(@1: &'b u32) -> &'b [u8; 4 : usize]
+pub fn to_bytes_by_ref<'b>(_1: &'b u32) -> &'b [u8; 4 : usize]
 {
     let _0: &'1 [u8; 4 : usize]; // return
     let s_1: &'3 u32; // arg #1

@@ -12,11 +12,11 @@ pub trait Destruct::<String>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place::<String>(@1: *mut String)
+unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct::<String>}::drop_in_place
-unsafe fn {impl Destruct::<String>}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct::<String>}::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct::<String>}
@@ -26,7 +26,7 @@ impl Destruct::<String> {
 }
 
 // Full name: alloc::string::{impl ToString::<Str>}::to_string::<Str>
-pub fn {impl ToString::<Str>}::to_string::<Str><'_0>(@1: &'_0 Str) -> String
+pub fn {impl ToString::<Str>}::to_string::<Str><'_0>(_1: &'_0 Str) -> String
 = <opaque>
 
 // Full name: test_crate::main

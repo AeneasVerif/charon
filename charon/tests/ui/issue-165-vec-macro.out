@@ -22,13 +22,13 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 i32) -> i32
+pub fn {impl Clone for i32}::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
@@ -46,7 +46,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -54,7 +54,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -79,14 +79,14 @@ where
 
 // Full name: alloc::slice::{[T]}::into_vec
 #[lang_item("slice_into_vec")]
-pub fn into_vec<T, A>(@1: alloc::boxed::Box<[T]>[{built_in impl MetaSized for [T]}, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
+pub fn into_vec<T, A>(_1: alloc::boxed::Box<[T]>[{built_in impl MetaSized for [T]}, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -104,7 +104,7 @@ where
 
 // Full name: alloc::vec::from_elem
 #[lang_item("vec_from_elem")]
-pub fn from_elem<T>(@1: T, @2: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
+pub fn from_elem<T>(_1: T, _2: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,

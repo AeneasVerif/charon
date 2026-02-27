@@ -37,7 +37,7 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -60,7 +60,7 @@ pub enum AssertKind {
 }
 
 // Full name: take_mut::take
-pub fn take<'_0, T, F>(@1: &'_0 mut T, @2: F)
+pub fn take<'_0, T, F>(_1: &'_0 mut T, _2: F)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -82,7 +82,7 @@ const UNIT_METADATA: () = @Fun0()
 struct closure {}
 
 // Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}::call_once
-fn {impl FnOnce<(u32,)> for closure}::call_once(@1: closure, @2: (u32,)) -> u32
+fn {impl FnOnce<(u32,)> for closure}::call_once(_1: closure, _2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: closure; // arg #1
@@ -115,7 +115,7 @@ impl FnOnce<(u32,)> for closure {
 }
 
 // Full name: test_cargo_dependencies::main::silly_incr
-fn silly_incr<'_0>(@1: &'_0 mut u32)
+fn silly_incr<'_0>(_1: &'_0 mut u32)
 {
     let _0: (); // return
     let x_1: &'1 mut u32; // arg #1

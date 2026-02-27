@@ -34,14 +34,14 @@ pub trait From<Self, T>
     vtable: test_crate::From::{vtable}<T, Self::Error>
 }
 
-pub fn test_crate::From::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause2]
+pub fn test_crate::From::from<Self, T>(_1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause2]
 where
     [@TraitClause0]: From<Self, T>,
     [@TraitClause1]: Sized<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl From<&'_0 bool> for bool}::from
-pub fn {impl From<&'_0 bool> for bool}::from<'_0>(@1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
+pub fn {impl From<&'_0 bool> for bool}::from<'_0>(_1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 {
     let _0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
     let v_1: &'1 bool; // arg #1

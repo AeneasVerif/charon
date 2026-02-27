@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: test_crate::IntoIterator
@@ -41,7 +41,7 @@ pub trait FromIterator<Self, A>
     non-dyn-compatible
 }
 
-pub fn test_crate::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
+pub fn test_crate::FromIterator::from_iter<Self, A, T>(_1: T) -> Self
 where
     [@TraitClause0]: FromIterator<Self, A>,
     [@TraitClause1]: Sized<T>,
@@ -49,7 +49,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
-pub fn {impl FromIterator<()> for ()}::from_iter<I>(@1: I)
+pub fn {impl FromIterator<()> for ()}::from_iter<I>(_1: I)
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: IntoIterator<I, ()>,

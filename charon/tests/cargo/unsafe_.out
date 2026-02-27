@@ -5,11 +5,11 @@
 pub opaque type Arguments<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::from_str
-pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
+pub fn from_str<'a>(_1: &'static Str) -> Arguments<'a>
 = <opaque>
 
 // Full name: std::io::stdio::_print
-pub fn _print<'_0>(@1: Arguments<'_0>)
+pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
 // Full name: unsafe::main

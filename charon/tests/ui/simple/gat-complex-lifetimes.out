@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -44,7 +44,7 @@ pub trait Foo<Self, T>
 }
 
 // Full name: test_crate::Foo::foo
-pub fn foo<Self, T>(@1: Self) -> T
+pub fn foo<Self, T>(_1: Self) -> T
 where
     [@TraitClause0]: Foo<Self, T>,
 = <method_without_default_body>
@@ -62,7 +62,7 @@ pub trait Bar<'a, Self>
 }
 
 // Full name: test_crate::bar
-pub fn bar<'x, 'y, 'z, T>(@1: @TraitClause1::Type) -> &'x &'y &'z ()
+pub fn bar<'x, 'y, 'z, T>(_1: @TraitClause1::Type) -> &'x &'y &'z ()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Bar<'x, T>,

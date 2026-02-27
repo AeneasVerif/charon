@@ -22,7 +22,7 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -49,7 +49,7 @@ pub trait Copy<Self>
 struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
-pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 Foo) -> Foo
+pub fn {impl Clone for Foo}::clone<'_0>(_1: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return
     let self_1: &'1 Foo; // arg #1
@@ -80,7 +80,7 @@ impl Copy for Foo {
 }
 
 // Full name: test_crate::copy_foo
-fn copy_foo(@1: Foo)
+fn copy_foo(_1: Foo)
 {
     let _0: (); // return
     let x_1: Foo; // arg #1
@@ -99,7 +99,7 @@ fn copy_foo(@1: Foo)
 }
 
 // Full name: test_crate::copy_generic
-fn copy_generic<T>(@1: T)
+fn copy_generic<T>(_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -131,7 +131,7 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::copy_assoc_ty
-fn copy_assoc_ty<T>(@1: @TraitClause1::Ty)
+fn copy_assoc_ty<T>(_1: @TraitClause1::Ty)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,

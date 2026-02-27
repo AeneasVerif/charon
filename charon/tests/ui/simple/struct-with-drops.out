@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::drop::Drop
@@ -33,7 +33,7 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut Self)
+pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
     [@TraitClause0]: Drop<Self>,
 = <opaque>
@@ -43,7 +43,7 @@ where
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
@@ -53,7 +53,7 @@ impl Destruct for Global {
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -96,7 +96,7 @@ struct A {
 }
 
 // Full name: test_crate::{impl Drop for B}::drop
-pub fn {impl Drop for B}::drop<'_0>(@1: &'_0 mut B)
+pub fn {impl Drop for B}::drop<'_0>(_1: &'_0 mut B)
 {
     let _0: (); // return
     let self_1: &'1 mut B; // arg #1
@@ -107,7 +107,7 @@ pub fn {impl Drop for B}::drop<'_0>(@1: &'_0 mut B)
 }
 
 // Full name: test_crate::B::{impl Destruct for B}::drop_in_place
-unsafe fn {impl Destruct for B}::drop_in_place(@1: *mut B)
+unsafe fn {impl Destruct for B}::drop_in_place(_1: *mut B)
 {
     let _0: (); // return
     let _1: *mut B; // arg #1
@@ -134,7 +134,7 @@ impl Destruct for B {
 }
 
 // Full name: test_crate::A::{impl Destruct for A}::drop_in_place
-unsafe fn {impl Destruct for A}::drop_in_place(@1: *mut A)
+unsafe fn {impl Destruct for A}::drop_in_place(_1: *mut A)
 {
     let _0: (); // return
     let _1: *mut A; // arg #1
@@ -155,7 +155,7 @@ impl Destruct for A {
 }
 
 // Full name: test_crate::takes_a
-fn takes_a(@1: A)
+fn takes_a(_1: A)
 {
     let _0: (); // return
     let _1: A; // arg #1

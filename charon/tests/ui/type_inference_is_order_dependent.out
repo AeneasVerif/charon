@@ -50,7 +50,7 @@ pub opaque type Arguments<'a>
 pub opaque type Argument<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::new
-pub unsafe fn new<'a, const N : usize, const M : usize>(@1: &'a [u8; N], @2: &'a [Argument<'a>; M]) -> Arguments<'a>
+pub unsafe fn new<'a, const N : usize, const M : usize>(_1: &'a [u8; N], _2: &'a [Argument<'a>; M]) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::result::Result
@@ -72,13 +72,13 @@ pub trait Debug<Self>
     vtable: core::fmt::Debug::{vtable}
 }
 
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}::fmt
-pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(@1: &'_0 bool, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(_1: &'_0 bool, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}
@@ -88,7 +88,7 @@ impl Debug for bool {
 }
 
 // Full name: core::fmt::rt::{Argument<'_0>}::new_debug
-pub fn new_debug<'_0, '_1, T>(@1: &'_1 T) -> Argument<'_1>
+pub fn new_debug<'_0, '_1, T>(_1: &'_1 T) -> Argument<'_1>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Debug<T>,
@@ -103,11 +103,11 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: std::io::stdio::_print
-pub fn _print<'_0>(@1: Arguments<'_0>)
+pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
 fn UNIT_METADATA()
