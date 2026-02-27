@@ -625,8 +625,10 @@ impl<'a> ComputeItemModifications<'a> {
             // The complex case is traits: we call `compute_extra_params_for_trait` to
             // compute the right thing.
             let id = tdecl.def_id;
-            let _ = self.compute_extra_params_for_trait(id);
-            self.trait_modifications[id].as_processed().unwrap().clone()
+            self.compute_trait_modifications(id)
+                .as_processed()
+                .unwrap()
+                .clone()
         } else if let ItemRef::TraitImpl(timpl) = item {
             let _ = self.compute_assoc_tys_for_impl(timpl.def_id);
             let type_constraints = self.impl_assoc_tys[timpl.def_id]
@@ -678,13 +680,11 @@ impl<'a> ComputeItemModifications<'a> {
         modifications
     }
 
-    /// Returns the extra parameters that we add to the given trait. If we hadn't processed this
-    /// trait before, we modify it to add the parameters in question and remove its associated
-    /// types.
-    fn compute_extra_params_for_trait(
+    /// Compute the modifications needed for this trait.
+    fn compute_trait_modifications(
         &mut self,
         id: TraitDeclId,
-    ) -> impl Iterator<Item = &AssocTypePath> {
+    ) -> &CycleDetector<ItemModifications> {
         if self.trait_modifications[id].start_processing() {
             if let Some(tr) = self.ctx.translated.trait_decls.get(id) {
                 // The heart of the recursion: we process the trait clauses, which recursively computes
@@ -748,8 +748,17 @@ impl<'a> ComputeItemModifications<'a> {
                 self.trait_modifications[id] = CycleDetector::Processed(modifications);
             }
         }
+        &self.trait_modifications[id]
+    }
 
-        match &self.trait_modifications[id] {
+    /// Returns the extra parameters that we add to the given trait. If we hadn't processed this
+    /// trait before, we modify it to add the parameters in question and remove its associated
+    /// types.
+    fn compute_extra_params_for_trait(
+        &mut self,
+        id: TraitDeclId,
+    ) -> impl Iterator<Item = &AssocTypePath> {
+        match self.compute_trait_modifications(id) {
             CycleDetector::Unprocessed => None,
             CycleDetector::Processing | CycleDetector::Cyclic => {
                 // We're recursively processing ourselves. We already know we won't add new type
@@ -771,31 +780,6 @@ impl<'a> ComputeItemModifications<'a> {
         let clause_path = clause_to_path(clause.clause_id);
         self.compute_extra_params_for_trait(trait_id)
             .map(move |path| path.on_tref(&clause_path))
-    }
-
-    /// Returns any extra constraints implied by this predicate. If the trait is cyclic, the set
-    /// will not be exhaustive.
-    fn compute_implied_constraints_for_predicate<'b>(
-        &'b mut self,
-        pred: &'b TraitDeclRef,
-    ) -> impl Iterator<Item = (AssocTypePath, Ty)> + use<'b> {
-        let _ = self.compute_extra_params_for_trait(pred.id);
-        self.trait_modifications[pred.id]
-            .as_processed()
-            .into_iter()
-            .flat_map(|mods| mods.type_constraints.iter_self_paths_subst(&pred.generics))
-    }
-
-    fn compute_implied_constraints_for_poly_predicate<'b>(
-        &'b mut self,
-        poly_pred: &'b PolyTraitDeclRef,
-    ) -> Vec<(AssocTypePath, Ty)> {
-        if let Some(pred) = poly_pred.skip_binder.clone().move_from_under_binder() {
-            self.compute_implied_constraints_for_predicate(&pred)
-                .collect()
-        } else {
-            vec![]
-        }
     }
 
     /// Returns the associated types values known for the given impl. If the impl is cyclic, the
@@ -835,11 +819,22 @@ impl<'a> ComputeItemModifications<'a> {
     ) -> Vec<(AssocTypePath, Ty)> {
         let mut tys = vec![];
         match &tref.kind {
-            TraitRefKind::Clause(..)
-            | TraitRefKind::ParentClause(..)
-            | TraitRefKind::ItemClause(..)
-            | TraitRefKind::SelfId
-            | TraitRefKind::Unknown(_) => {}
+            TraitRefKind::Clause(..) | TraitRefKind::ParentClause(..) | TraitRefKind::SelfId => {
+                let pred = &tref.trait_decl_ref;
+                if let Some(pred) = pred.skip_binder.clone().move_from_under_binder()
+                    && let Some(trait_mods) =
+                        self.compute_trait_modifications(pred.id).as_processed()
+                {
+                    let base_path = tref.to_path().unwrap();
+                    for (path, ty) in trait_mods
+                        .type_constraints
+                        .iter_self_paths_subst(&pred.generics)
+                    {
+                        tys.push((path.on_tref(&base_path), ty));
+                    }
+                }
+            }
+            TraitRefKind::ItemClause(..) => {}
             TraitRefKind::TraitImpl(impl_ref) => {
                 if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(impl_ref.id) {
                     tys.extend(set_for_clause.iter_self_paths_subst(&impl_ref.generics));
@@ -898,13 +893,7 @@ impl<'a> ComputeItemModifications<'a> {
                     );
                 }
             }
-        }
-        if let Some(base_path) = tref.to_path() {
-            for (path, ty) in
-                self.compute_implied_constraints_for_poly_predicate(&tref.trait_decl_ref)
-            {
-                tys.push((path.on_tref(&base_path), ty));
-            }
+            TraitRefKind::Unknown(_) => {}
         }
         tys
     }
