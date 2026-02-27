@@ -16,6 +16,10 @@ pub trait Sized<Self>
 trait Foo<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    type T<A, [@TraitClause0_1]: Sized<A>>
+    where
+        implied_clause_0 : [@TraitClause0_1]: Sized<Self::T>
+
     fn f<A, [@TraitClause0_1]: Sized<A>> = f<Self, A>[Self, @TraitClause0_1]
     non-dyn-compatible
 }

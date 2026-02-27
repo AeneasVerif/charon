@@ -1345,7 +1345,7 @@ impl TransformPass for Transform {
             if let ItemRefMut::TraitDecl(tr) = &mut item
                 && modifications.add_type_params
             {
-                tr.types.clear();
+                tr.types.retain(|assoc_ty| assoc_ty.binds_anything());
             }
 
             // Adjust impl associated types.
@@ -1353,7 +1353,9 @@ impl TransformPass for Transform {
                 let trait_id = timpl.impl_trait.id;
                 if let Some(decl_modifs) = item_modifications.get(&GenericsSource::item(trait_id)) {
                     if decl_modifs.add_type_params {
-                        timpl.types.clear();
+                        timpl
+                            .types
+                            .retain(|(_, assoc_ty)| assoc_ty.binds_anything());
                     }
                     for path in decl_modifs.required_extra_assoc_types() {
                         let new_type_name = TraitItemName(path.to_name().into());
