@@ -692,6 +692,21 @@ pub enum RefKind {
     Shared,
 }
 
+/// The nature of locations where a given lifetime parameter is used. If this lifetime ever flows
+/// to be used as the lifetime of a mutable reference `&'a mut` then we consider it mutable.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, EnumIsA,
+)]
+#[charon::variants_prefix("Lt")]
+pub enum LifetimeMutability {
+    /// A lifetime that is used for a mutable reference.
+    Mutable,
+    /// A lifetime used only in shared references.
+    Shared,
+    /// A lifetime for which we couldn't/didn't compute mutability.
+    Unknown,
+}
+
 /// Type identifier.
 ///
 /// Allows us to factorize the code for built-in types, adts and tuples

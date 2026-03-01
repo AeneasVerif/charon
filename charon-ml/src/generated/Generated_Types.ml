@@ -36,13 +36,6 @@ type literal_type = Values.literal_type [@@deriving show, ord, eq]
 type trait_type_constraint_id = TraitTypeConstraintId.id
 [@@deriving show, ord, eq]
 
-(** We define these types to control the name of the visitor functions *)
-type ('id, 'name) indexed_var = {
-  index : 'id;  (** Unique index identifying the variable *)
-  name : 'name;  (** Variable name *)
-}
-[@@deriving show, ord, eq]
-
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
 type de_bruijn_id = int
@@ -140,53 +133,16 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
-(** Ancestor for iter visitor for {!type: Types.ty} *)
-class ['self] iter_ty_base_base =
-  object (self : 'self)
-    inherit [_] iter_type_vars
-
-    method visit_indexed_var :
-        'id 'name.
-        ('env -> 'id -> unit) ->
-        ('env -> 'name -> unit) ->
-        'env ->
-        ('id, 'name) indexed_var ->
-        unit =
-      fun visit_index visit_name env x ->
-        let { index; name } = x in
-        visit_index env index;
-        visit_name env name
-  end
-
-(** Ancestor for map visitor for {!type: Types.ty} *)
-class virtual ['self] map_ty_base_base =
-  object (self : 'self)
-    inherit [_] map_type_vars
-
-    method visit_indexed_var :
-        'id 'name.
-        ('env -> 'id -> 'id) ->
-        ('env -> 'name -> 'name) ->
-        'env ->
-        ('id, 'name) indexed_var ->
-        ('id, 'name) indexed_var =
-      fun visit_index visit_name env x ->
-        let { index; name } = x in
-        let index = visit_index env index in
-        let name = visit_name env name in
-        { index; name }
-  end
-
 (* Ancestors for the ty visitors *)
 class ['self] iter_ty_base =
   object (self : 'self)
-    inherit [_] iter_ty_base_base
+    inherit [_] iter_type_vars
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
   end
 
 class ['self] map_ty_base =
   object (self : 'self)
-    inherit [_] map_ty_base_base
+    inherit [_] map_type_vars
     method visit_span : 'env -> span -> span = fun _ x -> x
   end
 
@@ -494,13 +450,22 @@ and global_decl_ref = { id : global_decl_id; generics : generic_args }
     to use the pointer address as a hash value. *)
 and 'a0 hash_consed = 'a0 (* Not actually hash-consed on the OCaml side *)
 
+(** The nature of locations where a given lifetime parameter is used. If this
+    lifetime ever flows to be used as the lifetime of a mutable reference
+    [&'a mut] then we consider it mutable. *)
+and lifetime_mutability =
+  | LtMutable  (** A lifetime that is used for a mutable reference. *)
+  | LtShared  (** A lifetime used only in shared references. *)
+  | LtUnknown
+      (** A lifetime for which we couldn't/didn't compute mutability. *)
+
 (** .0 outlives .1 *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
 and provenance =
-  | Global of global_decl_ref
-  | Function of fun_decl_ref
-  | Unknown
+  | ProvGlobal of global_decl_ref
+  | ProvFunction of fun_decl_ref
+  | ProvUnknown
 
 and ref_kind = RMut | RShared
 
@@ -525,7 +490,17 @@ and 'a0 region_binder = {
 and region_id = (RegionId.id[@visitors.opaque])
 
 (** A region variable in a signature or binder. *)
-and region_param = (region_id, string option) indexed_var
+and region_param = {
+  index : region_id;
+      (** Index identifying the variable among other variables bound at the same
+          level. *)
+  name : string option;  (** Region name *)
+  mutability : lifetime_mutability;
+      (** Whether this lifetime is (recursively) used in a [&'a mut T] type.
+          Only [true] if this lifetime parameter belongs to an ADT. This is a
+          global analysis that looks even into opaque items. When unsure, err on
+          the side of assuming mutability. *)
+}
 
 (** The value of a trait associated type. *)
 and trait_assoc_ty_impl = { value : ty }
@@ -756,7 +731,12 @@ and type_id =
           as it allows for more uniform treatment throughout the codebase. *)
 
 (** A type variable in a signature or binder. *)
-and type_param = (type_var_id, string) indexed_var
+and type_param = {
+  index : type_var_id;
+      (** Index identifying the variable among other variables bound at the same
+          level. *)
+  name : string;  (** Variable name *)
+}
 
 and unsizing_metadata =
   | MetaLength of constant_expr  (** Cast from [[T; N]] to [[T]]. *)

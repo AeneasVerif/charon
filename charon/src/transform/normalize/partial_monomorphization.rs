@@ -265,7 +265,7 @@ struct PartialMonomorphizer<'a> {
     /// Tracks the closest span to emit useful errors.
     span: Span,
     /// Whether we partially-monomorphize type declarations.
-    instantiate_types: bool,
+    specialize_adts: bool,
     /// Types that contain mutable references.
     infected_types: HashSet<TypeDeclId>,
     /// Map of generic params for each item. We can't use `ctx.translated` because while iterating
@@ -284,35 +284,22 @@ struct PartialMonomorphizer<'a> {
 }
 
 impl<'a> PartialMonomorphizer<'a> {
-    pub fn new(ctx: &'a mut TransformCtx, instantiate_types: bool) -> Self {
-        use petgraph::graphmap::DiGraphMap;
-        use petgraph::visit::Dfs;
-        use petgraph::visit::Walker;
-
-        // Compute the types that contain `&mut` (even indirectly).
-        let infected_types: HashSet<_> = {
-            // We build a graph that has one node per type decl plus a special `None` node. If type A
-            // contains a reference to type B we add a B->A edge; if it contains a mutable reference we
-            // add a None->A edge. Then a type contains `&mut` iff it is reachable from the `None`
-            // node.
-            let mut graph: DiGraphMap<Option<TypeDeclId>, ()> = Default::default();
-            for (id, tdecl) in ctx.translated.type_decls.iter_indexed() {
-                tdecl.dyn_visit(|x: &Ty| match x.kind() {
-                    TyKind::Ref(_, _, RefKind::Mut) => {
-                        graph.add_edge(None, Some(id), ());
-                    }
-                    TyKind::Adt(tref) if let TypeId::Adt(other_id) = tref.id => {
-                        graph.add_edge(Some(other_id), Some(id), ());
-                    }
-                    _ => {}
-                });
-            }
-            let start = graph.add_node(None);
-            Dfs::new(&graph, start)
-                .iter(&graph)
-                .filter_map(|opt_id| opt_id)
-                .collect()
-        };
+    pub fn new(ctx: &'a mut TransformCtx, specialize_adts: bool) -> Self {
+        // Compute the types that contain `&mut` (even indirectly). We actually can ignore
+        // `&'static mut`, so we simply rely on our "lifetime mutability" computation.
+        let infected_types: HashSet<_> = ctx
+            .translated
+            .type_decls
+            .iter()
+            .filter(|tdecl| {
+                tdecl
+                    .generics
+                    .regions
+                    .iter()
+                    .any(|r| r.mutability.is_mutable())
+            })
+            .map(|tdecl| tdecl.def_id)
+            .collect();
 
         // Record the generic params of all items.
         let generic_params: HashMap<ItemId, GenericParams> = ctx
@@ -326,7 +313,7 @@ impl<'a> PartialMonomorphizer<'a> {
         PartialMonomorphizer {
             ctx,
             span: Span::dummy(),
-            instantiate_types,
+            specialize_adts,
             infected_types,
             generic_params,
             to_process,
@@ -344,10 +331,9 @@ impl<'a> PartialMonomorphizer<'a> {
             | TyKind::RawPtr(ty, _)
             | TyKind::Array(ty, _)
             | TyKind::Slice(ty) => self.is_infected(ty),
-            TyKind::Adt(tref) => {
-                let ty_infected =
-                    matches!(&tref.id, TypeId::Adt(id) if self.infected_types.contains(id));
-                let args_infected = if tref.id.is_adt() && self.instantiate_types {
+            TyKind::Adt(tref) if let TypeId::Adt(id) = tref.id => {
+                let ty_infected = self.infected_types.contains(&id);
+                let args_infected = if self.specialize_adts {
                     // Since we make sure to only call the method on a processed type, any type
                     // with infected arguments would have been replaced with a fresh instantiated
                     // (and infected type). Hence we don't need to check the arguments here, only
@@ -358,14 +344,11 @@ impl<'a> PartialMonomorphizer<'a> {
                 };
                 ty_infected || args_infected
             }
-            TyKind::FnDef(..) | TyKind::FnPtr(..) => {
-                register_error!(
-                    self.ctx,
-                    self.span,
-                    "function pointers are unsupported with `--monomorphize-mut`"
-                );
-                false
-            }
+            TyKind::Adt(..) => false,
+            // A function pointer/item by itself doesn't carry any mutable reference, even if it
+            // uses some in its signature. Compare with closures: a closure without captures
+            // doesn't trigger partial mono regardless of its signature.
+            TyKind::FnDef(..) | TyKind::FnPtr(..) => false,
             TyKind::DynTrait(_) => {
                 register_error!(
                     self.ctx,
@@ -494,7 +477,7 @@ impl VisitAstMut for PartialMonomorphizer<'_> {
     }
 
     fn exit_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
-        if self.instantiate_types
+        if self.specialize_adts
             && let TypeId::Adt(id) = x.id
             && let Some(new_decl_ref) = self.process_generics(id.into(), &x.generics)
         {

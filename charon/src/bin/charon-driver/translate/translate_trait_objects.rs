@@ -316,6 +316,21 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    /// The Charon+Hax machinery will add Destruct super-traits to trait bounds,
+    /// however for `dyn Trait` the Destruct super-trait is unexepcted, as it is not
+    /// dyn-compatible.
+    /// We use this function to ensure that any non dyn-compatible super-trait is
+    /// Destruct and can be safely ignored.
+    fn assert_is_destruct(&self, tref: &hax::TraitRef) {
+        assert!(
+            tref.def_id
+                .as_rust_def_id()
+                .is_some_and(|id| self.tcx.is_lang_item(id, rustc_hir::LangItem::Destruct)),
+            "unexpected non-dyn compatible supertrait: {:?}",
+            tref.def_id
+        );
+    }
+
     fn gen_vtable_struct_fields(
         &mut self,
         span: Span,
@@ -362,12 +377,16 @@ impl ItemTransCtx<'_, '_> {
                             let hax::ClauseKind::Trait(pred) = kind else {
                                 unreachable!()
                             };
-                            let tyref = ctx
-                                .translate_vtable_struct_ref(span, &pred.trait_ref)?
-                                .expect("parent trait should be dyn compatible");
+                            let tyref = ctx.translate_vtable_struct_ref(span, &pred.trait_ref)?;
+                            if tyref.is_none() {
+                                ctx.assert_is_destruct(&pred.trait_ref);
+                            }
                             Ok(tyref)
                         })?;
-                    let vtbl_struct = self.erase_region_binder(vtbl_struct);
+                    // We already checked above that it's ok for this to be none.
+                    let Some(vtbl_struct) = self.erase_region_binder(vtbl_struct) else {
+                        continue;
+                    };
                     let ty = Ty::new(TyKind::Ref(
                         Region::Static,
                         Ty::new(TyKind::Adt(vtbl_struct)),
@@ -1076,27 +1095,45 @@ impl ItemTransCtx<'_, '_> {
             let bound_tyref = {
                 let mono = self.monomorphize_mode();
                 self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    let tyref = if mono {
-                        ctx.translate_vtable_struct_ref_from_def_id_mono(span, &tref.def_id)?
+                    if mono {
+                        let tyref =
+                            ctx.translate_vtable_struct_ref_from_def_id_mono(span, &tref.def_id)?;
+                        Ok(Some(tyref))
                     } else {
-                        ctx.translate_vtable_struct_ref(span, tref)?
-                            .expect("parent trait should be dyn compatible")
-                    };
-                    Ok(tyref)
+                        let tyref = ctx.translate_vtable_struct_ref(span, tref)?;
+                        if tyref.is_none() {
+                            ctx.assert_is_destruct(tref);
+                        }
+                        Ok(tyref)
+                    }
+                    // let tyref = if mono {
+                    //     ctx.translate_vtable_struct_ref_from_def_id_mono(span, &tref.def_id)?
+                    // } else {
+                    //     ctx.translate_vtable_struct_ref(span, tref)?
+                    // };
+                    // if tyref.is_none() {
+                    //     ctx.assert_is_destruct(tref);
+                    // }
+                    // Ok(tyref)
                 })?
             };
-            let vtable_def_ref = self.erase_region_binder(bound_tyref);
+            let Some(vtable_def_ref) = self.erase_region_binder(bound_tyref) else {
+                continue;
+            };
             let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
             let kind = match &impl_expr.r#impl {
                 hax::ImplExprAtom::Concrete(impl_item) => {
-                    let bound_gref: RegionBinder<GlobalDeclRef> =
-                        self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                            let gref = ctx
-                                .translate_vtable_instance_ref(span, tref, impl_item)?
-                                .expect("parent trait should be dyn compatible");
+                    let bound_gref: RegionBinder<Option<GlobalDeclRef>> = self
+                        .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                            let gref = ctx.translate_vtable_instance_ref(span, tref, impl_item)?;
+                            if gref.is_none() {
+                                ctx.assert_is_destruct(tref);
+                            };
                             Ok(gref)
                         })?;
-                    let vtable_instance_ref = self.erase_region_binder(bound_gref);
+                    let Some(vtable_instance_ref) = self.erase_region_binder(bound_gref) else {
+                        continue;
+                    };
                     let global = Box::new(ConstantExpr {
                         kind: ConstantExprKind::Global(vtable_instance_ref),
                         ty: fn_ptr_ty,

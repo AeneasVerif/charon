@@ -808,6 +808,7 @@ impl ItemTransCtx<'_, '_> {
                 let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
                 (item_src, poly_item_def)
             };
+            let attr_info = self.translate_attr_info(&item_def);
 
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
@@ -846,6 +847,7 @@ impl ItemTransCtx<'_, '_> {
                             };
                             Ok(TraitMethod {
                                 name: item_name.clone(),
+                                attr_info,
                                 item: fn_ref,
                             })
                         },
@@ -907,6 +909,7 @@ impl ItemTransCtx<'_, '_> {
                     let ty = self.translate_ty(item_span, ty)?;
                     consts.push(TraitAssocConst {
                         name: item_name.clone(),
+                        attr_info,
                         ty,
                         default,
                     });
@@ -937,6 +940,7 @@ impl ItemTransCtx<'_, '_> {
                                 .transpose()?;
                             Ok(TraitAssocTy {
                                 name: item_name.clone(),
+                                attr_info,
                                 default,
                                 implied_clauses,
                             })
@@ -954,6 +958,7 @@ impl ItemTransCtx<'_, '_> {
             self.mark_method_as_used(def_id, method_name);
             methods.push(method_binder.map(|fn_ref| TraitMethod {
                 name: method_name,
+                attr_info: AttrInfo::dummy_public(),
                 item: fn_ref,
             }));
         }

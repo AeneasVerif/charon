@@ -32,25 +32,455 @@ where
     [@TraitClause2]: Index<[T], I>,
 = <opaque>
 
+// Full name: core::fmt::Error
+pub struct Error {}
+
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::fmt::num::imp::{impl Display for usize}::fmt
+pub fn {impl Display for usize}::fmt<'_0, '_1, '_2>(@1: &'_0 usize, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+= <opaque>
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub opaque type NonNull<T>
+
+// Full name: core::marker::PhantomData
+#[lang_item("phantom_data")]
+pub struct PhantomData<T> {}
+
+// Full name: core::fmt::rt::ArgumentType
+enum ArgumentType<'a> {
+  Placeholder(value: NonNull<()>, formatter: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], _lifetime: PhantomData<&'a ()>),
+  Count(u16),
+}
 
 // Full name: core::fmt::rt::Argument
 #[lang_item("format_argument")]
 pub opaque type Argument<'a>
 
+fn UNIT_METADATA()
+{
+    let _0: (); // return
+
+    _0 = ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
 fn core::slice::index::slice_index_fail::do_panic::runtime(@1: usize, @2: usize) -> !
-= <missing>
+{
+    let _0: !; // return
+    let start_1: usize; // arg #1
+    let len_2: usize; // arg #2
+    let _3: Arguments<'1>; // anonymous local
+    let args_4: &'3 usize; // local
+    let args_5: &'4 usize; // local
+    let args_6: [Argument<'7>; 2 : usize]; // local
+    let _7: Argument<'8>; // anonymous local
+    let _8: Argument<'9>; // anonymous local
+    let args_9: &'12 [Argument<'13>; 2 : usize]; // local
+    let _10: ArgumentType<'15>; // anonymous local
+    let _11: NonNull<()>; // anonymous local
+    let _12: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _13: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _14: *const usize; // anonymous local
+    let _15: *const (); // anonymous local
+    let _16: ArgumentType<'16>; // anonymous local
+    let _17: NonNull<()>; // anonymous local
+    let _18: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _19: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _20: *const usize; // anonymous local
+    let _21: *const (); // anonymous local
+    let _22: NonNull<u8>; // anonymous local
+    let _23: NonNull<Argument<'18>>; // anonymous local
+    let _24: PhantomData<&'30 ()>; // anonymous local
+    let _25: PhantomData<&'39 ()>; // anonymous local
+    let _26: [u8; 57 : usize]; // anonymous local
+    let _27: &'44 [u8; 57 : usize]; // anonymous local
+
+    storage_live(args_4)
+    storage_live(args_5)
+    storage_live(args_9)
+    storage_live(_3)
+    args_4 = &start_1
+    args_5 = &len_2
+    storage_live(args_6)
+    storage_live(_7)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_10)
+    storage_live(_11)
+    _14 = &raw const (*args_4)
+    storage_live(_15)
+    _15 = cast<*const usize, *const ()>(copy _14)
+    _11 = NonNull { 0: copy _15 }
+    storage_dead(_15)
+    storage_live(_12)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
+    _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
+    storage_live(_24)
+    _24 = PhantomData {  }
+    _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _24 }
+    storage_dead(_12)
+    storage_dead(_11)
+    _7 = Argument { 0: move _10 }
+    storage_dead(_10)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_live(_8)
+    storage_live(_19)
+    storage_live(_20)
+    storage_live(_16)
+    storage_live(_17)
+    _20 = &raw const (*args_5)
+    storage_live(_21)
+    _21 = cast<*const usize, *const ()>(copy _20)
+    _17 = NonNull { 0: copy _21 }
+    storage_dead(_21)
+    storage_live(_18)
+    _19 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
+    _18 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _19)
+    storage_live(_25)
+    _25 = PhantomData {  }
+    _16 = ArgumentType::Placeholder { value: move _17, formatter: copy _18, _lifetime: move _25 }
+    storage_dead(_18)
+    storage_dead(_17)
+    _8 = Argument { 0: move _16 }
+    storage_dead(_16)
+    storage_dead(_20)
+    storage_dead(_19)
+    args_6 = [move _7, move _8]
+    storage_dead(_8)
+    storage_dead(_7)
+    args_9 = &args_6
+    storage_live(_22)
+    storage_live(_26)
+    _26 = [const 18 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 115 : u8, const 116 : u8, const 97 : u8, const 114 : u8, const 116 : u8, const 32 : u8, const 105 : u8, const 110 : u8, const 100 : u8, const 101 : u8, const 120 : u8, const 32 : u8, const 192 : u8, const 34 : u8, const 32 : u8, const 111 : u8, const 117 : u8, const 116 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 102 : u8, const 111 : u8, const 114 : u8, const 32 : u8, const 115 : u8, const 108 : u8, const 105 : u8, const 99 : u8, const 101 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 108 : u8, const 101 : u8, const 110 : u8, const 103 : u8, const 116 : u8, const 104 : u8, const 32 : u8, const 192 : u8, const 0 : u8]
+    storage_live(_27)
+    _27 = &_26
+    _22 = transmute<&'44 [u8; 57 : usize], NonNull<u8>>(move _27)
+    storage_live(_23)
+    _23 = transmute<&'12 [Argument<'13>; 2 : usize], NonNull<Argument<'45>>>(copy args_9)
+    _3 = Arguments { 0: move _22, 1: move _23 }
+    storage_dead(_23)
+    storage_dead(_22)
+    panic(core::panicking::panic_fmt)
+}
 
 fn core::slice::index::slice_index_fail::do_panic#1::runtime(@1: usize, @2: usize) -> !
-= <missing>
+{
+    let _0: !; // return
+    let end_1: usize; // arg #1
+    let len_2: usize; // arg #2
+    let _3: Arguments<'1>; // anonymous local
+    let args_4: &'3 usize; // local
+    let args_5: &'4 usize; // local
+    let args_6: [Argument<'7>; 2 : usize]; // local
+    let _7: Argument<'8>; // anonymous local
+    let _8: Argument<'9>; // anonymous local
+    let args_9: &'12 [Argument<'13>; 2 : usize]; // local
+    let _10: ArgumentType<'15>; // anonymous local
+    let _11: NonNull<()>; // anonymous local
+    let _12: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _13: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _14: *const usize; // anonymous local
+    let _15: *const (); // anonymous local
+    let _16: ArgumentType<'16>; // anonymous local
+    let _17: NonNull<()>; // anonymous local
+    let _18: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _19: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _20: *const usize; // anonymous local
+    let _21: *const (); // anonymous local
+    let _22: NonNull<u8>; // anonymous local
+    let _23: NonNull<Argument<'18>>; // anonymous local
+    let _24: PhantomData<&'30 ()>; // anonymous local
+    let _25: PhantomData<&'39 ()>; // anonymous local
+    let _26: [u8; 55 : usize]; // anonymous local
+    let _27: &'44 [u8; 55 : usize]; // anonymous local
+
+    storage_live(args_4)
+    storage_live(args_5)
+    storage_live(args_9)
+    storage_live(_3)
+    args_4 = &end_1
+    args_5 = &len_2
+    storage_live(args_6)
+    storage_live(_7)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_10)
+    storage_live(_11)
+    _14 = &raw const (*args_4)
+    storage_live(_15)
+    _15 = cast<*const usize, *const ()>(copy _14)
+    _11 = NonNull { 0: copy _15 }
+    storage_dead(_15)
+    storage_live(_12)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
+    _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
+    storage_live(_24)
+    _24 = PhantomData {  }
+    _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _24 }
+    storage_dead(_12)
+    storage_dead(_11)
+    _7 = Argument { 0: move _10 }
+    storage_dead(_10)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_live(_8)
+    storage_live(_19)
+    storage_live(_20)
+    storage_live(_16)
+    storage_live(_17)
+    _20 = &raw const (*args_5)
+    storage_live(_21)
+    _21 = cast<*const usize, *const ()>(copy _20)
+    _17 = NonNull { 0: copy _21 }
+    storage_dead(_21)
+    storage_live(_18)
+    _19 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
+    _18 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _19)
+    storage_live(_25)
+    _25 = PhantomData {  }
+    _16 = ArgumentType::Placeholder { value: move _17, formatter: copy _18, _lifetime: move _25 }
+    storage_dead(_18)
+    storage_dead(_17)
+    _8 = Argument { 0: move _16 }
+    storage_dead(_16)
+    storage_dead(_20)
+    storage_dead(_19)
+    args_6 = [move _7, move _8]
+    storage_dead(_8)
+    storage_dead(_7)
+    args_9 = &args_6
+    storage_live(_22)
+    storage_live(_26)
+    _26 = [const 16 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 101 : u8, const 110 : u8, const 100 : u8, const 32 : u8, const 105 : u8, const 110 : u8, const 100 : u8, const 101 : u8, const 120 : u8, const 32 : u8, const 192 : u8, const 34 : u8, const 32 : u8, const 111 : u8, const 117 : u8, const 116 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 102 : u8, const 111 : u8, const 114 : u8, const 32 : u8, const 115 : u8, const 108 : u8, const 105 : u8, const 99 : u8, const 101 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 108 : u8, const 101 : u8, const 110 : u8, const 103 : u8, const 116 : u8, const 104 : u8, const 32 : u8, const 192 : u8, const 0 : u8]
+    storage_live(_27)
+    _27 = &_26
+    _22 = transmute<&'44 [u8; 55 : usize], NonNull<u8>>(move _27)
+    storage_live(_23)
+    _23 = transmute<&'12 [Argument<'13>; 2 : usize], NonNull<Argument<'45>>>(copy args_9)
+    _3 = Arguments { 0: move _22, 1: move _23 }
+    storage_dead(_23)
+    storage_dead(_22)
+    panic(core::panicking::panic_fmt)
+}
 
 fn core::slice::index::slice_index_fail::do_panic#2::runtime(@1: usize, @2: usize) -> !
-= <missing>
+{
+    let _0: !; // return
+    let start_1: usize; // arg #1
+    let end_2: usize; // arg #2
+    let _3: Arguments<'1>; // anonymous local
+    let args_4: &'3 usize; // local
+    let args_5: &'4 usize; // local
+    let args_6: [Argument<'7>; 2 : usize]; // local
+    let _7: Argument<'8>; // anonymous local
+    let _8: Argument<'9>; // anonymous local
+    let args_9: &'12 [Argument<'13>; 2 : usize]; // local
+    let _10: ArgumentType<'15>; // anonymous local
+    let _11: NonNull<()>; // anonymous local
+    let _12: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _13: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _14: *const usize; // anonymous local
+    let _15: *const (); // anonymous local
+    let _16: ArgumentType<'16>; // anonymous local
+    let _17: NonNull<()>; // anonymous local
+    let _18: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _19: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _20: *const usize; // anonymous local
+    let _21: *const (); // anonymous local
+    let _22: NonNull<u8>; // anonymous local
+    let _23: NonNull<Argument<'18>>; // anonymous local
+    let _24: PhantomData<&'30 ()>; // anonymous local
+    let _25: PhantomData<&'39 ()>; // anonymous local
+    let _26: [u8; 40 : usize]; // anonymous local
+    let _27: &'44 [u8; 40 : usize]; // anonymous local
+
+    storage_live(args_4)
+    storage_live(args_5)
+    storage_live(args_9)
+    storage_live(_3)
+    args_4 = &start_1
+    args_5 = &end_2
+    storage_live(args_6)
+    storage_live(_7)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_10)
+    storage_live(_11)
+    _14 = &raw const (*args_4)
+    storage_live(_15)
+    _15 = cast<*const usize, *const ()>(copy _14)
+    _11 = NonNull { 0: copy _15 }
+    storage_dead(_15)
+    storage_live(_12)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
+    _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
+    storage_live(_24)
+    _24 = PhantomData {  }
+    _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _24 }
+    storage_dead(_12)
+    storage_dead(_11)
+    _7 = Argument { 0: move _10 }
+    storage_dead(_10)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_live(_8)
+    storage_live(_19)
+    storage_live(_20)
+    storage_live(_16)
+    storage_live(_17)
+    _20 = &raw const (*args_5)
+    storage_live(_21)
+    _21 = cast<*const usize, *const ()>(copy _20)
+    _17 = NonNull { 0: copy _21 }
+    storage_dead(_21)
+    storage_live(_18)
+    _19 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
+    _18 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _19)
+    storage_live(_25)
+    _25 = PhantomData {  }
+    _16 = ArgumentType::Placeholder { value: move _17, formatter: copy _18, _lifetime: move _25 }
+    storage_dead(_18)
+    storage_dead(_17)
+    _8 = Argument { 0: move _16 }
+    storage_dead(_16)
+    storage_dead(_20)
+    storage_dead(_19)
+    args_6 = [move _7, move _8]
+    storage_dead(_8)
+    storage_dead(_7)
+    args_9 = &args_6
+    storage_live(_22)
+    storage_live(_26)
+    _26 = [const 22 : u8, const 115 : u8, const 108 : u8, const 105 : u8, const 99 : u8, const 101 : u8, const 32 : u8, const 105 : u8, const 110 : u8, const 100 : u8, const 101 : u8, const 120 : u8, const 32 : u8, const 115 : u8, const 116 : u8, const 97 : u8, const 114 : u8, const 116 : u8, const 115 : u8, const 32 : u8, const 97 : u8, const 116 : u8, const 32 : u8, const 192 : u8, const 13 : u8, const 32 : u8, const 98 : u8, const 117 : u8, const 116 : u8, const 32 : u8, const 101 : u8, const 110 : u8, const 100 : u8, const 115 : u8, const 32 : u8, const 97 : u8, const 116 : u8, const 32 : u8, const 192 : u8, const 0 : u8]
+    storage_live(_27)
+    _27 = &_26
+    _22 = transmute<&'44 [u8; 40 : usize], NonNull<u8>>(move _27)
+    storage_live(_23)
+    _23 = transmute<&'12 [Argument<'13>; 2 : usize], NonNull<Argument<'45>>>(copy args_9)
+    _3 = Arguments { 0: move _22, 1: move _23 }
+    storage_dead(_23)
+    storage_dead(_22)
+    panic(core::panicking::panic_fmt)
+}
 
 fn core::slice::index::slice_index_fail::do_panic#3::runtime(@1: usize, @2: usize) -> !
-= <missing>
+{
+    let _0: !; // return
+    let end_1: usize; // arg #1
+    let len_2: usize; // arg #2
+    let _3: Arguments<'1>; // anonymous local
+    let args_4: &'3 usize; // local
+    let args_5: &'4 usize; // local
+    let args_6: [Argument<'7>; 2 : usize]; // local
+    let _7: Argument<'8>; // anonymous local
+    let _8: Argument<'9>; // anonymous local
+    let args_9: &'12 [Argument<'13>; 2 : usize]; // local
+    let _10: ArgumentType<'15>; // anonymous local
+    let _11: NonNull<()>; // anonymous local
+    let _12: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _13: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _14: *const usize; // anonymous local
+    let _15: *const (); // anonymous local
+    let _16: ArgumentType<'16>; // anonymous local
+    let _17: NonNull<()>; // anonymous local
+    let _18: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _19: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _20: *const usize; // anonymous local
+    let _21: *const (); // anonymous local
+    let _22: NonNull<u8>; // anonymous local
+    let _23: NonNull<Argument<'18>>; // anonymous local
+    let _24: PhantomData<&'30 ()>; // anonymous local
+    let _25: PhantomData<&'39 ()>; // anonymous local
+    let _26: [u8; 55 : usize]; // anonymous local
+    let _27: &'44 [u8; 55 : usize]; // anonymous local
+
+    storage_live(args_4)
+    storage_live(args_5)
+    storage_live(args_9)
+    storage_live(_3)
+    args_4 = &end_1
+    args_5 = &len_2
+    storage_live(args_6)
+    storage_live(_7)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_10)
+    storage_live(_11)
+    _14 = &raw const (*args_4)
+    storage_live(_15)
+    _15 = cast<*const usize, *const ()>(copy _14)
+    _11 = NonNull { 0: copy _15 }
+    storage_dead(_15)
+    storage_live(_12)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
+    _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
+    storage_live(_24)
+    _24 = PhantomData {  }
+    _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _24 }
+    storage_dead(_12)
+    storage_dead(_11)
+    _7 = Argument { 0: move _10 }
+    storage_dead(_10)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_live(_8)
+    storage_live(_19)
+    storage_live(_20)
+    storage_live(_16)
+    storage_live(_17)
+    _20 = &raw const (*args_5)
+    storage_live(_21)
+    _21 = cast<*const usize, *const ()>(copy _20)
+    _17 = NonNull { 0: copy _21 }
+    storage_dead(_21)
+    storage_live(_18)
+    _19 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
+    _18 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _19)
+    storage_live(_25)
+    _25 = PhantomData {  }
+    _16 = ArgumentType::Placeholder { value: move _17, formatter: copy _18, _lifetime: move _25 }
+    storage_dead(_18)
+    storage_dead(_17)
+    _8 = Argument { 0: move _16 }
+    storage_dead(_16)
+    storage_dead(_20)
+    storage_dead(_19)
+    args_6 = [move _7, move _8]
+    storage_dead(_8)
+    storage_dead(_7)
+    args_9 = &args_6
+    storage_live(_22)
+    storage_live(_26)
+    _26 = [const 16 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 101 : u8, const 110 : u8, const 100 : u8, const 32 : u8, const 105 : u8, const 110 : u8, const 100 : u8, const 101 : u8, const 120 : u8, const 32 : u8, const 192 : u8, const 34 : u8, const 32 : u8, const 111 : u8, const 117 : u8, const 116 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 102 : u8, const 111 : u8, const 114 : u8, const 32 : u8, const 115 : u8, const 108 : u8, const 105 : u8, const 99 : u8, const 101 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 108 : u8, const 101 : u8, const 110 : u8, const 103 : u8, const 116 : u8, const 104 : u8, const 32 : u8, const 192 : u8, const 0 : u8]
+    storage_live(_27)
+    _27 = &_26
+    _22 = transmute<&'44 [u8; 55 : usize], NonNull<u8>>(move _27)
+    storage_live(_23)
+    _23 = transmute<&'12 [Argument<'13>; 2 : usize], NonNull<Argument<'45>>>(copy args_9)
+    _3 = Arguments { 0: move _22, 1: move _23 }
+    storage_dead(_23)
+    storage_dead(_22)
+    panic(core::panicking::panic_fmt)
+}
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 Self, @2: Idx) -> &'_0 @TraitClause0::Output
 where
@@ -116,10 +546,6 @@ fn core::slice::index::slice_index_fail::do_panic#3(@1: usize, @2: usize) -> !
 // Full name: core::panicking::panic_nounwind_fmt
 pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
 = <opaque>
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub opaque type NonNull<T>
 
 // Full name: core::slice::index::private_slice_index::Sealed
 pub trait Sealed<Self>
@@ -528,48 +954,47 @@ where
     let _0: *mut [T]; // return
     let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice_2: *mut [T]; // arg #2
-    let _3: bool; // anonymous local
-    let _4: (); // anonymous local
+    let _3: (); // anonymous local
+    let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
-    let _7: usize; // anonymous local
-    let new_len_8: usize; // local
-    let _9: usize; // anonymous local
-    let offset_10: usize; // local
+    let new_len_7: usize; // local
+    let _8: usize; // anonymous local
+    let offset_9: usize; // local
+    let _10: *mut T; // anonymous local
     let _11: *mut T; // anonymous local
-    let _12: *mut T; // anonymous local
+    let _12: bool; // anonymous local
 
-    storage_live(_4)
-    storage_live(new_len_8)
-    storage_live(offset_10)
     storage_live(_3)
-    _3 = ub_checks<bool>
-    if move _3 {
+    storage_live(new_len_7)
+    storage_live(offset_9)
+    storage_live(_12)
+    _12 = ub_checks<bool>
+    if move _12 {
+        storage_live(_4)
+        _4 = copy (self_1).start
         storage_live(_5)
-        _5 = copy (self_1).start
+        _5 = copy (self_1).end
         storage_live(_6)
-        _6 = copy (self_1).end
-        storage_live(_7)
-        _7 = copy slice_2.metadata
-        _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(move _5, move _6, move _7)
-        storage_dead(_7)
+        _6 = copy slice_2.metadata
+        _3 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(move _4, move _5, move _6)
         storage_dead(_6)
         storage_dead(_5)
+        storage_dead(_4)
     } else {
     }
-    storage_dead(_3)
-    storage_live(_9)
-    _9 = copy (self_1).end
-    offset_10 = copy (self_1).start
-    new_len_8 = move _9 ub.- copy offset_10
-    storage_dead(_9)
+    storage_live(_8)
+    _8 = copy (self_1).end
+    offset_9 = copy (self_1).start
+    new_len_7 = move _8 ub.- copy offset_9
+    storage_dead(_8)
+    storage_live(_10)
     storage_live(_11)
-    storage_live(_12)
-    _11 = cast<*mut [T], *mut T>(copy slice_2)
-    _12 = copy _11 offset copy offset_10
-    _0 = @PtrFromPartsMut<'_, [T]>(copy _12, copy new_len_8)
-    storage_dead(_12)
+    _10 = cast<*mut [T], *mut T>(copy slice_2)
+    _11 = copy _10 offset copy offset_9
+    _0 = @PtrFromPartsMut<'_, [T]>(copy _11, copy new_len_7)
     storage_dead(_11)
+    storage_dead(_10)
     return
 }
 
@@ -648,48 +1073,47 @@ where
     let _0: *const [T]; // return
     let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice_2: *const [T]; // arg #2
-    let _3: bool; // anonymous local
-    let _4: (); // anonymous local
+    let _3: (); // anonymous local
+    let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
-    let _7: usize; // anonymous local
-    let new_len_8: usize; // local
-    let _9: usize; // anonymous local
-    let offset_10: usize; // local
+    let new_len_7: usize; // local
+    let _8: usize; // anonymous local
+    let offset_9: usize; // local
+    let _10: *const T; // anonymous local
     let _11: *const T; // anonymous local
-    let _12: *const T; // anonymous local
+    let _12: bool; // anonymous local
 
-    storage_live(_4)
-    storage_live(new_len_8)
-    storage_live(offset_10)
     storage_live(_3)
-    _3 = ub_checks<bool>
-    if move _3 {
+    storage_live(new_len_7)
+    storage_live(offset_9)
+    storage_live(_12)
+    _12 = ub_checks<bool>
+    if move _12 {
+        storage_live(_4)
+        _4 = copy (self_1).start
         storage_live(_5)
-        _5 = copy (self_1).start
+        _5 = copy (self_1).end
         storage_live(_6)
-        _6 = copy (self_1).end
-        storage_live(_7)
-        _7 = copy slice_2.metadata
-        _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(move _5, move _6, move _7)
-        storage_dead(_7)
+        _6 = copy slice_2.metadata
+        _3 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(move _4, move _5, move _6)
         storage_dead(_6)
         storage_dead(_5)
+        storage_dead(_4)
     } else {
     }
-    storage_dead(_3)
-    storage_live(_9)
-    _9 = copy (self_1).end
-    offset_10 = copy (self_1).start
-    new_len_8 = move _9 ub.- copy offset_10
-    storage_dead(_9)
+    storage_live(_8)
+    _8 = copy (self_1).end
+    offset_9 = copy (self_1).start
+    new_len_7 = move _8 ub.- copy offset_9
+    storage_dead(_8)
+    storage_live(_10)
     storage_live(_11)
-    storage_live(_12)
-    _11 = cast<*const [T], *const T>(copy slice_2)
-    _12 = copy _11 offset copy offset_10
-    _0 = @PtrFromPartsShared<'_, [T]>(copy _12, copy new_len_8)
-    storage_dead(_12)
+    _10 = cast<*const [T], *const T>(copy slice_2)
+    _11 = copy _10 offset copy offset_9
+    _0 = @PtrFromPartsShared<'_, [T]>(copy _11, copy new_len_7)
     storage_dead(_11)
+    storage_dead(_10)
     return
 }
 
@@ -867,16 +1291,6 @@ where
     fn index_mut<'_0_1> = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut<'_0_1, T>[@TraitClause0]
     vtable: {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::{vtable}<T>[@TraitClause0]
 }
-
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::main
 fn main()

@@ -105,7 +105,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Forma
     _4 = copy (((*f_2)).0).flags
     _3 = move _4 & copy DEBUG_LOWER_HEX_FLAG
     storage_dead(_4)
-    switch move _3 {
+    switch copy _3 {
         0 : u32 => {
         },
         _ => {
@@ -120,7 +120,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(@1: &'_0 u32, @2: &'_1 mut Forma
     _6 = copy (((*f_2)).0).flags
     _5 = move _6 & copy DEBUG_UPPER_HEX_FLAG
     storage_dead(_6)
-    switch move _5 {
+    switch copy _5 {
         0 : u32 => {
         },
         _ => {

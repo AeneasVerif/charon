@@ -5,7 +5,7 @@ error: Error parsing attribute: Unrecognized attribute: `charon::error`
   | ^^^^^^^^^^^^^^^^
 
 error: Error parsing attribute: Unrecognized attribute: `charon::error`
- --> ./tests/cargo/error-dependencies/error-crate/src/lib.rs:4:1
+ --> error-crate/src/lib.rs:4:1
 
 note: the error occurred when translating `error_crate::CausesError`, which is (transitively) used at the following location(s):
  --> src/module.rs:7:9
@@ -15,7 +15,7 @@ note: the error occurred when translating `error_crate::CausesError`, which is (
 8 |     let _y = error_crate::CausesError;
   |              ------------------------
 error: Error parsing attribute: Unrecognized attribute: `charon::error`
- --> ./tests/cargo/error-dependencies/error-crate/src/lib.rs:4:1
+ --> error-crate/src/lib.rs:4:1
 
 ERROR Charon failed to translate this code (3 errors)
 error: could not compile `test-cargo` (bin "test-cargo")

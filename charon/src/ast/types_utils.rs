@@ -689,6 +689,10 @@ impl Ty {
         Self::mk_tuple(vec![])
     }
 
+    pub fn mk_bool() -> Ty {
+        TyKind::Literal(LiteralTy::Bool).into()
+    }
+
     pub fn mk_usize() -> Ty {
         TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into()
     }

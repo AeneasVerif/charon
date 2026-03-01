@@ -9,7 +9,7 @@ pub trait MetaSized<Self>
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Sized
@@ -45,22 +45,24 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
-// Full name: core::array::from_fn
-pub fn from_fn<T, F, const N : usize>(@1: F) -> [T; N]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: FnMut<F, (usize,)>,
-    @TraitClause2::parent_clause1::Output = T,
-= <opaque>
-
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
+
+// Full name: core::array::from_fn
+pub fn from_fn<T, F, const N : usize>(@1: F) -> [T; N]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Destruct<T>,
+    [@TraitClause3]: FnMut<F, (usize,)>,
+    [@TraitClause4]: Destruct<F>,
+    @TraitClause3::parent_clause1::Output = T,
+= <opaque>
 
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 = <opaque>
@@ -106,6 +108,23 @@ where
     [@TraitClause1]: Ops<T, K>,
 {}
 
+// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place<T, const K : usize>(@1: *mut closure<T, K>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Ops<T, K>,
+= <missing>
+
+// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}
+impl<T, const K : usize> Destruct for closure<T, K>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Ops<T, K>,
+{
+    fn drop_in_place = {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place<T, K>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut
 fn {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T, const K : usize>(@1: &'_0 mut closure<T, K>[@TraitClause0, @TraitClause1], @2: (usize,)) -> T
 where
@@ -125,23 +144,6 @@ where
     _0 = @TraitClause1::of_usize(move _4)
     storage_dead(_4)
     return
-}
-
-// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place<T, const K : usize>(@1: *mut closure<T, K>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Ops<T, K>,
-= <missing>
-
-// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}
-impl<T, const K : usize> Destruct for closure<T, K>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Ops<T, K>,
-{
-    fn drop_in_place = {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}::drop_in_place<T, K>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::test::{impl FnOnce<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_once
@@ -202,7 +204,7 @@ where
 
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<T, closure<T, K>[@TraitClause0, @TraitClause1], 1 : usize>[@TraitClause0, {built_in impl Sized for closure<T, K>[@TraitClause0, @TraitClause1]}, {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1]](move _1)
+    _0 = from_fn<T, closure<T, K>[@TraitClause0, @TraitClause1], 1 : usize>[@TraitClause0, {built_in impl Sized for closure<T, K>[@TraitClause0, @TraitClause1]}, {built_in impl Destruct for T}, {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1], {impl Destruct for closure<T, K>[@TraitClause0, @TraitClause1]}<T, K>[@TraitClause0, @TraitClause1]](move _1)
     storage_dead(_1)
     return
 }

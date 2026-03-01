@@ -415,6 +415,12 @@ fn rename_attribute() -> anyhow::Result<()> {
 
         #[charon::rename("BoolTest")]
         pub trait BoolTrait {
+            #[charon::rename("AsSoCtY")]
+            type AssocTy;
+
+            #[charon::rename("konst")]
+            const ASSOC_CONST: u32 = 42;
+
             // Required method
             #[charon::rename("getTest")]
             fn get_bool(&self) -> bool;
@@ -428,6 +434,8 @@ fn rename_attribute() -> anyhow::Result<()> {
 
         #[charon::rename("BoolImpl")]
         impl BoolTrait for bool {
+            type AssocTy = ();
+
             fn get_bool(&self) -> bool {
                 *self
             }
@@ -472,6 +480,32 @@ fn rename_attribute() -> anyhow::Result<()> {
             .rename
             .as_deref(),
         Some("BoolTest")
+    );
+
+    assert_eq!(
+        crate_data.trait_decls[0].types[0]
+            .skip_binder
+            .attr_info
+            .rename
+            .as_deref(),
+        Some("AsSoCtY")
+    );
+
+    assert_eq!(
+        crate_data.trait_decls[0].consts[0]
+            .attr_info
+            .rename
+            .as_deref(),
+        Some("konst")
+    );
+
+    assert_eq!(
+        crate_data.trait_decls[0].methods[0]
+            .skip_binder
+            .attr_info
+            .rename
+            .as_deref(),
+        Some("getTest")
     );
 
     assert_eq!(

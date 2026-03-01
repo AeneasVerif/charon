@@ -78,7 +78,7 @@ impl Copy for u32 {
 pub trait Destruct<Self>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
@@ -181,6 +181,16 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
+unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+= <opaque>
+
+// Full name: alloc::alloc::Global::{impl Destruct for Global}
+impl Destruct for Global {
+    fn drop_in_place = {impl Destruct for Global}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub opaque type Vec<T>
@@ -216,6 +226,7 @@ pub fn push<'_0, T, A>(@1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], @2: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
+    [@TraitClause3]: Destruct<A>,
 = <opaque>
 
 fn UNIT_METADATA()
@@ -281,7 +292,7 @@ pub fn test_vec_push()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut v_1
-    _2 = push<'3, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _3, const 0 : u32)
+    _2 = push<'3, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, {impl Destruct for Global}](move _3, const 0 : u32)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

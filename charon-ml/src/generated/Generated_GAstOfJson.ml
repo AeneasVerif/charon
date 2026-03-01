@@ -1349,6 +1349,15 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             : layout)
     | _ -> Error "")
 
+and lifetime_mutability_of_json (ctx : of_json_ctx) (js : json) :
+    (lifetime_mutability, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Mutable" -> Ok LtMutable
+    | `String "Shared" -> Ok LtShared
+    | `String "Unknown" -> Ok LtUnknown
+    | _ -> Error "")
+
 and literal_of_json (ctx : of_json_ctx) (js : json) : (literal, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1590,11 +1599,11 @@ and provenance_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Global", global) ] ->
         let* global = global_decl_ref_of_json ctx global in
-        Ok (Global global)
+        Ok (ProvGlobal global)
     | `Assoc [ ("Function", function_) ] ->
         let* function_ = fun_decl_ref_of_json ctx function_ in
-        Ok (Function function_)
-    | `String "Unknown" -> Ok Unknown
+        Ok (ProvFunction function_)
+    | `String "Unknown" -> Ok ProvUnknown
     | _ -> Error "")
 
 and ptr_metadata_of_json (ctx : of_json_ctx) (js : json) :
@@ -1670,10 +1679,11 @@ and region_param_of_json (ctx : of_json_ctx) (js : json) :
     (region_param, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name) ] ->
+    | `Assoc [ ("index", index); ("name", name); ("mutability", mutability) ] ->
         let* index = region_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
-        Ok ({ index; name } : region_param)
+        let* mutability = lifetime_mutability_of_json ctx mutability in
+        Ok ({ index; name; mutability } : region_param)
     | _ -> Error "")
 
 and repr_algorithm_of_json (ctx : of_json_ctx) (js : json) :
@@ -1836,11 +1846,18 @@ and trait_assoc_const_of_json (ctx : of_json_ctx) (js : json) :
     (trait_assoc_const, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("name", name); ("ty", ty); ("default", default) ] ->
+    | `Assoc
+        [
+          ("name", name);
+          ("attr_info", attr_info);
+          ("ty", ty);
+          ("default", default);
+        ] ->
         let* name = trait_item_name_of_json ctx name in
+        let* attr_info = attr_info_of_json ctx attr_info in
         let* ty = ty_of_json ctx ty in
         let* default = option_of_json global_decl_ref_of_json ctx default in
-        Ok ({ name; ty; default } : trait_assoc_const)
+        Ok ({ name; attr_info; ty; default } : trait_assoc_const)
     | _ -> Error "")
 
 and trait_assoc_ty_of_json (ctx : of_json_ctx) (js : json) :
@@ -1850,16 +1867,18 @@ and trait_assoc_ty_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ("name", name);
+          ("attr_info", attr_info);
           ("default", default);
           ("implied_clauses", implied_clauses);
         ] ->
         let* name = trait_item_name_of_json ctx name in
+        let* attr_info = attr_info_of_json ctx attr_info in
         let* default = option_of_json ty_of_json ctx default in
         let* implied_clauses =
           index_map_of_json trait_clause_id_of_json trait_param_of_json ctx
             implied_clauses
         in
-        Ok ({ name; default; implied_clauses } : trait_assoc_ty)
+        Ok ({ name; attr_info; default; implied_clauses } : trait_assoc_ty)
     | _ -> Error "")
 
 and trait_assoc_ty_impl_of_json (ctx : of_json_ctx) (js : json) :
@@ -2024,10 +2043,11 @@ and trait_method_of_json (ctx : of_json_ctx) (js : json) :
     (trait_method, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("name", name); ("item", item) ] ->
+    | `Assoc [ ("name", name); ("attr_info", attr_info); ("item", item) ] ->
         let* name = trait_item_name_of_json ctx name in
+        let* attr_info = attr_info_of_json ctx attr_info in
         let* item = fun_decl_ref_of_json ctx item in
-        Ok ({ name; item } : trait_method)
+        Ok ({ name; attr_info; item } : trait_method)
     | _ -> Error "")
 
 and trait_param_of_json (ctx : of_json_ctx) (js : json) :

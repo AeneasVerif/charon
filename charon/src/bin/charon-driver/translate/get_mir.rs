@@ -99,17 +99,17 @@ fn get_mir_for_def_id_and_level<'tcx>(
                     | hax::DefKind::InlineConst
             );
             let mir_available = tcx.is_mir_available(rust_def_id);
-            let ctfe_mir_available = tcx.is_ctfe_mir_available(rust_def_id);
-            // For globals, prefer ctfe_mir when both are available.
-            let body = if mir_available && !(is_global && ctfe_mir_available) {
-                tcx.optimized_mir(rust_def_id).clone()
-            } else if ctfe_mir_available {
-                tcx.mir_for_ctfe(rust_def_id).clone()
+
+            if mir_available && !is_global {
+                Some(tcx.optimized_mir(rust_def_id).clone())
+            } else if (is_global && !tcx.is_trivial_const(rust_def_id))
+                || tcx.is_const_fn(rust_def_id)
+            {
+                Some(tcx.mir_for_ctfe(rust_def_id).clone())
             } else {
-                trace!("no mir available");
-                return None;
-            };
-            Some(body)
+                trace!("mir not available for {:?}", rust_def_id);
+                None
+            }
         }
         hax::DefIdBase::Promoted(rust_def_id, promoted_id) => {
             Some(hax::get_promoted_mir(tcx, rust_def_id, promoted_id))

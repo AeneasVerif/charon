@@ -666,12 +666,10 @@ let bound_identity_args (params : generic_params) : generic_args =
   {
     regions =
       List.map
-        (fun (var : _ indexed_var) -> s.r_sb_subst var.index)
+        (fun (var : region_param) -> s.r_sb_subst var.index)
         params.regions;
     types =
-      List.map
-        (fun (var : _ indexed_var) -> s.ty_sb_subst var.index)
-        params.types;
+      List.map (fun (var : type_param) -> s.ty_sb_subst var.index) params.types;
     const_generics =
       List.map
         (fun (var : const_generic_param) : Types.constant_expr ->

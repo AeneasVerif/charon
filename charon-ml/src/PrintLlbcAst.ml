@@ -35,7 +35,7 @@ module Ast = struct
         indent ^ "storage_live " ^ local_id_to_string env var_id
     | StorageDead var_id ->
         indent ^ "storage_dead " ^ local_id_to_string env var_id
-    | Deinit p -> indent ^ "deinit " ^ place_to_string env p
+    | PlaceMention place -> indent ^ "_ := " ^ place_to_string env place
     | Drop (p, _, _) -> indent ^ "drop " ^ place_to_string env p
     | Assert (asrt, abort_kind) ->
         indent

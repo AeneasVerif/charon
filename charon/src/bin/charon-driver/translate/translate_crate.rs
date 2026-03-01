@@ -716,6 +716,7 @@ pub fn translate<'tcx, 'ctx>(
         translate_stack: Default::default(),
         cached_item_metas: Default::default(),
         cached_names: Default::default(),
+        lt_mutability_computer: Default::default(),
         translated_preshims: Default::default(),
     };
     ctx.register_target_info();

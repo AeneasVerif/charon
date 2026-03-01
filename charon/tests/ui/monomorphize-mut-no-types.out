@@ -47,14 +47,14 @@ pub trait core::marker::Sized::<Option<Option<&_ mut _>>><'_0, T0>
 pub trait Destruct<Self>
 {
     fn drop_in_place = drop_in_place<Self>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::option::Option
@@ -68,14 +68,14 @@ pub enum Option<T> {
 pub trait core::marker::Destruct::<Option<&_ mut _>><'_0, T0>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<Option<&_ mut _>><'_0, T0>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<Option<Option<&_ mut _>>><'_0, T0>
 {
     fn drop_in_place = core::marker::Destruct::drop_in_place::<Option<Option<&_ mut _>>><'_0, T0>
-    vtable: core::marker::Destruct::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct::drop_in_place

@@ -119,6 +119,11 @@ pub struct RegionParam {
     /// Region name
     #[drive(skip)]
     pub name: Option<String>,
+    /// Whether this lifetime is (recursively) used in a `&'a mut T` type. Only `true` if this
+    /// lifetime parameter belongs to an ADT. This is a global analysis that looks even into opaque
+    /// items. When unsure, err on the side of assuming mutability.
+    #[drive(skip)]
+    pub mutability: LifetimeMutability,
 }
 
 /// A const generic variable in a signature or binder.
@@ -292,7 +297,11 @@ impl TypeParam {
 
 impl RegionParam {
     pub fn new(index: RegionId, name: Option<String>) -> Self {
-        Self { index, name }
+        Self {
+            index,
+            name,
+            mutability: LifetimeMutability::Unknown,
+        }
     }
 }
 

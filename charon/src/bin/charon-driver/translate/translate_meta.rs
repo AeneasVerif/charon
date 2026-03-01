@@ -1,6 +1,7 @@
 //! Translate information about items: name, attributes, etc.
 use itertools::Itertools;
 use rustc_middle::mir;
+use rustc_span::RemapPathScopeComponents;
 use std::cmp::Ord;
 use std::path::{Component, PathBuf};
 
@@ -36,9 +37,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub fn translate_filename(&mut self, name: rustc_span::FileName) -> meta::FileName {
         match name {
             rustc_span::FileName::Real(name) => {
-                use rustc_span::RealFileName;
-                match name {
-                    RealFileName::LocalPath(path) => {
+                match name.local_path() {
+                    Some(path) => {
                         let path = if let Ok(path) = path.strip_prefix(&self.sysroot) {
                             // The path to files in the standard library may be full paths to somewhere
                             // in the sysroot. This may depend on how the toolchain is installed
@@ -70,15 +70,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                                 rewritten_path.extend(path);
                                 rewritten_path
                             } else {
-                                path.clone()
+                                path.into()
                             }
                         };
                         FileName::Local(path)
                     }
-                    RealFileName::Remapped { virtual_name, .. } => {
+                    None => {
                         // We use the virtual name because it is always available.
                         // That name normally starts with `/rustc/<hash>/`. For our purposes we hide
                         // the hash.
+                        let virtual_name = name.path(RemapPathScopeComponents::empty());
                         let mut components_iter = virtual_name.components();
                         if let Some(
                             [
@@ -96,7 +97,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                                 .collect();
                             FileName::Virtual(path_without_hash)
                         } else {
-                            FileName::Virtual(virtual_name.clone())
+                            FileName::Virtual(virtual_name.into())
                         }
                     }
                 }

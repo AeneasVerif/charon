@@ -64,7 +64,7 @@ where
 pub trait Tuple<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    vtable: core::marker::Tuple::{vtable}
+    non-dyn-compatible
 }
 
 opaque type core::ops::function::Fn::{vtable}<Args, Ty0>
