@@ -150,12 +150,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
 
+                // In Mono mode, only user-defined trait is supported for now.
+                // TODO: support other kinds of traits.
                 if mono {
                     if matches!(kind, TraitImplSource::Normal) {
                         bt_ctx.translate_trait_impl_mono(item_meta, &def)?;
                     } else {
                         error!("TraitImpl other than Normal is not supported in Mono");
                     }
+                    // We do not translate trait impl blocks.
                     self.translated.trait_impls.remove_and_shift_ids(id);
                 } else {
                     let trait_impl = match kind {
@@ -381,6 +384,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         self.options.monomorphize_with_hax
     }
 
+    // In Mono mode, we do not translate trait impls.
     pub fn check_mono_no_trait_impl(&mut self) {
         if self.monomorphize_mode() {
             self.translated.trait_impls.clear();
@@ -466,7 +470,6 @@ impl ItemTransCtx<'_, '_> {
                 let trait_ref = if self.monomorphize_mode() {
                     self.translate_trait_decl_ref_poly(span, implemented_trait_ref)?
                 } else {
-                    trace!("MONO_trait_ref: get_item_source TraitImplContainer");
                     self.translate_trait_ref(span, implemented_trait_ref)?
                 };
                 // let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
@@ -496,7 +499,6 @@ impl ItemTransCtx<'_, '_> {
                 let trait_ref = if self.monomorphize_mode() {
                     self.translate_trait_decl_ref_poly(span, trait_ref)?
                 } else {
-                    trace!("MONO_trait_ref: get_item_source TraitContainer");
                     self.translate_trait_ref(span, trait_ref)?
                 };
                 // let trait_ref = self.translate_trait_ref(span, trait_ref)?;
@@ -1558,7 +1560,6 @@ impl ItemTransCtx<'_, '_> {
             unreachable!()
         };
 
-        trace!("MONO_trait_ref: translate_defaulted_method");
         // Retrieve the information about the implemented trait.
         let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         // A `TraitRef` that points to this impl with the correct generics.

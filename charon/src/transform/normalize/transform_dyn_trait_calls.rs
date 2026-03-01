@@ -49,10 +49,13 @@ fn transform_dyn_trait_call(
     let trait_pred = trait_ref.trait_decl_ref.clone().erase();
 
     // mono mode
+    // We fetch the specific preshim function
+    // by iterating `fun_decls` in `translated` with `trait_decl_id` and generic and associative arguments.
     if ctx.ctx.options.monomorphize_with_hax {
-        trace!("MONO: current trait_id: {}", trait_pred.id);
-        trace!("MONO: trait_decls:\n {:?}", ctx.ctx.translated.trait_decls);
+        // `receiver_types` contains associative arguments, if any.
         let mut receiver_types = None;
+        // `types` contains generic arguments,
+        // which will be appended with `receiver_types` to form the complete list of arguments.
         let mut types: Vec<_> = trait_ref
             .trait_decl_ref
             .skip_binder
@@ -62,16 +65,12 @@ fn transform_dyn_trait_call(
             .into_iter()
             .skip(1)
             .collect_vec();
-        // trace!("MONO: trait_ref.generic_args:\n {:?}", types);
 
+        // fetch associative arguments
         if let Some(Operand::Copy(receiver) | Operand::Move(receiver)) = call.args.first() {
             receiver_types = match receiver.ty().kind() {
                 TyKind::Ref(_, dyn_ty, _) | TyKind::RawPtr(dyn_ty, _) => match dyn_ty.kind() {
                     TyKind::DynTrait(pred) => {
-                        trace!(
-                            "MONO: inside:\n {:?}",
-                            pred.binder.params.trait_type_constraints
-                        );
                         let trait_type_constraints: Vec<_> = pred
                             .binder
                             .params
@@ -107,16 +106,12 @@ fn transform_dyn_trait_call(
             types.append(&mut receiver_types);
         }
 
-        trace!("MONO: trait_ref.generic_args:\n {:?}", types);
-
+        // find the specific preshim function
         let mut preshim = None;
         for fun_decl in ctx.ctx.translated.fun_decls.iter() {
             match &fun_decl.src {
                 ItemSource::VTableMethodPreShim(t_id, m_name, m_types) => {
-                    trace!("MONO: m_types:\n {:?}", m_types);
-                    if *t_id == trait_pred.id && *m_name == *method_name && *m_types == types
-                    // m_types.iter().eq(types.iter().copied())
-                    {
+                    if *t_id == trait_pred.id && *m_name == *method_name && *m_types == types {
                         preshim = Some(fun_decl);
                     }
                 }

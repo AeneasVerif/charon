@@ -440,12 +440,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         if let RustcItem::Mono(item_ref) = &src.item
             && !item_ref.generic_args.is_empty()
         {
+            // For preshim functions in Mono mode, we compute their generic and associative arguments,
+            // which are appended to the name of these functions.
             let is_preshim = matches!(
                 src.kind,
                 TransItemSourceKind::VTableDropPreShim
                     | TransItemSourceKind::VTableMethodPreShim(..)
             );
-            trace!("MONO: name for generic_args:\n {:?}", item_ref.generic_args);
 
             let trans_id = self.register_no_enqueue(&None, src).unwrap();
             let span = self.def_span(&item_ref.def_id);
@@ -455,6 +456,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let trait_def = bt_ctx.t_ctx.hax_def_for_item(&src.item)?;
             let mut assoc_types = None;
 
+            // fetch associative arguments
             if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
                 for item in items {
                     let item_def_id = &item.def_id;
@@ -472,20 +474,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         if let Some((c, _)) = predicates.first() {
                             if let hax::ClauseKind::Trait(p) = &c.kind.value {
                                 assoc_types = Some(p.trait_ref.generic_args.clone());
+                                break;
                             }
                         }
                     }
                 }
             }
+            // fetch generic arguments
             let mut substs = item_ref.generic_args.clone();
 
             if !(is_preshim && item_ref.generic_args.len() == 1 && matches!(assoc_types, None)) {
+                // For preshim functions, skip the first argument, which is the dyn trait type.
                 let args = if is_preshim {
-                    trace!("MONO: test is_preshim");
                     if let Some(mut assoc_types) = assoc_types {
                         substs.append(&mut assoc_types);
                     }
-                    trace!("MONO: name for assoc:\n {:?}", substs);
                     bt_ctx.translate_generic_args(span, &substs[1..], &item_ref.impl_exprs)?
                 } else {
                     bt_ctx.translate_generic_args(span, &substs, &item_ref.impl_exprs)?

@@ -343,6 +343,7 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Size => ("size".into(), usize_ty()),
                 TrVTableField::Align => ("align".into(), usize_ty()),
                 TrVTableField::Drop => {
+                    // In Mono mode, drop shims are opaque function pointers.
                     if self.monomorphize_mode() {
                         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
                         ("drop".into(), erased_ptr_ty)
@@ -360,6 +361,7 @@ impl ItemTransCtx<'_, '_> {
                 }
                 TrVTableField::Method(item_name, sig) => {
                     let field_name = format!("method_{}", item_name.0);
+                    // In Mono mode, method shims are opaque function pointers.
                     if self.monomorphize_mode() {
                         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
                         (field_name, erased_ptr_ty)
@@ -406,13 +408,12 @@ impl ItemTransCtx<'_, '_> {
         Ok(fields)
     }
 
+    // In Mono mode, preshim functions are used for dynamic trait calls.
+    // It does two things:
+    // 1. It converts opaque shim functions stored in the vtable back into shim functions with dyn trait types
+    // 2. It calls the converted shim function, passing the dyn trait object.
     #[tracing::instrument(skip(self, span))]
-    fn translate_preshim(
-        &mut self,
-        span: Span,
-        trait_def: &hax::FullDef,
-        // type_id: TypeDeclId,
-    ) -> Result<(), Error> {
+    fn translate_preshim(&mut self, span: Span, trait_def: &hax::FullDef) -> Result<(), Error> {
         let item_src =
             TransItemSource::polymorphic(&trait_def.def_id(), TransItemSourceKind::TraitDecl);
         let item_id = match self.t_ctx.id_map.get(&item_src) {
@@ -453,7 +454,6 @@ impl ItemTransCtx<'_, '_> {
             return Ok(());
         }
 
-        // let a= self.translate_trait_decl_ref_poly(span, trait_def.this())?;
         // translate drop_preshim
         let _: FnPtr = self.translate_item(
             span,
@@ -474,12 +474,6 @@ impl ItemTransCtx<'_, '_> {
                 } = item_def.kind()
                 {
                     let name = self.translate_trait_item_name(&item_def_id)?;
-
-                    // let item_src = TransItemSource::polymorphic(item_def_id,
-                    //         TransItemSourceKind::VTableMethodPreShim(trait_id, name),
-                    //     );
-                    // // let item_src = TransItemSource::from_item(&item, kind, self.monomorphize());
-                    // let _ : FnPtr = self.register_and_enqueue(span, item_src);
 
                     let _: FnPtr = self.translate_item(
                         span,
@@ -597,12 +591,6 @@ impl ItemTransCtx<'_, '_> {
             let vtable_data = self.prepare_vtable_fields(trait_def, implied_predicates)?;
             let fields = self.gen_vtable_struct_fields(span, &vtable_data)?;
 
-            // translate preshim functions that cast *const() fnptr
-            // back into their corresponding shim type
-            if self.monomorphize_mode() {
-                // let _ = self.translate_preshim(span, trait_def);
-            }
-
             let kind = TypeDeclKind::Struct(fields);
             let layout = self.generate_naive_layout(span, &kind)?;
             supertrait_map = vtable_data.supertrait_map;
@@ -650,6 +638,7 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    // In Mono mode, vtable stores drop and method shims as opaque function pointers.
     pub(crate) fn translate_vtable_struct_mono(
         mut self,
         type_id: TypeDeclId,
@@ -666,7 +655,7 @@ impl ItemTransCtx<'_, '_> {
             );
         }
 
-        // In mono mode, trait def remains poly.
+        // In mono mode, trait decl def remains poly.
         self.check_no_monomorphize(span)?;
 
         let (hax::FullDefKind::Trait {
@@ -692,12 +681,6 @@ impl ItemTransCtx<'_, '_> {
             let vtable_data = self.prepare_vtable_fields(trait_def, implied_predicates)?;
             let fields = self.gen_vtable_struct_fields(span, &vtable_data)?;
 
-            // translate preshim functions that cast *const() fnptr
-            // back into their corresponding shim type
-            if self.monomorphize_mode() {
-                // let _ = self.translate_preshim(span, trait_def);
-            }
-
             let kind = TypeDeclKind::Struct(fields);
             let layout = self.generate_naive_layout(span, &kind)?;
             supertrait_map = vtable_data.supertrait_map;
@@ -711,7 +694,7 @@ impl ItemTransCtx<'_, '_> {
             (kind, Some(layout))
         };
 
-        // In mono mode we erase the vtable declaration generics.
+        // In mono mode we erase the generics (generic and associative paramters) of the vtable declaration .
         let dyn_predicate = DynPredicate {
             binder: Binder {
                 params: GenericParams::empty(),
@@ -726,7 +709,6 @@ impl ItemTransCtx<'_, '_> {
         Ok(TypeDecl {
             def_id: type_id,
             item_meta: item_meta,
-            // generics: generics,
             generics: GenericParams::empty(),
             src: ItemSource::VTableTy {
                 dyn_predicate: dyn_predicate.clone(),
@@ -819,37 +801,16 @@ impl ItemTransCtx<'_, '_> {
             hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
             _ => unreachable!(),
         };
-        // let item_src =
-        //     TransItemSource::polymorphic(&implemented_trait.def_id, TransItemSourceKind::VTable);
-        // let id: ItemId = self.register_and_enqueue(span, item_src);
-        // // let generics = self.translate_generic_args(
-        // //     span,
-        // //     &implemented_trait.generic_args,
-        // //     &implemented_trait.impl_exprs,
-        // // )?;
-        // let id = id
-        //     .try_into()
-        //     .expect("translated trait decl should be a trait decl id");
-        // Ok(TypeDeclRef {
-        //     id,
-        //     generics: Box::new(GenericArgs::empty()),
-        // })
         return self.translate_vtable_struct_ref_from_def_id_mono(span, &implemented_trait.def_id);
     }
 
     fn translate_vtable_struct_ref_from_def_id_mono<'a>(
         &mut self,
         span: Span,
-        // impl_def: &'a hax::FullDef,
         def_id: &hax::DefId,
     ) -> Result<TypeDeclRef, Error> {
         let item_src = TransItemSource::polymorphic(def_id, TransItemSourceKind::VTable);
         let id: ItemId = self.register_and_enqueue(span, item_src);
-        // let generics = self.translate_generic_args(
-        //     span,
-        //     &implemented_trait.generic_args,
-        //     &implemented_trait.impl_exprs,
-        // )?;
         let id = id
             .try_into()
             .expect("translated trait decl should be a trait decl id");
@@ -904,6 +865,8 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    // In Mono mode, when translating vtable_instance,
+    // we also enqueue the items of preshims for translation.
     pub(crate) fn translate_vtable_instance_mono(
         mut self,
         global_id: GlobalDeclId,
@@ -1054,11 +1017,8 @@ impl ItemTransCtx<'_, '_> {
             regions: self.outermost_generics().regions.clone(),
             skip_binder: signature.clone(),
         }));
-        // let method_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
 
         mk_cast_field((name.to_string(), method_ty, method_shim));
-
-        // mk_field(const_kind);
 
         Ok(())
     }
@@ -1106,15 +1066,6 @@ impl ItemTransCtx<'_, '_> {
                         }
                         Ok(tyref)
                     }
-                    // let tyref = if mono {
-                    //     ctx.translate_vtable_struct_ref_from_def_id_mono(span, &tref.def_id)?
-                    // } else {
-                    //     ctx.translate_vtable_struct_ref(span, tref)?
-                    // };
-                    // if tyref.is_none() {
-                    //     ctx.assert_is_destruct(tref);
-                    // }
-                    // Ok(tyref)
                 })?
             };
             let Some(vtable_def_ref) = self.erase_region_binder(bound_tyref) else {
@@ -1255,13 +1206,9 @@ impl ItemTransCtx<'_, '_> {
         Ok(Body::Unstructured(builder.build()))
     }
 
-    /// Generate the body of the vtable instance function.
-    /// This is for `impl Trait for T` implementation, it does NOT handle builtin impls.
-    /// ```ignore
-    /// let ret@0 : VTable;
-    /// ret@0 = VTable { ... };
-    /// return;
-    /// ```
+    // In Mono mode, when generating the body of the vtable initializer,
+    // we need to first cast the shim funtions to opaque pointer functions,
+    // and then pass them the fields of the vtable.
     fn gen_vtable_instance_init_body_mono(
         &mut self,
         span: Span,
@@ -1281,10 +1228,6 @@ impl ItemTransCtx<'_, '_> {
         // let implemented_trait = self.translate_trait_decl_ref(span, trait_def.this())?;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
-
-        // add region generics for dyn trait
-        // self.translate_item_generics(span, &trait_def, &TransItemSourceKind::TraitDecl)?;
-        // self.push_generics_for_def(span, &trait_def)?;
 
         let mut builder = BodyBuilder::new(span, 0);
         let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
@@ -1337,10 +1280,6 @@ impl ItemTransCtx<'_, '_> {
             Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
         ));
         aggregate_fields.push(Operand::Move(align_local));
-
-        if self.monomorphize_mode() {
-            trace!("MONO: gen_vtable_instance_init_body");
-        }
 
         let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
             panic!()
@@ -1939,8 +1878,6 @@ impl ItemTransCtx<'_, '_> {
         name: &TraitItemName,
         trait_id: &TraitDeclId,
     ) -> Result<FunDecl, Error> {
-        trace!("MONO: regions before:\n {:?}", self.outermost_generics());
-
         let span = item_meta.span;
         // self.check_no_monomorphize(span)?;
 
@@ -1975,9 +1912,6 @@ impl ItemTransCtx<'_, '_> {
                         }
                     }
                 }
-                // let hax::FullDefKind::AssocTy { param_env, implied_predicates, associated_item, value }
-                //   = item_def.kind() {
-                // }
             }
         }
 
@@ -2001,8 +1935,6 @@ impl ItemTransCtx<'_, '_> {
             raise_error!(self, span, "MONO: expected associative methods");
         };
 
-        // let dyn_self = vtable_sig.value.inputs[0].clone();
-
         let AssocItemContainer::TraitContainer {
             trait_ref: tref, ..
         } = &associated_item.container
@@ -2014,14 +1946,7 @@ impl ItemTransCtx<'_, '_> {
             );
         };
 
-        trace!("MONO: tref associate types:\n {:?}", tref);
-
         let trait_def = self.poly_hax_def(&tref.def_id)?;
-
-        trace!(
-            "MONO: regions after:\n {:?}",
-            self.outermost_generics().regions
-        );
 
         // The signature of the shim function.
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
@@ -2042,7 +1967,6 @@ impl ItemTransCtx<'_, '_> {
 
         let mut types = vec![];
         let generic_args = tref.generic_args.clone();
-        trace!("MONO: check generic_args:\n {:?}", generic_args);
         for arg in generic_args.iter().skip(1) {
             if let GenericArg::Type(hax_ty) = arg {
                 types.push(self.translate_ty(span, hax_ty)?);
@@ -2055,8 +1979,6 @@ impl ItemTransCtx<'_, '_> {
                 }
             }
         }
-
-        trace!("MONO: check assoc types:\n {:?}", types);
 
         Ok(FunDecl {
             def_id: fun_id,

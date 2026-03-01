@@ -82,7 +82,6 @@ pub enum TransItemSourceKind {
     VTableDropShim,
     VTableDropPreShim,
     VTableMethodPreShim(TraitDeclId, TraitItemName),
-    // VTableMethodPreShim2(TraitDeclId, TraitItemName, Ty),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -638,7 +637,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.translate_item(span, item, TransItemSourceKind::TraitDecl)
     }
 
-    // Used for translate_predicate with dynamic trait type in Mono mode
+    // Used for translate_predicate with dynamic trait object in Mono mode.
+    // In Mono mode, we keep trait decl as in Poly mode, with generic and associative parameters.
     pub(crate) fn translate_trait_decl_ref_poly(
         &mut self,
         span: Span,
@@ -793,8 +793,6 @@ pub fn translate<'tcx, 'ctx>(
     while let Some(item_src) = ctx.items_to_translate.pop_front() {
         if ctx.processed.insert(item_src.clone()) {
             ctx.translate_item(&item_src);
-            trace!("MONO: item translated:\n {:?}", item_src);
-            trace!("MONO: items_to_translate:\n {:?}", ctx.items_to_translate);
         }
     }
 
