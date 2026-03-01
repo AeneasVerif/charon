@@ -17,8 +17,8 @@ pub enum Option::<i32> {
 pub fn is_some::<i32><'_0>(@1: &'_0 Option::<i32>) -> bool
 = <opaque>
 
-// Full name: core::slice::index::{impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>>
-pub fn {impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'_0>(@1: &'_0 [bool], @2: RangeFrom::<usize>) -> &'_0 [bool]
+// Full name: core::slice::index::{impl#0}::index::<bool, RangeFrom::<usize>>
+pub fn {impl#0}::index::<bool, RangeFrom::<usize>><'_0>(@1: &'_0 [bool], @2: RangeFrom::<usize>) -> &'_0 [bool]
 = <opaque>
 
 fn UNIT_METADATA()
@@ -94,7 +94,7 @@ fn foo()
     _8 = &(*slice_3) with_metadata(copy slice_3.metadata)
     storage_live(_9)
     _9 = RangeFrom::<usize> { start: const 1 : usize }
-    _7 = {impl Index::<[bool], RangeFrom::<usize>>}::index::<bool, RangeFrom::<usize>><'18>(move _8, move _9)
+    _7 = {impl#0}::index::<bool, RangeFrom::<usize>><'18>(move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     _6 = &(*_7) with_metadata(copy _7.metadata)

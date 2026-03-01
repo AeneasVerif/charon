@@ -80,6 +80,8 @@ pub enum TransItemSourceKind {
     VTableMethod,
     /// The drop shim function to be used in the vtable as a field, the ID is an `impl`.
     VTableDropShim,
+    VTableDropPreShim,
+    VTableMethodPreShim(TraitDeclId, TraitItemName),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -274,7 +276,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                     | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod
-                    | VTableDropShim => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableDropShim
+                    | VTableDropPreShim
+                    | VTableMethodPreShim(..) => {
+                        ItemId::Fun(self.translated.fun_decls.reserve_slot())
+                    }
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -631,6 +637,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.translate_item(span, item, TransItemSourceKind::TraitDecl)
     }
 
+    // Used for translate_predicate with dynamic trait object in Mono mode.
+    // In Mono mode, we keep trait decl as in Poly mode, with generic and associative parameters.
+    pub(crate) fn translate_trait_decl_ref_poly(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+    ) -> Result<TraitDeclRef, Error> {
+        let item_src = TransItemSource::polymorphic(&item.def_id, TransItemSourceKind::TraitDecl);
+        let id: ItemId = self.register_and_enqueue(span, item_src);
+        let generics = self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
+        let id = id
+            .try_into()
+            .expect("translated trait decl should be a trait decl id");
+        Ok(TraitDeclRef {
+            id,
+            generics: Box::new(generics),
+        })
+    }
+
     pub(crate) fn translate_trait_impl_ref(
         &mut self,
         span: Span,
@@ -692,6 +717,7 @@ pub fn translate<'tcx, 'ctx>(
         cached_item_metas: Default::default(),
         cached_names: Default::default(),
         lt_mutability_computer: Default::default(),
+        translated_preshims: Default::default(),
     };
     ctx.register_target_info();
 
@@ -773,6 +799,8 @@ pub fn translate<'tcx, 'ctx>(
     // Remove methods not marked as "used". They are never called and we made sure not to translate
     // them. This removes them from the traits and impls.
     ctx.remove_unused_methods();
+
+    ctx.check_mono_no_trait_impl();
 
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {

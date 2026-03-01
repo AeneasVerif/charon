@@ -121,7 +121,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         trait_ref: &hax::TraitRef,
     ) -> Result<TraitDeclRef, Error> {
-        self.translate_trait_decl_ref(span, trait_ref)
+        if self.monomorphize_mode() {
+            self.translate_trait_decl_ref_poly(span, trait_ref)
+        } else {
+            self.translate_trait_decl_ref(span, trait_ref)
+        }
     }
 
     pub(crate) fn translate_predicate(
@@ -136,9 +140,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let span = self.translate_span(hspan);
         match clause.kind.hax_skip_binder_ref() {
             ClauseKind::Trait(trait_pred) => {
-                let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
-                    ctx.translate_trait_predicate(span, trait_pred)
-                })?;
+                // translate poly trait decl when translating predicates for dynamic type in Mono
+                let pred = if matches!(origin, PredicateOrigin::Dyn) && self.monomorphize() {
+                    self.translate_region_binder(span, &clause.kind, |ctx, _| {
+                        ctx.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)
+                    })?
+                } else {
+                    self.translate_region_binder(span, &clause.kind, |ctx, _| {
+                        ctx.translate_trait_predicate(span, trait_pred)
+                    })?
+                };
                 into.trait_clauses.push_with(|clause_id| TraitParam {
                     clause_id,
                     origin,

@@ -10,8 +10,8 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun1()
 
-// Full name: test_crate::{impl Trait::<bool>}::method
-pub fn {impl Trait::<bool>}::method<'_0>(@1: &'_0 bool)
+// Full name: test_crate::{impl#0}::method
+pub fn method<'_0>(@1: &'_0 bool)
 {
     let _0: (); // return
     let self_1: &'1 bool; // arg #1
@@ -31,7 +31,7 @@ fn do_test::<bool>(@1: bool)
     _0 = ()
     storage_live(_2)
     _2 = &x_1
-    _0 = {impl Trait::<bool>}::method<'3>(move _2)
+    _0 = method<'3>(move _2)
     storage_dead(_2)
     return
 }

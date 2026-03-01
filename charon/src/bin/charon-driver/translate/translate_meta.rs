@@ -417,6 +417,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
+            TransItemSourceKind::VTableDropPreShim => {
+                name.name.push(PathElem::Ident(
+                    "{vtable_drop_preshim}".into(),
+                    Disambiguator::ZERO,
+                ));
+            }
+            TransItemSourceKind::VTableMethodPreShim(..) => {
+                name.name.push(PathElem::Ident(
+                    "{vtable_method_preshim}".into(),
+                    Disambiguator::ZERO,
+                ));
+            }
         }
         Ok(name)
     }
@@ -428,20 +440,65 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         if let RustcItem::Mono(item_ref) = &src.item
             && !item_ref.generic_args.is_empty()
         {
+            // For preshim functions in Mono mode, we compute their generic and associative arguments,
+            // which are appended to the name of these functions.
+            let is_preshim = matches!(
+                src.kind,
+                TransItemSourceKind::VTableDropPreShim
+                    | TransItemSourceKind::VTableMethodPreShim(..)
+            );
+
             let trans_id = self.register_no_enqueue(&None, src).unwrap();
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
             bt_ctx.binding_levels.push(BindingLevel::new(true));
-            let args = bt_ctx.translate_generic_args(
-                span,
-                &item_ref.generic_args,
-                &item_ref.impl_exprs,
-            )?;
-            name.name.push(PathElem::Instantiated(Box::new(Binder {
-                params: GenericParams::empty(),
-                skip_binder: args,
-                kind: BinderKind::Other,
-            })));
+
+            let trait_def = bt_ctx.t_ctx.hax_def_for_item(&src.item)?;
+            let mut assoc_types = None;
+
+            // fetch associative arguments
+            if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
+                for item in items {
+                    let item_def_id = &item.def_id;
+                    // This is ok because dyn-compatible methods don't have generics.
+                    let item_def = bt_ctx.hax_def(
+                        &trait_def
+                            .this()
+                            .with_def_id(bt_ctx.hax_state(), item_def_id),
+                    )?;
+                    if let hax::FullDefKind::AssocTy {
+                        implied_predicates, ..
+                    } = item_def.kind()
+                    {
+                        let predicates = &implied_predicates.predicates;
+                        if let Some((c, _)) = predicates.first() {
+                            if let hax::ClauseKind::Trait(p) = &c.kind.value {
+                                assoc_types = Some(p.trait_ref.generic_args.clone());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            // fetch generic arguments
+            let mut substs = item_ref.generic_args.clone();
+
+            if !(is_preshim && item_ref.generic_args.len() == 1 && matches!(assoc_types, None)) {
+                // For preshim functions, skip the first argument, which is the dyn trait type.
+                let args = if is_preshim {
+                    if let Some(mut assoc_types) = assoc_types {
+                        substs.append(&mut assoc_types);
+                    }
+                    bt_ctx.translate_generic_args(span, &substs[1..], &item_ref.impl_exprs)?
+                } else {
+                    bt_ctx.translate_generic_args(span, &substs, &item_ref.impl_exprs)?
+                };
+                name.name.push(PathElem::Instantiated(Box::new(Binder {
+                    params: GenericParams::empty(),
+                    skip_binder: args,
+                    kind: BinderKind::Other,
+                })));
+            }
         }
         Ok(name)
     }

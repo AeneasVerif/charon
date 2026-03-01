@@ -1315,6 +1315,12 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
         let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
         Ok (VTableInstanceItem impl_ref)
     | `String "VTableMethodShim" -> Ok VTableMethodShimItem
+    | `String "VTableInstanceMono" -> Ok VTableInstanceMonoItem
+    | `Assoc [ ("VTableMethodPreShim", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = trait_decl_id_of_json ctx x_0 in
+        let* x_1 = trait_item_name_of_json ctx x_1 in
+        let* x_2 = list_of_json ty_of_json ctx x_2 in
+        Ok (VTableMethodPreShimItem (x_0, x_1, x_2))
     | _ -> Error "")
 
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =

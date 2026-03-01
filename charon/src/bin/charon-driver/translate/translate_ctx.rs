@@ -66,6 +66,10 @@ pub struct TranslateCtx<'tcx> {
     pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
+    /// Cache translated dyn trait preshims by generic and associated arguments.
+    /// This is used to fetch the unique preshim
+    /// when invoking dyn trait methods (see transform_dyn_trait_calls.rs).
+    pub translated_preshims: HashSet<(TraitDeclId, Vec<Ty>)>,
 }
 
 /// Tracks whether a method is used (i.e. called or (non-opaquely) implemented).
@@ -221,6 +225,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Whether to monomorphize items we encounter.
     pub fn monomorphize(&self) -> bool {
         matches!(self.item_src.item, RustcItem::Mono(..))
+    }
+
+    /// Whether monomorphization is enabled in the global setting.
+    pub fn monomorphize_mode(&self) -> bool {
+        self.t_ctx.monomorphize_mode()
     }
 
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {

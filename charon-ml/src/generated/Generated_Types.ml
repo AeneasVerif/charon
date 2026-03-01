@@ -921,6 +921,8 @@ and item_source =
       (** The method shim wraps a concrete implementation of a method into a
           function that takes [dyn Trait] as its [Self] type. This shim casts
           the receiver to the known concrete type and calls the real method. *)
+  | VTableInstanceMonoItem
+  | VTableMethodPreShimItem of trait_decl_id * trait_item_name * ty list
 
 (** Simplified type layout information.
 

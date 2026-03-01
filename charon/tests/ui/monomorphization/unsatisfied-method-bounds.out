@@ -1,5 +1,17 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -10,11 +22,19 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun1()
 
+// Full name: test_crate::MyIterator
+trait MyIterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    type Item
+    vtable: test_crate::MyIterator::{vtable}
+}
+
 // Full name: test_crate::A
 struct A {}
 
-// Full name: test_crate::{impl MyIterator::<A>}::method
-fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 A)
+fn test_crate::MyIterator::method<'_0>(@1: &'_0 A)
 {
     let _0: (); // return
     let self_1: &'1 A; // arg #1
@@ -27,8 +47,7 @@ fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 A)
 // Full name: test_crate::B
 struct B {}
 
-// Full name: test_crate::{impl MyIterator::<B>}::method
-fn {impl MyIterator::<B>}::method<'_0>(@1: &'_0 B)
+fn test_crate::MyIterator::method<'_0>(@1: &'_0 B)
 {
     let _0: (); // return
     let self_1: &'1 B; // arg #1
@@ -64,7 +83,7 @@ fn main()
     storage_live(_2)
     _6 = move _7
     _2 = &(*_6)
-    _1 = {impl MyIterator::<A>}::method<'8>(move _2)
+    _1 = {impl#0}::method<'8>(move _2)
     storage_live(_9)
     storage_live(_10)
     _10 = B {  }
@@ -75,7 +94,7 @@ fn main()
     storage_live(_4)
     _5 = move _9
     _4 = &(*_5)
-    _3 = {impl MyIterator::<B>}::method<'11>(move _4)
+    _3 = {impl#1}::method<'11>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

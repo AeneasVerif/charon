@@ -1,23 +1,17 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<u64>
+// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized::<u64>
+pub trait MetaSized<Self>
 
-// Full name: test_crate::Foo::<u64>
-trait Foo::<u64>
+// Full name: test_crate::Foo
+trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<u64>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl Foo::<u64>}
-impl Foo::<u64> {
-    parent_clause0 = {built_in impl MetaSized::<u64>}
-    non-dyn-compatible
-}
-
-// Full name: test_crate::{impl Foo::<u64>}::bar::<bool>
+// Full name: test_crate::{impl#0}::bar::<bool>
 fn bar::<bool>() -> u64
 {
     let _0: u64; // return

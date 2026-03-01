@@ -96,6 +96,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             intravisit::walk_body(self, body);
         }
 
+        let mono = self.monomorphize_mode();
+
         // Initialize the item translation context
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         trace!(
@@ -147,19 +149,34 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::TraitImpl(id)) = trans_id else {
                     unreachable!()
                 };
-                let trait_impl = match kind {
-                    TraitImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
-                    TraitImplSource::TraitAlias => {
-                        bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
+
+                // In Mono mode, only user-defined trait is supported for now.
+                // TODO: support other kinds of traits.
+                if mono {
+                    if matches!(kind, TraitImplSource::Normal) {
+                        bt_ctx.translate_trait_impl_mono(item_meta, &def)?;
+                    } else {
+                        error!("TraitImpl other than Normal is not supported in Mono");
                     }
-                    &TraitImplSource::Closure(kind) => {
-                        bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
-                    }
-                    TraitImplSource::ImplicitDestruct => {
-                        bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
-                    }
-                };
-                self.translated.trait_impls.set_slot(id, trait_impl);
+                    // We do not translate trait impl blocks.
+                    self.translated.trait_impls.remove_and_shift_ids(id);
+                } else {
+                    let trait_impl = match kind {
+                        TraitImplSource::Normal => {
+                            bt_ctx.translate_trait_impl(id, item_meta, &def)?
+                        }
+                        TraitImplSource::TraitAlias => {
+                            bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
+                        }
+                        &TraitImplSource::Closure(kind) => {
+                            bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
+                        }
+                        TraitImplSource::ImplicitDestruct => {
+                            bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
+                        }
+                    };
+                    self.translated.trait_impls.set_slot(id, trait_impl);
+                }
             }
             &TransItemSourceKind::DefaultedMethod(impl_kind, name) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
@@ -195,23 +212,33 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Type(id)) = trans_id else {
                     unreachable!()
                 };
-                let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
+                let ty_decl = if mono {
+                    bt_ctx.translate_vtable_struct_mono(id, item_meta, &def)?
+                } else {
+                    bt_ctx.translate_vtable_struct(id, item_meta, &def)?
+                };
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
             TransItemSourceKind::VTableInstance(impl_kind) => {
                 let Some(ItemId::Global(id)) = trans_id else {
                     unreachable!()
                 };
-                let global_decl =
-                    bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
+                let global_decl = if mono {
+                    bt_ctx.translate_vtable_instance_mono(id, item_meta, &def, impl_kind)?
+                } else {
+                    bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?
+                };
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl =
-                    bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?;
+                let fun_decl = if mono {
+                    bt_ctx.translate_vtable_instance_init_mono(id, item_meta, &def, impl_kind)?
+                } else {
+                    bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?
+                };
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::VTableMethod => {
@@ -225,7 +252,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?;
+                let fun_decl = if mono {
+                    bt_ctx.translate_vtable_drop_shim_mono(id, item_meta, &def)?
+                } else {
+                    bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?
+                };
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableDropPreShim => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_drop_preshim(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableMethodPreShim(trait_id, name) => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl =
+                    bt_ctx.translate_vtable_method_preshim(id, item_meta, &def, name, trait_id)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -333,6 +379,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 .retain(|(name, _)| method_is_used(trait_id, *name));
         }
     }
+
+    pub fn monomorphize_mode(&self) -> bool {
+        self.options.monomorphize_with_hax
+    }
+
+    // In Mono mode, we do not translate trait impls.
+    pub fn check_mono_no_trait_impl(&mut self) {
+        if self.monomorphize_mode() {
+            self.translated.trait_impls.clear();
+            if self.translated.trait_impls.slot_count() != 0 {
+                error!("Trait Impl should not be translated in Mono mode");
+            }
+        }
+    }
 }
 
 impl ItemTransCtx<'_, '_> {
@@ -407,7 +467,12 @@ impl ItemTransCtx<'_, '_> {
             } => {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, impl_, TraitImplSource::Normal)?;
-                let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
+                let trait_ref = if self.monomorphize_mode() {
+                    self.translate_trait_decl_ref_poly(span, implemented_trait_ref)?
+                } else {
+                    self.translate_trait_ref(span, implemented_trait_ref)?
+                };
+                // let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
                     // If the implementation is getting translated, that means the method is
@@ -431,7 +496,12 @@ impl ItemTransCtx<'_, '_> {
             hax::AssocItemContainer::TraitContainer { trait_ref, .. } => {
                 // The trait id should be Some(...): trait markers (that we may eliminate)
                 // don't have associated items.
-                let trait_ref = self.translate_trait_ref(span, trait_ref)?;
+                let trait_ref = if self.monomorphize_mode() {
+                    self.translate_trait_decl_ref_poly(span, trait_ref)?
+                } else {
+                    self.translate_trait_ref(span, trait_ref)?
+                };
+                // let trait_ref = self.translate_trait_ref(span, trait_ref)?;
                 let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
                 ItemSource::TraitDecl {
                     trait_ref,
@@ -715,6 +785,13 @@ impl ItemTransCtx<'_, '_> {
                 hax::AssocKind::Const { .. } => TransItemSourceKind::Global,
                 hax::AssocKind::Type { .. } => TransItemSourceKind::Type,
             };
+
+            // skip all methods of trait decl
+            // question: what if the method has default implmentation?
+            if self.monomorphize_mode() && matches!(trans_kind, TransItemSourceKind::Fun) {
+                continue;
+            }
+
             let poly_item_def = self.poly_hax_def(item_def_id)?;
             let (item_src, item_def) = if self.monomorphize() {
                 if poly_item_def.has_own_generics_or_predicates() {
@@ -901,6 +978,116 @@ impl ItemTransCtx<'_, '_> {
             methods,
             vtable,
         })
+    }
+
+    // Register method impls without actually translate TraitImpl
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_trait_impl_mono(
+        mut self,
+        item_meta: ItemMeta,
+        def: &hax::FullDef,
+    ) -> Result<(), Error> {
+        let span = item_meta.span;
+
+        let hax::FullDefKind::TraitImpl {
+            trait_pred,
+            items: impl_items,
+            ..
+        } = &def.kind
+        else {
+            unreachable!()
+        };
+
+        // Retrieve the information about the implemented trait.
+        // let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)?;
+        let trait_id = implemented_trait.id;
+
+        // Explore the associated items
+        for impl_item in impl_items {
+            use hax::ImplAssocItemValue::*;
+            let name = self
+                .t_ctx
+                .translate_trait_item_name(&impl_item.decl_def_id)?;
+            let item_def_id = impl_item.def_id();
+            let item_span = self.def_span(item_def_id);
+            //
+            // In --mono mode, we keep only non-polymorphic items; in not-mono mode, we use the
+            // polymorphic item as usual.
+            let poly_item_def = self.poly_hax_def(item_def_id)?;
+            let trans_kind = match poly_item_def.kind() {
+                hax::FullDefKind::AssocFn { .. } => TransItemSourceKind::Fun,
+                hax::FullDefKind::AssocConst { .. } => TransItemSourceKind::Global,
+                hax::FullDefKind::AssocTy { .. } => TransItemSourceKind::Type,
+                _ => unreachable!(),
+            };
+            let (item_src, item_def) = if self.monomorphize() {
+                if poly_item_def.has_own_generics_or_predicates() {
+                    continue;
+                } else {
+                    let item = match &impl_item.value {
+                        // Real item: we reuse the impl arguments to get a reference to the item.
+                        Provided { def_id, .. } => def.this().with_def_id(self.hax_state(), def_id),
+                        // Defaulted item: we use the implemented trait arguments.
+                        _ => trait_pred
+                            .trait_ref
+                            .with_def_id(self.hax_state(), &impl_item.decl_def_id),
+                    };
+                    let item_src = TransItemSource::monomorphic(&item, trans_kind);
+                    let item_def = self.hax_def_for_item(&item_src.item)?;
+                    (item_src, item_def)
+                }
+            } else {
+                let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
+                (item_src, poly_item_def)
+            };
+
+            match item_def.kind() {
+                hax::FullDefKind::AssocFn { .. } => {
+                    let method_id: FunDeclId = {
+                        let method_src = match &impl_item.value {
+                            Provided { .. } => item_src,
+                            // This will generate a copy of the default method. Note that the base
+                            // item for `DefaultedMethod` is the trait impl.
+                            DefaultedFn { .. } => TransItemSource::from_item(
+                                def.this(),
+                                TransItemSourceKind::DefaultedMethod(TraitImplSource::Normal, name),
+                                self.monomorphize(),
+                            ),
+                            _ => unreachable!(),
+                        };
+                        self.register_no_enqueue(item_span, &method_src)
+                    };
+
+                    // Register this method.
+                    self.register_method_impl(trait_id, name, method_id);
+                    // By default we only enqueue required methods (those that don't have a default
+                    // impl). If the impl is transparent, we enqueue all the implemented methods.
+                    if matches!(impl_item.value, Provided { .. })
+                        && item_meta.opacity.is_transparent()
+                    {
+                        self.mark_method_as_used(trait_id, name);
+                    }
+                }
+                hax::FullDefKind::AssocConst { .. } => {
+                    let _: GlobalDeclId = self.register_and_enqueue(item_span, item_src);
+                }
+                // Monomorphic traits have no associated types.
+                hax::FullDefKind::AssocTy { .. } => continue,
+                _ => panic!("Unexpected definition for trait item: {item_def:?}"),
+            }
+        }
+
+        let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+        if implemented_trait_def.lang_item == Some(sym::destruct) {
+            raise_error!(
+                self,
+                span,
+                "found an explicit impl of `core::marker::Destruct`, this should not happen"
+            );
+        }
+
+        Ok(())
     }
 
     #[tracing::instrument(skip(self, item_meta, def))]
