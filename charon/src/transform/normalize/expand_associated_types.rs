@@ -653,11 +653,17 @@ impl<'a> ComputeItemModifications<'a> {
             TypeConstraintSet::from_constraints(&params.trait_type_constraints);
         // Clauses may provide more type constraints.
         for clause in &params.trait_clauses {
-            let tref = clause.identity_tref();
-            for (path, ty) in
-                self.compute_assoc_tys_for_tref(clause.span.unwrap_or_default(), &tref)
+            if let Some(pred) = clause.trait_.skip_binder.clone().move_from_under_binder()
+                && let Some(trait_mods) = self.compute_trait_modifications(pred.id).as_processed()
             {
-                type_constraints.insert_path(&path, ty);
+                let base_path = TraitRefPath::local_clause(clause.clause_id);
+                for (path, ty) in trait_mods
+                    .type_constraints
+                    .iter_self_paths_subst(&pred.generics)
+                {
+                    let path = path.on_tref(&base_path);
+                    type_constraints.insert_path(&path, ty);
+                }
             }
         }
         type_constraints
@@ -796,6 +802,9 @@ impl<'a> ComputeItemModifications<'a> {
                         set.insert_path(&path, assoc_ty.value);
                     }
                 }
+                // Add constraints known from the implied clause proofs. E.g. in an `FnMut` impl,
+                // we get the value of the `Output` assoc type using the proof of `Self: FnOnce` in
+                // its implied clauses.
                 for (clause_id, tref) in timpl.implied_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(clause_id);
                     for (path, ty) in self.compute_assoc_tys_for_tref(timpl.item_meta.span, tref) {
@@ -810,7 +819,9 @@ impl<'a> ComputeItemModifications<'a> {
         self.impl_assoc_tys[id].as_processed()
     }
 
-    /// Returns the associated types values known for the given trait ref.
+    /// Returns the associated types values known for the given trait ref. E.g. for `T:
+    /// FnOnce<..>`, we get `Self::Output = ...`. The returned trait refs should be based on
+    /// `Self`.
     fn compute_assoc_tys_for_tref(
         &mut self,
         span: Span,
@@ -818,21 +829,8 @@ impl<'a> ComputeItemModifications<'a> {
     ) -> Vec<(AssocTypePath, Ty)> {
         let mut tys = vec![];
         match &tref.kind {
-            TraitRefKind::Clause(..) | TraitRefKind::ParentClause(..) | TraitRefKind::SelfId => {
-                let pred = &tref.trait_decl_ref;
-                if let Some(pred) = pred.skip_binder.clone().move_from_under_binder()
-                    && let Some(trait_mods) =
-                        self.compute_trait_modifications(pred.id).as_processed()
-                {
-                    let base_path = tref.to_path().unwrap();
-                    for (path, ty) in trait_mods
-                        .type_constraints
-                        .iter_self_paths_subst(&pred.generics)
-                    {
-                        tys.push((path.on_tref(&base_path), ty));
-                    }
-                }
-            }
+            // TODO: give something here
+            TraitRefKind::Clause(..) | TraitRefKind::ParentClause(..) | TraitRefKind::SelfId => {}
             TraitRefKind::ItemClause(..) => {}
             TraitRefKind::TraitImpl(impl_ref) => {
                 if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(impl_ref.id) {
