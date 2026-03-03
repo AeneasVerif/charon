@@ -19,6 +19,8 @@ pub struct Local {
     /// through desugaring.
     #[drive(skip)]
     pub name: Option<String>,
+    /// Span of the variable declaration.
+    pub span: Span,
     /// The variable type
     #[charon::rename("local_ty")]
     pub ty: Ty,
