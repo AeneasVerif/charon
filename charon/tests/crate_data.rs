@@ -104,11 +104,20 @@ fn spans() -> anyhow::Result<()> {
     // Span of the whole function.
     assert_eq!(repr_span(function.item_meta.span), "2:8-10:9");
 
-    let body = &function.body.as_structured().unwrap().body;
+    let body = &function.body.as_structured().unwrap();
     // Span of the function body
-    assert_eq!(repr_span(body.span), "3:16-10:9");
+    assert_eq!(repr_span(body.body.span), "3:16-10:9");
 
-    let the_loop = body.statements.iter().find(|st| st.kind.is_loop()).unwrap();
+    let sum_var = &body.locals.locals[2];
+    assert_eq!(sum_var.name.as_deref(), Some("sum"));
+    assert_eq!(repr_span(sum_var.span), "3:16-3:23");
+
+    let the_loop = body
+        .body
+        .statements
+        .iter()
+        .find(|st| st.kind.is_loop())
+        .unwrap();
     assert_eq!(repr_span(the_loop.span), "5:12-8:13");
 
     Ok(())

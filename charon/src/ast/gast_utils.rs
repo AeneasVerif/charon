@@ -43,6 +43,7 @@ impl Locals {
         let local_id = self.locals.push_with(|index| Local {
             index,
             name,
+            span: Span::dummy(),
             ty: ty.clone(),
         });
         Place::new(local_id, ty)

@@ -1404,11 +1404,12 @@ and loc_of_json (ctx : of_json_ctx) (js : json) : (loc, string) result =
 and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name); ("ty", ty) ] ->
+    | `Assoc [ ("index", index); ("name", name); ("span", span); ("ty", ty) ] ->
         let* index = local_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
+        let* span = span_of_json ctx span in
         let* local_ty = ty_of_json ctx ty in
-        Ok ({ index; name; local_ty } : local)
+        Ok ({ index; name; span; local_ty } : local)
     | _ -> Error "")
 
 and local_id_of_json (ctx : of_json_ctx) (js : json) : (local_id, string) result

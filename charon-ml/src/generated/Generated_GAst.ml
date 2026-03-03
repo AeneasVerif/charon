@@ -128,6 +128,7 @@ and local = {
   name : string option;
       (** Variable name - may be [None] if the variable was introduced by Rust
           through desugaring. *)
+  span : span;  (** Span of the variable declaration. *)
   local_ty : ty;  (** The variable type *)
 }
 
