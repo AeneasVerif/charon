@@ -630,9 +630,8 @@ impl<'a> ComputeItemModifications<'a> {
                 .unwrap()
                 .clone()
         } else if let ItemRef::TraitImpl(timpl) = item {
-            let _ = self.compute_assoc_tys_for_impl(timpl.def_id);
-            let type_constraints = self.impl_assoc_tys[timpl.def_id]
-                .as_processed()
+            let type_constraints = self
+                .compute_assoc_tys_for_impl(timpl.def_id)
                 .unwrap()
                 .clone();
             let mut modifications = ItemModifications::from_constraint_set(type_constraints, true);
@@ -1154,6 +1153,40 @@ impl VisitAstMut for UpdateItemBody<'_> {
         }
     }
     fn enter_trait_impl(&mut self, timpl: &mut TraitImpl) {
+        // Adjust impl associated types.
+        let trait_id = timpl.impl_trait.id;
+        if let Some(decl_modifs) = self.item_modifications.get(&GenericsSource::item(trait_id)) {
+            if decl_modifs.add_type_params {
+                timpl
+                    .types
+                    .retain(|(_, assoc_ty)| assoc_ty.binds_anything());
+            }
+            for path in decl_modifs.required_extra_assoc_types() {
+                let new_type_name = TraitItemName(path.to_name().into());
+                if let Some(ty) = self.lookup_type_replacement(&path) {
+                    trace!("Adding associated type {new_type_name} = {ty:?}");
+                    timpl.types.push((
+                        new_type_name.clone(),
+                        Binder::empty(
+                            BinderKind::TraitType(trait_id, new_type_name.clone()),
+                            TraitAssocTyImpl {
+                                value: ty.clone(),
+                                implied_trait_refs: Default::default(),
+                            },
+                        ),
+                    ));
+                } else {
+                    register_error!(
+                        self.ctx,
+                        timpl.item_meta.span,
+                        "Could not figure out type for new associated type {new_type_name}.\n\
+                        Available: {:?}",
+                        self.type_replacements,
+                    );
+                }
+            }
+        }
+
         self.process_trait_decl_ref(&mut timpl.impl_trait, TraitRefKind::SelfId);
     }
     fn enter_trait_decl(&mut self, tdecl: &mut TraitDecl) {
@@ -1335,42 +1368,6 @@ impl TransformPass for Transform {
                 && modifications.add_type_params
             {
                 tr.types.retain(|assoc_ty| assoc_ty.binds_anything());
-            }
-
-            // Adjust impl associated types.
-            if let ItemRefMut::TraitImpl(timpl) = &mut item {
-                let trait_id = timpl.impl_trait.id;
-                if let Some(decl_modifs) = item_modifications.get(&GenericsSource::item(trait_id)) {
-                    if decl_modifs.add_type_params {
-                        timpl
-                            .types
-                            .retain(|(_, assoc_ty)| assoc_ty.binds_anything());
-                    }
-                    for path in decl_modifs.required_extra_assoc_types() {
-                        let new_type_name = TraitItemName(path.to_name().into());
-                        if let Some(ty) = type_replacements.find(&path) {
-                            trace!("Adding associated type {new_type_name} = {ty:?}");
-                            timpl.types.push((
-                                new_type_name.clone(),
-                                Binder::empty(
-                                    BinderKind::TraitType(trait_id, new_type_name.clone()),
-                                    TraitAssocTyImpl {
-                                        value: ty.clone(),
-                                        implied_trait_refs: Default::default(),
-                                    },
-                                ),
-                            ));
-                        } else {
-                            register_error!(
-                                ctx,
-                                span,
-                                "Could not figure out type for new associated type {new_type_name}.\
-                                \nAvailable: {:?}",
-                                type_replacements
-                            );
-                        }
-                    }
-                }
             }
 
             // Update the rest of the items: all the `GenericArgs` and the non-top-level binders
