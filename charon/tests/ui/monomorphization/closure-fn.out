@@ -145,7 +145,7 @@ fn apply_to_once::<closure<'_, '_>>(@1: closure<'_, '_>) -> u8
     _0 = {impl#0}<'8, '9>::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl#1}<'20, '21>] f_1
+    conditional_drop[{impl#3}<'20, '21>] f_1
     return
 }
 

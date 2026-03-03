@@ -84,7 +84,7 @@ fn call_once::<()>(@1: closure::<()>, @2: ((),))
     _0 = ()
     _3 = &mut _1
     _0 = {impl#1}::<()>::call_mut<'3>(move _3, move _2)
-    drop[{impl#1}::<()>] _1
+    drop[{impl#3}::<()>] _1
     return
 }
 

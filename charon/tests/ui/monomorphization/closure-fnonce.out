@@ -71,7 +71,7 @@ fn apply_to_zero_once::<closure>(@1: closure) -> u8
     _0 = {impl#0}::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl#0}] f_1
+    conditional_drop[{impl#1}] f_1
     return
 }
 

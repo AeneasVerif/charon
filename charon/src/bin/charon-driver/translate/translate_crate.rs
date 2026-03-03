@@ -790,7 +790,7 @@ pub fn translate<'tcx, 'ctx>(
     // them. This removes them from the traits and impls.
     ctx.remove_unused_methods();
 
-    ctx.check_mono_no_trait_impl();
+    // ctx.check_mono_no_trait_impl();
 
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {

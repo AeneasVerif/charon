@@ -159,7 +159,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         error!("TraitImpl other than Normal is not supported in Mono");
                     }
                     // We do not translate trait impl blocks.
-                    self.translated.trait_impls.remove_and_shift_ids(id);
+                    // self.translated.trait_impls.remove_and_shift_ids(id);
                 } else {
                     let trait_impl = match kind {
                         TraitImplSource::Normal => {
