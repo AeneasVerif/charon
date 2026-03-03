@@ -459,22 +459,24 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // fetch associative arguments
             if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
                 for item in items {
-                    let item_def_id = &item.def_id;
-                    // This is ok because dyn-compatible methods don't have generics.
-                    let item_def = bt_ctx.hax_def(
-                        &trait_def
-                            .this()
-                            .with_def_id(bt_ctx.hax_state(), item_def_id),
-                    )?;
-                    if let hax::FullDefKind::AssocTy {
-                        implied_predicates, ..
-                    } = item_def.kind()
-                    {
-                        let predicates = &implied_predicates.predicates;
-                        if let Some((c, _)) = predicates.first() {
-                            if let hax::ClauseKind::Trait(p) = &c.kind.value {
-                                assoc_types = Some(p.trait_ref.generic_args.clone());
-                                break;
+                    if matches!(item.kind, hax::AssocKind::Type { .. }) {
+                        let item_def_id = &item.def_id;
+                        // This is ok because dyn-compatible methods don't have generics.
+                        let item_def = bt_ctx.hax_def(
+                            &trait_def
+                                .this()
+                                .with_def_id(bt_ctx.hax_state(), item_def_id),
+                        )?;
+                        if let hax::FullDefKind::AssocTy {
+                            implied_predicates, ..
+                        } = item_def.kind()
+                        {
+                            let predicates = &implied_predicates.predicates;
+                            if let Some((c, _)) = predicates.first() {
+                                if let hax::ClauseKind::Trait(p) = &c.kind.value {
+                                    assoc_types = Some(p.trait_ref.generic_args.clone());
+                                    break;
+                                }
                             }
                         }
                     }

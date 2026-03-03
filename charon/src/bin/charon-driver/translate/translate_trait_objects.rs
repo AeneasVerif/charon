@@ -882,7 +882,7 @@ impl ItemTransCtx<'_, '_> {
             _ => unreachable!(),
         };
 
-        let implemented_trait = self.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
         let self_ty = implemented_trait.generics.types[0].clone();
 
         trace!("MONO: self_ty index:\n {:?}", self_ty);
@@ -1224,7 +1224,7 @@ impl ItemTransCtx<'_, '_> {
 
         let trait_def = self.hax_def(&trait_pred.trait_ref)?;
         // let trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
-        let implemented_trait = self.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
         // let implemented_trait = self.translate_trait_decl_ref(span, trait_def.this())?;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
@@ -1666,7 +1666,7 @@ impl ItemTransCtx<'_, '_> {
             TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
         // `*mut T` for `impl Trait for T`
         let ref_target_self = {
-            let impl_trait = self.translate_trait_decl_ref_poly(span, &trait_pred.trait_ref)?;
+            let impl_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
             // let impl_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
             TyKind::RawPtr(impl_trait.generics.types[0].clone(), RefKind::Mut).into_ty()
         };
