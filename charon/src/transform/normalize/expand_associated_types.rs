@@ -171,6 +171,33 @@ mod trait_ref_path {
             new_ref
         }
 
+        /// Apply `self` onto a real `TraitRef`, going up through the `tref`'s parent
+        /// clauses. Returns `None` if the crate did not contain all the `TraitDecl`s we need to do
+        /// that.
+        pub fn on_real_tref(
+            &self,
+            krate: &TranslatedCrate,
+            mut tref: TraitRef,
+        ) -> Option<TraitRef> {
+            assert!(self.base.is_self_clause());
+            for &parent_id in &self.parent_path {
+                let pred = tref
+                    .trait_decl_ref
+                    .skip_binder
+                    .clone()
+                    .move_from_under_binder()?;
+                let tdecl = krate.get_item(pred.id)?;
+                let tdecl = tdecl.as_trait_decl()?;
+                let clause = &tdecl.implied_clauses[parent_id];
+                let next_pred = clause.trait_.clone().substitute(&pred.generics);
+                tref = TraitRef::new(
+                    TraitRefKind::ParentClause(Box::new(tref), parent_id),
+                    next_pred,
+                );
+            }
+            Some(tref)
+        }
+
         /// References the same clause one level up.
         pub fn pop_base(&self) -> Self {
             let mut new_ref = self.clone();
@@ -789,6 +816,7 @@ impl<'a> ComputeItemModifications<'a> {
 
     /// Returns the associated types values known for the given impl. If the impl is cyclic, the
     /// set will not be exhaustive.
+    #[tracing::instrument(skip(self))]
     fn compute_assoc_tys_for_impl(&mut self, id: TraitImplId) -> Option<&TypeConstraintSet> {
         if let CycleDetector::Unprocessed = self.impl_assoc_tys[id] {
             if let Some(timpl) = self.ctx.translated.trait_impls.get(id) {
@@ -807,92 +835,33 @@ impl<'a> ComputeItemModifications<'a> {
                 // its implied clauses.
                 for (clause_id, tref) in timpl.implied_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(clause_id);
-                    for (path, ty) in self.compute_assoc_tys_for_tref(timpl.item_meta.span, tref) {
-                        let path = path.on_tref(&clause_path);
-                        set.insert_path(&path, ty);
+                    let pred = &tref.trait_decl_ref;
+                    if let Some(pred) = pred.skip_binder.clone().move_from_under_binder()
+                            // This takes a `&mut self`, so we reborrow it shared below.
+                            && let _ = self.compute_trait_modifications(pred.id)
+                            && let Some(trait_mods) = self.trait_modifications[pred.id].as_processed()
+                    {
+                        for path in trait_mods.required_extra_params() {
+                            if let Some(tref) =
+                                path.tref.on_real_tref(&self.ctx.translated, tref.clone())
+                            {
+                                // This will get normalized further by `lookup_type_replacement`.
+                                let ty = TyKind::TraitType(tref, path.type_name).into_ty();
+                                let path = path.on_tref(&clause_path);
+                                set.insert_path(&path, ty);
+                            }
+                        }
                     }
                 }
+                trace!(
+                    "compute_assoc_tys_for_impl({}) = {set:?}",
+                    timpl.def_id.with_ctx(&self.ctx.into_fmt()),
+                );
 
                 self.impl_assoc_tys[id] = CycleDetector::Processed(set);
             }
         }
         self.impl_assoc_tys[id].as_processed()
-    }
-
-    /// Returns the associated types values known for the given trait ref. E.g. for `T:
-    /// FnOnce<..>`, we get `Self::Output = ...`. The returned trait refs should be based on
-    /// `Self`.
-    fn compute_assoc_tys_for_tref(
-        &mut self,
-        span: Span,
-        tref: &TraitRef,
-    ) -> Vec<(AssocTypePath, Ty)> {
-        let mut tys = vec![];
-        match &tref.kind {
-            // TODO: give something here
-            TraitRefKind::Clause(..) | TraitRefKind::ParentClause(..) | TraitRefKind::SelfId => {}
-            TraitRefKind::ItemClause(..) => {}
-            TraitRefKind::TraitImpl(impl_ref) => {
-                if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(impl_ref.id) {
-                    tys.extend(set_for_clause.iter_self_paths_subst(&impl_ref.generics));
-                }
-            }
-            TraitRefKind::BuiltinOrAuto {
-                parent_trait_refs,
-                types,
-                ..
-            } => {
-                for (name, assoc_ty) in types.iter().cloned() {
-                    let path = TraitRefPath::self_ref().with_assoc_type(name);
-                    tys.push((path, assoc_ty.value));
-                }
-                for (parent_clause_id, parent_ref) in parent_trait_refs.iter_indexed() {
-                    let clause_path = TraitRefPath::parent_clause(parent_clause_id);
-                    tys.extend(
-                        self.compute_assoc_tys_for_tref(span, parent_ref)
-                            .into_iter()
-                            .map(|(path, ty)| {
-                                let path = path.on_tref(&clause_path);
-                                (path, ty)
-                            }),
-                    )
-                }
-            }
-            TraitRefKind::Dyn => {
-                let pred = &tref.trait_decl_ref;
-                let self_ty = pred.skip_binder.generics.types[0]
-                    .clone()
-                    .move_from_under_binder()
-                    .unwrap();
-                if !self_ty.is_error() {
-                    let TyKind::DynTrait(dyn_pred) = self_ty.kind() else {
-                        unreachable!(
-                            "`TraitRefKind::Dyn` only makes sense with a `dyn Trait` Self type"
-                        )
-                    };
-                    tys.extend(
-                        self.compute_constraint_set(&dyn_pred.binder.params)
-                            .iter()
-                            // Paths apply to the first clause of the binder, which is the one
-                            // that's being implemented. FIXME: is that true? if not, ask hax to
-                            // resolve the correct clause.
-                            .filter(|(path, _ty)| {
-                                matches!(path.tref.base, BaseClause::Local(id)
-                                    if id == DeBruijnVar::new_at_zero(TraitClauseId::ZERO))
-                            })
-                            .map(|(path, ty)| {
-                                (
-                                    path.pop_base(),
-                                    ty.move_from_under_binder()
-                                        .expect("unepected dyn type constraint"),
-                                )
-                            }),
-                    );
-                }
-            }
-            TraitRefKind::Unknown(_) => {}
-        }
-        tys
     }
 }
 
@@ -932,7 +901,16 @@ impl UpdateItemBody<'_> {
             _ => self.type_replacements.depth(),
         };
         let ty = self.type_replacements[dbid].find(&path)?;
-        Some(ty.clone().move_under_binders(dbid))
+        let mut ty = ty.clone().move_under_binders(dbid);
+        if let TyKind::TraitType(tref, name) = ty.kind() {
+            let path = TraitRefPath::self_ref().with_assoc_type(*name);
+            // Unnormalizable types may very well show up, e.g. when trait loopiness forces us to
+            // create new assoc types.
+            if let Some(new_ty) = self.lookup_path_on_trait_ref(&path, tref) {
+                ty = new_ty;
+            }
+        }
+        Some(ty)
     }
 
     fn lookup_path_on_trait_ref(&self, path: &AssocTypePath, tref: &TraitRef) -> Option<Ty> {
