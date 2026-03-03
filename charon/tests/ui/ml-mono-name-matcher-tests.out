@@ -14,7 +14,7 @@ pub enum Option::<i32> {
 }
 
 // Full name: core::option::{Option::<i32>}::is_some::<i32>
-pub fn is_some::<i32><'_0>(@1: &'_0 Option::<i32>) -> bool
+pub fn is_some::<i32><'_0>(_1: &'_0 Option::<i32>) -> bool
 = <opaque>
 
 // Full name: core::slice::index::{impl#0}::index::<bool, RangeFrom::<usize>>
@@ -122,7 +122,7 @@ fn test_crate::funs_with_disambiguator::f() -> u32
 }
 
 // Full name: test_crate::funs_with_disambiguator
-fn funs_with_disambiguator(@1: bool) -> u32
+fn funs_with_disambiguator(_1: bool) -> u32
 {
     let _0: u32; // return
     let b_1: bool; // arg #1
@@ -149,7 +149,7 @@ struct MonoContainer::<&'_ Str> {
   item: &'_ Str,
 }
 
-fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::<i32>
+fn test_crate::{MonoContainer::<i32>}::create::<i32>(_1: i32) -> MonoContainer::<i32>
 {
     let _0: MonoContainer::<i32>; // return
     let item_1: i32; // arg #1
@@ -162,7 +162,7 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(@1: i32) -> MonoContainer::
     return
 }
 
-fn test_crate::{MonoContainer::<&'_ Str>}::create::<&'_ Str>(@1: &'_ Str) -> MonoContainer::<&'_ Str>
+fn test_crate::{MonoContainer::<&'_ Str>}::create::<&'_ Str>(_1: &'_ Str) -> MonoContainer::<&'_ Str>
 {
     let _0: MonoContainer::<&'_ Str>; // return
     let item_1: &'0 Str; // arg #1

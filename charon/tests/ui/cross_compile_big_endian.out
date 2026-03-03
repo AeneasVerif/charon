@@ -8,7 +8,7 @@ pub fn MAX() -> usize
 pub const MAX: usize = MAX()
 
 // Full name: core::num::{u128}::to_ne_bytes
-pub fn to_ne_bytes(@1: u128) -> [u8; 16 : usize]
+pub fn to_ne_bytes(_1: u128) -> [u8; 16 : usize]
 = <opaque>
 
 // Full name: test_crate::S

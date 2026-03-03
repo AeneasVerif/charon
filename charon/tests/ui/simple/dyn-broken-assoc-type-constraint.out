@@ -23,7 +23,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -67,13 +67,13 @@ pub trait Broken<Self>
     vtable: test_crate::Broken::{vtable}<Self::Assoc>
 }
 
-pub fn test_crate::Broken::broken<'_0, Self>(@1: &'_0 Self)
+pub fn test_crate::Broken::broken<'_0, Self>(_1: &'_0 Self)
 where
     [@TraitClause0]: Broken<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Broken for T}::broken
-pub fn {impl Broken for T}::broken<'_0, T>(@1: &'_0 T)
+pub fn {impl Broken for T}::broken<'_0, T>(_1: &'_0 T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Foo<()>,
@@ -87,7 +87,7 @@ where
 }
 
 // Full name: test_crate::{impl Broken for T}::broken::{vtable_method}
-fn {vtable_method}<'_0, T>(@1: &'_0 (dyn Broken))
+fn {vtable_method}<'_0, T>(_1: &'_0 (dyn Broken))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Foo<()>,
@@ -104,7 +104,7 @@ where
 }
 
 // Full name: test_crate::{impl Broken for T}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Broken<Assoc = ()>))
+unsafe fn {vtable_drop_shim}<T>(_1: *mut (dyn Broken<Assoc = ()>))
 where
     [@TraitClause0]: Sized<T>,
 {

@@ -24,13 +24,13 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn {impl Clone for i32}::clone<'_0>(@1: &'_0 i32) -> i32
+pub fn {impl Clone for i32}::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
@@ -67,13 +67,13 @@ trait Modifiable<Self, T>
     vtable: test_crate::Modifiable::{vtable}<T>
 }
 
-fn test_crate::Modifiable::modify<'_0, '_1, Self, T>(@1: &'_0 mut Self, @2: &'_1 T) -> T
+fn test_crate::Modifiable::modify<'_0, '_1, Self, T>(_1: &'_0 mut Self, _2: &'_1 T) -> T
 where
     [@TraitClause0]: Modifiable<Self, T>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify
-fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(@1: &'_0 mut i32, @2: &'_1 T) -> T
+fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(_1: &'_0 mut i32, _2: &'_1 T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -95,7 +95,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify::{vtable_method}
-fn {vtable_method}<'_0, '_1, T>(@1: &'_0 mut (dyn Modifiable<T>), @2: &'_1 T) -> T
+fn {vtable_method}<'_0, '_1, T>(_1: &'_0 mut (dyn Modifiable<T>), _2: &'_1 T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -112,7 +112,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}<T>(@1: *mut (dyn Modifiable<T>))
+unsafe fn {vtable_drop_shim}<T>(_1: *mut (dyn Modifiable<T>))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -165,7 +165,7 @@ where
 }
 
 // Full name: test_crate::modify_trait_object
-fn modify_trait_object<'_0, T>(@1: &'_0 T) -> T
+fn modify_trait_object<'_0, T>(_1: &'_0 T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,

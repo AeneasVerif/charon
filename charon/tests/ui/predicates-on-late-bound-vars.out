@@ -22,7 +22,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::cell::{RefCell<T>[@TraitClause0::parent_clause0]}::new
-pub fn new<T>(@1: T) -> RefCell<T>[@TraitClause0::parent_clause0]
+pub fn new<T>(_1: T) -> RefCell<T>[@TraitClause0::parent_clause0]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -46,7 +46,7 @@ where
     T : 'b,
 
 // Full name: core::cell::{RefCell<T>[@TraitClause0]}::try_borrow
-pub fn try_borrow<'_0, T>(@1: &'_0 RefCell<T>[@TraitClause0]) -> Result<Ref<'_0, T>[@TraitClause0], BorrowError>[{built_in impl Sized for Ref<'_0, T>[@TraitClause0]}, {built_in impl Sized for BorrowError}]
+pub fn try_borrow<'_0, T>(_1: &'_0 RefCell<T>[@TraitClause0]) -> Result<Ref<'_0, T>[@TraitClause0], BorrowError>[{built_in impl Sized for Ref<'_0, T>[@TraitClause0]}, {built_in impl Sized for BorrowError}]
 where
     [@TraitClause0]: MetaSized<T>,
 = <opaque>
@@ -62,7 +62,7 @@ pub trait Clone<Self>
 
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -75,7 +75,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -89,7 +89,7 @@ where
 }
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>(@1: *mut Result<T, E>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>(_1: *mut Result<T, E>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
@@ -116,7 +116,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::wrap
-fn wrap<'a>(@1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
+fn wrap<'a>(_1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 {
     let _0: Option<&'6 u32>[{built_in impl Sized for &'6 u32}]; // return
     let x_1: &'9 u32; // arg #1
@@ -130,7 +130,7 @@ fn wrap<'a>(@1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 }
 
 // Full name: test_crate::wrap2
-fn wrap2<'a>(@1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'_ u32}]
+fn wrap2<'a>(_1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'_ u32}]
 where
     [@TraitClause0]: Clone<&'a ()>,
 {

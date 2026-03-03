@@ -44,7 +44,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -66,7 +66,7 @@ pub enum AssertKind {
 
 // Full name: core::slice::{[T]}::len
 #[lang_item("slice_len_fn")]
-pub fn len<'_0, T>(@1: &'_0 [T]) -> usize
+pub fn len<'_0, T>(_1: &'_0 [T]) -> usize
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -82,7 +82,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::function_call
-fn function_call(@1: u32)
+fn function_call(_1: u32)
 {
     let _0: (); // return
     let _1: u32; // arg #1
@@ -93,7 +93,7 @@ fn function_call(@1: u32)
 }
 
 // Full name: test_crate::sum
-pub fn sum<'_0>(@1: &'_0 [u32]) -> u32
+pub fn sum<'_0>(_1: &'_0 [u32]) -> u32
 {
     let _0: u32; // return
     let s_1: &'1 [u32]; // arg #1
@@ -288,7 +288,7 @@ impl Default for Bar {
 }
 
 // Full name: test_crate::eat
-fn eat<T>(@1: T)
+fn eat<T>(_1: T)
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -500,7 +500,7 @@ pub fn thing()
 }
 
 // Full name: test_crate::fake_read
-pub fn fake_read(@1: u32)
+pub fn fake_read(_1: u32)
 {
     let _0: (); // return
     let x_1: u32; // arg #1

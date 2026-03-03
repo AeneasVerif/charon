@@ -22,13 +22,13 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
-pub fn {impl Clone for u32}::clone<'_0>(@1: &'_0 u32) -> u32
+pub fn {impl Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}
@@ -40,7 +40,7 @@ impl Clone for u32 {
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
 #[lang_item("noop_method_clone")]
-pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(@1: &'_1 &'_0 T) -> &'_0 T
+pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}
@@ -58,7 +58,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -82,7 +82,7 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -108,13 +108,13 @@ pub trait Foo<Self>
     vtable: test_crate::Foo::{vtable}<Self::Type>
 }
 
-pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 Self) -> &'_0 @TraitClause0::Type
+pub fn test_crate::Foo::get_ty<'_0, Self>(_1: &'_0 Self) -> &'_0 @TraitClause0::Type
 where
     [@TraitClause0]: Foo<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::get_ty
-pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 ()) -> &'_0 u32
+pub fn {impl Foo for ()}::get_ty<'_0>(_1: &'_0 ()) -> &'_0 u32
 {
     let _0: &'1 u32; // return
     let self_1: &'3 (); // arg #1
@@ -290,7 +290,7 @@ where
 }
 
 // Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]}::call_once
-fn {impl FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]}::call_once<'_0, U>(@1: closure<U>[@TraitClause0], @2: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
+fn {impl FnOnce<(&'_ U,)> for closure<U>[@TraitClause0]}::call_once<'_0, U>(_1: closure<U>[@TraitClause0], _2: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
 where
     [@TraitClause0]: Sized<U>,
 {
@@ -324,7 +324,7 @@ where
 }
 
 // Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>(@1: *mut closure<U>[@TraitClause0])
+unsafe fn {impl Destruct for closure<U>[@TraitClause0]}::drop_in_place<U>(_1: *mut closure<U>[@TraitClause0])
 where
     [@TraitClause0]: Sized<U>,
 = <missing>

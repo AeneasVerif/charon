@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -33,7 +33,7 @@ pub trait Tuple<Self>
 
 // Full name: core::mem::drop
 #[lang_item("mem_drop")]
-pub fn drop<T>(@1: T)
+pub fn drop<T>(_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
@@ -52,7 +52,7 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -68,7 +68,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::apply_to_zero_once
-fn apply_to_zero_once<T0>(@1: T0) -> u8
+fn apply_to_zero_once<T0>(_1: T0) -> u8
 where
     [@TraitClause0]: Sized<T0>,
     [@TraitClause1]: FnOnce<T0, (u8,)>,
@@ -94,7 +94,7 @@ where
 struct NotCopy {}
 
 // Full name: test_crate::NotCopy::{impl Destruct for NotCopy}::drop_in_place
-unsafe fn {impl Destruct for NotCopy}::drop_in_place(@1: *mut NotCopy)
+unsafe fn {impl Destruct for NotCopy}::drop_in_place(_1: *mut NotCopy)
 {
     let _0: (); // return
     let _1: *mut NotCopy; // arg #1
@@ -118,7 +118,7 @@ struct closure {
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}::call_once
-fn {impl FnOnce<(u8,)> for closure}::call_once(@1: closure, @2: (u8,)) -> u8
+fn {impl FnOnce<(u8,)> for closure}::call_once(_1: closure, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: closure; // arg #1

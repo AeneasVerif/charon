@@ -205,7 +205,7 @@ fn FOO() -> Foo
 static FOO: Foo = FOO()
 
 // Full name: test_crate::non_copy_static::{Foo}::method
-fn method<'_0>(@1: &'_0 Foo)
+fn method<'_0>(_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1

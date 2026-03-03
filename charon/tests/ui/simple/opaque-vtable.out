@@ -24,13 +24,13 @@ pub trait Trait<Self>
     vtable: test_crate::x::Trait::{vtable}
 }
 
-pub fn test_crate::x::Trait::method<'_0, Self>(@1: &'_0 Self)
+pub fn test_crate::x::Trait::method<'_0, Self>(_1: &'_0 Self)
 where
     [@TraitClause0]: Trait<Self>,
 = <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::method
-pub fn {impl Trait for ()}::method<'_0>(@1: &'_0 ())
+pub fn {impl Trait for ()}::method<'_0>(_1: &'_0 ())
 = <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
@@ -48,7 +48,7 @@ impl Trait for () {
 }
 
 // Full name: test_crate::use_debug
-fn use_debug<'_0>(@1: &'_0 (dyn Trait + '_0))
+fn use_debug<'_0>(_1: &'_0 (dyn Trait + '_0))
 {
     let _0: (); // return
     let _d_1: &'3 (dyn Trait + '4); // arg #1

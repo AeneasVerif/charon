@@ -15,7 +15,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::foo::{impl Trait for ()}::defaulted
-pub fn {impl Trait for ()}::defaulted<'_0>(@1: &'_0 ())
+pub fn {impl Trait for ()}::defaulted<'_0>(_1: &'_0 ())
 {
     let _0: (); // return
     let self_1: &'1 (); // arg #1
@@ -60,7 +60,7 @@ pub trait Trait<Self>
     vtable: test_crate::foo::Trait::{vtable}
 }
 
-pub fn test_crate::foo::Trait::defaulted<'_0, Self>(@1: &'_0 Self)
+pub fn test_crate::foo::Trait::defaulted<'_0, Self>(_1: &'_0 Self)
 where
     [@TraitClause0]: Trait<Self>,
 {

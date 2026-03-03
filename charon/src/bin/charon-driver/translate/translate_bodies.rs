@@ -209,11 +209,13 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         self.locals_map.get(&local.index()).copied()
     }
 
-    pub(crate) fn push_var(&mut self, rid: mir::Local, ty: Ty, name: Option<String>) {
-        let local_id = self
-            .locals
-            .locals
-            .push_with(|index| Local { index, name, ty });
+    pub(crate) fn push_var(&mut self, rid: mir::Local, ty: Ty, name: Option<String>, span: Span) {
+        let local_id = self.locals.locals.push_with(|index| Local {
+            index,
+            name,
+            span,
+            ty,
+        });
         self.locals_map.insert(rid.as_usize(), local_id);
     }
 
@@ -229,7 +231,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             let ty = self.translate_rustc_ty(span, &var.ty)?;
 
             // Add the variable to the environment
-            self.push_var(index, ty, name);
+            self.push_var(index, ty, name, span);
         }
 
         Ok(())

@@ -723,7 +723,7 @@ impl<'a> ComputeItemModifications<'a> {
                     && self
                         .ctx
                         .options
-                        .remove_associated_types
+                        .lift_associated_types
                         .iter()
                         .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
                 let remove_assoc_types = !is_self_referential && remove_assoc_type;
@@ -1039,16 +1039,15 @@ impl UpdateItemBody<'_> {
             let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
                 ty.clone()
             } else {
-                if let Some(tref) = base_tref.to_path() {
-                    path = path.on_tref(&tref);
-                }
                 let fmt_ctx = &self.ctx.into_fmt();
                 let item_name = target.item_name(&self.ctx.translated, fmt_ctx);
+                let base_tref = base_tref.with_ctx(fmt_ctx);
+                let args = args.with_ctx(fmt_ctx);
                 register_error!(
                     self.ctx,
                     self.span,
-                    "Could not compute the value of {path} ({self_path:?}) needed to update \
-                    generics {args:?} for item {item_name}.\
+                    "Could not compute the value of {path} (on {base_tref}) needed to update \
+                    item reference {item_name}{args}.\
                     \nConstraints in scope:\n{}",
                     self.type_replacements
                         .iter()
@@ -1348,7 +1347,7 @@ impl TransformPass for Transform {
             if let ItemRefMut::TraitDecl(tr) = &mut item
                 && modifications.add_type_params
             {
-                tr.types.clear();
+                tr.types.retain(|assoc_ty| assoc_ty.binds_anything());
             }
 
             // Adjust impl associated types.
@@ -1356,7 +1355,9 @@ impl TransformPass for Transform {
                 let trait_id = timpl.impl_trait.id;
                 if let Some(decl_modifs) = item_modifications.get(&GenericsSource::item(trait_id)) {
                     if decl_modifs.add_type_params {
-                        timpl.types.clear();
+                        timpl
+                            .types
+                            .retain(|(_, assoc_ty)| assoc_ty.binds_anything());
                     }
                     for path in decl_modifs.required_extra_assoc_types() {
                         let new_type_name = TraitItemName(path.to_name().into());

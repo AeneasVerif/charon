@@ -574,7 +574,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
             // The input variables start at index 1
             // TODO: use the locals to get the variable names
             let id = LocalId::new(i + 1);
-            args.push(format!("{}: {}", id.to_pretty_string(), ty.with_ctx(ctx)));
+            args.push(format!("{}: {}", id.with_ctx(ctx), ty.with_ctx(ctx)));
         }
         let args = args.join(", ");
         write!(f, "({args})")?;

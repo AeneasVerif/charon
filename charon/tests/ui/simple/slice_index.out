@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::first
-pub fn first<'_0>(@1: &'_0 [u32]) -> u32
+pub fn first<'_0>(_1: &'_0 [u32]) -> u32
 {
     let _0: u32; // return
     let s_1: &'1 [u32]; // arg #1

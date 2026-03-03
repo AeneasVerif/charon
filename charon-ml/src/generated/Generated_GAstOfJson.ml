@@ -424,7 +424,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("exclude", exclude);
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
-          ("remove_associated_types", remove_associated_types);
+          ("lift_associated_types", lift_associated_types);
           ("hide_marker_traits", hide_marker_traits);
           ("remove_adt_clauses", remove_adt_clauses);
           ("hide_allocator", hide_allocator);
@@ -469,8 +469,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* exclude = list_of_json string_of_json ctx exclude in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
-        let* remove_associated_types =
-          list_of_json string_of_json ctx remove_associated_types
+        let* lift_associated_types =
+          list_of_json string_of_json ctx lift_associated_types
         in
         let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
         let* remove_adt_clauses = bool_of_json ctx remove_adt_clauses in
@@ -521,7 +521,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              exclude;
              extract_opaque_bodies;
              translate_all_methods;
-             remove_associated_types;
+             lift_associated_types;
              hide_marker_traits;
              remove_adt_clauses;
              hide_allocator;
@@ -1410,11 +1410,12 @@ and loc_of_json (ctx : of_json_ctx) (js : json) : (loc, string) result =
 and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name); ("ty", ty) ] ->
+    | `Assoc [ ("index", index); ("name", name); ("span", span); ("ty", ty) ] ->
         let* index = local_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
+        let* span = span_of_json ctx span in
         let* local_ty = ty_of_json ctx ty in
-        Ok ({ index; name; local_ty } : local)
+        Ok ({ index; name; span; local_ty } : local)
     | _ -> Error "")
 
 and local_id_of_json (ctx : of_json_ctx) (js : json) : (local_id, string) result

@@ -95,7 +95,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::apply_to::<closure<'_, '_>>
-fn apply_to::<closure<'_, '_>><'_0>(@1: &'_0 closure<'_, '_>) -> u8
+fn apply_to::<closure<'_, '_>><'_0>(_1: &'_0 closure<'_, '_>) -> u8
 {
     let _0: u8; // return
     let f_1: &'3 closure<'4, '5>; // arg #1
@@ -113,7 +113,7 @@ fn apply_to::<closure<'_, '_>><'_0>(@1: &'_0 closure<'_, '_>) -> u8
 }
 
 // Full name: test_crate::apply_to_mut::<closure<'_, '_>>
-fn apply_to_mut::<closure<'_, '_>><'_0>(@1: &'_0 mut closure<'_, '_>) -> u8
+fn apply_to_mut::<closure<'_, '_>><'_0>(_1: &'_0 mut closure<'_, '_>) -> u8
 {
     let _0: u8; // return
     let f_1: &'3 mut closure<'4, '5>; // arg #1
@@ -131,7 +131,7 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(@1: &'_0 mut closure<'_, '_>) -> u8
 }
 
 // Full name: test_crate::apply_to_once::<closure<'_, '_>>
-fn apply_to_once::<closure<'_, '_>>(@1: closure<'_, '_>) -> u8
+fn apply_to_once::<closure<'_, '_>>(_1: closure<'_, '_>) -> u8
 {
     let _0: u8; // return
     let f_1: closure<'0, '1>; // arg #1

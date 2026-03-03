@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -28,7 +28,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -60,7 +60,7 @@ pub enum Thing {
 }
 
 // Full name: test_crate::Thing::{impl Destruct for Thing}::drop_in_place
-unsafe fn {impl Destruct for Thing}::drop_in_place(@1: *mut Thing)
+unsafe fn {impl Destruct for Thing}::drop_in_place(_1: *mut Thing)
 {
     let _0: (); // return
     let _1: *mut Thing; // arg #1
@@ -84,7 +84,7 @@ impl Destruct for Thing {
 }
 
 // Full name: test_crate::foo
-fn foo(@1: Thing)
+fn foo(_1: Thing)
 {
     let _0: (); // return
     let _1: Thing; // arg #1

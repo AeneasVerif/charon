@@ -5,7 +5,7 @@
 pub opaque type Arguments<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::from_str
-pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
+pub fn from_str<'a>(_1: &'static Str) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::marker::MetaSized
@@ -28,7 +28,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::drop::Drop
@@ -41,13 +41,13 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut Self)
+pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
     [@TraitClause0]: Drop<Self>,
 = <opaque>
 
 // Full name: std::io::stdio::_print
-pub fn _print<'_0>(@1: Arguments<'_0>)
+pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -55,7 +55,7 @@ pub fn _print<'_0>(@1: Arguments<'_0>)
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
@@ -65,7 +65,7 @@ impl Destruct for Global {
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -78,7 +78,7 @@ where
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::vec::Vec
@@ -91,7 +91,7 @@ where
     [@TraitClause4]: Destruct<type_error("removed allocator parameter")>,
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -110,7 +110,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::use_string
-fn use_string(@1: String)
+fn use_string(_1: String)
 {
     let _0: (); // return
     let _1: String; // arg #1
@@ -127,7 +127,7 @@ fn use_string(@1: String)
 }
 
 // Full name: test_crate::use_vec
-fn use_vec(@1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}])
+fn use_vec(_1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}])
 {
     let _0: (); // return
     let _1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // arg #1
@@ -144,7 +144,7 @@ fn use_vec(@1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for 
 }
 
 // Full name: test_crate::drop_unknown
-fn drop_unknown<T>(@1: T)
+fn drop_unknown<T>(_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
@@ -164,7 +164,7 @@ where
 }
 
 // Full name: test_crate::skip_drop_scalar
-fn skip_drop_scalar(@1: i32)
+fn skip_drop_scalar(_1: i32)
 {
     let _0: (); // return
     let _1: i32; // arg #1
@@ -181,7 +181,7 @@ struct Point {
 }
 
 // Full name: test_crate::{impl Drop for Point}::drop
-pub fn {impl Drop for Point}::drop<'_0>(@1: &'_0 mut Point)
+pub fn {impl Drop for Point}::drop<'_0>(_1: &'_0 mut Point)
 {
     let _0: (); // return
     let self_1: &'1 mut Point; // arg #1
@@ -200,7 +200,7 @@ pub fn {impl Drop for Point}::drop<'_0>(@1: &'_0 mut Point)
 }
 
 // Full name: test_crate::Point::{impl Destruct for Point}::drop_in_place
-unsafe fn {impl Destruct for Point}::drop_in_place(@1: *mut Point)
+unsafe fn {impl Destruct for Point}::drop_in_place(_1: *mut Point)
 {
     let _0: (); // return
     let _1: *mut Point; // arg #1

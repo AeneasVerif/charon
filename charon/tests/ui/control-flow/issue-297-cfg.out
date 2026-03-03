@@ -34,14 +34,14 @@ pub trait Iterator<Self>
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
-pub fn {impl IntoIterator for I}::into_iter<I>(@1: I) -> I
+pub fn {impl IntoIterator for I}::into_iter<I>(_1: I) -> I
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Iterator<I>,
 = <opaque>
 
 #[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(_1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: Iterator<Self>,
 = <opaque>
@@ -54,7 +54,7 @@ where
     T : 'a,
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(@1: &'_1 mut Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -72,7 +72,7 @@ where
 }
 
 // Full name: core::slice::{[T]}::chunks
-pub fn chunks<'_0, T>(@1: &'_0 [T], @2: usize) -> Chunks<'_0, T>[@TraitClause0]
+pub fn chunks<'_0, T>(_1: &'_0 [T], _2: usize) -> Chunks<'_0, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -88,7 +88,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::f1
-fn f1<'_0>(@1: &'_0 [u8]) -> usize
+fn f1<'_0>(_1: &'_0 [u8]) -> usize
 {
     let _0: usize; // return
     let a_1: &'1 [u8]; // arg #1
@@ -168,7 +168,7 @@ fn FIELD_MODULUS() -> i16
 const FIELD_MODULUS: i16 = FIELD_MODULUS()
 
 // Full name: test_crate::f2
-fn f2<'_0, '_1>(@1: &'_0 [u8], @2: &'_1 mut [i16]) -> usize
+fn f2<'_0, '_1>(_1: &'_0 [u8], _2: &'_1 mut [i16]) -> usize
 {
     let _0: usize; // return
     let a_1: &'1 [u8]; // arg #1

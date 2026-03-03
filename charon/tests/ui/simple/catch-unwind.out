@@ -22,7 +22,7 @@ where
 }
 
 // Full name: core::any::Any::type_id
-pub fn type_id<'_0, Self>(@1: &'_0 Self) -> TypeId
+pub fn type_id<'_0, Self>(_1: &'_0 Self) -> TypeId
 where
     [@TraitClause0]: Any<Self>,
 = <opaque>
@@ -47,7 +47,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -71,7 +71,7 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -92,7 +92,7 @@ where
 }
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>(@1: *mut Result<T, E>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for Result<T, E>[@TraitClause0, @TraitClause1]}::drop_in_place<T, E>(_1: *mut Result<T, E>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
@@ -113,7 +113,7 @@ where
 pub struct Global {}
 
 // Full name: std::panic::catch_unwind
-pub fn catch_unwind<F, R>(@1: F) -> Result<R, alloc::boxed::Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send)}, {built_in impl Sized for Global}]>[@TraitClause1, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send)>[{built_in impl MetaSized for (dyn Any + Send)}, {built_in impl Sized for Global}]}]
+pub fn catch_unwind<F, R>(_1: F) -> Result<R, alloc::boxed::Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send)}, {built_in impl Sized for Global}]>[@TraitClause1, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send)>[{built_in impl MetaSized for (dyn Any + Send)}, {built_in impl Sized for Global}]}]
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<R>,
@@ -126,7 +126,7 @@ where
 struct closure {}
 
 // Full name: test_crate::main::{impl FnOnce<()> for closure}::call_once
-fn {impl FnOnce<()> for closure}::call_once(@1: closure, @2: ())
+fn {impl FnOnce<()> for closure}::call_once(_1: closure, _2: ())
 {
     let _0: (); // return
     let _1: closure; // arg #1

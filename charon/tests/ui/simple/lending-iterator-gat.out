@@ -24,7 +24,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -60,12 +60,12 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -81,7 +81,7 @@ where
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut Option<T>[@TraitClause0])
+unsafe fn {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>(_1: *mut Option<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -125,7 +125,7 @@ pub trait LendingIterator<Self>
 }
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_in_place
-unsafe fn {impl Destruct for (A,)}::drop_in_place<A>(@1: *mut (A,))
+unsafe fn {impl Destruct for (A,)}::drop_in_place<A>(_1: *mut (A,))
 {
     let _0: (); // return
     let _1: *mut (A,); // arg #1
@@ -144,13 +144,13 @@ impl<A> Destruct for (A,) {
     non-dyn-compatible
 }
 
-pub fn test_crate::LendingIterator::next<'a, Self>(@1: &'a mut Self) -> Option<@TraitClause0::Item>[(@TraitClause0::Item::[@TraitClause0])]
+pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<@TraitClause0::Item>[(@TraitClause0::Item::[@TraitClause0])]
 where
     [@TraitClause0]: LendingIterator<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next
-pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next<'a, 'b, T>(@1: &'b mut Option<&'a T>[{built_in impl Sized for &'_ T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
+pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next<'a, 'b, T>(_1: &'b mut Option<&'a T>[{built_in impl Sized for &'_ T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -198,7 +198,7 @@ where
 }
 
 // Full name: test_crate::for_each
-pub fn for_each<I, T1>(@1: I, @2: T1)
+pub fn for_each<I, T1>(_1: I, _2: T1)
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Sized<T1>,
@@ -265,7 +265,7 @@ struct closure<'_0> {
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut
-fn {impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut closure<'_0>, @2: (&'_1 i32,))
+fn {impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0>, _2: (&'_1 i32,))
 {
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1
@@ -288,7 +288,7 @@ fn {impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 m
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}::drop_in_place
-unsafe fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(@1: *mut closure<'_0>)
+unsafe fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(_1: *mut closure<'_0>)
 = <missing>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
@@ -298,7 +298,7 @@ impl<'_0> Destruct for closure<'_0> {
 }
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once
-fn {impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once<'_0, '_1>(@1: closure<'_0>, @2: (&'_1 i32,))
+fn {impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once<'_0, '_1>(_1: closure<'_0>, _2: (&'_1 i32,))
 {
     let _0: (); // return
     let _1: closure<'_0>; // arg #1

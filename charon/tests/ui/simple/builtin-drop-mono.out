@@ -33,7 +33,7 @@ pub struct Global {}
 pub opaque type String
 
 // Full name: test_crate::drop_array
-fn drop_array(@1: [String; 4 : usize])
+fn drop_array(_1: [String; 4 : usize])
 {
     let _0: (); // return
     let _1: [String; 4 : usize]; // arg #1
@@ -57,7 +57,7 @@ fn drop_slice(@1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [Stri
 }
 
 // Full name: test_crate::drop_tuple
-fn drop_tuple(@1: (String, String))
+fn drop_tuple(_1: (String, String))
 {
     let _0: (); // return
     let _1: (String, String); // arg #1

@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::num::{u8}::wrapping_add
-pub fn wrapping_add(@1: u8, @2: u8) -> u8
+pub fn wrapping_add(_1: u8, _2: u8) -> u8
 {
     let _0: u8; // return
     let self_1: u8; // arg #1
@@ -12,7 +12,7 @@ pub fn wrapping_add(@1: u8, @2: u8) -> u8
 }
 
 // Full name: core::num::{u8}::wrapping_sub
-pub fn wrapping_sub(@1: u8, @2: u8) -> u8
+pub fn wrapping_sub(_1: u8, _2: u8) -> u8
 {
     let _0: u8; // return
     let self_1: u8; // arg #1
@@ -23,7 +23,7 @@ pub fn wrapping_sub(@1: u8, @2: u8) -> u8
 }
 
 // Full name: core::num::{u8}::wrapping_mul
-pub fn wrapping_mul(@1: u8, @2: u8) -> u8
+pub fn wrapping_mul(_1: u8, _2: u8) -> u8
 {
     let _0: u8; // return
     let self_1: u8; // arg #1

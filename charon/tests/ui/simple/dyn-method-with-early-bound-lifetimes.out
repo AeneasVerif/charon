@@ -22,13 +22,13 @@ trait Trait<Self>
     vtable: test_crate::Trait::{vtable}
 }
 
-fn test_crate::Trait::foo<'a, '_1, Self>(@1: &'_1 Self)
+fn test_crate::Trait::foo<'a, '_1, Self>(_1: &'_1 Self)
 where
     [@TraitClause0]: Trait<Self>,
     Self : 'a,
 = <method_without_default_body>
 
-fn test_crate::foo<'_0>(@1: &'_0 (dyn Trait + '_0))
+fn test_crate::foo<'_0>(_1: &'_0 (dyn Trait + '_0))
 {
     let _0: (); // return
     let x_1: &'3 (dyn Trait + '4); // arg #1

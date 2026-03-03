@@ -103,7 +103,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::apply_to_zero::<test_crate::main::closure<'_>>
-fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<'_>) -> u8
+fn apply_to_zero::<test_crate::main::closure<'_>>(_1: test_crate::main::closure<'_>) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure<'0>; // arg #1
@@ -122,7 +122,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
 }
 
 // Full name: test_crate::apply_to_zero_mut::<test_crate::main::closure#1<'_>>
-fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::closure#1<'_>) -> u8
+fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(_1: test_crate::main::closure#1<'_>) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure#1<'0>; // arg #1
@@ -141,7 +141,7 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::cl
 }
 
 // Full name: test_crate::apply_to_zero_once::<test_crate::main::closure#2>
-fn apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate::main::closure#2) -> u8
+fn apply_to_zero_once::<test_crate::main::closure#2>(_1: test_crate::main::closure#2) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure#2; // arg #1

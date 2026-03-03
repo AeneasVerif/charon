@@ -20,7 +20,7 @@ where
 }
 
 // Full name: test_crate::foo
-fn foo<T>(@1: T)
+fn foo<T>(_1: T)
 {
     let _0: (); // return
     let _x_1: T; // arg #1

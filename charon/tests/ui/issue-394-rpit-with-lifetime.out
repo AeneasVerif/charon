@@ -61,7 +61,7 @@ where
     [@TraitClause0]: Sized<F>,
 
 // Full name: core::iter::sources::from_fn::from_fn
-pub fn from_fn<T, F>(@1: F) -> FromFn<F>[@TraitClause1]
+pub fn from_fn<T, F>(_1: F) -> FromFn<F>[@TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -77,15 +77,15 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -104,7 +104,7 @@ const UNIT_METADATA: () = @Fun0()
 struct closure<'a> {}
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'a>}::call_mut
-fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(@1: &'_1 mut closure<'a>, @2: ()) -> Option<u8>[{built_in impl Sized for u8}]
+fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: &'1 mut closure<'a>; // arg #1
@@ -115,7 +115,7 @@ fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(@1: &'_1 mut closure<'a>,
 }
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}::drop_in_place
-unsafe fn {impl Destruct for closure<'a>}::drop_in_place<'a>(@1: *mut closure<'a>)
+unsafe fn {impl Destruct for closure<'a>}::drop_in_place<'a>(_1: *mut closure<'a>)
 = <missing>
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}
@@ -125,7 +125,7 @@ impl<'a> Destruct for closure<'a> {
 }
 
 // Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'a>}::call_once
-fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(@1: closure<'a>, @2: ()) -> Option<u8>[{built_in impl Sized for u8}]
+fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(_1: closure<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: closure<'a>; // arg #1

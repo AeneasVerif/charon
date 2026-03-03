@@ -128,6 +128,7 @@ and local = {
   name : string option;
       (** Variable name - may be [None] if the variable was introduced by Rust
           through desugaring. *)
+  span : span;  (** Span of the variable declaration. *)
   local_ty : ty;  (** The variable type *)
 }
 
@@ -436,10 +437,10 @@ type cli_options = {
   translate_all_methods : bool;
       (** Usually we skip the provided methods that aren't used. When this flag
           is on, we translate them all. *)
-  remove_associated_types : string list;
-      (** Transforma the associate types of traits to be type parameters
-          instead. This takes a list of name patterns of the traits to
-          transform, using the same syntax as [--include]. *)
+  lift_associated_types : string list;
+      (** Transform the associate types of traits to be type parameters instead.
+          This takes a list of name patterns of the traits to transform, using
+          the same syntax as [--include]. *)
   hide_marker_traits : bool;
       (** Whether to hide various marker traits such as [Sized], [Sync], [Send]
           and [Destruct] anywhere they show up. This can considerably speed up

@@ -23,7 +23,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::choose
-fn choose<'a, T>(@1: bool, @2: &'a mut T, @3: &'a mut T) -> &'a mut T
+fn choose<'a, T>(_1: bool, _2: &'a mut T, _3: &'a mut T) -> &'a mut T
 where
     [@TraitClause0]: Sized<T>,
 {

@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::neg_test
-pub fn neg_test(@1: i32) -> i32
+pub fn neg_test(_1: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -15,7 +15,7 @@ pub fn neg_test(@1: i32) -> i32
 }
 
 // Full name: test_crate::add_u32
-pub fn add_u32(@1: u32, @2: u32) -> u32
+pub fn add_u32(_1: u32, _2: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -37,7 +37,7 @@ pub fn add_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::incr
-pub fn incr<'_0>(@1: &'_0 mut u32)
+pub fn incr<'_0>(_1: &'_0 mut u32)
 {
     let _0: (); // return
     let x_1: &'1 mut u32; // arg #1
@@ -52,7 +52,7 @@ pub fn incr<'_0>(@1: &'_0 mut u32)
 }
 
 // Full name: test_crate::subs_u32
-pub fn subs_u32(@1: u32, @2: u32) -> u32
+pub fn subs_u32(_1: u32, _2: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -74,7 +74,7 @@ pub fn subs_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::div_u32
-pub fn div_u32(@1: u32, @2: u32) -> u32
+pub fn div_u32(_1: u32, _2: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -93,7 +93,7 @@ pub fn div_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::div_u32_const
-pub fn div_u32_const(@1: u32) -> u32
+pub fn div_u32_const(_1: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -107,7 +107,7 @@ pub fn div_u32_const(@1: u32) -> u32
 }
 
 // Full name: test_crate::rem_u32
-pub fn rem_u32(@1: u32, @2: u32) -> u32
+pub fn rem_u32(_1: u32, _2: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -126,7 +126,7 @@ pub fn rem_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::mul_u32
-pub fn mul_u32(@1: u32, @2: u32) -> u32
+pub fn mul_u32(_1: u32, _2: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -148,7 +148,7 @@ pub fn mul_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::add_i32
-pub fn add_i32(@1: i32, @2: i32) -> i32
+pub fn add_i32(_1: i32, _2: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -170,7 +170,7 @@ pub fn add_i32(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::subs_i32
-pub fn subs_i32(@1: i32, @2: i32) -> i32
+pub fn subs_i32(_1: i32, _2: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -192,7 +192,7 @@ pub fn subs_i32(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::div_i32
-pub fn div_i32(@1: i32, @2: i32) -> i32
+pub fn div_i32(_1: i32, _2: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -211,7 +211,7 @@ pub fn div_i32(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::div_i32_const
-pub fn div_i32_const(@1: i32) -> i32
+pub fn div_i32_const(_1: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -225,7 +225,7 @@ pub fn div_i32_const(@1: i32) -> i32
 }
 
 // Full name: test_crate::rem_i32
-pub fn rem_i32(@1: i32, @2: i32) -> i32
+pub fn rem_i32(_1: i32, _2: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -244,7 +244,7 @@ pub fn rem_i32(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::mul_i32
-pub fn mul_i32(@1: i32, @2: i32) -> i32
+pub fn mul_i32(_1: i32, _2: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -266,7 +266,7 @@ pub fn mul_i32(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::mix_arith_u32
-pub fn mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
+pub fn mix_arith_u32(_1: u32, _2: u32, _3: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -368,7 +368,7 @@ pub fn mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
 }
 
 // Full name: test_crate::mix_arith_i32
-pub fn mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
+pub fn mix_arith_i32(_1: i32, _2: i32, _3: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -470,7 +470,7 @@ pub fn mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
 }
 
 // Full name: test_crate::shl_u32
-fn shl_u32(@1: u32, @2: u32) -> u32
+fn shl_u32(_1: u32, _2: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -489,7 +489,7 @@ fn shl_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::shr_u32
-fn shr_u32(@1: u32, @2: u32) -> u32
+fn shr_u32(_1: u32, _2: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -508,7 +508,7 @@ fn shr_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::shr_add_u32
-fn shr_add_u32(@1: u32, @2: u32) -> u32
+fn shr_add_u32(_1: u32, _2: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -534,7 +534,7 @@ fn shr_add_u32(@1: u32, @2: u32) -> u32
 }
 
 // Full name: test_crate::shl_i32
-fn shl_i32(@1: i32, @2: i32) -> i32
+fn shl_i32(_1: i32, _2: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -553,7 +553,7 @@ fn shl_i32(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::shr_i32
-fn shr_i32(@1: i32, @2: i32) -> i32
+fn shr_i32(_1: i32, _2: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -572,7 +572,7 @@ fn shr_i32(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::shr_i32_manual_cast
-fn shr_i32_manual_cast(@1: i32, @2: i32) -> i32
+fn shr_i32_manual_cast(_1: i32, _2: i32) -> i32
 {
     let _0: i32; // return
     let x_1: i32; // arg #1
@@ -595,7 +595,7 @@ fn shr_i32_manual_cast(@1: i32, @2: i32) -> i32
 }
 
 // Full name: test_crate::index_slice_ignore_value
-fn index_slice_ignore_value<'_0>(@1: &'_0 [u32])
+fn index_slice_ignore_value<'_0>(_1: &'_0 [u32])
 {
     let _0: (); // return
     let x_1: &'1 [u32]; // arg #1
@@ -816,7 +816,7 @@ fn div_signed_with_constant() -> i32
 }
 
 // Full name: test_crate::div_unsigned_to_slice
-fn div_unsigned_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
+fn div_unsigned_to_slice<'_0>(_1: &'_0 mut [u32], _2: u32)
 {
     let _0: (); // return
     let result_1: &'1 mut [u32]; // arg #1
@@ -843,7 +843,7 @@ fn div_unsigned_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
 }
 
 // Full name: test_crate::div_signed_to_slice
-fn div_signed_to_slice<'_0>(@1: &'_0 mut [i32], @2: i32)
+fn div_signed_to_slice<'_0>(_1: &'_0 mut [i32], _2: i32)
 {
     let _0: (); // return
     let result_1: &'1 mut [i32]; // arg #1
@@ -870,7 +870,7 @@ fn div_signed_to_slice<'_0>(@1: &'_0 mut [i32], @2: i32)
 }
 
 // Full name: test_crate::add_to_slice
-fn add_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
+fn add_to_slice<'_0>(_1: &'_0 mut [u32], _2: u32)
 {
     let _0: (); // return
     let result_1: &'1 mut [u32]; // arg #1
@@ -900,7 +900,7 @@ fn add_to_slice<'_0>(@1: &'_0 mut [u32], @2: u32)
 }
 
 // Full name: test_crate::add_to_slice2
-fn add_to_slice2<'_0>(@1: &'_0 mut [u8], @2: usize, @3: u8)
+fn add_to_slice2<'_0>(_1: &'_0 mut [u8], _2: usize, _3: u8)
 {
     let _0: (); // return
     let result_1: &'1 mut [u8]; // arg #1
