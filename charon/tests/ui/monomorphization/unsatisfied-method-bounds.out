@@ -14,7 +14,7 @@ const UNIT_METADATA: () = @Fun1()
 struct A {}
 
 // Full name: test_crate::{impl MyIterator::<A>}::method
-fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 A)
+fn {impl MyIterator::<A>}::method<'_0>(_1: &'_0 A)
 {
     let _0: (); // return
     let self_1: &'1 A; // arg #1
@@ -28,7 +28,7 @@ fn {impl MyIterator::<A>}::method<'_0>(@1: &'_0 A)
 struct B {}
 
 // Full name: test_crate::{impl MyIterator::<B>}::method
-fn {impl MyIterator::<B>}::method<'_0>(@1: &'_0 B)
+fn {impl MyIterator::<B>}::method<'_0>(_1: &'_0 B)
 {
     let _0: (); // return
     let self_1: &'1 B; // arg #1

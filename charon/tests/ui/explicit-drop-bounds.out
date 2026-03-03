@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::string::String
@@ -28,7 +28,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
@@ -51,7 +51,7 @@ trait Trait<Self, T>
     non-dyn-compatible
 }
 
-fn test_crate::Trait::foo<Self, T, U>(@1: U)
+fn test_crate::Trait::foo<Self, T, U>(_1: U)
 where
     [@TraitClause0]: Trait<Self, T>,
     [@TraitClause1]: Sized<U>,
@@ -67,7 +67,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait<u32> for ()}::foo
-fn {impl Trait<u32> for ()}::foo<U>(@1: U)
+fn {impl Trait<u32> for ()}::foo<U>(_1: U)
 where
     [@TraitClause0]: Sized<U>,
     [@TraitClause1]: Destruct<U>,
@@ -95,7 +95,7 @@ impl Trait<u32> for () {
 }
 
 // Full name: test_crate::use_trait
-fn use_trait<T, X>(@1: T, @2: X)
+fn use_trait<T, X>(_1: T, _2: X)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<X>,

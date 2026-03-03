@@ -63,13 +63,13 @@ pub trait Destruct::<test_crate::main::closure#2>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(@1: *mut test_crate::main::closure<'_>)
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(_1: *mut test_crate::main::closure<'_>)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>(@1: *mut test_crate::main::closure#1<'_>)
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>(_1: *mut test_crate::main::closure#1<'_>)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(@1: *mut test_crate::main::closure#2)
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(_1: *mut test_crate::main::closure#2)
 = <opaque>
 
 // Full name: core::marker::Tuple::<(u8,)>
@@ -82,7 +82,7 @@ pub trait Tuple::<(u8,)>
 
 // Full name: core::mem::drop::<Thing>
 #[lang_item("mem_drop")]
-pub fn drop::<Thing>(@1: Thing)
+pub fn drop::<Thing>(_1: Thing)
 = <opaque>
 
 // Full name: core::ops::function::FnOnce::<test_crate::main::closure<'_>, (u8,)>
@@ -120,7 +120,7 @@ pub trait Fn::<test_crate::main::closure<'_>, (u8,)>
     vtable: core::ops::function::Fn::{vtable}::<test_crate::main::closure<'_>, (u8,)><u8>
 }
 
-pub fn core::ops::function::Fn::call::<test_crate::main::closure<'_>, (u8,)><'_0>(@1: &'_0 test_crate::main::closure<'_>, @2: (u8,)) -> u8
+pub fn core::ops::function::Fn::call::<test_crate::main::closure<'_>, (u8,)><'_0>(_1: &'_0 test_crate::main::closure<'_>, _2: (u8,)) -> u8
 = <opaque>
 
 // Full name: core::ops::function::FnOnce::<test_crate::main::closure#1<'_>, (u8,)>
@@ -146,10 +146,10 @@ pub trait FnMut::<test_crate::main::closure#1<'_>, (u8,)>
     vtable: core::ops::function::FnMut::{vtable}::<test_crate::main::closure#1<'_>, (u8,)><u8>
 }
 
-pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8,)><'_0>(@1: &'_0 mut test_crate::main::closure#1<'_>, @2: (u8,)) -> u8
+pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8,)><'_0>(_1: &'_0 mut test_crate::main::closure#1<'_>, _2: (u8,)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8,)><'_0>(@1: &'_0 mut test_crate::main::closure<'_>, @2: (u8,)) -> u8
+pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8,)><'_0>(_1: &'_0 mut test_crate::main::closure<'_>, _2: (u8,)) -> u8
 = <opaque>
 
 // Full name: core::ops::function::FnOnce::<test_crate::main::closure#2, (u8,)>
@@ -163,13 +163,13 @@ pub trait FnOnce::<test_crate::main::closure#2, (u8,)>
     vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure#2, (u8,)><u8>
 }
 
-pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8,)>(@1: test_crate::main::closure#2, @2: (u8,)) -> u8
+pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8,)>(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8,)>(@1: test_crate::main::closure<'_>, @2: (u8,)) -> u8
+pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8,)>(_1: test_crate::main::closure<'_>, _2: (u8,)) -> u8
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8,)>(@1: test_crate::main::closure#1<'_>, @2: (u8,)) -> u8
+pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8,)>(_1: test_crate::main::closure#1<'_>, _2: (u8,)) -> u8
 = <opaque>
 
 fn UNIT_METADATA()
@@ -183,7 +183,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::main::{impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call
-fn {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'_0, '_1>(@1: &'_1 test_crate::main::closure<'_0>, @2: (u8,)) -> u8
+fn {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'_0, '_1>(_1: &'_1 test_crate::main::closure<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: &'2 test_crate::main::closure<'_0>; // arg #1
@@ -208,7 +208,7 @@ fn {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'_0, '_1>(@1: &'_1 te
 }
 
 // Full name: test_crate::main::closure::{impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place
-unsafe fn {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>(@1: *mut test_crate::main::closure<'_>)
+unsafe fn {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure<'_>)
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure<'_0>; // arg #1
@@ -227,7 +227,7 @@ impl<'_0> Destruct::<test_crate::main::closure<'_>> {
 }
 
 // Full name: test_crate::apply_to_zero::<test_crate::main::closure<'_>>
-fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<'_>) -> u8
+fn apply_to_zero::<test_crate::main::closure<'_>>(_1: test_crate::main::closure<'_>) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure<'0>; // arg #1
@@ -246,7 +246,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<
 }
 
 // Full name: test_crate::main::{impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut
-fn {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '_1>(@1: &'_1 mut test_crate::main::closure#1<'_0>, @2: (u8,)) -> u8
+fn {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::closure#1<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: &'2 mut test_crate::main::closure#1<'_0>; // arg #1
@@ -275,7 +275,7 @@ fn {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '_1>(@1
 }
 
 // Full name: test_crate::main::closure#1::{impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place
-unsafe fn {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>(@1: *mut test_crate::main::closure#1<'_>)
+unsafe fn {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure#1<'_>)
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure#1<'_0>; // arg #1
@@ -294,7 +294,7 @@ impl<'_0> Destruct::<test_crate::main::closure#1<'_>> {
 }
 
 // Full name: test_crate::apply_to_zero_mut::<test_crate::main::closure#1<'_>>
-fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::closure#1<'_>) -> u8
+fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(_1: test_crate::main::closure#1<'_>) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure#1<'0>; // arg #1
@@ -313,7 +313,7 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_crate::main::cl
 }
 
 // Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once
-fn {impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once(@1: test_crate::main::closure#2, @2: (u8,)) -> u8
+fn {impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::main::closure#2; // arg #1
@@ -342,7 +342,7 @@ fn {impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once(@1: test_crate
 }
 
 // Full name: test_crate::main::closure#2::{impl Destruct::<test_crate::main::closure#2>}::drop_in_place
-unsafe fn {impl Destruct::<test_crate::main::closure#2>}::drop_in_place(@1: *mut test_crate::main::closure#2)
+unsafe fn {impl Destruct::<test_crate::main::closure#2>}::drop_in_place(_1: *mut test_crate::main::closure#2)
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure#2; // arg #1
@@ -361,7 +361,7 @@ impl Destruct::<test_crate::main::closure#2> {
 }
 
 // Full name: test_crate::apply_to_zero_once::<test_crate::main::closure#2>
-fn apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate::main::closure#2) -> u8
+fn apply_to_zero_once::<test_crate::main::closure#2>(_1: test_crate::main::closure#2) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure#2; // arg #1
@@ -434,7 +434,7 @@ fn main()
 }
 
 // Full name: test_crate::main::{impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut
-fn {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '_1>(@1: &'_1 mut test_crate::main::closure<'_0>, @2: (u8,)) -> u8
+fn {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::closure<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let state_1: &'_1 mut test_crate::main::closure<'_0>; // arg #1
@@ -448,7 +448,7 @@ fn {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '_1>(@1: 
 }
 
 // Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}::call_once
-fn {impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}::call_once<'_0>(@1: test_crate::main::closure<'_0>, @2: (u8,)) -> u8
+fn {impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}::call_once<'_0>(_1: test_crate::main::closure<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::main::closure<'_0>; // arg #1
@@ -492,7 +492,7 @@ impl<'_0> Fn::<test_crate::main::closure<'_>, (u8,)> {
 }
 
 // Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}::call_once
-fn {impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}::call_once<'_0>(@1: test_crate::main::closure#1<'_0>, @2: (u8,)) -> u8
+fn {impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}::call_once<'_0>(_1: test_crate::main::closure#1<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::main::closure#1<'_0>; // arg #1

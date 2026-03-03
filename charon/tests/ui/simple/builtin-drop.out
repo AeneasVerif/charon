@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -28,7 +28,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
@@ -38,7 +38,7 @@ impl Destruct for Global {
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(@1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause3, @TraitClause4])
 where
     [@TraitClause0]: MetaSized<T>,
     [@TraitClause1]: Sized<A>,
@@ -63,7 +63,7 @@ where
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
@@ -83,7 +83,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_in_place
-unsafe fn {impl Destruct for [T; N]}::drop_in_place<T, const N : usize>(@1: *mut [T; N])
+unsafe fn {impl Destruct for [T; N]}::drop_in_place<T, const N : usize>(_1: *mut [T; N])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
@@ -142,7 +142,7 @@ where
 }
 
 // Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_in_place
-unsafe fn {impl Destruct for [T]}::drop_in_place<T>(@1: *mut [T])
+unsafe fn {impl Destruct for [T]}::drop_in_place<T>(_1: *mut [T])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
@@ -195,7 +195,7 @@ where
 }
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_in_place
-unsafe fn {impl Destruct for (A, B)}::drop_in_place<A, B>(@1: *mut (A, B))
+unsafe fn {impl Destruct for (A, B)}::drop_in_place<A, B>(_1: *mut (A, B))
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Destruct<A>,
@@ -225,7 +225,7 @@ where
 }
 
 // Full name: test_crate::drop_array
-fn drop_array(@1: [String; 4 : usize])
+fn drop_array(_1: [String; 4 : usize])
 {
     let _0: (); // return
     let _1: [String; 4 : usize]; // arg #1
@@ -237,7 +237,7 @@ fn drop_array(@1: [String; 4 : usize])
 }
 
 // Full name: test_crate::drop_slice
-fn drop_slice(@1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}])
+fn drop_slice(_1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}])
 {
     let _0: (); // return
     let _1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]; // arg #1
@@ -249,7 +249,7 @@ fn drop_slice(@1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [Stri
 }
 
 // Full name: test_crate::drop_tuple
-fn drop_tuple<A, B>(@1: (A, B))
+fn drop_tuple<A, B>(_1: (A, B))
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause1]: Sized<B>,

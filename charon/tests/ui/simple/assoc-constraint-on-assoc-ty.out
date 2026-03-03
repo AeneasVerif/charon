@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: test_crate::Trait
@@ -33,7 +33,7 @@ trait Trait<Self, Self_Assoc>
 }
 
 // Full name: test_crate::takes_trait
-fn takes_trait<I, Clause1_Assoc>(@1: I)
+fn takes_trait<I, Clause1_Assoc>(_1: I)
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Trait<I, Clause1_Assoc>,
@@ -57,7 +57,7 @@ trait IntoIterator<Self, Self_IntoIter>
 }
 
 // Full name: test_crate::collect
-fn collect<I, Clause1_IntoIter>(@1: Clause1_IntoIter)
+fn collect<I, Clause1_IntoIter>(_1: Clause1_IntoIter)
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: IntoIterator<I, Clause1_IntoIter>,

@@ -11,7 +11,7 @@ enum MyResult::<Never, u8> {
 }
 
 // Full name: test_crate::use_result
-fn use_result(@1: MyResult::<Never, u8>)
+fn use_result(_1: MyResult::<Never, u8>)
 {
     let _0: (); // return
     let _1: MyResult::<Never, u8>; // arg #1

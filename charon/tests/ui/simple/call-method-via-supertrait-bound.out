@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -57,13 +57,13 @@ trait HasMethod<Self>
     vtable: test_crate::HasMethod::{vtable}
 }
 
-fn test_crate::HasMethod::method<'_0, Self>(@1: &'_0 Self)
+fn test_crate::HasMethod::method<'_0, Self>(_1: &'_0 Self)
 where
     [@TraitClause0]: HasMethod<Self>,
 = <method_without_default_body>
 
 // Full name: test_crate::{impl HasMethod for T}::method
-fn {impl HasMethod for T}::method<'_0, T>(@1: &'_0 T)
+fn {impl HasMethod for T}::method<'_0, T>(_1: &'_0 T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: OtherTrait<T>,
@@ -88,7 +88,7 @@ where
 }
 
 // Full name: test_crate::call_method
-fn call_method<T>(@1: T)
+fn call_method<T>(_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ImpliesOtherTrait<T>,

@@ -5,7 +5,7 @@
 pub opaque type Arguments<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::from_str
-pub fn from_str<'a>(@1: &'static Str) -> Arguments<'a>
+pub fn from_str<'a>(_1: &'static Str) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::marker::MetaSized
@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::drop::Drop
@@ -32,13 +32,13 @@ pub trait Drop<Self>
     vtable: core::ops::drop::Drop::{vtable}
 }
 
-pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut Self)
+pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
     [@TraitClause0]: Drop<Self>,
 = <opaque>
 
 // Full name: std::io::stdio::_print
-pub fn _print<'_0>(@1: Arguments<'_0>)
+pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -57,7 +57,7 @@ const UNIT_METADATA: () = @Fun0()
 struct Foo {}
 
 // Full name: test_crate::{impl Drop for Foo}::drop
-pub fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut Foo)
+pub fn {impl Drop for Foo}::drop<'_0>(_1: &'_0 mut Foo)
 {
     let _0: (); // return
     let self_1: &'1 mut Foo; // arg #1
@@ -88,7 +88,7 @@ pub fn {impl Drop for Foo}::drop<'_0>(@1: &'_0 mut Foo)
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo}::drop_in_place
-unsafe fn {impl Destruct for Foo}::drop_in_place(@1: *mut Foo)
+unsafe fn {impl Destruct for Foo}::drop_in_place(_1: *mut Foo)
 {
     let _0: (); // return
     let _1: *mut Foo; // arg #1

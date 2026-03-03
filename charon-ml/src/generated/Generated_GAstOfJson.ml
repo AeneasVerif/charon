@@ -424,7 +424,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("exclude", exclude);
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
-          ("remove_associated_types", remove_associated_types);
+          ("lift_associated_types", lift_associated_types);
           ("hide_marker_traits", hide_marker_traits);
           ("remove_adt_clauses", remove_adt_clauses);
           ("hide_allocator", hide_allocator);
@@ -469,8 +469,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* exclude = list_of_json string_of_json ctx exclude in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
-        let* remove_associated_types =
-          list_of_json string_of_json ctx remove_associated_types
+        let* lift_associated_types =
+          list_of_json string_of_json ctx lift_associated_types
         in
         let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
         let* remove_adt_clauses = bool_of_json ctx remove_adt_clauses in
@@ -521,7 +521,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              exclude;
              extract_opaque_bodies;
              translate_all_methods;
-             remove_associated_types;
+             lift_associated_types;
              hide_marker_traits;
              remove_adt_clauses;
              hide_allocator;

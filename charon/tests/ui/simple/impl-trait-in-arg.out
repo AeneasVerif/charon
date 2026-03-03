@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: test_crate::Trait
@@ -32,7 +32,7 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::foo
-fn foo<T0>(@1: T0)
+fn foo<T0>(_1: T0)
 where
     [@TraitClause0]: Sized<T0>,
     [@TraitClause1]: Trait<T0>,

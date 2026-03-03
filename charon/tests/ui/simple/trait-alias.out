@@ -22,7 +22,7 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
@@ -36,7 +36,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -72,7 +72,7 @@ trait Trait<Self, T, Self_Item>
 struct Struct {}
 
 // Full name: test_crate::{impl Clone for Struct}::clone
-pub fn {impl Clone for Struct}::clone<'_0>(@1: &'_0 Struct) -> Struct
+pub fn {impl Clone for Struct}::clone<'_0>(_1: &'_0 Struct) -> Struct
 {
     let _0: Struct; // return
     let self_1: &'1 Struct; // arg #1
@@ -125,7 +125,7 @@ where
 }
 
 // Full name: test_crate::takes_alias
-fn takes_alias<T>(@1: T)
+fn takes_alias<T>(_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Alias<T, ()>,

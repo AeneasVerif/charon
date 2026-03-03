@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::rej_sample
-fn rej_sample<'_0>(@1: &'_0 [u8]) -> usize
+fn rej_sample<'_0>(_1: &'_0 [u8]) -> usize
 {
     let _0: usize; // return
     let a_1: &'1 [u8]; // arg #1

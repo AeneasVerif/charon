@@ -38,7 +38,7 @@ where
 }
 
 // Full name: test_crate::{AVLTree<T>[@TraitClause0]}::insert
-pub fn insert<'_0, T>(@1: &'_0 mut AVLTree<T>[@TraitClause0])
+pub fn insert<'_0, T>(_1: &'_0 mut AVLTree<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ord<T>,
@@ -57,7 +57,7 @@ impl Ord for u32 {
 }
 
 // Full name: test_crate::test
-pub fn test(@1: AVLTree<u32>[{built_in impl Sized for u32}])
+pub fn test(_1: AVLTree<u32>[{built_in impl Sized for u32}])
 {
     let _0: (); // return
     let tree_1: AVLTree<u32>[{built_in impl Sized for u32}]; // arg #1

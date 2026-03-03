@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -75,17 +75,17 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 Self, @2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args>(_1: &'_0 Self, _2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -125,7 +125,7 @@ where
 }
 
 // Full name: test_crate::foo::{const}::{impl Fn<()> for closure<T>[@TraitClause0]}::call
-fn {impl Fn<()> for closure<T>[@TraitClause0]}::call<'_0, T>(@1: &'_0 closure<T>[@TraitClause0], @2: ()) -> i32
+fn {impl Fn<()> for closure<T>[@TraitClause0]}::call<'_0, T>(_1: &'_0 closure<T>[@TraitClause0], _2: ()) -> i32
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -138,7 +138,7 @@ where
 }
 
 // Full name: test_crate::foo::{const}::{impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut
-fn {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_0, T>(@1: &'_0 mut closure<T>[@TraitClause0], @2: ()) -> i32
+fn {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_0, T>(_1: &'_0 mut closure<T>[@TraitClause0], _2: ()) -> i32
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -154,7 +154,7 @@ where
 }
 
 // Full name: test_crate::foo::{const}::closure::{impl Destruct for closure<T>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for closure<T>[@TraitClause0]}::drop_in_place<T>(@1: *mut closure<T>[@TraitClause0])
+unsafe fn {impl Destruct for closure<T>[@TraitClause0]}::drop_in_place<T>(_1: *mut closure<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 = <missing>
@@ -169,7 +169,7 @@ where
 }
 
 // Full name: test_crate::foo::{const}::{impl FnOnce<()> for closure<T>[@TraitClause0]}::call_once
-fn {impl FnOnce<()> for closure<T>[@TraitClause0]}::call_once<T>(@1: closure<T>[@TraitClause0], @2: ()) -> i32
+fn {impl FnOnce<()> for closure<T>[@TraitClause0]}::call_once<T>(_1: closure<T>[@TraitClause0], _2: ()) -> i32
 where
     [@TraitClause0]: Sized<T>,
 {

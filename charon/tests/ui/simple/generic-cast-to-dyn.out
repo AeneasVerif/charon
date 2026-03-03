@@ -22,7 +22,7 @@ where
 }
 
 // Full name: core::any::Any::type_id
-pub fn type_id<'_0, Self>(@1: &'_0 Self) -> TypeId
+pub fn type_id<'_0, Self>(_1: &'_0 Self) -> TypeId
 where
     [@TraitClause0]: Any<Self>,
 = <opaque>
@@ -46,7 +46,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::foo
-fn foo<'_0, T>(@1: &'_0 T) -> &'_0 (dyn Any + 'static)
+fn foo<'_0, T>(_1: &'_0 T) -> &'_0 (dyn Any + 'static)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Any<T>,

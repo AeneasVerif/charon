@@ -174,7 +174,7 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         {
             write!(f, "{v}")
         } else {
-            write!(f, "{}", id.to_pretty_string())
+            write!(f, "_{id}")
         }
     }
 

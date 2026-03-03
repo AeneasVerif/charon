@@ -25,7 +25,7 @@ pub trait Tuple::<(&'_ u32,)>
 }
 
 // Full name: test_crate::foo::<u32>
-fn foo::<u32><'a>(@1: &'a u32)
+fn foo::<u32><'a>(_1: &'a u32)
 {
     let _0: (); // return
     let x_1: &'1 u32; // arg #1
@@ -71,19 +71,19 @@ pub trait Fn::<for<'a> foo::<u32><'a>, (&'_ u32,)>
 }
 
 // Full name: core::ops::function::Fn::call::<for<'a> foo::<u32><'a>, (&'_ u32,)>
-pub fn call::<for<'a> foo::<u32><'a>, (&'_ u32,)><'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32,))
+pub fn call::<for<'a> foo::<u32><'a>, (&'_ u32,)><'_0>(_1: &'_0 for<'a> foo::<u32><'a>, _2: (&'_ u32,))
 = <opaque>
 
 // Full name: core::ops::function::Fn::call
-pub fn call<'_0>(@1: &'_0 for<'a> foo::<u32><'a>, @2: (&'_ u32,))
+pub fn call<'_0>(_1: &'_0 for<'a> foo::<u32><'a>, _2: (&'_ u32,))
 = <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut::<for<'a> foo::<u32><'a>, (&'_ u32,)>
-pub fn call_mut::<for<'a> foo::<u32><'a>, (&'_ u32,)><'_0>(@1: &'_0 mut for<'a> foo::<u32><'a>, @2: (&'_ u32,))
+pub fn call_mut::<for<'a> foo::<u32><'a>, (&'_ u32,)><'_0>(_1: &'_0 mut for<'a> foo::<u32><'a>, _2: (&'_ u32,))
 = <opaque>
 
 // Full name: core::ops::function::FnOnce::call_once::<for<'a> foo::<u32><'a>, (&'_ u32,)>
-pub fn call_once::<for<'a> foo::<u32><'a>, (&'_ u32,)>(@1: for<'a> foo::<u32><'a>, @2: (&'_ u32,))
+pub fn call_once::<for<'a> foo::<u32><'a>, (&'_ u32,)>(_1: for<'a> foo::<u32><'a>, _2: (&'_ u32,))
 = <opaque>
 
 fn UNIT_METADATA()
@@ -97,7 +97,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::foo::<u8>
-fn foo::<u8><'a>(@1: &'a u8)
+fn foo::<u8><'a>(_1: &'a u8)
 {
     let _0: (); // return
     let x_1: &'1 u8; // arg #1
@@ -108,7 +108,7 @@ fn foo::<u8><'a>(@1: &'a u8)
 }
 
 // Full name: test_crate::foo::<char>
-fn foo::<char><'a>(@1: &'a char)
+fn foo::<char><'a>(_1: &'a char)
 {
     let _0: (); // return
     let x_1: &'1 char; // arg #1
@@ -119,7 +119,7 @@ fn foo::<char><'a>(@1: &'a char)
 }
 
 // Full name: test_crate::takes_closure::<for<'a> foo::<u32><'a>>
-fn takes_closure::<for<'a> foo::<u32><'a>>(@1: for<'a> foo::<u32><'a>)
+fn takes_closure::<for<'a> foo::<u32><'a>>(_1: for<'a> foo::<u32><'a>)
 {
     let _0: (); // return
     let c_1: for<'a> foo::<u32><'a>; // arg #1

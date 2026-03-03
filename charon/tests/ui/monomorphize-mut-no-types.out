@@ -79,16 +79,16 @@ pub trait core::marker::Destruct::<Option<Option<&_ mut _>>><'_0, T0>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>(@1: *mut &'_0 mut T0)
+unsafe fn core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>(_1: *mut &'_0 mut T0)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<Option<&_ mut _>><'_0, T0>(@1: *mut Option<&'_0 mut T0>)
+unsafe fn core::marker::Destruct::drop_in_place::<Option<&_ mut _>><'_0, T0>(_1: *mut Option<&'_0 mut T0>)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<Option<Option<&_ mut _>>><'_0, T0>(@1: *mut Option<Option<&'_0 mut T0>>)
+unsafe fn core::marker::Destruct::drop_in_place::<Option<Option<&_ mut _>>><'_0, T0>(_1: *mut Option<Option<&'_0 mut T0>>)
 = <opaque>
 
 fn UNIT_METADATA()
@@ -102,7 +102,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::identity
-fn identity<T>(@1: T) -> T
+fn identity<T>(_1: T) -> T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -114,7 +114,7 @@ where
     return
 }
 
-fn test_crate::identity::<&_ mut _><'_0, T0>(@1: &'_0 mut T0) -> &'_0 mut T0
+fn test_crate::identity::<&_ mut _><'_0, T0>(_1: &'_0 mut T0) -> &'_0 mut T0
 where
     [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
 {
@@ -126,7 +126,7 @@ where
     return
 }
 
-fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(@1: Option<&'_0 mut T0>) -> Option<&'_0 mut T0>
+fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(_1: Option<&'_0 mut T0>) -> Option<&'_0 mut T0>
 where
     [@TraitClause0]: core::marker::Sized::<Option<&_ mut _>><'_0, T0>,
 {
@@ -138,7 +138,7 @@ where
     return
 }
 
-fn test_crate::identity::<Option<Option<&_ mut _>>><'_0, T0>(@1: Option<Option<&'_0 mut T0>>) -> Option<Option<&'_0 mut T0>>
+fn test_crate::identity::<Option<Option<&_ mut _>>><'_0, T0>(_1: Option<Option<&'_0 mut T0>>) -> Option<Option<&'_0 mut T0>>
 where
     [@TraitClause0]: core::marker::Sized::<Option<Option<&_ mut _>>><'_0, T0>,
 {
@@ -151,7 +151,7 @@ where
 }
 
 // Full name: test_crate::use_id_mut
-fn use_id_mut<X, A>(@1: A)
+fn use_id_mut<X, A>(_1: A)
 where
     [@TraitClause0]: Sized<X>,
     [@TraitClause1]: Sized<A>,

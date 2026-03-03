@@ -22,14 +22,14 @@ pub trait Sized<Self>
 
 // Full name: core::cmp::impls::{impl Ord for u64}::min
 #[lang_item("cmp_ord_min")]
-pub fn {impl Ord for u64}::min(@1: u64, @2: u64) -> u64
+pub fn {impl Ord for u64}::min(_1: u64, _2: u64) -> u64
 where
     [@TraitClause0]: Sized<u64>,
     [@TraitClause1]: Destruct<u64>,
 = <opaque>
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: test_crate::main

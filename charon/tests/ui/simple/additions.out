@@ -31,12 +31,12 @@ pub trait Clone<Self>
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <method_without_default_body>
 
-pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut Self, @2: &'_1 Self)
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 Self)
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
@@ -56,7 +56,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
+pub fn {impl Clone for u8}::clone<'_0>(_1: &'_0 u8) -> u8
 {
     let _0: u8; // return
     let self_1: &'1 u8; // arg #1
@@ -66,7 +66,7 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone_from
-pub fn {impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut u8, @2: &'_1 u8)
+pub fn {impl Clone for u8}::clone_from<'_0, '_1>(_1: &'_0 mut u8, _2: &'_1 u8)
 where
     [@TraitClause0]: Destruct<u8>,
 {
@@ -101,7 +101,7 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-pub fn core::intrinsics::saturating_add<T>(@1: T, @2: T) -> T
+pub fn core::intrinsics::saturating_add<T>(_1: T, _2: T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -121,10 +121,10 @@ impl Copy for u8 {
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <missing>
 
-pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8
+pub fn core::num::{u8}::saturating_add(_1: u8, _2: u8) -> u8
 {
     let _0: u8; // return
     let self_1: u8; // arg #1
@@ -135,7 +135,7 @@ pub fn core::num::{u8}::saturating_add(@1: u8, @2: u8) -> u8
 }
 
 // Full name: core::num::{u8}::wrapping_add
-pub fn wrapping_add(@1: u8, @2: u8) -> u8
+pub fn wrapping_add(_1: u8, _2: u8) -> u8
 {
     let _0: u8; // return
     let self_1: u8; // arg #1
@@ -146,7 +146,7 @@ pub fn wrapping_add(@1: u8, @2: u8) -> u8
 }
 
 // Full name: core::num::{u8}::overflowing_add
-pub fn overflowing_add(@1: u8, @2: u8) -> (u8, bool)
+pub fn overflowing_add(_1: u8, _2: u8) -> (u8, bool)
 {
     let _0: (u8, bool); // return
     let self_1: u8; // arg #1

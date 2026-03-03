@@ -20,7 +20,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -34,7 +34,7 @@ where
 }
 
 // Full name: core::option::Option::Some
-fn Some<T>(@1: T) -> Option<T>[@TraitClause0]
+fn Some<T>(_1: T) -> Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -44,7 +44,7 @@ where
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(@1: *mut String)
+unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
@@ -87,7 +87,7 @@ struct Foo {
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo}::drop_in_place
-unsafe fn {impl Destruct for Foo}::drop_in_place(@1: *mut Foo)
+unsafe fn {impl Destruct for Foo}::drop_in_place(_1: *mut Foo)
 {
     let _0: (); // return
     let _1: *mut Foo; // arg #1
@@ -107,7 +107,7 @@ impl Destruct for Foo {
 }
 
 // Full name: test_crate::Foo
-fn Foo(@1: u32, @2: String) -> Foo
+fn Foo(_1: u32, _2: String) -> Foo
 {
     let _0: Foo; // return
     let _1: u32; // arg #1
@@ -127,7 +127,7 @@ where
 }
 
 // Full name: test_crate::Bar::Variant
-fn Variant<'a, T>(@1: &'a T) -> Bar<'a, T>[@TraitClause0]
+fn Variant<'a, T>(_1: &'a T) -> Bar<'a, T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     T : 'a,

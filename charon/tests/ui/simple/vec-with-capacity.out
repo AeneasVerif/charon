@@ -28,7 +28,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::ptr::alignment::Alignment
@@ -143,7 +143,7 @@ where
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(@1: *mut Global)
+unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
@@ -164,7 +164,7 @@ where
     [@TraitClause0]: Sized<A>,
 
 // Full name: alloc::raw_vec::{RawVecInner<A>[@TraitClause0]}::with_capacity_in
-fn with_capacity_in<A>(@1: usize, @2: A, @3: Layout) -> RawVecInner<A>[@TraitClause0]
+fn with_capacity_in<A>(_1: usize, _2: A, _3: Layout) -> RawVecInner<A>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
     [@TraitClause2]: Destruct<A>,
@@ -182,7 +182,7 @@ where
 }
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(@1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -200,7 +200,7 @@ where
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::with_capacity
 #[lang_item("vec_with_capacity")]
-pub fn with_capacity<T>(@1: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
+pub fn with_capacity<T>(_1: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
 {

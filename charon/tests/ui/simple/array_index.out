@@ -11,7 +11,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::first
-pub fn first(@1: [u32; 0 : usize]) -> u32
+pub fn first(_1: [u32; 0 : usize]) -> u32
 {
     let _0: u32; // return
     let s_1: [u32; 0 : usize]; // arg #1

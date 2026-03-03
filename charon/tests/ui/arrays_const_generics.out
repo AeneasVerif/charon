@@ -11,7 +11,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::index_array_generic
-pub fn index_array_generic<const N : usize>(@1: [u32; N], @2: usize) -> u32
+pub fn index_array_generic<const N : usize>(_1: [u32; N], _2: usize) -> u32
 {
     let _0: u32; // return
     let s_1: [u32; N]; // arg #1
@@ -32,7 +32,7 @@ pub fn index_array_generic<const N : usize>(@1: [u32; N], @2: usize) -> u32
 }
 
 // Full name: test_crate::index_array_generic_call
-pub fn index_array_generic_call<const N : usize>(@1: [u32; N], @2: usize) -> u32
+pub fn index_array_generic_call<const N : usize>(_1: [u32; N], _2: usize) -> u32
 {
     let _0: u32; // return
     let s_1: [u32; N]; // arg #1

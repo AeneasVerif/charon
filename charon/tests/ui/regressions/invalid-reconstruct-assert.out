@@ -9,7 +9,7 @@ pub enum Ordering {
 }
 
 // Full name: core::cmp::impls::{impl Ord for u32}::cmp
-pub fn {impl Ord for u32}::cmp<'_0, '_1>(@1: &'_0 u32, @2: &'_1 u32) -> Ordering
+pub fn {impl Ord for u32}::cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Ordering
 = <opaque>
 
 // Full name: core::marker::Destruct
@@ -33,13 +33,13 @@ pub trait Sized<Self>
 }
 
 // Full name: core::hint::select_unpredictable
-pub fn select_unpredictable<T>(@1: bool, @2: T, @3: T) -> T
+pub fn select_unpredictable<T>(_1: bool, _2: T, _3: T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(@1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -75,12 +75,12 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
 }
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut Self, @2: Args) -> @TraitClause0::parent_clause1::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
@@ -108,15 +108,15 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-fn core::hint::assert_unchecked::precondition_check(@1: bool)
+fn core::hint::assert_unchecked::precondition_check(_1: bool)
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check
-fn {impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check(@1: usize, @2: usize)
+fn {impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check(_1: usize, _2: usize)
 = <opaque>
 
 // Full name: core::slice::{[T]}::binary_search_by
-pub fn binary_search_by<'a, T, F>(@1: &'a [T], @2: F) -> Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]
+pub fn binary_search_by<'a, T, F>(_1: &'a [T], _2: F) -> Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -428,7 +428,7 @@ where
 struct closure {}
 
 // Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}::call_mut
-fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(@1: &'_1 mut closure, @2: (&'_0 u32,)) -> Ordering
+fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(_1: &'_1 mut closure, _2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: &'1 mut closure; // arg #1
@@ -472,7 +472,7 @@ fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(@1: &'_1 mut closure
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(@1: *mut closure)
+unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
 = <missing>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}
@@ -482,7 +482,7 @@ impl Destruct for closure {
 }
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}::call_once
-fn {impl FnOnce<(&'_ u32,)> for closure}::call_once<'_0>(@1: closure, @2: (&'_0 u32,)) -> Ordering
+fn {impl FnOnce<(&'_ u32,)> for closure}::call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: closure; // arg #1

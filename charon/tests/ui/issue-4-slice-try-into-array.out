@@ -38,7 +38,7 @@ pub trait Debug<Self>
 pub opaque type TryFromSliceError
 
 // Full name: core::array::{impl Debug for TryFromSliceError}::fmt
-pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(@1: &'_0 TryFromSliceError, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn {impl Debug for TryFromSliceError}::fmt<'_0, '_1, '_2>(_1: &'_0 TryFromSliceError, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: core::array::{impl Debug for TryFromSliceError}
@@ -78,7 +78,7 @@ pub trait TryFrom<Self, T>
 }
 
 // Full name: core::array::{impl TryFrom<&'_0 [T]> for [T; N]}::try_from
-pub fn {impl TryFrom<&'_0 [T]> for [T; N]}::try_from<'_0, T, const N : usize>(@1: &'_0 [T]) -> Result<[T; N], TryFromSliceError>[{built_in impl Sized for [T; N]}, {built_in impl Sized for TryFromSliceError}]
+pub fn {impl TryFrom<&'_0 [T]> for [T; N]}::try_from<'_0, T, const N : usize>(_1: &'_0 [T]) -> Result<[T; N], TryFromSliceError>[{built_in impl Sized for [T; N]}, {built_in impl Sized for TryFromSliceError}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -99,13 +99,13 @@ where
 }
 
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 Self) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 u8) -> u8
+pub fn {impl Clone for u8}::clone<'_0>(_1: &'_0 u8) -> u8
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}
@@ -116,20 +116,20 @@ impl Clone for u8 {
 }
 
 #[lang_item("try_from_fn")]
-pub fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause0::parent_clause0, @TraitClause0::parent_clause2]
+pub fn core::convert::TryFrom::try_from<Self, T>(_1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause0::parent_clause0, @TraitClause0::parent_clause2]
 where
     [@TraitClause0]: TryFrom<Self, T>,
 = <opaque>
 
 // Full name: core::convert::{impl TryInto<U> for T}::try_into
-pub fn {impl TryInto<U> for T}::try_into<T, U>(@1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
+pub fn {impl TryInto<U> for T}::try_into<T, U>(_1: T) -> Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<U>,
     [@TraitClause2]: TryFrom<U, T>,
 = <opaque>
 
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 Self, @2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     [@TraitClause0]: Debug<Self>,
 = <opaque>
@@ -142,7 +142,7 @@ impl Copy for u8 {
 }
 
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap
-pub fn unwrap<T, E>(@1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
+pub fn unwrap<T, E>(_1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<E>,
@@ -150,7 +150,7 @@ where
 = <opaque>
 
 // Full name: test_crate::trait_error
-pub fn trait_error<'_0>(@1: &'_0 [u8])
+pub fn trait_error<'_0>(_1: &'_0 [u8])
 {
     let _0: (); // return
     let s_1: &'1 [u8]; // arg #1
