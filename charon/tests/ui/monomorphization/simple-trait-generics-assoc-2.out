@@ -43,7 +43,7 @@ trait Trait<Self, T>
 }
 
 // Full name: test_crate::Trait::{vtable_drop_preshim}::<usize, bool>
-unsafe fn {vtable_drop_preshim}::<usize, bool>(@1: *mut (dyn Trait<usize, Item = bool>))
+unsafe fn {vtable_drop_preshim}::<usize, bool>(_1: *mut (dyn Trait<usize, Item = bool>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<usize, Item = bool> + '0); // arg #1
@@ -60,7 +60,7 @@ unsafe fn {vtable_drop_preshim}::<usize, bool>(@1: *mut (dyn Trait<usize, Item =
 }
 
 // Full name: test_crate::Trait::{vtable_method_preshim}::<usize, bool>
-fn {vtable_method_preshim}::<usize, bool><'_0>(@1: &'_0 (dyn Trait<usize, Item = bool>))
+fn {vtable_method_preshim}::<usize, bool><'_0>(_1: &'_0 (dyn Trait<usize, Item = bool>))
 {
     let ret_0: (); // return
     let dyn_self_1: &'_0 (dyn Trait<usize, Item = bool> + '0); // arg #1
@@ -77,7 +77,7 @@ fn {vtable_method_preshim}::<usize, bool><'_0>(@1: &'_0 (dyn Trait<usize, Item =
 }
 
 // Full name: test_crate::Trait::{vtable_drop_preshim}::<bool, usize>
-unsafe fn {vtable_drop_preshim}::<bool, usize>(@1: *mut (dyn Trait<bool, Item = usize>))
+unsafe fn {vtable_drop_preshim}::<bool, usize>(_1: *mut (dyn Trait<bool, Item = usize>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<bool, Item = usize> + '0); // arg #1
@@ -94,7 +94,7 @@ unsafe fn {vtable_drop_preshim}::<bool, usize>(@1: *mut (dyn Trait<bool, Item = 
 }
 
 // Full name: test_crate::Trait::{vtable_method_preshim}::<bool, usize>
-fn {vtable_method_preshim}::<bool, usize><'_0>(@1: &'_0 (dyn Trait<bool, Item = usize>))
+fn {vtable_method_preshim}::<bool, usize><'_0>(_1: &'_0 (dyn Trait<bool, Item = usize>))
 {
     let ret_0: (); // return
     let dyn_self_1: &'_0 (dyn Trait<bool, Item = usize> + '0); // arg #1
@@ -110,14 +110,14 @@ fn {vtable_method_preshim}::<bool, usize><'_0>(@1: &'_0 (dyn Trait<bool, Item = 
     return
 }
 
-fn test_crate::Trait::comsume<'_0>(@1: &'_0 (dyn Trait<usize, Item = bool>))
+fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<usize, Item = bool>))
 = <method_without_default_body>
 
-fn test_crate::Trait::comsume<'_0>(@1: &'_0 (dyn Trait<bool, Item = usize>))
+fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<bool, Item = usize>))
 = <method_without_default_body>
 
 // Full name: test_crate::{impl#0}::comsume
-fn {impl#0}::comsume<'_0>(@1: &'_0 i32)
+fn {impl#0}::comsume<'_0>(_1: &'_0 i32)
 {
     let _0: (); // return
     let self_1: &'1 i32; // arg #1
@@ -128,7 +128,7 @@ fn {impl#0}::comsume<'_0>(@1: &'_0 i32)
 }
 
 // Full name: test_crate::{impl#0}::comsume::{vtable_method}
-fn {impl#0}::comsume::{vtable_method}<'_0>(@1: &'_0 (dyn Trait<usize, Item = bool>))
+fn {impl#0}::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<usize, Item = bool>))
 {
     let _0: (); // return
     let _1: &'_0 (dyn Trait<usize, Item = bool> + '0); // arg #1
@@ -142,7 +142,7 @@ fn {impl#0}::comsume::{vtable_method}<'_0>(@1: &'_0 (dyn Trait<usize, Item = boo
 }
 
 // Full name: test_crate::{impl#0}::{vtable_drop_shim}
-unsafe fn {impl#0}::{vtable_drop_shim}(@1: *mut (dyn Trait<usize, Item = bool>))
+unsafe fn {impl#0}::{vtable_drop_shim}(_1: *mut (dyn Trait<usize, Item = bool>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<usize, Item = bool> + '0); // arg #1
@@ -185,7 +185,7 @@ fn {impl#0}::{vtable}() -> test_crate::Trait::{vtable}
 static {impl#0}::{vtable}: test_crate::Trait::{vtable} = {impl#0}::{vtable}()
 
 // Full name: test_crate::{impl#1}::comsume
-fn {impl#1}::comsume<'_0>(@1: &'_0 bool)
+fn {impl#1}::comsume<'_0>(_1: &'_0 bool)
 {
     let _0: (); // return
     let self_1: &'1 bool; // arg #1
@@ -196,7 +196,7 @@ fn {impl#1}::comsume<'_0>(@1: &'_0 bool)
 }
 
 // Full name: test_crate::{impl#1}::comsume::{vtable_method}
-fn {impl#1}::comsume::{vtable_method}<'_0>(@1: &'_0 (dyn Trait<bool, Item = usize>))
+fn {impl#1}::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<bool, Item = usize>))
 {
     let _0: (); // return
     let _1: &'_0 (dyn Trait<bool, Item = usize> + '0); // arg #1
@@ -210,7 +210,7 @@ fn {impl#1}::comsume::{vtable_method}<'_0>(@1: &'_0 (dyn Trait<bool, Item = usiz
 }
 
 // Full name: test_crate::{impl#1}::{vtable_drop_shim}
-unsafe fn {impl#1}::{vtable_drop_shim}(@1: *mut (dyn Trait<bool, Item = usize>))
+unsafe fn {impl#1}::{vtable_drop_shim}(_1: *mut (dyn Trait<bool, Item = usize>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<bool, Item = usize> + '0); // arg #1

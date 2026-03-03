@@ -41,7 +41,7 @@ trait Trait<Self, T>
 }
 
 // Full name: test_crate::Trait::{vtable_drop_preshim}::<bool>
-unsafe fn {vtable_drop_preshim}::<bool>(@1: *mut (dyn Trait<bool>))
+unsafe fn {vtable_drop_preshim}::<bool>(_1: *mut (dyn Trait<bool>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<bool> + '0); // arg #1
@@ -58,7 +58,7 @@ unsafe fn {vtable_drop_preshim}::<bool>(@1: *mut (dyn Trait<bool>))
 }
 
 // Full name: test_crate::Trait::{vtable_method_preshim}::<bool>
-fn {vtable_method_preshim}::<bool><'_0>(@1: &'_0 (dyn Trait<bool>)) -> bool
+fn {vtable_method_preshim}::<bool><'_0>(_1: &'_0 (dyn Trait<bool>)) -> bool
 {
     let ret_0: (); // return
     let dyn_self_1: &'_0 (dyn Trait<bool> + '0); // arg #1
@@ -74,7 +74,7 @@ fn {vtable_method_preshim}::<bool><'_0>(@1: &'_0 (dyn Trait<bool>)) -> bool
 }
 
 // Full name: test_crate::Trait::{vtable_drop_preshim}::<usize>
-unsafe fn {vtable_drop_preshim}::<usize>(@1: *mut (dyn Trait<usize>))
+unsafe fn {vtable_drop_preshim}::<usize>(_1: *mut (dyn Trait<usize>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<usize> + '0); // arg #1
@@ -91,7 +91,7 @@ unsafe fn {vtable_drop_preshim}::<usize>(@1: *mut (dyn Trait<usize>))
 }
 
 // Full name: test_crate::Trait::{vtable_method_preshim}::<usize>
-fn {vtable_method_preshim}::<usize><'_0>(@1: &'_0 (dyn Trait<usize>)) -> usize
+fn {vtable_method_preshim}::<usize><'_0>(_1: &'_0 (dyn Trait<usize>)) -> usize
 {
     let ret_0: (); // return
     let dyn_self_1: &'_0 (dyn Trait<usize> + '0); // arg #1
@@ -106,14 +106,14 @@ fn {vtable_method_preshim}::<usize><'_0>(@1: &'_0 (dyn Trait<usize>)) -> usize
     return
 }
 
-fn test_crate::Trait::comsume<'_0>(@1: &'_0 (dyn Trait<bool>)) -> bool
+fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<bool>)) -> bool
 = <method_without_default_body>
 
-fn test_crate::Trait::comsume<'_0>(@1: &'_0 (dyn Trait<usize>)) -> usize
+fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<usize>)) -> usize
 = <method_without_default_body>
 
 // Full name: test_crate::{impl#0}::comsume
-fn {impl#0}::comsume<'_0>(@1: &'_0 i32) -> bool
+fn {impl#0}::comsume<'_0>(_1: &'_0 i32) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 i32; // arg #1
@@ -123,7 +123,7 @@ fn {impl#0}::comsume<'_0>(@1: &'_0 i32) -> bool
 }
 
 // Full name: test_crate::{impl#0}::comsume::{vtable_method}
-fn {impl#0}::comsume::{vtable_method}<'_0>(@1: &'_0 (dyn Trait<bool>)) -> bool
+fn {impl#0}::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<bool>)) -> bool
 {
     let _0: bool; // return
     let _1: &'_0 (dyn Trait<bool> + '0); // arg #1
@@ -136,7 +136,7 @@ fn {impl#0}::comsume::{vtable_method}<'_0>(@1: &'_0 (dyn Trait<bool>)) -> bool
 }
 
 // Full name: test_crate::{impl#0}::{vtable_drop_shim}
-unsafe fn {impl#0}::{vtable_drop_shim}(@1: *mut (dyn Trait<bool>))
+unsafe fn {impl#0}::{vtable_drop_shim}(_1: *mut (dyn Trait<bool>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<bool> + '0); // arg #1
@@ -179,7 +179,7 @@ fn {impl#0}::{vtable}() -> test_crate::Trait::{vtable}
 static {impl#0}::{vtable}: test_crate::Trait::{vtable} = {impl#0}::{vtable}()
 
 // Full name: test_crate::{impl#1}::comsume
-fn {impl#1}::comsume<'_0>(@1: &'_0 u32) -> usize
+fn {impl#1}::comsume<'_0>(_1: &'_0 u32) -> usize
 {
     let _0: usize; // return
     let self_1: &'1 u32; // arg #1
@@ -189,7 +189,7 @@ fn {impl#1}::comsume<'_0>(@1: &'_0 u32) -> usize
 }
 
 // Full name: test_crate::{impl#1}::comsume::{vtable_method}
-fn {impl#1}::comsume::{vtable_method}<'_0>(@1: &'_0 (dyn Trait<usize>)) -> usize
+fn {impl#1}::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<usize>)) -> usize
 {
     let _0: usize; // return
     let _1: &'_0 (dyn Trait<usize> + '0); // arg #1
@@ -202,7 +202,7 @@ fn {impl#1}::comsume::{vtable_method}<'_0>(@1: &'_0 (dyn Trait<usize>)) -> usize
 }
 
 // Full name: test_crate::{impl#1}::{vtable_drop_shim}
-unsafe fn {impl#1}::{vtable_drop_shim}(@1: *mut (dyn Trait<usize>))
+unsafe fn {impl#1}::{vtable_drop_shim}(_1: *mut (dyn Trait<usize>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<usize> + '0); // arg #1

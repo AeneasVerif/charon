@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -73,15 +73,15 @@ struct closure<'_0, '_1> {
 }
 
 // Full name: core::ops::function::Fn::call
-pub fn call<'_0>(@1: &'_0 closure<'_, '_>, @2: (u8, u8)) -> u8
+pub fn call<'_0>(_1: &'_0 closure<'_, '_>, _2: (u8, u8)) -> u8
 = <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0>(@1: &'_0 mut closure<'_, '_>, @2: (u8, u8)) -> u8
+pub fn call_mut<'_0>(_1: &'_0 mut closure<'_, '_>, _2: (u8, u8)) -> u8
 = <opaque>
 
 // Full name: core::ops::function::FnOnce::call_once
-pub fn call_once(@1: closure<'_, '_>, @2: (u8, u8)) -> u8
+pub fn call_once(_1: closure<'_, '_>, _2: (u8, u8)) -> u8
 = <opaque>
 
 fn UNIT_METADATA()

@@ -18,7 +18,7 @@ pub fn is_some::<i32><'_0>(_1: &'_0 Option::<i32>) -> bool
 = <opaque>
 
 // Full name: core::slice::index::{impl#0}::index::<bool, RangeFrom::<usize>>
-pub fn {impl#0}::index::<bool, RangeFrom::<usize>><'_0>(@1: &'_0 [bool], @2: RangeFrom::<usize>) -> &'_0 [bool]
+pub fn {impl#0}::index::<bool, RangeFrom::<usize>><'_0>(_1: &'_0 [bool], _2: RangeFrom::<usize>) -> &'_0 [bool]
 = <opaque>
 
 fn UNIT_METADATA()

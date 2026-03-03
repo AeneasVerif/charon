@@ -34,7 +34,7 @@ trait MyIterator<Self>
 // Full name: test_crate::A
 struct A {}
 
-fn test_crate::MyIterator::method<'_0>(@1: &'_0 A)
+fn test_crate::MyIterator::method<'_0>(_1: &'_0 A)
 {
     let _0: (); // return
     let self_1: &'1 A; // arg #1
@@ -47,7 +47,7 @@ fn test_crate::MyIterator::method<'_0>(@1: &'_0 A)
 // Full name: test_crate::B
 struct B {}
 
-fn test_crate::MyIterator::method<'_0>(@1: &'_0 B)
+fn test_crate::MyIterator::method<'_0>(_1: &'_0 B)
 {
     let _0: (); // return
     let self_1: &'1 B; // arg #1

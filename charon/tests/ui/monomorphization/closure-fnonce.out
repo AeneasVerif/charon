@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(@1: *mut Self)
+unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -53,7 +53,7 @@ struct closure {
 }
 
 // Full name: core::ops::function::FnOnce::call_once
-pub fn call_once(@1: closure, @2: (u8,)) -> u8
+pub fn call_once(_1: closure, _2: (u8,)) -> u8
 = <opaque>
 
 // Full name: test_crate::apply_to_zero_once::<closure>

@@ -11,7 +11,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun1()
 
 // Full name: test_crate::{impl#0}::method
-pub fn method<'_0>(@1: &'_0 bool)
+pub fn method<'_0>(_1: &'_0 bool)
 {
     let _0: (); // return
     let self_1: &'1 bool; // arg #1
