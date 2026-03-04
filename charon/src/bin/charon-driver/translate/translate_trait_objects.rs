@@ -488,16 +488,16 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// This is a temporary check until we support `dyn Trait` with `--monomorphize`.
-    pub(crate) fn check_no_monomorphize(&self, span: Span) -> Result<(), Error> {
-        if self.monomorphize() {
-            raise_error!(
-                self,
-                span,
-                "`dyn Trait` is not yet supported with `--monomorphize`"
-            )
-        }
-        Ok(())
-    }
+    // pub(crate) fn check_no_monomorphize(&self, span: Span) -> Result<(), Error> {
+    //     if self.monomorphize() {
+    //         raise_error!(
+    //             self,
+    //             span,
+    //             "`dyn Trait` is not yet supported with `--monomorphize`"
+    //         )
+    //     }
+    //     Ok(())
+    // }
 
     /// Construct the type of the vtable for this trait.
     ///
@@ -1453,7 +1453,7 @@ impl ItemTransCtx<'_, '_> {
         impl_def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        self.check_no_monomorphize(span)?;
+        // self.check_no_monomorphize(span)?;
 
         let hax::FullDefKind::TraitImpl {
             dyn_self: Some(dyn_self),
@@ -1474,62 +1474,6 @@ impl ItemTransCtx<'_, '_> {
         // `*mut T` for `impl Trait for T`
         let ref_target_self = {
             let impl_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
-            TyKind::RawPtr(impl_trait.generics.types[0].clone(), RefKind::Mut).into_ty()
-        };
-
-        // `*mut dyn Trait -> ()`
-        let signature = FunSig {
-            is_unsafe: true,
-            inputs: vec![ref_dyn_self.clone()],
-            output: Ty::mk_unit(),
-        };
-
-        let body: Body = self.translate_vtable_drop_shim_body(
-            span,
-            &ref_dyn_self,
-            &ref_target_self,
-            trait_pred,
-        )?;
-
-        Ok(FunDecl {
-            def_id: fun_id,
-            item_meta,
-            generics: self.into_generics(),
-            signature,
-            src: ItemSource::VTableMethodShim,
-            is_global_initializer: None,
-            body,
-        })
-    }
-
-    pub(crate) fn translate_vtable_drop_shim_mono(
-        mut self,
-        fun_id: FunDeclId,
-        item_meta: ItemMeta,
-        impl_def: &hax::FullDef,
-    ) -> Result<FunDecl, Error> {
-        let span = item_meta.span;
-
-        let hax::FullDefKind::TraitImpl {
-            dyn_self: Some(dyn_self),
-            trait_pred,
-            ..
-        } = impl_def.kind()
-        else {
-            raise_error!(
-                self,
-                span,
-                "Trying to generate a vtable drop shim for a non-trait impl"
-            );
-        };
-
-        // `*mut dyn Trait`
-        let ref_dyn_self =
-            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
-        // `*mut T` for `impl Trait for T`
-        let ref_target_self = {
-            let impl_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
-            // let impl_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
             TyKind::RawPtr(impl_trait.generics.types[0].clone(), RefKind::Mut).into_ty()
         };
 
