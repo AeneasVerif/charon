@@ -265,7 +265,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         // Ensure the vtable type is translated. The first predicate is the one that
                         // can have methods, i.e. a vtable.
                         if self.monomorphize() {
-                            let item_src = TransItemSource::polymorphic(
+                            let item_src = TransItemSource::monomorphic_trait(
                                 &trait_predicate.trait_ref.def_id,
                                 TransItemSourceKind::VTable,
                             );

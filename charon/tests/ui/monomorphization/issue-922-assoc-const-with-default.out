@@ -12,6 +12,18 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
 // Full name: core::mem::size_of
 #[lang_item("mem_size_of")]
 pub fn size_of<T>() -> usize
@@ -23,6 +35,14 @@ where
 #[lang_item("mem_size_of")]
 pub fn size_of::<()>() -> usize
 = <opaque>
+
+// Full name: test_crate::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const IS_ZST : bool
+    non-dyn-compatible
+}
 
 // Full name: test_crate::SizedTypeProperties
 pub trait SizedTypeProperties<Self>

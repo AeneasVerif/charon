@@ -102,10 +102,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         trace!(
             "About to translate item `{:?}` as a {:?}; \
-            target_id={trans_id:?}, mono={}",
+            target_id={trans_id:?}, mono={}, poly={}",
             def.def_id(),
             item_src.kind,
-            bt_ctx.monomorphize()
+            bt_ctx.monomorphize(),
+            bt_ctx.polymorphize(),
         );
         if !matches!(
             &item_src.kind,
@@ -801,6 +802,10 @@ impl ItemTransCtx<'_, '_> {
                     (item_src, item_def)
                 }
             } else {
+                trace!(
+                    "MONO: catch polymorphic item {:?} in translate_trait_decl",
+                    self.item_src
+                );
                 let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
                 (item_src, poly_item_def)
             };
@@ -1024,6 +1029,7 @@ impl ItemTransCtx<'_, '_> {
                 hax::FullDefKind::AssocTy { .. } => TransItemSourceKind::Type,
                 _ => unreachable!(),
             };
+            trace!("MONO: trait_impl_mono: {:?}", self.item_src);
             let (item_src, item_def) = if self.monomorphize() {
                 if poly_item_def.has_own_generics_or_predicates() {
                     continue;
@@ -1041,6 +1047,10 @@ impl ItemTransCtx<'_, '_> {
                     (item_src, item_def)
                 }
             } else {
+                trace!(
+                    "MONO: catch polymorphic item {:?} in translate_trait_impl_mono",
+                    self.item_src
+                );
                 let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
                 (item_src, poly_item_def)
             };

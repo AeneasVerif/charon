@@ -415,7 +415,7 @@ impl ItemTransCtx<'_, '_> {
     #[tracing::instrument(skip(self, span))]
     fn translate_preshim(&mut self, span: Span, trait_def: &hax::FullDef) -> Result<(), Error> {
         let item_src =
-            TransItemSource::polymorphic(&trait_def.def_id(), TransItemSourceKind::TraitDecl);
+            TransItemSource::monomorphic_trait(&trait_def.def_id(), TransItemSourceKind::TraitDecl);
         let item_id = match self.t_ctx.id_map.get(&item_src) {
             Some(tid) => *tid,
             None => {
@@ -809,7 +809,7 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         def_id: &hax::DefId,
     ) -> Result<TypeDeclRef, Error> {
-        let item_src = TransItemSource::polymorphic(def_id, TransItemSourceKind::VTable);
+        let item_src = TransItemSource::monomorphic_trait(def_id, TransItemSourceKind::VTable);
         let id: ItemId = self.register_and_enqueue(span, item_src);
         let id = id
             .try_into()

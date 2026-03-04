@@ -177,6 +177,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         std::panic::catch_unwind(move || match item {
             RustcItem::Poly(def_id) => def_id.full_def(*unwind_safe_s),
             RustcItem::Mono(item_ref) => item_ref.instantiated_full_def(*unwind_safe_s),
+            RustcItem::MonoTrait(def_id) => def_id.full_def(*unwind_safe_s),
         })
         .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
     }
@@ -225,6 +226,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Whether to monomorphize items we encounter.
     pub fn monomorphize(&self) -> bool {
         matches!(self.item_src.item, RustcItem::Mono(..))
+    }
+
+    /// Whether to polymorphize items we encounter.
+    pub fn polymorphize(&self) -> bool {
+        matches!(self.item_src.item, RustcItem::Poly(..))
     }
 
     /// Whether monomorphization is enabled in the global setting.
