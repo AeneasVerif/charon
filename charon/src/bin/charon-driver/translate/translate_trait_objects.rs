@@ -705,35 +705,26 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         impl_def: &'a hax::FullDef,
         impl_kind: &TraitImplSource,
-    ) -> Result<(TraitImplRef, TypeDeclRef), Error> {
+    ) -> Result<(Option<TraitImplRef>, TypeDeclRef), Error> {
         let implemented_trait = match impl_def.kind() {
             hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
             _ => unreachable!(),
         };
-        let vtable_struct_ref = self
-            .translate_vtable_struct_ref(span, implemented_trait)?
-            .expect("trait should be dyn-compatible");
+        let vtable_struct_ref = if self.monomorphize() {
+            self.translate_vtable_struct_ref_from_def_id_mono(span, &implemented_trait.def_id)?
+        } else {
+            self.translate_vtable_struct_ref(span, implemented_trait)?
+                .expect("trait should be dyn-compatible")
+        };
+        if self.monomorphize() {
+            return Ok((None, vtable_struct_ref));
+        }
         let impl_ref = self.translate_item(
             span,
             impl_def.this(),
             TransItemSourceKind::TraitImpl(*impl_kind),
         )?;
-        Ok((impl_ref, vtable_struct_ref))
-    }
-
-    /// Local helper function to get the vtable struct reference in mono mode.
-    /// When translating vtable instance,
-    /// use poly_hax_def for the trait ref without any generic parameters.
-    fn get_vtable_instance_info_mono<'a>(
-        &mut self,
-        span: Span,
-        impl_def: &'a hax::FullDef,
-    ) -> Result<TypeDeclRef, Error> {
-        let implemented_trait = match impl_def.kind() {
-            hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
-            _ => unreachable!(),
-        };
-        return self.translate_vtable_struct_ref_from_def_id_mono(span, &implemented_trait.def_id);
+        Ok((Some(impl_ref), vtable_struct_ref))
     }
 
     fn translate_vtable_struct_ref_from_def_id_mono<'a>(
@@ -775,14 +766,13 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
 
-        let (src, vtable_struct_ref) = if self.monomorphize() {
-            let vtable_struct_ref = self.get_vtable_instance_info_mono(span, impl_def)?;
-            (ItemSource::VTableInstanceMono, vtable_struct_ref)
-        } else {
-            let (impl_ref, vtable_struct_ref) =
-                self.get_vtable_instance_info(span, impl_def, impl_kind)?;
-            (ItemSource::VTableInstance { impl_ref }, vtable_struct_ref)
-        };
+        let (src, vtable_struct_ref) =
+            match self.get_vtable_instance_info(span, impl_def, impl_kind)? {
+                (Some(impl_ref), vtable_struct_ref) => {
+                    (ItemSource::VTableInstance { impl_ref }, vtable_struct_ref)
+                }
+                (None, vtable_struct_ref) => (ItemSource::VTableInstanceMono, vtable_struct_ref),
+            };
 
         // register preshims for translation
         if self.monomorphize() {
@@ -1272,14 +1262,13 @@ impl ItemTransCtx<'_, '_> {
         let span = item_meta.span;
         // self.check_no_monomorphize(span)?;
 
-        let (src, vtable_struct_ref) = if self.monomorphize() {
-            let vtable_struct_ref = self.get_vtable_instance_info_mono(span, impl_def)?;
-            (ItemSource::VTableInstanceMono, vtable_struct_ref)
-        } else {
-            let (impl_ref, vtable_struct_ref) =
-                self.get_vtable_instance_info(span, impl_def, impl_kind)?;
-            (ItemSource::VTableInstance { impl_ref }, vtable_struct_ref)
-        };
+        let (src, vtable_struct_ref) =
+            match self.get_vtable_instance_info(span, impl_def, impl_kind)? {
+                (Some(impl_ref), vtable_struct_ref) => {
+                    (ItemSource::VTableInstance { impl_ref }, vtable_struct_ref)
+                }
+                (None, vtable_struct_ref) => (ItemSource::VTableInstanceMono, vtable_struct_ref),
+            };
 
         let init_for = self.register_item(
             span,

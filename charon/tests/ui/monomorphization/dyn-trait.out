@@ -1,5 +1,5 @@
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:1636:13:
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:1625:13:
 Could not determine method index for drop in vtable
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `core::fmt::Display`.
@@ -11,7 +11,7 @@ note: the error occurred when translating `core::fmt::Display::{vtable_drop_pres
 12 |     let _ = dyn_to_string(&str);
    |                           ----
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:1841:13:
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:1830:13:
 Could not determine method index for method_fmt in vtable
 error: Thread panicked when extracting item `core::fmt::Display`.
  --> /rustc/library/core/src/fmt/mod.rs:1186:1
