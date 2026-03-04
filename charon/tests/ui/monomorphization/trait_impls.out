@@ -10,7 +10,7 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun1()
 
-// Full name: test_crate::{impl#0}::method
+// Full name: test_crate::{impl Trait for bool}::method
 pub fn method<'_0>(_1: &'_0 bool)
 {
     let _0: (); // return

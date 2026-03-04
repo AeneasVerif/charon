@@ -153,10 +153,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 // In Mono mode, only user-defined trait is supported for now.
                 // TODO: support other kinds of traits.
                 if mono {
-                    if matches!(kind, TraitImplSource::Normal) {
-                        bt_ctx.translate_trait_impl_mono(item_meta, &def)?;
+                    let trait_impl = if matches!(kind, TraitImplSource::Normal) {
+                        Some(bt_ctx.translate_trait_impl_mono(id, item_meta, &def)?)
                     } else {
                         error!("TraitImpl other than Normal is not supported in Mono");
+                        None
+                    };
+                    if let Some(trait_impl) = trait_impl {
+                        self.translated.trait_impls.set_slot(id, trait_impl);
                     }
                     // We do not translate trait impl blocks.
                     // self.translated.trait_impls.remove_and_shift_ids(id);
@@ -974,9 +978,10 @@ impl ItemTransCtx<'_, '_> {
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_impl_mono(
         mut self,
+        def_id: TraitImplId,
         item_meta: ItemMeta,
         def: &hax::FullDef,
-    ) -> Result<(), Error> {
+    ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
         let hax::FullDefKind::TraitImpl {
@@ -992,6 +997,9 @@ impl ItemTransCtx<'_, '_> {
         // let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
         let trait_id = implemented_trait.id;
+
+        // let vtable =
+        //     self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;
 
         // Explore the associated items
         for impl_item in impl_items {
@@ -1077,7 +1085,18 @@ impl ItemTransCtx<'_, '_> {
             );
         }
 
-        Ok(())
+        Ok(TraitImpl {
+            def_id: def_id,
+            item_meta,
+            impl_trait: implemented_trait,
+            generics: Default::default(),
+            implied_trait_refs: Default::default(),
+            consts: Default::default(),
+            types: Default::default(),
+            methods: Default::default(),
+            vtable: Default::default(),
+            // vtable,
+        })
     }
 
     #[tracing::instrument(skip(self, item_meta, def))]

@@ -23,4 +23,48 @@ note: the error occurred when translating `core::fmt::Display::{vtable_method_pr
    |
 12 |     let _ = dyn_to_string(&str);
    |                           ----
-ERROR Charon failed to translate this code (2 errors)
+error: Type error after translation:
+       Mismatched trait parent clauses:
+       target: ToString
+       expected: [[@TraitClause0]: MetaSized<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/string.rs:2893:1
+
+error: Type error after translation:
+       Mismatched trait parent clauses:
+       target: ToString
+       expected: [[@TraitClause0]: MetaSized<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/string.rs:2893:1
+
+error: Type error after transformations:
+       Mismatched trait parent clauses:
+       target: ToString
+       expected: [[@TraitClause0]: MetaSized<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/string.rs:2893:1
+
+error: Type error after transformations:
+       Mismatched trait parent clauses:
+       target: ToString
+       expected: [[@TraitClause0]: MetaSized<Self>]
+            got: []
+       Visitor stack:
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: 
+ --> /rustc/library/alloc/src/string.rs:2893:1
+
+ERROR Charon failed to translate this code (6 errors)

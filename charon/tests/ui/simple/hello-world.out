@@ -16,7 +16,7 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::{impl#0}::to_string::<Str>
+// Full name: alloc::string::{impl ToString for Str}::to_string::<Str>
 pub fn to_string::<Str><'_0>(_1: &'_0 Str) -> String
 = <opaque>
 

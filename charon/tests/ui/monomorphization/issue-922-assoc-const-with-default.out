@@ -72,6 +72,10 @@ pub const IS_ZST::<()>: bool = IS_ZST()
 // Full name: test_crate::SizedTypeProperties::IS_ZST
 pub const IS_ZST: bool = IS_ZST()
 
+// Full name: test_crate::{impl SizedTypeProperties for ()}::<()>
+impl SizedTypeProperties for () {    non-dyn-compatible
+}
+
 // Full name: test_crate::main
 fn main()
 {
@@ -80,7 +84,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = const {impl#0}::<()>::IS_ZST
+    _1 = const {impl SizedTypeProperties for ()}::<()>::IS_ZST
     storage_dead(_1)
     _0 = ()
     return

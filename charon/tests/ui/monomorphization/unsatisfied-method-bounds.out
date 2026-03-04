@@ -57,6 +57,14 @@ fn test_crate::MyIterator::method<'_0>(_1: &'_0 B)
     return
 }
 
+// Full name: test_crate::{impl MyIterator for A}
+impl MyIterator for A {    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl MyIterator for B}
+impl MyIterator for B {    non-dyn-compatible
+}
+
 // Full name: test_crate::main
 fn main()
 {
@@ -83,7 +91,7 @@ fn main()
     storage_live(_2)
     _6 = move _7
     _2 = &(*_6)
-    _1 = {impl#0}::method<'8>(move _2)
+    _1 = {impl MyIterator for A}::method<'8>(move _2)
     storage_live(_9)
     storage_live(_10)
     _10 = B {  }
@@ -94,7 +102,7 @@ fn main()
     storage_live(_4)
     _5 = move _9
     _4 = &(*_5)
-    _3 = {impl#1}::method<'11>(move _4)
+    _3 = {impl MyIterator for B}::method<'11>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

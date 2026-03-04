@@ -1,6 +1,6 @@
 # Final ULLBC before serialization:
 
-// Full name: core::cmp::impls::{impl#1}::eq
+// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}::eq
 pub fn eq<'_0, '_1>(_1: &'_0 bool, _2: &'_1 bool) -> bool
 = <opaque>
 
