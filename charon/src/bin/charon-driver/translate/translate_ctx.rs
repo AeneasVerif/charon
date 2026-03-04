@@ -233,9 +233,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         matches!(self.item_src.item, RustcItem::Poly(..))
     }
 
-    /// Whether monomorphization is enabled in the global setting.
-    pub fn monomorphize_mode(&self) -> bool {
-        self.t_ctx.monomorphize_mode()
+    /// Whether to pay special attention to items in mono mode
+    pub fn monomorphize_trait(&self) -> bool {
+        matches!(self.item_src.item, RustcItem::MonoTrait(..))
     }
 
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {

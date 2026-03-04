@@ -128,7 +128,7 @@ impl ItemTransCtx<'_, '_> {
         // Therefore, in mono mode, projection predicates in dyn binders may refer to clause vars with an
         // extra slot (e.g. `Bound(0, 1)` instead of `Bound(0, 0)`).
         // Hence, we normalize them so that associated type constraints point to trait clauses in the scope.
-        if self.monomorphize_mode() {
+        if self.monomorphize() {
             struct ShiftDynClauseVars;
             impl VarsVisitor for ShiftDynClauseVars {
                 fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
@@ -247,7 +247,7 @@ impl ItemTransCtx<'_, '_> {
             .remove_and_shift_ids(TypeVarId::ZERO);
 
         // In mono mode we keep a unique vtable type per trait declaration, with no generic arguments.
-        if self.monomorphize_mode() {
+        if self.monomorphize_trait() {
             vtable_ref.generics = Box::new(GenericArgs::empty());
             return Ok(Some(vtable_ref));
         }
@@ -344,7 +344,7 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Align => ("align".into(), usize_ty()),
                 TrVTableField::Drop => {
                     // In Mono mode, drop shims are opaque function pointers.
-                    if self.monomorphize_mode() {
+                    if self.monomorphize_trait() {
                         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
                         ("drop".into(), erased_ptr_ty)
                     } else {
@@ -362,7 +362,7 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Method(item_name, sig) => {
                     let field_name = format!("method_{}", item_name.0);
                     // In Mono mode, method shims are opaque function pointers.
-                    if self.monomorphize_mode() {
+                    if self.monomorphize_trait() {
                         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
                         (field_name, erased_ptr_ty)
                     } else {
@@ -1053,7 +1053,7 @@ impl ItemTransCtx<'_, '_> {
             }
 
             let bound_tyref = {
-                let mono = self.monomorphize_mode();
+                let mono = self.monomorphize();
                 self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
                     if mono {
                         let tyref =

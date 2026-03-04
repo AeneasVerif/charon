@@ -812,14 +812,11 @@ pub fn translate<'tcx, 'ctx>(
         if ctx.processed.insert(item_src.clone()) {
             ctx.translate_item(&item_src);
         }
-        trace!("MONO: items_to_translate:\n {:?}", ctx.items_to_translate);
     }
 
     // Remove methods not marked as "used". They are never called and we made sure not to translate
     // them. This removes them from the traits and impls.
     ctx.remove_unused_methods();
-
-    // ctx.check_mono_no_trait_impl();
 
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {

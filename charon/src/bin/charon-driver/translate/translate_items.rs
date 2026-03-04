@@ -96,8 +96,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             intravisit::walk_body(self, body);
         }
 
-        let mono = self.monomorphize_mode();
-
         // Initialize the item translation context
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         trace!(
@@ -153,7 +151,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
                 // In Mono mode, only user-defined trait is supported for now.
                 // TODO: support other kinds of traits.
-                if mono {
+                if bt_ctx.monomorphize() {
                     let trait_impl = if matches!(kind, TraitImplSource::Normal) {
                         Some(bt_ctx.translate_trait_impl_mono(id, item_meta, &def)?)
                     } else {
@@ -163,8 +161,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     if let Some(trait_impl) = trait_impl {
                         self.translated.trait_impls.set_slot(id, trait_impl);
                     }
-                    // We do not translate trait impl blocks.
-                    // self.translated.trait_impls.remove_and_shift_ids(id);
                 } else {
                     let trait_impl = match kind {
                         TraitImplSource::Normal => {
@@ -217,7 +213,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Type(id)) = trans_id else {
                     unreachable!()
                 };
-                let ty_decl = if mono {
+                let ty_decl = if matches!(item_src.item, RustcItem::MonoTrait(..)) {
                     bt_ctx.translate_vtable_struct_mono(id, item_meta, &def)?
                 } else {
                     bt_ctx.translate_vtable_struct(id, item_meta, &def)?
@@ -228,7 +224,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Global(id)) = trans_id else {
                     unreachable!()
                 };
-                let global_decl = if mono {
+                let global_decl = if bt_ctx.monomorphize() {
                     bt_ctx.translate_vtable_instance_mono(id, item_meta, &def, impl_kind)?
                 } else {
                     bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?
@@ -239,7 +235,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = if mono {
+                let fun_decl = if bt_ctx.monomorphize() {
                     bt_ctx.translate_vtable_instance_init_mono(id, item_meta, &def, impl_kind)?
                 } else {
                     bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?
@@ -257,7 +253,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = if mono {
+                let fun_decl = if bt_ctx.monomorphize() {
                     bt_ctx.translate_vtable_drop_shim_mono(id, item_meta, &def)?
                 } else {
                     bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?
@@ -382,20 +378,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             timpl
                 .methods
                 .retain(|(name, _)| method_is_used(trait_id, *name));
-        }
-    }
-
-    pub fn monomorphize_mode(&self) -> bool {
-        self.options.monomorphize_with_hax
-    }
-
-    // In Mono mode, we do not translate trait impls.
-    pub fn check_mono_no_trait_impl(&mut self) {
-        if self.monomorphize_mode() {
-            self.translated.trait_impls.clear();
-            if self.translated.trait_impls.slot_count() != 0 {
-                error!("Trait Impl should not be translated in Mono mode");
-            }
         }
     }
 }
@@ -781,9 +763,9 @@ impl ItemTransCtx<'_, '_> {
                 hax::AssocKind::Type { .. } => TransItemSourceKind::Type,
             };
 
-            // skip all methods of trait decl
+            // skip all methods of trait decl in mono mode
             // question: what if the method has default implmentation?
-            if self.monomorphize_mode() && matches!(trans_kind, TransItemSourceKind::Fun) {
+            if self.monomorphize_trait() && matches!(trans_kind, TransItemSourceKind::Fun) {
                 continue;
             }
 
