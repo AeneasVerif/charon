@@ -1015,194 +1015,99 @@ impl ItemTransCtx<'_, '_> {
         ));
         aggregate_fields.push(Operand::Move(align_local));
 
-        // Helper to fill in the remaining fields with constant values.
-        let mut mk_field = |kind| {
-            let ty = field_ty_iter.next().unwrap();
-            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
-        };
+        // In mono mode, we need to cast the shim functions into opaque funtion pointers
+        // and then fill them in the fields of the vtable.
+        if self.monomorphize() {
+            let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
+                panic!()
+            };
+            let Some(dyn_self) = dyn_self else {
+                panic!("MONO: Trying to generate a vtable for a non-dyn-compatible trait")
+            };
+            let mut mk_cast_field = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
+                let ty = field_ty_iter.next().unwrap();
+                let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
+                let shim = Rvalue::Use(Operand::Const(Box::new(ConstantExpr {
+                    kind: ConstantExprKind::FnDef(method_shim.clone()),
+                    ty: method_ty.clone(),
+                })));
+                let cast_local = builder.new_var(
+                    Some("erased_".to_string() + method_name.as_str()),
+                    ty.clone(),
+                );
+                let cast = Rvalue::UnaryOp(
+                    UnOp::Cast(CastKind::RawPtr(
+                        method_local.ty().clone(),
+                        cast_local.ty().clone(),
+                    )),
+                    Operand::Move(method_local.clone()),
+                );
 
-        let drop_shim =
-            self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
+                builder.push_statement(StatementKind::Assign(method_local.clone(), shim));
+                builder.push_statement(StatementKind::Assign(cast_local.clone(), cast));
+                aggregate_fields.push(Operand::Move(cast_local));
+            };
 
-        mk_field(ConstantExprKind::FnDef(drop_shim));
+            // `*mut dyn Trait`
+            let ref_dyn_self =
+                TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
 
-        for item in items {
-            // self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
-            self.add_method_to_vtable_value(span, impl_def, item, |value| match value {
-                VtableMethodValue::Const(kind) => mk_field(kind),
-                VtableMethodValue::Mono(_) => {
-                    unreachable!("unexpected mono vtable method in non-mono mode")
-                }
-            })?;
+            // `*mut dyn Trait -> ()`
+            let signature = FunSig {
+                is_unsafe: true,
+                inputs: vec![ref_dyn_self.clone()],
+                output: Ty::mk_unit(),
+            };
+            let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
+
+            let drop_shim: FnPtr =
+                self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
+
+            mk_cast_field(("drop".to_string(), drop_ty.clone(), drop_shim));
+
+            for item in items {
+                self.add_method_to_vtable_value(span, impl_def, item, |value| match value {
+                    VtableMethodValue::Mono(method) => mk_cast_field(method),
+                    VtableMethodValue::Const(_) => {
+                        unreachable!("unexpected poly vtable method in mono mode")
+                    }
+                })?;
+            }
+
+            // Helper to fill in the supertrait fields with constant values.
+            let mut mk_field = |kind| {
+                let ty = field_ty_iter.next().unwrap();
+                aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
+            };
+
+            let poly_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+
+            self.add_supertraits_to_vtable_value(span, &poly_trait_def, impl_def, &mut mk_field)?;
+        } else {
+            // Helper to fill in the shim functions and supertrait fields with constant values.
+            let mut mk_field = |kind| {
+                let ty = field_ty_iter.next().unwrap();
+                aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
+            };
+
+            let drop_shim =
+                self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
+
+            mk_field(ConstantExprKind::FnDef(drop_shim));
+
+            for item in items {
+                self.add_method_to_vtable_value(span, impl_def, item, |value| match value {
+                    VtableMethodValue::Const(kind) => mk_field(kind),
+                    VtableMethodValue::Mono(_) => {
+                        unreachable!("unexpected mono vtable method in poly mode")
+                    }
+                })?;
+            }
+
+            self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
         }
-
-        self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
 
         if field_ty_iter.next().is_some() {
-            raise_error!(
-                self,
-                span,
-                "Missed some fields in vtable value construction"
-            )
-        }
-
-        // Construct the final struct.
-        builder.push_statement(StatementKind::Assign(
-            ret_place,
-            Rvalue::Aggregate(
-                AggregateKind::Adt(vtable_struct_ref.clone(), None, None),
-                aggregate_fields,
-            ),
-        ));
-
-        Ok(Body::Unstructured(builder.build()))
-    }
-
-    // In Mono mode, when generating the body of the vtable initializer,
-    // we need to first cast the shim funtions to opaque pointer functions,
-    // and then pass them the fields of the vtable.
-    fn gen_vtable_instance_init_body_mono(
-        &mut self,
-        span: Span,
-        impl_def: &hax::FullDef,
-        vtable_struct_ref: TypeDeclRef,
-    ) -> Result<Body, Error> {
-        let hax::FullDefKind::TraitImpl {
-            trait_pred, items, ..
-        } = impl_def.kind()
-        else {
-            unreachable!()
-        };
-
-        let trait_def = self.hax_def(&trait_pred.trait_ref)?;
-        // let trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
-        let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
-        // let implemented_trait = self.translate_trait_decl_ref(span, trait_def.this())?;
-        // The type this impl is for.
-        let self_ty = &implemented_trait.generics.types[0];
-
-        let mut builder = BodyBuilder::new(span, 0);
-        let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
-        let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
-
-        // Retreive the expected field types from the struct definition. This avoids complicated
-        // substitutions.
-        let field_tys = {
-            let vtable_decl_id = vtable_struct_ref.id.as_adt().unwrap().clone();
-
-            let ItemRef::Type(vtable_def) = self.t_ctx.get_or_translate(vtable_decl_id.into())?
-            else {
-                unreachable!()
-            };
-            let fields = match &vtable_def.kind {
-                TypeDeclKind::Struct(fields) => fields,
-                TypeDeclKind::Opaque => return Ok(Body::Opaque),
-                TypeDeclKind::Error(error) => return Err(Error::new(span, error.clone())),
-                _ => unreachable!(),
-            };
-            trace!("MONO: check fields:\n {:?}", fields.iter());
-            trace!(
-                "MONO: check vtable_struct_ref.generics:\n {:?}",
-                vtable_struct_ref.generics
-            );
-            fields
-                .iter()
-                .map(|f| &f.ty)
-                .cloned()
-                .map(|ty| ty.substitute(&vtable_struct_ref.generics))
-                .collect_vec()
-        };
-
-        let mut aggregate_fields = vec![];
-        // For each vtable field, assign the desired value to a new local.
-        let mut field_ty_iter = field_tys.into_iter();
-
-        let size_ty = field_ty_iter.next().unwrap();
-        let size_local = builder.new_var(Some("size".to_string()), size_ty);
-        builder.push_statement(StatementKind::Assign(
-            size_local.clone(),
-            Rvalue::NullaryOp(NullOp::SizeOf, self_ty.clone()),
-        ));
-        aggregate_fields.push(Operand::Move(size_local));
-
-        let align_ty = field_ty_iter.next().unwrap();
-        let align_local = builder.new_var(Some("align".to_string()), align_ty);
-        builder.push_statement(StatementKind::Assign(
-            align_local.clone(),
-            Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
-        ));
-        aggregate_fields.push(Operand::Move(align_local));
-
-        let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
-            panic!()
-        };
-        let Some(dyn_self) = dyn_self else {
-            panic!("MONO: Trying to generate a vtable for a non-dyn-compatible trait")
-        };
-
-        let mut mk_cast_field = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
-            let ty = field_ty_iter.next().unwrap();
-            let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
-            let shim = Rvalue::Use(Operand::Const(Box::new(ConstantExpr {
-                kind: ConstantExprKind::FnDef(method_shim.clone()),
-                ty: method_ty.clone(),
-            })));
-            let cast_local = builder.new_var(
-                Some("erased_".to_string() + method_name.as_str()),
-                ty.clone(),
-            );
-            let cast = Rvalue::UnaryOp(
-                UnOp::Cast(CastKind::RawPtr(
-                    method_local.ty().clone(),
-                    cast_local.ty().clone(),
-                )),
-                Operand::Move(method_local.clone()),
-            );
-
-            builder.push_statement(StatementKind::Assign(method_local.clone(), shim));
-            builder.push_statement(StatementKind::Assign(cast_local.clone(), cast));
-            aggregate_fields.push(Operand::Move(cast_local));
-        };
-
-        // `*mut dyn Trait`
-        let ref_dyn_self =
-            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
-
-        // `*mut dyn Trait -> ()`
-        let signature = FunSig {
-            is_unsafe: true,
-            inputs: vec![ref_dyn_self.clone()],
-            output: Ty::mk_unit(),
-        };
-        let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
-
-        let drop_shim: FnPtr =
-            self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
-
-        mk_cast_field(("drop".to_string(), drop_ty.clone(), drop_shim));
-
-        for item in items {
-            self.add_method_to_vtable_value(span, impl_def, item, |value| match value {
-                VtableMethodValue::Mono(method) => mk_cast_field(method),
-                VtableMethodValue::Const(_) => {
-                    unreachable!("unexpected non-mono vtable method in mono mode")
-                }
-            })?;
-        }
-
-        // Helper to fill in the remaining fields with constant values.
-        let mut mk_field = |kind| {
-            let ty = field_ty_iter.next().unwrap();
-            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
-        };
-
-        let poly_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
-
-        self.add_supertraits_to_vtable_value(span, &poly_trait_def, impl_def, &mut mk_field)?;
-
-        if let Some(f) = field_ty_iter.next() {
-            error!("Aggregate fileds: {:?}", aggregate_fields);
-            error!("Additional field: {:?}", f);
             raise_error!(
                 self,
                 span,
@@ -1256,11 +1161,7 @@ impl ItemTransCtx<'_, '_> {
         let body = match impl_kind {
             _ if item_meta.opacity.with_private_contents().is_opaque() => Body::Opaque,
             TraitImplSource::Normal => {
-                if self.monomorphize() {
-                    self.gen_vtable_instance_init_body_mono(span, impl_def, vtable_struct_ref)?
-                } else {
-                    self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref)?
-                }
+                self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref)?
             }
             _ => {
                 raise_error!(
