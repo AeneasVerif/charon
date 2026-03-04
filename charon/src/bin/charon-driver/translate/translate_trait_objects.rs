@@ -1270,59 +1270,17 @@ impl ItemTransCtx<'_, '_> {
         impl_kind: &TraitImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        self.check_no_monomorphize(span)?;
-
-        let (impl_ref, vtable_struct_ref) =
-            self.get_vtable_instance_info(span, impl_def, impl_kind)?;
-        let init_for = self.register_item(
-            span,
-            impl_def.this(),
-            TransItemSourceKind::VTableInstance(*impl_kind),
-        );
-
-        // Signature: `() -> VTable`.
-        let sig = FunSig {
-            is_unsafe: false,
-            inputs: vec![],
-            output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
-        };
-
-        let body = match impl_kind {
-            _ if item_meta.opacity.with_private_contents().is_opaque() => Body::Opaque,
-            TraitImplSource::Normal => {
-                self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref)?
-            }
-            _ => {
-                raise_error!(
-                    self,
-                    span,
-                    "Don't know how to generate a vtable for a virtual impl {impl_kind:?}"
-                );
-            }
-        };
-
-        Ok(FunDecl {
-            def_id: init_func_id,
-            item_meta: item_meta,
-            generics: self.into_generics(),
-            signature: sig,
-            src: ItemSource::VTableInstance { impl_ref },
-            is_global_initializer: Some(init_for),
-            body,
-        })
-    }
-
-    pub(crate) fn translate_vtable_instance_init_mono(
-        mut self,
-        init_func_id: FunDeclId,
-        item_meta: ItemMeta,
-        impl_def: &hax::FullDef,
-        impl_kind: &TraitImplSource,
-    ) -> Result<FunDecl, Error> {
-        let span = item_meta.span;
         // self.check_no_monomorphize(span)?;
 
-        let vtable_struct_ref = self.get_vtable_instance_info_mono(span, impl_def)?;
+        let (src, vtable_struct_ref) = if self.monomorphize() {
+            let vtable_struct_ref = self.get_vtable_instance_info_mono(span, impl_def)?;
+            (ItemSource::VTableInstanceMono, vtable_struct_ref)
+        } else {
+            let (impl_ref, vtable_struct_ref) =
+                self.get_vtable_instance_info(span, impl_def, impl_kind)?;
+            (ItemSource::VTableInstance { impl_ref }, vtable_struct_ref)
+        };
+
         let init_for = self.register_item(
             span,
             impl_def.this(),
@@ -1339,7 +1297,11 @@ impl ItemTransCtx<'_, '_> {
         let body = match impl_kind {
             _ if item_meta.opacity.with_private_contents().is_opaque() => Body::Opaque,
             TraitImplSource::Normal => {
-                self.gen_vtable_instance_init_body_mono(span, impl_def, vtable_struct_ref)?
+                if self.monomorphize() {
+                    self.gen_vtable_instance_init_body_mono(span, impl_def, vtable_struct_ref)?
+                } else {
+                    self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref)?
+                }
             }
             _ => {
                 raise_error!(
@@ -1353,10 +1315,13 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: init_func_id,
             item_meta: item_meta,
-            generics: GenericParams::empty(),
-            // into_generics(),
+            generics: if self.monomorphize() {
+                GenericParams::empty()
+            } else {
+                self.into_generics()
+            },
             signature: sig,
-            src: ItemSource::VTableInstanceMono,
+            src,
             is_global_initializer: Some(init_for),
             body,
         })
