@@ -236,6 +236,21 @@ impl ItemTransCtx<'_, '_> {
         if !self.trait_is_dyn_compatible(&tref.def_id)? {
             return Ok(None);
         }
+
+        // In mono mode we keep a single opaque vtable per trait declaration.
+        if self.monomorphize() {
+            let item_src =
+                TransItemSource::monomorphic_trait(&tref.def_id, TransItemSourceKind::VTable);
+            let id: ItemId = self.register_and_enqueue(span, item_src);
+            let id = id
+                .try_into()
+                .expect("translated trait decl should be a trait decl id");
+            return Ok(Some(TypeDeclRef {
+                id,
+                generics: Box::new(GenericArgs::empty()),
+            }));
+        }
+
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
         let mut vtable_ref: TypeDeclRef =
@@ -710,12 +725,9 @@ impl ItemTransCtx<'_, '_> {
             hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
             _ => unreachable!(),
         };
-        let vtable_struct_ref = if self.monomorphize() {
-            self.translate_vtable_struct_ref_from_def_id_mono(span, &implemented_trait.def_id)?
-        } else {
-            self.translate_vtable_struct_ref(span, implemented_trait)?
-                .expect("trait should be dyn-compatible")
-        };
+        let vtable_struct_ref = self
+            .translate_vtable_struct_ref(span, implemented_trait)?
+            .expect("trait should be dyn-compatible");
         if self.monomorphize() {
             return Ok((None, vtable_struct_ref));
         }
@@ -725,22 +737,6 @@ impl ItemTransCtx<'_, '_> {
             TransItemSourceKind::TraitImpl(*impl_kind),
         )?;
         Ok((Some(impl_ref), vtable_struct_ref))
-    }
-
-    fn translate_vtable_struct_ref_from_def_id_mono<'a>(
-        &mut self,
-        span: Span,
-        def_id: &hax::DefId,
-    ) -> Result<TypeDeclRef, Error> {
-        let item_src = TransItemSource::monomorphic_trait(def_id, TransItemSourceKind::VTable);
-        let id: ItemId = self.register_and_enqueue(span, item_src);
-        let id = id
-            .try_into()
-            .expect("translated trait decl should be a trait decl id");
-        Ok(TypeDeclRef {
-            id,
-            generics: Box::new(GenericArgs::empty()),
-        })
     }
 
     /// E.g.,
@@ -940,19 +936,12 @@ impl ItemTransCtx<'_, '_> {
             }
 
             let bound_tyref = {
-                let mono = self.monomorphize();
                 self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    if mono {
-                        let tyref =
-                            ctx.translate_vtable_struct_ref_from_def_id_mono(span, &tref.def_id)?;
-                        Ok(Some(tyref))
-                    } else {
-                        let tyref = ctx.translate_vtable_struct_ref(span, tref)?;
-                        if tyref.is_none() {
-                            ctx.assert_is_destruct(tref);
-                        }
-                        Ok(tyref)
+                    let tyref = ctx.translate_vtable_struct_ref(span, tref)?;
+                    if tyref.is_none() {
+                        ctx.assert_is_destruct(tref);
                     }
+                    Ok(tyref)
                 })?
             };
             let Some(vtable_def_ref) = self.erase_region_binder(bound_tyref) else {
@@ -1608,8 +1597,10 @@ impl ItemTransCtx<'_, '_> {
         // let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
 
         // Construct the `(*ptr.ptr_metadata).method_field` place.
-        let vtable_decl_ref =
-            self.translate_vtable_struct_ref_from_def_id_mono(span, trait_def.def_id())?;
+        let Some(vtable_decl_ref) = self.translate_vtable_struct_ref(span, trait_def.this())?
+        else {
+            panic!("trait {:?} is not dyn-compatible", trait_def);
+        };
         let vtable_decl_id = *vtable_decl_ref.id.as_adt().unwrap();
         let vtable_ty = TyKind::Adt(vtable_decl_ref).into_ty();
         let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(vtable_ty.clone(), RefKind::Shared));
@@ -1813,8 +1804,10 @@ impl ItemTransCtx<'_, '_> {
         // let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
 
         // Construct the `(*ptr.ptr_metadata).method_field` place.
-        let vtable_decl_ref =
-            self.translate_vtable_struct_ref_from_def_id_mono(span, trait_def.def_id())?;
+        let Some(vtable_decl_ref) = self.translate_vtable_struct_ref(span, trait_def.this())?
+        else {
+            panic!("trait {:?} is not dyn-compatible", trait_def);
+        };
         let vtable_decl_id = *vtable_decl_ref.id.as_adt().unwrap();
         let vtable_ty = TyKind::Adt(vtable_decl_ref).into_ty();
         let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(vtable_ty.clone(), RefKind::Shared));
