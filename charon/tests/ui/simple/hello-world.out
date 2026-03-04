@@ -4,7 +4,7 @@
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     non-dyn-compatible
 }
 
@@ -12,17 +12,26 @@ pub trait Destruct<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
+
+// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
+unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
+= <opaque>
+
+// Full name: alloc::string::String::{impl Destruct for String}
+impl Destruct for String {
+    fn drop_in_place = {impl Destruct for String}::drop_in_place
+    non-dyn-compatible
+}
 
 // Full name: alloc::string::{impl ToString for Str}::to_string::<Str>
 pub fn to_string::<Str><'_0>(_1: &'_0 Str) -> String
@@ -46,7 +55,7 @@ fn main()
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[{impl#2}] a_1
+    conditional_drop[{impl Destruct for String}] a_1
     storage_dead(a_1)
     return
 }
