@@ -774,61 +774,26 @@ impl ItemTransCtx<'_, '_> {
         impl_kind: &TraitImplSource,
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
-        // self.check_no_monomorphize(span)?;
 
-        let (impl_ref, vtable_struct_ref) =
-            self.get_vtable_instance_info(span, impl_def, impl_kind)?;
-        // Initializer function for this global.
-        let init = self.register_item(
-            span,
-            impl_def.this(),
-            TransItemSourceKind::VTableInstanceInitializer(*impl_kind),
-        );
-
-        Ok(GlobalDecl {
-            def_id: global_id,
-            item_meta,
-            generics: self.into_generics(),
-            src: ItemSource::VTableInstance { impl_ref },
-            // it should be static to have its own address
-            global_kind: GlobalKind::Static,
-            ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
-            init,
-        })
-    }
-
-    // In Mono mode, when translating vtable_instance,
-    // we also enqueue the items of preshims for translation.
-    pub(crate) fn translate_vtable_instance_mono(
-        mut self,
-        global_id: GlobalDeclId,
-        item_meta: ItemMeta,
-        impl_def: &hax::FullDef,
-        impl_kind: &TraitImplSource,
-    ) -> Result<GlobalDecl, Error> {
-        let span = item_meta.span;
-        // self.check_no_monomorphize(span)?;
-
-        let trait_pred = match impl_def.kind() {
-            hax::FullDefKind::TraitImpl { trait_pred, .. } => trait_pred,
-            _ => unreachable!(),
+        let (src, vtable_struct_ref) = if self.monomorphize() {
+            let vtable_struct_ref = self.get_vtable_instance_info_mono(span, impl_def)?;
+            (ItemSource::VTableInstanceMono, vtable_struct_ref)
+        } else {
+            let (impl_ref, vtable_struct_ref) =
+                self.get_vtable_instance_info(span, impl_def, impl_kind)?;
+            (ItemSource::VTableInstance { impl_ref }, vtable_struct_ref)
         };
 
-        let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
-        let self_ty = implemented_trait.generics.types[0].clone();
+        // register preshims for translation
+        if self.monomorphize() {
+            let trait_pred = match impl_def.kind() {
+                hax::FullDefKind::TraitImpl { trait_pred, .. } => trait_pred,
+                _ => unreachable!(),
+            };
+            let trait_def = self.hax_def(&trait_pred.trait_ref)?;
+            self.translate_preshim(span, &trait_def)?;
+        }
 
-        trace!("MONO: self_ty index:\n {:?}", self_ty);
-        trace!(
-            "MONO: impl_def.generic_args:\n {:?}",
-            impl_def.this().generic_args
-        );
-
-        let trait_def = self.hax_def(&trait_pred.trait_ref)?;
-        self.translate_preshim(span, &trait_def)?;
-
-        // implemented_trait.generic_args
-
-        let vtable_struct_ref = self.get_vtable_instance_info_mono(span, impl_def)?;
         // Initializer function for this global.
         let init = self.register_item(
             span,
@@ -840,7 +805,7 @@ impl ItemTransCtx<'_, '_> {
             def_id: global_id,
             item_meta,
             generics: self.into_generics(),
-            src: ItemSource::VTableInstanceMono,
+            src,
             // it should be static to have its own address
             global_kind: GlobalKind::Static,
             ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
