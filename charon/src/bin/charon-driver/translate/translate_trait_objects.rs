@@ -519,6 +519,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         trait_def: &hax::FullDef,
     ) -> Result<TypeDecl, Error> {
+        let mono = self.monomorphize_trait();
         let span = item_meta.span;
         if !self.trait_is_dyn_compatible(trait_def.def_id())? {
             raise_error!(
@@ -528,7 +529,6 @@ impl ItemTransCtx<'_, '_> {
                 for a non-dyn-compatible trait"
             );
         }
-        self.check_no_monomorphize(span)?;
 
         let (hax::FullDefKind::Trait {
             dyn_self,
@@ -545,37 +545,6 @@ impl ItemTransCtx<'_, '_> {
         };
         let Some(dyn_self) = dyn_self else {
             panic!("Trying to generate a vtable for a non-dyn-compatible trait")
-        };
-
-        // The `dyn Trait<Args..>` type for this trait.
-        let mut dyn_self = {
-            let dyn_self = self.translate_ty(span, dyn_self)?;
-            let TyKind::DynTrait(mut dyn_pred) = dyn_self.kind().clone() else {
-                panic!("incorrect `dyn_self`")
-            };
-
-            // Add one generic parameter for each associated type of this trait and its parents. We
-            // then use that in `dyn_self`
-            for (i, ty_constraint) in dyn_pred
-                .binder
-                .params
-                .trait_type_constraints
-                .iter_mut()
-                .enumerate()
-            {
-                let name = format!("Ty{i}");
-                let new_ty = self
-                    .the_only_binder_mut()
-                    .params
-                    .types
-                    .push_with(|index| TypeParam { index, name });
-                // Moving that type under two levels of binders: the `DynPredicate` binder and the
-                // type constraint binder.
-                let new_ty =
-                    TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::new(2), new_ty)).into_ty();
-                ty_constraint.skip_binder.ty = new_ty;
-            }
-            TyKind::DynTrait(dyn_pred).into_ty()
         };
 
         let mut field_map = IndexVec::new();
@@ -604,114 +573,77 @@ impl ItemTransCtx<'_, '_> {
             (kind, Some(layout))
         };
 
-        // Replace any use of `Self` with `dyn Trait<...>`, and remove the `Self` type variable
-        // from the generic parameters.
-        let mut generics = self.into_generics();
-        {
-            dyn_self = dynify(dyn_self, None, false);
-            generics = dynify(generics, Some(dyn_self.clone()), false);
-            kind = dynify(kind, Some(dyn_self.clone()), true);
-            generics.types.remove_and_shift_ids(TypeVarId::ZERO);
-            generics.types.iter_mut().for_each(|ty| {
-                ty.index -= 1;
-            });
-        }
+        let mut generics = Default::default();
 
-        let dyn_predicate = dyn_self
-            .kind()
-            .as_dyn_trait()
-            .expect("incorrect `dyn_self`");
+        let dyn_predicate = if mono {
+            DynPredicate {
+                binder: Binder {
+                    params: GenericParams::empty(),
+                    skip_binder: TyKind::Error(
+                        "mono vtable dyn predicate is intentionally erased".to_string(),
+                    )
+                    .into_ty(),
+                    kind: BinderKind::Dyn,
+                },
+            }
+        } else {
+            // The `dyn Trait<Args..>` type for this trait.
+            // This is only used in poly mode
+            let mut dyn_self = {
+                let dyn_self = self.translate_ty(span, dyn_self)?;
+                let TyKind::DynTrait(mut dyn_pred) = dyn_self.kind().clone() else {
+                    panic!("incorrect `dyn_self`")
+                };
+
+                // Add one generic parameter for each associated type of this trait and its parents. We
+                // then use that in `dyn_self`
+                for (i, ty_constraint) in dyn_pred
+                    .binder
+                    .params
+                    .trait_type_constraints
+                    .iter_mut()
+                    .enumerate()
+                {
+                    let name = format!("Ty{i}");
+                    let new_ty = self
+                        .the_only_binder_mut()
+                        .params
+                        .types
+                        .push_with(|index| TypeParam { index, name });
+                    // Moving that type under two levels of binders: the `DynPredicate` binder and the
+                    // type constraint binder.
+                    let new_ty =
+                        TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::new(2), new_ty)).into_ty();
+                    ty_constraint.skip_binder.ty = new_ty;
+                }
+                TyKind::DynTrait(dyn_pred).into_ty()
+            };
+
+            // Replace any use of `Self` with `dyn Trait<...>`, and remove the `Self` type variable
+            // from the generic parameters.
+            generics = self.into_generics();
+            {
+                dyn_self = dynify(dyn_self, None, false);
+                generics = dynify(generics, Some(dyn_self.clone()), false);
+                kind = dynify(kind, Some(dyn_self.clone()), true);
+                generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+                generics.types.iter_mut().for_each(|ty| {
+                    ty.index -= 1;
+                });
+            }
+
+            dyn_self
+                .kind()
+                .as_dyn_trait()
+                .expect("incorrect `dyn_self`")
+                .clone()
+        };
         Ok(TypeDecl {
             def_id: type_id,
             item_meta: item_meta,
             generics: generics,
             src: ItemSource::VTableTy {
-                dyn_predicate: dyn_predicate.clone(),
-                field_map,
-                supertrait_map,
-            },
-            kind,
-            layout,
-            // A vtable struct is always sized
-            ptr_metadata: PtrMetadata::None,
-            repr: None,
-        })
-    }
-
-    // In Mono mode, vtable stores drop and method shims as opaque function pointers.
-    pub(crate) fn translate_vtable_struct_mono(
-        mut self,
-        type_id: TypeDeclId,
-        item_meta: ItemMeta,
-        trait_def: &hax::FullDef,
-    ) -> Result<TypeDecl, Error> {
-        let span = item_meta.span;
-        if !self.trait_is_dyn_compatible(trait_def.def_id())? {
-            raise_error!(
-                self,
-                span,
-                "Trying to compute the vtable type \
-                for a non-dyn-compatible trait"
-            );
-        }
-
-        // In mono mode, trait decl def remains poly.
-        self.check_no_monomorphize(span)?;
-
-        let (hax::FullDefKind::Trait {
-            implied_predicates, ..
-        }
-        | hax::FullDefKind::TraitAlias {
-            implied_predicates, ..
-        }) = trait_def.kind()
-        else {
-            panic!()
-        };
-
-        let mut field_map = IndexVec::new();
-        let mut supertrait_map: IndexMap<TraitClauseId, _> =
-            (0..implied_predicates.predicates.len())
-                .map(|_| None)
-                .collect();
-        let (kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
-            (TypeDeclKind::Opaque, None)
-        } else {
-            // First construct fields that use the real method signatures (which may use the `Self`
-            // type). We fixup the types and generics below.
-            let vtable_data = self.prepare_vtable_fields(trait_def, implied_predicates)?;
-            let fields = self.gen_vtable_struct_fields(span, &vtable_data)?;
-
-            let kind = TypeDeclKind::Struct(fields);
-            let layout = self.generate_naive_layout(span, &kind)?;
-            supertrait_map = vtable_data.supertrait_map;
-            field_map = vtable_data.fields.map_ref(|tr_field| match *tr_field {
-                TrVTableField::Size => VTableField::Size,
-                TrVTableField::Align => VTableField::Align,
-                TrVTableField::Drop => VTableField::Drop,
-                TrVTableField::Method(name, ..) => VTableField::Method(name),
-                TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(clause_id),
-            });
-            (kind, Some(layout))
-        };
-
-        // In mono mode we erase the generics (generic and associative paramters) of the vtable declaration .
-        let dyn_predicate = DynPredicate {
-            binder: Binder {
-                params: GenericParams::empty(),
-                skip_binder: TyKind::Error(
-                    "mono vtable dyn predicate is intentionally erased".to_string(),
-                )
-                .into_ty(),
-                kind: BinderKind::Dyn,
-            },
-        };
-
-        Ok(TypeDecl {
-            def_id: type_id,
-            item_meta: item_meta,
-            generics: GenericParams::empty(),
-            src: ItemSource::VTableTy {
-                dyn_predicate: dyn_predicate.clone(),
+                dyn_predicate: dyn_predicate,
                 field_map,
                 supertrait_map,
             },
