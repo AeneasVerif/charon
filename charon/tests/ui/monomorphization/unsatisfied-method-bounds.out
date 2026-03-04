@@ -12,6 +12,10 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -58,11 +62,19 @@ fn test_crate::MyIterator::method<'_0>(_1: &'_0 B)
 }
 
 // Full name: test_crate::{impl MyIterator for A}
-impl MyIterator for A {    non-dyn-compatible
+impl MyIterator for A {
+    parent_clause0 = {built_in impl MetaSized for A}
+    parent_clause1 = {built_in impl Sized for String}
+    type Item = String
+    vtable: {impl MyIterator for A}::{vtable}
 }
 
 // Full name: test_crate::{impl MyIterator for B}
-impl MyIterator for B {    non-dyn-compatible
+impl MyIterator for B {
+    parent_clause0 = {built_in impl MetaSized for B}
+    parent_clause1 = {built_in impl Sized for u8}
+    type Item = u8
+    vtable: {impl MyIterator for B}::{vtable}
 }
 
 // Full name: test_crate::main

@@ -68,10 +68,6 @@ fn {vtable_method_preshim}<'_0>(_1: &'_0 (dyn Trait))
 fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait))
 = <method_without_default_body>
 
-// Full name: test_crate::{impl Trait for i32}
-impl Trait for i32 {    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl Trait for i32}::comsume
 fn {impl Trait for i32}::comsume<'_0>(_1: &'_0 i32)
 {
@@ -139,6 +135,12 @@ fn {impl Trait for i32}::{vtable}() -> test_crate::Trait::{vtable}
 
 // Full name: test_crate::{impl Trait for i32}::{vtable}
 static {impl Trait for i32}::{vtable}: test_crate::Trait::{vtable} = {impl Trait for i32}::{vtable}()
+
+// Full name: test_crate::{impl Trait for i32}
+impl Trait for i32 {
+    parent_clause0 = {built_in impl MetaSized for i32}
+    vtable: {impl Trait for i32}::{vtable}
+}
 
 // Full name: test_crate::main
 fn main()

@@ -12,7 +12,9 @@ trait Foo<Self>
 }
 
 // Full name: test_crate::{impl Foo for u64}
-impl Foo for u64 {    non-dyn-compatible
+impl Foo for u64 {
+    parent_clause0 = {built_in impl MetaSized for u64}
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Foo for u64}::bar::<bool>

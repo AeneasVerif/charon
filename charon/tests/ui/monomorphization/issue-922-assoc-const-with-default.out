@@ -73,7 +73,10 @@ pub const IS_ZST::<()>: bool = IS_ZST()
 pub const IS_ZST: bool = IS_ZST()
 
 // Full name: test_crate::{impl SizedTypeProperties for ()}::<()>
-impl SizedTypeProperties for () {    non-dyn-compatible
+impl SizedTypeProperties for () {
+    parent_clause0 = {built_in impl Sized for ()}
+    const IS_ZST = IS_ZST::<()>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main

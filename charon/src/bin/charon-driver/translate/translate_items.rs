@@ -986,6 +986,7 @@ impl ItemTransCtx<'_, '_> {
 
         let hax::FullDefKind::TraitImpl {
             trait_pred,
+            implied_impl_exprs,
             items: impl_items,
             ..
         } = &def.kind
@@ -997,9 +998,13 @@ impl ItemTransCtx<'_, '_> {
         // let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
         let trait_id = implemented_trait.id;
+        let implied_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;
 
-        // let vtable =
-        //     self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;
+        let vtable =
+            self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;
+
+        let mut types = Vec::new();
+        let mut consts = Vec::new();
 
         // Explore the associated items
         for impl_item in impl_items {
@@ -1067,11 +1072,44 @@ impl ItemTransCtx<'_, '_> {
                         self.mark_method_as_used(trait_id, name);
                     }
                 }
+                // hax::FullDefKind::AssocConst { .. } => {
+                //     let _: GlobalDeclId = self.register_and_enqueue(item_span, item_src);
+                // }
                 hax::FullDefKind::AssocConst { .. } => {
-                    let _: GlobalDeclId = self.register_and_enqueue(item_span, item_src);
+                    let id = self.register_and_enqueue(item_span, item_src);
+                    // In monomorphized impls, the associated const reference should keep the
+                    // instantiated generics from the const item itself.
+                    let generics = self.the_only_binder().params.identity_args();
+                    let gref = GlobalDeclRef {
+                        id,
+                        generics: Box::new(generics),
+                    };
+                    consts.push((name, gref));
                 }
+
                 // Monomorphic traits have no associated types.
-                hax::FullDefKind::AssocTy { .. } => continue,
+                // hax::FullDefKind::AssocTy { .. } => continue,
+                hax::FullDefKind::AssocTy { value, .. } => {
+                    let binder_kind = BinderKind::TraitType(trait_id, name.clone());
+                    let assoc_ty =
+                        self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
+                            let ty = match &impl_item.value {
+                                Provided { .. } => value.as_ref().unwrap(),
+                                DefaultedTy { ty, .. } => ty,
+                                _ => unreachable!(),
+                            };
+                            let ty = ctx.translate_ty(item_span, &ty)?;
+                            let implied_trait_refs = ctx.translate_trait_impl_exprs(
+                                item_span,
+                                &impl_item.required_impl_exprs,
+                            )?;
+                            Ok(TraitAssocTyImpl {
+                                value: ty,
+                                implied_trait_refs,
+                            })
+                        })?;
+                    types.push((name.clone(), assoc_ty));
+                }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
         }
@@ -1090,12 +1128,15 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             impl_trait: implemented_trait,
             generics: Default::default(),
-            implied_trait_refs: Default::default(),
-            consts: Default::default(),
-            types: Default::default(),
+            implied_trait_refs: implied_trait_refs,
+            // Default::default(),
+            consts: consts,
+            // Default::default(),
+            types: types,
+            // Default::default(),
             methods: Default::default(),
-            vtable: Default::default(),
-            // vtable,
+            vtable: vtable,
+            // Default::default(),
         })
     }
 
