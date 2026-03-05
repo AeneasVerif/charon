@@ -1180,11 +1180,7 @@ impl ItemTransCtx<'_, '_> {
             def_id,
             item_meta,
             impl_trait: implemented_trait,
-            generics: if self.polymorphize() {
-                self.into_generics()
-            } else {
-                Default::default()
-            },
+            generics: self.into_generics(),
             implied_trait_refs,
             consts,
             types,
