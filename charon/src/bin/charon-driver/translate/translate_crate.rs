@@ -41,6 +41,7 @@ pub struct TransItemSource {
 pub enum RustcItem {
     Poly(hax::DefId),
     Mono(hax::ItemRef),
+    MonoTrait(hax::DefId),
 }
 
 /// The kind of a [`TransItemSource`].
@@ -80,6 +81,8 @@ pub enum TransItemSourceKind {
     VTableMethod,
     /// The drop shim function to be used in the vtable as a field, the ID is an `impl`.
     VTableDropShim,
+    VTableDropPreShim,
+    VTableMethodPreShim(TraitDeclId, TraitItemName),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -101,6 +104,13 @@ impl TransItemSource {
         if let RustcItem::Mono(item) = &item {
             if item.has_param {
                 panic!("Item is not monomorphic: {item:?}")
+            }
+        } else if let RustcItem::MonoTrait(_) = &item {
+            if !matches!(
+                kind,
+                TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
+            ) {
+                panic!("Item kind {kind:?} should not be translated as monomorphic_trait")
             }
         }
         Self { item, kind }
@@ -124,6 +134,13 @@ impl TransItemSource {
     /// Refers to the monomorphic version of this item.
     pub fn monomorphic(item: &hax::ItemRef, kind: TransItemSourceKind) -> Self {
         Self::new(RustcItem::Mono(item.clone()), kind)
+    }
+
+    /// Refers to the monomorphic trait (or vtable)
+    /// that works mostly like the polymorphic version
+    /// except that it knows it's being translated monomorphically.
+    pub fn monomorphic_trait(def_id: &hax::DefId, kind: TransItemSourceKind) -> Self {
+        Self::new(RustcItem::MonoTrait(def_id.clone()), kind)
     }
 
     pub fn def_id(&self) -> &hax::DefId {
@@ -178,6 +195,7 @@ impl RustcItem {
         match self {
             RustcItem::Poly(def_id) => def_id,
             RustcItem::Mono(item_ref) => &item_ref.def_id,
+            RustcItem::MonoTrait(def_id) => def_id,
         }
     }
 }
@@ -246,6 +264,10 @@ impl<'tcx> TranslateCtx<'tcx> {
                 return;
             }
         } else {
+            trace!(
+                "MONO: catch polymorphic item {:?} in enqueue_module_item",
+                def_id
+            );
             TransItemSource::polymorphic(def_id, kind)
         };
         let _: Option<ItemId> = self.register_and_enqueue(&None, item_src);
@@ -274,7 +296,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                     | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod
-                    | VTableDropShim => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableDropShim
+                    | VTableDropPreShim
+                    | VTableMethodPreShim(..) => {
+                        ItemId::Fun(self.translated.fun_decls.reserve_slot())
+                    }
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -628,7 +654,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TraitDeclRef, Error> {
-        self.translate_item(span, item, TransItemSourceKind::TraitDecl)
+        let item_src = if self.polymorphize() {
+            trace!(
+                "MONO: catch polymorphic item {:?} in translate_trait_decl_ref",
+                self.item_src
+            );
+            TransItemSource::polymorphic(&item.def_id, TransItemSourceKind::TraitDecl)
+        } else {
+            TransItemSource::monomorphic_trait(&item.def_id, TransItemSourceKind::TraitDecl)
+        };
+        let id: ItemId = self.register_and_enqueue(span, item_src);
+        let generics = self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
+        let id = id
+            .try_into()
+            .expect("translated trait decl should be a trait decl id");
+        Ok(TraitDeclRef {
+            id,
+            generics: Box::new(generics),
+        })
     }
 
     pub(crate) fn translate_trait_impl_ref(
@@ -692,6 +735,7 @@ pub fn translate<'tcx, 'ctx>(
         cached_item_metas: Default::default(),
         cached_names: Default::default(),
         lt_mutability_computer: Default::default(),
+        translated_preshims: Default::default(),
     };
     ctx.register_target_info();
 

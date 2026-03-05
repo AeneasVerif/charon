@@ -1,176 +1,84 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::<(u8,)>
+// Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
-pub trait MetaSized::<(u8,)>
+pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized::<(u8,)>
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait Sized::<(u8,)>
+pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<(u8,)>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized::<test_crate::main::closure<'_>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure<'_>>
-
-// Full name: core::marker::MetaSized::<test_crate::main::closure#1<'_>>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure#1<'_>>
-
-// Full name: core::marker::MetaSized::<test_crate::main::closure#2>
-#[lang_item("meta_sized")]
-pub trait MetaSized::<test_crate::main::closure#2>
-
-struct test_crate::main::closure<'_0> {
-  &'_0 u8,
-}
-
-// Full name: core::marker::Destruct::<test_crate::main::closure<'_>>
+// Full name: core::marker::Destruct
 #[lang_item("destruct")]
-pub trait Destruct::<test_crate::main::closure<'_>>
+pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
     non-dyn-compatible
 }
 
-struct test_crate::main::closure#1<'_0> {
-  &'_0 mut u8,
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct::<test_crate::main::closure#1<'_>>
-#[lang_item("destruct")]
-pub trait Destruct::<test_crate::main::closure#1<'_>>
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+= <opaque>
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
     non-dyn-compatible
 }
 
 // Full name: test_crate::Thing
 struct Thing {}
 
-struct test_crate::main::closure#2 {
-  Thing,
-}
-
-// Full name: core::marker::Destruct::<test_crate::main::closure#2>
-#[lang_item("destruct")]
-pub trait Destruct::<test_crate::main::closure#2>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(_1: *mut test_crate::main::closure<'_>)
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>(_1: *mut test_crate::main::closure#1<'_>)
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(_1: *mut test_crate::main::closure#2)
-= <opaque>
-
-// Full name: core::marker::Tuple::<(u8,)>
-#[lang_item("tuple_trait")]
-pub trait Tuple::<(u8,)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<(u8,)>
-    non-dyn-compatible
-}
-
 // Full name: core::mem::drop::<Thing>
 #[lang_item("mem_drop")]
 pub fn drop::<Thing>(_1: Thing)
 = <opaque>
 
-// Full name: core::ops::function::FnOnce::<test_crate::main::closure<'_>, (u8,)>
+// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait FnOnce::<test_crate::main::closure<'_>, (u8,)>
+pub trait FnOnce<Self, Args, Self_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
-    parent_clause1 : [@TraitClause1]: Sized::<(u8,)>
-    parent_clause2 : [@TraitClause2]: Tuple::<(u8,)>
-    fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8,)>
-    vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure<'_>, (u8,)><u8>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self_Output>
+    vtable: core::ops::function::FnOnce::{vtable}
 }
 
-// Full name: core::ops::function::FnMut::<test_crate::main::closure<'_>, (u8,)>
+// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait FnMut::<test_crate::main::closure<'_>, (u8,)>
+pub trait FnMut<Self, Args, Self_Clause1_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
-    parent_clause1 : [@TraitClause1]: FnOnce::<test_crate::main::closure<'_>, (u8,)>
-    parent_clause2 : [@TraitClause2]: Sized::<(u8,)>
-    parent_clause3 : [@TraitClause3]: Tuple::<(u8,)>
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8,)><'_0_1>
-    vtable: core::ops::function::FnMut::{vtable}::<test_crate::main::closure<'_>, (u8,)><u8>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args, Self_Clause1_Output>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    vtable: core::ops::function::FnMut::{vtable}
 }
 
-// Full name: core::ops::function::Fn::<test_crate::main::closure<'_>, (u8,)>
+// Full name: core::ops::function::Fn
 #[lang_item("fn")]
-pub trait Fn::<test_crate::main::closure<'_>, (u8,)>
+pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure<'_>>
-    parent_clause1 : [@TraitClause1]: FnMut::<test_crate::main::closure<'_>, (u8,)>
-    parent_clause2 : [@TraitClause2]: Sized::<(u8,)>
-    parent_clause3 : [@TraitClause3]: Tuple::<(u8,)>
-    fn call<'_0_1> = core::ops::function::Fn::call::<test_crate::main::closure<'_>, (u8,)><'_0_1>
-    vtable: core::ops::function::Fn::{vtable}::<test_crate::main::closure<'_>, (u8,)><u8>
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: FnMut<Self, Args, Self_Clause1_Clause1_Output>
+    parent_clause2 : [@TraitClause2]: Sized<Args>
+    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    vtable: core::ops::function::Fn::{vtable}
 }
-
-pub fn core::ops::function::Fn::call::<test_crate::main::closure<'_>, (u8,)><'_0>(_1: &'_0 test_crate::main::closure<'_>, _2: (u8,)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::<test_crate::main::closure#1<'_>, (u8,)>
-#[lang_item("fn_once")]
-pub trait FnOnce::<test_crate::main::closure#1<'_>, (u8,)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
-    parent_clause1 : [@TraitClause1]: Sized::<(u8,)>
-    parent_clause2 : [@TraitClause2]: Tuple::<(u8,)>
-    fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8,)>
-    vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure#1<'_>, (u8,)><u8>
-}
-
-// Full name: core::ops::function::FnMut::<test_crate::main::closure#1<'_>, (u8,)>
-#[lang_item("fn_mut")]
-pub trait FnMut::<test_crate::main::closure#1<'_>, (u8,)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#1<'_>>
-    parent_clause1 : [@TraitClause1]: FnOnce::<test_crate::main::closure#1<'_>, (u8,)>
-    parent_clause2 : [@TraitClause2]: Sized::<(u8,)>
-    parent_clause3 : [@TraitClause3]: Tuple::<(u8,)>
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8,)><'_0_1>
-    vtable: core::ops::function::FnMut::{vtable}::<test_crate::main::closure#1<'_>, (u8,)><u8>
-}
-
-pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure#1<'_>, (u8,)><'_0>(_1: &'_0 mut test_crate::main::closure#1<'_>, _2: (u8,)) -> u8
-= <opaque>
-
-pub fn core::ops::function::FnMut::call_mut::<test_crate::main::closure<'_>, (u8,)><'_0>(_1: &'_0 mut test_crate::main::closure<'_>, _2: (u8,)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::<test_crate::main::closure#2, (u8,)>
-#[lang_item("fn_once")]
-pub trait FnOnce::<test_crate::main::closure#2, (u8,)>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized::<test_crate::main::closure#2>
-    parent_clause1 : [@TraitClause1]: Sized::<(u8,)>
-    parent_clause2 : [@TraitClause2]: Tuple::<(u8,)>
-    fn call_once = core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8,)>
-    vtable: core::ops::function::FnOnce::{vtable}::<test_crate::main::closure#2, (u8,)><u8>
-}
-
-pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#2, (u8,)>(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
-= <opaque>
-
-pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure<'_>, (u8,)>(_1: test_crate::main::closure<'_>, _2: (u8,)) -> u8
-= <opaque>
-
-pub fn core::ops::function::FnOnce::call_once::<test_crate::main::closure#1<'_>, (u8,)>(_1: test_crate::main::closure#1<'_>, _2: (u8,)) -> u8
-= <opaque>
 
 fn UNIT_METADATA()
 {
@@ -182,11 +90,15 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun1()
 
-// Full name: test_crate::main::{impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call
-fn {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'_0, '_1>(_1: &'_1 test_crate::main::closure<'_0>, _2: (u8,)) -> u8
+struct test_crate::main::closure<'_0> {
+  &'_0 u8,
+}
+
+// Full name: test_crate::main::{impl Fn<(u8,), type_error("Can't compute Self::Clause1::Clause1::Output")> for test_crate::main::closure<'_0>}::call
+fn {impl Fn<(u8,), type_error("Can't compute Self::Clause1::Clause1::Output")> for test_crate::main::closure<'_0>}::call<'_0, '_1>(_1: &'_1 test_crate::main::closure<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
-    let _1: &'2 test_crate::main::closure<'_0>; // arg #1
+    let _1: &'1 test_crate::main::closure<'_0>; // arg #1
     let tupled_args_2: (u8,); // arg #2
     let x_3: u8; // local
     let _4: u8; // anonymous local
@@ -207,12 +119,12 @@ fn {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'_0, '_1>(_1: &'_1 te
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place
-unsafe fn {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure<'_>)
+// Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}::drop_in_place
+unsafe fn {impl Destruct for test_crate::main::closure<'_0>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure<'_0>)
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure<'_0>; // arg #1
-    let _2: &'2 mut test_crate::main::closure<'_0>; // anonymous local
+    let _2: &'1 mut test_crate::main::closure<'_0>; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -220,9 +132,9 @@ unsafe fn {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>(_
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct::<test_crate::main::closure<'_>>}
-impl<'_0> Destruct::<test_crate::main::closure<'_>> {
-    fn drop_in_place = {impl Destruct::<test_crate::main::closure<'_>>}::drop_in_place<'_0>
+// Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}
+impl<'_0> Destruct for test_crate::main::closure<'_0> {
+    fn drop_in_place = {impl Destruct for test_crate::main::closure<'_0>}::drop_in_place<'_0>
     non-dyn-compatible
 }
 
@@ -238,18 +150,22 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(_1: test_crate::main::closure<
     _2 = &f_1
     storage_live(_3)
     _3 = (const 0 : u8,)
-    _0 = {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'6, '7>(move _2, move _3)
+    _0 = {impl Fn<(u8,), type_error("Can't compute Self::Clause1::Clause1::Output")> for test_crate::main::closure<'_0>}::call<'8, '9>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct::<test_crate::main::closure<'_>>}<'9>] f_1
+    conditional_drop[{impl Destruct for test_crate::main::closure<'_0>}<'15>] f_1
     return
 }
 
-// Full name: test_crate::main::{impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut
-fn {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::closure#1<'_0>, _2: (u8,)) -> u8
+struct test_crate::main::closure#1<'_0> {
+  &'_0 mut u8,
+}
+
+// Full name: test_crate::main::{impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure#1<'_0>}::call_mut
+fn {impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure#1<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::closure#1<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
-    let _1: &'2 mut test_crate::main::closure#1<'_0>; // arg #1
+    let _1: &'1 mut test_crate::main::closure#1<'_0>; // arg #1
     let tupled_args_2: (u8,); // arg #2
     let x_3: u8; // local
     let _4: u8; // anonymous local
@@ -274,12 +190,12 @@ fn {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '_1>(_1
     return
 }
 
-// Full name: test_crate::main::closure#1::{impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place
-unsafe fn {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure#1<'_>)
+// Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}::drop_in_place
+unsafe fn {impl Destruct for test_crate::main::closure#1<'_0>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure#1<'_0>)
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure#1<'_0>; // arg #1
-    let _2: &'2 mut test_crate::main::closure#1<'_0>; // anonymous local
+    let _2: &'1 mut test_crate::main::closure#1<'_0>; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -287,9 +203,9 @@ unsafe fn {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>
     return
 }
 
-// Full name: test_crate::main::closure#1::{impl Destruct::<test_crate::main::closure#1<'_>>}
-impl<'_0> Destruct::<test_crate::main::closure#1<'_>> {
-    fn drop_in_place = {impl Destruct::<test_crate::main::closure#1<'_>>}::drop_in_place<'_0>
+// Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}
+impl<'_0> Destruct for test_crate::main::closure#1<'_0> {
+    fn drop_in_place = {impl Destruct for test_crate::main::closure#1<'_0>}::drop_in_place<'_0>
     non-dyn-compatible
 }
 
@@ -305,15 +221,19 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(_1: test_crate::main::cl
     _2 = &mut f_1
     storage_live(_3)
     _3 = (const 0 : u8,)
-    _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'6, '7>(move _2, move _3)
+    _0 = {impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure#1<'_0>}::call_mut<'8, '9>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'9>] f_1
+    conditional_drop[{impl Destruct for test_crate::main::closure#1<'_0>}<'15>] f_1
     return
 }
 
-// Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once
-fn {impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
+struct test_crate::main::closure#2 {
+  Thing,
+}
+
+// Full name: test_crate::main::{impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#2}::call_once
+fn {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#2}::call_once(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::main::closure#2; // arg #1
@@ -341,8 +261,8 @@ fn {impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once(_1: test_crate
     return
 }
 
-// Full name: test_crate::main::closure#2::{impl Destruct::<test_crate::main::closure#2>}::drop_in_place
-unsafe fn {impl Destruct::<test_crate::main::closure#2>}::drop_in_place(_1: *mut test_crate::main::closure#2)
+// Full name: test_crate::main::closure#2::{impl Destruct for test_crate::main::closure#2}::drop_in_place
+unsafe fn {impl Destruct for test_crate::main::closure#2}::drop_in_place(_1: *mut test_crate::main::closure#2)
 {
     let _0: (); // return
     let _1: *mut test_crate::main::closure#2; // arg #1
@@ -354,9 +274,9 @@ unsafe fn {impl Destruct::<test_crate::main::closure#2>}::drop_in_place(_1: *mut
     return
 }
 
-// Full name: test_crate::main::closure#2::{impl Destruct::<test_crate::main::closure#2>}
-impl Destruct::<test_crate::main::closure#2> {
-    fn drop_in_place = {impl Destruct::<test_crate::main::closure#2>}::drop_in_place
+// Full name: test_crate::main::closure#2::{impl Destruct for test_crate::main::closure#2}
+impl Destruct for test_crate::main::closure#2 {
+    fn drop_in_place = {impl Destruct for test_crate::main::closure#2}::drop_in_place
     non-dyn-compatible
 }
 
@@ -372,10 +292,10 @@ fn apply_to_zero_once::<test_crate::main::closure#2>(_1: test_crate::main::closu
     _2 = move f_1
     storage_live(_3)
     _3 = (const 0 : u8,)
-    _0 = {impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once(move _2, move _3)
+    _0 = {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#2}::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct::<test_crate::main::closure#2>}] f_1
+    conditional_drop[{impl Destruct for test_crate::main::closure#2}] f_1
     return
 }
 
@@ -433,8 +353,8 @@ fn main()
     return
 }
 
-// Full name: test_crate::main::{impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut
-fn {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::closure<'_0>, _2: (u8,)) -> u8
+// Full name: test_crate::main::{impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure<'_0>}::call_mut
+fn {impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::closure<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let state_1: &'_1 mut test_crate::main::closure<'_0>; // arg #1
@@ -443,94 +363,94 @@ fn {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '_1>(_1: 
 
     storage_live(_3)
     _3 = &(*state_1)
-    _0 = {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'_0, '2>(move _3, move args_2)
+    _0 = {impl Fn<(u8,), type_error("Can't compute Self::Clause1::Clause1::Output")> for test_crate::main::closure<'_0>}::call<'_0, '2>(move _3, move args_2)
     return
 }
 
-// Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}::call_once
-fn {impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}::call_once<'_0>(_1: test_crate::main::closure<'_0>, _2: (u8,)) -> u8
+// Full name: test_crate::main::{impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure<'_0>}::call_once
+fn {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure<'_0>}::call_once<'_0>(_1: test_crate::main::closure<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::main::closure<'_0>; // arg #1
     let _2: (u8,); // arg #2
-    let _3: &'2 mut test_crate::main::closure<'_0>; // anonymous local
+    let _3: &'1 mut test_crate::main::closure<'_0>; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '5>(move _3, move _2)
-    drop[{impl Destruct::<test_crate::main::closure<'_>>}<'_0>] _1
+    _0 = {impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure<'_0>}::call_mut<'_0, '5>(move _3, move _2)
+    drop[{impl Destruct for test_crate::main::closure<'_0>}<'_0>] _1
     return
 }
 
-// Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}
-impl<'_0> FnOnce::<test_crate::main::closure<'_>, (u8,)> {
-    parent_clause0 = {built_in impl MetaSized::<test_crate::main::closure<'_>>}
-    parent_clause1 = {built_in impl Sized::<(u8,)>}
-    parent_clause2 = {built_in impl Tuple::<(u8,)>}
-    fn call_once = {impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}::call_once<'_0>
+// Full name: test_crate::main::{impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure<'_0>}
+impl<'_0> FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure<'_0> {
+    parent_clause0 = {built_in impl MetaSized for test_crate::main::closure<'_0>}
+    parent_clause1 = {built_in impl Sized for (u8,)}
+    parent_clause2 = {built_in impl Tuple for (u8,)}
+    fn call_once = {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure<'_0>}::call_once<'_0>
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnMut::<test_crate::main::closure<'_>, (u8,)>}
-impl<'_0> FnMut::<test_crate::main::closure<'_>, (u8,)> {
-    parent_clause0 = {built_in impl MetaSized::<test_crate::main::closure<'_>>}
-    parent_clause1 = {impl FnOnce::<test_crate::main::closure<'_>, (u8,)>}<'_0>
-    parent_clause2 = {built_in impl Sized::<(u8,)>}
-    parent_clause3 = {built_in impl Tuple::<(u8,)>}
-    fn call_mut<'_0_1> = {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}::call_mut<'_0, '_0_1>
+// Full name: test_crate::main::{impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure<'_0>}
+impl<'_0> FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure<'_0> {
+    parent_clause0 = {built_in impl MetaSized for test_crate::main::closure<'_0>}
+    parent_clause1 = {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure<'_0>}<'_0>
+    parent_clause2 = {built_in impl Sized for (u8,)}
+    parent_clause3 = {built_in impl Tuple for (u8,)}
+    fn call_mut<'_0_1> = {impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure<'_0>}::call_mut<'_0, '_0_1>
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl Fn::<test_crate::main::closure<'_>, (u8,)>}
-impl<'_0> Fn::<test_crate::main::closure<'_>, (u8,)> {
-    parent_clause0 = {built_in impl MetaSized::<test_crate::main::closure<'_>>}
-    parent_clause1 = {impl FnMut::<test_crate::main::closure<'_>, (u8,)>}<'_0>
-    parent_clause2 = {built_in impl Sized::<(u8,)>}
-    parent_clause3 = {built_in impl Tuple::<(u8,)>}
-    fn call<'_0_1> = {impl Fn::<test_crate::main::closure<'_>, (u8,)>}::call<'_0, '_0_1>
+// Full name: test_crate::main::{impl Fn<(u8,), type_error("Can't compute Self::Clause1::Clause1::Output")> for test_crate::main::closure<'_0>}
+impl<'_0> Fn<(u8,), type_error("Can't compute Self::Clause1::Clause1::Output")> for test_crate::main::closure<'_0> {
+    parent_clause0 = {built_in impl MetaSized for test_crate::main::closure<'_0>}
+    parent_clause1 = {impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure<'_0>}<'_0>
+    parent_clause2 = {built_in impl Sized for (u8,)}
+    parent_clause3 = {built_in impl Tuple for (u8,)}
+    fn call<'_0_1> = {impl Fn<(u8,), type_error("Can't compute Self::Clause1::Clause1::Output")> for test_crate::main::closure<'_0>}::call<'_0, '_0_1>
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}::call_once
-fn {impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}::call_once<'_0>(_1: test_crate::main::closure#1<'_0>, _2: (u8,)) -> u8
+// Full name: test_crate::main::{impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#1<'_0>}::call_once
+fn {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#1<'_0>}::call_once<'_0>(_1: test_crate::main::closure#1<'_0>, _2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::main::closure#1<'_0>; // arg #1
     let _2: (u8,); // arg #2
-    let _3: &'2 mut test_crate::main::closure#1<'_0>; // anonymous local
+    let _3: &'1 mut test_crate::main::closure#1<'_0>; // anonymous local
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '5>(move _3, move _2)
-    drop[{impl Destruct::<test_crate::main::closure#1<'_>>}<'_0>] _1
+    _0 = {impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure#1<'_0>}::call_mut<'_0, '5>(move _3, move _2)
+    drop[{impl Destruct for test_crate::main::closure#1<'_0>}<'_0>] _1
     return
 }
 
-// Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}
-impl<'_0> FnOnce::<test_crate::main::closure#1<'_>, (u8,)> {
-    parent_clause0 = {built_in impl MetaSized::<test_crate::main::closure#1<'_>>}
-    parent_clause1 = {built_in impl Sized::<(u8,)>}
-    parent_clause2 = {built_in impl Tuple::<(u8,)>}
-    fn call_once = {impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}::call_once<'_0>
+// Full name: test_crate::main::{impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#1<'_0>}
+impl<'_0> FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#1<'_0> {
+    parent_clause0 = {built_in impl MetaSized for test_crate::main::closure#1<'_0>}
+    parent_clause1 = {built_in impl Sized for (u8,)}
+    parent_clause2 = {built_in impl Tuple for (u8,)}
+    fn call_once = {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#1<'_0>}::call_once<'_0>
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}
-impl<'_0> FnMut::<test_crate::main::closure#1<'_>, (u8,)> {
-    parent_clause0 = {built_in impl MetaSized::<test_crate::main::closure#1<'_>>}
-    parent_clause1 = {impl FnOnce::<test_crate::main::closure#1<'_>, (u8,)>}<'_0>
-    parent_clause2 = {built_in impl Sized::<(u8,)>}
-    parent_clause3 = {built_in impl Tuple::<(u8,)>}
-    fn call_mut<'_0_1> = {impl FnMut::<test_crate::main::closure#1<'_>, (u8,)>}::call_mut<'_0, '_0_1>
+// Full name: test_crate::main::{impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure#1<'_0>}
+impl<'_0> FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure#1<'_0> {
+    parent_clause0 = {built_in impl MetaSized for test_crate::main::closure#1<'_0>}
+    parent_clause1 = {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#1<'_0>}<'_0>
+    parent_clause2 = {built_in impl Sized for (u8,)}
+    parent_clause3 = {built_in impl Tuple for (u8,)}
+    fn call_mut<'_0_1> = {impl FnMut<(u8,), type_error("Can't compute Self::Clause1::Output")> for test_crate::main::closure#1<'_0>}::call_mut<'_0, '_0_1>
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnOnce::<test_crate::main::closure#2, (u8,)>}
-impl FnOnce::<test_crate::main::closure#2, (u8,)> {
-    parent_clause0 = {built_in impl MetaSized::<test_crate::main::closure#2>}
-    parent_clause1 = {built_in impl Sized::<(u8,)>}
-    parent_clause2 = {built_in impl Tuple::<(u8,)>}
-    fn call_once = {impl FnOnce::<test_crate::main::closure#2, (u8,)>}::call_once
+// Full name: test_crate::main::{impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#2}
+impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#2 {
+    parent_clause0 = {built_in impl MetaSized for test_crate::main::closure#2}
+    parent_clause1 = {built_in impl Sized for (u8,)}
+    parent_clause2 = {built_in impl Tuple for (u8,)}
+    fn call_once = {impl FnOnce<(u8,), type_error("Can't compute Self::Output")> for test_crate::main::closure#2}::call_once
     non-dyn-compatible
 }
 

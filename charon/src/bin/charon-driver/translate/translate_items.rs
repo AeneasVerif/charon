@@ -100,10 +100,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         trace!(
             "About to translate item `{:?}` as a {:?}; \
-            target_id={trans_id:?}, mono={}",
+            target_id={trans_id:?}, mono={}, poly={}",
             def.def_id(),
             item_src.kind,
-            bt_ctx.monomorphize()
+            bt_ctx.monomorphize(),
+            bt_ctx.polymorphize(),
         );
         if !matches!(
             &item_src.kind,
@@ -147,6 +148,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::TraitImpl(id)) = trans_id else {
                     unreachable!()
                 };
+                // In Mono mode, only user-defined trait is supported for now.
                 let trait_impl = match kind {
                     TraitImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
                     TraitImplSource::TraitAlias => {
@@ -226,6 +228,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableDropPreShim => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_drop_preshim(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableMethodPreShim(trait_id, name) => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl =
+                    bt_ctx.translate_vtable_method_preshim(id, item_meta, &def, name, trait_id)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -715,6 +732,13 @@ impl ItemTransCtx<'_, '_> {
                 hax::AssocKind::Const { .. } => TransItemSourceKind::Global,
                 hax::AssocKind::Type { .. } => TransItemSourceKind::Type,
             };
+
+            // skip all methods of trait decl in mono mode
+            // question: what if the method has default implmentation?
+            if self.monomorphize_trait() && matches!(trans_kind, TransItemSourceKind::Fun) {
+                continue;
+            }
+
             let poly_item_def = self.poly_hax_def(item_def_id)?;
             let (item_src, item_def) = if self.monomorphize() {
                 if poly_item_def.has_own_generics_or_predicates() {
@@ -730,6 +754,10 @@ impl ItemTransCtx<'_, '_> {
                     (item_src, item_def)
                 }
             } else {
+                trace!(
+                    "MONO: catch polymorphic item {:?} in translate_trait_decl",
+                    self.item_src
+                );
                 let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
                 (item_src, poly_item_def)
             };
@@ -1024,76 +1052,88 @@ impl ItemTransCtx<'_, '_> {
                         self.mark_method_as_used(trait_id, name);
                     }
 
-                    let binder_kind = BinderKind::TraitMethod(trait_id, name);
-                    let bound_fn_ref = match &impl_item.value {
-                        Provided { .. } => self.translate_binder_for_def(
-                            item_span,
-                            binder_kind,
-                            &item_def,
-                            |ctx| {
-                                let generics = ctx
+                    // In mono mode, we skip all methods in trait decl.
+                    // Correspondingly, here we skip all methods in trait impl.
+                    if self.polymorphize() {
+                        let binder_kind = BinderKind::TraitMethod(trait_id, name);
+                        let bound_fn_ref = match &impl_item.value {
+                            Provided { .. } => self.translate_binder_for_def(
+                                item_span,
+                                binder_kind,
+                                &item_def,
+                                |ctx| {
+                                    let generics = ctx
+                                        .outermost_generics()
+                                        .identity_args_at_depth(DeBruijnId::one())
+                                        .concat(
+                                            &ctx.innermost_generics()
+                                                .identity_args_at_depth(DeBruijnId::zero()),
+                                        );
+                                    Ok(FunDeclRef {
+                                        id: method_id,
+                                        generics: Box::new(generics),
+                                    })
+                                },
+                            )?,
+                            DefaultedFn { .. } => {
+                                // Retrieve the method generics from the trait decl.
+                                let decl_methods =
+                                    match self.get_or_translate(implemented_trait.id.into()) {
+                                        Ok(ItemRef::TraitDecl(tdecl)) => tdecl.methods.as_slice(),
+                                        _ => &[],
+                                    };
+                                let Some(bound_method) =
+                                    decl_methods.iter().find(|m| m.name() == name)
+                                else {
+                                    continue;
+                                };
+                                let method_params = bound_method
+                                    .clone()
+                                    .substitute_with_self(
+                                        &implemented_trait.generics,
+                                        &self_predicate.kind,
+                                    )
+                                    .params;
+
+                                let generics = self
                                     .outermost_generics()
                                     .identity_args_at_depth(DeBruijnId::one())
                                     .concat(
-                                        &ctx.innermost_generics()
-                                            .identity_args_at_depth(DeBruijnId::zero()),
+                                        &method_params.identity_args_at_depth(DeBruijnId::zero()),
                                     );
-                                Ok(FunDeclRef {
+                                let fn_ref = FunDeclRef {
                                     id: method_id,
                                     generics: Box::new(generics),
-                                })
-                            },
-                        )?,
-                        DefaultedFn { .. } => {
-                            // Retrieve the method generics from the trait decl.
-                            let decl_methods =
-                                match self.get_or_translate(implemented_trait.id.into()) {
-                                    Ok(ItemRef::TraitDecl(tdecl)) => tdecl.methods.as_slice(),
-                                    _ => &[],
                                 };
-                            let Some(bound_method) = decl_methods.iter().find(|m| m.name() == name)
-                            else {
-                                continue;
-                            };
-                            let method_params = bound_method
-                                .clone()
-                                .substitute_with_self(
-                                    &implemented_trait.generics,
-                                    &self_predicate.kind,
-                                )
-                                .params;
+                                Binder::new(binder_kind, method_params, fn_ref)
+                            }
+                            _ => unreachable!(),
+                        };
 
-                            let generics = self
-                                .outermost_generics()
-                                .identity_args_at_depth(DeBruijnId::one())
-                                .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
-                            let fn_ref = FunDeclRef {
-                                id: method_id,
-                                generics: Box::new(generics),
-                            };
-                            Binder::new(binder_kind, method_params, fn_ref)
-                        }
-                        _ => unreachable!(),
-                    };
-
-                    // We insert the `Binder<FunDeclRef>` unconditionally here; we'll remove the
-                    // ones that correspond to unused methods at the end of translation.
-                    methods.push((name, bound_fn_ref));
+                        // We insert the `Binder<FunDeclRef>` unconditionally here; we'll remove the
+                        // ones that correspond to unused methods at the end of translation.
+                        methods.push((name, bound_fn_ref));
+                    }
                 }
                 hax::FullDefKind::AssocConst { .. } => {
                     let id = self.register_and_enqueue(item_span, item_src);
-                    // The parameters of the constant are the same as those of the item that
-                    // declares them.
-                    let generics = match &impl_item.value {
-                        Provided { .. } => self.the_only_binder().params.identity_args(),
-                        _ => {
-                            let mut generics = implemented_trait.generics.as_ref().clone();
-                            // For default consts, we add an extra `Self` predicate.
-                            if !self.monomorphize() {
-                                generics.trait_refs.push(self_predicate.clone());
+                    let generics = if self.polymorphize() {
+                        // The parameters of the constant are the same as those of the item that
+                        // declares them.
+                        match &impl_item.value {
+                            Provided { .. } => self.the_only_binder().params.identity_args(),
+                            _ => {
+                                let mut generics = implemented_trait.generics.as_ref().clone();
+                                // For default consts, we add an extra `Self` predicate.
+                                if !self.monomorphize() {
+                                    generics.trait_refs.push(self_predicate.clone());
+                                }
+                                generics
                             }
-                            generics
                         }
+                    } else {
+                        // In mono impls, we keep the instantiated generics from the const item itself.
+                        self.the_only_binder().params.identity_args()
                     };
                     let gref = GlobalDeclRef {
                         id,
@@ -1101,8 +1141,8 @@ impl ItemTransCtx<'_, '_> {
                     };
                     consts.push((name, gref));
                 }
-                // Monomorphic traits have no associated types.
-                hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
+                // In mono mode, trait decl keeps associative parameters.
+                // Correspondingly, here we translate associative arguments for trait impl (the same way as in poly mode).
                 hax::FullDefKind::AssocTy { value, .. } => {
                     let binder_kind = BinderKind::TraitType(trait_id, name.clone());
                     let assoc_ty =
@@ -1136,12 +1176,15 @@ impl ItemTransCtx<'_, '_> {
                 "found an explicit impl of `core::marker::Destruct`, this should not happen"
             );
         }
-
         Ok(TraitImpl {
             def_id,
             item_meta,
             impl_trait: implemented_trait,
-            generics: self.into_generics(),
+            generics: if self.polymorphize() {
+                self.into_generics()
+            } else {
+                Default::default()
+            },
             implied_trait_refs,
             consts,
             types,
