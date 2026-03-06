@@ -997,7 +997,6 @@ impl ItemTransCtx<'_, '_> {
         let mut types = Vec::new();
         let mut methods = Vec::new();
 
-
         // In mono mode, we do not translate any associated items in trait impl.
         if self.monomorphize() {
             return Ok(TraitImpl {
@@ -1078,68 +1077,61 @@ impl ItemTransCtx<'_, '_> {
                         self.mark_method_as_used(trait_id, name);
                     }
 
-                    // In mono mode, we skip all methods in trait decl.
-                    // Correspondingly, here we skip all methods in trait impl.
-                    if self.polymorphize() {
-                        let binder_kind = BinderKind::TraitMethod(trait_id, name);
-                        let bound_fn_ref = match &impl_item.value {
-                            Provided { .. } => self.translate_binder_for_def(
-                                item_span,
-                                binder_kind,
-                                &item_def,
-                                |ctx| {
-                                    let generics = ctx
-                                        .outermost_generics()
-                                        .identity_args_at_depth(DeBruijnId::one())
-                                        .concat(
-                                            &ctx.innermost_generics()
-                                                .identity_args_at_depth(DeBruijnId::zero()),
-                                        );
-                                    Ok(FunDeclRef {
-                                        id: method_id,
-                                        generics: Box::new(generics),
-                                    })
-                                },
-                            )?,
-                            DefaultedFn { .. } => {
-                                // Retrieve the method generics from the trait decl.
-                                let decl_methods =
-                                    match self.get_or_translate(implemented_trait.id.into()) {
-                                        Ok(ItemRef::TraitDecl(tdecl)) => tdecl.methods.as_slice(),
-                                        _ => &[],
-                                    };
-                                let Some(bound_method) =
-                                    decl_methods.iter().find(|m| m.name() == name)
-                                else {
-                                    continue;
-                                };
-                                let method_params = bound_method
-                                    .clone()
-                                    .substitute_with_self(
-                                        &implemented_trait.generics,
-                                        &self_predicate.kind,
-                                    )
-                                    .params;
-
-                                let generics = self
+                    let binder_kind = BinderKind::TraitMethod(trait_id, name);
+                    let bound_fn_ref = match &impl_item.value {
+                        Provided { .. } => self.translate_binder_for_def(
+                            item_span,
+                            binder_kind,
+                            &item_def,
+                            |ctx| {
+                                let generics = ctx
                                     .outermost_generics()
                                     .identity_args_at_depth(DeBruijnId::one())
                                     .concat(
-                                        &method_params.identity_args_at_depth(DeBruijnId::zero()),
+                                        &ctx.innermost_generics()
+                                            .identity_args_at_depth(DeBruijnId::zero()),
                                     );
-                                let fn_ref = FunDeclRef {
+                                Ok(FunDeclRef {
                                     id: method_id,
                                     generics: Box::new(generics),
+                                })
+                            },
+                        )?,
+                        DefaultedFn { .. } => {
+                            // Retrieve the method generics from the trait decl.
+                            let decl_methods =
+                                match self.get_or_translate(implemented_trait.id.into()) {
+                                    Ok(ItemRef::TraitDecl(tdecl)) => tdecl.methods.as_slice(),
+                                    _ => &[],
                                 };
-                                Binder::new(binder_kind, method_params, fn_ref)
-                            }
-                            _ => unreachable!(),
-                        };
+                            let Some(bound_method) = decl_methods.iter().find(|m| m.name() == name)
+                            else {
+                                continue;
+                            };
+                            let method_params = bound_method
+                                .clone()
+                                .substitute_with_self(
+                                    &implemented_trait.generics,
+                                    &self_predicate.kind,
+                                )
+                                .params;
 
-                        // We insert the `Binder<FunDeclRef>` unconditionally here; we'll remove the
-                        // ones that correspond to unused methods at the end of translation.
-                        methods.push((name, bound_fn_ref));
-                    }
+                            let generics = self
+                                .outermost_generics()
+                                .identity_args_at_depth(DeBruijnId::one())
+                                .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
+                            let fn_ref = FunDeclRef {
+                                id: method_id,
+                                generics: Box::new(generics),
+                            };
+                            Binder::new(binder_kind, method_params, fn_ref)
+                        }
+                        _ => unreachable!(),
+                    };
+
+                    // We insert the `Binder<FunDeclRef>` unconditionally here; we'll remove the
+                    // ones that correspond to unused methods at the end of translation.
+                    methods.push((name, bound_fn_ref));
                 }
                 hax::FullDefKind::AssocConst { .. } => {
                     let id = self.register_and_enqueue(item_span, item_src);
@@ -1162,8 +1154,6 @@ impl ItemTransCtx<'_, '_> {
                     };
                     consts.push((name, gref));
                 }
-                // In mono mode, trait decl keeps associative parameters.
-                // Correspondingly, here we translate associative arguments for trait impl (the same way as in poly mode).
                 hax::FullDefKind::AssocTy { value, .. } => {
                     let binder_kind = BinderKind::TraitType(trait_id, name.clone());
                     let assoc_ty =
