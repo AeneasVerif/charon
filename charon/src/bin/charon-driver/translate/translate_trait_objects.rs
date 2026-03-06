@@ -715,38 +715,6 @@ impl ItemTransCtx<'_, '_> {
         Ok(())
     }
 
-    fn add_supertraits_to_vtable_value(
-        &mut self,
-        span: Span,
-        trait_def: &hax::FullDef,
-        impl_def: &hax::FullDef,
-        mut mk_field: impl FnMut(ConstantExprKind),
-    ) -> Result<(), Error> {
-        let hax::FullDefKind::TraitImpl {
-            implied_impl_exprs, ..
-        } = impl_def.kind()
-        else {
-            unreachable!()
-        };
-        let hax::FullDefKind::Trait {
-            implied_predicates, ..
-        } = trait_def.kind()
-        else {
-            unreachable!()
-        };
-        for ((clause, _), impl_expr) in implied_predicates.predicates.iter().zip(implied_impl_exprs)
-        {
-            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
-            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
-                && self.pred_is_for_self(&pred.trait_ref)
-                && let Some(vtable) = self.translate_vtable_instance_const(span, impl_expr)?
-            {
-                mk_field(vtable.kind);
-            }
-        }
-        Ok(())
-    }
-
     /// Generate the body of the vtable instance function.
     /// This is for `impl Trait for T` implementation, it does NOT handle builtin impls.
     /// ```ignore
@@ -761,12 +729,24 @@ impl ItemTransCtx<'_, '_> {
         vtable_struct_ref: TypeDeclRef,
     ) -> Result<Body, Error> {
         let hax::FullDefKind::TraitImpl {
-            trait_pred, items, ..
+            trait_pred,
+            implied_impl_exprs,
+            items,
+            ..
         } = impl_def.kind()
         else {
             unreachable!()
         };
+
         let trait_def = self.hax_def(&trait_pred.trait_ref)?;
+        let hax::FullDefKind::Trait {
+            implied_predicates: implied_preds,
+            ..
+        } = trait_def.kind()
+        else {
+            unreachable!()
+        };
+
         let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
@@ -832,7 +812,17 @@ impl ItemTransCtx<'_, '_> {
             self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
         }
 
-        self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
+        for ((clause, _), impl_expr) in implied_preds.predicates.iter().zip(implied_impl_exprs) {
+            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
+                && self.pred_is_for_self(&pred.trait_ref)
+            {
+                match self.translate_vtable_instance_const(span, impl_expr)? {
+                    Some(vtable) => mk_field(vtable.kind),
+                    None => self.assert_is_destruct(&pred.trait_ref),
+                }
+            }
+        }
 
         if field_ty_iter.next().is_some() {
             raise_error!(
