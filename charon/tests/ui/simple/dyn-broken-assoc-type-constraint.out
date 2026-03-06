@@ -177,7 +177,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _m_1 = unsize_cast<&'6 (), &'10 (dyn Broken<Assoc = ()> + '11), {impl Broken for T}<()>[{built_in impl Sized for ()}] with {impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
+    _m_1 = unsize_cast<&'6 (), &'10 (dyn Broken<Assoc = ()> + '11), &{impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

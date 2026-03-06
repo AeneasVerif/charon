@@ -337,7 +337,7 @@ fn main()
     storage_live(_4)
     _4 = &cat_1
     _3 = &(*_4)
-    dyn_cat_2 = unsize_cast<&'6 HouseCat, &'22 (dyn Cat + '23), {impl Cat for HouseCat} with {impl Cat for HouseCat}::{vtable}>(move _3)
+    dyn_cat_2 = unsize_cast<&'6 HouseCat, &'22 (dyn Cat + '23), &{impl Cat for HouseCat}::{vtable}>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_live(dyn_feline_5)

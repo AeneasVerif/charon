@@ -237,7 +237,7 @@ fn gives_fn()
     let _2: &'14 closure; // anonymous local
     let _3: &'15 closure; // anonymous local
     let _4: &'16 closure; // anonymous local
-    let _5: &'25 closure; // anonymous local
+    let _5: &'28 closure; // anonymous local
     let _6: closure; // anonymous local
 
     storage_live(_5)
@@ -252,9 +252,9 @@ fn gives_fn()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = unsize_cast<&'14 closure, &'18 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '19), {impl Fn<(&'_ mut u32,)> for closure}<'21> with ?>(move _2)
+    _1 = unsize_cast<&'14 closure, &'18 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '19), &vtable_of({impl Fn<(&'_ mut u32,)> for closure}<'24>)>(move _2)
     storage_dead(_2)
-    _0 = takes_fn<'24>(move _1)
+    _0 = takes_fn<'27>(move _1)
     storage_dead(_1)
     storage_dead(_3)
     return

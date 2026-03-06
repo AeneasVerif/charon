@@ -186,7 +186,7 @@ where
     _5 = const 199 : i32
     _4 = &mut _5
     _3 = &mut (*_4)
-    x_2 = unsize_cast<&'8 mut i32, &'13 mut (dyn Modifiable<T> + '14), {impl Modifiable<T> for i32}<T>[@TraitClause0, @TraitClause1] with {impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]>(move _3)
+    x_2 = unsize_cast<&'8 mut i32, &'13 mut (dyn Modifiable<T> + '14), &{impl Modifiable<T> for i32}::{vtable}<T>[@TraitClause0, @TraitClause1]>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_live(_6)

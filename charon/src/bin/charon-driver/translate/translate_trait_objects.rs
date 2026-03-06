@@ -517,6 +517,64 @@ impl ItemTransCtx<'_, '_> {
 
 //// Generate a vtable value.
 impl ItemTransCtx<'_, '_> {
+    /// Construct a constant that represents a reference to the vtable corresponding to this this trait proof.
+    pub fn translate_vtable_instance_const(
+        &mut self,
+        span: Span,
+        impl_expr: &hax::ImplExpr,
+    ) -> Result<Option<Box<ConstantExpr>>, Error> {
+        let tref = impl_expr.r#trait.hax_skip_binder_ref();
+        if !self.trait_is_dyn_compatible(&tref.def_id)? {
+            return Ok(None);
+        }
+
+        let vtbl_ty = {
+            let vtbl_ty = self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                // We checked that the trait is dyn compatible already so the `unwrap` is fine.
+                let tyref = ctx.translate_vtable_struct_ref(span, tref)?.unwrap();
+                Ok(tyref)
+            })?;
+            let vtbl_ty = self.erase_region_binder(vtbl_ty);
+            TyKind::Adt(vtbl_ty).into_ty()
+        };
+        let ty = TyKind::Ref(Region::Static, vtbl_ty.clone(), RefKind::Shared).into_ty();
+
+        let kind = {
+            if let hax::ImplExprAtom::Concrete(impl_item) = &impl_expr.r#impl {
+                // We could return `VTableRef` but we need to enqueue the translation of the static
+                // so may as well reuse that to normalize a bit.
+                let vtable_instance =
+                    self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                        // We checked that the trait is dyn compatible already so the `unwrap` is fine.
+                        let gref = ctx
+                            .translate_vtable_instance_ref(span, tref, impl_item)?
+                            .unwrap();
+                        Ok(gref)
+                    })?;
+                let vtable_instance = self.erase_region_binder(vtable_instance);
+                let vtable_instance = Box::new(ConstantExpr {
+                    kind: ConstantExprKind::Global(vtable_instance),
+                    ty: vtbl_ty,
+                });
+                ConstantExprKind::Ref(vtable_instance, None)
+            } else {
+                ConstantExprKind::VTableRef(self.translate_trait_impl_expr(span, impl_expr)?)
+            }
+        };
+
+        Ok(Some(Box::new(ConstantExpr { kind, ty })))
+    }
+
+    /// You may want `translate_vtable_instance_const` instead.
+    pub fn translate_vtable_instance_ref(
+        &mut self,
+        span: Span,
+        trait_ref: &hax::TraitRef,
+        impl_ref: &hax::ItemRef,
+    ) -> Result<Option<GlobalDeclRef>, Error> {
+        self.translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)
+    }
+
     pub fn translate_vtable_instance_ref_no_enqueue(
         &mut self,
         span: Span,
@@ -678,28 +736,13 @@ impl ItemTransCtx<'_, '_> {
         };
         for ((clause, _), impl_expr) in implied_predicates.predicates.iter().zip(implied_impl_exprs)
         {
-            let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() else {
-                continue;
-            };
             // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
-            if !self.pred_is_for_self(&pred.trait_ref) {
-                continue;
+            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
+                && self.pred_is_for_self(&pred.trait_ref)
+                && let Some(vtable) = self.translate_vtable_instance_const(span, impl_expr)?
+            {
+                mk_field(vtable.kind);
             }
-            if !self.trait_is_dyn_compatible(&pred.trait_ref.def_id)? {
-                self.assert_is_destruct(&pred.trait_ref);
-                continue;
-            }
-            // Enqueue the vtable instance for translation.
-            if let hax::ImplExprAtom::Concrete(impl_item) = &impl_expr.r#impl {
-                self.register_item::<ItemId>(
-                    span,
-                    impl_item,
-                    TransItemSourceKind::VTableInstance(TraitImplSource::Normal),
-                );
-            }
-            let kind =
-                ConstantExprKind::VTableRef(self.translate_trait_impl_expr(span, impl_expr)?);
-            mk_field(kind);
         }
         Ok(())
     }

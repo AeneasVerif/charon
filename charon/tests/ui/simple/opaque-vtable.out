@@ -83,7 +83,7 @@ fn main()
     _5 = move _6
     _4 = &(*_5)
     _3 = &(*_4)
-    _2 = unsize_cast<&'6 (), &'10 (dyn Trait + '11), {impl Trait for ()} with {impl Trait for ()}::{vtable}>(move _3)
+    _2 = unsize_cast<&'6 (), &'10 (dyn Trait + '11), &{impl Trait for ()}::{vtable}>(move _3)
     storage_dead(_3)
     _1 = use_debug<'13>(move _2)
     storage_dead(_2)

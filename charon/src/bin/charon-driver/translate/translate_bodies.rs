@@ -709,27 +709,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             }
                             hax::UnsizingMetadata::DirectVTable(impl_expr) => {
                                 let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                                let vtable = match &impl_expr.r#impl {
-                                    hax::ImplExprAtom::Concrete(tref) => {
-                                        // Ensure the vtable type is translated.
-                                        Some(self.translate_item(
-                                            span,
-                                            tref,
-                                            TransItemSourceKind::VTableInstance(
-                                                TraitImplSource::Normal,
-                                            ),
-                                        )?)
-                                    }
-                                    // TODO(dyn): more ways of registering vtable instance?
-                                    _ => {
-                                        trace!(
-                                            "impl_expr not triggering registering vtable: {:?}",
-                                            impl_expr
-                                        );
-                                        None
-                                    }
-                                };
-                                UnsizingMetadata::VTable(tref, vtable)
+                                match self.translate_vtable_instance_const(span, impl_expr)? {
+                                    Some(vtable) => UnsizingMetadata::VTable(tref, vtable),
+                                    None => UnsizingMetadata::Unknown,
+                                }
                             }
                             hax::UnsizingMetadata::NestedVTable(dyn_impl_expr) => {
                                 // This binds a fake `T: SrcTrait` variable.

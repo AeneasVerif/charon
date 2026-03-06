@@ -741,11 +741,10 @@ and type_param = {
 
 and unsizing_metadata =
   | MetaLength of constant_expr  (** Cast from [[T; N]] to [[T]]. *)
-  | MetaVTable of trait_ref * global_decl_ref option
-      (** Cast from a sized value to a [dyn Trait] value. The [TraitRef] gives
-          the trait for which we're getting a vtable (this is the _principal_
-          trait of the [dyn Trait] target). The second field is the vtable
-          instance, if we could resolve it. *)
+  | MetaVTable of trait_ref * constant_expr
+      (** Cast from a sized value to a [dyn Trait] value. The [TraitRef] is the
+          proof of the [dyn Trait] predicate; the constant expression is a
+          reference to the vtable [static] value. *)
   | MetaVTableUpcast of field_id list
       (** Cast from [dyn Trait] to [dyn OtherTrait]. The fields indicate how to
           retreive the vtable: it's always either the same we already had, or
