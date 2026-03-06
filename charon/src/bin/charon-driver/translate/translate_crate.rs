@@ -393,15 +393,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             item.clone()
         };
-        let item_src = TransItemSource::from_item(
-            &item,
-            kind,
-            self.monomorphize()
-                && !matches!(
-                    self.item_src.kind,
-                    TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
-                ),
-        );
+        let item_src = if self.monomorphize() && matches!(kind, TransItemSourceKind::TraitDecl) {
+            TransItemSource::monomorphic_trait(&item.def_id, kind)
+        } else {
+            TransItemSource::from_item(
+                &item,
+                kind,
+                self.monomorphize()
+                    && !matches!(
+                        self.item_src.kind,
+                        TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
+                    ),
+            )
+        };
         if enqueue {
             self.register_and_enqueue(span, item_src)
         } else {
@@ -439,7 +443,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
-        let mut generics = if self.monomorphize() {
+        let mut generics = if self.monomorphize() && !matches!(kind, TransItemSourceKind::TraitDecl)
+        {
             GenericArgs::empty()
         } else {
             self.translate_generic_args(span, &hax_item.generic_args, &hax_item.impl_exprs)?
@@ -666,24 +671,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TraitDeclRef, Error> {
-        let item_src = if !self.monomorphize() {
-            trace!(
-                "MONO: catch polymorphic item {:?} in translate_trait_decl_ref",
-                self.item_src
-            );
-            TransItemSource::polymorphic(&item.def_id, TransItemSourceKind::TraitDecl)
-        } else {
-            TransItemSource::monomorphic_trait(&item.def_id, TransItemSourceKind::TraitDecl)
-        };
-        let id: ItemId = self.register_and_enqueue(span, item_src);
-        let generics = self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
-        let id = id
-            .try_into()
-            .expect("translated trait decl should be a trait decl id");
-        Ok(TraitDeclRef {
-            id,
-            generics: Box::new(generics),
-        })
+        self.translate_item(span, item, TransItemSourceKind::TraitDecl)
     }
 
     pub(crate) fn translate_trait_impl_ref(
