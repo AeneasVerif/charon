@@ -679,16 +679,16 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         impl_def: &hax::FullDef,
         item: &hax::ImplAssocItem,
-        mut mk_field: impl FnMut(ConstantExprKind),
-    ) -> Result<(), Error> {
+    ) -> Result<Option<ConstantExprKind>, Error> {
         // Exit if the item isn't a vtable safe method.
-        match self.poly_hax_def(&item.decl_def_id)?.kind() {
-            hax::FullDefKind::AssocFn {
-                vtable_sig: Some(_),
-                ..
-            } => {}
-            _ => return Ok(()),
-        }
+        let item_def = self.poly_hax_def(&item.decl_def_id)?;
+        let hax::FullDefKind::AssocFn {
+            vtable_sig: Some(_),
+            ..
+        } = item_def.kind()
+        else {
+            return Ok(None);
+        };
 
         let const_kind = match &item.value {
             hax::ImplAssocItemValue::Provided {
@@ -703,16 +703,12 @@ impl ItemTransCtx<'_, '_> {
                 ConstantExprKind::FnDef(shim_ref)
             }
             hax::ImplAssocItemValue::DefaultedFn { .. } => ConstantExprKind::Opaque(
-                "shim for default methods \
-                    aren't yet supported"
-                    .to_string(),
+                "shim for default methods aren't yet supported".to_string(),
             ),
-            _ => return Ok(()),
+            _ => return Ok(None),
         };
 
-        mk_field(const_kind);
-
-        Ok(())
+        Ok(Some(const_kind))
     }
 
     /// Generate the body of the vtable instance function.
@@ -755,7 +751,8 @@ impl ItemTransCtx<'_, '_> {
         let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
         let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
 
-        // Retreive the expected field types from the struct definition. This avoids complicated
+        let vtable_data = self.prepare_vtable_fields(&trait_def, implied_preds)?;
+        // Retrieve the expected field types from the struct definition. This avoids complicated
         // substitutions.
         let field_tys = {
             let vtable_decl_id = vtable_struct_ref.id.as_adt().unwrap().clone();
@@ -777,59 +774,63 @@ impl ItemTransCtx<'_, '_> {
                 .collect_vec()
         };
 
+        // Construct a list with one operand per vtable field.
         let mut aggregate_fields = vec![];
-        // For each vtable field, assign the desired value to a new local.
-        let mut field_ty_iter = field_tys.into_iter();
-
-        let size_ty = field_ty_iter.next().unwrap();
-        let size_local = builder.new_var(Some("size".to_string()), size_ty);
-        builder.push_statement(StatementKind::Assign(
-            size_local.clone(),
-            Rvalue::NullaryOp(NullOp::SizeOf, self_ty.clone()),
-        ));
-        aggregate_fields.push(Operand::Move(size_local));
-
-        let align_ty = field_ty_iter.next().unwrap();
-        let align_local = builder.new_var(Some("align".to_string()), align_ty);
-        builder.push_statement(StatementKind::Assign(
-            align_local.clone(),
-            Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
-        ));
-        aggregate_fields.push(Operand::Move(align_local));
-
-        // Helper to fill in the remaining fields with constant values.
-        let mut mk_field = |kind| {
-            let ty = field_ty_iter.next().unwrap();
-            aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
-        };
-
-        let drop_shim =
-            self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
-
-        mk_field(ConstantExprKind::FnDef(drop_shim));
-
-        for item in items {
-            self.add_method_to_vtable_value(span, impl_def, item, &mut mk_field)?;
-        }
-
-        for ((clause, _), impl_expr) in implied_preds.predicates.iter().zip(implied_impl_exprs) {
-            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
-            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
-                && self.pred_is_for_self(&pred.trait_ref)
-            {
-                match self.translate_vtable_instance_const(span, impl_expr)? {
-                    Some(vtable) => mk_field(vtable.kind),
-                    None => self.assert_is_destruct(&pred.trait_ref),
+        let mut items_iter = items.iter();
+        for (field, ty) in vtable_data.fields.into_iter().zip(field_tys) {
+            let mk_const = |kind| {
+                Operand::Const(Box::new(ConstantExpr {
+                    kind,
+                    ty: ty.clone(),
+                }))
+            };
+            let op = match field {
+                TrVTableField::Size => {
+                    let size_local = builder.new_var(Some("size".to_string()), ty);
+                    builder.push_statement(StatementKind::Assign(
+                        size_local.clone(),
+                        Rvalue::NullaryOp(NullOp::SizeOf, self_ty.clone()),
+                    ));
+                    Operand::Move(size_local)
                 }
-            }
-        }
-
-        if field_ty_iter.next().is_some() {
-            raise_error!(
-                self,
-                span,
-                "Missed some fields in vtable value construction"
-            )
+                TrVTableField::Align => {
+                    let align_local = builder.new_var(Some("align".to_string()), ty);
+                    builder.push_statement(StatementKind::Assign(
+                        align_local.clone(),
+                        Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
+                    ));
+                    Operand::Move(align_local)
+                }
+                TrVTableField::Drop => {
+                    let drop_shim = self.translate_item(
+                        span,
+                        impl_def.this(),
+                        TransItemSourceKind::VTableDropShim,
+                    )?;
+                    mk_const(ConstantExprKind::FnDef(drop_shim))
+                }
+                TrVTableField::Method(..) => 'a: {
+                    // Bit of a hack: we know the methods are in the right order. This is easier
+                    // than trying to index into the items list by name.
+                    for item in items_iter.by_ref() {
+                        if let Some(kind) = self.add_method_to_vtable_value(span, impl_def, item)? {
+                            break 'a mk_const(kind);
+                        }
+                    }
+                    unreachable!()
+                }
+                TrVTableField::SuperTrait(clause_id, _) => {
+                    let impl_expr = &implied_impl_exprs[clause_id.index()];
+                    match self.translate_vtable_instance_const(span, impl_expr)? {
+                        Some(vtable) => Operand::Const(vtable),
+                        None => {
+                            self.assert_is_destruct(impl_expr.r#trait.hax_skip_binder_ref());
+                            continue;
+                        }
+                    }
+                }
+            };
+            aggregate_fields.push(op);
         }
 
         // Construct the final struct.
