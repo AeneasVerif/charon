@@ -658,12 +658,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TraitDeclRef, Error> {
-        trace!(
-            "MONO: test in translate_trait_decl_ref:\n mono={}, poly={}",
-            self.monomorphize(),
-            self.polymorphize()
-        );
-        let item_src = if self.polymorphize() {
+        let item_src = if !(self.monomorphize() || self.monomorphize_trait()) {
             trace!(
                 "MONO: catch polymorphic item {:?} in translate_trait_decl_ref",
                 self.item_src

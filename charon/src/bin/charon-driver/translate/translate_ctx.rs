@@ -229,9 +229,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Whether to polymorphize items we encounter.
-    pub fn polymorphize(&self) -> bool {
-        matches!(self.item_src.item, RustcItem::Poly(..))
-    }
+    // pub fn polymorphize(&self) -> bool {
+    //     matches!(self.item_src.item, RustcItem::Poly(..))
+    // }
 
     /// Whether to pay special attention to items in mono mode
     pub fn monomorphize_trait(&self) -> bool {

@@ -100,11 +100,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         trace!(
             "About to translate item `{:?}` as a {:?}; \
-            target_id={trans_id:?}, mono={}, poly={}",
+            target_id={trans_id:?}, mono={}",
             def.def_id(),
             item_src.kind,
             bt_ctx.monomorphize(),
-            bt_ctx.polymorphize(),
         );
         if !matches!(
             &item_src.kind,
