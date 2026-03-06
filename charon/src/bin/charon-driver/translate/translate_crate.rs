@@ -35,8 +35,13 @@ pub struct TransItemSource {
     pub kind: TransItemSourceKind,
 }
 
-/// Refers to a rustc item. Can be either the polymorphic version of the item, or a
-/// monomorphization of it.
+/// Refers to a rustc item. Can be either the polymorphic version (`Poly`) of the item, or a
+/// monomorphization (`Mono` or `MonoTrait`) of it. 
+/// For `MonoTrait` items, their kind should be either `trait decl` or `struct vtable`: 
+///     1. the trait is translated like in poly mode except that we don't translate any of its 
+///        associated item lists.
+///     2. the vtable is translated with erased signature of the methods and no generic types.
+///        In other words, there is one "opaque" vtable per trait.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum RustcItem {
     Poly(hax::DefId),
@@ -136,9 +141,8 @@ impl TransItemSource {
         Self::new(RustcItem::Mono(item.clone()), kind)
     }
 
-    /// Refers to the monomorphic trait (or vtable)
-    /// that works mostly like the polymorphic version
-    /// except that it knows it's being translated monomorphically.
+    /// Refers to the monomorphic trait (or vtable).
+    /// See the docs of `RustcItem::MonoTrait` for details.
     pub fn monomorphic_trait(def_id: &hax::DefId, kind: TransItemSourceKind) -> Self {
         Self::new(RustcItem::MonoTrait(def_id.clone()), kind)
     }
