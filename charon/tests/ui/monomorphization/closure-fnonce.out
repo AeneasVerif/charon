@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+opaque type core::marker::MetaSized::{vtable}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -46,6 +48,8 @@ struct NotCopy {}
 #[lang_item("mem_drop")]
 pub fn drop::<NotCopy>(_1: NotCopy)
 = <opaque>
+
+opaque type core::ops::function::FnOnce::{vtable}
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]

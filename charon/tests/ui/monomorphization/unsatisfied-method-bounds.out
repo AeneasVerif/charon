@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+opaque type core::marker::MetaSized::{vtable}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -13,6 +15,14 @@ fn UNIT_METADATA()
 }
 
 const UNIT_METADATA: () = @Fun1()
+
+struct test_crate::MyIterator::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_method: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
 
 // Full name: test_crate::MyIterator
 trait MyIterator<Self>

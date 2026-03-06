@@ -36,9 +36,9 @@ pub struct TransItemSource {
 }
 
 /// Refers to a rustc item. Can be either the polymorphic version (`Poly`) of the item, or a
-/// monomorphization (`Mono` or `MonoTrait`) of it. 
-/// For `MonoTrait` items, their kind should be either `trait decl` or `struct vtable`: 
-///     1. the trait is translated like in poly mode except that we don't translate any of its 
+/// monomorphization (`Mono` or `MonoTrait`) of it.
+/// For `MonoTrait` items, their kind should be either `trait decl` or `struct vtable`:
+///     1. the trait is translated like in poly mode except that we don't translate any of its
 ///        associated item lists.
 ///     2. the vtable is translated with erased signature of the methods and no generic types.
 ///        In other words, there is one "opaque" vtable per trait.
@@ -658,6 +658,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TraitDeclRef, Error> {
+        trace!(
+            "MONO: test in translate_trait_decl_ref:\n mono={}, poly={}",
+            self.monomorphize(),
+            self.polymorphize()
+        );
         let item_src = if self.polymorphize() {
             trace!(
                 "MONO: catch polymorphic item {:?} in translate_trait_decl_ref",

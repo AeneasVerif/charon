@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+opaque type core::marker::MetaSized::{vtable}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -20,6 +22,10 @@ pub trait Tuple<Self>
     non-dyn-compatible
 }
 
+opaque type core::ops::function::Fn::{vtable}
+
+opaque type core::ops::function::FnOnce::{vtable}
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -29,6 +35,8 @@ pub trait FnOnce<Self, Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     vtable: core::ops::function::FnOnce::{vtable}
 }
+
+opaque type core::ops::function::FnMut::{vtable}
 
 // Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]

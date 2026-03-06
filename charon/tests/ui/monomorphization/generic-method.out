@@ -1,5 +1,8 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized::{vtable}
+opaque type {vtable}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>

@@ -653,6 +653,7 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    // either Poly or MonoTrait
     #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_trait_decl(
         mut self,

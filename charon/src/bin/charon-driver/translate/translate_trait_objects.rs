@@ -243,7 +243,7 @@ impl ItemTransCtx<'_, '_> {
         }
 
         // In mono mode we keep a single opaque vtable per trait declaration.
-        if self.monomorphize() {
+        if self.monomorphize() || self.monomorphize_trait() {
             let item_src =
                 TransItemSource::monomorphic_trait(&tref.def_id, TransItemSourceKind::VTable);
             let id: ItemId = self.register_and_enqueue(span, item_src);
@@ -267,10 +267,10 @@ impl ItemTransCtx<'_, '_> {
             .remove_and_shift_ids(TypeVarId::ZERO);
 
         // In mono mode we keep a unique vtable type per trait declaration, with no generic arguments.
-        if self.monomorphize_trait() {
-            vtable_ref.generics = Box::new(GenericArgs::empty());
-            return Ok(Some(vtable_ref));
-        }
+        // if self.monomorphize_trait() || self.monomorphize() {
+        //     vtable_ref.generics = Box::new(GenericArgs::empty());
+        //     return Ok(Some(vtable_ref));
+        // }
 
         // The vtable type also takes associated types as parameters.
         let assoc_tys: Vec<_> = tref
@@ -364,7 +364,7 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Align => ("align".into(), usize_ty()),
                 TrVTableField::Drop => {
                     // In Mono mode, drop shims are opaque function pointers.
-                    if self.monomorphize_trait() {
+                    if self.monomorphize_trait() || self.monomorphize() {
                         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
                         ("drop".into(), erased_ptr_ty)
                     } else {
@@ -382,7 +382,7 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Method(item_name, sig) => {
                     let field_name = format!("method_{}", item_name.0);
                     // In Mono mode, method shims are opaque function pointers.
-                    if self.monomorphize_trait() {
+                    if self.monomorphize_trait() || self.monomorphize() {
                         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
                         (field_name, erased_ptr_ty)
                     } else {
@@ -539,7 +539,7 @@ impl ItemTransCtx<'_, '_> {
         item_meta: ItemMeta,
         trait_def: &hax::FullDef,
     ) -> Result<TypeDecl, Error> {
-        let mono = self.monomorphize_trait();
+        let mono = self.monomorphize_trait() || self.monomorphize();
         let span = item_meta.span;
         if !self.trait_is_dyn_compatible(trait_def.def_id())? {
             raise_error!(
