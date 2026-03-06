@@ -333,17 +333,18 @@ and constant_expr_kind =
             }
           ]} *)
   | CTraitConst of trait_ref * trait_item_name
-      (** A trait constant.
+      (** A trait associated constant.
 
           Ex.:
           {@rust[
             impl Foo for Bar {
               const C : usize = 32; // <-
             }
-          ]}
-
-          Remark: trait constants can not be used in types, they are necessarily
-          values. *)
+          ]} *)
+  | CVTableRef of trait_ref
+      (** A reference to the vtable [static] item for this trait ref. This can
+          be normalized for cases where we do emit a vtable item. That's not
+          always the case for builtin traits, e.g. for [MetaSized]. *)
   | CRef of constant_expr * unsizing_metadata option
       (** A shared reference to a constant value.
 

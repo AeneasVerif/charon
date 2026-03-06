@@ -24,7 +24,7 @@ use crate::ullbc_ast::*;
 /// The function is recursively called on the aggregate fields (e.g. here x and y).
 fn transform_constant_expr(
     ctx: &mut UllbcStatementTransformCtx<'_>,
-    val: Box<ConstantExpr>,
+    mut val: Box<ConstantExpr>,
 ) -> Operand {
     let rval = match val.kind {
         ConstantExprKind::Literal(_)
@@ -45,7 +45,7 @@ fn transform_constant_expr(
         //     let x = GLOBAL;
         //     let y = GLOBAL; // if moving, at this point GLOBAL would be uninitialized
         ConstantExprKind::Global(global_ref) => {
-            return Operand::Copy(Place::new_global(global_ref.clone(), val.ty));
+            return Operand::Copy(Place::new_global(global_ref, val.ty));
         }
         ConstantExprKind::PtrNoProvenance(ptr) => {
             let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
@@ -150,6 +150,21 @@ fn transform_constant_expr(
                 })),
             )
         }
+        ConstantExprKind::VTableRef(tref)
+            if let TraitRefKind::TraitImpl(impl_ref) = &tref.kind
+                && let Some(timpl) = ctx.ctx.translated.trait_impls.get(impl_ref.id)
+                && let Some(vtable_ref) = &timpl.vtable
+                && let TyKind::Ref(_, vtable_ty, _) = val.ty.kind() =>
+        {
+            let inner = Box::new(ConstantExpr {
+                kind: ConstantExprKind::Global(vtable_ref.clone()),
+                ty: vtable_ty.clone(),
+            });
+            val.kind = ConstantExprKind::Ref(inner, None);
+            // Normalize further into a place access.
+            return transform_constant_expr(ctx, val);
+        }
+        ConstantExprKind::VTableRef(..) => return Operand::Const(val),
     };
     Operand::Move(ctx.rval_to_place(rval, val.ty.clone()))
 }

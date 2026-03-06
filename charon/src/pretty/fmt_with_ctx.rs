@@ -1275,6 +1275,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
             ConstantExprKind::TraitConst(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
             }
+            ConstantExprKind::VTableRef(trait_ref) => {
+                write!(f, "&vtable_of({})", trait_ref.with_ctx(ctx),)
+            }
             ConstantExprKind::Ref(cv, meta) => {
                 if let Some(meta) = meta {
                     write!(

@@ -261,7 +261,7 @@ fn {impl Super<i32> for i32}::{vtable}() -> test_crate::Super::{vtable}<i32>
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::Super::{vtable} { size: move size_1, align: move align_2, drop: const {impl Super<i32> for i32}::{vtable_drop_shim}, method_super_method: const {impl Super<i32> for i32}::super_method::{vtable_method}<'1>, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Super::{vtable} { size: move size_1, align: move align_2, drop: const {impl Super<i32> for i32}::{vtable_drop_shim}, method_super_method: const {impl Super<i32> for i32}::super_method::{vtable_method}<'1>, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
 }
 
@@ -334,7 +334,7 @@ fn {impl Checkable<i32> for i32}::{vtable}() -> test_crate::Checkable::{vtable}<
     align_2 = align_of<i32>
     storage_live(_3)
     _3 = &{impl Super<i32> for i32}::{vtable}
-    ret_0 = test_crate::Checkable::{vtable} { size: move size_1, align: move align_2, drop: const {impl Checkable<i32> for i32}::{vtable_drop_shim}, method_check: const {impl Checkable<i32> for i32}::check::{vtable_method}<'1>, super_trait_0: const Opaque(missing supertrait vtable), super_trait_1: move _3 }
+    ret_0 = test_crate::Checkable::{vtable} { size: move size_1, align: move align_2, drop: const {impl Checkable<i32> for i32}::{vtable_drop_shim}, method_check: const {impl Checkable<i32> for i32}::check::{vtable_method}<'1>, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}), super_trait_1: move _3 }
     return
 }
 
@@ -518,7 +518,7 @@ where
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>[@TraitClause0, @TraitClause1], method_modify: const {impl Modifiable<T> for i32}::modify::{vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1], super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>[@TraitClause0, @TraitClause1], method_modify: const {impl Modifiable<T> for i32}::modify::{vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1], super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
 }
 
@@ -727,7 +727,7 @@ fn {impl BaseOn<i32> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i32>
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::BaseOn::{vtable} { size: move size_1, align: move align_2, drop: const {impl BaseOn<i32> for i32}::{vtable_drop_shim}, method_operate_on: const {impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'1, '2>, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::BaseOn::{vtable} { size: move size_1, align: move align_2, drop: const {impl BaseOn<i32> for i32}::{vtable_drop_shim}, method_operate_on: const {impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'1, '2>, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
 }
 
@@ -815,7 +815,7 @@ fn {impl BaseOn<i64> for i32}::{vtable}() -> test_crate::BaseOn::{vtable}<i64>
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::BaseOn::{vtable} { size: move size_1, align: move align_2, drop: const {impl BaseOn<i64> for i32}::{vtable_drop_shim}, method_operate_on: const {impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'1, '2>, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::BaseOn::{vtable} { size: move size_1, align: move align_2, drop: const {impl BaseOn<i64> for i32}::{vtable_drop_shim}, method_operate_on: const {impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'1, '2>, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
 }
 
@@ -860,7 +860,7 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
     _3 = &{impl BaseOn<i32> for i32}::{vtable}
     storage_live(_4)
     _4 = &{impl BaseOn<i64> for i32}::{vtable}
-    ret_0 = test_crate::Both32And64::{vtable} { size: move size_1, align: move align_2, drop: const {impl Both32And64 for i32}::{vtable_drop_shim}, method_both_operate: const Opaque(shim for default methods aren't yet supported), super_trait_0: const Opaque(missing supertrait vtable), super_trait_1: move _3, super_trait_2: move _4 }
+    ret_0 = test_crate::Both32And64::{vtable} { size: move size_1, align: move align_2, drop: const {impl Both32And64 for i32}::{vtable_drop_shim}, method_both_operate: const Opaque(shim for default methods aren't yet supported), super_trait_0: const &vtable_of({built_in impl MetaSized for i32}), super_trait_1: move _3, super_trait_2: move _4 }
     return
 }
 
@@ -1011,7 +1011,7 @@ fn {impl LifetimeTrait for i32}::{vtable}() -> test_crate::LifetimeTrait::{vtabl
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::LifetimeTrait::{vtable} { size: move size_1, align: move align_2, drop: const {impl LifetimeTrait for i32}::{vtable_drop_shim}, method_lifetime_method: const {impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'1, '2>, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::LifetimeTrait::{vtable} { size: move size_1, align: move align_2, drop: const {impl LifetimeTrait for i32}::{vtable_drop_shim}, method_lifetime_method: const {impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'1, '2>, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
 }
 

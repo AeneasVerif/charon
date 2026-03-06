@@ -226,7 +226,7 @@ where
     size_1 = size_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>
     storage_live(align_2)
     align_2 = align_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>
-    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0, @TraitClause1, @TraitClause2], method_modify: const {vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1, @TraitClause2], super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0, @TraitClause1, @TraitClause2], method_modify: const {vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1, @TraitClause2], super_trait_0: const &vtable_of({built_in impl MetaSized for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}) }
     return
 }
 

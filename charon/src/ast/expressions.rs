@@ -632,8 +632,7 @@ pub enum ConstantExprKind {
     /// }
     /// ```
     Global(GlobalDeclRef),
-    ///
-    /// A trait constant.
+    /// A trait associated constant.
     ///
     /// Ex.:
     /// ```text
@@ -641,10 +640,11 @@ pub enum ConstantExprKind {
     ///   const C : usize = 32; // <-
     /// }
     /// ```
-    ///
-    /// Remark: trait constants can not be used in types, they are necessarily
-    /// values.
     TraitConst(TraitRef, TraitItemName),
+    /// A reference to the vtable `static` item for this trait ref. This can be normalized for
+    /// cases where we do emit a vtable item. That's not always the case for builtin traits, e.g.
+    /// for `MetaSized`.
+    VTableRef(TraitRef),
     /// A shared reference to a constant value.
     ///
     /// We eliminate this case in a micro-pass.

@@ -141,7 +141,7 @@ where
     size_1 = size_of<i32>
     storage_live(align_2)
     align_2 = align_of<i32>
-    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0, @TraitClause1], method_modify: const {vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1], super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0, @TraitClause1], method_modify: const {vtable_method}<'1, '2, T>[@TraitClause0, @TraitClause1], super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
 }
 

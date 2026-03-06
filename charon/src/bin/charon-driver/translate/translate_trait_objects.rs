@@ -726,8 +726,7 @@ impl ItemTransCtx<'_, '_> {
                     });
                     ConstantExprKind::Ref(global, None)
                 }
-                // TODO(dyn): builtin impls
-                _ => ConstantExprKind::Opaque("missing supertrait vtable".into()),
+                _ => ConstantExprKind::VTableRef(self.translate_trait_impl_expr(span, impl_expr)?),
             };
             mk_field(kind);
         }
