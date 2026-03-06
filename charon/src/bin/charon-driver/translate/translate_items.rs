@@ -1117,23 +1117,18 @@ impl ItemTransCtx<'_, '_> {
                 }
                 hax::FullDefKind::AssocConst { .. } => {
                     let id = self.register_and_enqueue(item_span, item_src);
-                    let generics = if self.polymorphize() {
-                        // The parameters of the constant are the same as those of the item that
-                        // declares them.
-                        match &impl_item.value {
-                            Provided { .. } => self.the_only_binder().params.identity_args(),
-                            _ => {
-                                let mut generics = implemented_trait.generics.as_ref().clone();
-                                // For default consts, we add an extra `Self` predicate.
-                                if !self.monomorphize() {
-                                    generics.trait_refs.push(self_predicate.clone());
-                                }
-                                generics
+                    // The parameters of the constant are the same as those of the item that
+                    // declares them.
+                    let generics = match &impl_item.value {
+                        Provided { .. } => self.the_only_binder().params.identity_args(),
+                        _ => {
+                            let mut generics = implemented_trait.generics.as_ref().clone();
+                            // For default consts, we add an extra `Self` predicate.
+                            if !self.monomorphize() {
+                                generics.trait_refs.push(self_predicate.clone());
                             }
+                            generics
                         }
-                    } else {
-                        // In mono impls, we keep the instantiated generics from the const item itself.
-                        self.the_only_binder().params.identity_args()
                     };
                     let gref = GlobalDeclRef {
                         id,

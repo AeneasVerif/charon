@@ -95,7 +95,7 @@ pub const IS_ZST: bool = IS_ZST()
 // Full name: test_crate::{impl SizedTypeProperties for ()}::<()>
 impl SizedTypeProperties for () {
     parent_clause0 = {built_in impl Sized for ()}
-    const IS_ZST = IS_ZST::<()>
+    const IS_ZST = IS_ZST::<()><()>
     non-dyn-compatible
 }
 
