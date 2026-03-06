@@ -517,15 +517,6 @@ impl ItemTransCtx<'_, '_> {
 
 //// Generate a vtable value.
 impl ItemTransCtx<'_, '_> {
-    pub fn translate_vtable_instance_ref(
-        &mut self,
-        span: Span,
-        trait_ref: &hax::TraitRef,
-        impl_ref: &hax::ItemRef,
-    ) -> Result<Option<GlobalDeclRef>, Error> {
-        self.translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)
-    }
-
     pub fn translate_vtable_instance_ref_no_enqueue(
         &mut self,
         span: Span,
@@ -694,40 +685,20 @@ impl ItemTransCtx<'_, '_> {
             if !self.pred_is_for_self(&pred.trait_ref) {
                 continue;
             }
-
-            let bound_tyref =
-                self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    let tyref = ctx.translate_vtable_struct_ref(span, tref)?;
-                    if tyref.is_none() {
-                        ctx.assert_is_destruct(tref);
-                    }
-                    Ok(tyref)
-                })?;
-            let Some(vtable_def_ref) = self.erase_region_binder(bound_tyref) else {
+            if !self.trait_is_dyn_compatible(&pred.trait_ref.def_id)? {
+                self.assert_is_destruct(&pred.trait_ref);
                 continue;
-            };
-            let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
-            let kind = match &impl_expr.r#impl {
-                hax::ImplExprAtom::Concrete(impl_item) => {
-                    let bound_gref: RegionBinder<Option<GlobalDeclRef>> = self
-                        .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                            let gref = ctx.translate_vtable_instance_ref(span, tref, impl_item)?;
-                            if gref.is_none() {
-                                ctx.assert_is_destruct(tref);
-                            };
-                            Ok(gref)
-                        })?;
-                    let Some(vtable_instance_ref) = self.erase_region_binder(bound_gref) else {
-                        continue;
-                    };
-                    let global = Box::new(ConstantExpr {
-                        kind: ConstantExprKind::Global(vtable_instance_ref),
-                        ty: fn_ptr_ty,
-                    });
-                    ConstantExprKind::Ref(global, None)
-                }
-                _ => ConstantExprKind::VTableRef(self.translate_trait_impl_expr(span, impl_expr)?),
-            };
+            }
+            // Enqueue the vtable instance for translation.
+            if let hax::ImplExprAtom::Concrete(impl_item) = &impl_expr.r#impl {
+                self.register_item::<ItemId>(
+                    span,
+                    impl_item,
+                    TransItemSourceKind::VTableInstance(TraitImplSource::Normal),
+                );
+            }
+            let kind =
+                ConstantExprKind::VTableRef(self.translate_trait_impl_expr(span, impl_expr)?);
             mk_field(kind);
         }
         Ok(())
