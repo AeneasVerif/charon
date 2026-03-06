@@ -188,8 +188,10 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         tref: &hax::TraitRef,
-    ) -> Result<Option<TypeDeclRef>, Error> {
-        self.translate_vtable_struct_ref_maybe_enqueue(true, span, tref)
+    ) -> Result<TypeDeclRef, Error> {
+        Ok(self
+            .translate_vtable_struct_ref_maybe_enqueue(true, span, tref)?
+            .expect("trait should be dyn-compatible"))
     }
 
     pub fn translate_vtable_struct_ref_no_enqueue(
@@ -272,6 +274,11 @@ impl ItemTransCtx<'_, '_> {
             if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
                 && self.pred_is_for_self(&pred.trait_ref)
             {
+                if !self.trait_is_dyn_compatible(&pred.trait_ref.def_id)? {
+                    // We add fake `Destruct` supertraits, but these are not dyn-compatible.
+                    self.assert_is_destruct(&pred.trait_ref);
+                    continue;
+                }
                 let trait_clause_id = TraitClauseId::from_raw(i);
                 supertrait_map[trait_clause_id] = Some(fields.next_idx());
                 fields.push(TrVTableField::SuperTrait(trait_clause_id, clause.clone()));
@@ -335,16 +342,9 @@ impl ItemTransCtx<'_, '_> {
                             let hax::ClauseKind::Trait(pred) = kind else {
                                 unreachable!()
                             };
-                            let tyref = ctx.translate_vtable_struct_ref(span, &pred.trait_ref)?;
-                            if tyref.is_none() {
-                                ctx.assert_is_destruct(&pred.trait_ref);
-                            }
-                            Ok(tyref)
+                            ctx.translate_vtable_struct_ref(span, &pred.trait_ref)
                         })?;
-                    // We already checked above that it's ok for this to be none.
-                    let Some(vtbl_struct) = self.erase_region_binder(vtbl_struct) else {
-                        continue;
-                    };
+                    let vtbl_struct = self.erase_region_binder(vtbl_struct);
                     let ty = Ty::new(TyKind::Ref(
                         Region::Static,
                         Ty::new(TyKind::Adt(vtbl_struct)),
@@ -522,17 +522,20 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         impl_expr: &hax::ImplExpr,
-    ) -> Result<Option<Box<ConstantExpr>>, Error> {
+    ) -> Result<Box<ConstantExpr>, Error> {
         let tref = impl_expr.r#trait.hax_skip_binder_ref();
         if !self.trait_is_dyn_compatible(&tref.def_id)? {
-            return Ok(None);
+            raise_error!(
+                self,
+                span,
+                "Trait {:?} should be dyn-compatible",
+                tref.def_id
+            );
         }
 
         let vtbl_ty = {
             let vtbl_ty = self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                // We checked that the trait is dyn compatible already so the `unwrap` is fine.
-                let tyref = ctx.translate_vtable_struct_ref(span, tref)?.unwrap();
-                Ok(tyref)
+                ctx.translate_vtable_struct_ref(span, tref)
             })?;
             let vtbl_ty = self.erase_region_binder(vtbl_ty);
             TyKind::Adt(vtbl_ty).into_ty()
@@ -545,11 +548,7 @@ impl ItemTransCtx<'_, '_> {
                 // so may as well reuse that to normalize a bit.
                 let vtable_instance =
                     self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                        // We checked that the trait is dyn compatible already so the `unwrap` is fine.
-                        let gref = ctx
-                            .translate_vtable_instance_ref(span, tref, impl_item)?
-                            .unwrap();
-                        Ok(gref)
+                        ctx.translate_vtable_instance_ref(span, tref, impl_item)
                     })?;
                 let vtable_instance = self.erase_region_binder(vtable_instance);
                 let vtable_instance = Box::new(ConstantExpr {
@@ -562,7 +561,7 @@ impl ItemTransCtx<'_, '_> {
             }
         };
 
-        Ok(Some(Box::new(ConstantExpr { kind, ty })))
+        Ok(Box::new(ConstantExpr { kind, ty }))
     }
 
     /// You may want `translate_vtable_instance_const` instead.
@@ -571,8 +570,10 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         trait_ref: &hax::TraitRef,
         impl_ref: &hax::ItemRef,
-    ) -> Result<Option<GlobalDeclRef>, Error> {
-        self.translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)
+    ) -> Result<GlobalDeclRef, Error> {
+        Ok(self
+            .translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)?
+            .expect("trait should be dyn-compatible"))
     }
 
     pub fn translate_vtable_instance_ref_no_enqueue(
@@ -618,9 +619,7 @@ impl ItemTransCtx<'_, '_> {
             hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
             _ => unreachable!(),
         };
-        let vtable_struct_ref = self
-            .translate_vtable_struct_ref(span, implemented_trait)?
-            .expect("trait should be dyn-compatible");
+        let vtable_struct_ref = self.translate_vtable_struct_ref(span, implemented_trait)?;
         let impl_ref = self.translate_item(
             span,
             impl_def.this(),
@@ -821,13 +820,8 @@ impl ItemTransCtx<'_, '_> {
                 }
                 TrVTableField::SuperTrait(clause_id, _) => {
                     let impl_expr = &implied_impl_exprs[clause_id.index()];
-                    match self.translate_vtable_instance_const(span, impl_expr)? {
-                        Some(vtable) => Operand::Const(vtable),
-                        None => {
-                            self.assert_is_destruct(impl_expr.r#trait.hax_skip_binder_ref());
-                            continue;
-                        }
-                    }
+                    let vtable = self.translate_vtable_instance_const(span, impl_expr)?;
+                    Operand::Const(vtable)
                 }
             };
             aggregate_fields.push(op);
