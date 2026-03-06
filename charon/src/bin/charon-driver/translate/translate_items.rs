@@ -845,26 +845,20 @@ impl ItemTransCtx<'_, '_> {
                 }
                 hax::FullDefKind::AssocConst { ty, .. } => {
                     // Check if the constant has a value (i.e., a body).
-                    // In mono mode, default consts are not translated for trait decl.
-                    // Instead, they are instantiated for each trait impl.
-                    let default = if self.monomorphize_trait() {
-                        None
-                    } else {
-                        hax_item.has_value.then(|| {
-                            // The parameters of the constant are the same as those of the item that
-                            // declares them.
-                            let id = self.register_and_enqueue(item_span, item_src);
-                            let mut generics = self.the_only_binder().params.identity_args();
-                            // We add an extra `Self: Trait` clause to default consts.
-                            if !self.monomorphize() {
-                                generics.trait_refs.push(self_trait_ref.clone());
-                            }
-                            GlobalDeclRef {
-                                id,
-                                generics: Box::new(generics),
-                            }
-                        })
-                    };
+                    let default = hax_item.has_value.then(|| {
+                        // The parameters of the constant are the same as those of the item that
+                        // declares them.
+                        let id = self.register_and_enqueue(item_span, item_src);
+                        let mut generics = self.the_only_binder().params.identity_args();
+                        // We add an extra `Self: Trait` clause to default consts.
+                        if !self.monomorphize() {
+                            generics.trait_refs.push(self_trait_ref.clone());
+                        }
+                        GlobalDeclRef {
+                            id,
+                            generics: Box::new(generics),
+                        }
+                    });
                     let ty = self.translate_ty(item_span, ty)?;
                     consts.push(TraitAssocConst {
                         name: item_name.clone(),
@@ -1123,22 +1117,23 @@ impl ItemTransCtx<'_, '_> {
                 }
                 hax::FullDefKind::AssocConst { .. } => {
                     let id = self.register_and_enqueue(item_span, item_src);
-                    // The parameters of the constant are the same as those of the item that
-                    // declares them.
-                    let generics = match &impl_item.value {
-                        Provided { .. } => self.the_only_binder().params.identity_args(),
-                        _ => {
-                            // In mono mode we have translated the global in mono mode too,
-                            // hence it takes no generics.
-                            if self.monomorphize() {
-                                GenericArgs::empty()
-                            } else {
+                    let generics = if self.polymorphize() {
+                        // The parameters of the constant are the same as those of the item that
+                        // declares them.
+                        match &impl_item.value {
+                            Provided { .. } => self.the_only_binder().params.identity_args(),
+                            _ => {
                                 let mut generics = implemented_trait.generics.as_ref().clone();
                                 // For default consts, we add an extra `Self` predicate.
-                                generics.trait_refs.push(self_predicate.clone());
+                                if !self.monomorphize() {
+                                    generics.trait_refs.push(self_predicate.clone());
+                                }
                                 generics
                             }
                         }
+                    } else {
+                        // In mono impls, we keep the instantiated generics from the const item itself.
+                        self.the_only_binder().params.identity_args()
                     };
                     let gref = GlobalDeclRef {
                         id,
