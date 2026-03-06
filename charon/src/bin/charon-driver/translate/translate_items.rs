@@ -733,9 +733,10 @@ impl ItemTransCtx<'_, '_> {
                 hax::AssocKind::Type { .. } => TransItemSourceKind::Type,
             };
 
-            // skip all methods of trait decl in mono mode
-            // question: what if the method has default implmentation?
-            if self.monomorphize_trait() && matches!(trans_kind, TransItemSourceKind::Fun) {
+            // skip all associated items of trait decl in mono mode
+            // question: what if the associated methods (or consts) has default implmentation?
+            // TODO: support default methods and default consts
+            if self.monomorphize_trait() {
                 continue;
             }
 
@@ -982,10 +983,35 @@ impl ItemTransCtx<'_, '_> {
             );
         }
 
+        let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+        if implemented_trait_def.lang_item == Some(sym::destruct) {
+            raise_error!(
+                self,
+                span,
+                "found an explicit impl of `core::marker::Destruct`, this should not happen"
+            );
+        }
+
         // Explore the associated items
         let mut consts = Vec::new();
         let mut types = Vec::new();
         let mut methods = Vec::new();
+
+
+        // In mono mode, we do not translate any associated items in trait impl.
+        if self.monomorphize() {
+            return Ok(TraitImpl {
+                def_id,
+                item_meta,
+                impl_trait: implemented_trait,
+                generics: self.into_generics(),
+                implied_trait_refs,
+                consts,
+                types,
+                methods,
+                vtable,
+            });
+        }
 
         for impl_item in impl_items {
             use hax::ImplAssocItemValue::*;
@@ -1163,14 +1189,6 @@ impl ItemTransCtx<'_, '_> {
             }
         }
 
-        let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
-        if implemented_trait_def.lang_item == Some(sym::destruct) {
-            raise_error!(
-                self,
-                span,
-                "found an explicit impl of `core::marker::Destruct`, this should not happen"
-            );
-        }
         Ok(TraitImpl {
             def_id,
             item_meta,

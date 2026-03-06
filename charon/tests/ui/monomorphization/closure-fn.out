@@ -46,8 +46,6 @@ pub trait FnOnce<Self, Args>
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
-    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
-    type Output
     vtable: core::ops::function::FnOnce::{vtable}
 }
 

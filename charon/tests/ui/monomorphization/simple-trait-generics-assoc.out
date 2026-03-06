@@ -37,8 +37,6 @@ trait Trait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Item>
-    type Item
     vtable: test_crate::Trait::{vtable}
 }
 
@@ -151,8 +149,6 @@ static {impl Trait<usize> for i32}::{vtable}: test_crate::Trait::{vtable} = {imp
 impl Trait<usize> for i32 {
     parent_clause0 = {built_in impl MetaSized for i32}
     parent_clause1 = {built_in impl Sized for usize}
-    parent_clause2 = {built_in impl Sized for bool}
-    type Item = bool
     vtable: {impl Trait<usize> for i32}::{vtable}
 }
 

@@ -6,14 +6,6 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    non-dyn-compatible
-}
-
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -36,8 +28,6 @@ struct test_crate::Trait::{vtable} {
 trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
-    type Item
     vtable: test_crate::Trait::{vtable}
 }
 
@@ -149,8 +139,6 @@ static {impl Trait for i32}::{vtable}: test_crate::Trait::{vtable} = {impl Trait
 // Full name: test_crate::{impl Trait for i32}
 impl Trait for i32 {
     parent_clause0 = {built_in impl MetaSized for i32}
-    parent_clause1 = {built_in impl Sized for bool}
-    type Item = bool
     vtable: {impl Trait for i32}::{vtable}
 }
 
@@ -225,8 +213,6 @@ static {impl Trait for usize}::{vtable}: test_crate::Trait::{vtable} = {impl Tra
 // Full name: test_crate::{impl Trait for usize}
 impl Trait for usize {
     parent_clause0 = {built_in impl MetaSized for usize}
-    parent_clause1 = {built_in impl Sized for bool}
-    type Item = bool
     vtable: {impl Trait for usize}::{vtable}
 }
 
