@@ -133,7 +133,7 @@ impl ItemTransCtx<'_, '_> {
         // Therefore, in mono mode, projection predicates in dyn binders may refer to clause vars with an
         // extra slot (e.g. `Bound(0, 1)` instead of `Bound(0, 0)`).
         // Hence, we normalize them so that associated type constraints point to trait clauses in the scope.
-        if self.monomorphize() {
+        if self.monomorphize() || self.monomorphize_trait() {
             struct ShiftDynClauseVars;
             impl VarsVisitor for ShiftDynClauseVars {
                 fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
@@ -733,7 +733,7 @@ impl ItemTransCtx<'_, '_> {
         let vtable_struct_ref = self
             .translate_vtable_struct_ref(span, implemented_trait)?
             .expect("trait should be dyn-compatible");
-        if self.monomorphize() {
+        if self.monomorphize() || self.monomorphize_trait() {
             return Ok((None, vtable_struct_ref));
         }
         let impl_ref = self.translate_item(
@@ -776,7 +776,7 @@ impl ItemTransCtx<'_, '_> {
             };
 
         // register preshims for translation
-        if self.monomorphize() {
+        if self.monomorphize() || self.monomorphize_trait() {
             let trait_pred = match impl_def.kind() {
                 hax::FullDefKind::TraitImpl { trait_pred, .. } => trait_pred,
                 _ => unreachable!(),
@@ -830,7 +830,7 @@ impl ItemTransCtx<'_, '_> {
                 let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
                 let shim_ref =
                     self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
-                if self.monomorphize() {
+                if self.monomorphize() || self.monomorphize_trait() {
                     // manually translate region params for dyn trait
                     assert!(self.binding_levels.len() == 1);
                     self.binding_levels.pop();
@@ -864,7 +864,9 @@ impl ItemTransCtx<'_, '_> {
                     mk_field(VtableMethodValue::Const(ConstantExprKind::FnDef(shim_ref)));
                 }
             }
-            hax::ImplAssocItemValue::DefaultedFn { .. } if self.monomorphize() => {
+            hax::ImplAssocItemValue::DefaultedFn { .. }
+                if self.monomorphize() || self.monomorphize_trait() =>
+            {
                 error!("shim for default methods aren't yet supported");
             }
             hax::ImplAssocItemValue::DefaultedFn { .. } => mk_field(VtableMethodValue::Const(
@@ -1017,7 +1019,7 @@ impl ItemTransCtx<'_, '_> {
 
         // In mono mode, we need to cast the shim functions into opaque funtion pointers
         // and then fill them in the fields of the vtable.
-        if self.monomorphize() {
+        if self.monomorphize() || self.monomorphize_trait() {
             let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
                 panic!()
             };
@@ -1175,7 +1177,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: init_func_id,
             item_meta: item_meta,
-            generics: if self.monomorphize() {
+            generics: if self.monomorphize() || self.monomorphize_trait() {
                 GenericParams::empty()
             } else {
                 self.into_generics()

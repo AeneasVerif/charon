@@ -388,12 +388,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
     ) -> T {
-        let item = if self.monomorphize() && item.has_param {
+        let item = if (self.monomorphize() || self.monomorphize_trait()) && item.has_param {
             item.erase(self.hax_state_with_id())
         } else {
             item.clone()
         };
-        let item_src = TransItemSource::from_item(&item, kind, self.monomorphize());
+        let item_src = TransItemSource::from_item(
+            &item,
+            kind,
+            (self.monomorphize() || self.monomorphize_trait())
+                && !matches!(
+                    self.item_src.kind,
+                    TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
+                ),
+        );
         if enqueue {
             self.register_and_enqueue(span, item_src)
         } else {
@@ -431,7 +439,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
-        let mut generics = if self.monomorphize() {
+        let mut generics = if self.monomorphize() || self.monomorphize_trait() {
             GenericArgs::empty()
         } else {
             self.translate_generic_args(span, &hax_item.generic_args, &hax_item.impl_exprs)?

@@ -260,7 +260,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
     /// depending on user choice.
     pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
-        let item = if self.monomorphize() {
+        let item = if (self.monomorphize() || self.monomorphize_trait())
+            && !matches!(
+                self.item_src.kind,
+                TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
+            ) {
             RustcItem::Mono(item.clone())
         } else {
             RustcItem::Poly(item.def_id.clone())

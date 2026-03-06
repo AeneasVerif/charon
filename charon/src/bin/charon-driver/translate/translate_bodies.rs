@@ -1234,8 +1234,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let item = &hax::translate_item_ref(&self.hax_state, *def_id, *generics);
                 trace!("func: {:?}", item.def_id);
                 let fun_def = self.hax_def(item)?;
-                let item_src =
-                    TransItemSource::from_item(item, TransItemSourceKind::Fun, self.monomorphize());
+                let item_src = TransItemSource::from_item(
+                    item,
+                    TransItemSourceKind::Fun,
+                    self.monomorphize() || self.monomorphize_trait(),
+                );
                 let name = self.t_ctx.translate_name(&item_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
