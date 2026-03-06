@@ -132,7 +132,7 @@ where
     size_1 = size_of<T>
     storage_live(align_2)
     align_2 = align_of<T>
-    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0], method_broken: const {vtable_method}<'1, T>[@TraitClause0], super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[@TraitClause0], method_broken: const {vtable_method}<'1, T>[@TraitClause0], super_trait_0: const &vtable_of(@TraitClause0::parent_clause0) }
     return
 }
 
@@ -177,7 +177,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _m_1 = unsize_cast<&'6 (), &'10 (dyn Broken<Assoc = ()> + '11), {impl Broken for T}<()>[{built_in impl Sized for ()}] with {impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
+    _m_1 = unsize_cast<&'6 (), &'10 (dyn Broken<Assoc = ()> + '11), &{impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

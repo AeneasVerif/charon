@@ -419,9 +419,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             let hax::ClauseKind::Trait(trait_predicate) = kind else {
                                 unreachable!()
                             };
-                            Ok(ctx
-                                .translate_vtable_struct_ref(span, &trait_predicate.trait_ref)?
-                                .unwrap())
+                            ctx.translate_vtable_struct_ref(span, &trait_predicate.trait_ref)
                         },
                     )?;
                     let vtable = self.erase_region_binder(vtable);

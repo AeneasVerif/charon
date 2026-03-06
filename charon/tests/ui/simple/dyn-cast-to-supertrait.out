@@ -166,7 +166,7 @@ fn {impl Feline for HouseCat}::{vtable}() -> test_crate::Feline::{vtable}
     size_1 = size_of<HouseCat>
     storage_live(align_2)
     align_2 = align_of<HouseCat>
-    ret_0 = test_crate::Feline::{vtable} { size: move size_1, align: move align_2, drop: const {impl Feline for HouseCat}::{vtable_drop_shim}, method_hunt: const {impl Feline for HouseCat}::hunt::{vtable_method}<'1>, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Feline::{vtable} { size: move size_1, align: move align_2, drop: const {impl Feline for HouseCat}::{vtable_drop_shim}, method_hunt: const {impl Feline for HouseCat}::hunt::{vtable_method}<'1>, super_trait_0: const &vtable_of({built_in impl MetaSized for HouseCat}) }
     return
 }
 
@@ -230,7 +230,7 @@ fn {impl Pettable for HouseCat}::{vtable}() -> test_crate::Pettable::{vtable}
     size_1 = size_of<HouseCat>
     storage_live(align_2)
     align_2 = align_of<HouseCat>
-    ret_0 = test_crate::Pettable::{vtable} { size: move size_1, align: move align_2, drop: const {impl Pettable for HouseCat}::{vtable_drop_shim}, method_pet: const {impl Pettable for HouseCat}::pet::{vtable_method}<'1>, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Pettable::{vtable} { size: move size_1, align: move align_2, drop: const {impl Pettable for HouseCat}::{vtable_drop_shim}, method_pet: const {impl Pettable for HouseCat}::pet::{vtable_method}<'1>, super_trait_0: const &vtable_of({built_in impl MetaSized for HouseCat}) }
     return
 }
 
@@ -300,7 +300,7 @@ fn {impl Cat for HouseCat}::{vtable}() -> test_crate::Cat::{vtable}
     _3 = &{impl Feline for HouseCat}::{vtable}
     storage_live(_4)
     _4 = &{impl Pettable for HouseCat}::{vtable}
-    ret_0 = test_crate::Cat::{vtable} { size: move size_1, align: move align_2, drop: const {impl Cat for HouseCat}::{vtable_drop_shim}, method_meow: const {impl Cat for HouseCat}::meow::{vtable_method}<'1>, super_trait_0: const Opaque(missing supertrait vtable), super_trait_1: move _3, super_trait_2: move _4 }
+    ret_0 = test_crate::Cat::{vtable} { size: move size_1, align: move align_2, drop: const {impl Cat for HouseCat}::{vtable_drop_shim}, method_meow: const {impl Cat for HouseCat}::meow::{vtable_method}<'1>, super_trait_0: const &vtable_of({built_in impl MetaSized for HouseCat}), super_trait_1: move _3, super_trait_2: move _4 }
     return
 }
 
@@ -337,7 +337,7 @@ fn main()
     storage_live(_4)
     _4 = &cat_1
     _3 = &(*_4)
-    dyn_cat_2 = unsize_cast<&'6 HouseCat, &'22 (dyn Cat + '23), {impl Cat for HouseCat} with {impl Cat for HouseCat}::{vtable}>(move _3)
+    dyn_cat_2 = unsize_cast<&'6 HouseCat, &'22 (dyn Cat + '23), &{impl Cat for HouseCat}::{vtable}>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_live(dyn_feline_5)
