@@ -37,7 +37,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(match get_mir_for_def_id_and_level(tcx, def_id, mir_level) {
             Some(body) => {
                 let s = self.hax_state_with_id();
-                Some(if self.monomorphize() || self.monomorphize_trait() {
+                Some(if self.monomorphize() {
                     let typing_env = s.typing_env();
                     let args = item_ref.rustc_args(s);
                     hax::substitute(tcx, typing_env, Some(args), body)

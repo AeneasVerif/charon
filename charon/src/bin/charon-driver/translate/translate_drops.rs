@@ -18,7 +18,7 @@ impl ItemTransCtx<'_, '_> {
         // Drop elaboration does not handle generics correctly, so it can ICE on some types. To be
         // safe we don't translate drop glue for poly types unless explicitly opted-in.
         let translate_glue = self.options.translate_poly_drop_glue
-            || (self.monomorphize() || self.monomorphize_trait())
+            || self.monomorphize()
             || def
                 .this
                 .def_id

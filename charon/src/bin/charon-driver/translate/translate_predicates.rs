@@ -384,7 +384,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     } else {
                         let parent_trait_refs =
                             self.translate_trait_impl_exprs(span, &impl_exprs)?;
-                        let types = if self.monomorphize() || self.monomorphize_trait() {
+                        let types = if self.monomorphize() {
                             vec![]
                         } else {
                             types

@@ -736,12 +736,12 @@ impl ItemTransCtx<'_, '_> {
             // skip all associated items of trait decl in mono mode
             // question: what if the associated methods (or consts) has default implmentation?
             // TODO: support default methods and default consts
-            if self.monomorphize_trait() || self.monomorphize() {
+            if self.monomorphize() {
                 continue;
             }
 
             let poly_item_def = self.poly_hax_def(item_def_id)?;
-            let (item_src, item_def) = if self.monomorphize() || self.monomorphize_trait() {
+            let (item_src, item_def) = if self.monomorphize() {
                 if poly_item_def.has_own_generics_or_predicates() {
                     // Skip items that have generics of their own (as rustc defines these). This
                     // skips GAT and generic methods. This does not skip methods with late-bound
@@ -810,7 +810,7 @@ impl ItemTransCtx<'_, '_> {
                     // don't want that to be part of the method clauses. Hence we remove the first
                     // bound clause and replace its uses with references to the ambient `Self`
                     // clause available in trait declarations.
-                    if !(self.monomorphize() || self.monomorphize_trait()) {
+                    if !self.monomorphize() {
                         struct ReplaceSelfVisitor;
                         impl VarsVisitor for ReplaceSelfVisitor {
                             fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
@@ -852,7 +852,7 @@ impl ItemTransCtx<'_, '_> {
                         let id = self.register_and_enqueue(item_span, item_src);
                         let mut generics = self.the_only_binder().params.identity_args();
                         // We add an extra `Self: Trait` clause to default consts.
-                        if !(self.monomorphize() || self.monomorphize_trait()) {
+                        if !self.monomorphize() {
                             generics.trait_refs.push(self_trait_ref.clone());
                         }
                         GlobalDeclRef {
@@ -869,9 +869,7 @@ impl ItemTransCtx<'_, '_> {
                     });
                 }
                 // Monomorphic traits need no associated types.
-                hax::FullDefKind::AssocTy { .. }
-                    if self.monomorphize() || self.monomorphize_trait() =>
-                {
+                hax::FullDefKind::AssocTy { .. } if self.monomorphize() => {
                     continue;
                 }
                 hax::FullDefKind::AssocTy {
@@ -1002,7 +1000,7 @@ impl ItemTransCtx<'_, '_> {
         let mut methods = Vec::new();
 
         // In mono mode, we do not translate any associated items in trait impl.
-        if self.monomorphize() || self.monomorphize_trait() {
+        if self.monomorphize() {
             return Ok(TraitImpl {
                 def_id,
                 item_meta,
@@ -1033,7 +1031,7 @@ impl ItemTransCtx<'_, '_> {
                 hax::FullDefKind::AssocTy { .. } => TransItemSourceKind::Type,
                 _ => unreachable!(),
             };
-            let (item_src, item_def) = if self.monomorphize() || self.monomorphize_trait() {
+            let (item_src, item_def) = if self.monomorphize() {
                 if poly_item_def.has_own_generics_or_predicates() {
                     continue;
                 } else {
@@ -1064,7 +1062,7 @@ impl ItemTransCtx<'_, '_> {
                             DefaultedFn { .. } => TransItemSource::from_item(
                                 def.this(),
                                 TransItemSourceKind::DefaultedMethod(TraitImplSource::Normal, name),
-                                self.monomorphize() || self.monomorphize_trait(),
+                                self.monomorphize(),
                             ),
                             _ => unreachable!(),
                         };
@@ -1146,7 +1144,7 @@ impl ItemTransCtx<'_, '_> {
                         _ => {
                             let mut generics = implemented_trait.generics.as_ref().clone();
                             // For default consts, we add an extra `Self` predicate.
-                            if !(self.monomorphize() || self.monomorphize_trait()) {
+                            if !self.monomorphize() {
                                 generics.trait_refs.push(self_predicate.clone());
                             }
                             generics
@@ -1327,7 +1325,7 @@ impl ItemTransCtx<'_, '_> {
 
         let mut types = vec![];
         // Monomorphic traits have no associated types.
-        if !(self.monomorphize() || self.monomorphize_trait()) {
+        if !self.monomorphize() {
             let type_items = trait_items.iter().filter(|assoc| match assoc.kind {
                 hax::AssocKind::Type { .. } => true,
                 _ => false,

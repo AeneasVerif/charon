@@ -225,17 +225,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Whether to monomorphize items we encounter.
     pub fn monomorphize(&self) -> bool {
-        matches!(self.item_src.item, RustcItem::Mono(..))
-    }
-
-    /// Whether to polymorphize items we encounter.
-    // pub fn polymorphize(&self) -> bool {
-    //     matches!(self.item_src.item, RustcItem::Poly(..))
-    // }
-
-    /// Whether to pay special attention to items in mono mode
-    pub fn monomorphize_trait(&self) -> bool {
-        matches!(self.item_src.item, RustcItem::MonoTrait(..))
+        matches!(
+            self.item_src.item,
+            RustcItem::Mono(..) | RustcItem::MonoTrait(..)
+        )
     }
 
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
@@ -260,7 +253,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
     /// depending on user choice.
     pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
-        let item = if (self.monomorphize() || self.monomorphize_trait())
+        let item = if self.monomorphize()
             && !matches!(
                 self.item_src.kind,
                 TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
