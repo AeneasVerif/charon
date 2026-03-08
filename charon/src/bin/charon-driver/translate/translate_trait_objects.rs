@@ -1397,128 +1397,6 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
-    pub(crate) fn translate_vtable_drop_preshim(
-        mut self,
-        fun_id: FunDeclId,
-        item_meta: ItemMeta,
-        trait_def: &hax::FullDef,
-    ) -> Result<FunDecl, Error> {
-        let span = item_meta.span;
-
-        let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
-            raise_error!(self, span, "MONO: Unsupported trait");
-        };
-        let Some(dyn_self) = dyn_self else {
-            panic!("Trying to generate a vtable for a non-dyn-compatible trait")
-        };
-
-        // `*mut dyn Trait`
-        let ref_dyn_self =
-            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
-
-        // `*mut dyn Trait -> ()`
-        let signature = FunSig {
-            is_unsafe: true,
-            inputs: vec![ref_dyn_self.clone()],
-            output: Ty::mk_unit(),
-        };
-
-        let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature.clone())));
-
-        let body: Body = self.translate_vtable_drop_preshim_body(
-            span,
-            &ref_dyn_self,
-            &drop_ty,
-            trait_def,
-            // &ref_target_self,
-        )?;
-
-        Ok(FunDecl {
-            def_id: fun_id,
-            item_meta,
-            // generics: self.into_generics(),
-            generics: GenericParams::empty(),
-            signature,
-            src: ItemSource::VTableMethodShim,
-            is_global_initializer: None,
-            body,
-        })
-    }
-
-    fn translate_vtable_drop_preshim_body(
-        &mut self,
-        span: Span,
-        shim_receiver: &Ty,
-        drop_ty: &Ty,
-        trait_def: &hax::FullDef,
-    ) -> Result<Body, Error> {
-        let mut builder = BodyBuilder::new(span, 1);
-
-        let ret_var = builder.new_var(Some("ret".into()), Ty::mk_unit());
-        let dyn_self = builder.new_var(Some("dyn_self".into()), shim_receiver.clone());
-
-        let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
-        let erased_drop_shim_ptr =
-            builder.new_var(Some("erased_drop_shim_ptr".into()), erased_ptr_ty.clone());
-        let drop_shim_ptr = builder.new_var(Some("drop_shim_ptr".into()), drop_ty.clone());
-        // let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
-
-        // Construct the `(*ptr.ptr_metadata).method_field` place.
-        let vtable_decl_ref = self.translate_vtable_struct_ref(span, trait_def.this())?;
-        let vtable_decl_id = *vtable_decl_ref.id.as_adt().unwrap();
-        let vtable_ty = TyKind::Adt(vtable_decl_ref).into_ty();
-        let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(vtable_ty.clone(), RefKind::Shared));
-
-        let Some(vtable_decl) = self.t_ctx.translated.type_decls.get(vtable_decl_id) else {
-            // error!("MONO: vtable_decl not found");
-            panic!("MONO: vtable_decl not found");
-        };
-        // Retreive the method field from the vtable struct definition.
-        let method_field_name = format!("drop");
-        let Some((method_field_id, _)) = vtable_decl.get_field_by_name(None, &method_field_name)
-        else {
-            panic!(
-                "Could not determine method index for {} in vtable",
-                method_field_name
-            );
-        };
-
-        // Construct the `(*ptr.ptr_metadata).drop_field` place.
-        let drop_field_place = dyn_self
-            .clone()
-            .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
-            .project(ProjectionElem::Deref, vtable_ty)
-            .project(
-                ProjectionElem::Field(FieldProjKind::Adt(vtable_decl_id, None), method_field_id),
-                erased_ptr_ty.clone(),
-            );
-
-        let drop_rval = Rvalue::Use(Operand::Copy(drop_field_place));
-        builder.push_statement(StatementKind::Assign(
-            erased_drop_shim_ptr.clone(),
-            drop_rval,
-        ));
-
-        // Perform the core concretization cast.
-        let rval_cast = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::RawPtr(
-                erased_drop_shim_ptr.ty().clone(),
-                drop_shim_ptr.ty().clone(),
-            )),
-            Operand::Move(erased_drop_shim_ptr.clone()),
-        );
-
-        builder.push_statement(StatementKind::Assign(drop_shim_ptr.clone(), rval_cast));
-
-        builder.call(Call {
-            func: FnOperand::Dynamic(Operand::Move(drop_shim_ptr)),
-            args: vec![Operand::Move(dyn_self)],
-            dest: ret_var,
-        });
-
-        Ok(Body::Unstructured(builder.build()))
-    }
-
     // In mono mode, method (or drop) preshim functions are used for dynamic trait calls.
     // It does two things:
     // 1. It converts opaque shim functions stored in the vtable back into shim functions with dyn trait types
@@ -1691,6 +1569,128 @@ impl ItemTransCtx<'_, '_> {
         };
 
         // Construct the `(*ptr.ptr_metadata).method_field` place.
+        let drop_field_place = dyn_self
+            .clone()
+            .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
+            .project(ProjectionElem::Deref, vtable_ty)
+            .project(
+                ProjectionElem::Field(FieldProjKind::Adt(vtable_decl_id, None), method_field_id),
+                erased_ptr_ty.clone(),
+            );
+
+        let drop_rval = Rvalue::Use(Operand::Copy(drop_field_place));
+        builder.push_statement(StatementKind::Assign(
+            erased_drop_shim_ptr.clone(),
+            drop_rval,
+        ));
+
+        // Perform the core concretization cast.
+        let rval_cast = Rvalue::UnaryOp(
+            UnOp::Cast(CastKind::RawPtr(
+                erased_drop_shim_ptr.ty().clone(),
+                drop_shim_ptr.ty().clone(),
+            )),
+            Operand::Move(erased_drop_shim_ptr.clone()),
+        );
+
+        builder.push_statement(StatementKind::Assign(drop_shim_ptr.clone(), rval_cast));
+
+        builder.call(Call {
+            func: FnOperand::Dynamic(Operand::Move(drop_shim_ptr)),
+            args: vec![Operand::Move(dyn_self)],
+            dest: ret_var,
+        });
+
+        Ok(Body::Unstructured(builder.build()))
+    }
+
+    pub(crate) fn translate_vtable_drop_preshim(
+        mut self,
+        fun_id: FunDeclId,
+        item_meta: ItemMeta,
+        trait_def: &hax::FullDef,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+
+        let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
+            raise_error!(self, span, "MONO: Unsupported trait");
+        };
+        let Some(dyn_self) = dyn_self else {
+            panic!("Trying to generate a vtable for a non-dyn-compatible trait")
+        };
+
+        // `*mut dyn Trait`
+        let ref_dyn_self =
+            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
+
+        // `*mut dyn Trait -> ()`
+        let signature = FunSig {
+            is_unsafe: true,
+            inputs: vec![ref_dyn_self.clone()],
+            output: Ty::mk_unit(),
+        };
+
+        let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature.clone())));
+
+        let body: Body = self.translate_vtable_drop_preshim_body(
+            span,
+            &ref_dyn_self,
+            &drop_ty,
+            trait_def,
+            // &ref_target_self,
+        )?;
+
+        Ok(FunDecl {
+            def_id: fun_id,
+            item_meta,
+            // generics: self.into_generics(),
+            generics: GenericParams::empty(),
+            signature,
+            src: ItemSource::VTableMethodShim,
+            is_global_initializer: None,
+            body,
+        })
+    }
+
+    fn translate_vtable_drop_preshim_body(
+        &mut self,
+        span: Span,
+        shim_receiver: &Ty,
+        drop_ty: &Ty,
+        trait_def: &hax::FullDef,
+    ) -> Result<Body, Error> {
+        let mut builder = BodyBuilder::new(span, 1);
+
+        let ret_var = builder.new_var(Some("ret".into()), Ty::mk_unit());
+        let dyn_self = builder.new_var(Some("dyn_self".into()), shim_receiver.clone());
+
+        let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
+        let erased_drop_shim_ptr =
+            builder.new_var(Some("erased_drop_shim_ptr".into()), erased_ptr_ty.clone());
+        let drop_shim_ptr = builder.new_var(Some("drop_shim_ptr".into()), drop_ty.clone());
+        // let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
+
+        // Construct the `(*ptr.ptr_metadata).method_field` place.
+        let vtable_decl_ref = self.translate_vtable_struct_ref(span, trait_def.this())?;
+        let vtable_decl_id = *vtable_decl_ref.id.as_adt().unwrap();
+        let vtable_ty = TyKind::Adt(vtable_decl_ref).into_ty();
+        let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(vtable_ty.clone(), RefKind::Shared));
+
+        let Some(vtable_decl) = self.t_ctx.translated.type_decls.get(vtable_decl_id) else {
+            // error!("MONO: vtable_decl not found");
+            panic!("MONO: vtable_decl not found");
+        };
+        // Retreive the method field from the vtable struct definition.
+        let method_field_name = format!("drop");
+        let Some((method_field_id, _)) = vtable_decl.get_field_by_name(None, &method_field_name)
+        else {
+            panic!(
+                "Could not determine method index for {} in vtable",
+                method_field_name
+            );
+        };
+
+        // Construct the `(*ptr.ptr_metadata).drop_field` place.
         let drop_field_place = dyn_self
             .clone()
             .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
