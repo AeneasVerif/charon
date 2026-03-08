@@ -304,12 +304,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnsizingMetadata {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             UnsizingMetadata::Length(len) => write!(f, "{}", len.with_ctx(ctx)),
-            UnsizingMetadata::VTable(tref, vt) => {
-                write!(f, "{} with ", tref.with_ctx(ctx))?;
-                match vt {
-                    Some(vt) => write!(f, "{}", vt.with_ctx(ctx)),
-                    None => write!(f, "?"),
-                }
+            UnsizingMetadata::VTable(_, vtable) => {
+                write!(f, "{}", vtable.with_ctx(ctx))
             }
             UnsizingMetadata::VTableUpcast(fields) => {
                 write!(f, " at [")?;
@@ -1274,6 +1270,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
             }
             ConstantExprKind::TraitConst(trait_ref, name) => {
                 write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
+            }
+            ConstantExprKind::VTableRef(trait_ref) => {
+                write!(f, "&vtable_of({})", trait_ref.with_ctx(ctx),)
             }
             ConstantExprKind::Ref(cv, meta) => {
                 if let Some(meta) = meta {

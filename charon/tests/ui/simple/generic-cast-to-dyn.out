@@ -61,7 +61,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*x_1)
-    _3 = unsize_cast<&'11 T, &'12 (dyn Any + '13), @TraitClause1 with ?>(move _4)
+    _3 = unsize_cast<&'11 T, &'12 (dyn Any + '13), &vtable_of(@TraitClause1)>(move _4)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)
     _0 = unsize_cast<&'7 (dyn Any + '8), &'15 (dyn Any + '16),  at []>(move _2)

@@ -129,7 +129,7 @@ fn {impl Trait for i32}::{vtable}() -> test_crate::Trait::{vtable}
     storage_live(erased_comsume_6)
     comsume_5 = const {impl Trait for i32}::comsume::{vtable_method}<'7>
     erased_comsume_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '9)), *const ()>(move comsume_5)
-    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_comsume: move erased_comsume_6, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_comsume: move erased_comsume_6, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
 }
 
@@ -203,7 +203,7 @@ fn {impl Trait for usize}::{vtable}() -> test_crate::Trait::{vtable}
     storage_live(erased_comsume_6)
     comsume_5 = const {impl Trait for usize}::comsume::{vtable_method}<'7>
     erased_comsume_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '9)), *const ()>(move comsume_5)
-    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_comsume: move erased_comsume_6, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_comsume: move erased_comsume_6, super_trait_0: const &vtable_of({built_in impl MetaSized for usize}) }
     return
 }
 
@@ -250,7 +250,7 @@ fn main()
     _12 = move _13
     _3 = &(*_12)
     _2 = &(*_3)
-    a_1 = unsize_cast<&'6 i32, &'20 (dyn Trait<Item = bool> + '21), {impl Trait for i32} with {impl Trait for i32}::{vtable}>(move _2)
+    a_1 = unsize_cast<&'6 i32, &'20 (dyn Trait<Item = bool> + '21), &{impl Trait for i32}::{vtable}>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)
@@ -269,7 +269,7 @@ fn main()
     _11 = move _15
     _8 = &(*_11)
     _7 = &(*_8)
-    b_6 = unsize_cast<&'13 usize, &'28 (dyn Trait<Item = bool> + '29), {impl Trait for usize} with {impl Trait for usize}::{vtable}>(move _7)
+    b_6 = unsize_cast<&'13 usize, &'28 (dyn Trait<Item = bool> + '29), &{impl Trait for usize}::{vtable}>(move _7)
     storage_dead(_7)
     storage_dead(_8)
     storage_live(_9)

@@ -166,6 +166,7 @@ impl ItemTransCtx<'_, '_> {
 
 /// Vtable field info used for translation (same deal as `charon_lib::VTableField` but with
 /// different data).
+#[derive(Debug)]
 pub enum TrVTableField {
     Size,
     Align,
@@ -219,8 +220,10 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         tref: &hax::TraitRef,
-    ) -> Result<Option<TypeDeclRef>, Error> {
-        self.translate_vtable_struct_ref_maybe_enqueue(true, span, tref)
+    ) -> Result<TypeDeclRef, Error> {
+        Ok(self
+            .translate_vtable_struct_ref_maybe_enqueue(true, span, tref)?
+            .expect("trait should be dyn-compatible"))
     }
 
     pub fn translate_vtable_struct_ref_no_enqueue(
@@ -318,12 +321,22 @@ impl ItemTransCtx<'_, '_> {
             }
         }
 
+        trace!(
+            "MONO: prepare_vtable_fields implied_predicates:\n {:?}",
+            implied_predicates.predicates
+        );
         // Supertrait fields.
         for (i, (clause, _span)) in implied_predicates.predicates.iter().enumerate() {
             // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
             if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
                 && self.pred_is_for_self(&pred.trait_ref)
             {
+                trace!("MONO: prepare supertrait");
+                if !self.trait_is_dyn_compatible(&pred.trait_ref.def_id)? {
+                    // We add fake `Destruct` supertraits, but these are not dyn-compatible.
+                    self.assert_is_destruct(&pred.trait_ref);
+                    continue;
+                }
                 let trait_clause_id = TraitClauseId::from_raw(i);
                 supertrait_map[trait_clause_id] = Some(fields.next_idx());
                 fields.push(TrVTableField::SuperTrait(trait_clause_id, clause.clone()));
@@ -399,16 +412,9 @@ impl ItemTransCtx<'_, '_> {
                             let hax::ClauseKind::Trait(pred) = kind else {
                                 unreachable!()
                             };
-                            let tyref = ctx.translate_vtable_struct_ref(span, &pred.trait_ref)?;
-                            if tyref.is_none() {
-                                ctx.assert_is_destruct(&pred.trait_ref);
-                            }
-                            Ok(tyref)
+                            ctx.translate_vtable_struct_ref(span, &pred.trait_ref)
                         })?;
-                    // We already checked above that it's ok for this to be none.
-                    let Some(vtbl_struct) = self.erase_region_binder(vtbl_struct) else {
-                        continue;
-                    };
+                    let vtbl_struct = self.erase_region_binder(vtbl_struct);
                     let ty = Ty::new(TyKind::Ref(
                         Region::Static,
                         Ty::new(TyKind::Adt(vtbl_struct)),
@@ -678,13 +684,63 @@ impl ItemTransCtx<'_, '_> {
 
 //// Generate a vtable value.
 impl ItemTransCtx<'_, '_> {
+    /// Construct a constant that represents a reference to the vtable corresponding to this this trait proof.
+    pub fn translate_vtable_instance_const(
+        &mut self,
+        span: Span,
+        impl_expr: &hax::ImplExpr,
+    ) -> Result<Box<ConstantExpr>, Error> {
+        let tref = impl_expr.r#trait.hax_skip_binder_ref();
+        if !self.trait_is_dyn_compatible(&tref.def_id)? {
+            raise_error!(
+                self,
+                span,
+                "Trait {:?} should be dyn-compatible",
+                tref.def_id
+            );
+        }
+
+        let vtbl_ty = {
+            let vtbl_ty = self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                ctx.translate_vtable_struct_ref(span, tref)
+            })?;
+            let vtbl_ty = self.erase_region_binder(vtbl_ty);
+            TyKind::Adt(vtbl_ty).into_ty()
+        };
+        let ty = TyKind::Ref(Region::Static, vtbl_ty.clone(), RefKind::Shared).into_ty();
+
+        let kind = {
+            if let hax::ImplExprAtom::Concrete(impl_item) = &impl_expr.r#impl {
+                // We could return `VTableRef` but we need to enqueue the translation of the static
+                // so may as well reuse that to normalize a bit.
+                let vtable_instance =
+                    self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                        ctx.translate_vtable_instance_ref(span, tref, impl_item)
+                    })?;
+                let vtable_instance = self.erase_region_binder(vtable_instance);
+                let vtable_instance = Box::new(ConstantExpr {
+                    kind: ConstantExprKind::Global(vtable_instance),
+                    ty: vtbl_ty,
+                });
+                ConstantExprKind::Ref(vtable_instance, None)
+            } else {
+                ConstantExprKind::VTableRef(self.translate_trait_impl_expr(span, impl_expr)?)
+            }
+        };
+
+        Ok(Box::new(ConstantExpr { kind, ty }))
+    }
+
+    /// You may want `translate_vtable_instance_const` instead.
     pub fn translate_vtable_instance_ref(
         &mut self,
         span: Span,
         trait_ref: &hax::TraitRef,
         impl_ref: &hax::ItemRef,
-    ) -> Result<Option<GlobalDeclRef>, Error> {
-        self.translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)
+    ) -> Result<GlobalDeclRef, Error> {
+        Ok(self
+            .translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)?
+            .expect("trait should be dyn-compatible"))
     }
 
     pub fn translate_vtable_instance_ref_no_enqueue(
@@ -730,9 +786,7 @@ impl ItemTransCtx<'_, '_> {
             hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
             _ => unreachable!(),
         };
-        let vtable_struct_ref = self
-            .translate_vtable_struct_ref(span, implemented_trait)?
-            .expect("trait should be dyn-compatible");
+        let vtable_struct_ref = self.translate_vtable_struct_ref(span, implemented_trait)?;
         if self.monomorphize() {
             return Ok((None, vtable_struct_ref));
         }
@@ -809,18 +863,18 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         impl_def: &hax::FullDef,
         item: &hax::ImplAssocItem,
-        mut mk_field: impl FnMut(VtableMethodValue),
-    ) -> Result<(), Error> {
+    ) -> Result<Option<VtableMethodValue>, Error> {
         // Exit if the item isn't a vtable safe method.
-        match self.poly_hax_def(&item.decl_def_id)?.kind() {
-            hax::FullDefKind::AssocFn {
-                vtable_sig: Some(_),
-                ..
-            } => {}
-            _ => return Ok(()),
-        }
+        let item_def = self.poly_hax_def(&item.decl_def_id)?;
+        let hax::FullDefKind::AssocFn {
+            vtable_sig: Some(_),
+            ..
+        } = item_def.kind()
+        else {
+            return Ok(None);
+        };
 
-        match &item.value {
+        let vtable_value = match &item.value {
             hax::ImplAssocItemValue::Provided {
                 def_id: item_def_id,
                 ..
@@ -855,95 +909,88 @@ impl ItemTransCtx<'_, '_> {
                         skip_binder: signature,
                     }));
 
-                    mk_field(VtableMethodValue::Mono((
-                        name.to_string(),
-                        method_ty,
-                        shim_ref,
-                    )));
+                    VtableMethodValue::Mono((name.to_string(), method_ty, shim_ref))
                 } else {
-                    mk_field(VtableMethodValue::Const(ConstantExprKind::FnDef(shim_ref)));
+                    VtableMethodValue::Const(ConstantExprKind::FnDef(shim_ref))
                 }
             }
-            hax::ImplAssocItemValue::DefaultedFn { .. } if self.monomorphize() => {
-                error!("shim for default methods aren't yet supported");
-            }
-            hax::ImplAssocItemValue::DefaultedFn { .. } => mk_field(VtableMethodValue::Const(
+            hax::ImplAssocItemValue::DefaultedFn { .. } => VtableMethodValue::Const(
                 ConstantExprKind::Opaque("shim for default methods aren't yet supported".into()),
-            )),
-            _ => return Ok(()),
-        }
+            ),
+            _ => return Ok(None),
+        };
 
-        Ok(())
+        Ok(Some(vtable_value))
     }
 
-    fn add_supertraits_to_vtable_value(
-        &mut self,
-        span: Span,
-        trait_def: &hax::FullDef,
-        impl_def: &hax::FullDef,
-        mut mk_field: impl FnMut(ConstantExprKind),
-    ) -> Result<(), Error> {
-        let hax::FullDefKind::TraitImpl {
-            implied_impl_exprs, ..
-        } = impl_def.kind()
-        else {
-            unreachable!()
-        };
-        let hax::FullDefKind::Trait {
-            implied_predicates, ..
-        } = trait_def.kind()
-        else {
-            unreachable!()
-        };
-        for ((clause, _), impl_expr) in implied_predicates.predicates.iter().zip(implied_impl_exprs)
-        {
-            let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() else {
-                continue;
-            };
-            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
-            if !self.pred_is_for_self(&pred.trait_ref) {
-                continue;
-            }
+    // fn add_supertraits_to_vtable_value(
+    //     &mut self,
+    //     span: Span,
+    //     trait_def: &hax::FullDef,
+    //     impl_def: &hax::FullDef,
+    //     mut mk_field: impl FnMut(ConstantExprKind),
+    // ) -> Result<(), Error> {
+    //     let hax::FullDefKind::TraitImpl {
+    //         implied_impl_exprs, ..
+    //     } = impl_def.kind()
+    //     else {
+    //         unreachable!()
+    //     };
+    //     let hax::FullDefKind::Trait {
+    //         implied_predicates, ..
+    //     } = trait_def.kind()
+    //     else {
+    //         unreachable!()
+    //     };
+    //     for ((clause, _), impl_expr) in implied_predicates.predicates.iter().zip(implied_impl_exprs)
+    //     {
+    //         let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() else {
+    //             continue;
+    //         };
+    //         // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+    //         if !self.pred_is_for_self(&pred.trait_ref) {
+    //             continue;
+    //         }
 
-            let bound_tyref = {
-                self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                    let tyref = ctx.translate_vtable_struct_ref(span, tref)?;
-                    if tyref.is_none() {
-                        ctx.assert_is_destruct(tref);
-                    }
-                    Ok(tyref)
-                })?
-            };
-            let Some(vtable_def_ref) = self.erase_region_binder(bound_tyref) else {
-                continue;
-            };
-            let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
-            let kind = match &impl_expr.r#impl {
-                hax::ImplExprAtom::Concrete(impl_item) => {
-                    let bound_gref: RegionBinder<Option<GlobalDeclRef>> = self
-                        .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-                            let gref = ctx.translate_vtable_instance_ref(span, tref, impl_item)?;
-                            if gref.is_none() {
-                                ctx.assert_is_destruct(tref);
-                            };
-                            Ok(gref)
-                        })?;
-                    let Some(vtable_instance_ref) = self.erase_region_binder(bound_gref) else {
-                        continue;
-                    };
-                    let global = Box::new(ConstantExpr {
-                        kind: ConstantExprKind::Global(vtable_instance_ref),
-                        ty: fn_ptr_ty,
-                    });
-                    ConstantExprKind::Ref(global, None)
-                }
-                // TODO(dyn): builtin impls
-                _ => ConstantExprKind::Opaque("missing supertrait vtable".into()),
-            };
-            mk_field(kind);
-        }
-        Ok(())
-    }
+    //         let bound_tyref = {
+    //             self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+    //                 let tyref = ctx.translate_vtable_struct_ref(span, tref)?;
+    //                 if tyref.is_none() {
+    //                     ctx.assert_is_destruct(tref);
+    //                 }
+    //                 Ok(tyref)
+    //             })?
+    //         };
+    //         let Some(vtable_def_ref) = self.erase_region_binder(bound_tyref) else {
+    //             continue;
+    //         };
+    //         let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
+    //         let kind = match &impl_expr.r#impl {
+    //             hax::ImplExprAtom::Concrete(impl_item) => {
+    //                 let bound_gref: RegionBinder<Option<GlobalDeclRef>> = self
+    //                     .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+    //                         let gref = ctx.translate_vtable_instance_ref(span, tref, impl_item)?;
+    //                         if gref.is_none() {
+    //                             ctx.assert_is_destruct(tref);
+    //                         };
+    //                         Ok(gref)
+    //                     })?;
+    //                 let Some(vtable_instance_ref) = self.erase_region_binder(bound_gref) else {
+    //                     continue;
+    //                 };
+    //                 let global = Box::new(ConstantExpr {
+    //                     kind: ConstantExprKind::Global(vtable_instance_ref),
+    //                     ty: fn_ptr_ty,
+    //                 });
+    //                 ConstantExprKind::Ref(global, None)
+    //             }
+    //             // TODO(dyn): builtin impls
+    //             _ => ConstantExprKind::Opaque("missing supertrait vtable".into()),
+    //         };
+    //         mk_field(kind);
+    //     }
+    //     Ok(())
+    // }
 
     /// Generate the body of the vtable instance function.
     /// This is for `impl Trait for T` implementation, it does NOT handle builtin impls.
@@ -959,12 +1006,25 @@ impl ItemTransCtx<'_, '_> {
         vtable_struct_ref: TypeDeclRef,
     ) -> Result<Body, Error> {
         let hax::FullDefKind::TraitImpl {
-            trait_pred, items, ..
+            trait_pred,
+            implied_impl_exprs,
+            items,
+            ..
         } = impl_def.kind()
         else {
             unreachable!()
         };
+
         let trait_def = self.hax_def(&trait_pred.trait_ref)?;
+        let poly_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+        let hax::FullDefKind::Trait {
+            implied_predicates: implied_preds,
+            ..
+        } = poly_trait_def.kind()
+        else {
+            unreachable!()
+        };
+
         let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
@@ -973,7 +1033,8 @@ impl ItemTransCtx<'_, '_> {
         let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
         let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
 
-        // Retreive the expected field types from the struct definition. This avoids complicated
+        let vtable_data = self.prepare_vtable_fields(&trait_def, implied_preds)?;
+        // Retrieve the expected field types from the struct definition. This avoids complicated
         // substitutions.
         let field_tys = {
             let vtable_decl_id = vtable_struct_ref.id.as_adt().unwrap().clone();
@@ -995,37 +1056,18 @@ impl ItemTransCtx<'_, '_> {
                 .collect_vec()
         };
 
+        // Construct a list with one operand per vtable field.
         let mut aggregate_fields = vec![];
-        // For each vtable field, assign the desired value to a new local.
-        let mut field_ty_iter = field_tys.into_iter();
-
-        let size_ty = field_ty_iter.next().unwrap();
-        let size_local = builder.new_var(Some("size".to_string()), size_ty);
-        builder.push_statement(StatementKind::Assign(
-            size_local.clone(),
-            Rvalue::NullaryOp(NullOp::SizeOf, self_ty.clone()),
-        ));
-        aggregate_fields.push(Operand::Move(size_local));
-
-        let align_ty = field_ty_iter.next().unwrap();
-        let align_local = builder.new_var(Some("align".to_string()), align_ty);
-        builder.push_statement(StatementKind::Assign(
-            align_local.clone(),
-            Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
-        ));
-        aggregate_fields.push(Operand::Move(align_local));
-
-        // In mono mode, we need to cast the shim functions into opaque funtion pointers
-        // and then fill them in the fields of the vtable.
-        if self.monomorphize() {
-            let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
-                panic!()
+        let mut items_iter = items.iter();
+        trace!("MONO: vtable_data.fields:\n {:?}", vtable_data.fields);
+        for (field, ty) in vtable_data.fields.into_iter().zip(field_tys) {
+            let mk_const = |kind| {
+                Operand::Const(Box::new(ConstantExpr {
+                    kind,
+                    ty: ty.clone(),
+                }))
             };
-            let Some(dyn_self) = dyn_self else {
-                panic!("MONO: Trying to generate a vtable for a non-dyn-compatible trait")
-            };
-            let mut mk_cast_field = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
-                let ty = field_ty_iter.next().unwrap();
+            let mut mk_cast = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
                 let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
                 let shim = Rvalue::Use(Operand::Const(Box::new(ConstantExpr {
                     kind: ConstantExprKind::FnDef(method_shim.clone()),
@@ -1045,74 +1087,79 @@ impl ItemTransCtx<'_, '_> {
 
                 builder.push_statement(StatementKind::Assign(method_local.clone(), shim));
                 builder.push_statement(StatementKind::Assign(cast_local.clone(), cast));
-                aggregate_fields.push(Operand::Move(cast_local));
+                Operand::Move(cast_local)
             };
+            let op = match field {
+                TrVTableField::Size => {
+                    let size_local = builder.new_var(Some("size".to_string()), ty);
+                    builder.push_statement(StatementKind::Assign(
+                        size_local.clone(),
+                        Rvalue::NullaryOp(NullOp::SizeOf, self_ty.clone()),
+                    ));
+                    Operand::Move(size_local)
+                }
+                TrVTableField::Align => {
+                    let align_local = builder.new_var(Some("align".to_string()), ty);
+                    builder.push_statement(StatementKind::Assign(
+                        align_local.clone(),
+                        Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
+                    ));
+                    Operand::Move(align_local)
+                }
+                TrVTableField::Drop => {
+                    let drop_shim = self.translate_item(
+                        span,
+                        impl_def.this(),
+                        TransItemSourceKind::VTableDropShim,
+                    )?;
+                    if self.monomorphize() {
+                        let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
+                            panic!()
+                        };
 
-            // `*mut dyn Trait`
-            let ref_dyn_self =
-                TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut).into_ty();
+                        let Some(dyn_self) = dyn_self else {
+                            panic!(
+                                "MONO: Trying to generate a vtable for a non-dyn-compatible trait"
+                            )
+                        };
+                        let ref_dyn_self =
+                            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut)
+                                .into_ty();
+                        let signature = FunSig {
+                            is_unsafe: true,
+                            inputs: vec![ref_dyn_self.clone()],
+                            output: Ty::mk_unit(),
+                        };
+                        let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
 
-            // `*mut dyn Trait -> ()`
-            let signature = FunSig {
-                is_unsafe: true,
-                inputs: vec![ref_dyn_self.clone()],
-                output: Ty::mk_unit(),
-            };
-            let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
-
-            let drop_shim: FnPtr =
-                self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
-
-            mk_cast_field(("drop".to_string(), drop_ty.clone(), drop_shim));
-
-            for item in items {
-                self.add_method_to_vtable_value(span, impl_def, item, |value| match value {
-                    VtableMethodValue::Mono(method) => mk_cast_field(method),
-                    VtableMethodValue::Const(_) => {
-                        unreachable!("unexpected poly vtable method in mono mode")
+                        mk_cast(("drop".to_string(), drop_ty.clone(), drop_shim))
+                    } else {
+                        mk_const(ConstantExprKind::FnDef(drop_shim))
                     }
-                })?;
-            }
-
-            // Helper to fill in the supertrait fields with constant values.
-            let mut mk_field = |kind| {
-                let ty = field_ty_iter.next().unwrap();
-                aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
-            };
-
-            let poly_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
-
-            self.add_supertraits_to_vtable_value(span, &poly_trait_def, impl_def, &mut mk_field)?;
-        } else {
-            // Helper to fill in the shim functions and supertrait fields with constant values.
-            let mut mk_field = |kind| {
-                let ty = field_ty_iter.next().unwrap();
-                aggregate_fields.push(Operand::Const(Box::new(ConstantExpr { kind, ty })));
-            };
-
-            let drop_shim =
-                self.translate_item(span, impl_def.this(), TransItemSourceKind::VTableDropShim)?;
-
-            mk_field(ConstantExprKind::FnDef(drop_shim));
-
-            for item in items {
-                self.add_method_to_vtable_value(span, impl_def, item, |value| match value {
-                    VtableMethodValue::Const(kind) => mk_field(kind),
-                    VtableMethodValue::Mono(_) => {
-                        unreachable!("unexpected mono vtable method in poly mode")
+                }
+                TrVTableField::Method(..) => 'a: {
+                    // Bit of a hack: we know the methods are in the right order. This is easier
+                    // than trying to index into the items list by name.
+                    for item in items_iter.by_ref() {
+                        if let Some(kind) = self.add_method_to_vtable_value(span, impl_def, item)? {
+                            match kind {
+                                VtableMethodValue::Const(const_kind) => {
+                                    break 'a mk_const(const_kind);
+                                }
+                                VtableMethodValue::Mono(method) => break 'a mk_cast(method),
+                            }
+                        }
                     }
-                })?;
-            }
-
-            self.add_supertraits_to_vtable_value(span, &trait_def, impl_def, &mut mk_field)?;
-        }
-
-        if field_ty_iter.next().is_some() {
-            raise_error!(
-                self,
-                span,
-                "Missed some fields in vtable value construction"
-            )
+                    unreachable!()
+                }
+                TrVTableField::SuperTrait(clause_id, _) => {
+                    trace!("MONO: SuperTrait");
+                    let impl_expr = &implied_impl_exprs[clause_id.index()];
+                    let vtable = self.translate_vtable_instance_const(span, impl_expr)?;
+                    Operand::Const(vtable)
+                }
+            };
+            aggregate_fields.push(op);
         }
 
         // Construct the final struct.
@@ -1479,10 +1526,7 @@ impl ItemTransCtx<'_, '_> {
         // let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
 
         // Construct the `(*ptr.ptr_metadata).method_field` place.
-        let Some(vtable_decl_ref) = self.translate_vtable_struct_ref(span, trait_def.this())?
-        else {
-            panic!("trait {:?} is not dyn-compatible", trait_def);
-        };
+        let vtable_decl_ref = self.translate_vtable_struct_ref(span, trait_def.this())?;
         let vtable_decl_id = *vtable_decl_ref.id.as_adt().unwrap();
         let vtable_ty = TyKind::Adt(vtable_decl_ref).into_ty();
         let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(vtable_ty.clone(), RefKind::Shared));
@@ -1686,10 +1730,7 @@ impl ItemTransCtx<'_, '_> {
         // let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
 
         // Construct the `(*ptr.ptr_metadata).method_field` place.
-        let Some(vtable_decl_ref) = self.translate_vtable_struct_ref(span, trait_def.this())?
-        else {
-            panic!("trait {:?} is not dyn-compatible", trait_def);
-        };
+        let vtable_decl_ref = self.translate_vtable_struct_ref(span, trait_def.this())?;
         let vtable_decl_id = *vtable_decl_ref.id.as_adt().unwrap();
         let vtable_ty = TyKind::Adt(vtable_decl_ref).into_ty();
         let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(vtable_ty.clone(), RefKind::Shared));

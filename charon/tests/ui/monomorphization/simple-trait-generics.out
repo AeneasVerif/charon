@@ -135,7 +135,7 @@ fn {impl Trait<bool> for i32}::{vtable}() -> test_crate::Trait::{vtable}
     storage_live(erased_comsume_6)
     comsume_5 = const {vtable_method}<'7>
     erased_comsume_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '9)) -> bool, *const ()>(move comsume_5)
-    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_comsume: move erased_comsume_6, super_trait_0: const Opaque(missing supertrait vtable) }
+    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_comsume: move erased_comsume_6, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
 }
 
@@ -174,7 +174,7 @@ fn main()
     _6 = move _7
     _3 = &(*_6)
     _2 = &(*_3)
-    a_1 = unsize_cast<&'6 i32, &'12 (dyn Trait<bool> + '13), {impl Trait<bool> for i32} with {impl Trait<bool> for i32}::{vtable}>(move _2)
+    a_1 = unsize_cast<&'6 i32, &'12 (dyn Trait<bool> + '13), &{impl Trait<bool> for i32}::{vtable}>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)

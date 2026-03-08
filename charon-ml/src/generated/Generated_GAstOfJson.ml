@@ -640,6 +640,9 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = trait_ref_of_json ctx x_0 in
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (CTraitConst (x_0, x_1))
+    | `Assoc [ ("VTableRef", v_table_ref) ] ->
+        let* v_table_ref = trait_ref_of_json ctx v_table_ref in
+        Ok (CVTableRef v_table_ref)
     | `Assoc [ ("Ref", `List [ x_0; x_1 ]) ] ->
         let* x_0 = box_of_json constant_expr_of_json ctx x_0 in
         let* x_1 = option_of_json unsizing_metadata_of_json ctx x_1 in
@@ -2360,7 +2363,7 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         Ok (MetaLength length)
     | `Assoc [ ("VTable", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_ref_of_json ctx x_0 in
-        let* x_1 = option_of_json global_decl_ref_of_json ctx x_1 in
+        let* x_1 = box_of_json constant_expr_of_json ctx x_1 in
         Ok (MetaVTable (x_0, x_1))
     | `Assoc [ ("VTableUpcast", v_table_upcast) ] ->
         let* v_table_upcast =

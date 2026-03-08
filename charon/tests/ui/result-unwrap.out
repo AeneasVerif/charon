@@ -177,7 +177,7 @@ where
             e_2 = move (self_1 as variant Result::Err).0
             storage_live(_4)
             _5 = &e_2
-            _4 = unsize_cast<&'6 E, &'7 (dyn Debug + '8), @TraitClause2 with ?>(copy _5)
+            _4 = unsize_cast<&'6 E, &'7 (dyn Debug + '8), &vtable_of(@TraitClause2)>(copy _5)
             _3 = unwrap_failed<'11, '12>(const "called `Result::unwrap()` on an `Err` value", move _4)
         },
     }
