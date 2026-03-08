@@ -17,21 +17,6 @@ pub trait Sized<Self>
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -126,23 +111,8 @@ fn {impl Fn<(u8,)> for test_crate::main::closure<'_0>}::call<'_0, '_1>(_1: &'_1 
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}::drop_in_place
-unsafe fn {impl Destruct for test_crate::main::closure<'_0>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure<'_0>)
-{
-    let _0: (); // return
-    let _1: *mut test_crate::main::closure<'_0>; // arg #1
-    let _2: &'1 mut test_crate::main::closure<'_0>; // anonymous local
-
-    storage_live(_2)
-    _0 = ()
-    _2 = &mut (*_1)
-    return
-}
-
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}
-impl<'_0> Destruct for test_crate::main::closure<'_0> {
-    fn drop_in_place = {impl Destruct for test_crate::main::closure<'_0>}::drop_in_place<'_0>
-    non-dyn-compatible
+impl<'_0> Destruct for test_crate::main::closure<'_0> {    non-dyn-compatible
 }
 
 // Full name: test_crate::apply_to_zero::<test_crate::main::closure<'_>>
@@ -197,23 +167,8 @@ fn {impl FnMut<(u8,)> for test_crate::main::closure#1<'_0>}::call_mut<'_0, '_1>(
     return
 }
 
-// Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}::drop_in_place
-unsafe fn {impl Destruct for test_crate::main::closure#1<'_0>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure#1<'_0>)
-{
-    let _0: (); // return
-    let _1: *mut test_crate::main::closure#1<'_0>; // arg #1
-    let _2: &'1 mut test_crate::main::closure#1<'_0>; // anonymous local
-
-    storage_live(_2)
-    _0 = ()
-    _2 = &mut (*_1)
-    return
-}
-
 // Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}
-impl<'_0> Destruct for test_crate::main::closure#1<'_0> {
-    fn drop_in_place = {impl Destruct for test_crate::main::closure#1<'_0>}::drop_in_place<'_0>
-    non-dyn-compatible
+impl<'_0> Destruct for test_crate::main::closure#1<'_0> {    non-dyn-compatible
 }
 
 // Full name: test_crate::apply_to_zero_mut::<test_crate::main::closure#1<'_>>
@@ -268,23 +223,8 @@ fn {impl FnOnce<(u8,)> for test_crate::main::closure#2}::call_once(_1: test_crat
     return
 }
 
-// Full name: test_crate::main::closure#2::{impl Destruct for test_crate::main::closure#2}::drop_in_place
-unsafe fn {impl Destruct for test_crate::main::closure#2}::drop_in_place(_1: *mut test_crate::main::closure#2)
-{
-    let _0: (); // return
-    let _1: *mut test_crate::main::closure#2; // arg #1
-    let _2: &'1 mut test_crate::main::closure#2; // anonymous local
-
-    storage_live(_2)
-    _0 = ()
-    _2 = &mut (*_1)
-    return
-}
-
 // Full name: test_crate::main::closure#2::{impl Destruct for test_crate::main::closure#2}
-impl Destruct for test_crate::main::closure#2 {
-    fn drop_in_place = {impl Destruct for test_crate::main::closure#2}::drop_in_place
-    non-dyn-compatible
+impl Destruct for test_crate::main::closure#2 {    non-dyn-compatible
 }
 
 // Full name: test_crate::apply_to_zero_once::<test_crate::main::closure#2>
@@ -418,6 +358,19 @@ impl<'_0> Fn<(u8,)> for test_crate::main::closure<'_0> {
     non-dyn-compatible
 }
 
+// Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}::drop_in_place
+unsafe fn {impl Destruct for test_crate::main::closure<'_0>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure<'_0>)
+{
+    let _0: (); // return
+    let _1: *mut test_crate::main::closure<'_0>; // arg #1
+    let _2: &'1 mut test_crate::main::closure<'_0>; // anonymous local
+
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1)
+    return
+}
+
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for test_crate::main::closure#1<'_0>}::call_once
 fn {impl FnOnce<(u8,)> for test_crate::main::closure#1<'_0>}::call_once<'_0>(_1: test_crate::main::closure#1<'_0>, _2: (u8,)) -> u8
 {
@@ -452,6 +405,19 @@ impl<'_0> FnMut<(u8,)> for test_crate::main::closure#1<'_0> {
     non-dyn-compatible
 }
 
+// Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}::drop_in_place
+unsafe fn {impl Destruct for test_crate::main::closure#1<'_0>}::drop_in_place<'_0>(_1: *mut test_crate::main::closure#1<'_0>)
+{
+    let _0: (); // return
+    let _1: *mut test_crate::main::closure#1<'_0>; // arg #1
+    let _2: &'1 mut test_crate::main::closure#1<'_0>; // anonymous local
+
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1)
+    return
+}
+
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for test_crate::main::closure#2}
 impl FnOnce<(u8,)> for test_crate::main::closure#2 {
     parent_clause0 = {built_in impl MetaSized for test_crate::main::closure#2}
@@ -459,6 +425,19 @@ impl FnOnce<(u8,)> for test_crate::main::closure#2 {
     parent_clause2 = {built_in impl Tuple for (u8,)}
     fn call_once = {impl FnOnce<(u8,)> for test_crate::main::closure#2}::call_once
     non-dyn-compatible
+}
+
+// Full name: test_crate::main::closure#2::{impl Destruct for test_crate::main::closure#2}::drop_in_place
+unsafe fn {impl Destruct for test_crate::main::closure#2}::drop_in_place(_1: *mut test_crate::main::closure#2)
+{
+    let _0: (); // return
+    let _1: *mut test_crate::main::closure#2; // arg #1
+    let _2: &'1 mut test_crate::main::closure#2; // anonymous local
+
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1)
+    return
 }
 
 

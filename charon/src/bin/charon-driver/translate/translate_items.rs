@@ -721,6 +721,22 @@ impl ItemTransCtx<'_, '_> {
         let mut types = Vec::new();
         let mut methods = Vec::new();
 
+        // skip all associated items of trait decl in mono mode
+        // question: what if the associated methods (or consts) has default implmentation?
+        // TODO: support default methods and default consts
+        if self.monomorphize() {
+            return Ok(TraitDecl {
+                def_id,
+                item_meta,
+                implied_clauses,
+                generics: self.into_generics(),
+                consts,
+                types,
+                methods,
+                vtable,
+            });
+        }
+
         for &(item_name, ref hax_item) in &items {
             let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
@@ -732,13 +748,6 @@ impl ItemTransCtx<'_, '_> {
                 hax::AssocKind::Const { .. } => TransItemSourceKind::Global,
                 hax::AssocKind::Type { .. } => TransItemSourceKind::Type,
             };
-
-            // skip all associated items of trait decl in mono mode
-            // question: what if the associated methods (or consts) has default implmentation?
-            // TODO: support default methods and default consts
-            if self.monomorphize() {
-                continue;
-            }
 
             let poly_item_def = self.poly_hax_def(item_def_id)?;
             let (item_src, item_def) = if self.monomorphize() {

@@ -17,21 +17,6 @@ pub trait Sized<Self>
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -105,23 +90,8 @@ fn {impl FnOnce<(u8,)> for closure}::call_once(_1: closure, _2: (u8,)) -> u8
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
-{
-    let _0: (); // return
-    let _1: *mut closure; // arg #1
-    let _2: &'1 mut closure; // anonymous local
-
-    storage_live(_2)
-    _0 = ()
-    _2 = &mut (*_1)
-    return
-}
-
 // Full name: test_crate::main::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
-    non-dyn-compatible
+impl Destruct for closure {    non-dyn-compatible
 }
 
 // Full name: test_crate::apply_to_zero_once::<closure>
@@ -172,6 +142,19 @@ impl FnOnce<(u8,)> for closure {
     parent_clause2 = {built_in impl Tuple for (u8,)}
     fn call_once = {impl FnOnce<(u8,)> for closure}::call_once
     non-dyn-compatible
+}
+
+// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
+unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
+{
+    let _0: (); // return
+    let _1: *mut closure; // arg #1
+    let _2: &'1 mut closure; // anonymous local
+
+    storage_live(_2)
+    _0 = ()
+    _2 = &mut (*_1)
+    return
 }
 
 
