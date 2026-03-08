@@ -16,9 +16,14 @@ fn usize_ty() -> Ty {
     Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
 }
 
+// Vtable method values that are used to vtable initilization functions.
+// In poly mode, they are const values of shim function pointers direcly filled in vtable fields.
+// In mono mode, they are used for construction of casting statements (see `mk_cast` in `gen_vtable_instance_init_body` for details).
+// Specifically, the tuple `(String, Ty, FnPtr)` represent method names,
+// the type of the shim function pointers and the shim function pointers, respectively.
 enum VtableMethodValue {
     Const(ConstantExprKind),
-    Mono((String, Ty, FnPtr)),
+    Cast((String, Ty, FnPtr)),
 }
 
 /// Takes a `T` valid in the context of a trait ref and transforms it into a `T` valid in the
@@ -269,12 +274,6 @@ impl ItemTransCtx<'_, '_> {
             .types
             .remove_and_shift_ids(TypeVarId::ZERO);
 
-        // In mono mode we keep a unique vtable type per trait declaration, with no generic arguments.
-        // if self.monomorphize_trait() || self.monomorphize() {
-        //     vtable_ref.generics = Box::new(GenericArgs::empty());
-        //     return Ok(Some(vtable_ref));
-        // }
-
         // The vtable type also takes associated types as parameters.
         let assoc_tys: Vec<_> = tref
             .trait_associated_types(self.hax_state_with_id())
@@ -321,17 +320,12 @@ impl ItemTransCtx<'_, '_> {
             }
         }
 
-        trace!(
-            "MONO: prepare_vtable_fields implied_predicates:\n {:?}",
-            implied_predicates.predicates
-        );
         // Supertrait fields.
         for (i, (clause, _span)) in implied_predicates.predicates.iter().enumerate() {
             // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
             if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
                 && self.pred_is_for_self(&pred.trait_ref)
             {
-                trace!("MONO: prepare supertrait");
                 if !self.trait_is_dyn_compatible(&pred.trait_ref.def_id)? {
                     // We add fake `Destruct` supertraits, but these are not dyn-compatible.
                     self.assert_is_destruct(&pred.trait_ref);
@@ -434,12 +428,10 @@ impl ItemTransCtx<'_, '_> {
         Ok(fields)
     }
 
-    // In Mono mode, preshim functions are used for dynamic trait calls.
-    // It does two things:
-    // 1. It converts opaque shim functions stored in the vtable back into shim functions with dyn trait types
-    // 2. It calls the converted shim function, passing the dyn trait object.
+    // Register preshim functions for the drop shim function and method shim functions.
+    // See `translate_vtable_method_preshim` for the description of preshim functions.
     #[tracing::instrument(skip(self, span))]
-    fn translate_preshim(&mut self, span: Span, trait_def: &hax::FullDef) -> Result<(), Error> {
+    fn register_preshim(&mut self, span: Span, trait_def: &hax::FullDef) -> Result<(), Error> {
         let item_src =
             TransItemSource::monomorphic_trait(&trait_def.def_id(), TransItemSourceKind::TraitDecl);
         let item_id = match self.t_ctx.id_map.get(&item_src) {
@@ -512,18 +504,6 @@ impl ItemTransCtx<'_, '_> {
 
         Ok(())
     }
-
-    /// This is a temporary check until we support `dyn Trait` with `--monomorphize`.
-    // pub(crate) fn check_no_monomorphize(&self, span: Span) -> Result<(), Error> {
-    //     if self.monomorphize() {
-    //         raise_error!(
-    //             self,
-    //             span,
-    //             "`dyn Trait` is not yet supported with `--monomorphize`"
-    //         )
-    //     }
-    //     Ok(())
-    // }
 
     /// Construct the type of the vtable for this trait.
     ///
@@ -829,14 +809,14 @@ impl ItemTransCtx<'_, '_> {
                 (None, vtable_struct_ref) => (ItemSource::VTableInstanceMono, vtable_struct_ref),
             };
 
-        // register preshims for translation
+        // In mono mode, register preshims for translation
         if self.monomorphize() {
             let trait_pred = match impl_def.kind() {
                 hax::FullDefKind::TraitImpl { trait_pred, .. } => trait_pred,
                 _ => unreachable!(),
             };
             let trait_def = self.hax_def(&trait_pred.trait_ref)?;
-            self.translate_preshim(span, &trait_def)?;
+            self.register_preshim(span, &trait_def)?;
         }
 
         // Initializer function for this global.
@@ -884,6 +864,9 @@ impl ItemTransCtx<'_, '_> {
                 let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
                 let shim_ref =
                     self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
+                // In mono mode, we cannot get real types of shim functions by looking up the ones in `struct vtable`
+                // because they are erased function pointers.
+                // Therefore, below we compute real types that are used for casting.
                 if self.monomorphize() {
                     // manually translate region params for dyn trait
                     assert!(self.binding_levels.len() == 1);
@@ -909,7 +892,7 @@ impl ItemTransCtx<'_, '_> {
                         skip_binder: signature,
                     }));
 
-                    VtableMethodValue::Mono((name.to_string(), method_ty, shim_ref))
+                    VtableMethodValue::Cast((name.to_string(), method_ty, shim_ref))
                 } else {
                     VtableMethodValue::Const(ConstantExprKind::FnDef(shim_ref))
                 }
@@ -922,75 +905,6 @@ impl ItemTransCtx<'_, '_> {
 
         Ok(Some(vtable_value))
     }
-
-    // fn add_supertraits_to_vtable_value(
-    //     &mut self,
-    //     span: Span,
-    //     trait_def: &hax::FullDef,
-    //     impl_def: &hax::FullDef,
-    //     mut mk_field: impl FnMut(ConstantExprKind),
-    // ) -> Result<(), Error> {
-    //     let hax::FullDefKind::TraitImpl {
-    //         implied_impl_exprs, ..
-    //     } = impl_def.kind()
-    //     else {
-    //         unreachable!()
-    //     };
-    //     let hax::FullDefKind::Trait {
-    //         implied_predicates, ..
-    //     } = trait_def.kind()
-    //     else {
-    //         unreachable!()
-    //     };
-    //     for ((clause, _), impl_expr) in implied_predicates.predicates.iter().zip(implied_impl_exprs)
-    //     {
-    //         let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() else {
-    //             continue;
-    //         };
-    //         // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
-    //         if !self.pred_is_for_self(&pred.trait_ref) {
-    //             continue;
-    //         }
-
-    //         let bound_tyref = {
-    //             self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-    //                 let tyref = ctx.translate_vtable_struct_ref(span, tref)?;
-    //                 if tyref.is_none() {
-    //                     ctx.assert_is_destruct(tref);
-    //                 }
-    //                 Ok(tyref)
-    //             })?
-    //         };
-    //         let Some(vtable_def_ref) = self.erase_region_binder(bound_tyref) else {
-    //             continue;
-    //         };
-    //         let fn_ptr_ty = TyKind::Adt(vtable_def_ref).into_ty();
-    //         let kind = match &impl_expr.r#impl {
-    //             hax::ImplExprAtom::Concrete(impl_item) => {
-    //                 let bound_gref: RegionBinder<Option<GlobalDeclRef>> = self
-    //                     .translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
-    //                         let gref = ctx.translate_vtable_instance_ref(span, tref, impl_item)?;
-    //                         if gref.is_none() {
-    //                             ctx.assert_is_destruct(tref);
-    //                         };
-    //                         Ok(gref)
-    //                     })?;
-    //                 let Some(vtable_instance_ref) = self.erase_region_binder(bound_gref) else {
-    //                     continue;
-    //                 };
-    //                 let global = Box::new(ConstantExpr {
-    //                     kind: ConstantExprKind::Global(vtable_instance_ref),
-    //                     ty: fn_ptr_ty,
-    //                 });
-    //                 ConstantExprKind::Ref(global, None)
-    //             }
-    //             // TODO(dyn): builtin impls
-    //             _ => ConstantExprKind::Opaque("missing supertrait vtable".into()),
-    //         };
-    //         mk_field(kind);
-    //     }
-    //     Ok(())
-    // }
 
     /// Generate the body of the vtable instance function.
     /// This is for `impl Trait for T` implementation, it does NOT handle builtin impls.
@@ -1016,6 +930,7 @@ impl ItemTransCtx<'_, '_> {
         };
 
         let trait_def = self.hax_def(&trait_pred.trait_ref)?;
+        // We use `poly_trait_def` to fetch `implied_preds`, which is used to fetch supertrait in `prepare_vtable_fields`.
         let poly_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
         let hax::FullDefKind::Trait {
             implied_predicates: implied_preds,
@@ -1059,14 +974,37 @@ impl ItemTransCtx<'_, '_> {
         // Construct a list with one operand per vtable field.
         let mut aggregate_fields = vec![];
         let mut items_iter = items.iter();
-        trace!("MONO: vtable_data.fields:\n {:?}", vtable_data.fields);
         for (field, ty) in vtable_data.fields.into_iter().zip(field_tys) {
+            // In poly mode, all fields of vtables can be filled with const values.
             let mk_const = |kind| {
                 Operand::Const(Box::new(ConstantExpr {
                     kind,
                     ty: ty.clone(),
                 }))
             };
+            // In mono mode, we need to additioanlly cast shim function pointers to opaque ones before filling them.
+            // Therefore, `mk_cast` receives `(method_name, method_ty, method_shim)` to construct casting statements.
+            // For example, for the trait declaration and trait implementation in Rust:
+            // ```
+            // trait Trait {
+            //      fn method(&self);
+            // }
+            // impl Trait for i32 {
+            //      fn method(&self) {}
+            // }
+            // ```
+            //  , `mk_cast` will generate the followging statements inside the vtable initialization function:
+            // ```
+            // fn vtable_init() -> vtable {
+            //      ...
+            //      let method_local: fn<'_0_1>(&'_0_1 (dyn Trait + '1));
+            //      let cast_local: *const ();
+            //
+            //      method_local = const {shim}<'1>
+            //      cast_local = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '2)), *const ()>(move method_local)
+            //      ...
+            // }
+            // ```
             let mut mk_cast = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
                 let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
                 let shim = Rvalue::Use(Operand::Const(Box::new(ConstantExpr {
@@ -1113,6 +1051,7 @@ impl ItemTransCtx<'_, '_> {
                         TransItemSourceKind::VTableDropShim,
                     )?;
                     if self.monomorphize() {
+                        // manually compute the type of drop shim function.
                         let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
                             panic!()
                         };
@@ -1146,14 +1085,13 @@ impl ItemTransCtx<'_, '_> {
                                 VtableMethodValue::Const(const_kind) => {
                                     break 'a mk_const(const_kind);
                                 }
-                                VtableMethodValue::Mono(method) => break 'a mk_cast(method),
+                                VtableMethodValue::Cast(method) => break 'a mk_cast(method),
                             }
                         }
                     }
                     unreachable!()
                 }
                 TrVTableField::SuperTrait(clause_id, _) => {
-                    trace!("MONO: SuperTrait");
                     let impl_expr = &implied_impl_exprs[clause_id.index()];
                     let vtable = self.translate_vtable_instance_const(span, impl_expr)?;
                     Operand::Const(vtable)
@@ -1182,7 +1120,6 @@ impl ItemTransCtx<'_, '_> {
         impl_kind: &TraitImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        // self.check_no_monomorphize(span)?;
 
         let (src, vtable_struct_ref) =
             match self.get_vtable_instance_info(span, impl_def, impl_kind)? {
@@ -1360,7 +1297,6 @@ impl ItemTransCtx<'_, '_> {
         impl_def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        // self.check_no_monomorphize(span)?;
 
         let hax::FullDefKind::TraitImpl {
             dyn_self: Some(dyn_self),
@@ -1416,7 +1352,6 @@ impl ItemTransCtx<'_, '_> {
         impl_func_def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        // self.check_no_monomorphize(span)?;
 
         let hax::FullDefKind::AssocFn {
             vtable_sig: Some(vtable_sig),
@@ -1465,7 +1400,6 @@ impl ItemTransCtx<'_, '_> {
         trait_def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        // self.check_no_monomorphize(span)?;
 
         let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
             raise_error!(self, span, "MONO: Unsupported trait");
@@ -1581,6 +1515,11 @@ impl ItemTransCtx<'_, '_> {
         Ok(Body::Unstructured(builder.build()))
     }
 
+
+    // In mono mode, method (or drop) preshim functions are used for dynamic trait calls.
+    // It does two things:
+    // 1. It converts opaque shim functions stored in the vtable back into shim functions with dyn trait types
+    // 2. It calls the converted shim function, passing the dyn trait object.
     #[tracing::instrument(skip(self, item_meta))]
     pub(crate) fn translate_vtable_method_preshim(
         mut self,
@@ -1591,7 +1530,6 @@ impl ItemTransCtx<'_, '_> {
         trait_id: &TraitDeclId,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        // self.check_no_monomorphize(span)?;
 
         let mut assoc_func_def = None;
         let mut assoc_types = None;
