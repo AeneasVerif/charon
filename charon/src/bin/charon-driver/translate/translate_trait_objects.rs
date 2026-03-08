@@ -868,9 +868,11 @@ impl ItemTransCtx<'_, '_> {
                 // because they are erased function pointers.
                 // Therefore, below we compute real types that are used for casting.
                 if self.monomorphize() {
-                    // manually translate region params for dyn trait
+                    // Manually translate region params for dyn trait.
+                    // We create a new binding level by `translate_item_generics`
+                    // and restore the orginal one after computing `method_ty`.
                     assert!(self.binding_levels.len() == 1);
-                    self.binding_levels.pop();
+                    let orginal_binding = self.binding_levels.pop();
                     let def = self.poly_hax_def(&item_ref.def_id)?;
                     self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
 
@@ -891,6 +893,12 @@ impl ItemTransCtx<'_, '_> {
                         regions: self.outermost_generics().regions.clone(),
                         skip_binder: signature,
                     }));
+
+                    // Restore the orignal binding_levels.
+                    self.binding_levels.pop();
+                    if let Some(binding_level) = orginal_binding {
+                        self.binding_levels.push(binding_level);
+                    }
 
                     VtableMethodValue::Cast((name.to_string(), method_ty, shim_ref))
                 } else {
@@ -1159,11 +1167,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunDecl {
             def_id: init_func_id,
             item_meta: item_meta,
-            generics: if self.monomorphize() {
-                GenericParams::empty()
-            } else {
-                self.into_generics()
-            },
+            generics: self.into_generics(),
             signature: sig,
             src,
             is_global_initializer: Some(init_for),
@@ -1514,7 +1518,6 @@ impl ItemTransCtx<'_, '_> {
 
         Ok(Body::Unstructured(builder.build()))
     }
-
 
     // In mono mode, method (or drop) preshim functions are used for dynamic trait calls.
     // It does two things:
