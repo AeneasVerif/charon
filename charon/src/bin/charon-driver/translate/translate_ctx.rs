@@ -251,7 +251,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
-    /// depending on user choice.
+    /// depending on user choice. For `TraitDecl` or `VTable`, we always use polymorphic definitions.
     pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
         let item = if self.monomorphize()
             && !matches!(

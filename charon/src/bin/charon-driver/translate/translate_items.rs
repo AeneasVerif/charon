@@ -755,10 +755,6 @@ impl ItemTransCtx<'_, '_> {
                     (item_src, item_def)
                 }
             } else {
-                trace!(
-                    "MONO: catch polymorphic item {:?} in translate_trait_decl",
-                    self.item_src
-                );
                 let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
                 (item_src, poly_item_def)
             };

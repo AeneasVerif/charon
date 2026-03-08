@@ -38,9 +38,9 @@ pub struct TransItemSource {
 /// Refers to a rustc item. Can be either the polymorphic version (`Poly`) of the item, or a
 /// monomorphization (`Mono` or `MonoTrait`) of it.
 /// For `MonoTrait` items, their kind should be either `trait decl` or `struct vtable`:
-///     1. the trait is translated like in poly mode except that we don't translate any of its
+///     1. the trait is translated as in poly mode, except that we don't translate any of its
 ///        associated item lists.
-///     2. the vtable is translated with erased signature of the methods and no generic types.
+///     2. the vtable is translated with erased signature of the methods and without generic types.
 ///        In other words, there is one "opaque" vtable per trait.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum RustcItem {
@@ -268,10 +268,6 @@ impl<'tcx> TranslateCtx<'tcx> {
                 return;
             }
         } else {
-            trace!(
-                "MONO: catch polymorphic item {:?} in enqueue_module_item",
-                def_id
-            );
             TransItemSource::polymorphic(def_id, kind)
         };
         let _: Option<ItemId> = self.register_and_enqueue(&None, item_src);
@@ -393,6 +389,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             item.clone()
         };
+        // In mono mode:
+        //   1. If the item being registered is a `trait decl`, we construct a
+        //      `monomorphic_trait` item source.
+        //   2. Otherwise, if the current `item_trans_ctx` is under a `trait decl`
+        //      or a `vtable`, we construct a `poly` item.
+        //   3. In all other cases, we construct a `mono` item.
         let item_src = if self.monomorphize() && matches!(kind, TransItemSourceKind::TraitDecl) {
             TransItemSource::monomorphic_trait(&item.def_id, kind)
         } else {
@@ -443,6 +445,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
+        // In mono mode, we keep generics of trait decls.
         let mut generics = if self.monomorphize() && !matches!(kind, TransItemSourceKind::TraitDecl)
         {
             GenericArgs::empty()
