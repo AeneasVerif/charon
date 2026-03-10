@@ -57,7 +57,7 @@ unsafe fn {vtable_drop_preshim}::<bool>(_1: *mut (dyn Trait<bool>))
     return
 }
 
-// Full name: test_crate::Trait::{vtable_method_preshim}::<bool>
+// Full name: test_crate::Trait::comsume::{vtable_method_preshim}::<bool>
 fn {vtable_method_preshim}::<bool><'_0>(_1: &'_0 (dyn Trait<bool>)) -> bool
 {
     let ret_0: (); // return

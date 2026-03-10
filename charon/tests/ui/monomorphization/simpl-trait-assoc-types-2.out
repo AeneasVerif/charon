@@ -48,7 +48,7 @@ unsafe fn {vtable_drop_preshim}::<bool>(_1: *mut (dyn Trait<Item = bool>))
     return
 }
 
-// Full name: test_crate::Trait::{vtable_method_preshim}::<bool>
+// Full name: test_crate::Trait::comsume::{vtable_method_preshim}::<bool>
 fn {vtable_method_preshim}::<bool><'_0>(_1: &'_0 (dyn Trait<Item = bool>))
 {
     let ret_0: (); // return
@@ -82,7 +82,7 @@ unsafe fn {vtable_drop_preshim}::<u32>(_1: *mut (dyn Trait<Item = u32>))
     return
 }
 
-// Full name: test_crate::Trait::{vtable_method_preshim}::<u32>
+// Full name: test_crate::Trait::comsume::{vtable_method_preshim}::<u32>
 fn {vtable_method_preshim}::<u32><'_0>(_1: &'_0 (dyn Trait<Item = u32>))
 {
     let ret_0: (); // return
