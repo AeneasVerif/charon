@@ -626,8 +626,81 @@ impl ExitInfo {
     fn compute_loop_exits(ctx: &TransformCtx, cfg: &mut CfgInfo) {
         for &loop_id in &cfg.loop_entries {
             // Compute the candidates.
-            let loop_exits: SeqHashMap<BlockId, LoopExitRank> =
+            let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> =
                 Self::compute_loop_exit_ranks(cfg, loop_id);
+
+            // Hard filter: discard exit candidates that are dominated by the loop header when
+            // non-dominated candidates exist.
+            // This is related to: https://github.com/AeneasVerif/charon/issues/1051
+            //
+            // Example (from issue #1051):
+            // ```
+            // fn f(b: bool) -> bool {
+            //     if b {
+            //         loop {
+            //             if b { return true; }  // bb5: dominated by loop header
+            //             break;                  // bb9→bb4: exits the loop
+            //         }
+            //     }
+            //     false                           // bb4: NOT dominated by loop header
+            // }
+            // ```
+            //
+            // Without the filter, bb5 (`return true`) ranks higher than bb4 because it is
+            // closer to the loop header. Picking bb5 as the exit incorrectly turns `return
+            // true` into `break`, producing the following wrong reconstruction:
+            // ```
+            // fn f(b: bool) -> bool {
+            //     if b {
+            //         loop {
+            //             if b { break; }   // was `return true` — wrongly turned into break
+            //             // the actual `break` path is lost here
+            //         }
+            //     }
+            //     false
+            // }
+            // ```
+            // The filter discards bb5 (dominated) so that bb4 (not dominated) is correctly
+            // chosen, producing the correct reconstruction:
+            // ```
+            // fn f(b: bool) -> bool {
+            //     if b {
+            //         loop {
+            //             if b { return true; }  // kept as return
+            //             break;                 // correctly reconstructed
+            //         }
+            //     }
+            //     false
+            // }
+            // ```
+            //
+            // Note: for simple `while cond { body } after;` loops, ALL exit candidates are
+            // dominated by the loop header (every path from the function entry goes through
+            // the loop header). In that case `has_non_dominated` is false and the filter is
+            // a no-op.
+            //
+            // Remark: rather than filtering, we could modify LoopExitRank to prioritize
+            // non-dominated blocks.
+
+            // Computing the set of blocks dominated by the loop - we could do this
+            // once and for all and save the information in [CfgInfo] but I doubt
+            // we would save much complexity-wise.
+            let dominated_by_loop = {
+                let mut set = HashSet::new();
+                let mut stack = vec![loop_id];
+                while let Some(bid) = stack.pop() {
+                    set.insert(bid);
+                    stack.extend(&cfg.block_data[bid].immediately_dominates);
+                }
+                set
+            };
+            let has_non_dominated = loop_exits
+                .keys()
+                .any(|bid| !dominated_by_loop.contains(bid));
+            if has_non_dominated {
+                loop_exits.retain(|bid, _| !dominated_by_loop.contains(bid));
+            }
+
             // We choose the exit with:
             // - the most occurrences
             // - the least total distance (if there are several possibilities)
