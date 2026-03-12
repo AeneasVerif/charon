@@ -915,6 +915,10 @@ impl TraitRef {
         )
     }
 
+    pub fn trait_id(&self) -> TraitDeclId {
+        self.trait_decl_ref.skip_binder.id
+    }
+
     /// Get mutable access to the contents. This cloned the value and will re-intern the modified
     /// value at the end of the function.
     pub fn with_contents_mut<R>(&mut self, f: impl FnOnce(&mut TraitRefContents) -> R) -> R {
