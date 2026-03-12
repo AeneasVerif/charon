@@ -181,19 +181,11 @@ mod trait_ref_path {
         ) -> Option<TraitRef> {
             assert!(self.base.is_self_clause());
             for &parent_id in &self.parent_path {
-                let pred = tref
-                    .trait_decl_ref
-                    .skip_binder
-                    .clone()
-                    .move_from_under_binder()?;
-                let tdecl = krate.get_item(pred.id)?;
+                let tdecl = krate.get_item(tref.trait_id())?;
                 let tdecl = tdecl.as_trait_decl()?;
                 let clause = &tdecl.implied_clauses[parent_id];
-                let next_pred = clause.trait_.clone().substitute(&pred.generics);
-                tref = TraitRef::new(
-                    TraitRefKind::ParentClause(Box::new(tref), parent_id),
-                    next_pred,
-                );
+                let pred = clause.trait_.clone().substitute_with_tref(&tref);
+                tref = TraitRef::new(TraitRefKind::ParentClause(Box::new(tref), parent_id), pred);
             }
             Some(tref)
         }
@@ -482,10 +474,14 @@ mod type_constraint_set {
         /// they would be redundant outside of the defining trait/impl.
         pub fn iter_self_paths_subst<'a>(
             &'a self,
-            args: &'a GenericArgs,
+            tref: &'a TraitRef,
         ) -> impl Iterator<Item = (AssocTypePath, Ty)> + use<'a> {
-            self.iter_self_paths()
-                .map(move |(path, ty)| (path, ty.substitute(args)))
+            let base_path = tref.to_path().unwrap();
+            self.iter_self_paths().map(move |(path, ty)| {
+                let path = path.on_tref(&base_path);
+                let ty = ty.substitute_with_tref(tref);
+                (path, ty)
+            })
         }
     }
 
@@ -680,15 +676,12 @@ impl<'a> ComputeItemModifications<'a> {
             TypeConstraintSet::from_constraints(&params.trait_type_constraints);
         // Clauses may provide more type constraints.
         for clause in &params.trait_clauses {
-            if let Some(pred) = clause.trait_.skip_binder.clone().move_from_under_binder()
-                && let Some(trait_mods) = self.compute_trait_modifications(pred.id).as_processed()
+            let tref = clause.identity_tref();
+            if let Some(trait_mods) = self
+                .compute_trait_modifications(tref.trait_id())
+                .as_processed()
             {
-                let base_path = TraitRefPath::local_clause(clause.clause_id);
-                for (path, ty) in trait_mods
-                    .type_constraints
-                    .iter_self_paths_subst(&pred.generics)
-                {
-                    let path = path.on_tref(&base_path);
+                for (path, ty) in trait_mods.type_constraints.iter_self_paths_subst(&tref) {
                     type_constraints.insert_path(&path, ty);
                 }
             }
@@ -1035,7 +1028,7 @@ impl UpdateItemBody<'_> {
     /// `TraitDeclRef`s exist in three places: in `TraitClause`, `TraitRef`, and directly in
     /// `TraitImpl`.
     fn process_trait_decl_ref(&mut self, tref: &mut TraitDeclRef, self_path: TraitRefKind) {
-        trace!("{tref:?}");
+        trace!("{tref:?}, {self_path:?}");
         let target = GenericsSource::item(tref.id);
         let self_tref = TraitRef::new(self_path, RegionBinder::empty(tref.clone()));
         self.update_generics(&mut tref.generics, target, Some(self_tref));
@@ -1047,7 +1040,7 @@ impl UpdateItemBody<'_> {
         tref: &mut PolyTraitDeclRef,
         self_path: TraitRefKind,
     ) {
-        trace!("{tref:?}");
+        trace!("{tref:?}, {self_path:?}");
         self.under_binder(Default::default(), |this| {
             let self_path = self_path.move_under_binder();
             this.process_trait_decl_ref(&mut tref.skip_binder, self_path)
@@ -1059,12 +1052,13 @@ impl UpdateItemBody<'_> {
             TypeConstraintSet::from_constraints(&binder.params.trait_type_constraints);
         // Clauses may provide more type constraints.
         for clause in &binder.params.trait_clauses {
-            if let Some(pred) = clause.trait_.skip_binder.clone().move_from_under_binder() {
-                if let Some(tmods) = self.item_modifications.get(&GenericsSource::item(pred.id)) {
-                    for (path, ty) in tmods.type_constraints.iter_self_paths_subst(&pred.generics) {
-                        let path = path.on_local_clause(clause.clause_id);
-                        type_constraints.insert_path(&path, ty);
-                    }
+            let tref = clause.identity_tref();
+            if let Some(tmods) = self
+                .item_modifications
+                .get(&GenericsSource::item(tref.trait_id()))
+            {
+                for (path, ty) in tmods.type_constraints.iter_self_paths_subst(&tref) {
+                    type_constraints.insert_path(&path, ty);
                 }
             }
         }
@@ -1114,6 +1108,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
 
     // Process trait refs
     fn enter_trait_ref_contents(&mut self, tref: &mut TraitRefContents) {
+        trace!("{tref:?}");
         self.process_poly_trait_decl_ref(&mut tref.trait_decl_ref, tref.kind.clone());
         match &mut tref.kind {
             TraitRefKind::BuiltinOrAuto { types, .. } => {
@@ -1242,6 +1237,10 @@ impl VisitAstMut for UpdateItemBody<'_> {
             let path = TraitRefPath::self_ref().with_assoc_type(name.clone());
             if let Some(new_ty) = self.lookup_path_on_trait_ref(&path, tref) {
                 *kind = new_ty.kind().clone();
+                trace!(
+                    "fixing up substituted type {}",
+                    new_ty.with_ctx(&self.ctx.into_fmt())
+                );
                 // Fix the newly-substituted type.
                 let _ = self.visit(kind);
             }
@@ -1292,6 +1291,10 @@ impl TransformPass for Transform {
 
         // Apply the computed modifications to each item.
         ctx.for_each_item_mut(|ctx, mut item| {
+            trace!(
+                "Processing {}",
+                item.item_meta().name.with_ctx(&ctx.into_fmt())
+            );
             let id = item.as_ref().id();
             let span = item.as_ref().item_meta().span;
             let modifications = item_modifications.get(&GenericsSource::Item(id)).unwrap();

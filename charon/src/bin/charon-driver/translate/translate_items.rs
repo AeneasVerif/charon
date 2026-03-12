@@ -1057,10 +1057,7 @@ impl ItemTransCtx<'_, '_> {
                             };
                             let method_params = bound_method
                                 .clone()
-                                .substitute_with_self(
-                                    &implemented_trait.generics,
-                                    &self_predicate.kind,
-                                )
+                                .substitute_with_tref(&self_predicate)
                                 .params;
 
                             let generics = self

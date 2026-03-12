@@ -392,7 +392,7 @@ impl<T> RegionBinder<T> {
             regions,
             ..GenericArgs::empty()
         };
-        self.skip_binder.substitute(&args)
+        self.skip_binder.substitute_inner_binder(&args)
     }
 
     /// Substitute the bound variables with erased lifetimes.
@@ -915,6 +915,10 @@ impl TraitRef {
         )
     }
 
+    pub fn trait_id(&self) -> TraitDeclId {
+        self.trait_decl_ref.skip_binder.id
+    }
+
     /// Get mutable access to the contents. This cloned the value and will re-intern the modified
     /// value at the end of the function.
     pub fn with_contents_mut<R>(&mut self, f: impl FnOnce(&mut TraitRefContents) -> R) -> R {
@@ -997,15 +1001,21 @@ impl Variant {
 impl DynPredicate {
     /// Get a reference to the vtable type that corresponds to this predicate.
     pub fn vtable_ref(&self, translated: &TranslatedCrate) -> Option<TypeDeclRef> {
-        // The first clause is the one relevant for the vtable.
-        let relevant_tref = self.binder.params.trait_clauses[0].trait_.clone().erase();
+        let dyn_ty = TyKind::DynTrait(self.clone()).into_ty();
+        // The first clause is the one relevant for the vtable. We're extracting it from our binder
+        // so must give a value for the `Self` type.
+        let relevant_tref = self.binder.params.trait_clauses[0]
+            .trait_
+            .clone()
+            .erase()
+            .substitute(&GenericArgs::new_types([dyn_ty].into_iter().collect()));
 
         // Get the vtable ref from the trait decl
         let trait_decl = translated.trait_decls.get(relevant_tref.id)?;
         let vtable_ref = trait_decl
             .vtable
             .clone()?
-            .substitute(&relevant_tref.generics);
+            .substitute_with_self(&relevant_tref.generics, &TraitRefKind::Dyn);
         Some(vtable_ref)
     }
 }
@@ -1046,7 +1056,7 @@ pub trait VarsVisitor {
 #[derive(Visitor)]
 pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
-    self_ref: &'a TraitRefKind,
+    self_ref: Option<&'a TraitRefKind>,
     /// Whether to substitute explicit variables only (types, regions, const generics).
     explicits_only: bool,
     had_error: bool,
@@ -1054,7 +1064,7 @@ pub(crate) struct SubstVisitor<'a> {
 impl<'a> SubstVisitor<'a> {
     pub(crate) fn new(
         generics: &'a GenericArgs,
-        self_ref: &'a TraitRefKind,
+        self_ref: Option<&'a TraitRefKind>,
         explicits_only: bool,
     ) -> Self {
         Self {
@@ -1124,7 +1134,10 @@ impl VarsVisitor for SubstVisitor<'_> {
         }
     }
     fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
-        Some(self.self_ref.clone())
+        Some(self.self_ref.cloned().expect(
+            "used `substitute` on an item coming from a trait; \
+            use `substitute_with_self` or `substitute_inner_binder` instead.",
+        ))
     }
 }
 
@@ -1210,31 +1223,41 @@ pub trait TyVisitable: Sized + AstVisitable {
     }
 
     /// Substitute the generic variables inside `self` by replacing them with the provided values.
-    /// Note: if `self` is an item that comes from a `TraitDecl`, you most likely want to use
-    /// `substitute_with_self`.
+    /// Note: if `self` is an item that comes from a `TraitDecl`, you must use
+    /// `substitute_with_self` or `substitute_inner_binder`, otherwise you'll get panics.
     fn substitute(self, generics: &GenericArgs) -> Self {
+        SubstVisitor::new(generics, None, false)
+            .visit(self)
+            .unwrap()
+    }
+    /// Substitute the generic variables inside `self` by replacing them with the provided values.
+    /// This is appropriate when substituting an inner binder.
+    fn substitute_inner_binder(self, generics: &GenericArgs) -> Self {
         self.substitute_with_self(generics, &TraitRefKind::SelfId)
     }
     /// Substitute only the type, region and const generic args.
     fn substitute_explicits(self, generics: &GenericArgs) -> Self {
-        SubstVisitor::new(generics, &TraitRefKind::SelfId, true)
-            .visit(self)
-            .unwrap()
+        SubstVisitor::new(generics, None, true).visit(self).unwrap()
     }
-    /// Substitute the generic variables as well as the `TraitRefKind::Self` trait ref.
+    /// Substitute the generic variables as well as the `TraitRefKind::SelfId` trait ref.
     fn substitute_with_self(self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
         self.try_substitute_with_self(generics, self_ref).unwrap()
     }
+    /// Substitute the generic variables as well as the `TraitRefKind::SelfId` trait ref.
+    fn substitute_with_tref(self, tref: &TraitRef) -> Self {
+        let pred = tref.trait_decl_ref.clone().erase();
+        self.substitute_with_self(&pred.generics, &tref.kind)
+    }
 
     fn try_substitute(self, generics: &GenericArgs) -> Result<Self, GenericsMismatch> {
-        self.try_substitute_with_self(generics, &TraitRefKind::SelfId)
+        SubstVisitor::new(generics, None, false).visit(self)
     }
     fn try_substitute_with_self(
         self,
         generics: &GenericArgs,
         self_ref: &TraitRefKind,
     ) -> Result<Self, GenericsMismatch> {
-        SubstVisitor::new(generics, self_ref, false).visit(self)
+        SubstVisitor::new(generics, Some(self_ref), false).visit(self)
     }
 
     /// Move under one binder.

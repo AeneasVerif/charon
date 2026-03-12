@@ -448,7 +448,7 @@ impl<'a> PartialMonomorphizer<'a> {
             .get_item(*orig_id)
             .unwrap()
             .clone()
-            .substitute(&shape.skip_binder);
+            .substitute_with_self(&shape.skip_binder, &TraitRefKind::SelfId);
 
         let mut decl_mut = decl.as_mut();
         decl_mut.set_id(new_id);
