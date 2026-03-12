@@ -44,12 +44,11 @@ fn transform_dyn_trait_call(
     let TraitRefKind::Dyn = &trait_ref.kind else {
         return Ok(()); // Not a dyn trait trait call
     };
-    let trait_pred = trait_ref.trait_decl_ref.clone().erase();
 
     // Get the type of the vtable struct.
     let vtable_decl_ref: TypeDeclRef = {
         // Get the trait declaration by its ID
-        let Some(trait_decl) = ctx.ctx.translated.trait_decls.get(trait_pred.id) else {
+        let Some(trait_decl) = ctx.ctx.translated.trait_decls.get(trait_ref.trait_id()) else {
             return Ok(()); // Unknown trait
         };
         // Get vtable ref from definition for correct ID.
@@ -58,12 +57,10 @@ fn transform_dyn_trait_call(
                 ctx.ctx,
                 ctx.span,
                 "Found a `dyn Trait` method call for non-dyn-compatible trait `{}`!",
-                trait_pred.id.with_ctx(fmt_ctx)
+                trait_ref.trait_id().with_ctx(fmt_ctx)
             );
         };
-        vtable_ty
-            .clone()
-            .substitute_with_self(&trait_pred.generics, &trait_ref.kind)
+        vtable_ty.clone().substitute_with_tref(trait_ref)
     };
     let vtable_decl_id = *vtable_decl_ref.id.as_adt().unwrap();
     let Some(vtable_decl) = ctx.ctx.translated.type_decls.get(vtable_decl_id) else {

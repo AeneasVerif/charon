@@ -181,19 +181,11 @@ mod trait_ref_path {
         ) -> Option<TraitRef> {
             assert!(self.base.is_self_clause());
             for &parent_id in &self.parent_path {
-                let pred = tref
-                    .trait_decl_ref
-                    .skip_binder
-                    .clone()
-                    .move_from_under_binder()?;
-                let tdecl = krate.get_item(pred.id)?;
+                let tdecl = krate.get_item(tref.trait_id())?;
                 let tdecl = tdecl.as_trait_decl()?;
                 let clause = &tdecl.implied_clauses[parent_id];
-                let next_pred = clause.trait_.clone().substitute(&pred.generics);
-                tref = TraitRef::new(
-                    TraitRefKind::ParentClause(Box::new(tref), parent_id),
-                    next_pred,
-                );
+                let pred = clause.trait_.clone().substitute_with_tref(&tref);
+                tref = TraitRef::new(TraitRefKind::ParentClause(Box::new(tref), parent_id), pred);
             }
             Some(tref)
         }
@@ -484,11 +476,10 @@ mod type_constraint_set {
             &'a self,
             tref: &'a TraitRef,
         ) -> impl Iterator<Item = (AssocTypePath, Ty)> + use<'a> {
-            let pred = tref.trait_decl_ref.clone().erase();
             let base_path = tref.to_path().unwrap();
             self.iter_self_paths().map(move |(path, ty)| {
                 let path = path.on_tref(&base_path);
-                let ty = ty.substitute_with_self(&pred.generics, &tref.kind);
+                let ty = ty.substitute_with_tref(tref);
                 (path, ty)
             })
         }
