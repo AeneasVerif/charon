@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build (${{ matrix.os }} - ${{ matrix.target }})
+    name: Build (${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -83,16 +83,6 @@ jobs:
         with:
           tag_name: build-${{ github.sha }}
           prerelease: true
+          make_latest: false
           files: ${{ matrix.artifact_name }}.tar.gz
-          body: "Development build for commit ${{ github.sha }}"
-
-      # Update the rolling 'latest' release for all branch pushes,
-      # or create a formal versioned release for tags.
-      - name: Release (Latest or Tag)
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
-          prerelease: ${{ github.ref_type != 'tag' }}
-          files: ${{ matrix.artifact_name }}.tar.gz
-          make_latest: ${{ github.ref_type == 'tag' }}
           generate_release_notes: true
