@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
+use std::mem;
 
 use hax::BaseState;
 use rustc_middle::ty;
@@ -525,12 +526,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        self.inside_binder(kind, true, |this| {
+        let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(&def.def_id());
+        let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
+        let ret = self.inside_binder(kind, true, |this| {
             this.push_generics_for_def_without_parents(span, def)?;
             this.push_late_bound_generics_for_def(span, def)?;
             this.innermost_binder().params.check_consistency();
             f(this)
-        })
+        });
+        self.hax_state = outer_hax_state;
+        ret
     }
 
     /// Push a group of bound regions and call the continuation.
