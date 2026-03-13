@@ -3,13 +3,27 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 jobs:
+  prepare:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.sha }}
+          prerelease: true
+          make_latest: false
+          generate_release_notes: true
+
   build:
     name: Build (${{ matrix.os }})
+    needs: prepare
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -76,13 +90,8 @@ jobs:
             ldd ./staging/charon-driver 2>&1 | grep rustc_driver
           fi
 
-      # Archive every individual commit in a unique 'build-<sha>' prerelease.
-      - name: Release (Historical)
-        if: github.ref_type != 'tag'
+      - name: Upload Artifact
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.sha }}
-          prerelease: true
-          make_latest: false
           files: ${{ matrix.artifact_name }}.tar.gz
-          generate_release_notes: true
