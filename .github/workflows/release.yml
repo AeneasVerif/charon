@@ -1,0 +1,97 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }} - ${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            artifact_name: charon-linux-x86_64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: charon-macos-x86_64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: charon-macos-aarch64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Extract the pinned toolchain from the source of truth.
+      - name: Read toolchain
+        id: toolchain
+        run: |
+          CHANNEL=$(grep 'channel =' rust-toolchain | cut -d '"' -f 2)
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.toolchain.outputs.channel }}
+          targets: ${{ matrix.target }}
+          components: rustc-dev
+
+      - name: Install musl-tools
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - name: Build
+        run: |
+          cd charon
+          cargo build --release --target ${{ matrix.target }}
+        env:
+          # Ensure static linking for OpenSSL to maximize binary portability.
+          OPENSSL_STATIC: 1
+
+      - name: Package
+        run: |
+          set -eo pipefail
+          
+          mkdir staging
+          cp charon/target/${{ matrix.target }}/release/charon staging/
+          cp charon/target/${{ matrix.target }}/release/charon-driver staging/
+          cd staging
+          tar -czvf ../${{ matrix.artifact_name }}.tar.gz *
+
+      # Verify the binary is functional and correctly statically linked on Linux.
+      - name: Smoke Test
+        run: |
+          ./staging/charon --help > /dev/null
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            (ldd ./staging/charon 2>&1 | grep "not a dynamic executable") || (echo "Binary is not statically linked!" && ldd ./staging/charon && exit 1)
+          fi
+
+      # Archive every individual commit in a unique 'build-<sha>' prerelease.
+      - name: Release (Historical)
+        if: github.ref_type != 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.sha }}
+          prerelease: true
+          files: ${{ matrix.artifact_name }}.tar.gz
+          body: "Development build for commit ${{ github.sha }}"
+
+      # Update the rolling 'latest' release for all branch pushes,
+      # or create a formal versioned release for tags.
+      - name: Release (Latest or Tag)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
+          prerelease: ${{ github.ref_type != 'tag' }}
+          files: ${{ matrix.artifact_name }}.tar.gz
+          make_latest: ${{ github.ref_type == 'tag' }}
+          generate_release_notes: true
