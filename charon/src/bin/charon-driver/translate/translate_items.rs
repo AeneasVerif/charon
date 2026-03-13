@@ -832,26 +832,48 @@ impl ItemTransCtx<'_, '_> {
                     methods.push(method);
                 }
                 hax::FullDefKind::AssocConst { ty, .. } => {
-                    // Check if the constant has a value (i.e., a body).
-                    let default = hax_item.has_value.then(|| {
-                        // The parameters of the constant are the same as those of the item that
-                        // declares them.
-                        let id = self.register_and_enqueue(item_span, item_src);
-                        let mut generics = self.the_only_binder().params.identity_args();
-                        // We add an extra `Self: Trait` clause to default consts.
+                    // The const is defined in a context that has an extra `Self: Trait` clause, so
+                    // we translate it bound first.
+                    let bound_assoc_const = self.translate_binder_for_def(
+                        item_span,
+                        BinderKind::Other,
+                        &item_def,
+                        |ctx| {
+                            // Check if the constant has a value (i.e., a body).
+                            let default = hax_item.has_value.then(|| {
+                                // The parameters of the constant are the same as those of the item that
+                                // declares them.
+                                let id = ctx.register_and_enqueue(item_span, item_src);
+                                let generics = ctx
+                                    .outermost_binder()
+                                    .params
+                                    .identity_args_at_depth(DeBruijnId::one())
+                                    .concat(
+                                        &ctx.innermost_binder()
+                                            .params
+                                            .identity_args_at_depth(DeBruijnId::zero()),
+                                    );
+                                GlobalDeclRef {
+                                    id,
+                                    generics: Box::new(generics),
+                                }
+                            });
+                            let ty = ctx.translate_ty(item_span, ty)?;
+                            Ok(TraitAssocConst {
+                                name: item_name.clone(),
+                                attr_info,
+                                ty,
+                                default,
+                            })
+                        },
+                    )?;
+                    let assoc_const = bound_assoc_const.apply(&{
+                        let mut generics = GenericArgs::empty();
+                        // Provide the `Self` clause.
                         generics.trait_refs.push(self_trait_ref.clone());
-                        GlobalDeclRef {
-                            id,
-                            generics: Box::new(generics),
-                        }
+                        generics
                     });
-                    let ty = self.translate_ty(item_span, ty)?;
-                    consts.push(TraitAssocConst {
-                        name: item_name.clone(),
-                        attr_info,
-                        ty,
-                        default,
-                    });
+                    consts.push(assoc_const);
                 }
                 hax::FullDefKind::AssocTy {
                     value,
