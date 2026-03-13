@@ -17,7 +17,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
+            target: x86_64-unknown-linux-gnu
             artifact_name: charon-linux-x86_64
           - os: macos-latest
             target: x86_64-apple-darwin
@@ -45,10 +45,6 @@ jobs:
           targets: ${{ matrix.target }}
           components: rustc-dev, rust-src, llvm-tools-preview
 
-      - name: Install musl-tools
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y musl-tools
-
       - name: Build
         run: |
           cd charon
@@ -68,11 +64,12 @@ jobs:
           tar -czvf ../${{ matrix.artifact_name }}.tar.gz *
 
       # Verify the binary is functional and correctly statically linked on Linux.
+      # Note that libc (gnu) and `rustc_driver.so` are still dynamically linked.
       - name: Smoke Test
         run: |
           ./staging/charon --help > /dev/null
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            (ldd ./staging/charon 2>&1 | grep "not a dynamic executable") || (echo "Binary is not statically linked!" && ldd ./staging/charon && exit 1)
+            ldd ./staging/charon-driver 2>&1 | grep rustc_driver
           fi
 
       # Archive every individual commit in a unique 'build-<sha>' prerelease.
