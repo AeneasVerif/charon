@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::mem;
 
-use hax::BaseState;
+use hax::{BaseState, Symbol};
 use rustc_middle::ty;
 
 use super::translate_ctx::{ItemTransCtx, TraitImplSource, TransItemSourceKind};
@@ -50,6 +50,9 @@ pub(crate) struct BindingLevel {
     pub closure_upvar_tys: Option<IndexVec<FieldId, Ty>>,
     /// The regions we added for the upvars.
     pub closure_upvar_regions: Vec<RegionId>,
+    /// RPITIT can cause region names to be reused. To avoid clashes in our output, we rename
+    /// duplicate names.
+    pub used_region_names: HashSet<Symbol>,
     /// Cache the translation of types. This harnesses the deduplication of `Ty` that hax does.
     // Important: we can't reuse type caches from earlier binders as the new binder may change what
     // a given variable resolves to.
@@ -76,7 +79,11 @@ impl BindingLevel {
         region: hax::EarlyParamRegion,
         mutability: LifetimeMutability,
     ) -> RegionId {
-        let name = translate_region_name(region.name);
+        let name = if self.used_region_names.insert(region.name) {
+            translate_region_name(region.name)
+        } else {
+            None
+        };
         // Check that there are no late-bound regions
         assert!(
             self.bound_region_vars.is_empty(),
