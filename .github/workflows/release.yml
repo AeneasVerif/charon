@@ -15,15 +15,14 @@ jobs:
       contents: write
     strategy:
       matrix:
+        # NOTE: We use native runners instead of cross-compiling to work around
+        # https://github.com/rust-lang/rust/issues/132728#issuecomment-2462937687
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
             artifact_name: charon-linux-x86_64
-          - os: macos-latest
-            target: x86_64-apple-darwin
+          - os: macos-15-intel
             artifact_name: charon-macos-x86_64
           - os: macos-latest
-            target: aarch64-apple-darwin
             artifact_name: charon-macos-aarch64
 
     steps:
@@ -35,6 +34,8 @@ jobs:
       - name: Read toolchain
         id: toolchain
         run: |
+          set -eo pipefail
+
           CHANNEL=$(grep 'channel =' rust-toolchain | cut -d '"' -f 2)
           echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
 
@@ -42,24 +43,25 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ steps.toolchain.outputs.channel }}
-          targets: ${{ matrix.target }}
           components: rustc-dev, rust-src, llvm-tools-preview
 
       - name: Build
-        run: |
-          cd charon
-          cargo build --release --target ${{ matrix.target }}
         env:
           # Ensure static linking for OpenSSL to maximize binary portability.
           OPENSSL_STATIC: 1
+        run: |
+          set -eo pipefail
+
+          cd charon
+          cargo build --release -p charon
 
       - name: Package
         run: |
           set -eo pipefail
-          
-          mkdir staging
-          cp charon/target/${{ matrix.target }}/release/charon staging/
-          cp charon/target/${{ matrix.target }}/release/charon-driver staging/
+
+          mkdir -p staging
+          cp charon/target/release/charon staging/
+          cp charon/target/release/charon-driver staging/
           cd staging
           tar -czvf ../${{ matrix.artifact_name }}.tar.gz *
 
@@ -67,6 +69,8 @@ jobs:
       # Note that libc (gnu) and `rustc_driver.so` are still dynamically linked.
       - name: Smoke Test
         run: |
+          set -eo pipefail
+
           ./staging/charon --help > /dev/null
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             ldd ./staging/charon-driver 2>&1 | grep rustc_driver
