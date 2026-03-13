@@ -646,7 +646,7 @@ pub fn translate<'tcx, 'ctx>(
     cli_options: &CliOpts,
     tcx: TyCtxt<'tcx>,
     sysroot: PathBuf,
-) -> TransformCtx {
+) -> Result<TransformCtx, Error> {
     let mut error_ctx = ErrorCtx::new(!cli_options.abort_on_error, cli_options.error_on_warnings);
     let translate_options = TranslateOptions::new(&mut error_ctx, cli_options);
 
@@ -748,6 +748,11 @@ pub fn translate<'tcx, 'ctx>(
         }
     }
 
+    if ctx.errors.borrow().has_errors() {
+        // Don't continue translating if there were errors while parsing options.
+        return Err(Error::dummy());
+    }
+
     trace!(
         "Queue after we explored the crate:\n{:?}",
         &ctx.items_to_translate
@@ -775,9 +780,9 @@ pub fn translate<'tcx, 'ctx>(
     ctx.remove_unused_methods();
 
     // Return the context, dropping the hax state and rustc `tcx`.
-    TransformCtx {
+    Ok(TransformCtx {
         options: ctx.options,
         translated: ctx.translated,
         errors: ctx.errors,
-    }
+    })
 }

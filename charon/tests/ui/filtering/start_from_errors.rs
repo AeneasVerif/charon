@@ -13,8 +13,6 @@
 
 mod module1 {}
 mod module2 {}
-
-#[charon::start_from]
 mod module3 {}
 
 struct Type;

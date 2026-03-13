@@ -140,7 +140,8 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
 /// The callbacks for Charon
 pub struct CharonCallbacks<'a> {
     options: &'a CliOpts,
-    /// This is to be filled during the extraction; it contains the translated crate.
+    /// This is to be filled during the extraction; it contains the translated crate. `None` at the
+    /// start or if we couldn't translate anything.
     transform_ctx: Option<TransformCtx>,
 }
 impl<'a> Callbacks for CharonCallbacks<'a> {
@@ -157,12 +158,13 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
-        let transform_ctx = translate_crate::translate(
+        self.transform_ctx = translate_crate::translate(
             &self.options,
             tcx,
             compiler.sess.opts.sysroot.path().to_owned(),
-        );
-        self.transform_ctx = Some(transform_ctx);
+        )
+        .ok();
+
         Compilation::Continue
     }
     fn after_analysis<'tcx>(&mut self, _: &Compiler, _: TyCtxt<'tcx>) -> Compilation {

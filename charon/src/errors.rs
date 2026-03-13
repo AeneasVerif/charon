@@ -83,6 +83,12 @@ impl Error {
     pub fn new(span: Span, msg: String) -> Self {
         Self { span, msg }
     }
+    pub fn dummy() -> Self {
+        Self {
+            span: Span::dummy(),
+            msg: String::new(),
+        }
+    }
 
     pub(crate) fn render(&self, krate: &TranslatedCrate, level: Level) -> String {
         use annotate_snippets::*;
