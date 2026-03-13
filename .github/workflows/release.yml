@@ -43,7 +43,7 @@ jobs:
         with:
           toolchain: ${{ steps.toolchain.outputs.channel }}
           targets: ${{ matrix.target }}
-          components: rustc-dev
+          components: rustc-dev, rust-src, llvm-tools-preview
 
       - name: Install musl-tools
         if: matrix.os == 'ubuntu-latest'
