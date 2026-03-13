@@ -16,16 +16,16 @@ pub trait Sized<Self>
 pub trait MyTrait<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    type <'a, '_1_1, Self : 'a, 'a : '_1_1, '_1_1 : 'a>
+    type foo_ty<'a, '_1_1, Self : 'a, 'a : '_1_1, '_1_1 : 'a>
     where
-        implied_clause_0 : [@TraitClause0_1]: Sized<Self::>
+        implied_clause_0 : [@TraitClause0_1]: Sized<Self::foo_ty>
 
     fn foo<'a, Self : 'a> = foo<'a, Self>[Self]
     non-dyn-compatible
 }
 
 // Full name: test_crate::MyTrait::foo
-pub fn foo<'a, Self>() -> @TraitClause0::
+pub fn foo<'a, Self>() -> @TraitClause0::foo_ty
 where
     [@TraitClause0]: MyTrait<Self>,
     Self : 'a,
