@@ -190,9 +190,9 @@ fn use_foo()
 pub trait RPITIT<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::>
-    parent_clause2 : [@TraitClause2]: Foo<Self::>
-    type 
+    parent_clause1 : [@TraitClause1]: Sized<Self::make_foo_ty>
+    parent_clause2 : [@TraitClause2]: Foo<Self::make_foo_ty>
+    type make_foo_ty
     fn make_foo = test_crate::RPITIT::make_foo<Self>[Self]
     non-dyn-compatible
 }
@@ -223,7 +223,7 @@ impl RPITIT for () {
     parent_clause0 = {built_in impl MetaSized for ()}
     parent_clause1 = {built_in impl Sized for ()}
     parent_clause2 = {impl Foo for ()}
-    type  = ()
+    type make_foo_ty = ()
     fn make_foo = {impl RPITIT for ()}::make_foo
     non-dyn-compatible
 }
@@ -235,11 +235,11 @@ where
     [@TraitClause1]: RPITIT<T>,
 {
     let _0: (); // return
-    let foo_1: @TraitClause1::; // local
+    let foo_1: @TraitClause1::make_foo_ty; // local
     let _2: @TraitClause1::parent_clause2::Type; // anonymous local
     let _3: &'1 @TraitClause1::parent_clause2::Type; // anonymous local
     let _4: &'2 @TraitClause1::parent_clause2::Type; // anonymous local
-    let _5: &'4 @TraitClause1::; // anonymous local
+    let _5: &'4 @TraitClause1::make_foo_ty; // anonymous local
 
     _0 = ()
     storage_live(foo_1)
@@ -258,7 +258,7 @@ where
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for @TraitClause1::}] foo_1
+    conditional_drop[{built_in impl Destruct for @TraitClause1::make_foo_ty}] foo_1
     storage_dead(foo_1)
     return
 }

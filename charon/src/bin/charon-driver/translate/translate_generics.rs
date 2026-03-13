@@ -1,7 +1,8 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
+use std::mem;
 
-use hax::BaseState;
+use hax::{BaseState, Symbol};
 use rustc_middle::ty;
 
 use super::translate_ctx::{ItemTransCtx, TraitImplSource, TransItemSourceKind};
@@ -49,6 +50,9 @@ pub(crate) struct BindingLevel {
     pub closure_upvar_tys: Option<IndexVec<FieldId, Ty>>,
     /// The regions we added for the upvars.
     pub closure_upvar_regions: Vec<RegionId>,
+    /// RPITIT can cause region names to be reused. To avoid clashes in our output, we rename
+    /// duplicate names.
+    pub used_region_names: HashSet<Symbol>,
     /// Cache the translation of types. This harnesses the deduplication of `Ty` that hax does.
     // Important: we can't reuse type caches from earlier binders as the new binder may change what
     // a given variable resolves to.
@@ -75,7 +79,11 @@ impl BindingLevel {
         region: hax::EarlyParamRegion,
         mutability: LifetimeMutability,
     ) -> RegionId {
-        let name = translate_region_name(region.name);
+        let name = if self.used_region_names.insert(region.name) {
+            translate_region_name(region.name)
+        } else {
+            None
+        };
         // Check that there are no late-bound regions
         assert!(
             self.bound_region_vars.is_empty(),
@@ -525,12 +533,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        self.inside_binder(kind, true, |this| {
+        let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(&def.def_id());
+        let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
+        let ret = self.inside_binder(kind, true, |this| {
             this.push_generics_for_def_without_parents(span, def)?;
             this.push_late_bound_generics_for_def(span, def)?;
             this.innermost_binder().params.check_consistency();
             f(this)
-        })
+        });
+        self.hax_state = outer_hax_state;
+        ret
     }
 
     /// Push a group of bound regions and call the continuation.
