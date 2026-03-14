@@ -103,7 +103,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             target_id={trans_id:?}, mono={}",
             def.def_id(),
             item_src.kind,
-            bt_ctx.monomorphize()
+            bt_ctx.monomorphize(),
         );
         if !matches!(
             &item_src.kind,
@@ -147,6 +147,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Some(ItemId::TraitImpl(id)) = trans_id else {
                     unreachable!()
                 };
+                // In Mono mode, only user-defined trait is supported for now.
                 let trait_impl = match kind {
                     TraitImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
                     TraitImplSource::TraitAlias => {
@@ -226,6 +227,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableDropPreShim => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_vtable_drop_preshim(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
+            TransItemSourceKind::VTableMethodPreShim(trait_id, name) => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl =
+                    bt_ctx.translate_vtable_method_preshim(id, item_meta, &def, name, trait_id)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -636,6 +652,7 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    // either Poly or MonoTrait
     #[tracing::instrument(skip(self, item_meta, def))]
     pub fn translate_trait_decl(
         mut self,
@@ -704,6 +721,22 @@ impl ItemTransCtx<'_, '_> {
         let mut types = Vec::new();
         let mut methods = Vec::new();
 
+        // skip all associated items of trait decl in mono mode
+        // question: what if the associated methods (or consts) has default implmentation?
+        // TODO: support default methods and default consts
+        if self.monomorphize() {
+            return Ok(TraitDecl {
+                def_id,
+                item_meta,
+                implied_clauses,
+                generics: self.into_generics(),
+                consts,
+                types,
+                methods,
+                vtable,
+            });
+        }
+
         for &(item_name, ref hax_item) in &items {
             let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
@@ -715,24 +748,9 @@ impl ItemTransCtx<'_, '_> {
                 hax::AssocKind::Const { .. } => TransItemSourceKind::Global,
                 hax::AssocKind::Type { .. } => TransItemSourceKind::Type,
             };
-            let poly_item_def = self.poly_hax_def(item_def_id)?;
-            let (item_src, item_def) = if self.monomorphize() {
-                if poly_item_def.has_own_generics_or_predicates() {
-                    // Skip items that have generics of their own (as rustc defines these). This
-                    // skips GAT and generic methods. This does not skip methods with late-bound
-                    // lifetimes as these aren't considered generic arguments to the method itself
-                    // by rustc.
-                    continue;
-                } else {
-                    let item = def.this().with_def_id(self.hax_state(), item_def_id);
-                    let item_def = self.hax_def(&item)?;
-                    let item_src = TransItemSource::monomorphic(&item, trans_kind);
-                    (item_src, item_def)
-                }
-            } else {
-                let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
-                (item_src, poly_item_def)
-            };
+
+            let item_def = self.poly_hax_def(item_def_id)?;
+            let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
             let attr_info = self.translate_attr_info(&item_def);
 
             match item_def.kind() {
@@ -781,35 +799,33 @@ impl ItemTransCtx<'_, '_> {
                     // don't want that to be part of the method clauses. Hence we remove the first
                     // bound clause and replace its uses with references to the ambient `Self`
                     // clause available in trait declarations.
-                    if !self.monomorphize() {
-                        struct ReplaceSelfVisitor;
-                        impl VarsVisitor for ReplaceSelfVisitor {
-                            fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
-                                if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
-                                    // Replace clause 0 and decrement the others.
-                                    Some(if let Some(new_id) = clause_id.index().checked_sub(1) {
-                                        TraitRefKind::Clause(DeBruijnVar::Bound(
-                                            DeBruijnId::ZERO,
-                                            TraitClauseId::new(new_id),
-                                        ))
-                                    } else {
-                                        TraitRefKind::SelfId
-                                    })
+                    struct ReplaceSelfVisitor;
+                    impl VarsVisitor for ReplaceSelfVisitor {
+                        fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+                            if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
+                                // Replace clause 0 and decrement the others.
+                                Some(if let Some(new_id) = clause_id.index().checked_sub(1) {
+                                    TraitRefKind::Clause(DeBruijnVar::Bound(
+                                        DeBruijnId::ZERO,
+                                        TraitClauseId::new(new_id),
+                                    ))
                                 } else {
-                                    None
-                                }
+                                    TraitRefKind::SelfId
+                                })
+                            } else {
+                                None
                             }
                         }
-                        method.params.visit_vars(&mut ReplaceSelfVisitor);
-                        method.skip_binder.visit_vars(&mut ReplaceSelfVisitor);
-                        method
-                            .params
-                            .trait_clauses
-                            .remove_and_shift_ids(TraitClauseId::ZERO);
-                        method.params.trait_clauses.iter_mut().for_each(|clause| {
-                            clause.clause_id -= 1;
-                        });
                     }
+                    method.params.visit_vars(&mut ReplaceSelfVisitor);
+                    method.skip_binder.visit_vars(&mut ReplaceSelfVisitor);
+                    method
+                        .params
+                        .trait_clauses
+                        .remove_and_shift_ids(TraitClauseId::ZERO);
+                    method.params.trait_clauses.iter_mut().for_each(|clause| {
+                        clause.clause_id -= 1;
+                    });
 
                     // We insert the `Binder<TraitMethod>` unconditionally here; we'll remove the
                     // ones that correspond to unused methods at the end of translation.
@@ -823,9 +839,7 @@ impl ItemTransCtx<'_, '_> {
                         let id = self.register_and_enqueue(item_span, item_src);
                         let mut generics = self.the_only_binder().params.identity_args();
                         // We add an extra `Self: Trait` clause to default consts.
-                        if !self.monomorphize() {
-                            generics.trait_refs.push(self_trait_ref.clone());
-                        }
+                        generics.trait_refs.push(self_trait_ref.clone());
                         GlobalDeclRef {
                             id,
                             generics: Box::new(generics),
@@ -839,8 +853,6 @@ impl ItemTransCtx<'_, '_> {
                         default,
                     });
                 }
-                // Monomorphic traits need no associated types.
-                hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
                 hax::FullDefKind::AssocTy {
                     value,
                     implied_predicates,
@@ -954,10 +966,34 @@ impl ItemTransCtx<'_, '_> {
             );
         }
 
+        let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+        if implemented_trait_def.lang_item == Some(sym::destruct) {
+            raise_error!(
+                self,
+                span,
+                "found an explicit impl of `core::marker::Destruct`, this should not happen"
+            );
+        }
+
         // Explore the associated items
         let mut consts = Vec::new();
         let mut types = Vec::new();
         let mut methods = Vec::new();
+
+        // In mono mode, we do not translate any associated items in trait impl.
+        if self.monomorphize() {
+            return Ok(TraitImpl {
+                def_id,
+                item_meta,
+                impl_trait: implemented_trait,
+                generics: self.into_generics(),
+                implied_trait_refs,
+                consts,
+                types,
+                methods,
+                vtable,
+            });
+        }
 
         for impl_item in impl_items {
             use hax::ImplAssocItemValue::*;
@@ -967,35 +1003,15 @@ impl ItemTransCtx<'_, '_> {
             let item_def_id = impl_item.def_id();
             let item_span = self.def_span(item_def_id);
             //
-            // In --mono mode, we keep only non-polymorphic items; in not-mono mode, we use the
-            // polymorphic item as usual.
-            let poly_item_def = self.poly_hax_def(item_def_id)?;
-            let trans_kind = match poly_item_def.kind() {
+            // In not-mono mode, we use the polymorphic item as usual.
+            let item_def = self.poly_hax_def(item_def_id)?;
+            let trans_kind = match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => TransItemSourceKind::Fun,
                 hax::FullDefKind::AssocConst { .. } => TransItemSourceKind::Global,
                 hax::FullDefKind::AssocTy { .. } => TransItemSourceKind::Type,
                 _ => unreachable!(),
             };
-            let (item_src, item_def) = if self.monomorphize() {
-                if poly_item_def.has_own_generics_or_predicates() {
-                    continue;
-                } else {
-                    let item = match &impl_item.value {
-                        // Real item: we reuse the impl arguments to get a reference to the item.
-                        Provided { def_id, .. } => def.this().with_def_id(self.hax_state(), def_id),
-                        // Defaulted item: we use the implemented trait arguments.
-                        _ => trait_pred
-                            .trait_ref
-                            .with_def_id(self.hax_state(), &impl_item.decl_def_id),
-                    };
-                    let item_src = TransItemSource::monomorphic(&item, trans_kind);
-                    let item_def = self.hax_def_for_item(&item_src.item)?;
-                    (item_src, item_def)
-                }
-            } else {
-                let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
-                (item_src, poly_item_def)
-            };
+            let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
 
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
@@ -1086,9 +1102,7 @@ impl ItemTransCtx<'_, '_> {
                         _ => {
                             let mut generics = implemented_trait.generics.as_ref().clone();
                             // For default consts, we add an extra `Self` predicate.
-                            if !self.monomorphize() {
-                                generics.trait_refs.push(self_predicate.clone());
-                            }
+                            generics.trait_refs.push(self_predicate.clone());
                             generics
                         }
                     };
@@ -1098,8 +1112,6 @@ impl ItemTransCtx<'_, '_> {
                     };
                     consts.push((name, gref));
                 }
-                // Monomorphic traits have no associated types.
-                hax::FullDefKind::AssocTy { .. } if self.monomorphize() => continue,
                 hax::FullDefKind::AssocTy { value, .. } => {
                     let binder_kind = BinderKind::TraitType(trait_id, name.clone());
                     let assoc_ty =
@@ -1153,15 +1165,6 @@ impl ItemTransCtx<'_, '_> {
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
-        }
-
-        let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
-        if implemented_trait_def.lang_item == Some(sym::destruct) {
-            raise_error!(
-                self,
-                span,
-                "found an explicit impl of `core::marker::Destruct`, this should not happen"
-            );
         }
 
         Ok(TraitImpl {
