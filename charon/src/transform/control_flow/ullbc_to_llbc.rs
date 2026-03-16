@@ -958,6 +958,7 @@ enum ReconstructMode {
 }
 
 struct ReconstructCtx<'a> {
+    ctx: &'a TransformCtx,
     cfg: CfgInfo,
     body: &'a src::ExprBody,
     /// The depth of `loop` contexts we may `break`/`continue` to.
@@ -971,7 +972,7 @@ struct ReconstructCtx<'a> {
 }
 
 impl<'a> ReconstructCtx<'a> {
-    fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
+    fn build(ctx: &'a TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
         // Compute all sorts of graph-related information about the control-flow graph, including
         // reachability, the dominator tree, loop entries, and loop/switch exits.
         let cfg = CfgInfo::build(ctx, &src_body.body)?;
@@ -980,6 +981,7 @@ impl<'a> ReconstructCtx<'a> {
         // conditional branchings.
         let allow_duplication = true;
         Ok(ReconstructCtx {
+            ctx,
             cfg,
             body: src_body,
             break_context_depth: 0,
@@ -1016,16 +1018,18 @@ impl<'a> ReconstructCtx<'a> {
     /// Translate a jump to the given block. The span is used to create the jump statement, if any.
     #[tracing::instrument(skip(self), ret, fields(stack = ?self.special_jump_stack))]
     fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
-        match self
+        // Look up target_block in the special jump stack (from the top).
+        let found = self
             .special_jump_stack
-            .iter_mut()
+            .iter()
             .rev()
             .enumerate()
             .find(|(_, j)| j.target_block == target_block)
-        {
-            Some((i, jump_target)) => {
+            .map(|(i, j)| (i, j.kind));
+        match found {
+            Some((i, target_kind)) => {
                 let mk_block = |kind| tgt::Statement::new(span, kind).into_block();
-                match jump_target.kind {
+                match target_kind {
                     // The top of the stack is where control-flow goes naturally, no need to add a
                     // `break`/`continue`.
                     SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
@@ -1039,7 +1043,35 @@ impl<'a> ReconstructCtx<'a> {
                     SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
                         mk_block(tgt::StatementKind::Break(self.break_context_depth - depth))
                     }
-                    SpecialJumpKind::NextBlock => mk_block(tgt::StatementKind::Nop),
+                    SpecialJumpKind::NextBlock => {
+                        // A NextBlock entry means "this block will be translated after the
+                        // current switch." Normally, we should generate a no-op to fall
+                        // through to the code after the switch.
+                        //
+                        // However, if there is a [LoopContinue]/[LoopBreak] between the top of
+                        // the stack and and this [NextBlock] entry, it means we are inside a loop
+                        // nested within a switch. A no-op here would mean "fall through to the
+                        // end of the loop body" (= implicit continue), which is wrong: the original
+                        // code intended to exit the loop and reach the outer continuation block.
+                        // If we fall into this case, it also means that the block we currently
+                        // want to jump to is *not* one of these loop exits, meaning we can't
+                        // insert a break. Because of this, we instead translate the target
+                        // block inline (duplicating it). This is not optimal but at least is
+                        // sound.
+                        //
+                        // Note: there is a complementary fix in `compute_loop_exits` that
+                        // uses the dominator tree to avoid picking the wrong exit in the
+                        // first place. Together, the two fixes provide defense in depth.
+                        let n = self.special_jump_stack.len();
+                        let has_intervening_loop = i > 0
+                            && self.special_jump_stack[(n - i)..n]
+                                .iter()
+                                .any(|j| matches!(j.kind, SpecialJumpKind::LoopContinue(_)));
+                        if has_intervening_loop {
+                            return self.translate_block(target_block);
+                        }
+                        mk_block(tgt::StatementKind::Nop)
+                    }
                 }
             }
             // Translate the block without a jump.
