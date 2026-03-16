@@ -1019,7 +1019,13 @@ impl<'a> ReconstructCtx<'a> {
     #[tracing::instrument(skip(self), ret, fields(stack = ?self.special_jump_stack))]
     fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
         // Look up target_block in the special jump stack (from the top).
-        match self.special_jump_stack.iter().rev().enumerate().find(|(_, j)| j.target_block == target_block) {
+        match self
+            .special_jump_stack
+            .iter()
+            .rev()
+            .enumerate()
+            .find(|(_, j)| j.target_block == target_block)
+        {
             Some((i, jump_target)) => {
                 let mk_block = |kind| tgt::Statement::new(span, kind).into_block();
                 match jump_target.kind {
@@ -1059,7 +1065,7 @@ impl<'a> ReconstructCtx<'a> {
                                 &self.ctx,
                                 span,
                                 "Could not reconstruct the control-flow",
-                                );
+                            );
                         }
                         mk_block(tgt::StatementKind::Nop)
                     }
