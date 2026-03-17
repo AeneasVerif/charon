@@ -792,10 +792,15 @@ where
                                 };
                                 match decl_assoc.kind {
                                     ty::AssocKind::Type { .. } => {
-                                        let ty = tcx
-                                            .type_of(decl_def_id)
-                                            .instantiate(tcx, trait_ref.args)
-                                            .sinto(s);
+                                        let ty = if tcx.generics_of(decl_def_id).is_own_empty() {
+                                            let ty = tcx
+                                                .type_of(decl_def_id)
+                                                .instantiate(tcx, trait_ref.args)
+                                                .sinto(s);
+                                            Some(ty)
+                                        } else {
+                                            None
+                                        };
                                         ImplAssocItemValue::DefaultedTy { ty }
                                     }
                                     ty::AssocKind::Fn { .. } => {
@@ -1024,16 +1029,17 @@ pub enum ImplAssocItemValue {
     },
     /// This is an associated type that reuses the trait declaration default.
     DefaultedTy {
-        /// The default type, with generics properly instantiated. Note that this can be a GAT;
-        /// relevant generics and predicates can be found in `decl_def`.
-        ty: Ty,
+        /// The default type, with generics properly instantiated. `None` if the type has generics
+        /// of its own, because then we'd need to resolve traits but the type doesn't have its own
+        /// `DefId`.
+        ty: Option<Ty>,
     },
     /// This is a non-overriden default method.
     /// FIXME: provide properly instantiated generics.
     DefaultedFn {
-        /// The signature of the method, if we could translate it. `None` if the method as generics
-        /// of its own, because then we'd need to resolve traits but the method doesn't have it's
-        /// own `DefId`.
+        /// The signature of the method, if we could translate it. `None` if the method has
+        /// generics of its own, because then we'd need to resolve traits but the method doesn't
+        /// have its own `DefId`.
         sig: Option<PolyFnSig>,
     },
     /// This is an associated const that reuses the trait declaration default. The default const

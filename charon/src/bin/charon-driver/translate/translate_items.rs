@@ -1073,10 +1073,7 @@ impl ItemTransCtx<'_, '_> {
                             };
                             let method_params = bound_method
                                 .clone()
-                                .substitute_with_self(
-                                    &implemented_trait.generics,
-                                    &self_predicate.kind,
-                                )
+                                .substitute_with_tref(&self_predicate)
                                 .params;
 
                             let generics = self
@@ -1120,11 +1117,41 @@ impl ItemTransCtx<'_, '_> {
                     let assoc_ty =
                         self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
                             let ty = match &impl_item.value {
-                                Provided { .. } => value.as_ref().unwrap(),
-                                DefaultedTy { ty, .. } => ty,
+                                Provided { .. } => {
+                                    ctx.translate_ty(item_span, value.as_ref().unwrap())?
+                                }
+                                DefaultedTy { ty: Some(ty), .. } => {
+                                    ctx.translate_ty(item_span, ty)?
+                                }
+                                DefaultedTy { ty: None, .. } => {
+                                    // Retrieve the type from the trait decl.
+                                    let decl_types =
+                                        match ctx.get_or_translate(implemented_trait.id.into()) {
+                                            Ok(ItemRef::TraitDecl(tdecl)) => tdecl.types.as_slice(),
+                                            _ => &[],
+                                        };
+                                    if let Some(bound_ty) =
+                                        decl_types.iter().find(|m| *m.name() == name)
+                                    {
+                                        bound_ty
+                                            .clone()
+                                            .substitute_with_tref(&self_predicate)
+                                            .apply(&ctx.innermost_generics().identity_args())
+                                            .default
+                                            .unwrap()
+                                    } else {
+                                        let e = register_error!(
+                                            ctx,
+                                            item_span,
+                                            "couldn't translate defaulted GAT; \
+                                            either the corresponding trait decl caused errors \
+                                            or it was declared opaque."
+                                        );
+                                        TyKind::Error(e.msg).into_ty()
+                                    }
+                                }
                                 _ => unreachable!(),
                             };
-                            let ty = ctx.translate_ty(item_span, &ty)?;
                             let implied_trait_refs = ctx.translate_trait_impl_exprs(
                                 item_span,
                                 &impl_item.required_impl_exprs,
