@@ -79,7 +79,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // We use the virtual name because it is always available.
                         // That name normally starts with `/rustc/<hash>/`. For our purposes we hide
                         // the hash.
-                        let virtual_name = name.path(RemapPathScopeComponents::empty());
+                        let virtual_name = name.path(RemapPathScopeComponents::MACRO);
                         let mut components_iter = virtual_name.components();
                         if let Some(
                             [
