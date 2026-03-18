@@ -639,40 +639,15 @@ impl ExitInfo {
             //     if b {
             //         loop {
             //             if b { return true; }  // bb5: dominated by loop header
-            //             break;                  // bb9→bb4: exits the loop
+            //             break;                 // bb9→bb4: exits the loop
             //         }
             //     }
-            //     false                           // bb4: NOT dominated by loop header
+            //     false                          // bb4: NOT dominated by loop header
             // }
             // ```
             //
-            // Without the filter, bb5 (`return true`) ranks higher than bb4 because it is
-            // closer to the loop header. Picking bb5 as the exit incorrectly turns `return
-            // true` into `break`, producing the following wrong reconstruction:
-            // ```
-            // fn f(b: bool) -> bool {
-            //     if b {
-            //         loop {
-            //             if b { break; }   // was `return true` — wrongly turned into break
-            //             // the actual `break` path is lost here
-            //         }
-            //     }
-            //     false
-            // }
-            // ```
-            // The filter discards bb5 (dominated) so that bb4 (not dominated) is correctly
-            // chosen, producing the correct reconstruction:
-            // ```
-            // fn f(b: bool) -> bool {
-            //     if b {
-            //         loop {
-            //             if b { return true; }  // kept as return
-            //             break;                 // correctly reconstructed
-            //         }
-            //     }
-            //     false
-            // }
-            // ```
+            // Without the filter, bb5 (`return true`) ranks higher than bb4 in the exit
+            // candidates because it is closer to the loop header.
             //
             // Note: for simple `while cond { body } after;` loops, ALL exit candidates are
             // dominated by the loop header (every path from the function entry goes through
