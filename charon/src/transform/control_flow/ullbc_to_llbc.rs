@@ -679,6 +679,9 @@ impl ExitInfo {
             // the loop header). In that case `has_non_dominated` is false and the filter is
             // a no-op.
             //
+            // Note: we ignore blocks that can only reach error nodes  when checking
+            // for non-dominated candidates: we do not consider them as real exits.
+            //
             // Remark: rather than filtering, we could modify LoopExitRank to prioritize
             // non-dominated blocks.
 
@@ -696,7 +699,7 @@ impl ExitInfo {
             };
             let has_non_dominated = loop_exits
                 .keys()
-                .any(|bid| !dominated_by_loop.contains(bid));
+                .any(|bid| !dominated_by_loop.contains(bid) && !cfg.block_data[*bid].only_reach_error);
             if has_non_dominated {
                 loop_exits.retain(|bid, _| !dominated_by_loop.contains(bid));
             }
