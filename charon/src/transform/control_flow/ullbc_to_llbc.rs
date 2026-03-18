@@ -657,8 +657,16 @@ impl ExitInfo {
             // Note: we ignore blocks that can only reach error nodes  when checking
             // for non-dominated candidates: we do not consider them as real exits.
             //
-            // Remark: rather than filtering, we could modify LoopExitRank to prioritize
-            // non-dominated blocks.
+            // Example:
+            // ```
+            // for i in 0..5 {
+            //     for j in 0..5 { a[i][j] = f(old[i][j]); }
+            // }
+            // ```
+            // The MIR actually contains two matches because of the iterators, and these
+            // two maches share the same `undefined_behavior` fallthrough block. This block
+            // is not dominated by the inner loop header: so `has_non_dominated` would be true,
+            // causing the filter to discard the inner loop's real exit.
 
             // Computing the set of blocks dominated by the loop - we could do this
             // once and for all and save the information in [CfgInfo] but I doubt
