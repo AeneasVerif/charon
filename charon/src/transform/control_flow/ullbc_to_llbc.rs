@@ -111,7 +111,6 @@ struct CfgInfo {
     /// The blocks whose terminators are a switch are stored here.
     pub switch_blocks: HashSet<src::BlockId>,
     /// Tree of which nodes dominates which other nodes.
-    #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
     pub block_data: IndexVec<BlockId, Box<BlockData>>,
@@ -664,27 +663,20 @@ impl ExitInfo {
             // }
             // ```
             // The MIR actually contains two matches because of the iterators, and these
-            // two maches share the same `undefined_behavior` fallthrough block. This block
-            // is not dominated by the inner loop header: so `has_non_dominated` would be true,
-            // causing the filter to discard the inner loop's real exit.
+            // two matches share the same `undefined_behavior` fallthrough block. This block
+            // is not dominated by the inner loop header, so `has_non_dominated` would be
+            // true, causing the filter to discard the inner loop's real exit.
 
-            // Computing the set of blocks dominated by the loop - we could do this
-            // once and for all and save the information in [CfgInfo] but I doubt
-            // we would save much complexity-wise.
-            let dominated_by_loop = {
-                let mut set = HashSet::new();
-                let mut stack = vec![loop_id];
-                while let Some(bid) = stack.pop() {
-                    set.insert(bid);
-                    stack.extend(&cfg.block_data[bid].immediately_dominates);
-                }
-                set
+            let is_dominated_by_loop = |bid: &BlockId| -> bool {
+                cfg.dominator_tree
+                    .dominators(*bid)
+                    .is_some_and(|mut doms| doms.any(|d| d == loop_id))
             };
             let has_non_dominated = loop_exits
                 .keys()
-                .any(|bid| !dominated_by_loop.contains(bid) && !cfg.block_data[*bid].only_reach_error);
+                .any(|bid| !is_dominated_by_loop(bid) && !cfg.block_data[*bid].only_reach_error);
             if has_non_dominated {
-                loop_exits.retain(|bid, _| !dominated_by_loop.contains(bid));
+                loop_exits.retain(|bid, _| !is_dominated_by_loop(bid));
             }
 
             // We choose the exit with:
