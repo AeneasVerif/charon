@@ -578,6 +578,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 }
                 Attribute::Unknown(raw_attr.clone())
             }
+            // `#[verify::test]`: mark a function for test extraction
+            "test" if args.is_none() => Attribute::Unknown(raw_attr.clone()),
             _ => return Ok(None),
         };
         Ok(Some(parsed))
