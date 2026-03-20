@@ -556,6 +556,10 @@ impl ItemTransCtx<'_, '_> {
         };
         let mut timpl = self.translate_virtual_trait_impl(def_id, item_meta, vimpl)?;
 
+        if self.monomorphize() {
+            return Ok(timpl);
+        }
+
         // Construct the `call_*` method reference.
         let call_fn_name = TraitItemName(target_kind.method_name().into());
         let call_fn_binder = {

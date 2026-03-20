@@ -35,12 +35,18 @@ pub struct TransItemSource {
     pub kind: TransItemSourceKind,
 }
 
-/// Refers to a rustc item. Can be either the polymorphic version of the item, or a
-/// monomorphization of it.
+/// Refers to a rustc item. Can be either the polymorphic version (`Poly`) of the item, or a
+/// monomorphization (`Mono` or `MonoTrait`) of it.
+/// For `MonoTrait` items, their kind should be either `trait decl` or `struct vtable`:
+///     1. the trait is translated as in poly mode, except that we don't translate any of its
+///        associated item lists.
+///     2. the vtable is translated with erased signature of the methods and without generic types.
+///        In other words, there is one "opaque" vtable per trait.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum RustcItem {
     Poly(hax::DefId),
     Mono(hax::ItemRef),
+    MonoTrait(hax::DefId),
 }
 
 /// The kind of a [`TransItemSource`].
@@ -80,6 +86,8 @@ pub enum TransItemSourceKind {
     VTableMethod,
     /// The drop shim function to be used in the vtable as a field, the ID is an `impl`.
     VTableDropShim,
+    VTableDropPreShim,
+    VTableMethodPreShim(TraitDeclId, TraitItemName),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -101,6 +109,13 @@ impl TransItemSource {
         if let RustcItem::Mono(item) = &item {
             if item.has_param {
                 panic!("Item is not monomorphic: {item:?}")
+            }
+        } else if let RustcItem::MonoTrait(_) = &item {
+            if !matches!(
+                kind,
+                TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
+            ) {
+                panic!("Item kind {kind:?} should not be translated as monomorphic_trait")
             }
         }
         Self { item, kind }
@@ -124,6 +139,12 @@ impl TransItemSource {
     /// Refers to the monomorphic version of this item.
     pub fn monomorphic(item: &hax::ItemRef, kind: TransItemSourceKind) -> Self {
         Self::new(RustcItem::Mono(item.clone()), kind)
+    }
+
+    /// Refers to the monomorphic trait (or vtable).
+    /// See the docs of `RustcItem::MonoTrait` for details.
+    pub fn monomorphic_trait(def_id: &hax::DefId, kind: TransItemSourceKind) -> Self {
+        Self::new(RustcItem::MonoTrait(def_id.clone()), kind)
     }
 
     pub fn def_id(&self) -> &hax::DefId {
@@ -178,6 +199,7 @@ impl RustcItem {
         match self {
             RustcItem::Poly(def_id) => def_id,
             RustcItem::Mono(item_ref) => &item_ref.def_id,
+            RustcItem::MonoTrait(def_id) => def_id,
         }
     }
 }
@@ -274,7 +296,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                     | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod
-                    | VTableDropShim => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableDropShim
+                    | VTableDropPreShim
+                    | VTableMethodPreShim(..) => {
+                        ItemId::Fun(self.translated.fun_decls.reserve_slot())
+                    }
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -363,7 +389,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             item.clone()
         };
-        let item_src = TransItemSource::from_item(&item, kind, self.monomorphize());
+        // In mono mode:
+        //   1. If the item being registered is a `trait decl`, we construct a
+        //      `monomorphic_trait` item source.
+        //   2. Otherwise, if the current `item_trans_ctx` is under a `trait decl`
+        //      or a `vtable`, we construct a `poly` item.
+        //   3. In all other cases, we construct a `mono` item.
+        let item_src = if self.monomorphize() && matches!(kind, TransItemSourceKind::TraitDecl) {
+            TransItemSource::monomorphic_trait(&item.def_id, kind)
+        } else {
+            TransItemSource::from_item(
+                &item,
+                kind,
+                self.monomorphize()
+                    && !matches!(
+                        self.item_src.kind,
+                        TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
+                    ),
+            )
+        };
         if enqueue {
             self.register_and_enqueue(span, item_src)
         } else {
@@ -401,7 +445,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
-        let mut generics = if self.monomorphize() {
+        // In mono mode, we keep generics of trait decls.
+        let mut generics = if self.monomorphize() && !matches!(kind, TransItemSourceKind::TraitDecl)
+        {
             GenericArgs::empty()
         } else {
             self.translate_generic_args(span, &hax_item.generic_args, &hax_item.impl_exprs)?
@@ -692,6 +738,7 @@ pub fn translate<'tcx, 'ctx>(
         cached_item_metas: Default::default(),
         cached_names: Default::default(),
         lt_mutability_computer: Default::default(),
+        translated_preshims: Default::default(),
     };
     ctx.register_target_info();
 
