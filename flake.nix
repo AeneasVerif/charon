@@ -27,6 +27,20 @@
         ocamlformat = pkgs.ocamlPackages.ocamlformat_0_27_0;
 
         charon = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; };
+        charon-unwrapped = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; enableWrapping = false; };
+        charon-portable = pkgs.runCommand "charon-portable" { } ''
+          mkdir -p $out/bin
+          cp ${charon-unwrapped}/bin/charon $out/bin/charon
+          cp ${charon-unwrapped}/bin/charon-driver $out/bin/charon-driver
+
+          if [[ "${pkgs.stdenv.hostPlatform.system}" == *"linux"* ]]; then
+            for f in $out/bin/*; do
+              chmod +w $f
+              ${pkgs.patchelf}/bin/patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $f || true
+              ${pkgs.patchelf}/bin/patchelf --remove-rpath $f || true
+            done
+          fi
+        '';
         charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
 
         # Check rust files are correctly formatted.
@@ -87,7 +101,7 @@
       in
       {
         packages = {
-          inherit charon charon-ml rustToolchain;
+          inherit charon charon-unwrapped charon-portable charon-ml rustToolchain;
           inherit (rustc-tests) rustc-tests;
           default = charon;
         };
