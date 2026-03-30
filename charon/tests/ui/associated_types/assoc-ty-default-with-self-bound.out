@@ -1,0 +1,7 @@
+error: Unexpected error: could not find the type variable Self
+ --> tests/ui/associated_types/assoc-ty-default-with-self-bound.rs:7:15
+  |
+7 |         Self: Sized;
+  |               ^^^^^
+
+ERROR Charon failed to translate this code (1 errors)

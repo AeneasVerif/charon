@@ -1,0 +1,7 @@
+error: Unexpected error: could not find the type variable Self
+ --> tests/ui/simple/defaulted-rpitit.2.rs:5:15
+  |
+5 |         Self: Sized,
+  |               ^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
