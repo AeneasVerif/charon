@@ -33,10 +33,6 @@ mod internal_helpers {
                 builder.span(span.clone());
             }
             builder.code(rustc_errors::codes::ErrCode::MAX);
-            builder.note(
-                "⚠️ This is a bug in Hax's frontend.
-Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!",
-            );
             builder.emit()
         }};
     }
