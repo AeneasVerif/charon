@@ -1349,11 +1349,14 @@ pub struct GenericPredicates {
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericPredicates>
-    for crate::traits::Predicates<'tcx>
+    for crate::traits::ItemPredicates<'tcx>
 {
     fn sinto(&self, s: &S) -> GenericPredicates {
         GenericPredicates {
-            predicates: self.as_ref().sinto(s),
+            predicates: self
+                .iter()
+                .map(|pred| (pred.clause.sinto(s), pred.span.sinto(s)))
+                .collect(),
         }
     }
 }

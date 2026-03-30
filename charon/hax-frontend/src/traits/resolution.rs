@@ -174,8 +174,7 @@ fn local_bound_predicates<'tcx>(
         predicates.extend(
             required_predicates(tcx, def_id, options)
                 .iter()
-                .map(|(clause, _span)| *clause)
-                .filter_map(|clause| clause.as_trait_clause()),
+                .filter_map(|pred| pred.clause.as_trait_clause()),
         );
     }
 
@@ -193,10 +192,9 @@ fn parents_trait_predicates<'tcx>(
     let self_trait_ref = pred.to_poly_trait_ref();
     implied_predicates(tcx, pred.def_id(), options)
         .iter()
-        .map(|(clause, _span)| *clause)
         // Substitute with the `self` args so that the clause makes sense in the
         // outside context.
-        .map(|clause| clause.instantiate_supertrait(tcx, self_trait_ref))
+        .map(|pred| pred.clause.instantiate_supertrait(tcx, self_trait_ref))
         .filter_map(|pred| pred.as_trait_clause())
         .collect()
 }
@@ -370,8 +368,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let item_bounds = implied_predicates(tcx, alias_ty.def_id, self.options);
         let item_bounds = item_bounds
             .iter()
-            .map(|(clause, _span)| *clause)
-            .filter_map(|pred| pred.as_trait_clause())
+            .filter_map(|pred| pred.clause.as_trait_clause())
             // Substitute the item generics
             .map(|pred| EarlyBinder::bind(pred).instantiate(tcx, alias_ty.args))
             .enumerate();
@@ -638,15 +635,14 @@ impl<'tcx> PredicateSearcher<'tcx> {
     pub fn resolve_predicates(
         &mut self,
         generics: GenericArgsRef<'tcx>,
-        predicates: utils::Predicates<'tcx>,
+        predicates: utils::ItemPredicates<'tcx>,
         // Call back into hax-related code to display a nice warning.
         warn: &impl Fn(&str),
     ) -> Result<Vec<ImplExpr<'tcx>>, String> {
         let tcx = self.tcx;
         predicates
             .iter()
-            .map(|(clause, _span)| *clause)
-            .filter_map(|clause| clause.as_trait_clause())
+            .filter_map(|pred| pred.clause.as_trait_clause())
             .map(|trait_pred| trait_pred.map_bound(|p| p.trait_ref))
             // Substitute the item generics
             .map(|trait_ref| EarlyBinder::bind(trait_ref).instantiate(tcx, generics))

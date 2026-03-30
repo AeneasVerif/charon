@@ -3,8 +3,8 @@ use crate::{id_table::hash_consing::HashConsed, prelude::*};
 pub mod resolution;
 mod utils;
 pub use utils::{
-    Predicates, ToPolyTraitRef, erase_and_norm, erase_free_regions, implied_predicates, normalize,
-    predicates_defined_on, required_predicates, self_predicate,
+    ItemPredicate, ItemPredicateId, ItemPredicates, ToPolyTraitRef, erase_and_norm,
+    erase_free_regions, implied_predicates, normalize, required_predicates, self_predicate,
 };
 
 pub use resolution::PredicateSearcher;
@@ -282,13 +282,13 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
 fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     generics: ty::GenericArgsRef<'tcx>,
-    predicates: utils::Predicates<'tcx>,
+    predicates: utils::ItemPredicates<'tcx>,
 ) -> Vec<ImplExpr> {
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();
     predicates
         .iter()
-        .map(|(clause, _span)| *clause)
+        .map(|pred| pred.clause)
         .filter_map(|clause| clause.as_trait_clause())
         .map(|clause| clause.to_poly_trait_ref())
         // Substitute the item generics
