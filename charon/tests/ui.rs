@@ -233,8 +233,8 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
 
     // Hide thread id from the output.
     static RE: LazyLock<Regex> =
-        LazyLock::new(|| Regex::new(r"thread 'rustc' \(\d+\) panicked").unwrap());
-    let stderr = RE.replace_all(&stderr, "thread 'rustc' panicked");
+        LazyLock::new(|| Regex::new(r"thread 'rustc' \(\d+\) (panicked|has overflowed)").unwrap());
+    let stderr = RE.replace_all(&stderr, "thread 'rustc' $1");
 
     let test_output: &str = match test_case.magic_comments.test_kind {
         TestKind::KnownPanic => {

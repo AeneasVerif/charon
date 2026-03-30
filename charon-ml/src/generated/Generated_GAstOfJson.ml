@@ -1877,7 +1877,7 @@ and trait_assoc_ty_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* name = trait_item_name_of_json ctx name in
         let* attr_info = attr_info_of_json ctx attr_info in
-        let* default = option_of_json ty_of_json ctx default in
+        let* default = option_of_json trait_assoc_ty_impl_of_json ctx default in
         let* implied_clauses =
           index_map_of_json trait_clause_id_of_json trait_param_of_json ctx
             implied_clauses

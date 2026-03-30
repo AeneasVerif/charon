@@ -221,7 +221,7 @@ type trait_assoc_const = {
 and trait_assoc_ty = {
   name : trait_item_name;
   attr_info : attr_info;
-  default : ty option;
+  default : trait_assoc_ty_impl option;
   implied_clauses : trait_param list;
       (** List of trait clauses that apply to this type. *)
 }
