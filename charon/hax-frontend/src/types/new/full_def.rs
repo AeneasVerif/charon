@@ -325,7 +325,10 @@ pub enum FullDefKind {
         param_env: ParamEnv,
         implied_predicates: GenericPredicates,
         associated_item: AssocItem,
-        value: Option<Ty>,
+        /// The value for this associated type, along with proofs of the required predicates. If
+        /// we're in a trait decl, this has a value iff the type has a default; if we're in a trait
+        /// impl, this has a value iff the impl provides its own value for it.
+        value: Option<(Ty, Vec<ImplExpr>)>,
     },
     /// Opaque type, aka `impl Trait`.
     OpaqueTy,
@@ -678,7 +681,10 @@ where
             implied_predicates: get_implied_predicates(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             value: if tcx.defaultness(def_id).has_value() {
-                Some(type_of_self().sinto(s))
+                let ty = type_of_self();
+                let args = args_or_default();
+                let impl_exprs = solve_item_implied_traits(s, def_id, args);
+                Some((ty.sinto(s), impl_exprs))
             } else {
                 None
             },

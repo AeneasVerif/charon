@@ -1,4 +1,3 @@
-//@ known-failure
 pub trait MyTrait {
     fn foo() -> impl Sized
     where

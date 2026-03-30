@@ -367,7 +367,7 @@ pub struct TraitAssocTy {
     #[drive(skip)]
     #[serde_state(stateless)]
     pub attr_info: AttrInfo,
-    pub default: Option<Ty>,
+    pub default: Option<TraitAssocTyImpl>,
     /// List of trait clauses that apply to this type.
     pub implied_clauses: IndexMap<TraitClauseId, TraitParam>,
 }

@@ -1,4 +1,3 @@
-//@ known-failure
 #![feature(associated_type_defaults)]
 pub trait MyTrait {
     type Ret: Sized

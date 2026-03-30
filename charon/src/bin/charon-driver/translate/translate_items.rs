@@ -876,8 +876,8 @@ impl ItemTransCtx<'_, '_> {
                     consts.push(assoc_const);
                 }
                 hax::FullDefKind::AssocTy {
-                    value,
                     implied_predicates,
+                    value: default,
                     ..
                 } => {
                     let binder_kind = BinderKind::TraitType(def_id, item_name.clone());
@@ -893,9 +893,16 @@ impl ItemTransCtx<'_, '_> {
                             // matter for non-trait-clauses.
                             ctx.innermost_generics_mut().take_predicates_from(preds);
 
-                            let default = value
+                            let default = default
                                 .as_ref()
-                                .map(|ty| ctx.translate_ty(item_span, ty))
+                                .map(|(ty, impl_exprs)| -> Result<_, Error> {
+                                    let ty = ctx.translate_ty(item_span, ty)?;
+                                    let trefs = ctx.translate_trait_impl_exprs(span, impl_exprs)?;
+                                    Ok(TraitAssocTyImpl {
+                                        value: ty,
+                                        implied_trait_refs: trefs,
+                                    })
+                                })
                                 .transpose()?;
                             Ok(TraitAssocTy {
                                 name: item_name.clone(),
@@ -1136,53 +1143,50 @@ impl ItemTransCtx<'_, '_> {
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {
                     let binder_kind = BinderKind::TraitType(trait_id, name.clone());
-                    let assoc_ty =
-                        self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
-                            let ty = match &impl_item.value {
-                                Provided { .. } => {
-                                    ctx.translate_ty(item_span, value.as_ref().unwrap())?
-                                }
-                                DefaultedTy { ty: Some(ty), .. } => {
-                                    ctx.translate_ty(item_span, ty)?
-                                }
-                                DefaultedTy { ty: None, .. } => {
-                                    // Retrieve the type from the trait decl.
-                                    let decl_types =
-                                        match ctx.get_or_translate(implemented_trait.id.into()) {
-                                            Ok(ItemRef::TraitDecl(tdecl)) => tdecl.types.as_slice(),
-                                            _ => &[],
-                                        };
-                                    if let Some(bound_ty) =
-                                        decl_types.iter().find(|m| *m.name() == name)
-                                    {
-                                        bound_ty
-                                            .clone()
-                                            .substitute_with_tref(&self_predicate)
-                                            .apply(&ctx.innermost_generics().identity_args())
-                                            .default
-                                            .unwrap()
-                                    } else {
-                                        let e = register_error!(
-                                            ctx,
-                                            item_span,
-                                            "couldn't translate defaulted GAT; \
-                                            either the corresponding trait decl caused errors \
-                                            or it was declared opaque."
-                                        );
-                                        TyKind::Error(e.msg).into_ty()
-                                    }
-                                }
-                                _ => unreachable!(),
+                    let assoc_ty = match &impl_item.value {
+                        Provided { .. } => self.translate_binder_for_def(
+                            item_span,
+                            binder_kind,
+                            &item_def,
+                            |ctx| {
+                                let (ty, _impl_exprs) = value.as_ref().unwrap();
+                                let ty = ctx.translate_ty(item_span, ty)?;
+                                let implied_trait_refs = ctx.translate_trait_impl_exprs(
+                                    item_span,
+                                    &impl_item.required_impl_exprs,
+                                )?;
+                                Ok(TraitAssocTyImpl {
+                                    value: ty,
+                                    implied_trait_refs,
+                                })
+                            },
+                        )?,
+                        DefaultedTy { .. } => {
+                            // Retrieve the type from the trait decl.
+                            let decl_types =
+                                match self.get_or_translate(implemented_trait.id.into()) {
+                                    Ok(ItemRef::TraitDecl(tdecl)) => tdecl.types.as_slice(),
+                                    _ => &[],
+                                };
+                            let Some(bound_ty) =
+                                decl_types.iter().find(|m| *m.name() == name).cloned()
+                            else {
+                                register_error!(
+                                    self,
+                                    item_span,
+                                    "couldn't translate defaulted associated type; \
+                                    either the corresponding trait decl caused errors \
+                                    or it was declared opaque."
+                                );
+                                continue;
                             };
-                            let implied_trait_refs = ctx.translate_trait_impl_exprs(
-                                item_span,
-                                &impl_item.required_impl_exprs,
-                            )?;
-                            Ok(TraitAssocTyImpl {
-                                value: ty,
-                                implied_trait_refs,
-                            })
-                        })?;
+                            bound_ty
+                                .substitute_with_tref(&self_predicate)
+                                .map(|ty_decl: TraitAssocTy| ty_decl.default.unwrap())
+                        }
+                        _ => unreachable!(),
+                    };
+
                     types.push((name.clone(), assoc_ty));
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
