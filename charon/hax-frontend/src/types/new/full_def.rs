@@ -1334,13 +1334,9 @@ fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     let typing_env = s.typing_env();
     let mut implied_predicates = implied_predicates(tcx, def_id, s.base().options.bounds_options);
     if args.is_some() {
-        implied_predicates.predicates = implied_predicates
-            .iter()
-            .map(|ItemPredicate { clause, span }| {
-                let clause = substitute(tcx, typing_env, args, clause);
-                ItemPredicate { clause, span }
-            })
-            .collect();
+        for pred in implied_predicates.iter_mut() {
+            pred.clause = substitute(tcx, typing_env, args, pred.clause);
+        }
     }
     implied_predicates.sinto(s)
 }

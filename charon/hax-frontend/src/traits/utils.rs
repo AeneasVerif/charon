@@ -48,36 +48,79 @@ pub enum ItemPredicateId {
     TraitSelf,
 }
 
+impl ItemPredicateId {
+    fn new(def_id: DefId, required: bool, next_id: &mut usize) -> Self {
+        let i = *next_id as u32;
+        *next_id += 1;
+        if required {
+            ItemPredicateId::Required(def_id, i)
+        } else {
+            ItemPredicateId::Implied(def_id, i)
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct ItemPredicate<'tcx> {
-    // pub id: ItemPredicateId,
+    pub id: ItemPredicateId,
     pub clause: Clause<'tcx>,
     pub span: Span,
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct ItemPredicates<'tcx> {
-    pub predicates: Vec<ItemPredicate<'tcx>>,
+    required: bool,
+    next_id: usize,
+    predicates: Vec<ItemPredicate<'tcx>>,
 }
 
 impl<'tcx> ItemPredicates<'tcx> {
-    pub fn new(predicates: impl IntoIterator<Item = (Clause<'tcx>, Span)>) -> Self {
+    pub fn new(
+        def_id: DefId,
+        required: bool,
+        predicates: impl IntoIterator<Item = (Clause<'tcx>, Span)>,
+    ) -> Self {
+        let mut next_id = 0;
+        let predicates = predicates
+            .into_iter()
+            .map(|(clause, span)| {
+                let id = ItemPredicateId::new(def_id, required, &mut next_id);
+                ItemPredicate { id, clause, span }
+            })
+            .collect_vec();
         Self {
-            predicates: predicates
-                .into_iter()
-                .map(|(clause, span)| ItemPredicate { clause, span })
-                .collect(),
+            next_id,
+            required,
+            predicates,
         }
+    }
+
+    pub fn add_synthetic_predicates(
+        &mut self,
+        def_id: DefId,
+        predicates: impl IntoIterator<Item = Clause<'tcx>>,
+    ) {
+        self.predicates.extend(predicates.into_iter().map(|clause| {
+            let id = ItemPredicateId::new(def_id, self.required, &mut self.next_id);
+            ItemPredicate {
+                id,
+                clause,
+                span: DUMMY_SP,
+            }
+        }));
     }
 
     pub fn iter(&self) -> impl Iterator<Item = ItemPredicate<'tcx>> {
         self.predicates.iter().copied()
     }
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut ItemPredicate<'tcx>> {
+        self.predicates.iter_mut()
+    }
 }
 
 /// Returns a list of type predicates for the definition with ID `def_id`, including inferred
 /// lifetime constraints. This is the basic list of predicates we use for essentially all items.
-fn predicates_defined_on(tcx: TyCtxt<'_>, def_id: DefId) -> ItemPredicates<'_> {
+fn predicates_defined_on(tcx: TyCtxt<'_>, def_id: DefId, required: bool) -> ItemPredicates<'_> {
     let predicates = tcx
         .explicit_predicates_of(def_id)
         .predicates
@@ -89,7 +132,7 @@ fn predicates_defined_on(tcx: TyCtxt<'_>, def_id: DefId) -> ItemPredicates<'_> {
                 .copied()
                 .map(|(clause, span)| (clause.upcast(tcx), span)),
         );
-    ItemPredicates::new(predicates)
+    ItemPredicates::new(def_id, required, predicates)
 }
 
 /// Add `T: Destruct` bounds for every generic parameter of the given item.
@@ -113,12 +156,8 @@ fn add_destruct_bounds<'tcx>(
         .filter(|param| matches!(param.kind, GenericParamDefKind::Type { .. }))
         .map(|param| tcx.mk_param_from_def(param))
         .map(|ty| Binder::dummy(TraitRef::new(tcx, destruct_trait, [ty])))
-        .map(|tref| tref.upcast(tcx))
-        .map(|clause| ItemPredicate {
-            clause,
-            span: DUMMY_SP,
-        });
-    predicates.predicates.extend(extra_bounds);
+        .map(|tref| tref.upcast(tcx));
+    predicates.add_synthetic_predicates(def_id, extra_bounds);
 }
 
 /// The predicates that must hold to mention this item. E.g.
@@ -152,7 +191,7 @@ pub fn required_predicates<'tcx>(
         | Static { .. }
         | Struct
         | TyAlias
-        | Union => predicates_defined_on(tcx, def_id),
+        | Union => predicates_defined_on(tcx, def_id, true),
         // We consider all predicates on traits to be outputs
         Trait | TraitAlias => Default::default(),
         // `predicates_defined_on` ICEs on other def kinds.
@@ -167,6 +206,7 @@ pub fn required_predicates<'tcx>(
         predicates.predicates.insert(
             0,
             ItemPredicate {
+                id: ItemPredicateId::TraitSelf,
                 clause: self_clause,
                 span: DUMMY_SP,
             },
@@ -212,7 +252,7 @@ pub fn implied_predicates<'tcx>(
     let mut predicates = match tcx.def_kind(def_id) {
         // We consider all predicates on traits to be outputs
         Trait | TraitAlias => {
-            let mut predicates = predicates_defined_on(tcx, def_id);
+            let mut predicates = predicates_defined_on(tcx, def_id, false);
             if options.resolve_destruct {
                 // Add a `T: Drop` bound for every generic, unless the current trait is `Drop` itself, or a
                 // built-in marker trait that we know doesn't need the bound.
@@ -235,25 +275,23 @@ pub fn implied_predicates<'tcx>(
         }
         AssocTy if matches!(tcx.def_kind(parent.unwrap()), Trait) => {
             // `skip_binder` is for the GAT `EarlyBinder`
-            let mut predicates = tcx
-                .explicit_item_bounds(def_id)
-                .skip_binder()
-                .iter()
-                .copied()
-                .map(|(clause, span)| ItemPredicate { clause, span })
-                .collect_vec();
+            let mut predicates = ItemPredicates::new(
+                def_id,
+                false,
+                tcx.explicit_item_bounds(def_id)
+                    .skip_binder()
+                    .iter()
+                    .copied(),
+            );
             if options.resolve_destruct {
                 // Add a `Drop` bound to the assoc item.
                 let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
                 let ty =
                     Ty::new_projection(tcx, def_id, GenericArgs::identity_for_item(tcx, def_id));
                 let tref = Binder::dummy(TraitRef::new(tcx, destruct_trait, [ty]));
-                predicates.push(ItemPredicate {
-                    clause: tref.upcast(tcx),
-                    span: DUMMY_SP,
-                });
+                predicates.add_synthetic_predicates(def_id, [tref.upcast(tcx)]);
             }
-            ItemPredicates { predicates }
+            predicates
         }
         _ => ItemPredicates::default(),
     };
