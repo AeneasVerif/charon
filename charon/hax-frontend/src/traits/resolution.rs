@@ -2,6 +2,7 @@
 //! This module is independent from the rest of hax, in particular it doesn't use its
 //! state-tracking machinery.
 
+use crate::ItemPredicate;
 use crate::options::BoundsOptions;
 use itertools::{Either, Itertools};
 use std::collections::{HashMap, hash_map::Entry};
@@ -12,6 +13,7 @@ use rustc_middle::traits::CodegenObligationError;
 use rustc_middle::ty::{self, *};
 use rustc_trait_selection::traits::ImplSource;
 
+use super::ItemPredicateId;
 use super::utils::{
     self, ToPolyTraitRef, erase_and_norm, implied_predicates, normalize_bound_val,
     required_predicates, self_predicate,
@@ -50,6 +52,7 @@ pub enum ImplExprAtom<'tcx> {
         /// The nth (non-self) predicate found for this item. We use predicates from
         /// `required_predicates` starting from the parentmost item.
         index: usize,
+        id: ItemPredicateId,
         r#trait: PolyTraitRef<'tcx>,
         path: Path<'tcx>,
     },
@@ -132,6 +135,7 @@ pub enum BoundPredicateOrigin {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct AnnotatedTraitPred<'tcx> {
     pub origin: BoundPredicateOrigin,
+    pub id: ItemPredicateId,
     pub clause: PolyTraitPredicate<'tcx>,
 }
 
@@ -160,22 +164,18 @@ fn local_bound_predicates<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: rustc_span::def_id::DefId,
     options: BoundsOptions,
-) -> Vec<PolyTraitPredicate<'tcx>> {
+) -> Vec<ItemPredicate<'tcx>> {
     fn acc_predicates<'tcx>(
         tcx: TyCtxt<'tcx>,
         def_id: rustc_span::def_id::DefId,
         options: BoundsOptions,
-        predicates: &mut Vec<PolyTraitPredicate<'tcx>>,
+        predicates: &mut Vec<ItemPredicate<'tcx>>,
     ) {
         if crate::inherits_parent_clauses(tcx, def_id) {
             let parent = tcx.parent(def_id);
             acc_predicates(tcx, parent, options, predicates);
         }
-        predicates.extend(
-            required_predicates(tcx, def_id, options)
-                .iter()
-                .filter_map(|pred| pred.clause.as_trait_clause()),
-        );
+        predicates.extend(required_predicates(tcx, def_id, options).iter());
     }
 
     let mut predicates = vec![];
@@ -217,6 +217,7 @@ impl<'tcx> Candidate<'tcx> {
             BoundPredicateOrigin::Item(index) => ImplExprAtom::LocalBound {
                 predicate: self.origin.clause.upcast(tcx),
                 index,
+                id: self.origin.id,
                 r#trait,
                 path,
             },
@@ -253,6 +254,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         out.insert_predicates(
             initial_self_pred(tcx, owner_id).map(|clause| AnnotatedTraitPred {
                 origin: BoundPredicateOrigin::SelfPred,
+                id: ItemPredicateId::TraitSelf,
                 clause,
             }),
         );
@@ -265,19 +267,29 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// insertion order.
     pub fn insert_bound_predicates(
         &mut self,
-        clauses: impl IntoIterator<Item = PolyTraitPredicate<'tcx>>,
+        preds: impl IntoIterator<Item = ItemPredicate<'tcx>>,
     ) {
         let mut count = usize::MAX;
         // Swap to avoid borrow conflicts.
         std::mem::swap(&mut count, &mut self.bound_clause_count);
-        self.insert_predicates(clauses.into_iter().map(|clause| {
-            let i = count;
-            count += 1;
-            AnnotatedTraitPred {
-                origin: BoundPredicateOrigin::Item(i),
-                clause,
-            }
-        }));
+        self.insert_predicates(
+            preds
+                .into_iter()
+                .filter_map(|pred| {
+                    pred.clause
+                        .as_trait_clause()
+                        .map(|clause| (pred.id, clause))
+                })
+                .map(|(id, pred)| {
+                    let i = count;
+                    count += 1;
+                    AnnotatedTraitPred {
+                        origin: BoundPredicateOrigin::Item(i),
+                        id,
+                        clause: pred,
+                    }
+                }),
+        );
         std::mem::swap(&mut count, &mut self.bound_clause_count);
     }
 

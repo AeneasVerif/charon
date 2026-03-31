@@ -88,8 +88,9 @@ impl ItemTransCtx<'_, '_> {
         preds: &hax::GenericPredicates,
     ) -> Result<(), Error> {
         // Only the first clause is allowed to have methods.
-        for (clause, _) in preds.predicates.iter().skip(1) {
-            if let hax::ClauseKind::Trait(trait_predicate) = clause.kind.hax_skip_binder_ref() {
+        for pred in preds.predicates.iter().skip(1) {
+            if let hax::ClauseKind::Trait(trait_predicate) = pred.clause.kind.hax_skip_binder_ref()
+            {
                 let trait_def_id = &trait_predicate.trait_ref.def_id;
                 let trait_def = self.poly_hax_def(trait_def_id)?;
                 let has_methods = match trait_def.kind() {
@@ -321,8 +322,9 @@ impl ItemTransCtx<'_, '_> {
         }
 
         // Supertrait fields.
-        for (i, (clause, _span)) in implied_predicates.predicates.iter().enumerate() {
+        for (i, pred) in implied_predicates.predicates.iter().enumerate() {
             // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+            let clause = &pred.clause;
             if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
                 && self.pred_is_for_self(&pred.trait_ref)
             {
@@ -1436,9 +1438,8 @@ impl ItemTransCtx<'_, '_> {
                     implied_predicates, ..}
                     = item_def.kind() {
                     trace!("MONO: show:\n {:?}", item_def.kind());
-                    let predicates = &implied_predicates.predicates;
-                    if let Some((c, _)) = predicates.first() {
-                        if let hax::ClauseKind::Trait(p) = &c.kind.value {
+                    if let Some(pred) = implied_predicates.predicates.first() {
+                        if let hax::ClauseKind::Trait(p) = &pred.clause.kind.value {
                             assoc_types = Some(p.trait_ref.generic_args.clone());
                         }
                     }

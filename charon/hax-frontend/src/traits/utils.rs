@@ -35,7 +35,7 @@ use rustc_span::def_id::DefId;
 use rustc_span::{DUMMY_SP, Span};
 
 /// Uniquely identifies a predicate.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum ItemPredicateId {
     /// A predicate that counts as "input" for an item, e.g. `where` clauses on a function or impl.
     /// Numbered in some arbitrary but consistent order.
@@ -44,6 +44,9 @@ pub enum ItemPredicateId {
     /// that we count `where` clauses on a trait as implied.
     /// Numbered in some arbitrary but consistent order.
     Implied(DefId, u32),
+    /// Predicate inside a non-item binder, e.g. within a `dyn Trait`.
+    /// Numbered in some arbitrary but consistent order.
+    Unmapped(u32),
     /// The special `Self: Trait` clause available within trait `Trait`.
     TraitSelf,
 }
@@ -58,6 +61,11 @@ impl ItemPredicateId {
             ItemPredicateId::Implied(def_id, i)
         }
     }
+    fn new_unmapped(next_id: &mut usize) -> Self {
+        let i = *next_id as u32;
+        *next_id += 1;
+        ItemPredicateId::Unmapped(i)
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -71,7 +79,7 @@ pub struct ItemPredicate<'tcx> {
 pub struct ItemPredicates<'tcx> {
     required: bool,
     next_id: usize,
-    predicates: Vec<ItemPredicate<'tcx>>,
+    pub predicates: Vec<ItemPredicate<'tcx>>,
 }
 
 impl<'tcx> ItemPredicates<'tcx> {
@@ -91,6 +99,21 @@ impl<'tcx> ItemPredicates<'tcx> {
         Self {
             next_id,
             required,
+            predicates,
+        }
+    }
+    pub fn new_unmapped(span: Span, predicates: impl IntoIterator<Item = Clause<'tcx>>) -> Self {
+        let mut next_id = 0;
+        let predicates = predicates
+            .into_iter()
+            .map(|clause| {
+                let id = ItemPredicateId::new_unmapped(&mut next_id);
+                ItemPredicate { id, clause, span }
+            })
+            .collect_vec();
+        Self {
+            next_id,
+            required: true,
             predicates,
         }
     }

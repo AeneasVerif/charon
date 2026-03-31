@@ -73,14 +73,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // Translate the trait predicates first, because associated type constraints may refer to
         // them. E.g. in `fn foo<I: Iterator<Item=usize>>()`, the `I: Iterator` clause must be
         // translated before the `<I as Iterator>::Item = usize` predicate.
-        for (clause, span) in &preds.predicates {
-            if matches!(clause.kind.value, hax::ClauseKind::Trait(_)) {
-                self.translate_predicate(clause, span, origin.clone(), &mut out)?;
+        for pred in &preds.predicates {
+            if matches!(pred.clause.kind.value, hax::ClauseKind::Trait(_)) {
+                self.translate_predicate(&pred.clause, &pred.span, origin.clone(), &mut out)?;
             }
         }
-        for (clause, span) in &preds.predicates {
-            if !matches!(clause.kind.value, hax::ClauseKind::Trait(_)) {
-                self.translate_predicate(clause, span, origin.clone(), &mut out)?;
+        for pred in &preds.predicates {
+            if !matches!(pred.clause.kind.value, hax::ClauseKind::Trait(_)) {
+                self.translate_predicate(&pred.clause, &pred.span, origin.clone(), &mut out)?;
             }
         }
         Ok(out)

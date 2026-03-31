@@ -475,9 +475,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                             implied_predicates, ..
                         } = item_def.kind()
                         {
-                            let predicates = &implied_predicates.predicates;
-                            if let Some((c, _)) = predicates.first() {
-                                if let hax::ClauseKind::Trait(p) = &c.kind.value {
+                            if let Some(pred) = implied_predicates.predicates.first() {
+                                if let hax::ClauseKind::Trait(p) = &pred.clause.kind.value {
                                     assoc_types = Some(p.trait_ref.generic_args.clone());
                                     break;
                                 }

@@ -79,6 +79,7 @@ pub enum ImplExprAtom {
         /// The nth (non-self) predicate found for this item. We use predicates from
         /// `required_predicates` starting from the parentmost item.
         index: usize,
+        id: GenericPredicateId,
         r#trait: Binder<TraitRef>,
         path: Vec<ImplExprPathChunk>,
     },

@@ -861,13 +861,12 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
 ) -> DynBinder<R> {
     fn searcher_for_traits<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
-        clauses: &Vec<ty::Clause<'tcx>>,
+        preds: &ItemPredicates<'tcx>,
     ) -> PredicateSearcher<'tcx> {
         let tcx = s.base().tcx;
         // Populate a predicate searcher that knows about the `dyn` clauses.
         let mut predicate_searcher = s.with_predicate_searcher(|ps| ps.clone());
-        predicate_searcher
-            .insert_bound_predicates(clauses.iter().filter_map(|clause| clause.as_trait_clause()));
+        predicate_searcher.insert_bound_predicates(preds.iter());
         predicate_searcher.set_param_env(
             rustc_trait_selection::traits::normalize_param_env_or_error(
                 tcx,
@@ -876,7 +875,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         s.param_env()
                             .caller_bounds()
                             .iter()
-                            .chain(clauses.iter().copied()),
+                            .chain(preds.iter().map(|pred| pred.clause)),
                     ),
                 ),
                 rustc_trait_selection::traits::ObligationCause::dummy(),
@@ -901,23 +900,21 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
     let new_ty = new_param_ty.to_ty(tcx);
 
     // Set the new type as the `Self` parameter of our predicates.
-    let clauses: Vec<ty::Clause<'_>> = epreds
-        .iter()
-        .map(|epred| epred.with_self_ty(tcx, new_ty))
-        .collect();
+    let predicates = epreds.iter().map(|epred| epred.with_self_ty(tcx, new_ty));
+    let predicates: ItemPredicates<'_> = ItemPredicates::new_unmapped(span, predicates);
 
     // Populate a predicate searcher that knows about the `dyn` clauses.
-    let mut predicate_searcher = searcher_for_traits(s, &clauses);
+    let mut predicate_searcher = searcher_for_traits(s, &predicates);
     let val = f(&mut predicate_searcher, new_ty);
 
     // Using the predicate searcher, translate the predicates. Only the projection predicates need
     // to be handled specially.
-    let predicates = clauses
-        .into_iter()
-        .map(|clause| {
-            let clause = match clause.as_projection_clause() {
+    let predicates = predicates
+        .iter()
+        .map(|pred| {
+            match pred.clause.as_projection_clause() {
                 // Translate normally
-                None => clause.sinto(s),
+                None => pred.sinto(s),
                 // Translate by hand using our predicate searcher. This does the same as
                 // `clause.sinto(s)` except that it uses our predicate searcher to resolve the
                 // projection `ImplExpr`.
@@ -946,10 +943,14 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         value: ClauseKind::Projection(proj),
                         bound_vars,
                     };
-                    Clause { kind }
+                    let clause = Clause { kind };
+                    GenericPredicate {
+                        id: pred.id.sinto(s),
+                        clause,
+                        span,
+                    }
                 }
-            };
-            (clause, span.clone())
+            }
         })
         .collect();
 
@@ -1339,26 +1340,40 @@ impl<T> Binder<T> {
     }
 }
 
-/// Reflects [`ty::GenericPredicates`]
+/// Uniquely identifies a predicate.
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::GenericPredicates<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Default, Hash, PartialEq, Eq)]
-pub struct GenericPredicates {
-    #[value(self.predicates.iter().map(|x| x.sinto(s)).collect())]
-    pub predicates: Vec<(Clause, Span)>,
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicateId, state: S as s)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum GenericPredicateId {
+    /// A predicate that counts as "input" for an item, e.g. `where` clauses on a function or impl.
+    /// Numbered in some arbitrary but consistent order.
+    Required(DefId, u32),
+    /// A predicate that counts as "output" of an item, e.g. supertrait clauses in a trait. Note
+    /// that we count `where` clauses on a trait as implied.
+    /// Numbered in some arbitrary but consistent order.
+    Implied(DefId, u32),
+    /// Predicate inside a non-item binder, e.g. within a `dyn Trait`.
+    /// Numbered in some arbitrary but consistent order.
+    Unmapped(u32),
+    /// The special `Self: Trait` clause available within trait `Trait`.
+    TraitSelf,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericPredicates>
-    for crate::traits::ItemPredicates<'tcx>
-{
-    fn sinto(&self, s: &S) -> GenericPredicates {
-        GenericPredicates {
-            predicates: self
-                .iter()
-                .map(|pred| (pred.clause.sinto(s), pred.span.sinto(s)))
-                .collect(),
-        }
-    }
+#[derive(AdtInto)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicate<'tcx>, state: S as s)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct GenericPredicate {
+    pub id: GenericPredicateId,
+    pub clause: Clause,
+    pub span: Span,
+}
+
+/// Reflects [`ty::GenericPredicates`]
+#[derive(AdtInto)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicates<'tcx>, state: S as s)]
+#[derive(Clone, Debug, Default, Hash, PartialEq, Eq)]
+pub struct GenericPredicates {
+    pub predicates: Vec<GenericPredicate>,
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>, T1, T2> SInto<S, Binder<T2>> for ty::Binder<'tcx, T1>
