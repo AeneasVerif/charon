@@ -4,7 +4,8 @@ use anyhow::bail;
 use assert_cmd::prelude::CommandCargoExt;
 use itertools::Itertools;
 use libtest_mimic::Trial;
-use std::{error::Error, ffi::OsStr, path::PathBuf, process::Command};
+use regex::Regex;
+use std::{error::Error, ffi::OsStr, path::PathBuf, process::Command, sync::LazyLock};
 
 use util::compare_or_overwrite;
 mod util;
@@ -66,7 +67,11 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     } else {
         output.stderr
     };
+    // Hide thread id from the output.
+    static RE: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"thread '(\w+)' \(\d+\) (panicked|has overflowed)").unwrap());
     let mut output = String::from_utf8(output.clone())?;
+    output = RE.replace_all(&output, "thread '$1' $2").to_string();
     match test_case.expect {
         Success if !success => bail!("Command: `{cmd_str}`\nCompilation failed: {output}"),
         Failure if success => {
@@ -137,6 +142,20 @@ fn main() -> Result<(), Box<dyn Error>> {
             root.join("workspace"),
             &["--extract-opaque-bodies".to_owned()],
             &["--package=crate2".to_owned()],
+            Success,
+        ),
+        mktest(
+            "issue-396-lib-bin",
+            root.join("issue-396-lib-bin"),
+            &[],
+            &[],
+            Failure,
+        ),
+        mktest(
+            "issue-412-dup-deps",
+            root.join("issue-412-dup-deps"),
+            &["--include=mydup".to_owned()],
+            &[],
             Success,
         ),
     ];
