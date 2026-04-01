@@ -91,7 +91,7 @@ Example with `--opaque crate::module --include crate::module::_`:
 Note: pattern matching currently has limitations — e.g. it parses `u64` as a path instead of the built-in type, and it is not possible to filter a trait impl (only its methods)[^6].
 
 [^1]: `charon/src/ast/meta.rs:191`
-[^2]: `charon/src/bin/charon-driver/translate/translate_meta.rs:713-722`
+[^2]: `charon/src/bin/charon-driver/translate/translate_meta.rs:776-785`
 [^3]: `charon/src/options.rs:534-570`
 [^4]: `charon/src/name_matcher/mod.rs:51-125`
 [^5]: `charon/src/name_matcher/mod.rs:189-221`
