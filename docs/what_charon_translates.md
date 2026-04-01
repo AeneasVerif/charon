@@ -8,7 +8,7 @@ Each item has an **opacity** level[^1]:
 
 1. **Transparent** — the item is fully translated.
 2. **Foreign** — the default for items outside the current crate. Translation depends on normal Rust visibility: for types, translate fully if it's a struct with all-public fields or an enum; for other items this is equivalent to Opaque.
-3. **Opaque** — only the name and signature are translated, not the contents. For functions and globals, the body is not translated. For types (structs, enums, unions), the fields/variants are not translated. For traits and trait impls, this doesn't change anything. For modules, the contents are not explored (but items referenced from elsewhere are still translated).
+3. **Opaque** — only the name and signature are translated, not the contents. For functions and globals, the body is not translated. For types (structs, enums, unions), the fields/variants are not translated. For traits and trait impls, the default method is  only translated if it is used somewhere else. For modules, the contents are not explored (but items referenced from elsewhere are still translated).
 4. **Invisible** — nothing is translated for this item. The corresponding map will not have an entry for the item ID. Useful when even the signature causes errors.
 
 ## Selection process
@@ -36,18 +36,16 @@ The source-level attributes `#[charon::opaque]` and `#[charon::exclude]` set the
 
 When both a source annotation and a CLI pattern apply, the more opaque of the two wins (`Transparent < Foreign < Opaque < Invisible`). This means `--include` **cannot** override a `#[charon::opaque]` annotation.
 
-Note: `#[charon::opaque]` operates at the MIR level, before Charon's item selection. This is necessary when Charon panics during MIR processing of a function body — CLI flags only take effect after MIR is available, so they cannot prevent such panics.
-
 ### CLI flags
 
 - **`--start-from <PATTERN>`** — Entry points for translation. Can be specified multiple times. Default: `crate` (the entire current crate).
 - **`--start-from-attribute[=<ATTR>]`** — Use items annotated with a given attribute as entry points. Default attribute if none specified: `verify::start_from`.
-- **`--start-from-pub`** — Use all `pub` items as entry points.
+- **`--start-from-pub`** — Use all `pub` items from the current crate as entry points
 - **`--include <PATTERN>`** — Set matched items to **transparent**.
 - **`--opaque <PATTERN>`** — Set matched items to **opaque**.
 - **`--exclude <PATTERN>`** — Set matched items to **invisible**.
 - **`--extract-opaque-bodies`** — Alias for `--include *`. Makes all items transparent.
-- **`--translate-all-methods`** — Include provided trait methods even if unused.
+- **`--translate-all-methods`** — Include provided trait methods even if unused. Equivalent to making all trait declarations transparent.  
 
 ### Pattern list
 
@@ -71,8 +69,11 @@ Patterns use a name-matcher syntax (`charon/src/name_matcher/`). Examples:
 - `crate::module::item::_` — matches only the subitems (not the item itself)
 - `core::convert::{impl core::convert::Into<_> for _}` — a specific trait impl
 - `_` or `*` — glob, matches any single path segment
+- `{impl core::convert::Into<_> for _}` works without the core::convert prefix, in this case we do a global search for impls.
 
 Patterns are **prefix matches**: `crate::foo` matches `crate::foo`, `crate::foo::bar`, `crate::foo::bar::baz`, etc.[^4]
+
+Currently matching on inherent impl blocks isn't supported, writing `crate::module::_::method` is the standard workaround.
 
 ### Precedence
 
