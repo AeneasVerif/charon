@@ -662,19 +662,10 @@ where
                 ),
             }
         }
-        RDefKind::TyAlias { .. } => {
-            let s = &s.with_base(Base {
-                // Rust doesn't enforce bounds on generic parameters in type aliases. Thus, when
-                // translating type aliases, we need to disable trait resolution errors. For more
-                // details, please see https://github.com/hacspec/hax/issues/707.
-                silence_resolution_errors: true,
-                ..s.base()
-            });
-            FullDefKind::TyAlias {
-                param_env: get_param_env(s, args),
-                ty: type_of_self().sinto(s),
-            }
-        }
+        RDefKind::TyAlias { .. } => FullDefKind::TyAlias {
+            param_env: get_param_env(s, args),
+            ty: type_of_self().sinto(s),
+        },
         RDefKind::ForeignTy => FullDefKind::ForeignTy,
         RDefKind::AssocTy { .. } => FullDefKind::AssocTy {
             param_env: get_param_env(s, args),

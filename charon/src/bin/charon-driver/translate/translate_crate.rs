@@ -696,7 +696,7 @@ pub fn translate<'tcx, 'ctx>(
     let mut error_ctx = ErrorCtx::new(!cli_options.abort_on_error, cli_options.error_on_warnings);
     let translate_options = TranslateOptions::new(&mut error_ctx, cli_options);
 
-    let mut hax_state = hax::state::State::new(
+    let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
             item_ref_use_concrete_impl: true,
@@ -707,9 +707,6 @@ pub fn translate<'tcx, 'ctx>(
             },
         },
     );
-    // This suppresses warnings when trait resolution fails. We don't need them since we emit our
-    // own.
-    hax_state.base.silence_resolution_errors = true;
 
     let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
         .to_def_id()

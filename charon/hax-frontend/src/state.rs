@@ -121,8 +121,6 @@ mod types {
         pub opt_def_id: Option<rustc_hir::def_id::DefId>,
         pub cache: Rc<RefCell<GlobalCache<'tcx>>>,
         pub tcx: ty::TyCtxt<'tcx>,
-        /// Silence the warnings in case of trait resolution failure.
-        pub silence_resolution_errors: bool,
     }
 
     impl<'tcx> Base<'tcx> {
@@ -135,7 +133,6 @@ mod types {
                 // `opt_def_id` is used in `utils` for error reporting
                 opt_def_id: None,
                 local_ctx: Rc::new(RefCell::new(LocalContextS::new())),
-                silence_resolution_errors: false,
             }
         }
     }
