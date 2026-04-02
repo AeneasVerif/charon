@@ -870,6 +870,8 @@ struct UpdateItemBody<'a> {
     /// remporarily remove them for in-place modification.
     ctx: &'a TransformCtx,
     span: Span,
+    // Whether the current item is a type alias, which affects error messages.
+    is_type_alias: bool,
     item_modifications: &'a HashMap<GenericsSource, ItemModifications>,
     // It's a reversed stack, for when we go under binders.
     type_replacements: BindingStack<TypeConstraintSet>,
@@ -996,22 +998,32 @@ impl UpdateItemBody<'_> {
             let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
                 ty.clone()
             } else {
-                let fmt_ctx = &self.ctx.into_fmt();
-                let item_name = target.item_name(&self.ctx.translated, fmt_ctx);
-                let base_tref = base_tref.with_ctx(fmt_ctx);
-                let args = args.with_ctx(fmt_ctx);
-                register_error!(
-                    self.ctx,
-                    self.span,
-                    "Could not compute the value of {path} (on {base_tref}) needed to update \
-                    item reference {item_name}{args}.\
-                    \nConstraints in scope:\n{}",
-                    self.type_replacements
-                        .iter()
-                        .flat_map(|x| x.iter())
-                        .map(|(path, ty)| format!("  - {path} = {}", ty.with_ctx(fmt_ctx)))
-                        .join("\n"),
-                );
+                if self.is_type_alias {
+                    register_error!(
+                        self.ctx,
+                        self.span,
+                        "Could not compute the value of {path}: type aliases are allowed to \
+                        make use of unproved trait facts. To fix this, add the necessary \
+                        trait bound to the type alias, ignoring the `type_alias_bounds` warning."
+                    );
+                } else {
+                    let fmt_ctx = &self.ctx.into_fmt();
+                    let item_name = target.item_name(&self.ctx.translated, fmt_ctx);
+                    let base_tref = base_tref.with_ctx(fmt_ctx);
+                    let args = args.with_ctx(fmt_ctx);
+                    register_error!(
+                        self.ctx,
+                        self.span,
+                        "Could not compute the value of {path} (on {base_tref}) needed to update \
+                        item reference {item_name}{args}.\
+                        \nConstraints in scope:\n{}",
+                        self.type_replacements
+                            .iter()
+                            .flat_map(|x| x.iter())
+                            .map(|(path, ty)| format!("  - {path} = {}", ty.with_ctx(fmt_ctx)))
+                            .join("\n"),
+                    );
+                }
                 TyKind::Error(format!("Can't compute {path}")).into_ty()
             };
             args.types.push(ty);
@@ -1353,9 +1365,11 @@ impl TransformPass for Transform {
 
             // Update the rest of the items: all the `GenericArgs` and the non-top-level binders
             // (trait methods and inherent impls in `Name`s).
+            let is_type_alias = matches!(&item, ItemRefMut::Type(tdecl) if matches!(tdecl.kind, TypeDeclKind::Alias(..)));
             let _ = item.drive_mut(&mut UpdateItemBody {
                 ctx,
                 span,
+                is_type_alias,
                 item_modifications: &item_modifications,
                 type_replacements: BindingStack::new(type_replacements),
             });
