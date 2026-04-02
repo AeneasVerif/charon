@@ -43,15 +43,21 @@ impl UllbcPass for Transform {
                             // and adding its blocks to the outer body. The inner body's return
                             // local becomes a normal local that we can read from. We redirect some
                             // gotos so that the inner body is executed before the current block.
-                            let mut inner_body = inner_body.clone().substitute(&gref.generics);
+                            let mut inner_body = inner_body.clone();
+                            let inner_bound = inner_body.bound_body_regions;
 
-                            // Shift all the body regions in the inner body.
+                            // Shift all the body regions in the inner body BEFORE substitution,
+                            // so that we only shift the inner body's own regions.
                             inner_body.dyn_visit_mut(|r: &mut Region| {
                                 if let Region::Body(v) = r {
                                     *v += outer_body.bound_body_regions;
                                 }
                             });
-                            outer_body.bound_body_regions += inner_body.bound_body_regions;
+                            outer_body.bound_body_regions += inner_bound;
+
+                            // Now substitute generics. This may inject outer-body Region::Body
+                            // IDs, which is correct since they don't need shifting.
+                            let mut inner_body = inner_body.substitute(&gref.generics);
 
                             // The init function of a global assumes the return place is live;
                             // this is not the case once we inline it

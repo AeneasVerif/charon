@@ -1,4 +1,3 @@
-//@ known-panic
 //@ charon-args=--include std::io::_::advance_slices --include core::slice::_::default
 use std::io::IoSlice;
 
