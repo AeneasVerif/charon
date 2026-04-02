@@ -197,11 +197,7 @@ pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     trait_ref: rustc_middle::ty::PolyTraitRef<'tcx>,
 ) -> ImplExpr {
-    let warn = |msg: &str| {
-        if !s.base().silence_resolution_errors {
-            crate::warning!(s, "{}", msg)
-        }
-    };
+    let warn = |_msg: &str| {};
     if let Some(impl_expr) = s.with_cache(|cache| cache.impl_exprs.get(&trait_ref).cloned()) {
         return impl_expr;
     }
