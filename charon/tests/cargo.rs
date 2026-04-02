@@ -67,11 +67,16 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     } else {
         output.stderr
     };
+    let output = String::from_utf8(output.clone())?;
     // Hide thread id from the output.
     static RE: LazyLock<Regex> =
         LazyLock::new(|| Regex::new(r"thread '(\w+)' \(\d+\) (panicked|has overflowed)").unwrap());
-    let mut output = String::from_utf8(output.clone())?;
-    output = RE.replace_all(&output, "thread '$1' $2").to_string();
+    let output = RE.replace_all(&output, "thread '$1' $2");
+    // Hide rlib hashes from the output.
+    static RE2: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[a-f0-9]+.rlib").unwrap());
+    let mut output = RE2
+        .replace_all(&output, "0123456789abcdef.rlib")
+        .to_string();
     match test_case.expect {
         Success if !success => bail!("Command: `{cmd_str}`\nCompilation failed: {output}"),
         Failure if success => {

@@ -1,4 +1,4 @@
-error: extern location for issue_396_lib_bin does not exist: ./tests/cargo/issue-396-lib-bin/target/x86_64-unknown-linux-gnu/debug/deps/libissue_396_lib_bin-0829ccfdf82938a1.rlib
+error: extern location for issue_396_lib_bin does not exist: ./tests/cargo/issue-396-lib-bin/target/x86_64-unknown-linux-gnu/debug/deps/libissue_396_lib_bin-0123456789abcdef.rlib
  --> src/main.rs:2:20
   |
 2 |     println!("{}", issue_396_lib_bin::hello());
