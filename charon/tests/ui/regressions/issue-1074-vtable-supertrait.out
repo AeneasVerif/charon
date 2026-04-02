@@ -1,0 +1,11 @@
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:1125:56:
+index out of bounds: the len is 2 but the index is 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::{impl#0}`.
+ --> tests/ui/regressions/issue-1074-vtable-supertrait.rs:9:1
+  |
+9 | impl MyTrait for MyStruct {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
