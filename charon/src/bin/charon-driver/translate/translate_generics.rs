@@ -25,10 +25,6 @@ use charon_lib::ids::IndexVec;
 pub(crate) struct BindingLevel {
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
-    /// Whether this binder corresponds to an item (method, type) or not (`for<..>` predicate, `fn`
-    /// pointer, etc). This indicates whether it corresponds to a rustc `ParamEnv` and therefore
-    /// whether we should resolve rustc variables there.
-    pub is_item_binder: bool,
     /// Rust makes the distinction between early and late-bound region parameters. We do not make
     /// this distinction, and merge early and late bound regions. For details, see:
     /// <https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/>
@@ -68,9 +64,8 @@ fn translate_region_name(s: hax::Symbol) -> Option<String> {
 }
 
 impl BindingLevel {
-    pub(crate) fn new(is_item_binder: bool) -> Self {
+    pub(crate) fn new() -> Self {
         Self {
-            is_item_binder,
             ..Default::default()
         }
     }
@@ -436,7 +431,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: &TransItemSourceKind,
     ) -> Result<(), Error> {
         assert!(self.binding_levels.len() == 0);
-        self.binding_levels.push(BindingLevel::new(true));
+        self.binding_levels.push(BindingLevel::new());
         self.push_generics_for_def(span, def)?;
         self.push_late_bound_generics_for_def(span, def)?;
 
@@ -475,17 +470,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Push a new binding level, run the provided function inside it, then return the bound value.
-    pub(crate) fn inside_binder<F, U>(
-        &mut self,
-        kind: BinderKind,
-        is_item_binder: bool,
-        f: F,
-    ) -> Result<Binder<U>, Error>
+    pub(crate) fn inside_binder<F, U>(&mut self, kind: BinderKind, f: F) -> Result<Binder<U>, Error>
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
         assert!(!self.binding_levels.is_empty());
-        self.binding_levels.push(BindingLevel::new(is_item_binder));
+        self.binding_levels.push(BindingLevel::new());
 
         // Call the continuation. Important: do not short-circuit on error here.
         let res = f(self);
@@ -515,7 +505,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(&def.def_id());
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
-        let ret = self.inside_binder(kind, true, |this| {
+        let ret = self.inside_binder(kind, |this| {
             this.push_generics_for_def_without_parents(span, def)?;
             this.push_late_bound_generics_for_def(span, def)?;
             this.innermost_binder().params.check_consistency();
@@ -537,7 +527,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self, &T) -> Result<U, Error>,
     {
-        let binder = self.inside_binder(BinderKind::Other, false, |this| {
+        let binder = self.inside_binder(BinderKind::Other, |this| {
             this.innermost_binder_mut()
                 .push_params_from_binder(binder.rebind(()))?;
             f(this, binder.hax_skip_binder_ref())

@@ -49,9 +49,6 @@ pub enum ImplExprAtom<'tcx> {
     /// A context-bound clause like `where T: Trait`.
     LocalBound {
         predicate: Predicate<'tcx>,
-        /// The nth (non-self) predicate found for this item. We use predicates from
-        /// `required_predicates` starting from the parentmost item.
-        index: usize,
         id: ItemPredicateId,
         r#trait: PolyTraitRef<'tcx>,
         path: Path<'tcx>,
@@ -127,9 +124,8 @@ pub enum BoundPredicateOrigin {
     /// The `Self: Trait` predicate implicitly present within trait declarations (note: we
     /// don't add it for trait implementations, should we?).
     SelfPred,
-    /// The nth (non-self) predicate found for this item. We use predicates from
-    /// `required_predicates` starting from the parentmost item.
-    Item(usize),
+    /// A predicate found for this item.
+    Item,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -214,9 +210,8 @@ impl<'tcx> Candidate<'tcx> {
         let r#trait = self.origin.clause.to_poly_trait_ref();
         match self.origin.origin {
             BoundPredicateOrigin::SelfPred => ImplExprAtom::SelfImpl { r#trait, path },
-            BoundPredicateOrigin::Item(index) => ImplExprAtom::LocalBound {
+            BoundPredicateOrigin::Item => ImplExprAtom::LocalBound {
                 predicate: self.origin.clause.upcast(tcx),
-                index,
                 id: self.origin.id,
                 r#trait,
                 path,
@@ -234,8 +229,6 @@ pub struct PredicateSearcher<'tcx> {
     candidates: HashMap<PolyTraitPredicate<'tcx>, Candidate<'tcx>>,
     /// Resolution options.
     options: BoundsOptions,
-    /// Count the number of bound clauses in scope; used to identify clauses uniquely.
-    bound_clause_count: usize,
 }
 
 impl<'tcx> PredicateSearcher<'tcx> {
@@ -249,7 +242,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
             },
             candidates: Default::default(),
             options,
-            bound_clause_count: 0,
         };
         out.insert_predicates(
             initial_self_pred(tcx, owner_id).map(|clause| AnnotatedTraitPred {
@@ -269,28 +261,15 @@ impl<'tcx> PredicateSearcher<'tcx> {
         &mut self,
         preds: impl IntoIterator<Item = ItemPredicate<'tcx>>,
     ) {
-        let mut count = usize::MAX;
-        // Swap to avoid borrow conflicts.
-        std::mem::swap(&mut count, &mut self.bound_clause_count);
-        self.insert_predicates(
-            preds
-                .into_iter()
-                .filter_map(|pred| {
-                    pred.clause
-                        .as_trait_clause()
-                        .map(|clause| (pred.id, clause))
+        self.insert_predicates(preds.into_iter().filter_map(|pred| {
+            pred.clause
+                .as_trait_clause()
+                .map(|clause| AnnotatedTraitPred {
+                    origin: BoundPredicateOrigin::Item,
+                    id: pred.id,
+                    clause,
                 })
-                .map(|(id, pred)| {
-                    let i = count;
-                    count += 1;
-                    AnnotatedTraitPred {
-                        origin: BoundPredicateOrigin::Item(i),
-                        id,
-                        clause: pred,
-                    }
-                }),
-        );
-        std::mem::swap(&mut count, &mut self.bound_clause_count);
+        }));
     }
 
     /// Override the param env; we use this when resolving `dyn` predicates to add more clauses to

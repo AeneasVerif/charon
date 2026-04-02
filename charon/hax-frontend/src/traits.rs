@@ -76,9 +76,6 @@ pub enum ImplExprAtom {
     Concrete(ItemRef),
     /// A context-bound clause like `where T: Trait`.
     LocalBound {
-        /// The nth (non-self) predicate found for this item. We use predicates from
-        /// `required_predicates` starting from the parentmost item.
-        index: usize,
         id: GenericPredicateId,
         r#trait: Binder<TraitRef>,
         path: Vec<ImplExprPathChunk>,

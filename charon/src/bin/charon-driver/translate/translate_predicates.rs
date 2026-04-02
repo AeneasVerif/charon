@@ -78,25 +78,28 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             assert_eq!(prev, None);
         }
 
-        let preds = self.translate_predicates(preds, origin)?;
-        self.innermost_generics_mut().take_predicates_from(preds);
+        self.translate_predicates(preds, origin, None)?;
         Ok(())
     }
 
-    /// Translates the given predicates. Returns a `GenericParams` that only contains predicates.
-    ///
-    /// This function should be called **after** we translated the generics (type parameters,
-    /// regions...).
+    /// Translates the given predicates. This function should be called **after** we translated the
+    /// generics (type parameters, regions...).
     pub(crate) fn translate_predicates(
         &mut self,
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
-    ) -> Result<GenericParams, Error> {
-        let mut out = GenericParams::empty();
+        // Either put clauses there or in the innermost binder.
+        mut trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
+    ) -> Result<(), Error> {
         for pred in &preds.predicates {
-            self.translate_predicate(&pred.clause, &pred.span, origin.clone(), &mut out)?;
+            self.translate_predicate(
+                &pred.clause,
+                &pred.span,
+                origin.clone(),
+                trait_clauses.as_deref_mut(),
+            )?;
         }
-        Ok(out)
+        Ok(())
     }
 
     pub(crate) fn translate_poly_trait_ref(
@@ -142,7 +145,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         clause: &hax::Clause,
         hspan: &hax::Span,
         origin: PredicateOrigin,
-        into: &mut GenericParams,
+        // Either put clauses there or in the innermost binder.
+        trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
     ) -> Result<(), Error> {
         use hax::ClauseKind;
         trace!("{:?}", clause);
@@ -152,12 +156,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     ctx.translate_trait_predicate(span, trait_pred)
                 })?;
-                into.trait_clauses.push_with(|clause_id| TraitParam {
-                    clause_id,
-                    origin,
-                    span: Some(span),
-                    trait_: pred,
-                });
+                trait_clauses
+                    .unwrap_or(&mut self.innermost_generics_mut().trait_clauses)
+                    .push_with(|clause_id| TraitParam {
+                        clause_id,
+                        origin,
+                        span: Some(span),
+                        trait_: pred,
+                    });
             }
             ClauseKind::RegionOutlives(p) => {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
@@ -165,7 +171,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let r1 = ctx.translate_region(span, &p.rhs)?;
                     Ok(OutlivesPred(r0, r1))
                 })?;
-                into.regions_outlive.push(pred);
+                self.innermost_generics_mut().regions_outlive.push(pred);
             }
             ClauseKind::TypeOutlives(p) => {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
@@ -173,7 +179,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let r = ctx.translate_region(span, &p.rhs)?;
                     Ok(OutlivesPred(ty, r))
                 })?;
-                into.types_outlive.push(pred);
+                self.innermost_generics_mut().types_outlive.push(pred);
             }
             ClauseKind::Projection(p) => {
                 // This is used to express constraints over associated types.
@@ -192,7 +198,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         ty,
                     })
                 })?;
-                into.trait_type_constraints.push(pred);
+                self.innermost_generics_mut()
+                    .trait_type_constraints
+                    .push(pred);
             }
             ClauseKind::ConstArgHasType(..) => {
                 // These are used for trait resolution to get access to the type of const generics.
