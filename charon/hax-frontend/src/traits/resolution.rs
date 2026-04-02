@@ -117,20 +117,8 @@ pub struct ImplExpr<'tcx> {
     pub r#impl: ImplExprAtom<'tcx>,
 }
 
-/// Items have various predicates in scope. `path_to` uses them as a starting point for trait
-/// resolution. This tracks where each of them comes from.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub enum BoundPredicateOrigin {
-    /// The `Self: Trait` predicate implicitly present within trait declarations (note: we
-    /// don't add it for trait implementations, should we?).
-    SelfPred,
-    /// A predicate found for this item.
-    Item,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub struct AnnotatedTraitPred<'tcx> {
-    pub origin: BoundPredicateOrigin,
+pub struct ItemClause<'tcx> {
     pub id: ItemPredicateId,
     pub clause: PolyTraitPredicate<'tcx>,
 }
@@ -201,16 +189,18 @@ fn parents_trait_predicates<'tcx>(
 struct Candidate<'tcx> {
     path: Path<'tcx>,
     pred: PolyTraitPredicate<'tcx>,
-    origin: AnnotatedTraitPred<'tcx>,
+    origin: ItemClause<'tcx>,
 }
 
 impl<'tcx> Candidate<'tcx> {
-    fn into_impl_expr(self, tcx: TyCtxt<'tcx>) -> ImplExprAtom<'tcx> {
+    fn into_impl_expr(self, tcx: TyCtxt<'tcx>, implicit_self_clause: bool) -> ImplExprAtom<'tcx> {
         let path = self.path;
         let r#trait = self.origin.clause.to_poly_trait_ref();
-        match self.origin.origin {
-            BoundPredicateOrigin::SelfPred => ImplExprAtom::SelfImpl { r#trait, path },
-            BoundPredicateOrigin::Item => ImplExprAtom::LocalBound {
+        match self.origin.id {
+            ItemPredicateId::TraitSelf if implicit_self_clause => {
+                ImplExprAtom::SelfImpl { r#trait, path }
+            }
+            _ => ImplExprAtom::LocalBound {
                 predicate: self.origin.clause.upcast(tcx),
                 id: self.origin.id,
                 r#trait,
@@ -229,11 +219,15 @@ pub struct PredicateSearcher<'tcx> {
     candidates: HashMap<PolyTraitPredicate<'tcx>, Candidate<'tcx>>,
     /// Resolution options.
     options: BoundsOptions,
+    /// Whether we're in a trait declaration context where an implicit `Self: Trait` clause is
+    /// accessible.
+    implicit_self_clause: bool,
 }
 
 impl<'tcx> PredicateSearcher<'tcx> {
     /// Initialize the elaborator with the predicates accessible within this item.
     pub fn new_for_owner(tcx: TyCtxt<'tcx>, owner_id: DefId, options: BoundsOptions) -> Self {
+        let initial_self_pred = initial_self_pred(tcx, owner_id);
         let mut out = Self {
             tcx,
             typing_env: TypingEnv {
@@ -242,14 +236,12 @@ impl<'tcx> PredicateSearcher<'tcx> {
             },
             candidates: Default::default(),
             options,
+            implicit_self_clause: initial_self_pred.is_some(),
         };
-        out.insert_predicates(
-            initial_self_pred(tcx, owner_id).map(|clause| AnnotatedTraitPred {
-                origin: BoundPredicateOrigin::SelfPred,
-                id: ItemPredicateId::TraitSelf,
-                clause,
-            }),
-        );
+        out.insert_predicates(initial_self_pred.map(|clause| ItemClause {
+            id: ItemPredicateId::TraitSelf,
+            clause,
+        }));
         out.insert_bound_predicates(local_bound_predicates(tcx, owner_id, options));
         out
     }
@@ -262,13 +254,10 @@ impl<'tcx> PredicateSearcher<'tcx> {
         preds: impl IntoIterator<Item = ItemPredicate<'tcx>>,
     ) {
         self.insert_predicates(preds.into_iter().filter_map(|pred| {
-            pred.clause
-                .as_trait_clause()
-                .map(|clause| AnnotatedTraitPred {
-                    origin: BoundPredicateOrigin::Item,
-                    id: pred.id,
-                    clause,
-                })
+            pred.clause.as_trait_clause().map(|clause| ItemClause {
+                id: pred.id,
+                clause,
+            })
         }));
     }
 
@@ -280,7 +269,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
 
     /// Insert annotated predicates in the search context. Prefer inserting them all at once as
     /// this will give priority to shorter resolution paths.
-    fn insert_predicates(&mut self, preds: impl IntoIterator<Item = AnnotatedTraitPred<'tcx>>) {
+    fn insert_predicates(&mut self, preds: impl IntoIterator<Item = ItemClause<'tcx>>) {
         self.insert_candidates(preds.into_iter().map(|clause| Candidate {
             path: vec![],
             pred: clause.clause,
@@ -452,7 +441,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
             },
             Ok(ImplSource::Param(_)) => {
                 match self.resolve_local(erased_tref.upcast(self.tcx), warn)? {
-                    Some(candidate) => candidate.into_impl_expr(tcx),
+                    Some(candidate) => candidate.into_impl_expr(tcx, self.implicit_self_clause),
                     None => {
                         let msg = format!(
                             "Could not find a clause for `{tref:?}` in the item parameters"
@@ -540,7 +529,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
                                 // We've added `Destruct` impls on everything, we should be able to resolve
                                 // it.
                                 match self.resolve_local(erased_tref.upcast(self.tcx), warn)? {
-                                    Some(candidate) => Either::Right(candidate.into_impl_expr(tcx)),
+                                    Some(candidate) => Either::Right(
+                                        candidate.into_impl_expr(tcx, self.implicit_self_clause),
+                                    ),
                                     None => {
                                         let msg = format!(
                                             "Cannot find virtual `Destruct` clause: `{tref:?}`"
