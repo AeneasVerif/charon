@@ -1,0 +1,9 @@
+error: Could not compute the value of Self::Assoc (on UNKNOWN(Could not find a clause for `Binder { value: <B as HasAssoc>, bound_vars: [] }` in the current context: `Unimplemented`)) needed to update item reference test_crate::HasAssoc<@TypeBound(1, 0)>.
+       Constraints in scope:
+       
+ --> tests/ui/associated_types/lift-assoc-ty-in-alias.rs:7:1
+  |
+7 | pub type Alias<B> = <B as HasAssoc>::Assoc;
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
