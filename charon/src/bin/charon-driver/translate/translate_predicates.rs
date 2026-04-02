@@ -55,6 +55,29 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
     ) -> Result<(), Error> {
+        // Register the mapping from trait preds to their id early on, as these can be mentioned
+        // while translating any other predicate including themselves. Each trait pred gives rise
+        // to exactly one trait clause inserted into `trait_clauses`, which we use to compute
+        // clause ids. This is error-prone but I don't know a better way.
+        let next_clause_id = self.innermost_generics_mut().trait_clauses.next_id();
+        for (i, pred) in preds
+            .predicates
+            .iter()
+            .filter(|pred| {
+                matches!(
+                    pred.clause.kind.hax_skip_binder_ref(),
+                    hax::ClauseKind::Trait(_)
+                )
+            })
+            .enumerate()
+        {
+            let prev = self
+                .innermost_binder_mut()
+                .trait_preds
+                .insert(pred.id.clone(), next_clause_id + i);
+            assert_eq!(prev, None);
+        }
+
         let preds = self.translate_predicates(preds, origin)?;
         self.innermost_generics_mut().take_predicates_from(preds);
         Ok(())
@@ -70,18 +93,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         origin: PredicateOrigin,
     ) -> Result<GenericParams, Error> {
         let mut out = GenericParams::empty();
-        // Translate the trait predicates first, because associated type constraints may refer to
-        // them. E.g. in `fn foo<I: Iterator<Item=usize>>()`, the `I: Iterator` clause must be
-        // translated before the `<I as Iterator>::Item = usize` predicate.
         for pred in &preds.predicates {
-            if matches!(pred.clause.kind.value, hax::ClauseKind::Trait(_)) {
-                self.translate_predicate(&pred.clause, &pred.span, origin.clone(), &mut out)?;
-            }
-        }
-        for pred in &preds.predicates {
-            if !matches!(pred.clause.kind.value, hax::ClauseKind::Trait(_)) {
-                self.translate_predicate(&pred.clause, &pred.span, origin.clone(), &mut out)?;
-            }
+            self.translate_predicate(&pred.clause, &pred.span, origin.clone(), &mut out)?;
         }
         Ok(out)
     }
@@ -263,15 +276,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     "impl source (self or clause): param:\n- trait_ref: {:?}\n- path: {:?}",
                     trait_ref, path,
                 );
-                // If we are refering to a trait clause, we need to find the relevant one.
+                // If we are referring to a trait clause, we need to find the relevant one.
                 let mut tref_kind = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
-                    ImplExprAtom::LocalBound { index, .. } => {
-                        match self.lookup_clause_var(span, *index) {
-                            Ok(var) => TraitRefKind::Clause(var),
-                            Err(err) => TraitRefKind::Unknown(err.msg),
-                        }
-                    }
+                    ImplExprAtom::LocalBound { id, .. } => match self.lookup_clause_var(span, id) {
+                        Ok(var) => TraitRefKind::Clause(var),
+                        Err(err) => TraitRefKind::Unknown(err.msg),
+                    },
                     _ => unreachable!(),
                 };
 

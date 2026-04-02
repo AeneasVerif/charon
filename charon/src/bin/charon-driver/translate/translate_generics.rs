@@ -42,8 +42,10 @@ pub(crate) struct BindingLevel {
     pub closure_call_method_region: Option<RegionId>,
     /// The map from rust type variable indices to translated type variable indices.
     pub type_vars_map: HashMap<u32, TypeVarId>,
-    /// The map from rust const generic variables to translate const generic variable indices.
+    /// The map from rust const generic variables to translated const generic variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
+    /// The map from trait predicates to translated trait clause indices.
+    pub trait_preds: HashMap<hax::GenericPredicateId, TraitClauseId>,
     /// The types of the captured variables, when we're translating a closure item. This is
     /// translated early because this translation requires adding new lifetime generics to the
     /// current binder.
@@ -295,34 +297,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn lookup_clause_var(
         &mut self,
         span: Span,
-        mut id: usize,
+        id: &hax::GenericPredicateId,
     ) -> Result<ClauseDbVar, Error> {
-        // The clause indices returned by hax count clauses in order, starting from the parentmost.
-        // While adding clauses to a binding level we already need to translate types and clauses,
-        // so the innermost item binder may not have all the clauses yet. Hence for that binder we
-        // ignore the clause count.
-        let innermost_item_binder_id = self
-            .binding_levels
-            .iter_enumerated()
-            .find(|(_, bl)| bl.is_item_binder)
-            .unwrap()
-            .0;
-        // Iterate over the binders, starting from the outermost.
-        for (dbid, bl) in self.binding_levels.iter_enumerated().rev() {
-            let num_clauses_bound_at_this_level = bl.params.trait_clauses.elem_count();
-            if id < num_clauses_bound_at_this_level || dbid == innermost_item_binder_id {
-                let id = TraitClauseId::from_usize(id);
-                return Ok(DeBruijnVar::bound(dbid, id));
-            } else {
-                id -= num_clauses_bound_at_this_level
-            }
-        }
-        // Actually unreachable
-        raise_error!(
-            self,
+        self.lookup_param(
             span,
-            "Unexpected error: could not find clause variable {}",
-            id
+            |bl| bl.trait_preds.get(id).copied(),
+            || format!("the trait clause variable {id:?}"),
         )
     }
 
