@@ -254,7 +254,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 })?;
 
                 if let hax::ClauseKind::Trait(trait_predicate) = dyn_binder.predicates.predicates[0]
-                    .0
+                    .clause
                     .kind
                     .hax_skip_binder_ref()
                 {
@@ -422,7 +422,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 hax::TyKind::Dynamic(dyn_binder, _) => {
                     let vtable = self.translate_region_binder(
                         span,
-                        &dyn_binder.predicates.predicates[0].0.kind,
+                        &dyn_binder.predicates.predicates[0].clause.kind,
                         |ctx, kind: &hax::ClauseKind| {
                             let hax::ClauseKind::Trait(trait_predicate) = kind else {
                                 unreachable!()

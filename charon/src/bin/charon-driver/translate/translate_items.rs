@@ -672,13 +672,14 @@ impl ItemTransCtx<'_, '_> {
             raise_error!(self, span, "Unexpected definition: {def:?}");
         };
 
-        // Register implied predicates.
-        let mut preds =
-            self.translate_predicates(implied_predicates, PredicateOrigin::WhereClauseOnTrait)?;
-        let implied_clauses = mem::take(&mut preds.trait_clauses);
-        // Consider the other predicates as required since the distinction doesn't matter for
-        // non-trait-clauses.
-        self.innermost_generics_mut().take_predicates_from(preds);
+        // Register implied predicates. We gather the clauses and consider the other predicates as
+        // required since the distinction doesn't matter for non-trait-clauses.
+        let mut implied_clauses = Default::default();
+        self.translate_predicates(
+            implied_predicates,
+            PredicateOrigin::WhereClauseOnTrait,
+            Some(&mut implied_clauses),
+        )?;
 
         let vtable = self.translate_vtable_struct_ref_no_enqueue(span, def.this())?;
 
@@ -884,14 +885,12 @@ impl ItemTransCtx<'_, '_> {
                     let assoc_ty =
                         self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
                             // Also add the implied predicates.
-                            let mut preds = ctx.translate_predicates(
+                            let mut implied_clauses = Default::default();
+                            ctx.translate_predicates(
                                 &implied_predicates,
                                 PredicateOrigin::TraitItem(item_name.clone()),
+                                Some(&mut implied_clauses),
                             )?;
-                            let implied_clauses = mem::take(&mut preds.trait_clauses);
-                            // Consider the other predicates as required since the distinction doesn't
-                            // matter for non-trait-clauses.
-                            ctx.innermost_generics_mut().take_predicates_from(preds);
 
                             let default = default
                                 .as_ref()

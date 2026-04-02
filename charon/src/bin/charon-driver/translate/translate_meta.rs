@@ -455,7 +455,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let trans_id = self.register_no_enqueue(&None, src).unwrap();
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
-            bt_ctx.binding_levels.push(BindingLevel::new(true));
+            bt_ctx.binding_levels.push(BindingLevel::new());
 
             let trait_def = bt_ctx.t_ctx.hax_def_for_item(&src.item)?;
             let mut assoc_types = None;
@@ -475,9 +475,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                             implied_predicates, ..
                         } = item_def.kind()
                         {
-                            let predicates = &implied_predicates.predicates;
-                            if let Some((c, _)) = predicates.first() {
-                                if let hax::ClauseKind::Trait(p) = &c.kind.value {
+                            if let Some(pred) = implied_predicates.predicates.first() {
+                                if let hax::ClauseKind::Trait(p) = &pred.clause.kind.value {
                                     assoc_types = Some(p.trait_ref.generic_args.clone());
                                     break;
                                 }

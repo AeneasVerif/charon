@@ -55,35 +55,46 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
     ) -> Result<(), Error> {
-        let preds = self.translate_predicates(preds, origin)?;
-        self.innermost_generics_mut().take_predicates_from(preds);
+        self.translate_predicates(preds, origin, None)?;
         Ok(())
     }
 
-    /// Translates the given predicates. Returns a `GenericParams` that only contains predicates.
-    ///
-    /// This function should be called **after** we translated the generics (type parameters,
-    /// regions...).
+    /// Translates the given predicates. This function should be called **after** we translated the
+    /// generics (type parameters, regions...).
     pub(crate) fn translate_predicates(
         &mut self,
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
-    ) -> Result<GenericParams, Error> {
-        let mut out = GenericParams::empty();
-        // Translate the trait predicates first, because associated type constraints may refer to
-        // them. E.g. in `fn foo<I: Iterator<Item=usize>>()`, the `I: Iterator` clause must be
-        // translated before the `<I as Iterator>::Item = usize` predicate.
-        for (clause, span) in &preds.predicates {
-            if matches!(clause.kind.value, hax::ClauseKind::Trait(_)) {
-                self.translate_predicate(clause, span, origin.clone(), &mut out)?;
+        // Either put clauses there or in the innermost binder.
+        mut trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
+    ) -> Result<(), Error> {
+        if trait_clauses.is_none() {
+            // Register the mapping from trait preds to their id early on, as these can be mentioned
+            // while translating any other predicate including themselves. Each trait pred gives rise
+            // to exactly one trait clause inserted into `trait_clauses`, which we use to compute
+            // clause ids.
+            let next_clause_id = self.innermost_generics_mut().trait_clauses.next_id();
+            for (i, pred) in preds
+                .predicates
+                .iter()
+                .filter(|pred| {
+                    matches!(
+                        pred.clause.kind.hax_skip_binder_ref(),
+                        hax::ClauseKind::Trait(_)
+                    )
+                })
+                .enumerate()
+            {
+                self.innermost_binder_mut()
+                    .trait_preds
+                    .insert(pred.id.clone(), next_clause_id + i);
             }
         }
-        for (clause, span) in &preds.predicates {
-            if !matches!(clause.kind.value, hax::ClauseKind::Trait(_)) {
-                self.translate_predicate(clause, span, origin.clone(), &mut out)?;
-            }
+
+        for pred in &preds.predicates {
+            self.translate_predicate(pred, origin.clone(), trait_clauses.as_deref_mut())?;
         }
-        Ok(out)
+        Ok(())
     }
 
     pub(crate) fn translate_poly_trait_ref(
@@ -126,25 +137,39 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     pub(crate) fn translate_predicate(
         &mut self,
-        clause: &hax::Clause,
-        hspan: &hax::Span,
+        pred: &hax::GenericPredicate,
         origin: PredicateOrigin,
-        into: &mut GenericParams,
+        // Either put clauses there or in the innermost binder.
+        mut trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
     ) -> Result<(), Error> {
         use hax::ClauseKind;
+        let clause = &pred.clause;
         trace!("{:?}", clause);
-        let span = self.translate_span(hspan);
+        let span = self.translate_span(&pred.span);
         match clause.kind.hax_skip_binder_ref() {
             ClauseKind::Trait(trait_pred) => {
-                let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
+                let trait_pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     ctx.translate_trait_predicate(span, trait_pred)
                 })?;
-                into.trait_clauses.push_with(|clause_id| TraitParam {
-                    clause_id,
-                    origin,
-                    span: Some(span),
-                    trait_: pred,
-                });
+                let clause_id = trait_clauses
+                    .as_deref_mut()
+                    .unwrap_or(&mut self.innermost_generics_mut().trait_clauses)
+                    .push_with(|clause_id| TraitParam {
+                        clause_id,
+                        origin,
+                        span: Some(span),
+                        trait_: trait_pred,
+                    });
+
+                if trait_clauses.is_none() {
+                    // Sanity check.
+                    let expected_clause_id = self
+                        .innermost_binder_mut()
+                        .trait_preds
+                        .get(&pred.id)
+                        .unwrap();
+                    debug_assert_eq!(clause_id, *expected_clause_id);
+                }
             }
             ClauseKind::RegionOutlives(p) => {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
@@ -152,7 +177,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let r1 = ctx.translate_region(span, &p.rhs)?;
                     Ok(OutlivesPred(r0, r1))
                 })?;
-                into.regions_outlive.push(pred);
+                self.innermost_generics_mut().regions_outlive.push(pred);
             }
             ClauseKind::TypeOutlives(p) => {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
@@ -160,7 +185,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let r = ctx.translate_region(span, &p.rhs)?;
                     Ok(OutlivesPred(ty, r))
                 })?;
-                into.types_outlive.push(pred);
+                self.innermost_generics_mut().types_outlive.push(pred);
             }
             ClauseKind::Projection(p) => {
                 // This is used to express constraints over associated types.
@@ -179,7 +204,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         ty,
                     })
                 })?;
-                into.trait_type_constraints.push(pred);
+                self.innermost_generics_mut()
+                    .trait_type_constraints
+                    .push(pred);
             }
             ClauseKind::ConstArgHasType(..) => {
                 // These are used for trait resolution to get access to the type of const generics.
@@ -263,15 +290,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     "impl source (self or clause): param:\n- trait_ref: {:?}\n- path: {:?}",
                     trait_ref, path,
                 );
-                // If we are refering to a trait clause, we need to find the relevant one.
+                // If we are referring to a trait clause, we need to find the relevant one.
                 let mut tref_kind = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
-                    ImplExprAtom::LocalBound { index, .. } => {
-                        match self.lookup_clause_var(span, *index) {
-                            Ok(var) => TraitRefKind::Clause(var),
-                            Err(err) => TraitRefKind::Unknown(err.msg),
-                        }
-                    }
+                    ImplExprAtom::LocalBound { id, .. } => match self.lookup_clause_var(span, id) {
+                        Ok(var) => TraitRefKind::Clause(var),
+                        Err(err) => TraitRefKind::Unknown(err.msg),
+                    },
                     _ => unreachable!(),
                 };
 

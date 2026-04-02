@@ -1329,22 +1329,14 @@ fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> GenericPredicates {
-    use std::borrow::Cow;
     let tcx = s.base().tcx;
     let def_id = s.owner_id();
     let typing_env = s.typing_env();
     let mut implied_predicates = implied_predicates(tcx, def_id, s.base().options.bounds_options);
     if args.is_some() {
-        implied_predicates = Cow::Owned(
-            implied_predicates
-                .iter()
-                .copied()
-                .map(|(clause, span)| {
-                    let clause = substitute(tcx, typing_env, args, clause);
-                    (clause, span)
-                })
-                .collect(),
-        );
+        for pred in implied_predicates.iter_mut() {
+            pred.clause = substitute(tcx, typing_env, args, pred.clause);
+        }
     }
     implied_predicates.sinto(s)
 }

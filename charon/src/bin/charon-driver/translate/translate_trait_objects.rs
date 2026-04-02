@@ -88,8 +88,9 @@ impl ItemTransCtx<'_, '_> {
         preds: &hax::GenericPredicates,
     ) -> Result<(), Error> {
         // Only the first clause is allowed to have methods.
-        for (clause, _) in preds.predicates.iter().skip(1) {
-            if let hax::ClauseKind::Trait(trait_predicate) = clause.kind.hax_skip_binder_ref() {
+        for pred in preds.predicates.iter().skip(1) {
+            if let hax::ClauseKind::Trait(trait_predicate) = pred.clause.kind.hax_skip_binder_ref()
+            {
                 let trait_def_id = &trait_predicate.trait_ref.def_id;
                 let trait_def = self.poly_hax_def(trait_def_id)?;
                 let has_methods = match trait_def.kind() {
@@ -123,16 +124,17 @@ impl ItemTransCtx<'_, '_> {
         self.check_at_most_one_pred_has_methods(span, &binder.predicates)?;
 
         // Add a binder that contains the existentially quantified type.
-        self.binding_levels.push(BindingLevel::new(true));
+        self.binding_levels.push(BindingLevel::new());
 
         // Add the existentially quantified type.
         let ty_id = self
             .innermost_binder_mut()
             .push_type_var(binder.existential_ty.index, binder.existential_ty.name);
         let ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(ty_id)).into_ty();
-        let val = f(self, ty, &binder.val)?;
 
         self.register_predicates(&binder.predicates, PredicateOrigin::Dyn)?;
+
+        let val = f(self, ty, &binder.val)?;
 
         // As illustrated inside translate_trait_decl, associated items take an extra explicit `Self: Trait` clause in Hax.
         // Therefore, in mono mode, projection predicates in dyn binders may refer to clause vars with an
@@ -321,8 +323,9 @@ impl ItemTransCtx<'_, '_> {
         }
 
         // Supertrait fields.
-        for (i, (clause, _span)) in implied_predicates.predicates.iter().enumerate() {
+        for (i, pred) in implied_predicates.predicates.iter().enumerate() {
             // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+            let clause = &pred.clause;
             if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
                 && self.pred_is_for_self(&pred.trait_ref)
             {
@@ -361,6 +364,7 @@ impl ItemTransCtx<'_, '_> {
     fn gen_vtable_struct_fields(
         &mut self,
         span: Span,
+        self_trait_ref: &TraitRef,
         vtable_data: &VTableData,
     ) -> Result<IndexVec<FieldId, Field>, Error> {
         let mut fields = IndexVec::new();
@@ -393,9 +397,20 @@ impl ItemTransCtx<'_, '_> {
                         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
                         (field_name, erased_ptr_ty)
                     } else {
-                        // It's ok to translate the method signature in the context of the trait because
-                        // `vtable_sig: Some(_)` ensures the method has no generics of its own.
-                        let sig = self.translate_poly_fun_sig(span, &sig)?;
+                        // The method is defined in a context that has an extra `Self: Trait` clause, so
+                        // we translate it bound first.
+                        let bound_sig = self.inside_binder(BinderKind::Other, |ctx| {
+                            ctx.innermost_binder_mut()
+                                .trait_preds
+                                .insert(hax::GenericPredicateId::TraitSelf, TraitClauseId::ZERO);
+                            ctx.translate_poly_fun_sig(span, &sig)
+                        })?;
+                        let sig = bound_sig.apply(&{
+                            let mut generics = GenericArgs::empty();
+                            // Provide the `Self` clause.
+                            generics.trait_refs.push(self_trait_ref.clone());
+                            generics
+                        });
                         let ty = TyKind::FnPtr(sig).into_ty();
                         (field_name, ty)
                     }
@@ -537,11 +552,13 @@ impl ItemTransCtx<'_, '_> {
         }
 
         let (hax::FullDefKind::Trait {
+            self_predicate,
             dyn_self,
             implied_predicates,
             ..
         }
         | hax::FullDefKind::TraitAlias {
+            self_predicate,
             dyn_self,
             implied_predicates,
             ..
@@ -552,6 +569,11 @@ impl ItemTransCtx<'_, '_> {
         let Some(dyn_self) = dyn_self else {
             panic!("Trying to generate a vtable for a non-dyn-compatible trait")
         };
+
+        let self_trait_ref = TraitRef::new(
+            TraitRefKind::SelfId,
+            RegionBinder::empty(self.translate_trait_predicate(span, self_predicate)?),
+        );
 
         let mut field_map = IndexVec::new();
         let mut supertrait_map: IndexMap<TraitClauseId, _> =
@@ -564,7 +586,7 @@ impl ItemTransCtx<'_, '_> {
             // First construct fields that use the real method signatures (which may use the `Self`
             // type). We fixup the types and generics below.
             let vtable_data = self.prepare_vtable_fields(trait_def, implied_predicates)?;
-            let fields = self.gen_vtable_struct_fields(span, &vtable_data)?;
+            let fields = self.gen_vtable_struct_fields(span, &self_trait_ref, &vtable_data)?;
 
             let kind = TypeDeclKind::Struct(fields);
             let layout = self.generate_naive_layout(span, &kind)?;
@@ -1436,9 +1458,8 @@ impl ItemTransCtx<'_, '_> {
                     implied_predicates, ..}
                     = item_def.kind() {
                     trace!("MONO: show:\n {:?}", item_def.kind());
-                    let predicates = &implied_predicates.predicates;
-                    if let Some((c, _)) = predicates.first() {
-                        if let hax::ClauseKind::Trait(p) = &c.kind.value {
+                    if let Some(pred) = implied_predicates.predicates.first() {
+                        if let hax::ClauseKind::Trait(p) = &pred.clause.kind.value {
                             assoc_types = Some(p.trait_ref.generic_args.clone());
                         }
                     }

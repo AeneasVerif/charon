@@ -27,35 +27,142 @@
 //! benefit of reducing the size of signatures. Moreover, the rules on which bounds are required vs
 //! implied are subtle. We may change this if this proves to be a problem.
 use crate::options::BoundsOptions;
+use itertools::Itertools;
 use rustc_hir::LangItem;
 use rustc_hir::def::DefKind;
 use rustc_middle::ty::*;
 use rustc_span::def_id::DefId;
 use rustc_span::{DUMMY_SP, Span};
-use std::borrow::Cow;
 
-pub type Predicates<'tcx> = Cow<'tcx, [(Clause<'tcx>, Span)]>;
+/// Uniquely identifies a predicate.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum ItemPredicateId {
+    /// A predicate that counts as "input" for an item, e.g. `where` clauses on a function or impl.
+    /// Numbered in some arbitrary but consistent order.
+    Required(DefId, u32),
+    /// A predicate that counts as "output" of an item, e.g. supertrait clauses in a trait. Note
+    /// that we count `where` clauses on a trait as implied.
+    /// Numbered in some arbitrary but consistent order.
+    Implied(DefId, u32),
+    /// Predicate inside a non-item binder, e.g. within a `dyn Trait`.
+    /// Numbered in some arbitrary but consistent order.
+    Unmapped(u32),
+    /// The special `Self: Trait` clause available within trait `Trait`.
+    TraitSelf,
+}
+
+impl ItemPredicateId {
+    fn new(def_id: DefId, required: bool, next_id: &mut usize) -> Self {
+        let i = *next_id as u32;
+        *next_id += 1;
+        if required {
+            ItemPredicateId::Required(def_id, i)
+        } else {
+            ItemPredicateId::Implied(def_id, i)
+        }
+    }
+    fn new_unmapped(next_id: &mut usize) -> Self {
+        let i = *next_id as u32;
+        *next_id += 1;
+        ItemPredicateId::Unmapped(i)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ItemPredicate<'tcx> {
+    pub id: ItemPredicateId,
+    pub clause: Clause<'tcx>,
+    pub span: Span,
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct ItemPredicates<'tcx> {
+    required: bool,
+    next_id: usize,
+    pub predicates: Vec<ItemPredicate<'tcx>>,
+}
+
+impl<'tcx> ItemPredicates<'tcx> {
+    pub fn new(
+        def_id: DefId,
+        required: bool,
+        predicates: impl IntoIterator<Item = (Clause<'tcx>, Span)>,
+    ) -> Self {
+        let mut next_id = 0;
+        let predicates = predicates
+            .into_iter()
+            .map(|(clause, span)| {
+                let id = ItemPredicateId::new(def_id, required, &mut next_id);
+                ItemPredicate { id, clause, span }
+            })
+            .collect_vec();
+        Self {
+            next_id,
+            required,
+            predicates,
+        }
+    }
+    pub fn new_unmapped(span: Span, predicates: impl IntoIterator<Item = Clause<'tcx>>) -> Self {
+        let mut next_id = 0;
+        let predicates = predicates
+            .into_iter()
+            .map(|clause| {
+                let id = ItemPredicateId::new_unmapped(&mut next_id);
+                ItemPredicate { id, clause, span }
+            })
+            .collect_vec();
+        Self {
+            next_id,
+            required: true,
+            predicates,
+        }
+    }
+
+    pub fn add_synthetic_predicates(
+        &mut self,
+        def_id: DefId,
+        predicates: impl IntoIterator<Item = Clause<'tcx>>,
+    ) {
+        self.predicates.extend(predicates.into_iter().map(|clause| {
+            let id = ItemPredicateId::new(def_id, self.required, &mut self.next_id);
+            ItemPredicate {
+                id,
+                clause,
+                span: DUMMY_SP,
+            }
+        }));
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = ItemPredicate<'tcx>> {
+        self.predicates.iter().copied()
+    }
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut ItemPredicate<'tcx>> {
+        self.predicates.iter_mut()
+    }
+}
 
 /// Returns a list of type predicates for the definition with ID `def_id`, including inferred
 /// lifetime constraints. This is the basic list of predicates we use for essentially all items.
-pub fn predicates_defined_on(tcx: TyCtxt<'_>, def_id: DefId) -> Predicates<'_> {
-    let mut result = Cow::Borrowed(tcx.explicit_predicates_of(def_id).predicates);
-    let inferred_outlives = tcx.inferred_outlives_of(def_id);
-    if !inferred_outlives.is_empty() {
-        result.to_mut().extend(
-            inferred_outlives
+fn predicates_defined_on(tcx: TyCtxt<'_>, def_id: DefId, required: bool) -> ItemPredicates<'_> {
+    let predicates = tcx
+        .explicit_predicates_of(def_id)
+        .predicates
+        .iter()
+        .copied()
+        .chain(
+            tcx.inferred_outlives_of(def_id)
                 .iter()
-                .map(|(clause, span)| ((*clause).upcast(tcx), *span)),
+                .copied()
+                .map(|(clause, span)| (clause.upcast(tcx), span)),
         );
-    }
-    result
+    ItemPredicates::new(def_id, required, predicates)
 }
 
 /// Add `T: Destruct` bounds for every generic parameter of the given item.
 fn add_destruct_bounds<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
-    predicates: &mut Vec<(Clause<'tcx>, Span)>,
+    predicates: &mut ItemPredicates<'tcx>,
 ) {
     let def_kind = tcx.def_kind(def_id);
     if matches!(def_kind, DefKind::Closure) {
@@ -72,9 +179,8 @@ fn add_destruct_bounds<'tcx>(
         .filter(|param| matches!(param.kind, GenericParamDefKind::Type { .. }))
         .map(|param| tcx.mk_param_from_def(param))
         .map(|ty| Binder::dummy(TraitRef::new(tcx, destruct_trait, [ty])))
-        .map(|tref| tref.upcast(tcx))
-        .map(|clause| (clause, DUMMY_SP));
-    predicates.extend(extra_bounds);
+        .map(|tref| tref.upcast(tcx));
+    predicates.add_synthetic_predicates(def_id, extra_bounds);
 }
 
 /// The predicates that must hold to mention this item. E.g.
@@ -92,7 +198,7 @@ pub fn required_predicates<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
     options: BoundsOptions,
-) -> Predicates<'tcx> {
+) -> ItemPredicates<'tcx> {
     use DefKind::*;
     let def_kind = tcx.def_kind(def_id);
     let mut predicates = match def_kind {
@@ -108,7 +214,7 @@ pub fn required_predicates<'tcx>(
         | Static { .. }
         | Struct
         | TyAlias
-        | Union => predicates_defined_on(tcx, def_id),
+        | Union => predicates_defined_on(tcx, def_id, true),
         // We consider all predicates on traits to be outputs
         Trait | TraitAlias => Default::default(),
         // `predicates_defined_on` ICEs on other def kinds.
@@ -120,12 +226,19 @@ pub fn required_predicates<'tcx>(
         && let Some(trait_def_id) = tcx.trait_of_assoc(def_id)
     {
         let self_clause = self_predicate(tcx, trait_def_id).upcast(tcx);
-        predicates.to_mut().insert(0, (self_clause, DUMMY_SP));
+        predicates.predicates.insert(
+            0,
+            ItemPredicate {
+                id: ItemPredicateId::TraitSelf,
+                clause: self_clause,
+                span: DUMMY_SP,
+            },
+        );
     }
     if options.resolve_destruct && !matches!(def_kind, Trait | TraitAlias) {
         // Add a `T: Destruct` bound for every generic. For traits we consider these predicates
         // implied instead of required.
-        add_destruct_bounds(tcx, def_id, predicates.to_mut());
+        add_destruct_bounds(tcx, def_id, &mut predicates);
     }
     if options.prune_sized {
         prune_sized_predicates(tcx, &mut predicates);
@@ -156,13 +269,13 @@ pub fn implied_predicates<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
     options: BoundsOptions,
-) -> Predicates<'tcx> {
+) -> ItemPredicates<'tcx> {
     use DefKind::*;
     let parent = tcx.opt_parent(def_id);
     let mut predicates = match tcx.def_kind(def_id) {
         // We consider all predicates on traits to be outputs
         Trait | TraitAlias => {
-            let mut predicates = predicates_defined_on(tcx, def_id);
+            let mut predicates = predicates_defined_on(tcx, def_id, false);
             if options.resolve_destruct {
                 // Add a `T: Drop` bound for every generic, unless the current trait is `Drop` itself, or a
                 // built-in marker trait that we know doesn't need the bound.
@@ -178,25 +291,32 @@ pub fn implied_predicates<'tcx>(
                             | LangItem::Tuple
                     )
                 ) {
-                    add_destruct_bounds(tcx, def_id, predicates.to_mut());
+                    add_destruct_bounds(tcx, def_id, &mut predicates);
                 }
             }
             predicates
         }
         AssocTy if matches!(tcx.def_kind(parent.unwrap()), Trait) => {
             // `skip_binder` is for the GAT `EarlyBinder`
-            let mut predicates = Cow::Borrowed(tcx.explicit_item_bounds(def_id).skip_binder());
+            let mut predicates = ItemPredicates::new(
+                def_id,
+                false,
+                tcx.explicit_item_bounds(def_id)
+                    .skip_binder()
+                    .iter()
+                    .copied(),
+            );
             if options.resolve_destruct {
                 // Add a `Drop` bound to the assoc item.
                 let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
                 let ty =
                     Ty::new_projection(tcx, def_id, GenericArgs::identity_for_item(tcx, def_id));
                 let tref = Binder::dummy(TraitRef::new(tcx, destruct_trait, [ty]));
-                predicates.to_mut().push((tref.upcast(tcx), DUMMY_SP));
+                predicates.add_synthetic_predicates(def_id, [tref.upcast(tcx)]);
             }
             predicates
         }
-        _ => Predicates::default(),
+        _ => ItemPredicates::default(),
     };
     if options.prune_sized {
         prune_sized_predicates(tcx, &mut predicates);
@@ -306,19 +426,12 @@ pub fn is_sized_related_trait<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
 
 /// Given a `GenericPredicates`, prune every occurence of a sized-related clause.
 /// Prunes bounds of the shape `T: MetaSized`, `T: Sized` or `T: PointeeSized`.
-fn prune_sized_predicates<'tcx>(tcx: TyCtxt<'tcx>, generic_predicates: &mut Predicates<'tcx>) {
-    let predicates: Vec<(Clause<'tcx>, rustc_span::Span)> = generic_predicates
-        .iter()
-        .filter(|(clause, _)| {
-            clause.as_trait_clause().is_none_or(|trait_predicate| {
-                !is_sized_related_trait(tcx, trait_predicate.skip_binder().def_id())
-            })
+fn prune_sized_predicates<'tcx>(tcx: TyCtxt<'tcx>, generic_predicates: &mut ItemPredicates<'tcx>) {
+    generic_predicates.predicates.retain(|pred| {
+        pred.clause.as_trait_clause().is_none_or(|trait_predicate| {
+            !is_sized_related_trait(tcx, trait_predicate.skip_binder().def_id())
         })
-        .copied()
-        .collect();
-    if predicates.len() != generic_predicates.len() {
-        *generic_predicates.to_mut() = predicates;
-    }
+    });
 }
 
 pub trait ToPolyTraitRef<'tcx> {
