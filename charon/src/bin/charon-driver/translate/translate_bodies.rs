@@ -288,7 +288,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                 .rev()
                 .enumerate()
                 // Compute the absolute line number
-                .map(|(i, line)| (charon_span.data.end.line - i, line))
+                .filter_map(|(i, line)| Some((charon_span.data.end.line.checked_sub(i)?, line)))
                 // Extract the comment if this line starts with `//`
                 .map(|(line_nbr, line)| (line_nbr, line.trim_start().strip_prefix("//")))
                 .peekable()
