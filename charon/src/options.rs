@@ -415,6 +415,18 @@ impl CliOpts {
         }
         Ok(())
     }
+
+    pub fn target_filename(&self, crate_name: &str) -> PathBuf {
+        match self.dest_file.clone() {
+            Some(f) => f,
+            None => {
+                let mut target_filename = self.dest_dir.clone().unwrap_or_default();
+                let extension = if self.ullbc { "ullbc" } else { "llbc" };
+                target_filename.push(format!("{crate_name}.{extension}"));
+                target_filename
+            }
+        }
+    }
 }
 
 /// Predicates that determine wihch items to use as starting point for translation.

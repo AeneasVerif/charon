@@ -130,19 +130,9 @@ fn run_charon() -> Result<usize, CharonFailure> {
 
     // # Final step: generate the files.
     if !options.no_serialize {
-        let crate_data = export::CrateData::new(ctx);
-        let dest_file = match options.dest_file.clone() {
-            Some(f) => f,
-            None => {
-                let mut target_filename = options.dest_dir.clone().unwrap_or_default();
-                let crate_name = &crate_data.translated.crate_name;
-                let extension = if options.ullbc { "ullbc" } else { "llbc" };
-                target_filename.push(format!("{crate_name}.{extension}"));
-                target_filename
-            }
-        };
+        let dest_file = options.target_filename(&ctx.translated.crate_name);
         trace!("Target file: {:?}", dest_file);
-        crate_data
+        export::CrateData::new(ctx)
             .serialize_to_file(&dest_file)
             .map_err(|()| CharonFailure::Serialize)?;
     }
