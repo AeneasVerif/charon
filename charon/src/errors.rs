@@ -19,6 +19,10 @@ macro_rules! register_error {
         let msg = format!($($fmt)*);
         $ctx.span_err($krate, $span, &msg, $crate::errors::Level::WARNING)
     }};
+    ($ctx:expr, no_crate, $($fmt:tt)*) => {{
+        let msg = format!($($fmt)*);
+        $ctx.span_err(&Default::default(), Default::default(), &msg, $crate::errors::Level::WARNING)
+    }};
     ($ctx:expr, $span: expr, $($fmt:tt)*) => {{
         let msg = format!($($fmt)*);
         $ctx.span_err($span, &msg, $crate::errors::Level::WARNING)
@@ -30,7 +34,7 @@ pub use register_error;
 #[macro_export]
 macro_rules! raise_error {
     ($($tokens:tt)*) => {{
-        return Err(register_error!($($tokens)*));
+        return Err(register_error!($($tokens)*))?;
     }};
 }
 pub use raise_error;
@@ -215,10 +219,10 @@ pub struct ErrorCtx {
 }
 
 impl ErrorCtx {
-    pub fn new(continue_on_failure: bool, error_on_warnings: bool) -> Self {
+    pub fn new() -> Self {
         Self {
-            continue_on_failure,
-            error_on_warnings,
+            continue_on_failure: true,
+            error_on_warnings: false,
             external_decls_with_errors: HashSet::new(),
             external_dep_graph: DepGraph::new(),
             def_id: None,

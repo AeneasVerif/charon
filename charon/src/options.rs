@@ -504,15 +504,10 @@ pub struct TranslateOptions {
 
 impl TranslateOptions {
     pub fn new(error_ctx: &mut ErrorCtx, options: &CliOpts) -> Self {
-        let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
-            Ok(p) => Ok(p),
-            Err(e) => {
-                raise_error!(
-                    error_ctx,
-                    crate(&TranslatedCrate::default()),
-                    Span::dummy(),
-                    "failed to parse pattern `{s}` ({e})"
-                )
+        let mut parse_pattern = |s: &str| -> Result<_, Error> {
+            match NamePattern::parse(s) {
+                Ok(p) => Ok(p),
+                Err(e) => raise_error!(error_ctx, no_crate, "failed to parse pattern `{s}` ({e})"),
             }
         };
 

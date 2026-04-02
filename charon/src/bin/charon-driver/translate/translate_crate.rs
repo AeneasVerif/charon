@@ -685,13 +685,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 }
 
-#[tracing::instrument(skip(tcx))]
+#[tracing::instrument(skip(tcx, error_ctx))]
 pub fn translate<'tcx>(
-    cli_options: &CliOpts,
     tcx: TyCtxt<'tcx>,
+    cli_options: &CliOpts,
+    mut error_ctx: ErrorCtx,
     sysroot: PathBuf,
 ) -> Result<TransformCtx, Error> {
-    let mut error_ctx = ErrorCtx::new(!cli_options.abort_on_error, cli_options.error_on_warnings);
     let translate_options = TranslateOptions::new(&mut error_ctx, cli_options);
 
     let hax_state = hax::state::State::new(
