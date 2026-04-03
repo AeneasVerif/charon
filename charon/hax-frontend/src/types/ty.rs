@@ -1376,6 +1376,17 @@ pub struct GenericPredicates {
     pub predicates: Vec<GenericPredicate>,
 }
 
+impl GenericPredicates {
+    pub fn iter(&self) -> impl Iterator<Item = &GenericPredicate> {
+        self.predicates.iter()
+    }
+    /// Iter only on trait clauses.
+    pub fn iter_trait_clauses(&self) -> impl Iterator<Item = &GenericPredicate> {
+        self.iter()
+            .filter(|pred| matches!(pred.clause.kind.hax_skip_binder_ref(), ClauseKind::Trait(_)))
+    }
+}
+
 impl<'tcx, S: UnderOwnerState<'tcx>, T1, T2> SInto<S, Binder<T2>> for ty::Binder<'tcx, T1>
 where
     T1: SInto<StateWithBinder<'tcx>, T2>,

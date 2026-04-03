@@ -85,12 +85,13 @@ impl TypeCheckVisitor<'_> {
         Ok(())
     }
 
+    /// Compare two types for equality. Because we can't use the full power of rustc's type
+    /// equality, we err on the side of accepting.
     fn match_tys(&mut self, a: &Ty, b: &Ty) -> Result<(), TypeError> {
         match (a.kind(), b.kind()) {
             (TyKind::Adt(a), TyKind::Adt(b)) if a.id == b.id => {
                 self.match_generics(&a.generics, &b.generics)?
             }
-            (TyKind::TypeVar(a), TyKind::TypeVar(b)) if a == b => {}
             (TyKind::Literal(a), TyKind::Literal(b)) if a == b => {}
             (TyKind::Never, TyKind::Never) => {}
             (TyKind::Array(aty, _), TyKind::Array(bty, _)) => {
@@ -111,7 +112,8 @@ impl TypeCheckVisitor<'_> {
             (TyKind::DynTrait(..), TyKind::DynTrait(..)) => {}
             (TyKind::FnPtr(..), TyKind::FnPtr(..)) => {}
             (TyKind::FnDef(..), TyKind::FnDef(..)) => {}
-            // We may be missing normalization. TODO: fetch value from env.
+            // We can't decide type equality, so we avoid false positives here.
+            (TyKind::TypeVar(_), _) | (_, TyKind::TypeVar(_)) => {}
             (TyKind::TraitType(..), _) | (_, TyKind::TraitType(..)) => {}
             (TyKind::PtrMetadata(..), _) | (_, TyKind::PtrMetadata(..)) => {}
             (TyKind::Error(_), _) | (_, TyKind::Error(_)) => {}
