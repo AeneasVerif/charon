@@ -323,18 +323,19 @@ impl ItemTransCtx<'_, '_> {
         }
 
         // Supertrait fields.
-        for (i, pred) in implied_predicates.predicates.iter().enumerate() {
-            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+        for (i, pred) in implied_predicates.iter_trait_clauses().enumerate() {
+            let trait_clause_id = TraitClauseId::from_raw(i); // One trait clause id per trait clause
             let clause = &pred.clause;
-            if let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref()
-                && self.pred_is_for_self(&pred.trait_ref)
-            {
+            let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() else {
+                unreachable!()
+            };
+            // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
+            if self.pred_is_for_self(&pred.trait_ref) {
                 if !self.trait_is_dyn_compatible(&pred.trait_ref.def_id)? {
                     // We add fake `Destruct` supertraits, but these are not dyn-compatible.
                     self.assert_is_destruct(&pred.trait_ref);
                     continue;
                 }
-                let trait_clause_id = TraitClauseId::from_raw(i);
                 supertrait_map[trait_clause_id] = Some(fields.next_idx());
                 fields.push(TrVTableField::SuperTrait(trait_clause_id, clause.clone()));
             }

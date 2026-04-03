@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--mir optimized
 pub trait MyTrait: 'static + Send {
     fn foo(&self);
