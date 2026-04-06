@@ -430,13 +430,23 @@ let block_substitute (subst : subst) (blk : block) : block =
     the body. *)
 let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
     local list * block =
-  let locals =
-    List.map
-      (fun (v : local) -> { v with local_ty = ty_substitute subst v.local_ty })
-      body.locals.locals
-  in
-  let body = block_substitute subst body.body in
-  (locals, body)
+  match body with
+  | Body body ->
+      let locals =
+        List.map
+          (fun (v : local) ->
+            { v with local_ty = ty_substitute subst v.local_ty })
+          body.locals.locals
+      in
+      let body = block_substitute subst body.body in
+      (locals, body)
+  | TraitMethodWithoutDefault
+  | Extern _
+  | Intrinsic _
+  | TargetDispatch _
+  | Opaque
+  | Missing
+  | Error _ -> raise (Failure "Can't substitute a non-structured function body")
 
 let trait_type_constraint_substitute (subst : subst)
     (ttc : trait_type_constraint) : trait_type_constraint =
