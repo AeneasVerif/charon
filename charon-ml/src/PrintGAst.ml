@@ -112,10 +112,28 @@ let gfun_decl_to_string (env : 'a fmt_env) (indent : string)
    * (we have access to a body) *)
   let sg = bound_fun_sig_of_decl def in
   match def.body with
-  | None ->
+  | Opaque ->
       fun_sig_with_name_to_string env indent indent_incr (Some "opaque")
         (Some name) None sg
-  | Some body ->
+  | Missing ->
+      fun_sig_with_name_to_string env indent indent_incr (Some "missing")
+        (Some name) None sg
+  | TraitMethodWithoutDefault ->
+      fun_sig_with_name_to_string env indent indent_incr
+        (Some "method_without_default_body") (Some name) None sg
+  | Extern sym ->
+      fun_sig_with_name_to_string env indent indent_incr
+        (Some ("extern:" ^ sym))
+        (Some name) None sg
+  | Intrinsic sym ->
+      fun_sig_with_name_to_string env indent indent_incr
+        (Some ("intrinsic:" ^ sym))
+        (Some name) None sg
+  | Error err ->
+      fun_sig_with_name_to_string env indent indent_incr
+        (Some ("error(\"" ^ err.msg ^ "\")"))
+        (Some name) None sg
+  | Body body ->
       (* Locally update the environment *)
       let locals = List.map (fun v -> (v.index, v.name)) body.locals.locals in
       let env = { env with locals } in
