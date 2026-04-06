@@ -105,13 +105,7 @@ pub fn core::intrinsics::saturating_add<T>(_1: T, _2: T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
-{
-    let _0: T; // return
-    let a_1: T; // arg #1
-    let b_2: T; // arg #2
-
-    undefined_behavior
-}
+= <intrinsic:saturating_add>
 
 // Full name: core::marker::{impl Copy for u8}
 impl Copy for u8 {

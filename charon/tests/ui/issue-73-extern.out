@@ -2,11 +2,11 @@
 
 // Full name: test_crate::foo
 unsafe fn foo(_1: i32)
-= <opaque>
+= <extern:foo>
 
 // Full name: test_crate::CONST
 fn CONST() -> u8
-= <opaque>
+= <extern:CONST>
 
 // Full name: test_crate::CONST
 static CONST: u8 = CONST()

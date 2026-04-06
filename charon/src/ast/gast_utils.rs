@@ -15,6 +15,8 @@ impl Body {
         match self {
             Body::Unstructured(..) | Body::Structured(..) => true,
             Body::TraitMethodWithoutDefault
+            | Body::Extern(..)
+            | Body::Intrinsic(..)
             | Body::Opaque
             | Body::Missing
             | Body::Error(..)

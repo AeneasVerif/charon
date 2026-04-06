@@ -242,12 +242,7 @@ pub fn ctpop<T>(_1: T) -> u32
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
-{
-    let _0: u32; // return
-    let x_1: T; // arg #1
-
-    undefined_behavior
-}
+= <intrinsic:ctpop>
 
 fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(_1: usize)
 {
@@ -818,11 +813,7 @@ where
 pub fn core::intrinsics::align_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    undefined_behavior
-}
+= <intrinsic:align_of>
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
@@ -847,11 +838,7 @@ where
 pub fn size_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    undefined_behavior
-}
+= <intrinsic:size_of>
 
 // Full name: core::mem::SizedTypeProperties::SIZE
 #[lang_item("mem_size_const")]
@@ -941,15 +928,7 @@ where
 pub unsafe fn write_bytes<T>(_1: *mut T, _2: u8, _3: usize)
 where
     [@TraitClause0]: Sized<T>,
-{
-    let _0: (); // return
-    let dst_1: *mut T; // arg #1
-    let val_2: u8; // arg #2
-    let count_3: usize; // arg #3
-
-    _0 = ()
-    undefined_behavior
-}
+= <intrinsic:write_bytes>
 
 // Full name: core::convert::Infallible
 pub enum Infallible {
@@ -1106,12 +1085,7 @@ pub fn panic_nounwind(_1: &'static Str) -> !
 
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
+= <intrinsic:cold_path>
 
 // Full name: core::ub_checks::maybe_is_nonoverlapping::runtime
 fn runtime(_1: *const (), _2: *const (), _3: usize, _4: usize) -> bool
@@ -1788,23 +1762,23 @@ fn core::hint::assert_unchecked::precondition_check(_1: bool)
 
 // Full name: alloc::alloc::__rust_alloc
 unsafe fn __rust_alloc(_1: usize, _2: usize) -> *mut u8
-= <opaque>
+= <extern:__rust_alloc>
 
 // Full name: alloc::alloc::__rust_dealloc
 unsafe fn __rust_dealloc(_1: *mut u8, _2: usize, _3: usize)
-= <opaque>
+= <extern:__rust_dealloc>
 
 // Full name: alloc::alloc::__rust_realloc
 unsafe fn __rust_realloc(_1: *mut u8, _2: usize, _3: usize, _4: usize) -> *mut u8
-= <opaque>
+= <extern:__rust_realloc>
 
 // Full name: alloc::alloc::__rust_alloc_zeroed
 unsafe fn __rust_alloc_zeroed(_1: usize, _2: usize) -> *mut u8
-= <opaque>
+= <extern:__rust_alloc_zeroed>
 
 // Full name: alloc::alloc::__rust_no_alloc_shim_is_unstable_v2
 unsafe fn __rust_no_alloc_shim_is_unstable_v2()
-= <opaque>
+= <extern:__rust_no_alloc_shim_is_unstable_v2>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
