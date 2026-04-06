@@ -744,6 +744,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             .is_some_and(|parent| matches!(parent.kind, hax::DefKind::ForeignMod { .. }))
     }
 
+    /// If this is an item declared in an `extern { .. }` block, return its symbol name.
+    pub(crate) fn extern_item_symbol_name(&mut self, def: &hax::FullDef) -> Option<String> {
+        if !self.is_extern_item(def) {
+            return None;
+        }
+        let path_item = def.def_id().path_item(&self.hax_state);
+        match path_item.data {
+            hax::DefPathItem::ValueNs(name) | hax::DefPathItem::TypeNs(name) => {
+                Some(name.to_string())
+            }
+            _ => None,
+        }
+    }
+
     /// Compute the meta information for a Rust item.
     pub(crate) fn translate_item_meta(
         &mut self,

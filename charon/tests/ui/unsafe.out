@@ -225,7 +225,7 @@ impl Hash for () {
 }
 
 pub unsafe fn core::intrinsics::assume(_1: bool)
-= <opaque>
+= <intrinsic:assume>
 
 // Full name: core::marker::Send
 #[lang_item("Send")]

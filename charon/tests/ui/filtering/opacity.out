@@ -160,7 +160,7 @@ struct Struct {}
 
 // Full name: test_crate::extern_fn
 unsafe fn extern_fn(_1: i32)
-= <opaque>
+= <extern:extern_fn>
 
 
 

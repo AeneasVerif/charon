@@ -157,12 +157,7 @@ pub fn ctpop<T>(_1: T) -> u32
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
-{
-    let _0: u32; // return
-    let x_1: T; // arg #1
-
-    undefined_behavior
-}
+= <intrinsic:ctpop>
 
 // Full name: core::panicking::panic_nounwind_fmt::compiletime
 fn compiletime<'_0>(_1: Arguments<'_0>, _2: bool) -> !
@@ -178,20 +173,12 @@ fn compiletime<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 pub fn size_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    undefined_behavior
-}
+= <intrinsic:size_of>
 
 pub fn core::intrinsics::align_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    undefined_behavior
-}
+= <intrinsic:align_of>
 
 // Full name: core::marker::{impl Copy for usize}
 impl Copy for usize {

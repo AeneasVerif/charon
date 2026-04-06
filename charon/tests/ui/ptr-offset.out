@@ -14,7 +14,7 @@ pub opaque type Argument<'a>
 
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
-= <opaque>
+= <intrinsic:cold_path>
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
