@@ -16,7 +16,7 @@ impl Body {
             Body::Unstructured(..) | Body::Structured(..) => true,
             Body::TraitMethodWithoutDefault
             | Body::Extern(..)
-            | Body::Intrinsic(..)
+            | Body::Intrinsic { .. }
             | Body::Opaque
             | Body::Missing
             | Body::Error(..)

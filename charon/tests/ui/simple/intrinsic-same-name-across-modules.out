@@ -47,7 +47,7 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-pub fn core::intrinsics::wrapping_add<T>(_1: T, _2: T) -> T
+pub fn core::intrinsics::wrapping_add<T>(a_1: T, b_2: T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -60,7 +60,7 @@ impl Copy for u8 {
     non-dyn-compatible
 }
 
-pub fn test_crate::first::nested::wrapping_add<T>(_1: T, _2: T) -> T
+pub fn test_crate::first::nested::wrapping_add<T>(lhs_1: T, rhs_2: T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,

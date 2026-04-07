@@ -224,7 +224,7 @@ impl Hash for () {
     non-dyn-compatible
 }
 
-pub unsafe fn core::intrinsics::assume(_1: bool)
+pub unsafe fn core::intrinsics::assume(b_1: bool)
 = <intrinsic:assume>
 
 // Full name: core::marker::Send

@@ -101,7 +101,7 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-pub fn core::intrinsics::saturating_add<T>(_1: T, _2: T) -> T
+pub fn core::intrinsics::saturating_add<T>(a_1: T, b_2: T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,

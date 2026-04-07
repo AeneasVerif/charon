@@ -604,9 +604,10 @@ impl ItemTransCtx<'_, '_> {
             .then(|| self.register_item(span, def.this(), TransItemSourceKind::Global));
 
         let body = if let Some(name) = intrinsic_name {
-            Body::Intrinsic(name)
-        } else if let Some(symbol_name) = self.t_ctx.extern_item_symbol_name(def) {
-            Body::Extern(symbol_name)
+            let arg_names = self.translate_argument_names(span, def, signature.inputs.len());
+            Body::Intrinsic { name, arg_names }
+        } else if let Some(name) = self.t_ctx.extern_item_symbol_name(def) {
+            Body::Extern(name)
         } else if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else if is_trait_method_decl_without_default {

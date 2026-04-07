@@ -238,7 +238,7 @@ impl Copy for usize {
 }
 
 // Full name: core::intrinsics::ctpop
-pub fn ctpop<T>(_1: T) -> u32
+pub fn ctpop<T>(x_1: T) -> u32
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -925,7 +925,7 @@ where
 }
 
 // Full name: core::intrinsics::write_bytes
-pub unsafe fn write_bytes<T>(_1: *mut T, _2: u8, _3: usize)
+pub unsafe fn write_bytes<T>(dst_1: *mut T, val_2: u8, count_3: usize)
 where
     [@TraitClause0]: Sized<T>,
 = <intrinsic:write_bytes>

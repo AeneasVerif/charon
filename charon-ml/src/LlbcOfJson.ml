@@ -22,7 +22,9 @@ let expr_body_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Extern", sym) ] ->
         let* sym = string_of_json ctx sym in
         Ok (Extern sym)
-    | `Assoc [ ("Intrinsic", name) ] ->
+    | `Assoc
+        [ ("Intrinsic", `Assoc [ ("name", name); ("arg_names", arg_names) ]) ]
+      ->
         let* name = string_of_json ctx name in
         let* arg_names = list_of_json string_of_json ctx arg_names in
         Ok (Intrinsic { name; arg_names })

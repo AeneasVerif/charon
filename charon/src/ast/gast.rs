@@ -100,10 +100,17 @@ pub enum Body {
     /// The body of the function item we add for each trait method declaration, if the trait
     /// doesn't provide a default for that method.
     TraitMethodWithoutDefault,
-    /// Function declared in an `extern { ... }` block. The string is the foreign symbol name.
+    /// Function declared in an `extern { ... }` block.
     Extern(#[drive(skip)] String),
     /// Rust intrinsic function.
-    Intrinsic(#[drive(skip)] String),
+    Intrinsic {
+        /// The intrinsic name.
+        #[drive(skip)]
+        name: String,
+        /// The argument names, None if not available.
+        #[drive(skip)]
+        arg_names: Vec<Option<String>>,
+    },
     /// A body that the user chose not to translate, based on opacity settings like
     /// `--include`/`--opaque`.
     Opaque,

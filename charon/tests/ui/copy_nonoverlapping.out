@@ -153,7 +153,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::intrinsics::ctpop
-pub fn ctpop<T>(_1: T) -> u32
+pub fn ctpop<T>(x_1: T) -> u32
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
