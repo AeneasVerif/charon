@@ -84,7 +84,7 @@ struct closure<'_0> {
 }
 
 // Full name: test_crate::foo::{impl FnMut<()> for closure<'_0>}::call_mut
-fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, _2: ())
+fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, tupled_args_2: ())
 {
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1

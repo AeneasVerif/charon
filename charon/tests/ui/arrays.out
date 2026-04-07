@@ -332,7 +332,7 @@ pub enum AB {
 }
 
 // Full name: test_crate::incr
-pub fn incr<'_0>(_1: &'_0 mut u32)
+pub fn incr<'_0>(x_1: &'_0 mut u32)
 {
     let _0: (); // return
     let x_1: &'1 mut u32; // arg #1
@@ -347,7 +347,7 @@ pub fn incr<'_0>(_1: &'_0 mut u32)
 }
 
 // Full name: test_crate::array_to_shared_slice_
-pub fn array_to_shared_slice_<'_0, T>(_1: &'_0 [T; 32 : usize]) -> &'_0 [T]
+pub fn array_to_shared_slice_<'_0, T>(s_1: &'_0 [T; 32 : usize]) -> &'_0 [T]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -363,7 +363,7 @@ where
 }
 
 // Full name: test_crate::array_to_mut_slice_
-pub fn array_to_mut_slice_<'_0, T>(_1: &'_0 mut [T; 32 : usize]) -> &'_0 mut [T]
+pub fn array_to_mut_slice_<'_0, T>(s_1: &'_0 mut [T; 32 : usize]) -> &'_0 mut [T]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -383,7 +383,7 @@ where
 }
 
 // Full name: test_crate::array_len
-pub fn array_len<T>(_1: [T; 32 : usize]) -> usize
+pub fn array_len<T>(s_1: [T; 32 : usize]) -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -404,7 +404,7 @@ where
 }
 
 // Full name: test_crate::shared_array_len
-pub fn shared_array_len<'_0, T>(_1: &'_0 [T; 32 : usize]) -> usize
+pub fn shared_array_len<'_0, T>(s_1: &'_0 [T; 32 : usize]) -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -424,7 +424,7 @@ where
 }
 
 // Full name: test_crate::shared_slice_len
-pub fn shared_slice_len<'_0, T>(_1: &'_0 [T]) -> usize
+pub fn shared_slice_len<'_0, T>(s_1: &'_0 [T]) -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -440,7 +440,7 @@ where
 }
 
 // Full name: test_crate::index_array_shared
-pub fn index_array_shared<'_0, T>(_1: &'_0 [T; 32 : usize], _2: usize) -> &'_0 T
+pub fn index_array_shared<'_0, T>(s_1: &'_0 [T; 32 : usize], i_2: usize) -> &'_0 T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -467,7 +467,7 @@ where
 }
 
 // Full name: test_crate::index_array_u32
-pub fn index_array_u32(_1: [u32; 32 : usize], _2: usize) -> u32
+pub fn index_array_u32(s_1: [u32; 32 : usize], i_2: usize) -> u32
 {
     let _0: u32; // return
     let s_1: [u32; 32 : usize]; // arg #1
@@ -488,7 +488,7 @@ pub fn index_array_u32(_1: [u32; 32 : usize], _2: usize) -> u32
 }
 
 // Full name: test_crate::index_array_copy
-pub fn index_array_copy<'_0>(_1: &'_0 [u32; 32 : usize]) -> u32
+pub fn index_array_copy<'_0>(x_1: &'_0 [u32; 32 : usize]) -> u32
 {
     let _0: u32; // return
     let x_1: &'1 [u32; 32 : usize]; // arg #1
@@ -508,7 +508,7 @@ pub fn index_array_copy<'_0>(_1: &'_0 [u32; 32 : usize]) -> u32
 }
 
 // Full name: test_crate::index_mut_array
-pub fn index_mut_array<'_0, T>(_1: &'_0 mut [T; 32 : usize], _2: usize) -> &'_0 mut T
+pub fn index_mut_array<'_0, T>(s_1: &'_0 mut [T; 32 : usize], i_2: usize) -> &'_0 mut T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -539,7 +539,7 @@ where
 }
 
 // Full name: test_crate::index_slice
-pub fn index_slice<'_0, T>(_1: &'_0 [T], _2: usize) -> &'_0 T
+pub fn index_slice<'_0, T>(s_1: &'_0 [T], i_2: usize) -> &'_0 T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -566,7 +566,7 @@ where
 }
 
 // Full name: test_crate::index_mut_slice
-pub fn index_mut_slice<'_0, T>(_1: &'_0 mut [T], _2: usize) -> &'_0 mut T
+pub fn index_mut_slice<'_0, T>(s_1: &'_0 mut [T], i_2: usize) -> &'_0 mut T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -597,7 +597,7 @@ where
 }
 
 // Full name: test_crate::slice_subslice_shared_
-pub fn slice_subslice_shared_<'_0>(_1: &'_0 [u32], _2: usize, _3: usize) -> &'_0 [u32]
+pub fn slice_subslice_shared_<'_0>(x_1: &'_0 [u32], y_2: usize, z_3: usize) -> &'_0 [u32]
 {
     let _0: &'1 [u32]; // return
     let x_1: &'2 [u32]; // arg #1
@@ -633,7 +633,7 @@ pub fn slice_subslice_shared_<'_0>(_1: &'_0 [u32], _2: usize, _3: usize) -> &'_0
 }
 
 // Full name: test_crate::slice_subslice_mut_
-pub fn slice_subslice_mut_<'_0>(_1: &'_0 mut [u32], _2: usize, _3: usize) -> &'_0 mut [u32]
+pub fn slice_subslice_mut_<'_0>(x_1: &'_0 mut [u32], y_2: usize, z_3: usize) -> &'_0 mut [u32]
 {
     let _0: &'1 mut [u32]; // return
     let x_1: &'2 mut [u32]; // arg #1
@@ -673,7 +673,7 @@ pub fn slice_subslice_mut_<'_0>(_1: &'_0 mut [u32], _2: usize, _3: usize) -> &'_
 }
 
 // Full name: test_crate::array_to_slice_shared_
-pub fn array_to_slice_shared_<'_0>(_1: &'_0 [u32; 32 : usize]) -> &'_0 [u32]
+pub fn array_to_slice_shared_<'_0>(x_1: &'_0 [u32; 32 : usize]) -> &'_0 [u32]
 {
     let _0: &'1 [u32]; // return
     let x_1: &'3 [u32; 32 : usize]; // arg #1
@@ -687,7 +687,7 @@ pub fn array_to_slice_shared_<'_0>(_1: &'_0 [u32; 32 : usize]) -> &'_0 [u32]
 }
 
 // Full name: test_crate::array_to_slice_mut_
-pub fn array_to_slice_mut_<'_0>(_1: &'_0 mut [u32; 32 : usize]) -> &'_0 mut [u32]
+pub fn array_to_slice_mut_<'_0>(x_1: &'_0 mut [u32; 32 : usize]) -> &'_0 mut [u32]
 {
     let _0: &'1 mut [u32]; // return
     let x_1: &'3 mut [u32; 32 : usize]; // arg #1
@@ -705,7 +705,7 @@ pub fn array_to_slice_mut_<'_0>(_1: &'_0 mut [u32; 32 : usize]) -> &'_0 mut [u32
 }
 
 // Full name: test_crate::array_subslice_shared_
-pub fn array_subslice_shared_<'_0>(_1: &'_0 [u32; 32 : usize], _2: usize, _3: usize) -> &'_0 [u32]
+pub fn array_subslice_shared_<'_0>(x_1: &'_0 [u32; 32 : usize], y_2: usize, z_3: usize) -> &'_0 [u32]
 {
     let _0: &'1 [u32]; // return
     let x_1: &'3 [u32; 32 : usize]; // arg #1
@@ -741,7 +741,7 @@ pub fn array_subslice_shared_<'_0>(_1: &'_0 [u32; 32 : usize], _2: usize, _3: us
 }
 
 // Full name: test_crate::array_subslice_mut_
-pub fn array_subslice_mut_<'_0>(_1: &'_0 mut [u32; 32 : usize], _2: usize, _3: usize) -> &'_0 mut [u32]
+pub fn array_subslice_mut_<'_0>(x_1: &'_0 mut [u32; 32 : usize], y_2: usize, z_3: usize) -> &'_0 mut [u32]
 {
     let _0: &'1 mut [u32]; // return
     let x_1: &'3 mut [u32; 32 : usize]; // arg #1
@@ -781,7 +781,7 @@ pub fn array_subslice_mut_<'_0>(_1: &'_0 mut [u32; 32 : usize], _2: usize, _3: u
 }
 
 // Full name: test_crate::index_slice_0
-pub fn index_slice_0<'_0, T>(_1: &'_0 [T]) -> &'_0 T
+pub fn index_slice_0<'_0, T>(s_1: &'_0 [T]) -> &'_0 T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -807,7 +807,7 @@ where
 }
 
 // Full name: test_crate::index_array_0
-pub fn index_array_0<'_0, T>(_1: &'_0 [T; 32 : usize]) -> &'_0 T
+pub fn index_array_0<'_0, T>(s_1: &'_0 [T; 32 : usize]) -> &'_0 T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -833,7 +833,7 @@ where
 }
 
 // Full name: test_crate::index_index_array
-pub fn index_index_array(_1: [[u32; 32 : usize]; 32 : usize], _2: usize, _3: usize) -> u32
+pub fn index_index_array(s_1: [[u32; 32 : usize]; 32 : usize], i_2: usize, j_3: usize) -> u32
 {
     let _0: u32; // return
     let s_1: [[u32; 32 : usize]; 32 : usize]; // arg #1
@@ -865,7 +865,7 @@ pub fn index_index_array(_1: [[u32; 32 : usize]; 32 : usize], _2: usize, _3: usi
 }
 
 // Full name: test_crate::update_update_array
-pub fn update_update_array(_1: [[u32; 32 : usize]; 32 : usize], _2: usize, _3: usize)
+pub fn update_update_array(s_1: [[u32; 32 : usize]; 32 : usize], i_2: usize, j_3: usize)
 {
     let _0: (); // return
     let s_1: [[u32; 32 : usize]; 32 : usize]; // arg #1
@@ -899,7 +899,7 @@ pub fn update_update_array(_1: [[u32; 32 : usize]; 32 : usize], _2: usize, _3: u
 }
 
 // Full name: test_crate::incr_array_self
-pub fn incr_array_self<'_0>(_1: &'_0 mut [u32; 2 : usize])
+pub fn incr_array_self<'_0>(s_1: &'_0 mut [u32; 2 : usize])
 {
     let _0: (); // return
     let s_1: &'1 mut [u32; 2 : usize]; // arg #1
@@ -930,7 +930,7 @@ pub fn incr_array_self<'_0>(_1: &'_0 mut [u32; 2 : usize])
 }
 
 // Full name: test_crate::incr_slice_self
-pub fn incr_slice_self<'_0>(_1: &'_0 mut [u32])
+pub fn incr_slice_self<'_0>(s_1: &'_0 mut [u32])
 {
     let _0: (); // return
     let s_1: &'1 mut [u32]; // arg #1
@@ -961,7 +961,7 @@ pub fn incr_slice_self<'_0>(_1: &'_0 mut [u32])
 }
 
 // Full name: test_crate::array_local_deep_copy
-pub fn array_local_deep_copy<'_0>(_1: &'_0 [u32; 32 : usize])
+pub fn array_local_deep_copy<'_0>(x_1: &'_0 [u32; 32 : usize])
 {
     let _0: (); // return
     let x_1: &'1 [u32; 32 : usize]; // arg #1
@@ -1139,7 +1139,7 @@ pub fn take_all()
 }
 
 // Full name: test_crate::index_array
-pub fn index_array(_1: [u32; 2 : usize]) -> u32
+pub fn index_array(x_1: [u32; 2 : usize]) -> u32
 {
     let _0: u32; // return
     let x_1: [u32; 2 : usize]; // arg #1
@@ -1159,7 +1159,7 @@ pub fn index_array(_1: [u32; 2 : usize]) -> u32
 }
 
 // Full name: test_crate::index_array_borrow
-pub fn index_array_borrow<'_0>(_1: &'_0 [u32; 2 : usize]) -> u32
+pub fn index_array_borrow<'_0>(x_1: &'_0 [u32; 2 : usize]) -> u32
 {
     let _0: u32; // return
     let x_1: &'1 [u32; 2 : usize]; // arg #1
@@ -1179,7 +1179,7 @@ pub fn index_array_borrow<'_0>(_1: &'_0 [u32; 2 : usize]) -> u32
 }
 
 // Full name: test_crate::index_slice_u32_0
-pub fn index_slice_u32_0<'_0>(_1: &'_0 [u32]) -> u32
+pub fn index_slice_u32_0<'_0>(x_1: &'_0 [u32]) -> u32
 {
     let _0: u32; // return
     let x_1: &'1 [u32]; // arg #1
@@ -1199,7 +1199,7 @@ pub fn index_slice_u32_0<'_0>(_1: &'_0 [u32]) -> u32
 }
 
 // Full name: test_crate::index_mut_slice_u32_0
-pub fn index_mut_slice_u32_0<'_0>(_1: &'_0 mut [u32]) -> u32
+pub fn index_mut_slice_u32_0<'_0>(x_1: &'_0 mut [u32]) -> u32
 {
     let _0: u32; // return
     let x_1: &'1 mut [u32]; // arg #1
@@ -1331,7 +1331,7 @@ pub fn index_all() -> u32
 }
 
 // Full name: test_crate::update_array
-pub fn update_array(_1: [u32; 2 : usize])
+pub fn update_array(x_1: [u32; 2 : usize])
 {
     let _0: (); // return
     let x_1: [u32; 2 : usize]; // arg #1
@@ -1353,7 +1353,7 @@ pub fn update_array(_1: [u32; 2 : usize])
 }
 
 // Full name: test_crate::update_array_mut_borrow
-pub fn update_array_mut_borrow<'_0>(_1: &'_0 mut [u32; 2 : usize])
+pub fn update_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2 : usize])
 {
     let _0: (); // return
     let x_1: &'1 mut [u32; 2 : usize]; // arg #1
@@ -1375,7 +1375,7 @@ pub fn update_array_mut_borrow<'_0>(_1: &'_0 mut [u32; 2 : usize])
 }
 
 // Full name: test_crate::update_mut_slice
-pub fn update_mut_slice<'_0>(_1: &'_0 mut [u32])
+pub fn update_mut_slice<'_0>(x_1: &'_0 mut [u32])
 {
     let _0: (); // return
     let x_1: &'1 mut [u32]; // arg #1
@@ -1494,7 +1494,7 @@ pub fn range_all()
 }
 
 // Full name: test_crate::deref_array_borrow
-pub fn deref_array_borrow<'_0>(_1: &'_0 [u32; 2 : usize]) -> u32
+pub fn deref_array_borrow<'_0>(x_1: &'_0 [u32; 2 : usize]) -> u32
 {
     let _0: u32; // return
     let x_1: &'1 [u32; 2 : usize]; // arg #1
@@ -1518,7 +1518,7 @@ pub fn deref_array_borrow<'_0>(_1: &'_0 [u32; 2 : usize]) -> u32
 }
 
 // Full name: test_crate::deref_array_mut_borrow
-pub fn deref_array_mut_borrow<'_0>(_1: &'_0 mut [u32; 2 : usize]) -> u32
+pub fn deref_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2 : usize]) -> u32
 {
     let _0: u32; // return
     let x_1: &'1 mut [u32; 2 : usize]; // arg #1
@@ -1587,7 +1587,7 @@ pub fn non_copyable_array()
 }
 
 // Full name: test_crate::sum
-pub fn sum<'_0>(_1: &'_0 [u32]) -> u32
+pub fn sum<'_0>(s_1: &'_0 [u32]) -> u32
 {
     let _0: u32; // return
     let s_1: &'1 [u32]; // arg #1
@@ -1653,7 +1653,7 @@ pub fn sum<'_0>(_1: &'_0 [u32]) -> u32
 }
 
 // Full name: test_crate::sum2
-pub fn sum2<'_0, '_1>(_1: &'_0 [u32], _2: &'_1 [u32]) -> u32
+pub fn sum2<'_0, '_1>(s_1: &'_0 [u32], s2_2: &'_1 [u32]) -> u32
 {
     let _0: u32; // return
     let s_1: &'1 [u32]; // arg #1
@@ -1840,7 +1840,7 @@ pub fn f2(_1: u32)
 }
 
 // Full name: test_crate::f4
-pub fn f4<'_0>(_1: &'_0 [u32; 32 : usize], _2: usize, _3: usize) -> &'_0 [u32]
+pub fn f4<'_0>(x_1: &'_0 [u32; 32 : usize], y_2: usize, z_3: usize) -> &'_0 [u32]
 {
     let _0: &'1 [u32]; // return
     let x_1: &'3 [u32; 32 : usize]; // arg #1
@@ -1951,7 +1951,7 @@ pub fn SZ() -> usize
 pub const SZ: usize = SZ()
 
 // Full name: test_crate::f5
-pub fn f5<'_0>(_1: &'_0 [u32; 32 : usize]) -> u32
+pub fn f5<'_0>(x_1: &'_0 [u32; 32 : usize]) -> u32
 {
     let _0: u32; // return
     let x_1: &'1 [u32; 32 : usize]; // arg #1
@@ -2029,7 +2029,7 @@ pub fn ite()
 }
 
 // Full name: test_crate::zero_slice
-pub fn zero_slice<'_0>(_1: &'_0 mut [u8])
+pub fn zero_slice<'_0>(a_1: &'_0 mut [u8])
 {
     let _0: (); // return
     let a_1: &'1 mut [u8]; // arg #1
@@ -2089,7 +2089,7 @@ pub fn zero_slice<'_0>(_1: &'_0 mut [u8])
 }
 
 // Full name: test_crate::iter_mut_slice
-pub fn iter_mut_slice<'_0>(_1: &'_0 mut [u8])
+pub fn iter_mut_slice<'_0>(a_1: &'_0 mut [u8])
 {
     let _0: (); // return
     let a_1: &'1 mut [u8]; // arg #1
@@ -2138,7 +2138,7 @@ pub fn iter_mut_slice<'_0>(_1: &'_0 mut [u8])
 }
 
 // Full name: test_crate::sum_mut_slice
-pub fn sum_mut_slice<'_0>(_1: &'_0 mut [u32]) -> u32
+pub fn sum_mut_slice<'_0>(a_1: &'_0 mut [u32]) -> u32
 {
     let _0: u32; // return
     let a_1: &'1 mut [u32]; // arg #1
@@ -2204,7 +2204,7 @@ pub fn sum_mut_slice<'_0>(_1: &'_0 mut [u32]) -> u32
 }
 
 // Full name: test_crate::slice_pattern_1
-fn slice_pattern_1(_1: [(); 1 : usize])
+fn slice_pattern_1(x_1: [(); 1 : usize])
 {
     let _0: (); // return
     let x_1: [(); 1 : usize]; // arg #1
@@ -2225,7 +2225,7 @@ fn slice_pattern_1(_1: [(); 1 : usize])
 }
 
 // Full name: test_crate::slice_pattern_2
-fn slice_pattern_2<'_0, T>(_1: [&'_0 mut T; 3 : usize])
+fn slice_pattern_2<'_0, T>(x_1: [&'_0 mut T; 3 : usize])
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -2268,7 +2268,7 @@ where
 }
 
 // Full name: test_crate::slice_pattern_3
-fn slice_pattern_3<'_0>(_1: &'_0 [(); 1 : usize])
+fn slice_pattern_3<'_0>(x_1: &'_0 [(); 1 : usize])
 {
     let _0: (); // return
     let x_1: &'1 [(); 1 : usize]; // arg #1
@@ -2289,7 +2289,7 @@ fn slice_pattern_3<'_0>(_1: &'_0 [(); 1 : usize])
 }
 
 // Full name: test_crate::slice_pattern_4
-fn slice_pattern_4<'_0>(_1: &'_0 [()])
+fn slice_pattern_4<'_0>(x_1: &'_0 [()])
 {
     let _0: (); // return
     let x_1: &'1 [()]; // arg #1

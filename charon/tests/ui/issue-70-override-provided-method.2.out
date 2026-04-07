@@ -31,7 +31,7 @@ where
     [@TraitClause0]: Trait<Self>,
 = <method_without_default_body>
 
-fn test_crate::Trait::provided1<'_0, Self>(_1: &'_0 Self)
+fn test_crate::Trait::provided1<'_0, Self>(self_1: &'_0 Self)
 where
     [@TraitClause0]: Trait<Self>,
 {
@@ -59,7 +59,7 @@ where
     return
 }
 
-fn test_crate::Trait::provided2<'_0, Self>(_1: &'_0 Self)
+fn test_crate::Trait::provided2<'_0, Self>(self_1: &'_0 Self)
 where
     [@TraitClause0]: Trait<Self>,
 {
@@ -91,7 +91,7 @@ where
 struct Foo {}
 
 // Full name: test_crate::{impl Trait for Foo}::provided1
-fn {impl Trait for Foo}::provided1<'_0>(_1: &'_0 Foo)
+fn {impl Trait for Foo}::provided1<'_0>(self_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -118,7 +118,7 @@ fn {impl Trait for Foo}::provided1<'_0>(_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl Trait for Foo}::provided2
-fn {impl Trait for Foo}::provided2<'_0>(_1: &'_0 Foo)
+fn {impl Trait for Foo}::provided2<'_0>(self_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -145,7 +145,7 @@ fn {impl Trait for Foo}::provided2<'_0>(_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl Trait for Foo}::required
-fn {impl Trait for Foo}::required<'_0>(_1: &'_0 Foo)
+fn {impl Trait for Foo}::required<'_0>(self_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -176,7 +176,7 @@ impl Trait for Foo {
 struct Bar {}
 
 // Full name: test_crate::{impl Trait for Bar}::provided2
-fn {impl Trait for Bar}::provided2<'_0>(_1: &'_0 Bar)
+fn {impl Trait for Bar}::provided2<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1
@@ -203,7 +203,7 @@ fn {impl Trait for Bar}::provided2<'_0>(_1: &'_0 Bar)
 }
 
 // Full name: test_crate::{impl Trait for Bar}::required
-fn {impl Trait for Bar}::required<'_0>(_1: &'_0 Bar)
+fn {impl Trait for Bar}::required<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1
@@ -222,7 +222,7 @@ fn {impl Trait for Bar}::required<'_0>(_1: &'_0 Bar)
 }
 
 // Full name: test_crate::{impl Trait for Bar}::provided1
-fn {impl Trait for Bar}::provided1<'_0>(_1: &'_0 Bar)
+fn {impl Trait for Bar}::provided1<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1

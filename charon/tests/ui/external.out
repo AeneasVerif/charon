@@ -241,7 +241,7 @@ fn UNIT_METADATA()
 // Full name: UNIT_METADATA
 const UNIT_METADATA: () = UNIT_METADATA()
 
-pub fn test_crate::swap<'a, T>(_1: &'a mut T, _2: &'a mut T)
+pub fn test_crate::swap<'a, T>(x_1: &'a mut T, y_2: &'a mut T)
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -263,7 +263,7 @@ where
 }
 
 // Full name: test_crate::test_new_non_zero_u32
-pub fn test_new_non_zero_u32(_1: u32) -> NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]
+pub fn test_new_non_zero_u32(x_1: u32) -> NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]
 {
     let _0: NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]; // return
     let x_1: u32; // arg #1
@@ -304,7 +304,7 @@ pub fn test_vec_push()
 }
 
 // Full name: test_crate::use_get
-pub fn use_get<'_0>(_1: &'_0 Cell<u32>[{built_in impl MetaSized for u32}]) -> u32
+pub fn use_get<'_0>(rc_1: &'_0 Cell<u32>[{built_in impl MetaSized for u32}]) -> u32
 {
     let _0: u32; // return
     let rc_1: &'1 Cell<u32>[{built_in impl MetaSized for u32}]; // arg #1
@@ -318,7 +318,7 @@ pub fn use_get<'_0>(_1: &'_0 Cell<u32>[{built_in impl MetaSized for u32}]) -> u3
 }
 
 // Full name: test_crate::incr
-pub fn incr<'_0>(_1: &'_0 mut Cell<u32>[{built_in impl MetaSized for u32}])
+pub fn incr<'_0>(rc_1: &'_0 mut Cell<u32>[{built_in impl MetaSized for u32}])
 {
     let _0: (); // return
     let rc_1: &'1 mut Cell<u32>[{built_in impl MetaSized for u32}]; // arg #1
