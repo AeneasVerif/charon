@@ -48,7 +48,7 @@ impl Trait for () {
 }
 
 // Full name: test_crate::use_debug
-fn use_debug<'_0>(_1: &'_0 (dyn Trait + '_0))
+fn use_debug<'_0>(_d_1: &'_0 (dyn Trait + '_0))
 {
     let _0: (); // return
     let _d_1: &'3 (dyn Trait + '4); // arg #1

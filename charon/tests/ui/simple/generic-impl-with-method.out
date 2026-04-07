@@ -26,7 +26,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for T}::method
-pub fn {impl Trait for T}::method<'_0, T>(_1: &'_0 T)
+pub fn {impl Trait for T}::method<'_0, T>(self_1: &'_0 T)
 where
     [@TraitClause0]: Sized<T>,
 {

@@ -49,7 +49,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
-pub fn {impl FromIterator<()> for ()}::from_iter<I>(_1: I)
+pub fn {impl FromIterator<()> for ()}::from_iter<I>(iter_1: I)
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: IntoIterator<I, ()>,

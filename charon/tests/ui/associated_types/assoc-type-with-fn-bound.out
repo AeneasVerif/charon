@@ -99,7 +99,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait<F> for F}::call
-pub fn {impl Trait<F> for F}::call<'_0, F>(_1: &'_0 F)
+pub fn {impl Trait<F> for F}::call<'_0, F>(self_1: &'_0 F)
 where
     [@TraitClause0]: Fn<F, (), ()>,
     [@TraitClause1]: Sized<F>,

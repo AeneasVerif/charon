@@ -154,7 +154,7 @@ where
 }
 
 // Full name: test_crate::{Generic<T>[@TraitClause0]}::new
-fn new<T>(_1: T) -> Generic<T>[@TraitClause0]
+fn new<T>(value_1: T) -> Generic<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -172,7 +172,7 @@ where
 }
 
 // Full name: test_crate::{Generic<T>[@TraitClause0]}::get
-fn get<'_0, T>(_1: &'_0 Generic<T>[@TraitClause0]) -> &'_0 T
+fn get<'_0, T>(self_1: &'_0 Generic<T>[@TraitClause0]) -> &'_0 T
 where
     [@TraitClause0]: Sized<T>,
 {

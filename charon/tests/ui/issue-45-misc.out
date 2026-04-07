@@ -318,7 +318,7 @@ impl Destruct for closure {
 }
 
 // Full name: test_crate::map::{impl FnMut<(i32,)> for closure}::call_mut
-fn {impl FnMut<(i32,)> for closure}::call_mut<'_0>(_1: &'_0 mut closure, _2: (i32,)) -> i32
+fn {impl FnMut<(i32,)> for closure}::call_mut<'_0>(_1: &'_0 mut closure, tupled_args_2: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: &'1 mut closure; // arg #1
@@ -367,7 +367,7 @@ impl FnMut<(i32,)> for closure {
     non-dyn-compatible
 }
 
-pub fn test_crate::map(_1: [i32; 256 : usize]) -> [i32; 256 : usize]
+pub fn test_crate::map(x_1: [i32; 256 : usize]) -> [i32; 256 : usize]
 {
     let _0: [i32; 256 : usize]; // return
     let x_1: [i32; 256 : usize]; // arg #1
@@ -394,7 +394,7 @@ pub fn array<const LEN : usize>() -> [u8; LEN]
 }
 
 // Full name: test_crate::cbd
-fn cbd(_1: [u8; 33 : usize])
+fn cbd(prf_input_1: [u8; 33 : usize])
 {
     let _0: (); // return
     let prf_input_1: [u8; 33 : usize]; // arg #1
@@ -460,7 +460,7 @@ fn cbd(_1: [u8; 33 : usize])
 }
 
 // Full name: test_crate::select
-fn select<'_0, '_1>(_1: &'_0 [u8], _2: &'_1 [u8])
+fn select<'_0, '_1>(lhs_1: &'_0 [u8], rhs_2: &'_1 [u8])
 {
     let _0: (); // return
     let lhs_1: &'1 [u8]; // arg #1

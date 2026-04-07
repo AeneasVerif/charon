@@ -150,7 +150,7 @@ impl StructuralPartialEq for Foo {
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
-pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(_1: &'_0 Foo, _2: &'_1 Foo) -> bool
+pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 Foo; // arg #1
@@ -175,7 +175,7 @@ impl PartialEq<Foo> for Foo {
 }
 
 // Full name: test_crate::{impl PartialOrd<Foo> for Foo}::partial_cmp
-pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(_1: &'_0 Foo, _2: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
     let _0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
     let self_1: &'1 Foo; // arg #1

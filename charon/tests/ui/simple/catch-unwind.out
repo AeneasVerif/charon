@@ -126,7 +126,7 @@ where
 struct closure {}
 
 // Full name: test_crate::main::{impl FnOnce<()> for closure}::call_once
-fn {impl FnOnce<()> for closure}::call_once(_1: closure, _2: ())
+fn {impl FnOnce<()> for closure}::call_once(_1: closure, tupled_args_2: ())
 {
     let _0: (); // return
     let _1: closure; // arg #1

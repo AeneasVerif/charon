@@ -41,7 +41,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl MyTryFrom<&'_0 bool> for bool}::from
-pub fn {impl MyTryFrom<&'_0 bool> for bool}::from<'_0>(_1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
+pub fn {impl MyTryFrom<&'_0 bool> for bool}::from<'_0>(v_1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 {
     let _0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
     let v_1: &'1 bool; // arg #1

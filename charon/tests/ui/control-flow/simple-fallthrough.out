@@ -63,7 +63,7 @@ fn do_something_at_the_end()
 }
 
 // Full name: test_crate::foo
-fn foo(_1: Option<u32>[{built_in impl Sized for u32}])
+fn foo(opt_1: Option<u32>[{built_in impl Sized for u32}])
 {
     let _0: (); // return
     let opt_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1

@@ -21,7 +21,7 @@ struct Bar<'a> {
 }
 
 // Full name: test_crate::{Bar<'a>}::new
-fn new<'a>(_1: &'a i32) -> Bar<'a>
+fn new<'a>(r_1: &'a i32) -> Bar<'a>
 {
     let _0: Bar<'1>; // return
     let r_1: &'3 i32; // arg #1

@@ -262,7 +262,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::get_or_insert
-pub fn get_or_insert<'_0>(_1: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32
+pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32
 {
     let _0: &'1 u32; // return
     let map_1: &'3 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // arg #1

@@ -279,7 +279,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::nested_loops_enum
-pub fn nested_loops_enum(_1: usize, _2: usize) -> usize
+pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
 {
     let _0: usize; // return
     let step_out_1: usize; // arg #1
