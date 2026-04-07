@@ -96,7 +96,12 @@ class ['self] map_crate =
         | Body b -> Body (self#visit_expr_body env b)
         | TraitMethodWithoutDefault -> TraitMethodWithoutDefault
         | Extern sym -> Extern (self#visit_string env sym)
-        | Intrinsic sym -> Intrinsic (self#visit_string env sym)
+        | Intrinsic { name; arg_names } ->
+            Intrinsic
+              {
+                name = self#visit_string env name;
+                arg_names = List.map (self#visit_string env) arg_names;
+              }
         | Opaque -> Opaque
         | Missing -> Missing
         | Error err -> Error (self#visit_error env err)
@@ -227,7 +232,9 @@ class ['self] iter_crate =
       | Body b -> self#visit_expr_body env b
       | TraitMethodWithoutDefault -> ()
       | Extern sym -> self#visit_string env sym
-      | Intrinsic sym -> self#visit_string env sym
+      | Intrinsic { name; arg_names } ->
+          self#visit_string env name;
+          List.iter (self#visit_string env) arg_names
       | Opaque -> ()
       | Missing -> ()
       | Error err -> self#visit_error env err

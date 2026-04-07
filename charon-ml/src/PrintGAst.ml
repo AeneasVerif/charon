@@ -125,9 +125,9 @@ let gfun_decl_to_string (env : 'a fmt_env) (indent : string)
       fun_sig_with_name_to_string env indent indent_incr
         (Some ("extern:" ^ sym))
         (Some name) None sg
-  | Intrinsic sym ->
+  | Intrinsic { name; _ } ->
       fun_sig_with_name_to_string env indent indent_incr
-        (Some ("intrinsic:" ^ sym))
+        (Some ("intrinsic:" ^ name))
         (Some name) None sg
   | Error err ->
       fun_sig_with_name_to_string env indent indent_incr

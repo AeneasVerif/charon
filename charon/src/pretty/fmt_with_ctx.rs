@@ -252,7 +252,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
             }
             Body::TraitMethodWithoutDefault => write!(f, "= <method_without_default_body>"),
             Body::Extern(name) => write!(f, "= <extern:{name}>"),
-            Body::Intrinsic(name) => write!(f, "= <intrinsic:{name}>"),
+            Body::Intrinsic { name, .. } => write!(f, "= <intrinsic:{name}>"),
             Body::Opaque => write!(f, "= <opaque>"),
             Body::Missing => write!(f, "= <missing>"),
             Body::Error(error) => write!(f, "= error(\"{}\")", error.msg),
@@ -580,9 +580,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
         let arg_names = match &self.body {
             Body::Unstructured(body) => args_of_locals(&body.locals),
             Body::Structured(body) => args_of_locals(&body.locals),
+            Body::Intrinsic { arg_names, .. } => arg_names
+                .iter()
+                .enumerate()
+                .map(|(i, name)| {
+                    let id = LocalId::new(i + 1);
+                    match name {
+                        Some(name) => format!("{name}_{id}"),
+                        None => format!("_{id}"),
+                    }
+                })
+                .collect(),
             Body::Error(..)
             | Body::Extern(..)
-            | Body::Intrinsic(..)
             | Body::Missing
             | Body::Opaque
             | Body::TraitMethodWithoutDefault => (0..n_args)

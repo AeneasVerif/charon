@@ -31,7 +31,7 @@ type 'body body =
   | Body of 'body gexpr_body
   | TraitMethodWithoutDefault
   | Extern of string
-  | Intrinsic of string
+  | Intrinsic of { name : string; arg_names : string list }
   | Opaque
   | Missing
   | Error of error
