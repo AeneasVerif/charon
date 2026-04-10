@@ -73,7 +73,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify
-fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(_1: &'_0 mut i32, _2: &'_1 T) -> T
+fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(self_1: &'_0 mut i32, arg_2: &'_1 T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -112,7 +112,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}<T>(_1: *mut (dyn Modifiable<T>))
+unsafe fn {vtable_drop_shim}<T>(dyn_self_1: *mut (dyn Modifiable<T>))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -165,7 +165,7 @@ where
 }
 
 // Full name: test_crate::modify_trait_object
-fn modify_trait_object<'_0, T>(_1: &'_0 T) -> T
+fn modify_trait_object<'_0, T>(arg_1: &'_0 T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,

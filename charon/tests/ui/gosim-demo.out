@@ -128,7 +128,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::debug_slice
-fn debug_slice<'_0, T>(_1: &'_0 [T])
+fn debug_slice<'_0, T>(slice_1: &'_0 [T])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Debug<T>,

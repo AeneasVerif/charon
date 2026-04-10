@@ -96,7 +96,7 @@ struct A {
 }
 
 // Full name: test_crate::{impl Drop for B}::drop
-pub fn {impl Drop for B}::drop<'_0>(_1: &'_0 mut B)
+pub fn {impl Drop for B}::drop<'_0>(self_1: &'_0 mut B)
 {
     let _0: (); // return
     let self_1: &'1 mut B; // arg #1

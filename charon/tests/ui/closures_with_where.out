@@ -126,7 +126,7 @@ where
 }
 
 // Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut
-fn {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[@TraitClause0, @TraitClause1], _2: (usize,)) -> T
+fn {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[@TraitClause0, @TraitClause1], tupled_args_2: (usize,)) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ops<T, K>,

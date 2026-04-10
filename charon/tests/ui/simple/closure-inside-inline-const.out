@@ -125,7 +125,7 @@ where
 }
 
 // Full name: test_crate::foo::{const}::{impl Fn<()> for closure<T>[@TraitClause0]}::call
-fn {impl Fn<()> for closure<T>[@TraitClause0]}::call<'_0, T>(_1: &'_0 closure<T>[@TraitClause0], _2: ()) -> i32
+fn {impl Fn<()> for closure<T>[@TraitClause0]}::call<'_0, T>(_1: &'_0 closure<T>[@TraitClause0], tupled_args_2: ()) -> i32
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -138,7 +138,7 @@ where
 }
 
 // Full name: test_crate::foo::{const}::{impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut
-fn {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_0, T>(_1: &'_0 mut closure<T>[@TraitClause0], _2: ()) -> i32
+fn {impl FnMut<()> for closure<T>[@TraitClause0]}::call_mut<'_0, T>(state_1: &'_0 mut closure<T>[@TraitClause0], args_2: ()) -> i32
 where
     [@TraitClause0]: Sized<T>,
 {

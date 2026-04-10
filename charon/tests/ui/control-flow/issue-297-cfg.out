@@ -88,7 +88,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::f1
-fn f1<'_0>(_1: &'_0 [u8]) -> usize
+fn f1<'_0>(a_1: &'_0 [u8]) -> usize
 {
     let _0: usize; // return
     let a_1: &'1 [u8]; // arg #1
@@ -168,7 +168,7 @@ fn FIELD_MODULUS() -> i16
 const FIELD_MODULUS: i16 = FIELD_MODULUS()
 
 // Full name: test_crate::f2
-fn f2<'_0, '_1>(_1: &'_0 [u8], _2: &'_1 mut [i16]) -> usize
+fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
 {
     let _0: usize; // return
     let a_1: &'1 [u8]; // arg #1

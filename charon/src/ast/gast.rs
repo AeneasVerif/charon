@@ -87,6 +87,17 @@ pub enum Body {
     /// The body of the function item we add for each trait method declaration, if the trait
     /// doesn't provide a default for that method.
     TraitMethodWithoutDefault,
+    /// Function declared in an `extern { ... }` block.
+    Extern(#[drive(skip)] String),
+    /// Rust intrinsic function.
+    Intrinsic {
+        /// The intrinsic name.
+        #[drive(skip)]
+        name: String,
+        /// The argument names, None if not available.
+        #[drive(skip)]
+        arg_names: Vec<Option<String>>,
+    },
     /// A body that the user chose not to translate, based on opacity settings like
     /// `--include`/`--opaque`.
     Opaque,
@@ -206,9 +217,7 @@ pub struct FunDecl {
     /// Whether this function is in fact the body of a constant/static that we turned into an
     /// initializer function.
     pub is_global_initializer: Option<GlobalDeclId>,
-    /// The function body, unless the function is opaque.
-    /// Opaque functions are: external functions, or local functions tagged
-    /// as opaque.
+    /// The function body.
     pub body: Body,
 }
 

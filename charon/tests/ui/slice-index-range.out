@@ -82,7 +82,7 @@ fn UNIT_METADATA()
 
 const UNIT_METADATA: () = @Fun0()
 
-fn core::slice::index::slice_index_fail::do_panic::runtime(_1: usize, _2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2: usize) -> !
 {
     let _0: !; // return
     let start_1: usize; // arg #1
@@ -182,7 +182,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(_1: usize, _2: usize)
     panic(core::panicking::panic_fmt)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#1::runtime(_1: usize, _2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2: usize) -> !
 {
     let _0: !; // return
     let end_1: usize; // arg #1
@@ -282,7 +282,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(_1: usize, _2: usiz
     panic(core::panicking::panic_fmt)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#2::runtime(_1: usize, _2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end_2: usize) -> !
 {
     let _0: !; // return
     let start_1: usize; // arg #1
@@ -382,7 +382,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(_1: usize, _2: usiz
     panic(core::panicking::panic_fmt)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#3::runtime(_1: usize, _2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2: usize) -> !
 {
     let _0: !; // return
     let end_1: usize; // arg #1
@@ -507,7 +507,7 @@ where
   Some(T),
 }
 
-fn core::slice::index::slice_index_fail::do_panic(_1: usize, _2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic(start_1: usize, len_2: usize) -> !
 {
     let _0: !; // return
     let start_1: usize; // arg #1
@@ -516,7 +516,7 @@ fn core::slice::index::slice_index_fail::do_panic(_1: usize, _2: usize) -> !
     _0 = core::slice::index::slice_index_fail::do_panic::runtime(move start_1, move len_2)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#1(_1: usize, _2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#1(end_1: usize, len_2: usize) -> !
 {
     let _0: !; // return
     let end_1: usize; // arg #1
@@ -525,7 +525,7 @@ fn core::slice::index::slice_index_fail::do_panic#1(_1: usize, _2: usize) -> !
     _0 = core::slice::index::slice_index_fail::do_panic#1::runtime(move end_1, move len_2)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#2(_1: usize, _2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#2(start_1: usize, end_2: usize) -> !
 {
     let _0: !; // return
     let start_1: usize; // arg #1
@@ -534,7 +534,7 @@ fn core::slice::index::slice_index_fail::do_panic#2(_1: usize, _2: usize) -> !
     _0 = core::slice::index::slice_index_fail::do_panic#2::runtime(move start_1, move end_2)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#3(_1: usize, _2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#3(end_1: usize, len_2: usize) -> !
 {
     let _0: !; // return
     let end_1: usize; // arg #1
@@ -578,7 +578,7 @@ where
 = <method_without_default_body>
 
 // Full name: core::slice::index::{impl Index<I> for [T]}::index
-pub fn {impl Index<I> for [T]}::index<'_0, T, I>(_1: &'_0 [T], _2: I) -> &'_0 @TraitClause2::Output
+pub fn {impl Index<I> for [T]}::index<'_0, T, I>(self_1: &'_0 [T], index_2: I) -> &'_0 @TraitClause2::Output
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<I>,
@@ -608,7 +608,7 @@ where
 }
 
 // Full name: core::slice::index::slice_index_fail
-fn slice_index_fail(_1: usize, _2: usize, _3: usize) -> !
+fn slice_index_fail(start_1: usize, end_2: usize, len_3: usize) -> !
 {
     let _0: !; // return
     let start_1: usize; // arg #1
@@ -734,7 +734,7 @@ where
 = <method_without_default_body>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
-pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
+pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -807,7 +807,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index
-pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> &'_0 [T]
+pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index<'_0, T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: &'_0 [T]) -> &'_0 [T]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -880,7 +880,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check
-fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(_1: usize, _2: usize, _3: usize)
+fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(start_1: usize, end_2: usize, len_3: usize)
 {
     let _0: (); // return
     let start_1: usize; // arg #1
@@ -947,7 +947,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *mut [T]) -> *mut [T]
+pub unsafe fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: *mut [T]) -> *mut [T]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -999,7 +999,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check
-fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(_1: usize, _2: usize, _3: usize)
+fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(start_1: usize, end_2: usize, len_3: usize)
 {
     let _0: (); // return
     let start_1: usize; // arg #1
@@ -1066,7 +1066,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
-pub unsafe fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *const [T]) -> *const [T]
+pub unsafe fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: *const [T]) -> *const [T]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -1118,7 +1118,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
-pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -1196,7 +1196,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
-pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
+pub fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     [@TraitClause0]: Sized<T>,
 {

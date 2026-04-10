@@ -81,7 +81,7 @@ impl Destruct for MyStruct {
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::foo
-pub fn {impl MyTrait for MyStruct}::foo<'_0>(_1: &'_0 MyStruct)
+pub fn {impl MyTrait for MyStruct}::foo<'_0>(self_1: &'_0 MyStruct)
 {
     let _0: (); // return
     let self_1: &'1 MyStruct; // arg #1
@@ -106,7 +106,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn MyTrait))
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}(_1: *mut (dyn MyTrait))
+unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn MyTrait))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn MyTrait + '0); // arg #1

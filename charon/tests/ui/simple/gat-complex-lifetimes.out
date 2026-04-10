@@ -62,7 +62,7 @@ pub trait Bar<'a, Self>
 }
 
 // Full name: test_crate::bar
-pub fn bar<'x, 'y, 'z, T>(_1: @TraitClause1::Type) -> &'x &'y &'z ()
+pub fn bar<'x, 'y, 'z, T>(x_1: @TraitClause1::Type) -> &'x &'y &'z ()
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Bar<'x, T>,

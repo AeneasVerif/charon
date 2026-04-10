@@ -155,7 +155,12 @@ module PatternTest = struct
           and list_block_calls (blk : block) : call list =
             List.concat_map list_stmt_calls blk.statements
           in
-          let calls = list_block_calls (Option.get decl.body).body in
+          let body =
+            match decl.body with
+            | Body body -> body
+            | _ -> failwith "Expected a function body with contents"
+          in
+          let calls = list_block_calls body.body in
           let fn_ptrs =
             List.map
               (fun call ->

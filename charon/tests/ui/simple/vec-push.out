@@ -199,7 +199,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push_mut
-pub fn push_mut<'_0, T, A>(_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], _2: T) -> &'_0 mut T
+pub fn push_mut<'_0, T, A>(self_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], value_2: T) -> &'_0 mut T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -264,7 +264,7 @@ where
 }
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
-pub fn push<'_0, T, A>(_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], _2: T)
+pub fn push<'_0, T, A>(self_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], value_2: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
@@ -283,7 +283,7 @@ where
 }
 
 // Full name: test_crate::vec
-fn vec<'_0>(_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
+fn vec<'_0>(x_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
     let x_1: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1

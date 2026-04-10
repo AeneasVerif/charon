@@ -132,7 +132,7 @@ impl<'_0> Fn<(u8,)> for test_crate::main::closure<'_0> {
 }
 
 // Full name: test_crate::apply_to_zero::<test_crate::main::closure<'_>>
-fn apply_to_zero::<test_crate::main::closure<'_>>(_1: test_crate::main::closure<'_>) -> u8
+fn apply_to_zero::<test_crate::main::closure<'_>>(f_1: test_crate::main::closure<'_>) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure<'0>; // arg #1
@@ -172,7 +172,7 @@ impl<'_0> FnMut<(u8,)> for test_crate::main::closure#1<'_0> {
 }
 
 // Full name: test_crate::apply_to_zero_mut::<test_crate::main::closure#1<'_>>
-fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(_1: test_crate::main::closure#1<'_>) -> u8
+fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(f_1: test_crate::main::closure#1<'_>) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure#1<'0>; // arg #1
@@ -203,7 +203,7 @@ impl FnOnce<(u8,)> for test_crate::main::closure#2 {
 }
 
 // Full name: test_crate::apply_to_zero_once::<test_crate::main::closure#2>
-fn apply_to_zero_once::<test_crate::main::closure#2>(_1: test_crate::main::closure#2) -> u8
+fn apply_to_zero_once::<test_crate::main::closure#2>(f_1: test_crate::main::closure#2) -> u8
 {
     let _0: u8; // return
     let f_1: test_crate::main::closure#2; // arg #1

@@ -202,7 +202,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Super<i32> for i32}::super_method
-fn {impl Super<i32> for i32}::super_method<'_0>(_1: &'_0 i32, _2: i32) -> i32
+fn {impl Super<i32> for i32}::super_method<'_0>(self_1: &'_0 i32, arg_2: i32) -> i32
 {
     let _0: i32; // return
     let self_1: &'1 i32; // arg #1
@@ -238,7 +238,7 @@ fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(_1: &'_0 (dyn S
 }
 
 // Full name: test_crate::{impl Super<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(_1: *mut (dyn Super<i32>))
+unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Super<i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Super<i32> + '0); // arg #1
@@ -277,7 +277,7 @@ impl Super<i32> for i32 {
 }
 
 // Full name: test_crate::{impl Checkable<i32> for i32}::check
-fn {impl Checkable<i32> for i32}::check<'_0>(_1: &'_0 i32) -> bool
+fn {impl Checkable<i32> for i32}::check<'_0>(self_1: &'_0 i32) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 i32; // arg #1
@@ -308,7 +308,7 @@ fn {impl Checkable<i32> for i32}::check::{vtable_method}<'_0>(_1: &'_0 (dyn Chec
 }
 
 // Full name: test_crate::{impl Checkable<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(_1: *mut (dyn Checkable<i32>))
+unsafe fn {impl Checkable<i32> for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Checkable<i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Checkable<i32> + '0); // arg #1
@@ -372,7 +372,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl NoParam for i32}::dummy
-fn {impl NoParam for i32}::dummy<'_0>(_1: &'_0 i32)
+fn {impl NoParam for i32}::dummy<'_0>(self_1: &'_0 i32)
 {
     let _0: (); // return
     let self_1: &'1 i32; // arg #1
@@ -403,7 +403,7 @@ impl NoParam for i32 {
 }
 
 // Full name: test_crate::to_dyn_obj
-fn to_dyn_obj<'_0, T>(_1: &'_0 T) -> &'_0 (dyn NoParam + '_0)
+fn to_dyn_obj<'_0, T>(arg_1: &'_0 T) -> &'_0 (dyn NoParam + '_0)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: NoParam<T>,
@@ -450,7 +450,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify
-fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(_1: &'_0 mut i32, _2: &'_1 T) -> T
+fn {impl Modifiable<T> for i32}::modify<'_0, '_1, T>(self_1: &'_0 mut i32, arg_2: &'_1 T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -489,7 +489,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::{vtable_drop_shim}
-unsafe fn {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>(_1: *mut (dyn Modifiable<T>))
+unsafe fn {impl Modifiable<T> for i32}::{vtable_drop_shim}<T>(dyn_self_1: *mut (dyn Modifiable<T>))
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -542,7 +542,7 @@ where
 }
 
 // Full name: test_crate::modify_trait_object
-fn modify_trait_object<'_0, T>(_1: &'_0 T) -> T
+fn modify_trait_object<'_0, T>(arg_1: &'_0 T) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -620,7 +620,7 @@ trait Both32And64<Self>
     vtable: test_crate::Both32And64::{vtable}
 }
 
-fn test_crate::Both32And64::both_operate<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 i32, _3: &'_2 i64)
+fn test_crate::Both32And64::both_operate<'_0, '_1, '_2, Self>(self_1: &'_0 Self, t32_2: &'_1 i32, t64_3: &'_2 i64)
 where
     [@TraitClause0]: Both32And64<Self>,
 {
@@ -659,7 +659,7 @@ where
 }
 
 // Full name: test_crate::{impl BaseOn<i32> for i32}::operate_on
-fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32)
+fn {impl BaseOn<i32> for i32}::operate_on<'_0, '_1>(self_1: &'_0 i32, t_2: &'_1 i32)
 {
     let _0: (); // return
     let self_1: &'1 i32; // arg #1
@@ -704,7 +704,7 @@ fn {impl BaseOn<i32> for i32}::operate_on::{vtable_method}<'_0, '_1>(_1: &'_0 (d
 }
 
 // Full name: test_crate::{impl BaseOn<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(_1: *mut (dyn BaseOn<i32>))
+unsafe fn {impl BaseOn<i32> for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn BaseOn<i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn BaseOn<i32> + '0); // arg #1
@@ -743,7 +743,7 @@ impl BaseOn<i32> for i32 {
 }
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}::operate_on
-fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i64)
+fn {impl BaseOn<i64> for i32}::operate_on<'_0, '_1>(self_1: &'_0 i32, t_2: &'_1 i64)
 {
     let _0: (); // return
     let self_1: &'1 i32; // arg #1
@@ -792,7 +792,7 @@ fn {impl BaseOn<i64> for i32}::operate_on::{vtable_method}<'_0, '_1>(_1: &'_0 (d
 }
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}::{vtable_drop_shim}
-unsafe fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(_1: *mut (dyn BaseOn<i64>))
+unsafe fn {impl BaseOn<i64> for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn BaseOn<i64>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn BaseOn<i64> + '0); // arg #1
@@ -831,7 +831,7 @@ impl BaseOn<i64> for i32 {
 }
 
 // Full name: test_crate::{impl Both32And64 for i32}::{vtable_drop_shim}
-unsafe fn {impl Both32And64 for i32}::{vtable_drop_shim}(_1: *mut (dyn Both32And64))
+unsafe fn {impl Both32And64 for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Both32And64))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Both32And64 + '0); // arg #1
@@ -868,7 +868,7 @@ fn {impl Both32And64 for i32}::{vtable}() -> test_crate::Both32And64::{vtable}
 static {impl Both32And64 for i32}::{vtable}: test_crate::Both32And64::{vtable} = {impl Both32And64 for i32}::{vtable}()
 
 // Full name: test_crate::{impl Both32And64 for i32}::both_operate
-fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(_1: &'_0 i32, _2: &'_1 i32, _3: &'_2 i64)
+fn {impl Both32And64 for i32}::both_operate<'_0, '_1, '_2>(self_1: &'_0 i32, t32_2: &'_1 i32, t64_3: &'_2 i64)
 {
     let _0: (); // return
     let self_1: &'1 i32; // arg #1
@@ -945,7 +945,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl LifetimeTrait for i32}::lifetime_method
-fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(_1: &'_1 i32, _2: &'a i32) -> &'a i32
+fn {impl LifetimeTrait for i32}::lifetime_method<'a, '_1>(self_1: &'_1 i32, arg_2: &'a i32) -> &'a i32
 {
     let _0: &'1 i32; // return
     let self_1: &'2 i32; // arg #1
@@ -988,7 +988,7 @@ fn {impl LifetimeTrait for i32}::lifetime_method::{vtable_method}<'a, '_1>(_1: &
 }
 
 // Full name: test_crate::{impl LifetimeTrait for i32}::{vtable_drop_shim}
-unsafe fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(_1: *mut (dyn LifetimeTrait<Ty = i32>))
+unsafe fn {impl LifetimeTrait for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn LifetimeTrait<Ty = i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn LifetimeTrait<Ty = i32> + '0); // arg #1
@@ -1028,7 +1028,7 @@ impl LifetimeTrait for i32 {
 }
 
 // Full name: test_crate::use_lifetime_trait
-fn use_lifetime_trait<'a, '_1>(_1: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), _2: &'a i32) -> &'a i32
+fn use_lifetime_trait<'a, '_1>(x_1: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), y_2: &'a i32) -> &'a i32
 {
     let _0: &'1 i32; // return
     let x_1: &'5 (dyn LifetimeTrait<Ty = i32> + '6); // arg #1
@@ -1051,7 +1051,7 @@ fn use_lifetime_trait<'a, '_1>(_1: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), _2:
 }
 
 // Full name: test_crate::use_alias
-fn use_alias<'_0>(_1: &'_0 (dyn Both32And64 + '_0))
+fn use_alias<'_0>(x_1: &'_0 (dyn Both32And64 + '_0))
 {
     let _0: (); // return
     let x_1: &'3 (dyn Both32And64 + '4); // arg #1

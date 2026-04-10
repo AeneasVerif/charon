@@ -14,9 +14,12 @@ impl Body {
     pub fn has_contents(&self) -> bool {
         match self {
             Body::Unstructured(..) | Body::Structured(..) => true,
-            Body::TraitMethodWithoutDefault | Body::Opaque | Body::Missing | Body::Error(..) => {
-                false
-            }
+            Body::TraitMethodWithoutDefault
+            | Body::Extern(..)
+            | Body::Intrinsic { .. }
+            | Body::Opaque
+            | Body::Missing
+            | Body::Error(..) => false,
         }
     }
 

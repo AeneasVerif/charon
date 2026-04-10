@@ -97,7 +97,7 @@ const UNIT_METADATA: () = @Fun0()
 struct closure {}
 
 // Full name: test_crate::main::{impl Fn<()> for closure}::call
-fn {impl Fn<()> for closure}::call<'_0>(_1: &'_0 closure, _2: ())
+fn {impl Fn<()> for closure}::call<'_0>(_1: &'_0 closure, tupled_args_2: ())
 {
     let _0: (); // return
     let _1: &'1 closure; // arg #1
@@ -113,7 +113,7 @@ fn {impl Fn<()> for closure}::call<'_0>(_1: &'_0 closure, _2: ())
 }
 
 // Full name: test_crate::main::{impl FnMut<()> for closure}::call_mut
-fn {impl FnMut<()> for closure}::call_mut<'_0>(_1: &'_0 mut closure, _2: ())
+fn {impl FnMut<()> for closure}::call_mut<'_0>(state_1: &'_0 mut closure, args_2: ())
 {
     let _0: (); // return
     let state_1: &'_0 mut closure; // arg #1

@@ -578,6 +578,12 @@ impl ItemTransCtx<'_, '_> {
             _ => false,
         };
 
+        let intrinsic_name = def
+            .def_id()
+            .as_rust_def_id()
+            .and_then(|id| self.tcx.intrinsic(id))
+            .map(|i| i.name.to_ident_string());
+
         let is_global_initializer = matches!(
             def.kind(),
             hax::FullDefKind::Const { .. }
@@ -587,7 +593,12 @@ impl ItemTransCtx<'_, '_> {
         let is_global_initializer = is_global_initializer
             .then(|| self.register_item(span, def.this(), TransItemSourceKind::Global));
 
-        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+        let body = if let Some(name) = intrinsic_name {
+            let arg_names = self.translate_argument_names(span, def, signature.inputs.len());
+            Body::Intrinsic { name, arg_names }
+        } else if let Some(name) = self.t_ctx.extern_item_symbol_name(def) {
+            Body::Extern(name)
+        } else if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else if is_trait_method_decl_without_default {
             Body::TraitMethodWithoutDefault

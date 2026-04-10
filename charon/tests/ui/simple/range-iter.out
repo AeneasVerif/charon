@@ -191,7 +191,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::iter
-fn iter(_1: usize)
+fn iter(n_1: usize)
 {
     let _0: (); // return
     let n_1: usize; // arg #1

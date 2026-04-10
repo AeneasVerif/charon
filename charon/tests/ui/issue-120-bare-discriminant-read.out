@@ -59,7 +59,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = @Fun0()
 
 // Full name: test_crate::discriminant_value
-fn discriminant_value<'_0, T>(_1: &'_0 Option<T>[@TraitClause0]) -> isize
+fn discriminant_value<'_0, T>(opt_1: &'_0 Option<T>[@TraitClause0]) -> isize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -75,7 +75,7 @@ where
 }
 
 // Full name: test_crate::is_some
-fn is_some<T>(_1: Option<T>[@TraitClause0]) -> bool
+fn is_some<T>(opt_1: Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -100,7 +100,7 @@ where
 }
 
 // Full name: test_crate::my_is_some
-fn my_is_some<T>(_1: Option<T>[@TraitClause0]) -> isize
+fn my_is_some<T>(opt_1: Option<T>[@TraitClause0]) -> isize
 where
     [@TraitClause0]: Sized<T>,
 {
