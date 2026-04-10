@@ -279,6 +279,8 @@ impl Display for BuiltinFunId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         let name = match *self {
             BuiltinFunId::BoxNew => "BoxNew",
+            BuiltinFunId::BoxWrite => "BoxWrite",
+            BuiltinFunId::SliceIntoVec => "SliceIntoVec",
             BuiltinFunId::ArrayToSliceShared => "ArrayToSliceShared",
             BuiltinFunId::ArrayToSliceMut => "ArrayToSliceMut",
             BuiltinFunId::ArrayRepeat => "ArrayRepeat",

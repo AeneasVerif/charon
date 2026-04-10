@@ -37,6 +37,7 @@ pub mod resugar {
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
+    pub mod reconstruct_vec_boxes;
 }
 
 /// Passes that make the output simpler/easier to consume.
@@ -143,6 +144,11 @@ pub static ULLBC_PASSES: &[Pass] = &[
         // Recognize calls to the `offset_of` intrinsics and replace them with the corresponding
         // `NullOp`.
         &resugar::reconstruct_intrinsics::Transform,
+        // # Micro-pass: reconstruct `vec![x]` lowering to avoid unsafe operations.
+        // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
+        // it must happen before passes that insert statements like [simplify_constants].
+        // **WARNING**: this pass works across calls, hence must happen after `merge_goto_chains`,
+        &resugar::reconstruct_vec_boxes::Transform,
         // # Micro-pass: reconstruct the asserts
         &resugar::reconstruct_asserts::Transform,
         // # Micro-pass: desugar the constants to other values/operands as much
