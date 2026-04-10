@@ -272,6 +272,8 @@ and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "BoxNew" -> Ok BoxNew
+    | `String "BoxWrite" -> Ok BoxWrite
+    | `String "SliceIntoVec" -> Ok SliceIntoVec
     | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
     | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
     | `String "ArrayRepeat" -> Ok ArrayRepeat

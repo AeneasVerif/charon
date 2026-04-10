@@ -722,6 +722,8 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
 let builtin_fun_id_to_string (fid : T.builtin_fun_id) : string =
   match fid with
   | BoxNew -> "alloc::boxed::{Box<@T, alloc::alloc::Global>}::new"
+  | BoxWrite -> "alloc::boxed::{Box<@T, alloc::alloc::Global>}::write"
+  | SliceIntoVec -> "SliceIntoVec"
   | ArrayToSliceShared -> "ArrayToSliceShared"
   | ArrayToSliceMut -> "ArrayToSliceMut"
   | ArrayRepeat -> "ArrayRepeat"

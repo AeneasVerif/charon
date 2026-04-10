@@ -361,6 +361,8 @@ and constant_expr_to_string (env : fmt_env) (cv : constant_expr) : string =
 and builtin_fun_id_to_string (aid : builtin_fun_id) : string =
   match aid with
   | BoxNew -> "alloc::boxed::Box::new"
+  | BoxWrite -> "alloc::boxed::Box::write"
+  | SliceIntoVec -> "@SliceIntoVec"
   | ArrayToSliceShared -> "@ArrayToSliceShared"
   | ArrayToSliceMut -> "@ArrayToSliceMut"
   | ArrayRepeat -> "@ArrayRepeat"
@@ -936,8 +938,6 @@ and rvalue_to_string (env : fmt_env) (rv : rvalue) : string =
       "[" ^ operand_to_string env v ^ ";"
       ^ constant_expr_to_string env len
       ^ "]"
-  | ShallowInitBox (op, _) ->
-      "shallow-init-box(" ^ operand_to_string env op ^ ")"
   | Aggregate (akind, ops) -> aggregate_to_string env akind ops
 
 let item_id_to_string (id : item_id) : string =

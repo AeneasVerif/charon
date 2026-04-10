@@ -251,13 +251,15 @@ and builtin_fun_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 -> Ok BoxNew
-     | 1 -> Ok ArrayToSliceShared
-     | 2 -> Ok ArrayToSliceMut
-     | 3 -> Ok ArrayRepeat
-     | 4 ->
+     | 1 -> Ok BoxWrite
+     | 2 -> Ok SliceIntoVec
+     | 3 -> Ok ArrayToSliceShared
+     | 4 -> Ok ArrayToSliceMut
+     | 5 -> Ok ArrayRepeat
+     | 6 ->
          let* x_0 = builtin_index_op_of_postcard ctx st in
          Ok (Index x_0)
-     | 5 ->
+     | 7 ->
          let* x_0 = ref_kind_of_postcard ctx st in
          Ok (PtrFromParts x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
