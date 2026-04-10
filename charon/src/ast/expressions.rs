@@ -428,6 +428,12 @@ impl From<BuiltinFunId> for FunId {
 pub enum BuiltinFunId {
     /// Used instead of `alloc::boxed::Box::new` when `--treat-box-as-builtin` is set.
     BoxNew,
+    /// Used instead of `alloc::boxed::Box::write` when rewriting `vec!` lowering.
+    /// Writes into a `Box<MaybeUninit<T>>` and returns a `Box<T>`.
+    BoxWrite,
+    /// Used instead of `alloc::slice::into_vec` when rewriting `vec!` lowering.
+    /// Takes a `Box<[T]>` and returns a `Vec<T>`.
+    SliceIntoVec,
     /// Cast `&[T; N]` to `&[T]`.
     ///
     /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.

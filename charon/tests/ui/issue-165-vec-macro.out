@@ -49,17 +49,6 @@ pub trait Destruct<Self>
 unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
-// Full name: core::mem::manually_drop::ManuallyDrop
-#[lang_item("manually_drop")]
-pub opaque type ManuallyDrop<T>
-where
-    [@TraitClause0]: MetaSized<T>,
-
-// Full name: core::mem::maybe_dangling::MaybeDangling
-pub opaque type MaybeDangling<P>
-where
-    [@TraitClause0]: MetaSized<P>,
-
 // Full name: core::mem::maybe_uninit::MaybeUninit
 #[lang_item("maybe_uninit")]
 pub opaque type MaybeUninit<T>
@@ -70,22 +59,11 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new_uninit
+pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, {built_in impl Sized for Global}]
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
+    [@TraitClause0]: Sized<T>,
 = <opaque>
-
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-    fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
-}
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
@@ -93,19 +71,6 @@ pub opaque type Vec<T>
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
-
-// Full name: alloc::boxed::box_assume_init_into_vec_unsafe
-#[lang_item("box_assume_init_into_vec_unsafe")]
-pub fn box_assume_init_into_vec_unsafe<T, const N : usize>(_1: alloc::boxed::Box<MaybeUninit<[T; N]>[{built_in impl Sized for [T; N]}]>[{built_in impl MetaSized for MaybeUninit<[T; N]>[{built_in impl Sized for [T; N]}]}, {built_in impl Sized for Global}]) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: alloc::boxed::{alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new_uninit
-pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, {built_in impl Sized for Global}]
-where
-    [@TraitClause0]: Sized<T>,
-= <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
 unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
@@ -138,25 +103,29 @@ fn foo()
     let _0: (); // return
     let _v_1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
     let _2: alloc::boxed::Box<MaybeUninit<[i32; 1 : usize]>[{built_in impl Sized for [i32; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[i32; 1 : usize]>[{built_in impl Sized for [i32; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _3: alloc::boxed::Box<MaybeUninit<[i32; 1 : usize]>[{built_in impl Sized for [i32; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[i32; 1 : usize]>[{built_in impl Sized for [i32; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _v2_4: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
+    let _v2_3: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
+    let _4: [i32; 1 : usize]; // anonymous local
+    let _5: alloc::boxed::Box<[i32; 1 : usize]>; // anonymous local
+    let _6: alloc::boxed::Box<[i32]>; // anonymous local
 
     _0 = ()
     storage_live(_v_1)
     storage_live(_2)
-    storage_live(_3)
-    _3 = new_uninit<[i32; 1 : usize]>[{built_in impl Sized for [i32; 1 : usize]}]()
-    ((((*_3)).1).0).0 = [const 1 : i32]
-    _2 = move _3
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<MaybeUninit<[i32; 1 : usize]>[{built_in impl Sized for [i32; 1 : usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1 : usize]>[{built_in impl Sized for [i32; 1 : usize]}]}, {built_in impl Sized for Global}]] _3
-    storage_dead(_3)
-    _v_1 = box_assume_init_into_vec_unsafe<i32, 1 : usize>[{built_in impl Sized for i32}](move _2)
+    _2 = new_uninit<[i32; 1 : usize]>[{built_in impl Sized for [i32; 1 : usize]}]()
+    storage_live(_4)
+    _4 = [const 1 : i32]
+    storage_live(_5)
+    _5 = @BoxWrite<[i32; 1 : usize]>(move _2, move _4)
+    storage_dead(_4)
+    storage_live(_6)
+    _6 = unsize_cast<alloc::boxed::Box<[i32; 1 : usize]>, alloc::boxed::Box<[i32]>, 1 : usize>(move _5)
     storage_dead(_2)
-    storage_live(_v2_4)
-    _v2_4 = from_elem<i32>[{built_in impl Sized for i32}, {impl Clone for i32}](const 1 : i32, const 10 : usize)
+    _v_1 = @SliceIntoVec<i32>(move _6)
+    storage_live(_v2_3)
+    _v2_3 = from_elem<i32>[{built_in impl Sized for i32}, {impl Clone for i32}](const 1 : i32, const 10 : usize)
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v2_4
-    storage_dead(_v2_4)
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v2_3
+    storage_dead(_v2_3)
     conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v_1
     storage_dead(_v_1)
     return
@@ -171,23 +140,27 @@ pub fn bar()
     let _0: (); // return
     let _1: Vec<Foo>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}]; // anonymous local
     let _2: alloc::boxed::Box<MaybeUninit<[Foo; 1 : usize]>[{built_in impl Sized for [Foo; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[Foo; 1 : usize]>[{built_in impl Sized for [Foo; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _3: alloc::boxed::Box<MaybeUninit<[Foo; 1 : usize]>[{built_in impl Sized for [Foo; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[Foo; 1 : usize]>[{built_in impl Sized for [Foo; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _4: Foo; // anonymous local
+    let _3: Foo; // anonymous local
+    let _4: [Foo; 1 : usize]; // anonymous local
+    let _5: alloc::boxed::Box<[Foo; 1 : usize]>; // anonymous local
+    let _6: alloc::boxed::Box<[Foo]>; // anonymous local
 
     _0 = ()
     storage_live(_1)
     storage_live(_2)
+    _2 = new_uninit<[Foo; 1 : usize]>[{built_in impl Sized for [Foo; 1 : usize]}]()
     storage_live(_3)
-    _3 = new_uninit<[Foo; 1 : usize]>[{built_in impl Sized for [Foo; 1 : usize]}]()
+    _3 = Foo {  }
     storage_live(_4)
-    _4 = Foo {  }
-    ((((*_3)).1).0).0 = [move _4]
-    storage_dead(_4)
-    _2 = move _3
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<MaybeUninit<[Foo; 1 : usize]>[{built_in impl Sized for [Foo; 1 : usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Foo; 1 : usize]>[{built_in impl Sized for [Foo; 1 : usize]}]}, {built_in impl Sized for Global}]] _3
+    _4 = [move _3]
     storage_dead(_3)
-    _1 = box_assume_init_into_vec_unsafe<Foo, 1 : usize>[{built_in impl Sized for Foo}](move _2)
+    storage_live(_5)
+    _5 = @BoxWrite<[Foo; 1 : usize]>(move _2, move _4)
+    storage_dead(_4)
+    storage_live(_6)
+    _6 = unsize_cast<alloc::boxed::Box<[Foo; 1 : usize]>, alloc::boxed::Box<[Foo]>, 1 : usize>(move _5)
     storage_dead(_2)
+    _1 = @SliceIntoVec<Foo>(move _6)
     conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<Foo, Global>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
     _0 = ()
