@@ -165,9 +165,9 @@ fn add_destruct_bounds<'tcx>(
     predicates: &mut ItemPredicates<'tcx>,
 ) {
     let def_kind = tcx.def_kind(def_id);
-    if matches!(def_kind, DefKind::Closure) {
-        // Closures have fictitious weird type parameters in their `own_args` that we don't want to
-        // add `Destruct` bounds for.
+    if matches!(def_kind, DefKind::Closure | DefKind::InlineConst) {
+        // Closures and inline consts have fictitious weird type parameters in their `own_args`
+        // that we don't want to add `Destruct` bounds for.
         return;
     }
     // Add a `T: Destruct` bound for every generic.
