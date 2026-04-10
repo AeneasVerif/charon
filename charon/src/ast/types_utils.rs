@@ -760,6 +760,10 @@ impl Ty {
         }
     }
 
+    pub fn as_adt_id(&self) -> Option<TypeDeclId> {
+        self.kind().as_adt().and_then(|a| a.id.as_adt().cloned())
+    }
+
     pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
         let ref ty_decls = translated.type_decls;
         match self.kind() {

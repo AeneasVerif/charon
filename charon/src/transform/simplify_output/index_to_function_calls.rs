@@ -186,8 +186,9 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
             | Discriminant(..)
             | Len(..) => self.visit_inner_with_mutability(x, false),
 
-            Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Repeat(..)
-            | ShallowInitBox(..) => self.visit_inner(x),
+            Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Repeat(..) => {
+                self.visit_inner(x)
+            }
         }
     }
 
