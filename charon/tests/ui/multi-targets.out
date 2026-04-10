@@ -1,4 +1,30 @@
-pub fn test_crate::f1::i686-unknown-linux-gnu() -> u64
+pub struct test_crate::StructTargetIndep::i686-unknown-linux-gnu {
+  x: u64,
+  y: u64,
+}
+
+pub struct test_crate::StructTargetIndep::x86_64-apple-darwin {
+  x: u64,
+  y: u64,
+}
+
+fn test_crate::make_pair_same::i686-unknown-linux-gnu() -> test_crate::StructTargetIndep::i686-unknown-linux-gnu
+{
+    let _0: test_crate::StructTargetIndep::i686-unknown-linux-gnu; // return
+
+    _0 = test_crate::StructTargetIndep::i686-unknown-linux-gnu { x: const 1 : u64, y: const 2 : u64 }
+    return
+}
+
+fn test_crate::make_pair_same::x86_64-apple-darwin() -> test_crate::StructTargetIndep::x86_64-apple-darwin
+{
+    let _0: test_crate::StructTargetIndep::x86_64-apple-darwin; // return
+
+    _0 = test_crate::StructTargetIndep::x86_64-apple-darwin { x: const 1 : u64, y: const 2 : u64 }
+    return
+}
+
+pub fn test_crate::f1_same::i686-unknown-linux-gnu() -> u64
 {
     let _0: u64; // return
 
@@ -6,7 +32,7 @@ pub fn test_crate::f1::i686-unknown-linux-gnu() -> u64
     return
 }
 
-pub fn test_crate::f1::x86_64-apple-darwin() -> u64
+pub fn test_crate::f1_same::x86_64-apple-darwin() -> u64
 {
     let _0: u64; // return
 
@@ -14,15 +40,38 @@ pub fn test_crate::f1::x86_64-apple-darwin() -> u64
     return
 }
 
-pub fn test_crate::f2_per_target::i686-unknown-linux-gnu() -> u64
+fn test_crate::f2_same::i686-unknown-linux-gnu() -> u64
 {
     let _0: u64; // return
 
-    _0 = const 1 : u64
+    _0 = test_crate::f1_same::i686-unknown-linux-gnu()
     return
 }
 
-pub fn test_crate::f2_per_target::x86_64-apple-darwin() -> u64
+fn test_crate::f2_same::x86_64-apple-darwin() -> u64
+{
+    let _0: u64; // return
+
+    _0 = test_crate::f1_same::x86_64-apple-darwin()
+    return
+}
+
+pub fn test_crate::f3_different::i686-unknown-linux-gnu() -> u64
+{
+    let _0: u64; // return
+    let _1: u64; // anonymous local
+    let _2: u64; // anonymous local
+
+    storage_live(_2)
+    storage_live(_1)
+    _1 = test_crate::f2_same::i686-unknown-linux-gnu()
+    _2 = const 1 : u64 panic.+ copy _1
+    _0 = move _2
+    storage_dead(_1)
+    return
+}
+
+pub fn test_crate::f3_different::x86_64-apple-darwin() -> u64
 {
     let _0: u64; // return
 
@@ -30,7 +79,7 @@ pub fn test_crate::f2_per_target::x86_64-apple-darwin() -> u64
     return
 }
 
-fn test_crate::foo::i686-unknown-linux-gnu() -> u64
+fn test_crate::foo_same::i686-unknown-linux-gnu() -> u64
 {
     let _0: u64; // return
     let _1: u64; // anonymous local
@@ -39,9 +88,9 @@ fn test_crate::foo::i686-unknown-linux-gnu() -> u64
 
     storage_live(_3)
     storage_live(_1)
-    _1 = test_crate::f1::i686-unknown-linux-gnu()
+    _1 = test_crate::f2_same::i686-unknown-linux-gnu()
     storage_live(_2)
-    _2 = test_crate::f2_per_target::i686-unknown-linux-gnu()
+    _2 = test_crate::f3_different::i686-unknown-linux-gnu()
     _3 = copy _1 panic.+ copy _2
     _0 = move _3
     storage_dead(_2)
@@ -49,7 +98,7 @@ fn test_crate::foo::i686-unknown-linux-gnu() -> u64
     return
 }
 
-fn test_crate::foo::x86_64-apple-darwin() -> u64
+fn test_crate::foo_same::x86_64-apple-darwin() -> u64
 {
     let _0: u64; // return
     let _1: u64; // anonymous local
@@ -58,9 +107,9 @@ fn test_crate::foo::x86_64-apple-darwin() -> u64
 
     storage_live(_3)
     storage_live(_1)
-    _1 = test_crate::f1::x86_64-apple-darwin()
+    _1 = test_crate::f2_same::x86_64-apple-darwin()
     storage_live(_2)
-    _2 = test_crate::f2_per_target::x86_64-apple-darwin()
+    _2 = test_crate::f3_different::x86_64-apple-darwin()
     _3 = copy _1 panic.+ copy _2
     _0 = move _3
     storage_dead(_2)
