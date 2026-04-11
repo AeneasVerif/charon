@@ -742,8 +742,8 @@ pub fn translate<'tcx, 'ctx>(
     // Start translating from the selected items.
     for start_from in ctx.options.start_from.clone() {
         match start_from {
-            StartFrom::Pattern(pat) => {
-                match super::resolve_path::def_path_def_ids(&ctx.hax_state, &pat) {
+            StartFrom::Pattern { pattern, strict } => {
+                match super::resolve_path::def_path_def_ids(&ctx.hax_state, &pattern, strict) {
                     Ok(resolved) => {
                         for def_id in resolved {
                             let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
@@ -754,7 +754,7 @@ pub fn translate<'tcx, 'ctx>(
                         register_error!(
                             ctx,
                             Span::dummy(),
-                            "when processing starting pattern `{pat}`: {err}"
+                            "when processing starting pattern `{pattern}`: {err}"
                         );
                     }
                 }
