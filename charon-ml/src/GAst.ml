@@ -47,7 +47,7 @@ type target_info = { target_pointer_size : int; is_little_endian : bool }
 type 'fun_body gcrate = {
   name : string;
   options : cli_options;
-  target_information : target_info;
+  target_information : (string * target_info) list;
   declarations : declaration_group list;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;

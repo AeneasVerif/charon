@@ -339,10 +339,12 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
-        self.translated.target_information = krate::TargetInfo {
+        let triple = self.tcx.sess.opts.target_triple.tuple().to_owned();
+        let info = krate::TargetInfo {
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
-        }
+        };
+        self.translated.target_information.insert(triple, info);
     }
 }
 

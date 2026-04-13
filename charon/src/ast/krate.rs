@@ -3,6 +3,7 @@ use std::fmt;
 
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use index_vec::Idx;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -158,7 +159,11 @@ pub enum DeclarationGroup {
 
 pub type DeclarationsGroups = Vec<DeclarationGroup>;
 
-#[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
+/// A target triple, e.g. `x86_64-unknown-linux-gnu`.
+pub type TargetTriple = String;
+
+#[derive(Clone, Drive, DriveMut, SerializeState, DeserializeState)]
+#[serde_state(stateless)]
 pub struct TargetInfo {
     /// The pointer size of the target in bytes.
     pub target_pointer_size: types::ByteCount,
@@ -181,10 +186,11 @@ pub struct TranslatedCrate {
     #[serde_state(stateless)]
     pub options: crate::options::CliOpts,
 
-    /// Information about the target platform for which rustc is called on for the crate.
+    /// Information about each target platform. When translating a crate normally this will have a
+    /// single entry; when using `--targets` this will have one entry per chosen target.
     #[drive(skip)]
-    #[serde_state(stateless)]
-    pub target_information: TargetInfo,
+    #[serde(with = "SeqHashMapToArray::<TargetTriple, TargetInfo>")]
+    pub target_information: SeqHashMap<TargetTriple, TargetInfo>,
 
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
@@ -299,6 +305,16 @@ impl TranslatedCrate {
     }
     pub fn all_items_with_ids(&self) -> impl Iterator<Item = (ItemId, ItemRef<'_>)> {
         self.all_items().map(|item| (item.id(), item))
+    }
+
+    /// When translating without `--target`, there's only one target information; this method
+    /// retrieves it.
+    pub fn the_target_information(&self) -> &TargetInfo {
+        self.target_information
+            .values()
+            .exactly_one()
+            .ok()
+            .expect("called `the_target_information` on a multi-target crate")
     }
 }
 

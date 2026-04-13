@@ -112,7 +112,11 @@ and gtranslated_crate_of_json
 
         let* crate_name = string_of_json ctx crate_name in
         let* options = cli_options_of_json ctx options in
-        let* target_information = target_info_of_json ctx target_info in
+        let* target_information =
+          list_of_json
+            (key_value_pair_of_json string_of_json target_info_of_json)
+            ctx target_info
+        in
         let* _item_names =
           list_of_json
             (key_value_pair_of_json item_id_of_json name_of_json)
