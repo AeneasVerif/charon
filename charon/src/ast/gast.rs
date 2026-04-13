@@ -197,7 +197,6 @@ pub enum VTableField {
 /// A function definition
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct FunDecl {
-    #[drive(skip)]
     pub def_id: FunDeclId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
@@ -240,7 +239,6 @@ pub enum GlobalKind {
 /// A global variable definition (constant or static).
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct GlobalDecl {
-    #[drive(skip)]
     pub def_id: GlobalDeclId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
@@ -317,7 +315,6 @@ pub struct TraitItemName(pub ustr::Ustr);
 #[allow(clippy::type_complexity)]
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitDecl {
-    #[drive(skip)]
     pub def_id: TraitDeclId,
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
@@ -402,7 +399,6 @@ pub struct TraitMethod {
 /// ```
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitImpl {
-    #[drive(skip)]
     pub def_id: TraitImplId,
     pub item_meta: ItemMeta,
     /// The information about the implemented trait.

@@ -402,6 +402,10 @@ type cli_options = {
       (** The MIR stage to extract. This is only relevant for the current crate;
           for dpendencies only MIR optimized is available. *)
   rustc_args : string list;  (** Extra flags to pass to rustc. *)
+  targets : string list;
+      (** A list of target architectures to translate for. Charon will run the
+          compiler once for each target and aggregate the results, which is
+          useful if the code includes [#[cfg(..)]] filters. *)
   monomorphize : bool;
       (** Monomorphize the items encountered when possible. Generic items found
           in the crate are skipped. To only translate a particular call graph,

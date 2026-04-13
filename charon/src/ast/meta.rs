@@ -24,6 +24,7 @@ generate_index_type!(FileId);
     Drive,
     DriveMut,
 )]
+#[drive(skip)]
 pub struct Loc {
     /// The (1-based) line number.
     pub line: usize,
@@ -59,7 +60,6 @@ pub struct SpanData {
     Drive,
     DriveMut,
 )]
-#[drive(skip)]
 #[serde_state(stateless)]
 pub struct Span {
     /// The source code span.

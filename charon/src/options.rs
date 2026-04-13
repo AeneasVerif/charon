@@ -59,6 +59,12 @@ pub struct CliOpts {
     #[clap(long = "rustc-arg")]
     #[serde(default)]
     pub rustc_args: Vec<String>,
+    /// A list of target architectures to translate for. Charon will run the compiler once for each
+    /// target and aggregate the results, which is useful if the code includes `#[cfg(..)]`
+    /// filters.
+    #[clap(long, value_delimiter = ',')]
+    #[serde(default)]
+    pub targets: Vec<String>,
 
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
     /// skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't

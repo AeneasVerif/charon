@@ -509,7 +509,6 @@ pub struct ReprOptions {
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub struct TypeDecl {
-    #[drive(skip)]
     pub def_id: TypeDeclId,
     /// Meta information associated with the item.
     pub item_meta: ItemMeta,

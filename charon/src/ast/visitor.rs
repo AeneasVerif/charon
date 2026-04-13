@@ -3,14 +3,15 @@
 //! everywhere in the ast.
 //!
 //! The crate defines two traits:
-/// - `AstVisitable` is a trait implemented by all the types that can be visited by this;
-/// - `VisitAst[Mut]` is a (pair of) visitor trait(s) that can be implemented by visitors.
-///   To define a visitor, implement `VisitAst[Mut]` and override the methods you need. Calling
-///   `x.drive[_mut](&mut visitor)` will then traverse `x`, calling the visitor methods on all the
-///   subvalues encountered.
-///
-/// Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
-use std::{any::Any, collections::HashMap};
+//! - `AstVisitable` is a trait implemented by all the types that can be visited by this;
+//! - `VisitAst[Mut]` is a (pair of) visitor trait(s) that can be implemented by visitors.
+//!   To define a visitor, implement `VisitAst[Mut]` and override the methods you need. Calling
+//!   `x.drive[_mut](&mut visitor)` will then traverse `x`, calling the visitor methods on all the
+//!   subvalues encountered.
+//!
+//! Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
+use std::mem;
+use std::{any::Any, hash::Hash};
 
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
@@ -47,13 +48,13 @@ use derive_generic_visitor::*;
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
-        Locals, NullOp, Operand, PathElem, PlaceKind, ProjectionElem, ConstantExprKind,
+        Loc, Locals, NullOp, Operand, PathElem, PlaceKind, ProjectionElem, ConstantExprKind,
         RefKind, RegionId, RegionParam, ScalarValue, TraitItemName,
         TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypeVarId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata,
-        TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
+        SpanData, TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
         ItemByVal, VTableField,
         for<Id: AstVisitable> DeclRef<Id>, ItemId,
         for<T: AstVisitable> Box<T>,
@@ -79,7 +80,7 @@ use derive_generic_visitor::*;
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
         AggregateKind, FnPtr, ItemSource, ItemMeta, Name, Span, ConstantExpr,
-        FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
+        FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )
 )]
@@ -98,33 +99,20 @@ pub trait AstVisitable: Any {
     }
 }
 
-/// Manual impl that only visits the values
-impl<K: Any, T: AstVisitable> AstVisitable for HashMap<K, T> {
+/// Manual impl that visits the keys and values
+impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
     fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
-        for x in self.values() {
+        for (k, x) in self {
+            v.visit(k)?;
             v.visit(x)?;
         }
         Continue(())
     }
     fn drive_mut<V: VisitAstMut>(&mut self, v: &mut V) -> ControlFlow<V::Break> {
-        for x in self.values_mut() {
-            v.visit(x)?;
-        }
-        Continue(())
-    }
-}
-
-/// Manual impl that only visits the values
-impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
-    fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
-        for x in self.values() {
-            v.visit(x)?;
-        }
-        Continue(())
-    }
-    fn drive_mut<V: VisitAstMut>(&mut self, v: &mut V) -> ControlFlow<V::Break> {
-        for x in self.values_mut() {
-            v.visit(x)?;
+        for (mut k, mut x) in mem::take(self) {
+            v.visit(&mut k)?;
+            v.visit(&mut x)?;
+            self.insert(k, x);
         }
         Continue(())
     }

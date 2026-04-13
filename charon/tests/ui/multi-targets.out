@@ -1,0 +1,71 @@
+pub fn test_crate::f1::i686-unknown-linux-gnu() -> u64
+{
+    let _0: u64; // return
+
+    _0 = const 0 : u64
+    return
+}
+
+pub fn test_crate::f1::x86_64-apple-darwin() -> u64
+{
+    let _0: u64; // return
+
+    _0 = const 0 : u64
+    return
+}
+
+pub fn test_crate::f2_per_target::i686-unknown-linux-gnu() -> u64
+{
+    let _0: u64; // return
+
+    _0 = const 1 : u64
+    return
+}
+
+pub fn test_crate::f2_per_target::x86_64-apple-darwin() -> u64
+{
+    let _0: u64; // return
+
+    _0 = const 2 : u64
+    return
+}
+
+fn test_crate::foo::i686-unknown-linux-gnu() -> u64
+{
+    let _0: u64; // return
+    let _1: u64; // anonymous local
+    let _2: u64; // anonymous local
+    let _3: u64; // anonymous local
+
+    storage_live(_3)
+    storage_live(_1)
+    _1 = test_crate::f1::i686-unknown-linux-gnu()
+    storage_live(_2)
+    _2 = test_crate::f2_per_target::i686-unknown-linux-gnu()
+    _3 = copy _1 panic.+ copy _2
+    _0 = move _3
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+fn test_crate::foo::x86_64-apple-darwin() -> u64
+{
+    let _0: u64; // return
+    let _1: u64; // anonymous local
+    let _2: u64; // anonymous local
+    let _3: u64; // anonymous local
+
+    storage_live(_3)
+    storage_live(_1)
+    _1 = test_crate::f1::x86_64-apple-darwin()
+    storage_live(_2)
+    _2 = test_crate::f2_per_target::x86_64-apple-darwin()
+    _3 = copy _1 panic.+ copy _2
+    _0 = move _3
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+

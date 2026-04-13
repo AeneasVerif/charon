@@ -414,6 +414,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("skip_borrowck", skip_borrowck);
           ("mir", mir);
           ("rustc_args", rustc_args);
+          ("targets", targets);
           ("monomorphize", monomorphize);
           ("monomorphize_mut", monomorphize_mut);
           ("start_from", start_from);
@@ -456,6 +457,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* mir = option_of_json mir_level_of_json ctx mir in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
+        let* targets = list_of_json string_of_json ctx targets in
         let* monomorphize = bool_of_json ctx monomorphize in
         let* monomorphize_mut =
           option_of_json monomorphize_mut_of_json ctx monomorphize_mut
@@ -515,6 +517,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              skip_borrowck;
              mir;
              rustc_args;
+             targets;
              monomorphize;
              monomorphize_mut;
              start_from;

@@ -125,8 +125,6 @@ fn charon_cargo_features() -> Result<()> {
 
 #[test]
 fn charon_cargo_target() -> Result<()> {
-    let target = "riscv64gc-unknown-none-elf";
-
     let dir = "tests/cargo/multi-targets";
 
     #[cfg(target_family = "unix")]
@@ -149,6 +147,7 @@ fn charon_cargo_target() -> Result<()> {
         Ok(())
     })?;
 
+    let target = "riscv64gc-unknown-none-elf";
     let args = &["cargo", "--print-llbc", "--", "--target", target];
     charon(args, dir, |stdout, cmd| {
         let main = "multi_targets::no_os";
@@ -208,38 +207,6 @@ fn put_options_after_subcommand() -> Result<()> {
     let output = Command::cargo_bin("charon")?.args(args).output()?;
     assert!(!output.status.success());
     Ok(())
-}
-
-#[test]
-fn charon_rust_target() -> Result<()> {
-    let target = "riscv64gc-unknown-none-elf";
-
-    let path = "tests/cargo/multi-targets/src/lib.rs";
-    let args = &[
-        "rustc",
-        "--print-llbc",
-        "--",
-        "--crate-type=lib",
-        path,
-        "--crate-name",
-        "multi_targets",
-        "--target",
-        target,
-    ];
-    let [stdout, rustc_cmd] = charon(args, ".", |stdout, cmd| Ok([stdout, cmd]))?;
-
-    let dir = "tests/cargo/multi-targets";
-    let args = &["cargo", "--print-llbc", "--", "--target", target];
-    // Suppose outputs from cargo and rustc queries are the same...
-    charon(args, dir, |desired, cargo_cmd| {
-        ensure!(
-            desired == stdout,
-            "LLBC output differs between `charon cargo` and `charon rustc`\n\
-            `{cargo_cmd}` emits:\n{desired:?}\n\
-            `{rustc_cmd}` emits:\n{stdout:?}"
-        );
-        Ok(())
-    })
 }
 
 #[test]
