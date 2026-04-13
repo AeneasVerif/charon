@@ -995,6 +995,9 @@ and path_elem =
       (** This item was obtained by instantiating its parent with the given
           args. The binder binds the parameters of the new items. If the binder
           binds nothing then this is a monomorphization. *)
+  | PeTarget of string
+      (** This item is only available on the given target. Only appears in
+          multi-target mode. *)
 
 (** The metadata stored in a pointer. That's the information stored in pointers
     alongside their address. It's empty for [Sized] types, and interesting for

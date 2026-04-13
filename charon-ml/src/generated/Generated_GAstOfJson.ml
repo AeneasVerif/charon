@@ -1553,6 +1553,9 @@ and path_elem_of_json (ctx : of_json_ctx) (js : json) :
           box_of_json (binder_of_json generic_args_of_json) ctx instantiated
         in
         Ok (PeInstantiated instantiated)
+    | `Assoc [ ("Target", target) ] ->
+        let* target = string_of_json ctx target in
+        Ok (PeTarget target)
     | _ -> Error "")
 
 and place_of_json (ctx : of_json_ctx) (js : json) : (place, string) result =

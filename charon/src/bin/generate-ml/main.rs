@@ -28,6 +28,7 @@ fn repr_name(_crate_data: &TranslatedCrate, n: &Name) -> String {
             PathElem::Ident(i, _) => i.clone(),
             PathElem::Impl(..) => "<impl>".to_string(),
             PathElem::Instantiated(..) => "<mono>".to_string(),
+            PathElem::Target(target) => target.clone(),
         })
         .join("::")
 }

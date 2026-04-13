@@ -29,6 +29,9 @@ pub enum PathElem {
     /// the parameters of the new items. If the binder binds nothing then this is a
     /// monomorphization.
     Instantiated(Box<Binder<GenericArgs>>),
+    /// This item is only available on the given target. Only appears in multi-target mode.
+    #[serde_state(stateless)]
+    Target(#[drive(skip)] TargetTriple),
 }
 
 /// There are two kinds of `impl` blocks:

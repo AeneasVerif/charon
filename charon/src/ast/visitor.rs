@@ -47,7 +47,7 @@ use derive_generic_visitor::*;
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
-        Locals, Name, NullOp, Operand, PathElem, PlaceKind, ProjectionElem, ConstantExprKind,
+        Locals, NullOp, Operand, PathElem, PlaceKind, ProjectionElem, ConstantExprKind,
         RefKind, RegionId, RegionParam, ScalarValue, TraitItemName,
         TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypeVarId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
@@ -78,7 +78,7 @@ use derive_generic_visitor::*;
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
-        AggregateKind, FnPtr, ItemSource, ItemMeta, Span, ConstantExpr,
+        AggregateKind, FnPtr, ItemSource, ItemMeta, Name, Span, ConstantExpr,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )

@@ -1158,6 +1158,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                     binder.skip_binder.fmt_explicits(ctx).format(", ")
                 )
             }
+            PathElem::Target(target) => write!(f, "{target}"),
         }
     }
 }
