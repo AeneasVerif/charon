@@ -71,7 +71,7 @@ let run_tests (folder : string) : unit =
             Types.TypeDeclId.Map.iter
               (fun _ (ty_decl : Types.type_decl) ->
                 match (ty_decl.kind, ty_decl.Types.layout) with
-                | Enum _, Some layout
+                | Enum _, [ (_, layout) ]
                   when Option.is_some layout.discriminant_layout -> begin
                     let name =
                       PrintTypes.name_to_string print_ctx ty_decl.item_meta.name

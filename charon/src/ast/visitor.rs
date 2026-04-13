@@ -39,7 +39,7 @@ use derive_generic_visitor::*;
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
     // Types that we ignore.
-    skip(()),
+    skip((), String, bool),
     // Types that we unconditionally explore.
     drive(
         AbortKind, Assert, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
@@ -151,7 +151,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
         AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
-        TraitRef, LiteralTy, Literal, RegionId, ()
+        TraitRef, LiteralTy, Literal, RegionId, (), String, bool,
     ),
     // Types that we unconditionally explore.
     drive(

@@ -18,6 +18,7 @@ use derive_generic_visitor::*;
 /// To prevent accidental id reuse, the vector supports reserving a slot to be filled later. Use
 /// `IndexVec` if this is not needed.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[charon::rename("IndexedMap")]
 pub struct IndexMap<I, T>
 where
     I: Idx,

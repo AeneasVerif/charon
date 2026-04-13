@@ -1,4 +1,5 @@
 use crate::ast::*;
+use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::ids::{IndexMap, IndexVec};
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
@@ -401,7 +402,20 @@ pub struct DiscriminantLayout {
 /// Does not include information about niches.
 /// If the type does not have a fully known layout (e.g. it is ?Sized)
 /// some of the layout parts are not available.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
+#[serde_state(stateless)]
 pub struct Layout {
     /// The size of the type in bytes.
     #[drive(skip)]
@@ -504,10 +518,10 @@ pub struct TypeDecl {
     pub src: ItemSource,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
-    /// The layout of the type. Information may be partial because of generics or dynamically-
-    /// sized types. If rustc cannot compute a layout, it is `None`.
-    #[serde_state(stateless)]
-    pub layout: Option<Layout>,
+    /// The layout of the type for each target. Information may be partial because of generics or
+    /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
+    #[serde(with = "SeqHashMapToArray::<TargetTriple, Layout>")]
+    pub layout: SeqHashMap<TargetTriple, Layout>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
     /// The representation options of this type declaration as annotated by the user.

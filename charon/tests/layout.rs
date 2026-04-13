@@ -157,8 +157,10 @@ fn type_layout() -> anyhow::Result<()> {
         &[],
     )?;
 
+    // Check whether niche discriminant computations are correct, i.e. reversible.
+    let the_target = crate_data.target_information.keys().next().unwrap().clone();
     for tdecl in crate_data.type_decls.iter() {
-        if let Some(layout) = tdecl.layout.as_ref()
+        if let Some(layout) = tdecl.layout.get(&the_target)
             && layout.discriminant_layout.is_some()
         {
             let name = repr_name(&crate_data, &tdecl.item_meta.name);
@@ -174,7 +176,7 @@ fn type_layout() -> anyhow::Result<()> {
                     match tag {
                         None => (), // Must be the untagged variant
                         Some(tag) => {
-                            let roundtrip_var_id = tdecl.get_variant_from_tag(tag);
+                            let roundtrip_var_id = tdecl.get_variant_from_tag(&the_target, tag);
                             assert_eq!(
                                 Some(var_id),
                                 roundtrip_var_id,
@@ -197,7 +199,7 @@ fn type_layout() -> anyhow::Result<()> {
                 return None;
             }
             let name = repr_name(&crate_data, &tdecl.item_meta.name);
-            Some((name, tdecl.layout.clone()))
+            Some((name, tdecl.layout.get(&the_target).cloned()))
         })
         .collect();
     let layouts_str = serde_json::to_string_pretty(&layouts)?;

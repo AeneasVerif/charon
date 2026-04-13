@@ -285,7 +285,7 @@ pub mod serialize_map_to_array {
             Ok(map)
         }
         /// Deserializes from an array of named key-values.
-        pub fn deserialize_state<'de, D, State>(
+        pub fn deserialize_state<'de, D, State: ?Sized>(
             state: &State,
             deserializer: D,
         ) -> Result<SeqHashMap<K, V, U>, D::Error>
@@ -295,9 +295,12 @@ pub mod serialize_map_to_array {
             U: BuildHasher + Default,
             D: Deserializer<'de>,
         {
-            struct SeqHashMapToArrayVisitor<'a, State, K, V, U>(&'a State, PhantomData<(K, V, U)>);
+            struct SeqHashMapToArrayVisitor<'a, State: ?Sized, K, V, U>(
+                &'a State,
+                PhantomData<(K, V, U)>,
+            );
 
-            impl<'de, State, K, V, U> Visitor<'de> for SeqHashMapToArrayVisitor<'_, State, K, V, U>
+            impl<'de, State: ?Sized, K, V, U> Visitor<'de> for SeqHashMapToArrayVisitor<'_, State, K, V, U>
             where
                 K: DeserializeState<'de, State> + Eq + Hash,
                 V: DeserializeState<'de, State>,

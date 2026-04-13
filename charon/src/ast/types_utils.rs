@@ -1435,8 +1435,12 @@ impl TypeDecl {
     ///
     /// If the `tag` does not correspond to any valid discriminant but there is a niche,
     /// the resulting `VariantId` will be for the untagged variant [`TagEncoding::Niche::untagged_variant`].
-    pub fn get_variant_from_tag(&self, tag: ScalarValue) -> Option<VariantId> {
-        let layout = self.layout.as_ref()?;
+    pub fn get_variant_from_tag(
+        &self,
+        target: &TargetTriple,
+        tag: ScalarValue,
+    ) -> Option<VariantId> {
+        let layout = self.layout.get(target)?;
         if layout.uninhabited {
             return None;
         };

@@ -222,6 +222,11 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                     if first == "ustr" {
                         first = "string".to_string();
                     }
+                    if first == "index_map" {
+                        // That's the `indexmap::IndexMap` case. Pass something dummy for the
+                        // `RandomState` parameter.
+                        expr[2] = "int_of_json".to_string();
+                    }
                     expr.insert(0, first + "_of_json");
                 }
                 TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
@@ -298,9 +303,14 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                     if base_ty == "ustr" {
                         base_ty = "string".to_string();
                     }
-                    if base_ty == "index_map" || base_ty == "index_vec" {
+                    if base_ty == "indexed_map" || base_ty == "index_vec" {
                         base_ty = "list".to_string();
                         args.remove(0); // Remove the index generic param
+                    }
+                    if base_ty == "index_map" {
+                        // That's the `indexmap::IndexMap` case. Translate as a list of pairs.
+                        base_ty = "list".to_string();
+                        args = vec![format!("( {} * {} )", args[0], args[1])]
                     }
                     let args = match args.as_slice() {
                         [] => String::new(),
@@ -1068,11 +1078,12 @@ fn generate_ml(
         ),
     ];
     let manual_json_impls = &[
+        // Hand-written because we interpret it as a list.
         (
             "charon_lib::ids::index_vec::IndexVec",
             "list_of_json arg1_of_json ctx json",
         ),
-        // Hand-written because we filter out `None` values.
+        // Hand-written because we interpret it as a list.
         (
             "charon_lib::ids::index_map::IndexMap",
             indoc!(
@@ -1081,6 +1092,11 @@ fn generate_ml(
                 Ok (List.filter_map (fun x -> x) list)
                 "#
             ),
+        ),
+        // Hand-written because we turn it into a list of pairs.
+        (
+            "indexmap::map::IndexMap",
+            "list_of_json (key_value_pair_of_json arg0_of_json arg1_of_json) ctx json",
         ),
         // Hand-written because we replace the `FileId` with the corresponding file name.
         (
@@ -1137,7 +1153,8 @@ fn generate_ml(
 
     // Compute type sets for json deserializers.
     let (gast_types, llbc_types, ullbc_types) = {
-        let all_types: HashSet<_> = ctx.children_of("TranslatedCrate");
+        let mut all_types: HashSet<_> = ctx.children_of("TranslatedCrate");
+        all_types.insert(ctx.id_from_name("indexmap::map::IndexMap")); // Add this one foreign type
 
         // (u)llbc types are those that are dominated by the entrypoint of the corresponding
         // module, i.e. those that can't be reached if you remove these entrypoints.

@@ -320,7 +320,11 @@ let generic_params_lengths (args : generic_params) : int * int * int * int =
     variant[TagEncoding::Niche::untagged_variant]. *)
 let get_variant_from_tag ptr_size ty_decl (tag : Values.scalar_value) =
   let ( let* ) = Option.bind in
-  let* layout = ty_decl.layout in
+  let layout =
+    match ty_decl.layout with
+    | [ (_, layout) ] -> layout
+    | _ -> failwith "get_variant_from_tag can't be used in a multi-layout crate"
+  in
   let* discr_layout = layout.discriminant_layout in
   match ty_decl.kind with
   | Enum variants -> begin

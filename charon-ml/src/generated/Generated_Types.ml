@@ -1070,10 +1070,10 @@ and type_decl = {
       (** The context of the type: distinguishes top-level items from
           closure-related items. *)
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
-  layout : layout option;
-      (** The layout of the type. Information may be partial because of generics
-          or dynamically- sized types. If rustc cannot compute a layout, it is
-          [None]. *)
+  layout : (string * layout) list;
+      (** The layout of the type for each target. Information may be partial
+          because of generics or dynamically-sized types. If we cannot compute a
+          layout, the target has no entry. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
   repr : repr_options option;
