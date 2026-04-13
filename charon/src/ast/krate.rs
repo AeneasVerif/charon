@@ -90,7 +90,9 @@ impl TryFrom<ItemId> for FunId {
 }
 
 /// A translated item.
-#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+)]
 pub enum ItemByVal {
     Type(TypeDecl),
     Fun(FunDecl),
@@ -112,7 +114,9 @@ pub enum ItemRef<'ctx> {
 }
 
 /// A mutable reference to a translated item.
-#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+)]
 pub enum ItemRefMut<'ctx> {
     Type(&'ctx mut TypeDecl),
     Fun(&'ctx mut FunDecl),

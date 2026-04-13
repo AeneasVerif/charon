@@ -77,7 +77,7 @@ macro_rules! sanity_check {
 pub use sanity_check;
 
 /// Common error used during the translation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Error {
     pub span: Span,
     pub msg: String,

@@ -17,6 +17,8 @@ generate_index_type!(StatementId);
 /// A raw statement: a statement without meta data.
 #[derive(
     Debug,
+    PartialEq,
+    Eq,
     Clone,
     EnumIsA,
     EnumToGetters,
@@ -85,7 +87,7 @@ pub enum StatementKind {
     Error(String),
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
     /// Integer uniquely identifying this statement among the statmeents in the current body. To
@@ -99,7 +101,16 @@ pub struct Statement {
     pub comments_before: Vec<String>,
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+/// Ignores statement ids.
+impl PartialEq for Statement {
+    fn eq(&self, other: &Self) -> bool {
+        self.span == other.span
+            && self.kind == other.kind
+            && self.comments_before == other.comments_before
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Block {
     pub span: Span,
@@ -108,6 +119,8 @@ pub struct Block {
 
 #[derive(
     Debug,
+    PartialEq,
+    Eq,
     Clone,
     EnumIsA,
     EnumToGetters,

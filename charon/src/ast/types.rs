@@ -492,7 +492,8 @@ pub struct ReprOptions {
 ///
 /// A type can only be an ADT (structure or enumeration), as type aliases are
 /// inlined in MIR.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[serde_state(state_implements = HashConsSerializerState)]
 pub struct TypeDecl {
     #[drive(skip)]
     pub def_id: TypeDeclId,
@@ -520,7 +521,16 @@ generate_index_type!(VariantId, "Variant");
 generate_index_type!(FieldId, "Field");
 
 #[derive(
-    Debug, Clone, EnumIsA, EnumAsGetters, SerializeState, DeserializeState, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    EnumIsA,
+    EnumAsGetters,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 pub enum TypeDeclKind {
     Struct(IndexVec<FieldId, Field>),
@@ -540,7 +550,7 @@ pub enum TypeDeclKind {
     Error(String),
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(stateless)]
 pub struct Variant {
     pub span: Span,
@@ -557,7 +567,7 @@ pub struct Variant {
     pub discriminant: Literal,
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(stateless)]
 pub struct Field {
     pub span: Span,

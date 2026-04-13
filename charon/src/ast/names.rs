@@ -12,6 +12,7 @@ generate_index_type!(Disambiguator);
     Clone,
     PartialEq,
     Eq,
+    Hash,
     SerializeState,
     DeserializeState,
     Drive,
@@ -40,7 +41,7 @@ pub enum PathElem {
 ///   impl<T> PartialEq for List<T> { ...}
 ///   ```
 /// We distinguish the two.
-#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 #[charon::variants_prefix("ImplElem")]
 pub enum ImplElem {
     Ty(Box<Binder<Ty>>),
@@ -83,7 +84,7 @@ pub enum ImplElem {
 ///
 /// Also note that the first path element in the name is always the crate name.
 #[derive(
-    Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut,
+    Debug, Default, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut,
 )]
 #[serde(transparent)]
 pub struct Name {
