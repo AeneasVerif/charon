@@ -61,6 +61,7 @@ fn find_primitive_impls<'tcx>(
 pub fn def_path_def_ids<'a, 'tcx>(
     s: &impl BaseState<'tcx>,
     pat: &'a NamePattern,
+    strict: bool,
 ) -> anyhow::Result<Vec<DefId>> {
     use charon_lib::name_matcher::{PatElem, PatTy};
     let tcx = s.base().tcx;
@@ -104,7 +105,7 @@ pub fn def_path_def_ids<'a, 'tcx>(
                     ] => match generics.as_slice() {
                         [] => bail!("malformed trait impl pattern"),
                         [PatTy::Pat(self_pat)] => {
-                            let impls = def_path_def_ids(s, impl_pat)?
+                            let impls = def_path_def_ids(s, impl_pat, strict)?
                                 .into_iter()
                                 .flat_map(|trait_def_id| tcx.all_impls(trait_def_id));
                             match self_pat.elems.as_slice() {
@@ -112,7 +113,7 @@ pub fn def_path_def_ids<'a, 'tcx>(
                                     items = impls.collect_vec();
                                 }
                                 _ => {
-                                    let self_ty_def_ids = def_path_def_ids(s, self_pat)?;
+                                    let self_ty_def_ids = def_path_def_ids(s, self_pat, strict)?;
                                     items = impls
                                         .filter(|impl_def_id| {
                                             let impl_self_ty = tcx
@@ -163,7 +164,7 @@ pub fn def_path_def_ids<'a, 'tcx>(
                 ),
             }
         }
-        if items.is_empty() {
+        if strict && items.is_empty() {
             let prefix = NamePattern {
                 elems: pat.elems[..=i].to_vec(),
             };
