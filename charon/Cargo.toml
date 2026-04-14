@@ -45,7 +45,7 @@ serde_state = { git = "https://github.com/Nadrieril/serde_state", branch = "main
 # serde_state = { path = "../../../forks/serde_state/serde_state" }
 macros = { path = "./macros" }
 
-annotate-snippets = { git = "https://github.com/rust-lang/annotate-snippets-rs", rev = "74964e91d845e39fb549c4028452beffa7c6562b", version = "0.11.5" }
+annotate-snippets = { version = "0.12" }
 anstream = "0.6.18"
 anyhow = "1.0.81"
 assert_cmd = "2.0"
