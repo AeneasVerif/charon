@@ -269,14 +269,15 @@ impl TranslatedCrate {
         }
     }
     /// Set the item to the corresponding slot, and record its name in the name map.
-    pub fn set_new_item_slot(&mut self, id: ItemId, item: ItemByVal) {
+    pub fn set_new_item_slot(&mut self, id: ItemId, item: impl Into<ItemByVal>) {
+        let item = item.into();
         self.item_names
             .insert(id, item.as_ref().item_meta().name.clone());
         self.set_item_slot(id, item);
     }
     /// Set the item to the corresponding slot.
-    pub fn set_item_slot(&mut self, id: ItemId, item: ItemByVal) {
-        match item {
+    pub fn set_item_slot(&mut self, id: ItemId, item: impl Into<ItemByVal>) {
+        match item.into() {
             ItemByVal::Type(decl) => self.type_decls.set_slot(*id.as_type().unwrap(), decl),
             ItemByVal::Fun(decl) => self.fun_decls.set_slot(*id.as_fun().unwrap(), decl),
             ItemByVal::Global(decl) => self.global_decls.set_slot(*id.as_global().unwrap(), decl),

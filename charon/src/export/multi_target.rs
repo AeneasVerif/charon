@@ -22,7 +22,7 @@ pub fn merge(options: CliOpts, krates: Vec<CrateData>) -> CrateData {
 
     let mut merged = CrateMerger::process(options, krates);
 
-    ItemDeduplicator::dedup(&mut merged.translated);
+    ItemDeduplicator::dedup(&mut merged.translated, &mut error_ctx);
 
     // Recompute declaration order on the merged crate.
     let mut ctx = TransformCtx {
@@ -196,8 +196,6 @@ generate_index_type!(TargetGroupId, "TargetGroup");
 /// A set of items that share the same base name and item kind.
 /// These are candidates for merging into a single cross-target item.
 struct TargetGroup {
-    name: Name,
-    kind: std::mem::Discriminant<ItemId>,
     ids: SeqHashMap<TargetTriple, ItemId>,
 }
 
@@ -221,7 +219,7 @@ impl TargetGroup {
 
     /// Whether this group is a group of function items.
     fn is_function_group(&self) -> bool {
-        self.kind == std::mem::discriminant(&ItemId::Fun(FunDeclId::from_raw(0)))
+        self.canonical_id().is_fun()
     }
 
     /// Compare the items of this group under the provided id mapping.
@@ -231,17 +229,25 @@ impl TargetGroup {
         remap: &HashMap<ItemId, ItemId>,
     ) -> MergeDecision {
         let canonical_id = self.canonical_id();
-        let items = self
+        let items: Vec<Option<ItemByVal>> = self
             .ids
             .values()
-            .filter_map(|&id| {
-                let item = krate.get_item(id)?.to_owned();
-                Some(normalize_item(item, canonical_id, remap))
+            .map(|&id| {
+                krate
+                    .get_item(id)
+                    .map(|item| normalize_item(item.to_owned(), canonical_id, remap))
             })
             .collect_vec();
-        if items.len() != self.ids.len() {
-            return MergeDecision::Skip;
+
+        // Items that don't exist in the crate can't be compared; if they're all missing we can
+        // still merge them tho.
+        if items.iter().all(|i| i.is_none()) {
+            return MergeDecision::Dedup;
         }
+        let items: Vec<_> = match items.into_iter().collect::<Option<Vec<_>>>() {
+            Some(items) => items,
+            None => return MergeDecision::Skip,
+        };
 
         if items.iter().all_equal() {
             MergeDecision::Dedup
@@ -261,6 +267,10 @@ impl TargetGroup {
     /// Yields `(non_canonical_id, canonical_id)` pairs for building an ID remap.
     fn remap_entries<'a>(&'a self) -> impl Iterator<Item = (ItemId, ItemId)> + 'a {
         self.ids.values().map(|&id| (id, self.canonical_id()))
+    }
+    fn into_remap_entries(self) -> impl Iterator<Item = (ItemId, ItemId)> {
+        let canonical_id = self.canonical_id();
+        self.ids.into_values().map(move |id| (id, canonical_id))
     }
 
     /// Build a façade `FunDecl` for a group of functions with matching signatures but different
@@ -282,7 +292,8 @@ impl TargetGroup {
             .collect();
 
         let mut item_meta = canonical.item_meta.clone();
-        item_meta.name = self.name.clone();
+        // Remove the target suffix (and do a little sanity check).
+        item_meta.name.name.pop().unwrap().as_target().unwrap();
 
         FunDecl {
             def_id,
@@ -296,6 +307,36 @@ impl TargetGroup {
     }
 }
 
+/// Normalize a name for grouping across targets; returns the target.
+fn normalize_name_for_grouping(
+    name: &Name,
+    krate: &TranslatedCrate,
+) -> Option<(Name, TargetTriple)> {
+    let (mut name, target) = name.strip_target_suffix()?;
+    for elem in &mut name.name {
+        if let PathElem::Impl(ImplElem::Trait(id)) = elem {
+            // Replace ipl block references with something that contains the implemented trait
+            // predicate instead. That way, comparing names for equality compares trait predicates
+            // instead.
+            if let Some(timpl) = krate.trait_impls.get(*id) {
+                let mut params = GenericParams::default();
+                params.trait_clauses.push(TraitParam {
+                    clause_id: TraitClauseId::ZERO,
+                    span: None,
+                    origin: PredicateOrigin::WhereClauseOnImpl,
+                    trait_: RegionBinder::empty(timpl.impl_trait.clone()),
+                });
+                *elem = PathElem::Impl(ImplElem::Ty(Box::new(Binder {
+                    params,
+                    skip_binder: Ty::mk_unit(),
+                    kind: BinderKind::Other,
+                })));
+            }
+        }
+    }
+    Some((name, target))
+}
+
 /// Orchestrates deduplication of items across compilation targets.
 struct ItemDeduplicator<'a> {
     krate: &'a mut TranslatedCrate,
@@ -304,8 +345,8 @@ struct ItemDeduplicator<'a> {
 
 impl<'a> ItemDeduplicator<'a> {
     /// Entrypoint: deduplicate items that are the same across targets.
-    pub fn dedup(krate: &'a mut TranslatedCrate) {
-        let groups = Self::discover_groups(krate);
+    pub fn dedup(krate: &'a mut TranslatedCrate, errors: &mut ErrorCtx) {
+        let groups = Self::discover_groups(krate, errors);
         if groups.is_empty() {
             return;
         }
@@ -315,33 +356,64 @@ impl<'a> ItemDeduplicator<'a> {
     }
 
     /// Group items by (base_name, item_kind), keeping only groups that have items in all targets.
-    fn discover_groups(krate: &TranslatedCrate) -> IndexVec<TargetGroupId, TargetGroup> {
+    fn discover_groups(
+        krate: &TranslatedCrate,
+        _errors: &mut ErrorCtx,
+    ) -> IndexVec<TargetGroupId, TargetGroup> {
         let num_targets = krate.target_information.len();
-        let mut groups: HashMap<
+        let mut groups_map: SeqHashMap<
             (Name, std::mem::Discriminant<ItemId>),
             SeqHashMap<TargetTriple, ItemId>,
-        > = HashMap::new();
+        > = SeqHashMap::new();
         for (&item_id, name) in &krate.item_names {
-            if let Some((base_name, target)) = name.strip_target_suffix() {
+            if let Some((base_name, target)) = normalize_name_for_grouping(name, krate) {
                 let key = (base_name, std::mem::discriminant(&item_id));
-                let per_target = groups.entry(key).or_default();
+                let per_target = groups_map.entry(key).or_default();
                 if per_target.contains_key(&target) {
-                    // Name collision within the same target — skip this group entirely.
+                    // Name collision within the same target: skip this group entirely.
                     per_target.clear();
                 } else {
                     per_target.insert(target, item_id);
                 }
             }
         }
+        // We do a fixpoint: merging a group may lead to detecting that some names are actually the
+        // same (because the names refer to impls/types).
+        loop {
+            let prev_len = groups_map.len();
+            let remap: HashMap<ItemId, ItemId> = groups_map
+                .values()
+                .cloned()
+                .map(|ids| TargetGroup { ids })
+                .flat_map(|g| g.into_remap_entries())
+                .filter(|(x, y)| x != y)
+                .collect();
+            for ((mut name, kind), ids) in mem::take(&mut groups_map) {
+                name.drive_mut(&mut IdRefMapperVisitor::new(&remap));
+                let key = (name, kind);
+                let per_target = groups_map.entry(key).or_default();
+                for (target, item_id) in ids {
+                    if per_target.contains_key(&target) {
+                        // Name collision within the same target: skip this group entirely.
+                        per_target.clear();
+                        break;
+                    } else {
+                        per_target.insert(target, item_id);
+                    }
+                }
+            }
+            groups_map.retain(|_, v| v.len() == num_targets);
+            if prev_len == groups_map.len() {
+                break;
+            }
+        }
+        let groups: IndexVec<TargetGroupId, TargetGroup> = groups_map
+            .values()
+            .filter(|&per_target| per_target.len() == num_targets)
+            .cloned()
+            .map(|ids| TargetGroup { ids })
+            .collect();
         groups
-            .into_iter()
-            .filter(|(_, per_target)| per_target.len() == num_targets)
-            .map(|((base_name, item_kind), per_target)| TargetGroup {
-                name: base_name,
-                kind: item_kind,
-                ids: per_target,
-            })
-            .collect()
     }
 
     /// Decide how to merge each group. Skipped groups are not included in the output.
@@ -426,11 +498,13 @@ impl<'a> ItemDeduplicator<'a> {
         let group = &self.groups[idx];
         let canonical = group.canonical_id();
 
-        // Rename the canonical copy (strip target suffix).
-        self.krate.item_names.insert(canonical, group.name.clone());
+        // Remove the target suffix (and do a little sanity check).
+        let mut name = self.krate.item_names.get(&canonical).cloned().unwrap();
+        name.name.pop().unwrap().as_target().unwrap();
         if let Some(mut canonical_item) = self.krate.get_item_mut(canonical) {
-            canonical_item.item_meta().name = group.name.clone();
+            canonical_item.item_meta().name = name.clone();
         }
+        self.krate.item_names.insert(canonical, name);
 
         // Merge per-target layouts into the canonical type.
         if let ItemId::Type(canonical_type_id) = canonical {
@@ -517,11 +591,6 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
     fn enter_fun_decl_ref(&mut self, x: &mut FunDeclRef) {
         self.map(&mut x.id);
     }
-    fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
-        if let FnPtrKind::Fun(FunId::Regular(id)) = &mut *x.kind {
-            self.map(id);
-        }
-    }
     fn enter_global_decl_ref(&mut self, x: &mut GlobalDeclRef) {
         self.map(&mut x.id);
     }
@@ -530,5 +599,41 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
     }
     fn enter_trait_impl_ref(&mut self, x: &mut TraitImplRef) {
         self.map(&mut x.id);
+    }
+
+    fn enter_projection_elem(&mut self, x: &mut ProjectionElem) {
+        if let ProjectionElem::Field(proj, _) = x
+            && let FieldProjKind::Adt(id, _) = proj
+        {
+            self.map(id);
+        }
+    }
+    fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
+        match &mut *x.kind {
+            FnPtrKind::Fun(FunId::Regular(id)) => self.map(id),
+            FnPtrKind::Trait(_, _, id) => self.map(id),
+            _ => {}
+        }
+    }
+    fn enter_trait_method_ref(&mut self, x: &mut TraitMethodRef) {
+        self.map(&mut x.method_decl_id);
+    }
+    fn enter_item_source(&mut self, x: &mut ItemSource) {
+        if let ItemSource::VTableMethodPreShim(id, _, _) = x {
+            self.map(id);
+        }
+    }
+    fn enter_global_decl(&mut self, x: &mut GlobalDecl) {
+        self.map(&mut x.init);
+    }
+    fn enter_fun_decl(&mut self, x: &mut FunDecl) {
+        if let Some(id) = &mut x.is_global_initializer {
+            self.map(id);
+        }
+    }
+    fn enter_impl_elem(&mut self, x: &mut ImplElem) {
+        if let ImplElem::Trait(id) = x {
+            self.map(id);
+        }
     }
 }
