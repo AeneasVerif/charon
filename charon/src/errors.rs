@@ -94,7 +94,7 @@ impl Error {
         use annotate_snippets::*;
         let span = self.span.data;
 
-        let mut group = Group::with_title(level.title(&self.msg));
+        let mut group = Group::with_title(level.primary_title(&self.msg));
         let origin;
         if let Some(file) = krate.files.get(span.file_id) {
             origin = format!("{}", file.name);
@@ -129,7 +129,7 @@ impl<T: ToString> From<T> for Error {
 /// Display an error without a specific location.
 pub fn display_unspanned_error(level: Level, msg: &str) {
     use annotate_snippets::*;
-    let title = level.title(msg);
+    let title = level.primary_title(msg);
     let message = Renderer::styled()
         .render(&[Group::with_title(title)])
         .to_string();
@@ -355,7 +355,7 @@ impl ErrorCtx {
              which is (transitively) used at the following location(s):",
             id.with_ctx(&krate.into_fmt())
         );
-        let message = Group::with_title(level.title(&msg)).elements(snippets);
+        let message = Group::with_title(level.primary_title(&msg)).elements(snippets);
         let out = Renderer::styled().render(&[message]).to_string();
         anstream::eprintln!("{}", out);
     }
