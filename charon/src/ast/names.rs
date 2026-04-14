@@ -43,7 +43,7 @@ pub enum PathElem {
 #[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
 #[charon::variants_prefix("ImplElem")]
 pub enum ImplElem {
-    Ty(Binder<Ty>),
+    Ty(Box<Binder<Ty>>),
     Trait(TraitImplId),
 }
 

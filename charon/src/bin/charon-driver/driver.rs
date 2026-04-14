@@ -102,7 +102,7 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
     // We may however not want to be calling charon on all crates; `CARGO_PRIMARY_PACKAGE` tells us
     // whether the crate was specifically selected or is a dependency.
     let is_workspace_dependency =
-        env::var("CHARON_USING_CARGO").is_ok() && !env::var("CARGO_PRIMARY_PACKAGE").is_ok();
+        env::var("CHARON_USING_CARGO").is_ok() && env::var("CARGO_PRIMARY_PACKAGE").is_err();
     // Determines if we are being invoked to build a crate for the "target" architecture, in
     // contrast to the "host" architecture. Host crates are for build scripts and proc macros and
     // still need to be built like normal; target crates need to be processed by Charon.
@@ -159,7 +159,7 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
         self.transform_ctx = translate_crate::translate(
-            &self.options,
+            self.options,
             tcx,
             compiler.sess.opts.sysroot.path().to_owned(),
         )

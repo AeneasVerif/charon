@@ -56,7 +56,7 @@ mod intern_table {
     impl Mapper for InternMapper {
         type Value<T: Mappable> = SeqHashSet<Arc<T>>;
     }
-    static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> = LazyLock::new(|| Default::default());
+    static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> = LazyLock::new(Default::default);
 
     pub fn intern<T: HashConsable>(inner: T) -> HashConsed<T> {
         // Fast read-only check.
@@ -339,7 +339,6 @@ fn test_hash_cons() {
 fn test_hash_cons_concurrent() {
     use itertools::Itertools;
     let handles = (0..10)
-        .into_iter()
         .map(|_| std::thread::spawn(|| std::hint::black_box(HashConsed::new(42u32))))
         .collect_vec();
     let values = handles.into_iter().map(|h| h.join().unwrap()).collect_vec();

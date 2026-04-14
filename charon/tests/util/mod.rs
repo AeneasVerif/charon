@@ -7,7 +7,6 @@
 #![allow(dead_code)]
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use itertools::Itertools;
-use snapbox;
 use snapbox::filter::Filter;
 use std::fmt::Display;
 use std::path::Path;

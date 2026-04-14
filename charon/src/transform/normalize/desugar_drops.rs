@@ -31,9 +31,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
         {
             // check if this drop is noop
             if is_noop_destruct(tref) {
-                term.kind = TerminatorKind::Goto {
-                    target: target.clone(),
-                };
+                term.kind = TerminatorKind::Goto { target: *target };
                 return;
             }
 
@@ -65,8 +63,8 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             };
             term.kind = TerminatorKind::Call {
                 call,
-                target: target.clone(),
-                on_unwind: on_unwind.clone(),
+                target: *target,
+                on_unwind: *on_unwind,
             };
         }
     }

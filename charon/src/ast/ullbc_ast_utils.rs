@@ -408,8 +408,8 @@ impl BodyBuilder {
             .push(mk_block(self.span, TerminatorKind::Return));
         let term = TerminatorKind::Drop {
             kind: DropKind::Precise,
-            place: place,
-            tref: tref,
+            place,
+            tref,
             target: next_block,
             on_unwind: self.unwind_block(),
         };

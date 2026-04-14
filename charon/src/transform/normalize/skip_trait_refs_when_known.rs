@@ -16,7 +16,7 @@ impl VisitorWithSpan for NormalizeFnPtr<'_> {
 }
 
 impl VisitAstMut for NormalizeFnPtr<'_> {
-    fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
         // Track a useful enclosing span, for error messages.
         VisitWithSpan::new(self).visit(x)
     }
@@ -63,7 +63,7 @@ fn transform_fn_ptr(ctx: &TransformCtx, span: Span, fn_ptr: &mut FnPtr) {
     // Substitute the appropriate generics into the function call.
     let fn_ref = fn_ref.apply(&impl_ref.generics).apply(method_generics);
     fn_ptr.generics = fn_ref.generics;
-    fn_ptr.kind = Box::new(FnPtrKind::Fun(FunId::Regular(fn_ref.id)));
+    *fn_ptr.kind = FnPtrKind::Fun(FunId::Regular(fn_ref.id));
 }
 
 pub struct Transform;

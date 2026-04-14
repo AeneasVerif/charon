@@ -51,7 +51,7 @@ fn compute_uses(body: &ExprBody) -> LocalUses {
                     // so any usage after this point doesn't matter
                     // Similarly, a `StorageDead` means the local is de-initialised,
                     // so we can ignore any usage after this point
-                    visitor.0.remove(&local);
+                    visitor.0.remove(local);
                 }
                 _ => {
                     let _ = statement.drive_body(&mut visitor);
@@ -73,10 +73,10 @@ fn uses_local<T: BodyVisitable>(x: &T, local: LocalId) -> bool {
     }
     impl VisitBody for UsesLocalVisitor {
         fn visit_place(&mut self, x: &Place) -> ::std::ops::ControlFlow<Self::Break> {
-            if let Some(local_id) = x.as_local() {
-                if local_id == self.0 {
-                    return ControlFlow::Break(FoundIt);
-                }
+            if let Some(local_id) = x.as_local()
+                && local_id == self.0
+            {
+                return ControlFlow::Break(FoundIt);
             }
             self.visit_inner(x)
         }

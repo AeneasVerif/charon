@@ -67,7 +67,7 @@ fn transform_st(s: &mut Statement) {
         }
         // Transform the raw pointer aggregate to a function call
         StatementKind::Assign(p, Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), ops)) => {
-            let id = BuiltinFunId::PtrFromParts(is_mut.clone());
+            let id = BuiltinFunId::PtrFromParts(*is_mut);
             let func = FnPtrKind::mk_builtin(id);
             let generics = GenericArgs::new(
                 [Region::Erased].into(),

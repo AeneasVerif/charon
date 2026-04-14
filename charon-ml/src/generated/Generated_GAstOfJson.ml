@@ -1149,7 +1149,7 @@ and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Ty", ty) ] ->
-        let* ty = binder_of_json ty_of_json ctx ty in
+        let* ty = box_of_json (binder_of_json ty_of_json) ctx ty in
         Ok (ImplElemTy ty)
     | `Assoc [ ("Trait", trait) ] ->
         let* trait = trait_impl_id_of_json ctx trait in

@@ -5,9 +5,9 @@
 //! The crate defines two traits:
 /// - `AstVisitable` is a trait implemented by all the types that can be visited by this;
 /// - `VisitAst[Mut]` is a (pair of) visitor trait(s) that can be implemented by visitors.
-/// To define a visitor, implement `VisitAst[Mut]` and override the methods you need. Calling
-/// `x.drive[_mut](&mut visitor)` will then traverse `x`, calling the visitor methods on all the
-/// subvalues encountered.
+///   To define a visitor, implement `VisitAst[Mut]` and override the methods you need. Calling
+///   `x.drive[_mut](&mut visitor)` will then traverse `x`, calling the visitor methods on all the
+///   subvalues encountered.
 ///
 /// Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
 use std::{any::Any, collections::HashMap};
@@ -222,7 +222,7 @@ impl<F> VisitAst for DynVisitor<F>
 where
     F: FnMut(&dyn Any),
 {
-    fn visit<'a, T: AstVisitable>(&'a mut self, x: &T) -> ControlFlow<Self::Break> {
+    fn visit<T: AstVisitable>(&mut self, x: &T) -> ControlFlow<Self::Break> {
         (self.enter)(x);
         x.drive(self)?;
         Continue(())
@@ -232,7 +232,7 @@ impl<F> VisitAstMut for DynVisitor<F>
 where
     F: FnMut(&mut dyn Any),
 {
-    fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
         (self.enter)(x);
         x.drive_mut(self)?;
         Continue(())
@@ -242,7 +242,7 @@ impl<F> VisitBody for DynVisitor<F>
 where
     F: FnMut(&dyn Any),
 {
-    fn visit<'a, T: BodyVisitable>(&'a mut self, x: &T) -> ControlFlow<Self::Break> {
+    fn visit<T: BodyVisitable>(&mut self, x: &T) -> ControlFlow<Self::Break> {
         (self.enter)(x);
         x.drive_body(self)?;
         Continue(())
@@ -252,7 +252,7 @@ impl<F> VisitBodyMut for DynVisitor<F>
 where
     F: FnMut(&mut dyn Any),
 {
-    fn visit<'a, T: BodyVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    fn visit<T: BodyVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
         (self.enter)(x);
         x.drive_body_mut(self)?;
         Continue(())

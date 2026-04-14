@@ -53,12 +53,8 @@ impl Place {
         }
     }
 
-    pub fn project_auto_ty(
-        self,
-        krate: &TranslatedCrate,
-        proj: ProjectionElem,
-    ) -> Result<Self, ()> {
-        Ok(Place {
+    pub fn project_auto_ty(self, krate: &TranslatedCrate, proj: ProjectionElem) -> Option<Self> {
+        Some(Place {
             ty: proj.project_type(krate, &self.ty)?,
             kind: PlaceKind::Projection(Box::new(self), proj),
         })
@@ -83,7 +79,7 @@ impl Place {
         }
     }
 
-    pub fn projections<'a>(&'a self) -> impl Iterator<Item = &'a ProjectionElem> {
+    pub fn projections(&self) -> impl Iterator<Item = &ProjectionElem> {
         let mut place = self;
         std::iter::from_fn(move || {
             let (new_place, proj) = place.as_projection()?;
@@ -160,9 +156,9 @@ impl From<RefKind> for BorrowKind {
 
 impl ProjectionElem {
     /// Compute the type obtained when applying the current projection to a place of type `ty`.
-    pub fn project_type(&self, krate: &TranslatedCrate, ty: &Ty) -> Result<Ty, ()> {
+    pub fn project_type(&self, krate: &TranslatedCrate, ty: &Ty) -> Option<Ty> {
         use ProjectionElem::*;
-        Ok(match self {
+        Some(match self {
             Deref => {
                 use TyKind::*;
                 match ty.kind() {
@@ -174,7 +170,7 @@ impl ProjectionElem {
                     | Array(..) | Slice(..) | FnPtr(..) | FnDef(..) | PtrMetadata(..)
                     | Error(..) => {
                         // Type error
-                        return Err(());
+                        return None;
                     }
                 }
             }
@@ -184,46 +180,38 @@ impl ProjectionElem {
                 match pkind {
                     Adt(type_decl_id, variant_id) => {
                         // Can fail if the type declaration was not translated.
-                        let type_decl = krate.type_decls.get(*type_decl_id).ok_or(())?;
-                        let tref = ty.as_adt().ok_or(())?;
+                        let type_decl = krate.type_decls.get(*type_decl_id)?;
+                        let tref = ty.as_adt()?;
                         assert!(TypeId::Adt(*type_decl_id) == tref.id);
                         use TypeDeclKind::*;
                         match &type_decl.kind {
                             Struct(fields) | Union(fields) => {
                                 if variant_id.is_some() {
-                                    return Err(());
+                                    return None;
                                 };
-                                fields
-                                    .get(*field_id)
-                                    .ok_or(())?
-                                    .ty
-                                    .clone()
-                                    .substitute(&tref.generics)
+                                fields.get(*field_id)?.ty.clone().substitute(&tref.generics)
                             }
                             Enum(variants) => {
-                                let variant_id = variant_id.ok_or(())?;
-                                let variant = variants.get(variant_id).ok_or(())?;
+                                let variant_id = (*variant_id)?;
+                                let variant = variants.get(variant_id)?;
                                 variant
                                     .fields
-                                    .get(*field_id)
-                                    .ok_or(())?
+                                    .get(*field_id)?
                                     .ty
                                     .clone()
                                     .substitute(&tref.generics)
                             }
-                            Opaque | Alias(_) | Error(_) => return Err(()),
+                            Opaque | Alias(_) | Error(_) => return None,
                         }
                     }
                     Tuple(_) => ty
-                        .as_tuple()
-                        .ok_or(())?
-                        .get(TypeVarId::from(usize::from(*field_id)))
-                        .ok_or(())?
+                        .as_tuple()?
+                        .get(TypeVarId::from(usize::from(*field_id)))?
                         .clone(),
                 }
             }
             PtrMetadata => ty.get_ptr_metadata(krate).into_type(),
-            Index { .. } | Subslice { .. } => ty.as_array_or_slice().ok_or(())?.clone(),
+            Index { .. } | Subslice { .. } => ty.as_array_or_slice()?.clone(),
         })
     }
 }

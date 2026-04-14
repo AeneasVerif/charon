@@ -304,6 +304,7 @@ pub struct TraitItemName(pub ustr::Ustr);
 /// we can use default methods *but*:
 /// - implementations of required methods shoudln't call default methods
 /// - trait implementations shouldn't redefine required methods
+///
 /// The use case we have in mind is [std::iter::Iterator]: it declares one required
 /// method (`next`) that should be implemented for every iterator, and defines many
 /// helpers like `all`, `map`, etc. that shouldn't be re-implemented.

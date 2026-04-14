@@ -232,10 +232,8 @@ impl DepsForItem<'_> {
     fn insert_node(&mut self, tgt: impl Into<ItemId>) {
         let tgt = tgt.into();
         // Only add translated items.
-        if self.ctx.translated.get_item(tgt).is_some() {
-            if !self.deps.visited.contains(&tgt) {
-                self.deps.unprocessed.push(tgt);
-            }
+        if self.ctx.translated.get_item(tgt).is_some() && !self.deps.visited.contains(&tgt) {
+            self.deps.unprocessed.push(tgt);
         }
     }
     fn insert_edge(&mut self, tgt: impl Into<ItemId>) {
@@ -291,7 +289,7 @@ impl VisitAst for DepsForItem<'_> {
     }
 }
 
-fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemId, ()> {
+fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
     let mut deps = Deps::default();
     // Start from the items included in `start_from`. We've mostly only translated items accessible
     // from that, but some passes render items inaccessible again, which we filter out here.
@@ -335,11 +333,8 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
                 let _ = generics.drive(&mut visitor);
                 let _ = signature.drive(&mut visitor);
                 let _ = body.drive(&mut visitor);
-                match src {
-                    ItemSource::TraitDecl { trait_ref, .. } => {
-                        visitor.insert_edge(trait_ref.id);
-                    }
-                    _ => (),
+                if let ItemSource::TraitDecl { trait_ref, .. } = src {
+                    visitor.insert_edge(trait_ref.id);
                 }
             }
             ItemRef::TraitDecl(d) => {

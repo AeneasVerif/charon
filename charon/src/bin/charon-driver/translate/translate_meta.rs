@@ -12,7 +12,7 @@ use charon_lib::ast::*;
 use hax::{DefPathItem, SInto};
 
 // Spans
-impl<'tcx, 'ctx> TranslateCtx<'tcx> {
+impl<'tcx> TranslateCtx<'tcx> {
     /// Register a file if it is a "real" file and was not already registered
     /// `span` must be a span from which we obtained that filename.
     fn register_file(&mut self, filename: FileName, span: rustc_span::Span) -> FileId {
@@ -112,7 +112,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let smap: &rustc_span::source_map::SourceMap = self.tcx.sess.psess.source_map();
         let filename = smap.span_to_filename(span);
         let filename = self.translate_filename(filename);
-        let span = span;
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
@@ -180,7 +179,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 }
 
 // Names
-impl<'tcx, 'ctx> TranslateCtx<'tcx> {
+impl<'tcx> TranslateCtx<'tcx> {
     fn path_elem_for_def(
         &mut self,
         span: Span,
@@ -224,12 +223,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                             &full_def,
                             &TransItemSourceKind::InherentImpl,
                         )?;
-                        let ty = bt_ctx.translate_ty(span, &ty)?;
-                        ImplElem::Ty(Binder {
+                        let ty = bt_ctx.translate_ty(span, ty)?;
+                        ImplElem::Ty(Box::new(Binder {
                             kind: BinderKind::InherentImplBlock,
                             params: bt_ctx.into_generics(),
                             skip_binder: ty,
-                        })
+                        }))
                     }
                     // Trait implementation
                     hax::FullDefKind::TraitImpl { .. } => {
@@ -474,13 +473,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         if let hax::FullDefKind::AssocTy {
                             implied_predicates, ..
                         } = item_def.kind()
+                            && let Some(pred) = implied_predicates.predicates.first()
+                            && let hax::ClauseKind::Trait(p) = &pred.clause.kind.value
                         {
-                            if let Some(pred) = implied_predicates.predicates.first() {
-                                if let hax::ClauseKind::Trait(p) = &pred.clause.kind.value {
-                                    assoc_types = Some(p.trait_ref.generic_args.clone());
-                                    break;
-                                }
-                            }
+                            assoc_types = Some(p.trait_ref.generic_args.clone());
+                            break;
                         }
                     }
                 }
@@ -488,7 +485,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // fetch generic arguments
             let mut substs = item_ref.generic_args.clone();
 
-            if !(is_preshim && item_ref.generic_args.len() == 1 && matches!(assoc_types, None)) {
+            if !(is_preshim && item_ref.generic_args.len() == 1 && assoc_types.is_none()) {
                 // For preshim functions, skip the first argument, which is the dyn trait type.
                 let args = if is_preshim {
                     if let Some(mut assoc_types) = assoc_types {
@@ -541,7 +538,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 }
 
 // Attributes
-impl<'tcx, 'ctx> TranslateCtx<'tcx> {
+impl<'tcx> TranslateCtx<'tcx> {
     /// Parse a raw attribute to recognize our special `charon::*`, `aeneas::*` and `verify::*` attributes.
     fn parse_attr_from_raw(
         &mut self,
@@ -561,10 +558,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         match self.parse_special_attr(def_id, attr_name, &raw_attr)? {
             Some(parsed) => Ok(parsed),
-            None => Err(format!(
-                "Unrecognized attribute: `{}`",
-                raw_attr.to_string()
-            )),
+            None => Err(format!("Unrecognized attribute: `{}`", raw_attr)),
         }
     }
 
@@ -636,7 +630,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // `#[verify::start_from]`
             "start_from" => {
                 if matches!(def_id.kind, hax::DefKind::Mod) {
-                    return Err(format!("`start_from` on modules has no effect"));
+                    return Err("`start_from` on modules has no effect".to_string());
                 }
                 Attribute::Unknown(raw_attr.clone())
             }
@@ -708,7 +702,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let attributes = def
             .attributes
             .iter()
-            .filter_map(|attr| self.translate_attribute(def.def_id(), &attr))
+            .filter_map(|attr| self.translate_attribute(def.def_id(), attr))
             .collect_vec();
 
         let rename = {
@@ -736,12 +730,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 }
 
 // `ItemMeta`
-impl<'tcx, 'ctx> TranslateCtx<'tcx> {
+impl<'tcx> TranslateCtx<'tcx> {
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
     pub(crate) fn is_extern_item(&mut self, def: &hax::FullDef) -> bool {
         def.def_id()
             .parent(&self.hax_state)
-            .is_some_and(|parent| matches!(parent.kind, hax::DefKind::ForeignMod { .. }))
+            .is_some_and(|parent| matches!(parent.kind, hax::DefKind::ForeignMod))
     }
 
     /// Compute the meta information for a Rust item.
@@ -752,7 +746,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         name: Name,
         name_opacity: ItemOpacity,
     ) -> ItemMeta {
-        if let Some(item_meta) = self.cached_item_metas.get(&item_src) {
+        if let Some(item_meta) = self.cached_item_metas.get(item_src) {
             return item_meta.clone();
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
@@ -762,11 +756,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             || matches!(item_src.kind, TransItemSourceKind::ClosureMethod(..))
         {
             let attr_info = self.translate_attr_info(def);
-            let lang_item = def
-                .lang_item
-                .clone()
-                .or_else(|| def.diagnostic_item.clone())
-                .map(|s| s.to_string());
+            let lang_item = def.lang_item.or(def.diagnostic_item).map(|s| s.to_string());
             (attr_info, lang_item)
         } else {
             (AttrInfo::default(), None)

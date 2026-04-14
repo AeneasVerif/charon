@@ -246,7 +246,7 @@ impl<T: AstVisitable> Binder<Binder<T>> {
             }
         }
         impl VisitAstMut for FlattenVisitor<'_> {
-            fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+            fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
                 VisitWithBinderDepth::new(self).visit(x)
             }
 
@@ -761,7 +761,7 @@ impl Ty {
     }
 
     pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
-        let ref ty_decls = translated.type_decls;
+        let ty_decls = &translated.type_decls;
         match self.kind() {
             TyKind::Adt(ty_ref) => {
                 // there are two cases:
@@ -875,7 +875,7 @@ impl TypeDeclRef {
 impl TraitDeclRef {
     pub fn self_ty<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a Ty> {
         match self.generics.types.iter().next() {
-            Some(ty) => return Some(ty),
+            Some(ty) => Some(ty),
             // TODO(mono): A monomorphized trait takes no arguments.
             None => {
                 let name = krate.item_name(self.id)?;
@@ -1076,7 +1076,7 @@ impl<'a> SubstVisitor<'a> {
     }
 
     pub fn visit<T: TyVisitable>(mut self, mut x: T) -> Result<T, GenericsMismatch> {
-        let _ = x.visit_vars(&mut self);
+        x.visit_vars(&mut self);
         if self.had_error {
             Err(GenericsMismatch)
         } else {
@@ -1161,7 +1161,7 @@ pub trait TyVisitable: Sized + AstVisitable {
             }
         }
         impl<V: VarsVisitor> VisitAstMut for Wrap<'_, V> {
-            fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+            fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
                 VisitWithBinderDepth::new(self).visit(x)
             }
 
@@ -1398,7 +1398,7 @@ impl<'a, T> Substituted<'a, T> {
         Substituted {
             val,
             generics: self.generics.clone(),
-            trait_self: self.trait_self.clone(),
+            trait_self: self.trait_self,
         }
     }
 

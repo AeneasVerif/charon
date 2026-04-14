@@ -110,7 +110,7 @@ impl<'a> GenerateCtx<'a> {
         }
 
         let mut ctx = GenerateCtx {
-            crate_data: &crate_data,
+            crate_data,
             name_to_type,
             type_tree,
             manual_type_impls: Default::default(),
@@ -135,7 +135,7 @@ impl<'a> GenerateCtx<'a> {
     fn id_from_name(&self, name: &str) -> TypeDeclId {
         self.name_to_type
             .get(name)
-            .expect(&format!("Name not found: `{name}`"))
+            .unwrap_or_else(|| panic!("Name not found: `{name}`"))
             .def_id
     }
 
@@ -441,13 +441,13 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             let pat: String = fields
                 .iter()
                 .map(|f| f.name.as_deref().unwrap())
-                .map(|n| make_ocaml_ident(n))
+                .map(make_ocaml_ident)
                 .join(";");
             let pat = format!("`List [ {pat} ]");
             let construct = fields
                 .iter()
                 .map(|f| f.renamed_name().unwrap())
-                .map(|n| make_ocaml_ident(n))
+                .map(make_ocaml_ident)
                 .join(", ");
             let construct = format!("( {construct} )");
             build_branch(ctx, &pat, &fields, &construct)
@@ -481,7 +481,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .iter()
                 .filter(|f| !f.is_opaque())
                 .map(|f| f.renamed_name().unwrap())
-                .map(|n| make_ocaml_ident(n))
+                .map(make_ocaml_ident)
                 .join("; ");
             let construct = format!("({{ {construct} }} : {return_ty})");
             build_branch(ctx, &pat, fields, &construct)
@@ -594,11 +594,11 @@ fn build_doc_comment(comment: String, indent_level: usize) -> String {
                 let mut result = parts.next().unwrap().to_owned();
                 for part in parts {
                     if self.is_in_open_inline_escape {
-                        result.push_str("]");
+                        result.push(']');
                         result.push_str(part);
                         self.is_in_open_inline_escape = false;
                     } else {
-                        result.push_str("[");
+                        result.push('[');
                         result.push_str(part);
                         self.is_in_open_inline_escape = true;
                     }
@@ -610,7 +610,7 @@ fn build_doc_comment(comment: String, indent_level: usize) -> String {
         }
     }
 
-    if comment == "" {
+    if comment.is_empty() {
         return comment;
     }
     let is_multiline = comment.contains("\n");
@@ -978,7 +978,7 @@ impl GenerateCodeFor {
                             .iter()
                             .map(|variety| {
                                 let nude = if !ancestors.is_empty() {
-                                    format!("nude = true (* Don't inherit VisitorsRuntime *);")
+                                    "nude = true (* Don't inherit VisitorsRuntime *);".to_string()
                                 } else {
                                     String::new()
                                 };

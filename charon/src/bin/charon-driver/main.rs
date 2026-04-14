@@ -1,6 +1,12 @@
 //! The Charon driver, which calls Rustc with callbacks to compile some Rust
 //! crate to LLBC.
 #![feature(rustc_private)]
+#![allow(clippy::useless_format)]
+#![allow(clippy::manual_map)]
+#![allow(clippy::mem_replace_with_default)]
+#![allow(clippy::derivable_impls)]
+#![allow(clippy::borrowed_box)]
+#![allow(clippy::field_reassign_with_default)]
 #![expect(incomplete_features)]
 #![feature(box_patterns)]
 #![feature(deref_patterns)]
@@ -67,7 +73,7 @@ pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
 
     passes.push(Pass::NonBody(PrintCtxPass::new(
         options.print_original_ullbc,
-        format!("# ULLBC after translation from MIR"),
+        "# ULLBC after translation from MIR".to_string(),
     )));
 
     passes.extend(INITIAL_CLEANUP_PASSES);
@@ -77,7 +83,7 @@ pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
         // If we're reconstructing control-flow, print the ullbc here.
         passes.push(Pass::NonBody(PrintCtxPass::new(
             options.print_ullbc,
-            format!("# Final ULLBC before control-flow reconstruction"),
+            "# Final ULLBC before control-flow reconstruction".to_string(),
         )));
     }
 
@@ -90,12 +96,12 @@ pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
         // If we're not reconstructing control-flow, print the ullbc after finalizing passes.
         passes.push(Pass::NonBody(PrintCtxPass::new(
             options.print_ullbc,
-            format!("# Final ULLBC before serialization"),
+            "# Final ULLBC before serialization".to_string(),
         )));
     } else {
         passes.push(Pass::NonBody(PrintCtxPass::new(
             options.print_llbc,
-            format!("# Final LLBC before serialization"),
+            "# Final LLBC before serialization".to_string(),
         )));
     }
 

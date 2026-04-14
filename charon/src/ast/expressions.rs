@@ -572,6 +572,7 @@ pub enum Byte {
 /// - a structure with no field is a constant.
 /// - sometimes, Rust stores the initialization of an ADT as a constant
 ///   (if all the fields are constant) rather than as an aggregated value
+///
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
 /// [`ConstantExprKind::Global`] case: access to a global variable. We later desugar it to
