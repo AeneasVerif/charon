@@ -1,0 +1,258 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    non-dyn-compatible
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u8}::clone
+pub fn {impl Clone for u8}::clone<'_0>(_1: &'_0 u8) -> u8
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u8}
+impl Clone for u8 {
+    parent_clause0 = {built_in impl Sized for u8}
+    fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+= <opaque>
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item("maybe_uninit")]
+pub opaque type MaybeUninit<T>
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new_uninit
+pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, {built_in impl Sized for Global}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: alloc::vec::Vec
+#[lang_item("Vec")]
+pub opaque type Vec<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+= <opaque>
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
+impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: alloc::vec::from_elem
+#[lang_item("vec_from_elem")]
+pub fn from_elem<T>(_1: T, _2: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+= <opaque>
+
+// Full name: test_crate::multiple_adjacent
+fn multiple_adjacent()
+{
+    let _0: (); // return
+    let _a_1: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let _2: alloc::boxed::Box<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _b_3: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let _4: alloc::boxed::Box<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _c_5: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let _6: alloc::boxed::Box<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _7: [u8; 1 : usize]; // anonymous local
+    let _8: alloc::boxed::Box<[u8; 1 : usize]>; // anonymous local
+    let _9: alloc::boxed::Box<[u8]>; // anonymous local
+    let _10: [u8; 1 : usize]; // anonymous local
+    let _11: alloc::boxed::Box<[u8; 1 : usize]>; // anonymous local
+    let _12: alloc::boxed::Box<[u8]>; // anonymous local
+    let _13: [u8; 1 : usize]; // anonymous local
+    let _14: alloc::boxed::Box<[u8; 1 : usize]>; // anonymous local
+    let _15: alloc::boxed::Box<[u8]>; // anonymous local
+
+    _0 = ()
+    storage_live(_a_1)
+    storage_live(_2)
+    _2 = new_uninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]()
+    storage_live(_7)
+    _7 = [const 1 : u8]
+    storage_live(_8)
+    _8 = @BoxWrite<[u8; 1 : usize]>(move _2, move _7)
+    storage_dead(_7)
+    storage_live(_9)
+    _9 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>, alloc::boxed::Box<[u8]>, 1 : usize>(move _8)
+    storage_dead(_2)
+    _a_1 = @SliceIntoVec<u8>(move _9)
+    storage_live(_b_3)
+    storage_live(_4)
+    _4 = new_uninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]()
+    storage_live(_10)
+    _10 = [const 2 : u8]
+    storage_live(_11)
+    _11 = @BoxWrite<[u8; 1 : usize]>(move _4, move _10)
+    storage_dead(_10)
+    storage_live(_12)
+    _12 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>, alloc::boxed::Box<[u8]>, 1 : usize>(move _11)
+    storage_dead(_4)
+    _b_3 = @SliceIntoVec<u8>(move _12)
+    storage_live(_c_5)
+    storage_live(_6)
+    _6 = new_uninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]()
+    storage_live(_13)
+    _13 = [const 3 : u8]
+    storage_live(_14)
+    _14 = @BoxWrite<[u8; 1 : usize]>(move _6, move _13)
+    storage_dead(_13)
+    storage_live(_15)
+    _15 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>, alloc::boxed::Box<[u8]>, 1 : usize>(move _14)
+    storage_dead(_6)
+    _c_5 = @SliceIntoVec<u8>(move _15)
+    _0 = ()
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _c_5
+    storage_dead(_c_5)
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _b_3
+    storage_dead(_b_3)
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
+    storage_dead(_a_1)
+    return
+}
+
+// Full name: test_crate::multiple_values
+fn multiple_values()
+{
+    let _0: (); // return
+    let _a_1: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let _2: alloc::boxed::Box<MaybeUninit<[u8; 3 : usize]>[{built_in impl Sized for [u8; 3 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 3 : usize]>[{built_in impl Sized for [u8; 3 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _3: [u8; 3 : usize]; // anonymous local
+    let _4: alloc::boxed::Box<[u8; 3 : usize]>; // anonymous local
+    let _5: alloc::boxed::Box<[u8]>; // anonymous local
+
+    _0 = ()
+    storage_live(_a_1)
+    storage_live(_2)
+    _2 = new_uninit<[u8; 3 : usize]>[{built_in impl Sized for [u8; 3 : usize]}]()
+    storage_live(_3)
+    _3 = [const 1 : u8, const 2 : u8, const 3 : u8]
+    storage_live(_4)
+    _4 = @BoxWrite<[u8; 3 : usize]>(move _2, move _3)
+    storage_dead(_3)
+    storage_live(_5)
+    _5 = unsize_cast<alloc::boxed::Box<[u8; 3 : usize]>, alloc::boxed::Box<[u8]>, 3 : usize>(move _4)
+    storage_dead(_2)
+    _a_1 = @SliceIntoVec<u8>(move _5)
+    _0 = ()
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
+    storage_dead(_a_1)
+    return
+}
+
+// Full name: test_crate::with_fn_calls::foo
+fn foo() -> u8
+{
+    let _0: u8; // return
+
+    _0 = const 42 : u8
+    return
+}
+
+// Full name: test_crate::with_fn_calls
+fn with_fn_calls()
+{
+    let _0: (); // return
+    let _a_1: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let _2: alloc::boxed::Box<MaybeUninit<[u8; 2 : usize]>[{built_in impl Sized for [u8; 2 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 2 : usize]>[{built_in impl Sized for [u8; 2 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _3: u8; // anonymous local
+    let _4: u8; // anonymous local
+    let _5: [u8; 2 : usize]; // anonymous local
+    let _6: alloc::boxed::Box<[u8; 2 : usize]>; // anonymous local
+    let _7: alloc::boxed::Box<[u8]>; // anonymous local
+
+    _0 = ()
+    storage_live(_a_1)
+    storage_live(_2)
+    _2 = new_uninit<[u8; 2 : usize]>[{built_in impl Sized for [u8; 2 : usize]}]()
+    storage_live(_3)
+    _3 = foo()
+    storage_live(_4)
+    _4 = foo()
+    storage_live(_5)
+    _5 = [move _3, move _4]
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_live(_6)
+    _6 = @BoxWrite<[u8; 2 : usize]>(move _2, move _5)
+    storage_dead(_5)
+    storage_live(_7)
+    _7 = unsize_cast<alloc::boxed::Box<[u8; 2 : usize]>, alloc::boxed::Box<[u8]>, 2 : usize>(move _6)
+    storage_dead(_2)
+    _a_1 = @SliceIntoVec<u8>(move _7)
+    _0 = ()
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
+    storage_dead(_a_1)
+    return
+}
+
+// Full name: test_crate::repeated
+fn repeated()
+{
+    let _0: (); // return
+    let _a_1: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+
+    _0 = ()
+    storage_live(_a_1)
+    _a_1 = from_elem<u8>[{built_in impl Sized for u8}, {impl Clone for u8}](const 1 : u8, const 3 : usize)
+    _0 = ()
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
+    storage_dead(_a_1)
+    return
+}
+
+
+
