@@ -153,7 +153,11 @@ class ['self] map_crate =
       in
       let name = self#visit_string env name in
       let options = self#visit_cli_options env options in
-      let target_information = self#visit_target_info env target_information in
+      let target_information =
+        List.map
+          (fun (name, info) -> (name, self#visit_target_info env info))
+          target_information
+      in
       let declarations =
         List.map (self#visit_declaration_group env) declarations
       in

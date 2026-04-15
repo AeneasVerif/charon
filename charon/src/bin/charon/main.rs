@@ -29,14 +29,16 @@
 //! them in a specific environment variable, so that charon-driver can
 //! deserialize them later and use them to guide the extraction in the
 //! callbacks.
-use anyhow::Result;
+use anyhow::{Context, Result};
 use charon_lib::{
     common::arg_value,
+    export::{CrateData, multi_target},
     logger,
     options::{CHARON_ARGS, CliOpts},
 };
 use clap::Parser;
 use cli::{Charon, Cli};
+use itertools::Itertools;
 use std::{env, process::ExitStatus};
 use toolchain::toolchain_path;
 
@@ -59,11 +61,32 @@ pub fn main() -> Result<()> {
             println!("{krate}");
             ExitStatus::default()
         }
-        Charon::Cargo(subcmd_cargo) => translate_with_cargo(subcmd_cargo.opts, subcmd_cargo.cargo)?,
+        Charon::Cargo(subcmd_cargo) => {
+            let mut options = subcmd_cargo.opts;
+            let targets = std::mem::take(&mut options.targets);
+            if targets.is_empty() {
+                translate_with_cargo(options, subcmd_cargo.cargo)?
+            } else {
+                translate_multi_target(targets, options, |opts: CliOpts, target: &str| {
+                    let mut cargo_args = subcmd_cargo.cargo.clone();
+                    cargo_args.extend(["--target".to_owned(), target.to_owned()]);
+                    translate_with_cargo(opts, cargo_args)
+                })?
+            }
+        }
         Charon::Rustc(mut subcmd_rustc) => {
             let mut options = subcmd_rustc.opts;
             options.rustc_args.append(&mut subcmd_rustc.rustc);
-            translate_without_cargo(options)?
+            let targets = std::mem::take(&mut options.targets);
+            if targets.is_empty() {
+                translate_without_cargo(options)?
+            } else {
+                translate_multi_target(targets, options, |mut opts: CliOpts, target: &str| {
+                    opts.rustc_args
+                        .extend(["--target".to_owned(), target.to_owned()]);
+                    translate_without_cargo(opts)
+                })?
+            }
         }
         Charon::ToolchainPath(_) => {
             let path = toolchain_path()?;
@@ -77,6 +100,73 @@ pub fn main() -> Result<()> {
     };
 
     handle_exit_status(exit_status)
+}
+
+/// Run translation once per target (in parallel), then merge the results.
+fn translate_multi_target(
+    targets: Vec<String>,
+    options: CliOpts,
+    translate_one: impl Fn(CliOpts, &str) -> anyhow::Result<ExitStatus> + Sync,
+) -> anyhow::Result<ExitStatus> {
+    let temp_dir = tempfile::tempdir().context("failed to create temp dir")?;
+
+    // Translate each target in its own thread.
+    let krates: Vec<_> = std::thread::scope(|scope| {
+        let options = &options;
+        let translate_one = &translate_one;
+        let temp_dir = temp_dir.path();
+        let handles: Vec<_> = targets
+            .iter()
+            .enumerate()
+            .map(|(i, target)| {
+                scope.spawn(move || -> anyhow::Result<_> {
+                    let mut opts = options.clone();
+                    let temp_file = temp_dir.join(format!("target_{i}.json"));
+                    opts.dest_file = Some(temp_file.clone());
+                    // Don't recurse into multi-target.
+                    opts.targets.clear();
+                    // Suppress per-target printing; we'll print the merged result.
+                    opts.print_ullbc = false;
+                    opts.print_llbc = false;
+                    // Ensure serialization so we can load the result.
+                    opts.no_serialize = false;
+
+                    let status = translate_one(opts, target)?;
+                    if !status.success() {
+                        eprintln!("translation for target {target} failed with status {status}");
+                        handle_exit_status(status)?;
+                    }
+
+                    let krate =
+                        CrateData::deserialize_from_file(&temp_file).with_context(|| {
+                            format!("failed to load translation result for target {target}")
+                        })?;
+                    Ok(krate)
+                })
+            })
+            .collect();
+        handles
+            .into_iter()
+            .map(|h| h.join().expect("target translation thread panicked"))
+            .try_collect()
+    })?;
+
+    // Merge all crates.
+    let merged = multi_target::merge(options.clone(), krates);
+
+    if options.print_llbc || options.print_ullbc {
+        println!("{}", merged.translated);
+    }
+
+    // Serialize the merged result unless --no-serialize was passed.
+    if !options.no_serialize {
+        let target_filename = options.target_filename(&merged.translated.crate_name);
+        merged
+            .serialize_to_file(&target_filename)
+            .map_err(|()| anyhow::anyhow!("failed to serialize merged crate"))?;
+    }
+
+    Ok(ExitStatus::default())
 }
 
 fn translate_with_cargo(

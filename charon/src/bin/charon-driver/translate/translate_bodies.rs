@@ -399,7 +399,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
         let tcx = self.hax_state.base().tcx;
         let local_decls = self.local_decls;
-        let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+        let ptr_size = self.translated.the_target_information().target_pointer_size;
 
         let mut place_ty: mir::PlaceTy = mir::Place::from(mir_place.local).ty(local_decls, tcx);
         let var_id = self.translate_local(&mir_place.local).unwrap();
@@ -826,7 +826,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .iter()
                     .map(|op| self.translate_operand(span, op))
                     .try_collect()?;
-                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let ptr_size = self.translated.the_target_information().target_pointer_size;
 
                 match aggregate_kind {
                     mir::AggregateKind::Array(ty) => {

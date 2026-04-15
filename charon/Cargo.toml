@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.178"
+version = "0.1.179"
 authors = [
     "Son Ho <hosonmarc@gmail.com>",
     "Guillaume Boisseau <nadrieril+git@gmail.com>",
@@ -78,6 +78,7 @@ smallvec = "1.15.1"
 stacker = "0.1"
 strip-ansi-escapes = "0.2.1"
 take_mut = "0.2.2"
+tempfile = "3"
 tar = { version = "0.4.42", optional = true }
 toml = { version = "0.8", features = ["parse"] }
 tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt", ] }

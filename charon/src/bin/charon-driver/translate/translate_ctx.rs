@@ -146,6 +146,10 @@ impl<'tcx> TranslateCtx<'tcx> {
             .span_err(&self.translated, span, msg, level)
     }
 
+    pub fn get_target_triple(&self) -> TargetTriple {
+        self.tcx.sess.opts.target_triple.tuple().to_owned()
+    }
+
     /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
     pub fn catch_sinto<S, T, U>(&mut self, s: &S, span: Span, x: &T) -> Result<U, Error>
     where

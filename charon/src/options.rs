@@ -59,6 +59,13 @@ pub struct CliOpts {
     #[clap(long = "rustc-arg")]
     #[serde(default)]
     pub rustc_args: Vec<String>,
+    /// A list of target architectures to translate for. Charon will run the compiler once for each
+    /// target and aggregate the results, which is useful if the code includes `#[cfg(..)]`
+    /// filters.
+    /// Warning: this is an initial implementation which is extremely slow.
+    #[clap(long, value_delimiter = ',')]
+    #[serde(default)]
+    pub targets: Vec<String>,
 
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
     /// skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't
@@ -415,6 +422,18 @@ impl CliOpts {
         }
         Ok(())
     }
+
+    pub fn target_filename(&self, crate_name: &str) -> PathBuf {
+        match self.dest_file.clone() {
+            Some(f) => f,
+            None => {
+                let mut target_filename = self.dest_dir.clone().unwrap_or_default();
+                let extension = if self.ullbc { "ullbc" } else { "llbc" };
+                target_filename.push(format!("{crate_name}.{extension}"));
+                target_filename
+            }
+        }
+    }
 }
 
 /// Predicates that determine wihch items to use as starting point for translation.
@@ -504,15 +523,10 @@ pub struct TranslateOptions {
 
 impl TranslateOptions {
     pub fn new(error_ctx: &mut ErrorCtx, options: &CliOpts) -> Self {
-        let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
-            Ok(p) => Ok(p),
-            Err(e) => {
-                raise_error!(
-                    error_ctx,
-                    crate(&TranslatedCrate::default()),
-                    Span::dummy(),
-                    "failed to parse pattern `{s}` ({e})"
-                )
+        let mut parse_pattern = |s: &str| -> Result<_, Error> {
+            match NamePattern::parse(s) {
+                Ok(p) => Ok(p),
+                Err(e) => raise_error!(error_ctx, no_crate, "failed to parse pattern `{s}` ({e})"),
             }
         };
 

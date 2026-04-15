@@ -65,11 +65,13 @@ let run_tests (folder : string) : unit =
               | Some v -> "Some " ^ PrintValues.scalar_value_to_string v
               | None -> "None"
             in
-            let ptr_size = m.target_information.target_pointer_size in
+            let ptr_size =
+              (snd (List.hd m.target_information)).target_pointer_size
+            in
             Types.TypeDeclId.Map.iter
               (fun _ (ty_decl : Types.type_decl) ->
                 match (ty_decl.kind, ty_decl.Types.layout) with
-                | Enum _, Some layout
+                | Enum _, [ (_, layout) ]
                   when Option.is_some layout.discriminant_layout -> begin
                     let name =
                       PrintTypes.name_to_string print_ctx ty_decl.item_meta.name

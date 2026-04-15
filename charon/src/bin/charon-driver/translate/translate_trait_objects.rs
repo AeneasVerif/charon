@@ -582,7 +582,7 @@ impl ItemTransCtx<'_, '_> {
                 .map(|_| None)
                 .collect();
         let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
-            (TypeDeclKind::Opaque, None)
+            (TypeDeclKind::Opaque, SeqHashMap::default())
         } else {
             // First construct fields that use the real method signatures (which may use the `Self`
             // type). We fixup the types and generics below.
@@ -590,7 +590,7 @@ impl ItemTransCtx<'_, '_> {
             let fields = self.gen_vtable_struct_fields(span, &self_trait_ref, &vtable_data)?;
 
             let kind = TypeDeclKind::Struct(fields);
-            let layout = self.generate_naive_layout(span, &kind)?;
+            let l = self.generate_naive_layout(span, &kind)?;
             supertrait_map = vtable_data.supertrait_map;
             field_map = vtable_data.fields.map_ref(|tr_field| match *tr_field {
                 TrVTableField::Size => VTableField::Size,
@@ -599,7 +599,8 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Method(name, ..) => VTableField::Method(name),
                 TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(clause_id),
             });
-            (kind, Some(layout))
+            let layout = [(self.get_target_triple(), l)].into();
+            (kind, layout)
         };
 
         let mut generics = Default::default();

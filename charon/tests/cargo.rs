@@ -163,6 +163,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             &[],
             Success,
         ),
+        mktest(
+            "multi-targets",
+            root.join("multi-targets"),
+            &[
+                "--targets=i686-unknown-linux-gnu,x86_64-apple-darwin,riscv64gc-unknown-none-elf"
+                    .to_owned(),
+            ],
+            &[],
+            Success,
+        ),
     ];
 
     let args = libtest_mimic::Arguments::from_args();

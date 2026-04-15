@@ -36,13 +36,13 @@ mod translate;
 
 use charon_lib::{
     export, logger,
-    options::{self, CliOpts},
+    options::CliOpts,
     transform::{
         FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, Pass, PrintCtxPass,
         SHARED_FINALIZING_PASSES, ULLBC_PASSES,
     },
 };
-use std::{env, fmt, panic};
+use std::{fmt, panic};
 
 pub enum CharonFailure {
     /// The usize is the number of errors.
@@ -112,9 +112,9 @@ pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
 }
 
 /// Run charon. Returns the number of warnings generated.
-fn run_charon(options: CliOpts) -> Result<usize, CharonFailure> {
+fn run_charon() -> Result<usize, CharonFailure> {
     // Run the driver machinery.
-    let Some(mut ctx) = driver::run_rustc_driver(&options)? else {
+    let Some((mut ctx, options)) = driver::run_rustc_driver()? else {
         // We didn't run charon.
         return Ok(0);
     };
@@ -130,19 +130,9 @@ fn run_charon(options: CliOpts) -> Result<usize, CharonFailure> {
 
     // # Final step: generate the files.
     if !options.no_serialize {
-        let crate_data = export::CrateData::new(ctx);
-        let dest_file = match options.dest_file.clone() {
-            Some(f) => f,
-            None => {
-                let mut target_filename = options.dest_dir.clone().unwrap_or_default();
-                let crate_name = &crate_data.translated.crate_name;
-                let extension = if options.ullbc { "ullbc" } else { "llbc" };
-                target_filename.push(format!("{crate_name}.{extension}"));
-                target_filename
-            }
-        };
+        let dest_file = options.target_filename(&ctx.translated.crate_name);
         trace!("Target file: {:?}", dest_file);
-        crate_data
+        export::CrateData::new(ctx)
             .serialize_to_file(&dest_file)
             .map_err(|()| CharonFailure::Serialize)?;
     }
@@ -158,17 +148,8 @@ fn main() {
     // Initialize the logger
     logger::initialize_logger();
 
-    // Retrieve the Charon options by deserializing them from the environment variable
-    // (cargo-charon serialized the arguments and stored them in a specific environment
-    // variable before calling cargo with RUSTC_WRAPPER=charon-driver).
-    let mut options: options::CliOpts = match env::var(options::CHARON_ARGS) {
-        Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
-        Err(_) => Default::default(),
-    };
-    options.apply_preset();
-
     // Catch any and all panics coming from charon to display a clear error.
-    let res = panic::catch_unwind(move || run_charon(options))
+    let res = panic::catch_unwind(run_charon)
         .map_err(|_| CharonFailure::Panic)
         .and_then(|x| x);
 

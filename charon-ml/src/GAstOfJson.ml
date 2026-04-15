@@ -112,7 +112,11 @@ and gtranslated_crate_of_json
 
         let* crate_name = string_of_json ctx crate_name in
         let* options = cli_options_of_json ctx options in
-        let* target_information = target_info_of_json ctx target_info in
+        let* target_information =
+          list_of_json
+            (key_value_pair_of_json string_of_json target_info_of_json)
+            ctx target_info
+        in
         let* _item_names =
           list_of_json
             (key_value_pair_of_json item_id_of_json name_of_json)
@@ -140,7 +144,9 @@ and gtranslated_crate_of_json
         in
         let* unit_metadata = global_decl_ref_of_json ctx unit_metadata in
         let* ordered_decls =
-          list_of_json declaration_group_of_json ctx ordered_decls
+          option_of_json
+            (list_of_json declaration_group_of_json)
+            ctx ordered_decls
         in
 
         let type_decls = TypeDeclId.map_of_indexed_list type_decls in
@@ -148,6 +154,7 @@ and gtranslated_crate_of_json
         let global_decls = GlobalDeclId.map_of_indexed_list global_decls in
         let trait_decls = TraitDeclId.map_of_indexed_list trait_decls in
         let trait_impls = TraitImplId.map_of_indexed_list trait_impls in
+        let ordered_decls = Option.value ordered_decls ~default:[] in
 
         Ok
           {

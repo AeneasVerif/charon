@@ -3,6 +3,7 @@ use std::fmt;
 
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use index_vec::Idx;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -90,7 +91,9 @@ impl TryFrom<ItemId> for FunId {
 }
 
 /// A translated item.
-#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+)]
 pub enum ItemByVal {
     Type(TypeDecl),
     Fun(FunDecl),
@@ -112,7 +115,9 @@ pub enum ItemRef<'ctx> {
 }
 
 /// A mutable reference to a translated item.
-#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+)]
 pub enum ItemRefMut<'ctx> {
     Type(&'ctx mut TypeDecl),
     Fun(&'ctx mut FunDecl),
@@ -154,7 +159,11 @@ pub enum DeclarationGroup {
 
 pub type DeclarationsGroups = Vec<DeclarationGroup>;
 
-#[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
+/// A target triple, e.g. `x86_64-unknown-linux-gnu`.
+pub type TargetTriple = String;
+
+#[derive(Clone, Drive, DriveMut, SerializeState, DeserializeState)]
+#[serde_state(stateless)]
 pub struct TargetInfo {
     /// The pointer size of the target in bytes.
     pub target_pointer_size: types::ByteCount,
@@ -177,10 +186,11 @@ pub struct TranslatedCrate {
     #[serde_state(stateless)]
     pub options: crate::options::CliOpts,
 
-    /// Information about the target platform for which rustc is called on for the crate.
+    /// Information about each target platform. When translating a crate normally this will have a
+    /// single entry; when using `--targets` this will have one entry per chosen target.
     #[drive(skip)]
-    #[serde_state(stateless)]
-    pub target_information: TargetInfo,
+    #[serde(with = "SeqHashMapToArray::<TargetTriple, TargetInfo>")]
+    pub target_information: SeqHashMap<TargetTriple, TargetInfo>,
 
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
@@ -244,6 +254,12 @@ impl TranslatedCrate {
         }
     }
     pub fn remove_item(&mut self, trans_id: ItemId) -> Option<ItemByVal> {
+        self.short_names.swap_remove(&trans_id);
+        self.item_names.swap_remove(&trans_id);
+        self.remove_item_temporarily(trans_id)
+    }
+    /// Remove the item without touching the name maps.
+    pub fn remove_item_temporarily(&mut self, trans_id: ItemId) -> Option<ItemByVal> {
         match trans_id {
             ItemId::Type(id) => self.type_decls.remove(id).map(ItemByVal::Type),
             ItemId::Fun(id) => self.fun_decls.remove(id).map(ItemByVal::Fun),
@@ -252,8 +268,16 @@ impl TranslatedCrate {
             ItemId::TraitImpl(id) => self.trait_impls.remove(id).map(ItemByVal::TraitImpl),
         }
     }
-    pub fn set_item_slot(&mut self, id: ItemId, item: ItemByVal) {
-        match item {
+    /// Set the item to the corresponding slot, and record its name in the name map.
+    pub fn set_new_item_slot(&mut self, id: ItemId, item: impl Into<ItemByVal>) {
+        let item = item.into();
+        self.item_names
+            .insert(id, item.as_ref().item_meta().name.clone());
+        self.set_item_slot(id, item);
+    }
+    /// Set the item to the corresponding slot.
+    pub fn set_item_slot(&mut self, id: ItemId, item: impl Into<ItemByVal>) {
+        match item.into() {
             ItemByVal::Type(decl) => self.type_decls.set_slot(*id.as_type().unwrap(), decl),
             ItemByVal::Fun(decl) => self.fun_decls.set_slot(*id.as_fun().unwrap(), decl),
             ItemByVal::Global(decl) => self.global_decls.set_slot(*id.as_global().unwrap(), decl),
@@ -296,6 +320,16 @@ impl TranslatedCrate {
     pub fn all_items_with_ids(&self) -> impl Iterator<Item = (ItemId, ItemRef<'_>)> {
         self.all_items().map(|item| (item.id(), item))
     }
+
+    /// When translating without `--target`, there's only one target information; this method
+    /// retrieves it.
+    pub fn the_target_information(&self) -> &TargetInfo {
+        self.target_information
+            .values()
+            .exactly_one()
+            .ok()
+            .expect("called `the_target_information` on a multi-target crate")
+    }
 }
 
 impl ItemByVal {
@@ -330,7 +364,7 @@ impl<'ctx> ItemRef<'ctx> {
         }
     }
 
-    pub fn to_item_by_val(&self) -> ItemByVal {
+    pub fn to_owned(&self) -> ItemByVal {
         match *self {
             Self::Type(d) => ItemByVal::Type(d.clone()),
             Self::Fun(d) => ItemByVal::Fun(d.clone()),

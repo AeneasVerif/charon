@@ -1,3 +1,5 @@
+pub mod multi_target;
+
 use crate::ast::*;
 use crate::transform::TransformCtx;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -119,5 +121,22 @@ impl CrateData {
             info!("Generated the file: {}", target_filename.to_str().unwrap());
         }
         Ok(())
+    }
+
+    pub fn deserialize_from_file(path: &std::path::Path) -> anyhow::Result<Self> {
+        use crate::export::CrateData;
+        use anyhow::Context;
+        use serde::Deserialize;
+        use std::fs::File;
+        use std::io::BufReader;
+        let file = File::open(path)
+            .with_context(|| format!("Failed to read llbc file {}", path.display()))?;
+        let reader = BufReader::new(file);
+        let mut deserializer = serde_json::Deserializer::from_reader(reader);
+        // Deserialize without recursion limit.
+        deserializer.disable_recursion_limit();
+        // Grow stack space as needed.
+        let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
+        Ok(CrateData::deserialize(deserializer)?)
     }
 }

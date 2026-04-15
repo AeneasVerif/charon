@@ -447,7 +447,7 @@ impl<'a> PartialMonomorphizer<'a> {
             .translated
             .get_item(*orig_id)
             .unwrap()
-            .to_item_by_val()
+            .to_owned()
             .substitute_with_self(&shape.skip_binder, &TraitRefKind::SelfId);
 
         let mut decl_mut = decl.as_mut();
@@ -533,7 +533,7 @@ impl TransformPass for Transform {
             } else {
                 // Take the item out so we can modify it. Warning: don't look up other items in the
                 // meantime as this would break in recursive cases.
-                match visitor.ctx.translated.remove_item(id) {
+                match visitor.ctx.translated.remove_item_temporarily(id) {
                     Some(decl) => decl,
                     None => continue,
                 }

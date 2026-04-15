@@ -339,10 +339,12 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
-        self.translated.target_information = krate::TargetInfo {
+        let triple = self.get_target_triple();
+        let info = krate::TargetInfo {
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
-        }
+        };
+        self.translated.target_information.insert(triple, info);
     }
 }
 
@@ -685,13 +687,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 }
 
-#[tracing::instrument(skip(tcx))]
+#[tracing::instrument(skip(tcx, error_ctx))]
 pub fn translate<'tcx>(
-    cli_options: &CliOpts,
     tcx: TyCtxt<'tcx>,
+    cli_options: &CliOpts,
+    mut error_ctx: ErrorCtx,
     sysroot: PathBuf,
 ) -> Result<TransformCtx, Error> {
-    let mut error_ctx = ErrorCtx::new(!cli_options.abort_on_error, cli_options.error_on_warnings);
     let translate_options = TranslateOptions::new(&mut error_ctx, cli_options);
 
     let hax_state = hax::state::State::new(

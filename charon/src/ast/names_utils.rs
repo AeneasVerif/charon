@@ -43,6 +43,19 @@ impl Name {
         self.name.last()?.as_monomorphized()
     }
 
+    /// Strip the trailing `PathElem::Target` from a name, if any.
+    pub fn strip_target_suffix(&self) -> Option<(Name, TargetTriple)> {
+        match self.name.last() {
+            Some(PathElem::Target(target)) => {
+                let target = target.clone();
+                let mut base = self.clone();
+                base.name.pop();
+                Some((base, target))
+            }
+            _ => None,
+        }
+    }
+
     /// Compare the name to a constant array.
     /// This ignores disambiguators.
     ///
