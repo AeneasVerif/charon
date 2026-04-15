@@ -96,6 +96,7 @@ where
   Err(E),
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -106,7 +107,8 @@ fn UNIT_METADATA()
     }
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 fn core::hint::assert_unchecked::precondition_check(_1: bool)
 = <opaque>

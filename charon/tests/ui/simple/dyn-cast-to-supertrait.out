@@ -17,6 +17,7 @@ pub trait Destruct<Self>
 unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -25,7 +26,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 struct test_crate::Feline::{vtable} {
   size: usize,

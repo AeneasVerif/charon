@@ -42,6 +42,7 @@ impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [Stri
 impl Destruct for String {    non-dyn-compatible
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -50,7 +51,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::<array>::{impl Destruct for [String; 4 : usize]}::<String, 4 : usize>
 impl Destruct for [String; 4 : usize] {    non-dyn-compatible

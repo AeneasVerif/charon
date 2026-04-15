@@ -91,6 +91,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<Option<&_ mut _>><'_0, T0>(_1:
 unsafe fn core::marker::Destruct::drop_in_place::<Option<Option<&_ mut _>>><'_0, T0>(_1: *mut Option<Option<&'_0 mut T0>>)
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -99,7 +100,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::identity
 fn identity<T>(_1: T) -> T

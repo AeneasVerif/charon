@@ -117,6 +117,7 @@ where
 pub fn _eprint<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -125,7 +126,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::debug_slice
 fn debug_slice<'_0, T>(_1: &'_0 [T])

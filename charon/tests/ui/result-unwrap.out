@@ -140,6 +140,7 @@ impl Debug for u32 {
     vtable: {impl Debug for u32}::{vtable}
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -148,7 +149,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: core::result::unwrap_failed
 fn unwrap_failed<'_0, '_1>(_1: &'_0 Str, _2: &'_1 (dyn Debug + '_1)) -> !

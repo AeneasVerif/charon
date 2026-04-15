@@ -188,6 +188,7 @@ where
   len: usize,
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -196,7 +197,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push_mut
 pub fn push_mut<'_0, T, A>(_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], _2: T) -> &'_0 mut T

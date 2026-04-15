@@ -15,6 +15,7 @@ pub opaque type NonNull<T>
 pub unsafe fn new_unchecked<T>(_1: *mut T) -> NonNull<T>
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -23,7 +24,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::HasPointerNiche
 enum HasPointerNiche {

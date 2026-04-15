@@ -59,6 +59,7 @@ pub struct Arguments<'a> {
 pub fn {impl Display for usize}::fmt<'_0, '_1, '_2>(_1: &'_0 usize, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <missing>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -67,7 +68,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 fn core::slice::index::slice_index_fail::do_panic::runtime(_1: usize, _2: usize) -> !
 {

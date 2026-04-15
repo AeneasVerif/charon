@@ -229,6 +229,7 @@ where
     [@TraitClause3]: Destruct<A>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -237,7 +238,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 pub fn test_crate::swap<'a, T>(_1: &'a mut T, _2: &'a mut T)
 where
