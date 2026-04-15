@@ -1,5 +1,6 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 use crate::ast::*;
+use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::ids::IndexMap;
 use crate::ids::IndexVec;
 use crate::llbc_ast;
@@ -82,12 +83,20 @@ pub struct GExprBody<T> {
     EnumAsGetters,
     EnumToGetters,
 )]
+#[serde_state(state_implements = HashConsSerializerState)]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
     Unstructured(ullbc_ast::ExprBody),
     /// Body represented with structured control flow. This is what llbc is made of. We restructure
     /// the control flow in the `ullbc_to_llbc` pass.
     Structured(llbc_ast::ExprBody),
+    /// A façade body that dispatches to one of several per-target function bodies. Created during
+    /// multi-target merging for functions with the same signature but different bodies across
+    /// targets.
+    TargetDispatch(
+        #[serde(with = "SeqHashMapToArray::<TargetTriple, FunDeclRef>")]
+        SeqHashMap<TargetTriple, FunDeclRef>,
+    ),
     /// The body of the function item we add for each trait method declaration, if the trait
     /// doesn't provide a default for that method.
     TraitMethodWithoutDefault,

@@ -195,7 +195,7 @@ impl TransformCtx {
     /// each item before iterating over it. Items added during traversal will not be iterated over.
     pub fn for_each_item_mut(&mut self, mut f: impl for<'a> FnMut(&'a mut Self, ItemRefMut<'a>)) {
         for id in self.translated.all_ids() {
-            if let Some(mut decl) = self.translated.remove_item(id) {
+            if let Some(mut decl) = self.translated.remove_item_temporarily(id) {
                 f(self, decl.as_mut());
                 self.translated.set_item_slot(id, decl);
             }

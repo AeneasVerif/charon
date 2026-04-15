@@ -165,14 +165,7 @@ where
 = <opaque>
 
 #[lang_item("Ordering")]
-pub enum core::cmp::Ordering::x86_64-apple-darwin {
-  Less,
-  Equal,
-  Greater,
-}
-
-#[lang_item("Ordering")]
-pub enum core::cmp::Ordering::aarch64-apple-darwin {
+pub enum core::cmp::Ordering {
   Less,
   Equal,
   Greater,
@@ -213,13 +206,13 @@ pub trait core::cmp::PartialOrd::aarch64-apple-darwin<Self, Rhs>
 }
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp::x86_64-apple-darwin<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> core::option::Option::x86_64-apple-darwin<core::cmp::Ordering::x86_64-apple-darwin>[{built_in impl core::marker::Sized::x86_64-apple-darwin for core::cmp::Ordering::x86_64-apple-darwin}]
+pub fn core::cmp::PartialOrd::partial_cmp::x86_64-apple-darwin<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> core::option::Option::x86_64-apple-darwin<core::cmp::Ordering>[{built_in impl core::marker::Sized::x86_64-apple-darwin for core::cmp::Ordering}]
 where
     [@TraitClause0]: core::cmp::PartialOrd::x86_64-apple-darwin<Self, Rhs>,
 = <opaque>
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp::aarch64-apple-darwin<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> core::option::Option::aarch64-apple-darwin<core::cmp::Ordering::aarch64-apple-darwin>[{built_in impl core::marker::Sized::aarch64-apple-darwin for core::cmp::Ordering::aarch64-apple-darwin}]
+pub fn core::cmp::PartialOrd::partial_cmp::aarch64-apple-darwin<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> core::option::Option::aarch64-apple-darwin<core::cmp::Ordering>[{built_in impl core::marker::Sized::aarch64-apple-darwin for core::cmp::Ordering}]
 where
     [@TraitClause0]: core::cmp::PartialOrd::aarch64-apple-darwin<Self, Rhs>,
 = <opaque>
@@ -242,7 +235,7 @@ impl core::cmp::PartialEq::aarch64-apple-darwin<usize> for usize {
     vtable: core::cmp::impls::{impl core::cmp::PartialEq::aarch64-apple-darwin<usize> for usize}::{vtable}::aarch64-apple-darwin
 }
 
-pub fn core::cmp::impls::{impl core::cmp::PartialOrd::x86_64-apple-darwin<usize> for usize}::partial_cmp::x86_64-apple-darwin<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> core::option::Option::x86_64-apple-darwin<core::cmp::Ordering::x86_64-apple-darwin>[{built_in impl core::marker::Sized::x86_64-apple-darwin for core::cmp::Ordering::x86_64-apple-darwin}]
+pub fn core::cmp::impls::{impl core::cmp::PartialOrd::x86_64-apple-darwin<usize> for usize}::partial_cmp::x86_64-apple-darwin<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> core::option::Option::x86_64-apple-darwin<core::cmp::Ordering>[{built_in impl core::marker::Sized::x86_64-apple-darwin for core::cmp::Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialOrd::x86_64-apple-darwin<usize> for usize}::x86_64-apple-darwin
@@ -252,7 +245,7 @@ impl core::cmp::PartialOrd::x86_64-apple-darwin<usize> for usize {
     vtable: core::cmp::impls::{impl core::cmp::PartialOrd::x86_64-apple-darwin<usize> for usize}::{vtable}::x86_64-apple-darwin
 }
 
-pub fn core::cmp::impls::{impl core::cmp::PartialOrd::aarch64-apple-darwin<usize> for usize}::partial_cmp::aarch64-apple-darwin<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> core::option::Option::aarch64-apple-darwin<core::cmp::Ordering::aarch64-apple-darwin>[{built_in impl core::marker::Sized::aarch64-apple-darwin for core::cmp::Ordering::aarch64-apple-darwin}]
+pub fn core::cmp::impls::{impl core::cmp::PartialOrd::aarch64-apple-darwin<usize> for usize}::partial_cmp::aarch64-apple-darwin<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> core::option::Option::aarch64-apple-darwin<core::cmp::Ordering>[{built_in impl core::marker::Sized::aarch64-apple-darwin for core::cmp::Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialOrd::aarch64-apple-darwin<usize> for usize}::aarch64-apple-darwin
@@ -456,10 +449,7 @@ where
     [@TraitClause0]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<Self>,
 = <opaque>
 
-pub fn core::num::{u16}::wrapping_add::x86_64-apple-darwin(_1: u16, _2: u16) -> u16
-= <opaque>
-
-pub fn core::num::{u16}::wrapping_add::aarch64-apple-darwin(_1: u16, _2: u16) -> u16
+pub fn core::num::{u16}::wrapping_add(_1: u16, _2: u16) -> u16
 = <opaque>
 
 pub fn core::slice::{[T]}::as_ptr::x86_64-apple-darwin<'_0, T>(_1: &'_0 [T]) -> *const T
@@ -791,7 +781,7 @@ fn test_crate::ntt_layer_generic::x86_64-apple-darwin<'_0, '_1>(_1: &'_0 mut [u1
         storage_live(_19)
         _19 = @ArrayIndexShared<'_, u16, 8 : usize>(move _18, copy _14)
         _13 = copy (*_19)
-        _10 = core::num::{u16}::wrapping_add::x86_64-apple-darwin(move _11, move _13)
+        _10 = core::num::{u16}::wrapping_add(move _11, move _13)
         storage_dead(_13)
         storage_dead(_11)
         storage_live(_15)
@@ -885,7 +875,7 @@ fn test_crate::ntt_layer_generic::aarch64-apple-darwin<'_0, '_1>(_1: &'_0 mut [u
         storage_live(_19)
         _19 = @ArrayIndexShared<'_, u16, 8 : usize>(move _18, copy _14)
         _13 = copy (*_19)
-        _10 = core::num::{u16}::wrapping_add::aarch64-apple-darwin(move _11, move _13)
+        _10 = core::num::{u16}::wrapping_add(move _11, move _13)
         storage_dead(_13)
         storage_dead(_11)
         storage_live(_15)
@@ -910,6 +900,12 @@ fn test_crate::ntt_layer_generic::aarch64-apple-darwin<'_0, '_1>(_1: &'_0 mut [u
     storage_dead(iter_5)
     storage_dead(_3)
     return
+}
+
+fn test_crate::ntt_layer_generic<'_0, '_1>(_1: &'_0 mut [u16; 8 : usize], _2: &'_1 [u16; 8 : usize])
+= target_dispatch {
+    x86_64-apple-darwin => test_crate::ntt_layer_generic::x86_64-apple-darwin<'_0, '_1>,
+    aarch64-apple-darwin => test_crate::ntt_layer_generic::aarch64-apple-darwin<'_0, '_1>,
 }
 
 fn test_crate::ntt_layer_vec128::x86_64-apple-darwin<'_0, '_1, T>(_1: &'_0 mut [u16; 8 : usize], _2: &'_1 [u16; 8 : usize])
@@ -1036,6 +1032,12 @@ fn test_crate::SYMCRYPT_CPU_FEATURE_SSE2::aarch64-apple-darwin() -> u32
     return
 }
 
+fn test_crate::SYMCRYPT_CPU_FEATURE_SSE2() -> u32
+= target_dispatch {
+    x86_64-apple-darwin => test_crate::SYMCRYPT_CPU_FEATURE_SSE2::x86_64-apple-darwin,
+    aarch64-apple-darwin => test_crate::SYMCRYPT_CPU_FEATURE_SSE2::aarch64-apple-darwin,
+}
+
 const test_crate::SYMCRYPT_CPU_FEATURE_SSE2::x86_64-apple-darwin: u32 = test_crate::SYMCRYPT_CPU_FEATURE_SSE2::x86_64-apple-darwin()
 
 const test_crate::SYMCRYPT_CPU_FEATURE_SSE2::aarch64-apple-darwin: u32 = test_crate::SYMCRYPT_CPU_FEATURE_SSE2::aarch64-apple-darwin()
@@ -1056,20 +1058,17 @@ fn test_crate::SYMCRYPT_CPU_FEATURE_NEON::aarch64-apple-darwin() -> u32
     return
 }
 
+fn test_crate::SYMCRYPT_CPU_FEATURE_NEON() -> u32
+= target_dispatch {
+    x86_64-apple-darwin => test_crate::SYMCRYPT_CPU_FEATURE_NEON::x86_64-apple-darwin,
+    aarch64-apple-darwin => test_crate::SYMCRYPT_CPU_FEATURE_NEON::aarch64-apple-darwin,
+}
+
 const test_crate::SYMCRYPT_CPU_FEATURE_NEON::x86_64-apple-darwin: u32 = test_crate::SYMCRYPT_CPU_FEATURE_NEON::x86_64-apple-darwin()
 
 const test_crate::SYMCRYPT_CPU_FEATURE_NEON::aarch64-apple-darwin: u32 = test_crate::SYMCRYPT_CPU_FEATURE_NEON::aarch64-apple-darwin()
 
-fn test_crate::cpu_features_present::x86_64-apple-darwin(_1: u32) -> bool
-{
-    let _0: bool; // return
-    let _mask_1: u32; // arg #1
-
-    _0 = const true
-    return
-}
-
-fn test_crate::cpu_features_present::aarch64-apple-darwin(_1: u32) -> bool
+fn test_crate::cpu_features_present(_1: u32) -> bool
 {
     let _0: bool; // return
     let _mask_1: u32; // arg #1
@@ -1093,7 +1092,7 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(_1: &'_0 mu
 
     _0 = ()
     storage_live(_3)
-    _3 = test_crate::cpu_features_present::x86_64-apple-darwin(copy test_crate::SYMCRYPT_CPU_FEATURE_SSE2::x86_64-apple-darwin)
+    _3 = test_crate::cpu_features_present(copy test_crate::SYMCRYPT_CPU_FEATURE_SSE2::x86_64-apple-darwin)
     if move _3 {
         storage_live(_4)
         storage_live(_5)
@@ -1111,7 +1110,7 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(_1: &'_0 mu
         _8 = &two-phase-mut (*a_1)
         storage_live(_9)
         _9 = &(*b_2)
-        _7 = test_crate::ntt_layer_generic::x86_64-apple-darwin<'14, '15>(move _8, move _9)
+        _7 = test_crate::ntt_layer_generic<'14, '15>(move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
@@ -1136,7 +1135,7 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(_1: &'_0 m
 
     _0 = ()
     storage_live(_3)
-    _3 = test_crate::cpu_features_present::aarch64-apple-darwin(copy test_crate::SYMCRYPT_CPU_FEATURE_NEON::aarch64-apple-darwin)
+    _3 = test_crate::cpu_features_present(copy test_crate::SYMCRYPT_CPU_FEATURE_NEON::aarch64-apple-darwin)
     if move _3 {
         storage_live(_4)
         storage_live(_5)
@@ -1154,7 +1153,7 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(_1: &'_0 m
         _8 = &two-phase-mut (*a_1)
         storage_live(_9)
         _9 = &(*b_2)
-        _7 = test_crate::ntt_layer_generic::aarch64-apple-darwin<'14, '15>(move _8, move _9)
+        _7 = test_crate::ntt_layer_generic<'14, '15>(move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
@@ -1162,6 +1161,12 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(_1: &'_0 m
     }
     storage_dead(_3)
     return
+}
+
+fn test_crate::poly_element_ntt_layer<'_0, '_1>(_1: &'_0 mut [u16; 8 : usize], _2: &'_1 [u16; 8 : usize])
+= target_dispatch {
+    x86_64-apple-darwin => test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>,
+    aarch64-apple-darwin => test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>,
 }
 
 

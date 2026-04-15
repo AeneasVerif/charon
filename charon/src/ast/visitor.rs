@@ -117,6 +117,23 @@ impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K
         Continue(())
     }
 }
+impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMap<K, T> {
+    fn drive_body<V: VisitBody>(&self, v: &mut V) -> ControlFlow<V::Break> {
+        for (k, x) in self {
+            v.visit(k)?;
+            v.visit(x)?;
+        }
+        Continue(())
+    }
+    fn drive_body_mut<V: VisitBodyMut>(&mut self, v: &mut V) -> ControlFlow<V::Break> {
+        for (mut k, mut x) in mem::take(self) {
+            v.visit(&mut k)?;
+            v.visit(&mut x)?;
+            self.insert(k, x);
+        }
+        Continue(())
+    }
+}
 
 /// A smaller visitor group just for function bodies. This explores statements, places and
 /// operands, but does not recurse into types.
@@ -137,7 +154,7 @@ impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K
     // Types that are ignored when encountered.
     skip(
         AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId, FieldProjKind,
-        TypeDeclRef, FunDeclId, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
+        TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
         TraitRef, LiteralTy, Literal, RegionId, (), String, bool,
     ),

@@ -254,6 +254,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
             Body::Opaque => write!(f, "= <opaque>"),
             Body::Missing => write!(f, "= <missing>"),
             Body::Error(error) => write!(f, "= error(\"{}\")", error.msg),
+            Body::TargetDispatch(targets) => {
+                writeln!(f, "= target_dispatch {{")?;
+                for (target, fun) in targets {
+                    let fun = fun.with_ctx(ctx);
+                    writeln!(f, "{tab}{TAB_INCR}{target} => {fun},")?;
+                }
+                write!(f, "{tab}}}")
+            }
         }
     }
 }

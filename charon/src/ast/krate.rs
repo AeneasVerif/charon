@@ -254,6 +254,12 @@ impl TranslatedCrate {
         }
     }
     pub fn remove_item(&mut self, trans_id: ItemId) -> Option<ItemByVal> {
+        self.short_names.swap_remove(&trans_id);
+        self.item_names.swap_remove(&trans_id);
+        self.remove_item_temporarily(trans_id)
+    }
+    /// Remove the item without touching the name maps.
+    pub fn remove_item_temporarily(&mut self, trans_id: ItemId) -> Option<ItemByVal> {
         match trans_id {
             ItemId::Type(id) => self.type_decls.remove(id).map(ItemByVal::Type),
             ItemId::Fun(id) => self.fun_decls.remove(id).map(ItemByVal::Fun),
@@ -262,6 +268,13 @@ impl TranslatedCrate {
             ItemId::TraitImpl(id) => self.trait_impls.remove(id).map(ItemByVal::TraitImpl),
         }
     }
+    /// Set the item to the corresponding slot, and record its name in the name map.
+    pub fn set_new_item_slot(&mut self, id: ItemId, item: ItemByVal) {
+        self.item_names
+            .insert(id, item.as_ref().item_meta().name.clone());
+        self.set_item_slot(id, item);
+    }
+    /// Set the item to the corresponding slot.
     pub fn set_item_slot(&mut self, id: ItemId, item: ItemByVal) {
         match item {
             ItemByVal::Type(decl) => self.type_decls.set_slot(*id.as_type().unwrap(), decl),
@@ -350,7 +363,7 @@ impl<'ctx> ItemRef<'ctx> {
         }
     }
 
-    pub fn to_item_by_val(&self) -> ItemByVal {
+    pub fn to_owned(&self) -> ItemByVal {
         match *self {
             Self::Type(d) => ItemByVal::Type(d.clone()),
             Self::Fun(d) => ItemByVal::Fun(d.clone()),
