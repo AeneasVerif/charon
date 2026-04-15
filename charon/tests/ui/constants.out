@@ -19,6 +19,7 @@ pub fn MAX() -> u32
 // Full name: core::num::{u32}::MAX
 pub const MAX: u32 = MAX()
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -27,7 +28,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::X0
 pub fn X0() -> u32

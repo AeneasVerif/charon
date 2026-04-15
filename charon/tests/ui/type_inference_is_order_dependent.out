@@ -110,6 +110,7 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -118,7 +119,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Left
 trait Left<Self, T>

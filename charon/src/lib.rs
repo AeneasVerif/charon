@@ -13,12 +13,13 @@
 
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
-#![allow(clippy::useless_format)]
+#![allow(clippy::borrowed_box)]
+#![allow(clippy::derivable_impls)]
+#![allow(clippy::field_reassign_with_default)]
 #![allow(clippy::manual_map)]
 #![allow(clippy::mem_replace_with_default)]
-#![allow(clippy::derivable_impls)]
-#![allow(clippy::borrowed_box)]
-#![allow(clippy::field_reassign_with_default)]
+#![allow(clippy::new_without_default)]
+#![allow(clippy::useless_format)]
 #![expect(incomplete_features)]
 #![feature(assert_matches)]
 #![feature(box_patterns)]

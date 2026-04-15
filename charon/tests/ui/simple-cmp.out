@@ -12,6 +12,7 @@ pub enum Ordering {
 pub fn {impl Ord for i32}::cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> Ordering
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -20,7 +21,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::main
 fn main()

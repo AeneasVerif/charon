@@ -38,6 +38,7 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -46,7 +47,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::foo::bar
 fn bar()

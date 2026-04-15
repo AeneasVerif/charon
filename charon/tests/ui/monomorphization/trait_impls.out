@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -8,7 +9,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun1()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::{impl Trait for bool}::method
 pub fn method<'_0>(_1: &'_0 bool)

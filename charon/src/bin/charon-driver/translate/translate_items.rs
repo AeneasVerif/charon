@@ -282,7 +282,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         use charon_lib::ullbc_ast::*;
         let name = Name::from_path(&["UNIT_METADATA"]);
         let item_meta = ItemMeta {
-            name,
+            name: name.clone(),
             span: Span::dummy(),
             source_text: None,
             attr_info: AttrInfo::default(),
@@ -311,6 +311,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             },
             body: Body::Unstructured(body),
         });
+        self.translated
+            .item_names
+            .insert(ItemId::Fun(initializer), name.clone());
         self.translated.global_decls.set_slot(
             global_id,
             GlobalDecl {
@@ -323,6 +326,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                 init: initializer,
             },
         );
+        self.translated
+            .item_names
+            .insert(ItemId::Global(global_id), name);
         self.translated.unit_metadata = Some(GlobalDeclRef {
             id: global_id,
             generics: Box::new(GenericArgs::empty()),

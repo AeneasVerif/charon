@@ -251,6 +251,7 @@ impl BuildHasher for RandomState {
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -259,7 +260,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::get_or_insert
 pub fn get_or_insert<'_0>(_1: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32

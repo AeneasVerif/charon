@@ -91,6 +91,7 @@ struct test_crate::main::closure#2 {
 pub fn call_once(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -99,7 +100,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun1()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}
 impl<'_0> Destruct for test_crate::main::closure<'_0> {    non-dyn-compatible
