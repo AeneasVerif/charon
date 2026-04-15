@@ -1159,21 +1159,6 @@ and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
         Ok (ImplElemTrait trait)
     | _ -> Error "")
 
-and indexed_map_of_json :
-    'a0 'a1.
-    (of_json_ctx -> json -> ('a0, string) result) ->
-    (of_json_ctx -> json -> ('a1, string) result) ->
-    of_json_ctx ->
-    json ->
-    ('a1 list, string) result =
- fun arg0_of_json arg1_of_json ctx js ->
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | json ->
-        let* list = list_of_json (option_of_json arg1_of_json) ctx json in
-        Ok (List.filter_map (fun x -> x) list)
-    | _ -> Error "")
-
 and index_map_of_json :
     'a0 'a1 'a2.
     (of_json_ctx -> json -> ('a0, string) result) ->
@@ -1187,6 +1172,21 @@ and index_map_of_json :
     (match js with
     | json ->
         list_of_json (key_value_pair_of_json arg0_of_json arg1_of_json) ctx json
+    | _ -> Error "")
+
+and indexed_map_of_json :
+    'a0 'a1.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    (of_json_ctx -> json -> ('a1, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a1 list, string) result =
+ fun arg0_of_json arg1_of_json ctx js ->
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | json ->
+        let* list = list_of_json (option_of_json arg1_of_json) ctx json in
+        Ok (List.filter_map (fun x -> x) list)
     | _ -> Error "")
 
 and index_vec_of_json :

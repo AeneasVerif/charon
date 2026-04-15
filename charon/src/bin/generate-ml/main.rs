@@ -928,14 +928,17 @@ impl GenerateCodeFor {
                 .iter()
                 .map(|&id| &ctx.crate_data[id])
                 .sorted_by_key(|tdecl| {
-                    tdecl
-                        .item_meta
-                        .name
-                        .name
-                        .last()
-                        .unwrap()
-                        .as_ident()
-                        .unwrap()
+                    (
+                        tdecl
+                            .item_meta
+                            .name
+                            .name
+                            .last()
+                            .unwrap()
+                            .as_ident()
+                            .unwrap(),
+                        tdecl.def_id,
+                    )
                 });
             let generated = match kind {
                 GenerationKind::OfJson => {
