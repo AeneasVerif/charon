@@ -213,7 +213,7 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_fallible_operations: bool,
-    /// Replace "if x { panic() }" with "assert(x)".
+    /// Replace `if x { panic() }` with `assert(x)`.
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_asserts: bool,
@@ -485,7 +485,7 @@ pub struct TranslateOptions {
     /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
     /// panic-on-overflow operation. This loses unwinding information.
     pub reconstruct_fallible_operations: bool,
-    /// Replace "if x { panic() }" with "assert(x)".
+    /// Replace `if x { panic() }` with `assert(x)`.
     pub reconstruct_asserts: bool,
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
     pub unbind_item_vars: bool,
@@ -524,7 +524,7 @@ impl TranslateOptions {
         let mut start_from = options
             .start_from
             .iter()
-            .filter_map(|path| parse_pattern(&path).ok())
+            .filter_map(|path| parse_pattern(path).ok())
             .map(|p| StartFrom::Pattern {
                 pattern: p,
                 strict: true,
@@ -534,7 +534,7 @@ impl TranslateOptions {
             options
                 .start_from_if_exists
                 .iter()
-                .filter_map(|path| parse_pattern(&path).ok())
+                .filter_map(|path| parse_pattern(path).ok())
                 .map(|p| StartFrom::Pattern {
                     pattern: p,
                     strict: false,
@@ -578,9 +578,9 @@ impl TranslateOptions {
             }
 
             if options.hide_allocator {
-                opacities.push((format!("core::alloc::Allocator"), Invisible));
+                opacities.push(("core::alloc::Allocator".to_string(), Invisible));
                 opacities.push((
-                    format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
+                    "alloc::alloc::{impl core::alloc::Allocator for _}".to_string(),
                     Invisible,
                 ));
             }
@@ -594,7 +594,7 @@ impl TranslateOptions {
         let lift_associated_types = options
             .lift_associated_types
             .iter()
-            .filter_map(|s| parse_pattern(&s).ok())
+            .filter_map(|s| parse_pattern(s).ok())
             .collect();
 
         TranslateOptions {

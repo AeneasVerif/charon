@@ -24,7 +24,7 @@ macro_rules! generate_index_type {
             #[drive(skip)]
             pub struct $name = usize;
             // Must fit in an u32 for serialization.
-            MAX_INDEX = std::u32::MAX as usize;
+            MAX_INDEX = u32::MAX as usize;
         }
 
         impl $name {

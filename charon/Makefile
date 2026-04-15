@@ -11,6 +11,7 @@ format:
 
 .PHONY: test
 test:
+	cargo clippy --all-targets -- -D warnings
 	cargo test
 
 .PHONY: test-popular-crates

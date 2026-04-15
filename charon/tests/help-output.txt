@@ -126,7 +126,7 @@ Options:
           Replace "bound checks followed by UB-on-overflow operation" with the corresponding panic-on-overflow operation. This loses unwinding information
 
       --reconstruct-asserts
-          Replace "if x { panic() }" with "assert(x)"
+          Replace `if x { panic() }` with `assert(x)`
 
       --unbind-item-vars
           Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects that don't intend to manipulate them too much

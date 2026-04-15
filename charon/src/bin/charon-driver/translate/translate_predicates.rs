@@ -355,7 +355,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         generics.trait_refs.is_empty(),
                         "found trait alias with non-empty required predicates"
                     );
-                    generics.trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                    generics.trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
                     TraitRefKind::TraitImpl(TraitImplRef {
                         id: impl_id,
                         generics,
@@ -408,7 +408,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         TraitRefKind::TraitImpl(self.erase_region_binder(binder))
                     } else {
                         let parent_trait_refs =
-                            self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                            self.translate_trait_impl_exprs(span, impl_exprs)?;
                         let types = if self.monomorphize() {
                             vec![]
                         } else {

@@ -40,7 +40,7 @@ impl Name {
 
     /// If this item comes from monomorphization, return the arguments used.
     pub fn mono_args(&self) -> Option<&GenericArgs> {
-        Some(self.name.last()?.as_monomorphized()?)
+        self.name.last()?.as_monomorphized()
     }
 
     /// Compare the name to a constant array.

@@ -251,12 +251,13 @@ and trait_assoc_ty = {
     basis, and in such a way thay they take as input a trait instance. This
     means that we can use default methods *but*:
     - implementations of required methods shoudln't call default methods
-    - trait implementations shouldn't redefine required methods The use case we
-      have in mind is [std::iter::Iterator]: it declares one required method
-      ([next]) that should be implemented for every iterator, and defines many
-      helpers like [all], [map], etc. that shouldn't be re-implemented. Of
-      course, this forbids other useful use cases such as visitors implemented
-      by means of traits. *)
+    - trait implementations shouldn't redefine required methods
+
+    The use case we have in mind is [std::iter::Iterator]: it declares one
+    required method ([next]) that should be implemented for every iterator, and
+    defines many helpers like [all], [map], etc. that shouldn't be
+    re-implemented. Of course, this forbids other useful use cases such as
+    visitors implemented by means of traits. *)
 and trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
@@ -485,7 +486,7 @@ type cli_options = {
           corresponding panic-on-overflow operation. This loses unwinding
           information. *)
   reconstruct_asserts : bool;
-      (** Replace "if x { panic() }" with "assert(x)". *)
+      (** Replace [if x { panic() }] with [assert(x)]. *)
   unbind_item_vars : bool;
       (** Use [DeBruijnVar::Free] for the variables bound in item signatures,
           instead of [DeBruijnVar::Bound] everywhere. This simplifies the

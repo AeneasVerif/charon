@@ -818,6 +818,7 @@ pub enum TyKind {
     /// - user-defined ADTs
     /// - tuples (including `unit`, which is a 0-tuple)
     /// - built-in types (includes some primitive types, e.g., arrays or slices)
+    ///
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
     /// The last list is used encode const generics, e.g., the size of an array
     ///

@@ -158,7 +158,7 @@ impl ItemTransCtx<'_, '_> {
                 .params
                 .identity_args_at_depth(DeBruijnId::one());
             Binder::new(
-                BinderKind::TraitMethod(destruct_trait_id, method_name.clone()),
+                BinderKind::TraitMethod(destruct_trait_id, method_name),
                 GenericParams::empty(),
                 FunDeclRef {
                     id: method_id,

@@ -108,14 +108,12 @@ fn transform_dyn_trait_call(
         // find the specific preshim function
         let mut preshim = None;
         for fun_decl in ctx.ctx.translated.fun_decls.iter() {
-            match &fun_decl.src {
-                ItemSource::VTableMethodPreShim(t_id, m_name, m_types) => {
-                    if *t_id == trait_ref.trait_id() && *m_name == *method_name && *m_types == types
-                    {
-                        preshim = Some(fun_decl);
-                    }
-                }
-                _ => {}
+            if let ItemSource::VTableMethodPreShim(t_id, m_name, m_types) = &fun_decl.src
+                && *t_id == trait_ref.trait_id()
+                && *m_name == *method_name
+                && *m_types == types
+            {
+                preshim = Some(fun_decl);
             }
         }
 

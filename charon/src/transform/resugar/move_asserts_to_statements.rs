@@ -48,7 +48,7 @@ impl UllbcPass for Transform {
 
             let on_failure = panics
                 .get(&on_unwind)
-                .map(AbortKind::clone)
+                .cloned()
                 .unwrap_or(AbortKind::Panic(None));
 
             block.statements.push(Statement {

@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize, Serializer};
 use serde_state::{DeserializeState, SerializeState};
 use std::{
     iter::{FromIterator, IntoIterator},
-    mem,
     ops::{ControlFlow, Index, IndexMut},
 };
 
@@ -56,11 +55,11 @@ where
     }
 
     pub fn get(&self, i: I) -> Option<&T> {
-        self.vector.get(i).map(Option::as_ref).flatten()
+        self.vector.get(i).and_then(Option::as_ref)
     }
 
     pub fn get_mut(&mut self, i: I) -> Option<&mut T> {
-        self.vector.get_mut(i).map(Option::as_mut).flatten()
+        self.vector.get_mut(i).and_then(Option::as_mut)
     }
 
     pub fn is_empty(&self) -> bool {
@@ -264,11 +263,11 @@ where
     }
 
     /// Iter over the nonempty slots.
-    pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator + Clone {
+    pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> + Clone {
         self.vector.iter().filter_map(|opt| opt.as_ref())
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> + DoubleEndedIterator {
+    pub fn iter_mut(&mut self) -> impl DoubleEndedIterator<Item = &mut T> {
         self.vector.iter_mut().filter_map(|opt| opt.as_mut())
     }
 
@@ -328,7 +327,7 @@ where
             .filter_map(move |(i, opt)| {
                 if f(opt.as_mut()?) {
                     *elem_count -= 1;
-                    let elem = mem::replace(opt, None)?;
+                    let elem = opt.take()?;
                     Some((i, elem))
                 } else {
                     None
@@ -429,10 +428,10 @@ where
     I: Idx,
 {
     type Item = T;
-    type IntoIter = impl Iterator<Item = T> + DoubleEndedIterator;
+    type IntoIter = impl DoubleEndedIterator<Item = T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.vector.into_iter().flat_map(|opt| opt)
+        self.vector.into_iter().flatten()
     }
 }
 

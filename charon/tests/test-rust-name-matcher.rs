@@ -40,10 +40,10 @@ fn test_crate_data(crate_data: &TranslatedCrate) -> anyhow::Result<()> {
             .attr_info
             .attributes
             .iter()
-            .filter_map(|a| parse_pattern_attr(a))
+            .filter_map(parse_pattern_attr)
             .collect_vec();
         for (pass, pat) in patterns {
-            let passes = pat.matches_item(&crate_data, item);
+            let passes = pat.matches_item(crate_data, item);
             if passes != pass {
                 if passes {
                     panic!(

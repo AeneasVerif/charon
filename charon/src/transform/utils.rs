@@ -37,8 +37,8 @@ impl GenericsSource {
                     .unwrap()
                     .to_string_with_ctx(fmt_ctx),
             ),
-            GenericsSource::Builtin => format!("<built-in>"),
-            GenericsSource::Other => format!("<unknown>"),
+            GenericsSource::Builtin => "<built-in>".to_string(),
+            GenericsSource::Other => "<unknown>".to_string(),
         }
     }
 }
@@ -64,7 +64,7 @@ impl FnPtrKind {
         match self {
             FnPtrKind::Fun(fun_id) => fun_id.generics_target(),
             FnPtrKind::Trait(trait_ref, name, _) => {
-                GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.id, name.clone())
+                GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.id, *name)
             }
         }
     }

@@ -20,7 +20,7 @@ impl VisitorWithBinderDepth for UnbindVarVisitor {
     }
 }
 impl VisitAstMut for UnbindVarVisitor {
-    fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
         VisitWithBinderDepth::new(self).visit(x)
     }
 

@@ -146,9 +146,7 @@ pub enum DeclarationGroup {
     Fun(GDeclarationGroup<FunDeclId>),
     /// A global declaration group
     Global(GDeclarationGroup<GlobalDeclId>),
-    ///
     TraitDecl(GDeclarationGroup<TraitDeclId>),
-    ///
     TraitImpl(GDeclarationGroup<TraitImplId>),
     /// Anything that doesn't fit into these categories.
     Mixed(GDeclarationGroup<ItemId>),
@@ -332,7 +330,7 @@ impl<'ctx> ItemRef<'ctx> {
         }
     }
 
-    pub fn clone(&self) -> ItemByVal {
+    pub fn to_item_by_val(&self) -> ItemByVal {
         match *self {
             Self::Type(d) => ItemByVal::Type(d.clone()),
             Self::Fun(d) => ItemByVal::Fun(d.clone()),
@@ -511,7 +509,7 @@ impl fmt::Display for TranslatedCrate {
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
+impl<'a> IntoFormatter for &'a TranslatedCrate {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {

@@ -288,8 +288,9 @@ and constant_expr = { kind : constant_expr_kind; ty : ty }
     - an enumeration with one variant and no fields is a constant.
     - a structure with no field is a constant.
     - sometimes, Rust stores the initialization of an ADT as a constant (if all
-      the fields are constant) rather than as an aggregated value We later
-      desugar those to regular ADTs, see [regularize_constant_adts.rs].
+      the fields are constant) rather than as an aggregated value
+
+    We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 
     [[ConstantExprKind::Global]] case: access to a global variable. We later
     desugar it to a copy of a place global.
@@ -651,9 +652,11 @@ and ty_kind =
           - user-defined ADTs
           - tuples (including [unit], which is a 0-tuple)
           - built-in types (includes some primitive types, e.g., arrays or
-            slices) The information on the nature of the ADT is stored in
-            ([TypeId])[TypeId]. The last list is used encode const generics,
-            e.g., the size of an array
+            slices)
+
+          The information on the nature of the ADT is stored in
+          ([TypeId])[TypeId]. The last list is used encode const generics, e.g.,
+          the size of an array
 
           Note: this is incorrectly named: this can refer to any valid
           [TypeDecl] including extern types. *)

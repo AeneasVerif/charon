@@ -313,7 +313,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::GenericParamDefKind::Lifetime => {
                 let region = hax::EarlyParamRegion {
                     index: param.index,
-                    name: param.name.clone(),
+                    name: param.name,
                 };
                 let mutability = self
                     .t_ctx
@@ -430,7 +430,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
         kind: &TransItemSourceKind,
     ) -> Result<(), Error> {
-        assert!(self.binding_levels.len() == 0);
+        assert!(self.binding_levels.is_empty());
         self.binding_levels.push(BindingLevel::new());
         self.push_generics_for_def(span, def)?;
         self.push_late_bound_generics_for_def(span, def)?;
@@ -503,7 +503,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(&def.def_id());
+        let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(def.def_id());
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
         let ret = self.inside_binder(kind, |this| {
             this.push_generics_for_def_without_parents(span, def)?;

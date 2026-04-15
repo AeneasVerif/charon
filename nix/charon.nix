@@ -73,6 +73,10 @@ craneLib.buildPackage (
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;
+    passthru.check-clippy = craneLib.cargoClippy (craneArgs // {
+      inherit cargoArtifacts;
+      cargoClippyExtraArgs = "--all-targets -- -D warnings";
+    });
     passthru.check-no-rustc = craneLib.mkCargoDerivation (craneArgs // {
       inherit cargoArtifacts;
       pnameSuffix = "-check-no-rustc";

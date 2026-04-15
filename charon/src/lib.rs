@@ -13,6 +13,12 @@
 
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
+#![allow(clippy::useless_format)]
+#![allow(clippy::manual_map)]
+#![allow(clippy::mem_replace_with_default)]
+#![allow(clippy::derivable_impls)]
+#![allow(clippy::borrowed_box)]
+#![allow(clippy::field_reassign_with_default)]
 #![expect(incomplete_features)]
 #![feature(assert_matches)]
 #![feature(box_patterns)]
@@ -54,8 +60,8 @@ pub fn deserialize_llbc(path: &std::path::Path) -> anyhow::Result<ast::Translate
     use serde::Deserialize;
     use std::fs::File;
     use std::io::BufReader;
-    let file = File::open(&path)
-        .with_context(|| format!("Failed to read llbc file {}", path.display()))?;
+    let file =
+        File::open(path).with_context(|| format!("Failed to read llbc file {}", path.display()))?;
     let reader = BufReader::new(file);
     let mut deserializer = serde_json::Deserializer::from_reader(reader);
     // Deserialize without recursion limit.

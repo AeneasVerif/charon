@@ -51,6 +51,7 @@ pub enum StatementKind {
     /// A non-diverging runtime check for a condition. This can be either:
     /// - Emitted for inlined "assumes" (which cause UB on failure)
     /// - Reconstructed from `if b { panic() }` if `--reconstruct-asserts` is set.
+    ///
     /// This statement comes with the effect that happens when the check fails
     /// (rather than representing it as an unwinding edge).
     Assert {

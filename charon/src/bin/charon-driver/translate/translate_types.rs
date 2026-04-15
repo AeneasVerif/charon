@@ -97,7 +97,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let mut ty = if let Some(ty) = self
             .innermost_binder()
             .type_trans_cache
-            .get(&hax_ty)
+            .get(hax_ty)
             .cloned()
         {
             ty
