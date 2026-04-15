@@ -62,6 +62,7 @@ pub struct CliOpts {
     /// A list of target architectures to translate for. Charon will run the compiler once for each
     /// target and aggregate the results, which is useful if the code includes `#[cfg(..)]`
     /// filters.
+    /// Warning: this is an initial implementation which is extremely slow.
     #[clap(long, value_delimiter = ',')]
     #[serde(default)]
     pub targets: Vec<String>,

@@ -405,7 +405,8 @@ type cli_options = {
   targets : string list;
       (** A list of target architectures to translate for. Charon will run the
           compiler once for each target and aggregate the results, which is
-          useful if the code includes [#[cfg(..)]] filters. *)
+          useful if the code includes [#[cfg(..)]] filters. Warning: this is an
+          initial implementation which is extremely slow. *)
   monomorphize : bool;
       (** Monomorphize the items encountered when possible. Generic items found
           in the crate are skipped. To only translate a particular call graph,
