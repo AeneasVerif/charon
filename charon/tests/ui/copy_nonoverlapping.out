@@ -184,7 +184,8 @@ where
     undefined_behavior
 }
 
-pub fn core::intrinsics::align_of<T>() -> usize
+// Full name: core::intrinsics::align_of
+pub fn align_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -204,89 +205,7 @@ impl Copy for usize {
 unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <missing>
 
-// Full name: core::panicking::panic_nounwind_fmt
-pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
-{
-    let _0: !; // return
-    let fmt_1: Arguments<'1>; // arg #1
-    let force_no_backtrace_2: bool; // arg #2
-    let _3: (Arguments<'3>, bool); // anonymous local
-    let _4: Arguments<'4>; // anonymous local
-    let _5: bool; // anonymous local
-
-    storage_live(_3)
-    storage_live(_4)
-    _4 = copy fmt_1
-    storage_live(_5)
-    _5 = copy force_no_backtrace_2
-    _3 = (move _4, move _5)
-    storage_dead(_5)
-    storage_dead(_4)
-    _0 = compiletime<'6>(move _3.0, move _3.1)
-}
-
-fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(_1: usize)
-{
-    let _0: (); // return
-    let align_1: usize; // arg #1
-    let msg_2: &'1 Str; // local
-    let _3: !; // anonymous local
-    let _4: Arguments<'3>; // anonymous local
-    let _5: u32; // anonymous local
-    let _6: NonNull<u8>; // anonymous local
-    let _7: *const u8; // anonymous local
-    let _8: NonNull<Argument<'6>>; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: usize; // anonymous local
-    let _11: usize; // anonymous local
-    let _12: *const Str; // anonymous local
-    let _13: &'8 [u8]; // anonymous local
-
-    storage_live(msg_2)
-    storage_live(_3)
-    _0 = ()
-    storage_live(_5)
-    _5 = ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](move align_1)
-    switch copy _5 {
-        1 : u32 => {
-        },
-        _ => {
-            storage_dead(_5)
-            msg_2 = const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
-            storage_live(_4)
-            storage_live(_6)
-            storage_live(_7)
-            storage_live(_12)
-            _12 = &raw const (*msg_2) with_metadata(copy msg_2.metadata)
-            _7 = cast<*const Str, *const u8>(copy _12)
-            storage_dead(_12)
-            _6 = transmute<*const u8, NonNull<u8>>(copy _7)
-            storage_dead(_7)
-            storage_live(_8)
-            storage_live(_9)
-            storage_live(_10)
-            storage_live(_11)
-            storage_live(_13)
-            _13 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
-            _11 = copy _13.metadata
-            storage_dead(_13)
-            _10 = move _11 wrap.<< const 1 : i32
-            storage_dead(_11)
-            _9 = move _10 | const 1 : usize
-            storage_dead(_10)
-            _8 = transmute<usize, NonNull<Argument<'12>>>(move _9)
-            storage_dead(_9)
-            _4 = Arguments { template: move _6, args: move _8 }
-            storage_dead(_8)
-            storage_dead(_6)
-            _3 = panic_nounwind_fmt<'15>(move _4, const false)
-        },
-    }
-    storage_dead(_5)
-    return
-}
-
-// Full name: core::ptr::alignment::AlignmentEnum
+// Full name: core::mem::alignment::AlignmentEnum
 enum AlignmentEnum {
   _Align1Shl0,
   _Align1Shl1,
@@ -354,9 +273,91 @@ enum AlignmentEnum {
   _Align1Shl63,
 }
 
-// Full name: core::ptr::alignment::Alignment
+// Full name: core::mem::alignment::Alignment
 pub struct Alignment {
   _inner_repr_trick: AlignmentEnum,
+}
+
+// Full name: core::panicking::panic_nounwind_fmt
+pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
+{
+    let _0: !; // return
+    let fmt_1: Arguments<'1>; // arg #1
+    let force_no_backtrace_2: bool; // arg #2
+    let _3: (Arguments<'3>, bool); // anonymous local
+    let _4: Arguments<'4>; // anonymous local
+    let _5: bool; // anonymous local
+
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy fmt_1
+    storage_live(_5)
+    _5 = copy force_no_backtrace_2
+    _3 = (move _4, move _5)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = compiletime<'6>(move _3.0, move _3.1)
+}
+
+fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(_1: usize)
+{
+    let _0: (); // return
+    let align_1: usize; // arg #1
+    let msg_2: &'1 Str; // local
+    let _3: !; // anonymous local
+    let _4: Arguments<'3>; // anonymous local
+    let _5: u32; // anonymous local
+    let _6: NonNull<u8>; // anonymous local
+    let _7: *const u8; // anonymous local
+    let _8: NonNull<Argument<'6>>; // anonymous local
+    let _9: usize; // anonymous local
+    let _10: usize; // anonymous local
+    let _11: usize; // anonymous local
+    let _12: *const Str; // anonymous local
+    let _13: &'8 [u8]; // anonymous local
+
+    storage_live(msg_2)
+    storage_live(_3)
+    _0 = ()
+    storage_live(_5)
+    _5 = ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](move align_1)
+    switch copy _5 {
+        1 : u32 => {
+        },
+        _ => {
+            storage_dead(_5)
+            msg_2 = const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+            storage_live(_4)
+            storage_live(_6)
+            storage_live(_7)
+            storage_live(_12)
+            _12 = &raw const (*msg_2) with_metadata(copy msg_2.metadata)
+            _7 = cast<*const Str, *const u8>(copy _12)
+            storage_dead(_12)
+            _6 = transmute<*const u8, NonNull<u8>>(copy _7)
+            storage_dead(_7)
+            storage_live(_8)
+            storage_live(_9)
+            storage_live(_10)
+            storage_live(_11)
+            storage_live(_13)
+            _13 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+            _11 = copy _13.metadata
+            storage_dead(_13)
+            _10 = move _11 wrap.<< const 1 : i32
+            storage_dead(_11)
+            _9 = move _10 | const 1 : usize
+            storage_dead(_10)
+            _8 = transmute<usize, NonNull<Argument<'12>>>(move _9)
+            storage_dead(_9)
+            _4 = Arguments { template: move _6, args: move _8 }
+            storage_dead(_8)
+            storage_dead(_6)
+            _3 = panic_nounwind_fmt<'15>(move _4, const false)
+        },
+    }
+    storage_dead(_5)
+    return
 }
 
 // Full name: core::option::Option
@@ -369,7 +370,7 @@ where
   Some(T),
 }
 
-// Full name: core::ptr::alignment::{Alignment}::new
+// Full name: core::mem::alignment::{Alignment}::new
 pub fn new(_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
 {
     let _0: Option<Alignment>[{built_in impl Sized for Alignment}]; // return
@@ -399,7 +400,7 @@ pub fn new(_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
     storage_live(_5)
     _5 = ub_checks<bool>
     if move _5 {
-        _4 = core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(copy align_1)
+        _4 = core::mem::alignment::{Alignment}::new_unchecked::precondition_check(copy align_1)
     } else {
     }
     _2 = transmute<usize, Alignment>(copy align_1)
@@ -407,6 +408,57 @@ pub fn new(_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
     storage_dead(_2)
     return
 }
+
+// Full name: core::mem::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const SIZE : usize
+    const ALIGN : usize
+    const ALIGNMENT : Alignment
+    const IS_ZST : bool
+    const LAYOUT : Layout
+    const MAX_SLICE_LEN : usize
+    non-dyn-compatible
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub fn SIZE<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: usize; // return
+
+    _0 = size_of<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::SIZE
+#[lang_item("mem_size_const")]
+pub const SIZE<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = SIZE()
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub fn ALIGN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: usize; // return
+
+    _0 = align_of<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::ALIGN
+#[lang_item("mem_align_const")]
+pub const ALIGN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGN()
 
 // Full name: core::option::unwrap_failed
 fn unwrap_failed() -> !
@@ -438,6 +490,61 @@ where
     _2 = unwrap_failed()
 }
 
+// Full name: core::mem::SizedTypeProperties::ALIGNMENT
+pub fn ALIGNMENT<Self>() -> Alignment
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: Alignment; // return
+    let _1: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
+
+    storage_live(_1)
+    _1 = new(const @TraitClause0::ALIGN)
+    _0 = unwrap<Alignment>[{built_in impl Sized for Alignment}](move _1)
+    storage_dead(_1)
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::ALIGNMENT
+pub const ALIGNMENT<Self>: Alignment
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = ALIGNMENT()
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub fn IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: bool; // return
+
+    _0 = const @TraitClause0::SIZE == const 0 : usize
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::IS_ZST
+pub const IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = IS_ZST()
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub fn LAYOUT<Self>() -> Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let _0: Layout; // return
+
+    _0 = from_size_align_unchecked(const @TraitClause0::SIZE, const @TraitClause0::ALIGN)
+    return
+}
+
+// Full name: core::mem::SizedTypeProperties::LAYOUT
+pub const LAYOUT<Self>: Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = LAYOUT()
+
 pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
@@ -461,19 +568,6 @@ pub fn core::num::{isize}::MAX() -> isize
 }
 
 pub const core::num::{isize}::MAX: isize = core::num::{isize}::MAX()
-
-// Full name: core::mem::SizedTypeProperties
-pub trait SizedTypeProperties<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    const SIZE : usize
-    const ALIGN : usize
-    const ALIGNMENT : Alignment
-    const IS_ZST : bool
-    const LAYOUT : Layout
-    const MAX_SLICE_LEN : usize
-    non-dyn-compatible
-}
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub fn MAX_SLICE_LEN<Self>() -> usize
@@ -515,106 +609,6 @@ where
     [@TraitClause0]: SizedTypeProperties<Self>,
  = MAX_SLICE_LEN()
 
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub fn LAYOUT<Self>() -> Layout
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: Layout; // return
-
-    _0 = from_size_align_unchecked(const @TraitClause0::SIZE, const @TraitClause0::ALIGN)
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub const LAYOUT<Self>: Layout
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = LAYOUT()
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub fn IS_ZST<Self>() -> bool
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: bool; // return
-
-    _0 = const @TraitClause0::SIZE == const 0 : usize
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub const IS_ZST<Self>: bool
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = IS_ZST()
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub fn ALIGN<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: usize; // return
-
-    _0 = core::intrinsics::align_of<Self>[@TraitClause0::parent_clause0]()
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub const ALIGN<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = ALIGN()
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub fn SIZE<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: usize; // return
-
-    _0 = size_of<Self>[@TraitClause0::parent_clause0]()
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub const SIZE<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = SIZE()
-
-#[lang_item("mem_align_of")]
-pub fn core::mem::align_of<T>() -> usize
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    _0 = const {impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub fn ALIGNMENT<Self>() -> Alignment
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-{
-    let _0: Alignment; // return
-
-    _0 = of<Self>[@TraitClause0::parent_clause0]()
-    return
-}
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub const ALIGNMENT<Self>: Alignment
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = ALIGNMENT()
-
 // Full name: core::mem::{impl SizedTypeProperties for T}
 impl<T> SizedTypeProperties for T
 where
@@ -628,28 +622,6 @@ where
     const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
     non-dyn-compatible
-}
-
-// Full name: core::ptr::alignment::{Alignment}::of
-pub fn of<T>() -> Alignment
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let _0: Alignment; // return
-    let _1: Alignment; // anonymous local
-    let _2: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
-    let _3: usize; // anonymous local
-
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = core::mem::align_of<T>[@TraitClause0]()
-    _2 = new(move _3)
-    storage_dead(_3)
-    _1 = unwrap<Alignment>[{built_in impl Sized for Alignment}](move _2)
-    storage_dead(_2)
-    _0 = move _1
-    return
 }
 
 fn core::ptr::copy_nonoverlapping::precondition_check(_1: *const (), _2: *mut (), _3: usize, _4: usize, _5: usize)

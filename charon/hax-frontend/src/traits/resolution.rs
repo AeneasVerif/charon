@@ -230,10 +230,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let initial_self_pred = initial_self_pred(tcx, owner_id);
         let mut out = Self {
             tcx,
-            typing_env: TypingEnv {
-                param_env: tcx.param_env(owner_id),
-                typing_mode: TypingMode::PostAnalysis,
-            },
+            typing_env: ty::TypingEnv::post_analysis(tcx, owner_id),
             candidates: Default::default(),
             options,
             implicit_self_clause: initial_self_pred.is_some(),
@@ -333,7 +330,10 @@ impl<'tcx> PredicateSearcher<'tcx> {
     ) -> Result<(), String> {
         let tcx = self.tcx;
         // Note: We skip a binder but rebind it just after.
-        let TyKind::Alias(AliasTyKind::Projection, alias_ty) = ty.skip_binder().kind() else {
+        let TyKind::Alias(alias_ty) = ty.skip_binder().kind() else {
+            return Ok(());
+        };
+        let AliasTyKind::Projection { def_id } = alias_ty.kind else {
             return Ok(());
         };
         let trait_ref = ty.rebind(alias_ty.trait_ref(tcx)).upcast(tcx);
@@ -345,7 +345,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         };
 
         // The bounds that hold on the associated type.
-        let item_bounds = implied_predicates(tcx, alias_ty.def_id, self.options);
+        let item_bounds = implied_predicates(tcx, def_id, self.options);
         let item_bounds = item_bounds
             .iter()
             .filter_map(|pred| pred.clause.as_trait_clause())
@@ -361,7 +361,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 origin: trait_candidate.origin,
             };
             candidate.path.push(PathChunk::AssocItem {
-                item: tcx.associated_item(alias_ty.def_id),
+                item: tcx.associated_item(def_id),
                 generic_args: alias_ty.args,
                 predicate: pred,
                 index,
@@ -469,8 +469,14 @@ impl<'tcx> PredicateSearcher<'tcx> {
                         let ty =
                             Ty::new_projection(tcx, assoc.def_id, erased_tref.skip_binder().args);
                         let ty = erase_and_norm(tcx, self.typing_env, ty);
-                        if let TyKind::Alias(_, alias_ty) = ty.kind() {
-                            if alias_ty.def_id == assoc.def_id {
+                        if let TyKind::Alias(alias_ty) = ty.kind() {
+                            let def_id = match alias_ty.kind {
+                                AliasTyKind::Projection { def_id } => def_id,
+                                AliasTyKind::Inherent { def_id } => def_id,
+                                AliasTyKind::Opaque { def_id } => def_id,
+                                AliasTyKind::Free { def_id } => def_id,
+                            };
+                            if def_id == assoc.def_id {
                                 // Couldn't normalize the type to anything different than itself;
                                 // this must be a built-in associated type such as
                                 // `DiscriminantKind::Discriminant`.

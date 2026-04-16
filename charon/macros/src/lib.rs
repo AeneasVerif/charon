@@ -1,7 +1,7 @@
 //! This module contains some macros for Charon. Due to technical reasons, Rust
 //! forces users to define such macros in a separate, dedicated library. Note
 //! that this doesn't apply to `macro_rules`.
-#![feature(non_exhaustive_omitted_patterns_lint)]
+
 
 extern crate proc_macro;
 

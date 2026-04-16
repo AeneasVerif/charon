@@ -7,10 +7,7 @@
 #![allow(clippy::derivable_impls)]
 #![allow(clippy::borrowed_box)]
 #![allow(clippy::field_reassign_with_default)]
-#![expect(incomplete_features)]
-#![feature(box_patterns)]
 #![feature(deref_patterns)]
-#![feature(if_let_guard)]
 #![feature(iter_array_chunks)]
 #![feature(iterator_try_collect)]
 

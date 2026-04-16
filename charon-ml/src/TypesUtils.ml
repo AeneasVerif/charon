@@ -28,7 +28,7 @@ type 'a item_binder = {
 type bound_fun_sig = fun_sig item_binder
 
 let to_name (ls : string list) : name =
-  List.map (fun s -> PeIdent (s, Disambiguator.zero)) ls
+  { name = List.map (fun s -> PeIdent (s, Disambiguator.zero)) ls }
 
 let as_ident (e : path_elem) : string =
   match e with
@@ -178,7 +178,7 @@ let trait_instance_id_as_trait_impl (id : trait_ref_kind) :
   | _ -> raise (Failure "Unreachable")
 
 (* Make a debruijn variable of index 0 *)
-let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound (0, varid)
+let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound ({ index = 0 }, varid)
 
 let free_var_of_db_var (var : 'id de_bruijn_var) : 'id option =
   match var with
@@ -187,11 +187,11 @@ let free_var_of_db_var (var : 'id de_bruijn_var) : 'id option =
 
 let decr_db_var : 'id de_bruijn_var -> 'id de_bruijn_var = function
   | Free id -> Free id
-  | Bound (dbid, id) -> Bound (dbid - 1, id)
+  | Bound (dbid, id) -> Bound ({ index = dbid.index - 1 }, id)
 
 let incr_db_var : 'id de_bruijn_var -> 'id de_bruijn_var = function
   | Free id -> Free id
-  | Bound (dbid, id) -> Bound (dbid + 1, id)
+  | Bound (dbid, id) -> Bound ({ index = dbid.index + 1 }, id)
 
 let empty_generic_args : generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }

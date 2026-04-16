@@ -99,7 +99,7 @@ let subst_free_vars (subst : single_binder_subst) : subst =
 *)
 let subst_at_binder_zero (subst : single_binder_subst) : subst =
   let subst_if_zero subst nosubst = function
-    | Bound (dbid, id) when dbid = 0 -> subst id
+    | Bound (dbid, id) when dbid.index = 0 -> subst id
     | var -> nosubst var
   in
   {
@@ -114,8 +114,9 @@ let subst_at_binder_zero (subst : single_binder_subst) : subst =
     variables to remove the current binder level. *)
 let subst_remove_binder_zero (subst : single_binder_subst) : subst =
   let subst_remove_zero subst nosubst = function
-    | Bound (dbid, id) when dbid = 0 -> subst id
-    | Bound (dbid, varid) when dbid > 0 -> nosubst (Bound (dbid - 1, varid))
+    | Bound (dbid, id) when dbid.index = 0 -> subst id
+    | Bound (dbid, varid) when dbid.index > 0 ->
+        nosubst (Bound ({ index = dbid.index - 1 }, varid))
     | var -> nosubst var
   in
   {
@@ -129,7 +130,7 @@ let subst_remove_binder_zero (subst : single_binder_subst) : subst =
 (** Move a whole expression under one level of binder. *)
 let move_under_binder_subst : subst =
   let shift = function
-    | Bound (dbid, var) -> Bound (dbid + 1, var)
+    | Bound (dbid, var) -> Bound ({ index = dbid.index + 1 }, var)
     | Free _ as var -> var
   in
   {
@@ -144,7 +145,7 @@ let move_under_binder_subst : subst =
 let st_shift_visitor =
   object (self)
     inherit [_] map_statement
-    method! visit_de_bruijn_id delta dbid = dbid + delta
+    method! visit_de_bruijn_id delta dbid = { index = dbid.index + delta }
   end
 
 (* Shift the the substitution under one binder. *)

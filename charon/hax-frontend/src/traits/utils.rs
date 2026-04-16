@@ -202,21 +202,21 @@ pub fn required_predicates<'tcx>(
     use DefKind::*;
     let def_kind = tcx.def_kind(def_id);
     let mut predicates = match def_kind {
-        AssocConst
-        | AssocFn
-        | AssocTy
-        | Const
-        | Enum
-        | Fn
+        AssocConst { .. }
+        | AssocFn { .. }
+        | AssocTy { .. }
+        | Const { .. }
+        | Enum { .. }
+        | Fn { .. }
         | ForeignTy
         | Impl { .. }
         | OpaqueTy
         | Static { .. }
-        | Struct
-        | TyAlias
-        | Union => predicates_defined_on(tcx, def_id, true),
+        | Struct { .. }
+        | TyAlias { .. }
+        | Union { .. } => predicates_defined_on(tcx, def_id, true),
         // We consider all predicates on traits to be outputs
-        Trait | TraitAlias => Default::default(),
+        Trait { .. } | TraitAlias { .. } => Default::default(),
         // `predicates_defined_on` ICEs on other def kinds.
         _ => Default::default(),
     };

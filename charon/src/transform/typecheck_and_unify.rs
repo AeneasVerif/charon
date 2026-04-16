@@ -403,10 +403,8 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
     }
     fn enter_trait_ref(&mut self, x: &mut TraitRef) {
         match &x.kind {
-            TraitRefKind::Clause(var) => {
-                if self.binder_stack.get_var(*var).is_none() {
-                    self.error(format!("Found incorrect clause var: {var}"));
-                }
+            TraitRefKind::Clause(var) if self.binder_stack.get_var(*var).is_none() => {
+                self.error(format!("Found incorrect clause var: {var}"));
             }
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,

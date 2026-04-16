@@ -89,10 +89,7 @@ impl UllbcPass for Transform {
                                 }
                             });
 
-                            outer_body
-                                .locals
-                                .locals
-                                .extend(inner_body.locals.locals.into_iter());
+                            outer_body.locals.locals.extend(inner_body.locals.locals);
                             new_blocks.extend(inner_body.body);
                             *op = Operand::Move(outer_body.locals.place_for_var(return_local));
                         }
@@ -106,7 +103,7 @@ impl UllbcPass for Transform {
                         // Add the new blocks. They've been set up so that each new inner body
                         // returns to what follows it in the sequence. Hence the last added body
                         // points to the not-yet-existing block at `start_new_bodies`
-                        outer_body.body.extend(new_blocks.into_iter());
+                        outer_body.body.extend(new_blocks);
                         // Push the current block to be executed after the newly-added ones.
                         outer_body.body.push(block);
                     }

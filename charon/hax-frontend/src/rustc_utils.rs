@@ -81,10 +81,9 @@ impl<'tcx, S: UnderOwnerState<'tcx>> HasParamEnv<'tcx> for S {
         }
     }
     fn typing_env(&self) -> ty::TypingEnv<'tcx> {
-        ty::TypingEnv {
-            param_env: self.param_env(),
-            typing_mode: ty::TypingMode::PostAnalysis,
-        }
+        let tcx = self.base().tcx;
+        let def_id = self.owner_id();
+        ty::TypingEnv::post_analysis(tcx, def_id)
     }
 }
 
@@ -211,7 +210,7 @@ pub fn assoc_tys_for_trait<'tcx>(
                 .in_definition_order()
                 .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Type { .. }))
                 .filter(|assoc| tcx.generics_of(assoc.def_id).own_params.is_empty())
-                .map(|assoc| ty::AliasTy::new(tcx, assoc.def_id, tref.args)),
+                .map(|assoc| ty::AliasTy::new(tcx, ty::AliasTyKind::Projection { def_id: assoc.def_id }, tref.args)),
         );
         for clause in tcx
             .explicit_super_predicates_of(tref.def_id)
@@ -250,7 +249,7 @@ pub fn dyn_self_ty<'tcx>(
         .map(|alias_ty| {
             let proj = ty::ProjectionPredicate {
                 projection_term: alias_ty.into(),
-                term: ty::Ty::new_alias(tcx, ty::Projection, alias_ty).into(),
+                term: ty::Ty::new_alias(tcx, alias_ty).into(),
             };
             let proj = ty::ExistentialProjection::erase_self_ty(tcx, proj);
             ty::Binder::dummy(ty::ExistentialPredicate::Projection(proj))

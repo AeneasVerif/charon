@@ -13,7 +13,7 @@ use crate::sinto_todo;
 
 sinto_reexport!(rustc_span::Span);
 
-pub use rustc_span::source_map::Spanned;
+pub use rustc_span::Spanned;
 impl<'s, S: UnderOwnerState<'s>, T: SInto<S, U>, U> SInto<S, Spanned<U>> for Spanned<T> {
     fn sinto<'a>(&self, s: &S) -> Spanned<U> {
         Spanned {

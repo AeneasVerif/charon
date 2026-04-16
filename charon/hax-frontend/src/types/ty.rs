@@ -655,7 +655,6 @@ impl Alias {
     #[tracing::instrument(level = "trace", skip(s))]
     fn from<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
-        alias_kind: &rustc_type_ir::AliasTyKind,
         alias_ty: &ty::AliasTy<'tcx>,
     ) -> TyKind {
         let tcx = s.base().tcx;
@@ -663,49 +662,43 @@ impl Alias {
         use rustc_type_ir::AliasTyKind as RustAliasKind;
 
         // Try to normalize the alias first.
-        let ty = ty::Ty::new_alias(tcx, *alias_kind, *alias_ty);
+        let ty = ty::Ty::new_alias(tcx, *alias_ty);
         let ty = crate::traits::normalize(tcx, typing_env, ty);
-        let ty::Alias(alias_kind, alias_ty) = ty.kind() else {
+        let ty::Alias(alias_ty) = ty.kind() else {
             let ty: Ty = ty.sinto(s);
             return ty.kind().clone();
         };
 
-        let kind = match alias_kind {
-            RustAliasKind::Projection => {
+        let (kind, def_id) = match alias_ty.kind {
+            RustAliasKind::Projection { def_id } => {
                 let trait_ref = alias_ty.trait_ref(tcx);
-                // In a case like:
-                // ```
-                // impl<T, U> Trait for Result<T, U>
-                // where
-                //     for<'a> &'a Result<T, U>: IntoIterator,
-                //     for<'a> <&'a Result<T, U> as IntoIterator>::Item: Copy,
-                // {}
-                // ```
-                // the `&'a Result<T, U> as IntoIterator` trait ref has escaping bound variables
-                // yet we dont have a binder around (could even be several). Binding this correctly
-                // is therefore difficult. Since our trait resolution ignores lifetimes anyway, we
-                // just erase them. See also https://github.com/hacspec/hax/issues/747.
                 let trait_ref = crate::traits::erase_free_regions(tcx, trait_ref);
-                let item = tcx.associated_item(alias_ty.def_id);
-                AliasKind::Projection {
-                    assoc_item: AssocItem::sfrom(s, &item),
-                    impl_expr: solve_trait(s, ty::Binder::dummy(trait_ref)),
-                }
+                let item = tcx.associated_item(def_id);
+                (
+                    AliasKind::Projection {
+                        assoc_item: AssocItem::sfrom(s, &item),
+                        impl_expr: solve_trait(s, ty::Binder::dummy(trait_ref)),
+                    },
+                    def_id,
+                )
             }
-            RustAliasKind::Inherent => AliasKind::Inherent,
-            RustAliasKind::Opaque => {
+            RustAliasKind::Inherent { def_id } => (AliasKind::Inherent, def_id),
+            RustAliasKind::Opaque { def_id } => {
                 // Reveal the underlying `impl Trait` type.
-                let ty = tcx.type_of(alias_ty.def_id).instantiate(tcx, alias_ty.args);
-                AliasKind::Opaque {
-                    hidden_ty: ty.sinto(s),
-                }
+                let ty = tcx.type_of(def_id).instantiate(tcx, alias_ty.args);
+                (
+                    AliasKind::Opaque {
+                        hidden_ty: ty.sinto(s),
+                    },
+                    def_id,
+                )
             }
-            RustAliasKind::Free => AliasKind::Free,
+            RustAliasKind::Free { def_id } => (AliasKind::Free, def_id),
         };
         TyKind::Alias(Alias {
             kind,
             args: alias_ty.args.sinto(s),
-            def_id: alias_ty.def_id.sinto(s),
+            def_id: def_id.sinto(s),
         })
     }
 }
@@ -825,7 +818,7 @@ pub enum TyKind {
     #[custom_arm(FROM_TYPE::Coroutine(def_id, generics) => TO_TYPE::Coroutine(translate_item_ref(s, *def_id, generics)),)]
     Coroutine(ItemRef),
     Never,
-    #[custom_arm(FROM_TYPE::Alias(alias_kind, alias_ty) => Alias::from(s, alias_kind, alias_ty),)]
+    #[custom_arm(FROM_TYPE::Alias(alias_ty) => Alias::from(s, alias_ty),)]
     Alias(Alias),
     Param(ParamTy),
     Bound(BoundVarIndexKind, BoundTy),
@@ -932,7 +925,13 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         let Term::Ty(ty) = proj.skip_binder().term.sinto(s) else {
                             unreachable!()
                         };
-                        let item = tcx.associated_item(alias_ty.def_id);
+                        let def_id = match alias_ty.kind {
+                            rustc_type_ir::AliasTyKind::Projection { def_id } => def_id,
+                            rustc_type_ir::AliasTyKind::Inherent { def_id } => def_id,
+                            rustc_type_ir::AliasTyKind::Opaque { def_id } => def_id,
+                            rustc_type_ir::AliasTyKind::Free { def_id } => def_id,
+                        };
+                        let item = tcx.associated_item(def_id);
                         ProjectionPredicate {
                             impl_expr,
                             assoc_item: AssocItem::sfrom(s, &item),
@@ -1227,7 +1226,13 @@ impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate>
         let Term::Ty(ty) = self.term.sinto(s) else {
             unreachable!()
         };
-        let item = tcx.associated_item(alias_ty.def_id);
+        let def_id = match alias_ty.kind {
+            rustc_type_ir::AliasTyKind::Projection { def_id } => def_id,
+            rustc_type_ir::AliasTyKind::Inherent { def_id } => def_id,
+            rustc_type_ir::AliasTyKind::Opaque { def_id } => def_id,
+            rustc_type_ir::AliasTyKind::Free { def_id } => def_id,
+        };
+        let item = tcx.associated_item(def_id);
         ProjectionPredicate {
             impl_expr: solve_trait(s, poly_trait_ref),
             assoc_item: AssocItem::sfrom(s, &item),

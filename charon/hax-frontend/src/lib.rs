@@ -1,5 +1,4 @@
 #![allow(rustdoc::private_intra_doc_links)]
-#![feature(if_let_guard)]
 #![feature(macro_metavar_expr)]
 #![feature(rustc_private)]
 #![feature(sized_hierarchy)]

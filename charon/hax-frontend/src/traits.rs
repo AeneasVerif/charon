@@ -224,7 +224,7 @@ pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
 pub fn inherits_parent_clauses<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> bool {
     use rustc_hir::def::DefKind::*;
     match tcx.def_kind(def_id) {
-        AssocTy | AssocFn | AssocConst | Closure | Ctor(..) | Variant | AnonConst | InlineConst => {
+        AssocTy { .. } | AssocFn { .. } | AssocConst { .. } | Closure { .. } | Ctor(..) | Variant | AnonConst { .. } | InlineConst { .. } => {
             true
         }
         _ => false,

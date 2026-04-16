@@ -1,5 +1,3 @@
-#![feature(box_patterns)]
-
 use charon_lib::llbc_ast::*;
 use itertools::Itertools;
 use std::collections::HashMap;

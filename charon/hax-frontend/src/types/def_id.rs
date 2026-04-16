@@ -20,8 +20,6 @@ sinto_reexport!(rustc_span::symbol::Symbol);
 sinto_reexport!(rustc_span::symbol::ByteSymbol);
 
 /// Reflects [`rustc_hir::def::DefKind`]
-#[derive(AdtInto)]
-#[args(<S>, from: rustc_hir::def::DefKind, state: S as tcx)]
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub enum DefKind {
     Mod,
@@ -52,7 +50,6 @@ pub enum DefKind {
     ForeignMod,
     AnonConst,
     InlineConst,
-    #[disable_mapping]
     /// Added by hax: promoted constants don't have def_ids in rustc but they do in hax.
     PromotedConst,
     OpaqueTy,
@@ -64,6 +61,49 @@ pub enum DefKind {
     },
     Closure,
     SyntheticCoroutineBody,
+}
+
+impl<S> SInto<S, DefKind> for rustc_hir::def::DefKind {
+    fn sinto(&self, s: &S) -> DefKind {
+        use rustc_hir::def::DefKind as RDefKind;
+        match self {
+            RDefKind::Mod => DefKind::Mod,
+            RDefKind::Struct => DefKind::Struct,
+            RDefKind::Union => DefKind::Union,
+            RDefKind::Enum => DefKind::Enum,
+            RDefKind::Variant => DefKind::Variant,
+            RDefKind::Trait => DefKind::Trait,
+            RDefKind::TyAlias => DefKind::TyAlias,
+            RDefKind::ForeignTy => DefKind::ForeignTy,
+            RDefKind::TraitAlias => DefKind::TraitAlias,
+            RDefKind::AssocTy => DefKind::AssocTy,
+            RDefKind::TyParam => DefKind::TyParam,
+            RDefKind::Fn => DefKind::Fn,
+            RDefKind::Const { .. } => DefKind::Const,
+            RDefKind::ConstParam => DefKind::ConstParam,
+            RDefKind::Static { safety, mutability, nested } => DefKind::Static {
+                safety: safety.sinto(s),
+                mutability: mutability.sinto(s),
+                nested: *nested,
+            },
+            RDefKind::Ctor(of, kind) => DefKind::Ctor(of.sinto(s), kind.sinto(s)),
+            RDefKind::AssocFn => DefKind::AssocFn,
+            RDefKind::AssocConst { .. } => DefKind::AssocConst,
+            RDefKind::Macro(kind) => DefKind::Macro(kind.sinto(s)),
+            RDefKind::ExternCrate => DefKind::ExternCrate,
+            RDefKind::Use => DefKind::Use,
+            RDefKind::ForeignMod => DefKind::ForeignMod,
+            RDefKind::AnonConst => DefKind::AnonConst,
+            RDefKind::InlineConst => DefKind::InlineConst,
+            RDefKind::OpaqueTy => DefKind::OpaqueTy,
+            RDefKind::Field => DefKind::Field,
+            RDefKind::LifetimeParam => DefKind::LifetimeParam,
+            RDefKind::GlobalAsm => DefKind::GlobalAsm,
+            RDefKind::Impl { of_trait } => DefKind::Impl { of_trait: *of_trait },
+            RDefKind::Closure => DefKind::Closure,
+            RDefKind::SyntheticCoroutineBody => DefKind::SyntheticCoroutineBody,
+        }
+    }
 }
 
 pub use rustc_middle::mir::Promoted as PromotedId;

@@ -342,7 +342,7 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
     | RVar var ->
         let dbid, varid =
           match var with
-          | Bound (dbid, varid) -> (dbid, varid)
+          | Bound (dbid, varid) -> (dbid.index, varid)
           | Free varid -> (List.length m.rmap.bound_regions - 1, varid)
         in
         begin
@@ -457,7 +457,7 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
      element, use the monomorphized args and continue matching without that
      element *)
   let n, g =
-    match List.rev n with
+    match List.rev n.name with
     | PeInstantiated binder :: rest_rev ->
         let mono_args = binder.binder_value in
         (* In this case, we may still have some late-bound generics in `g`, this could ONLY happen for regions *)
@@ -475,7 +475,7 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
           else mono_args
         in
         (List.rev rest_rev, merged_args)
-    | _ -> (n, g)
+    | _ -> (n.name, g)
   in
   match (p, n) with
   | [], [] ->
@@ -511,7 +511,7 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
       pid = id
       && T.Disambiguator.of_int pd = d
       && pg = []
-      && match_name_with_generics ctx c p n g
+      && match_name_with_generics ctx c p { name = n } g
   | PImpl pty :: p, PeImpl impl :: n -> (
       (* We have to distinguish two cases:
          - the impl is an inherent impl (linked to a type)
@@ -520,13 +520,13 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
       match impl with
       | ImplElemTy bound_ty ->
           match_expr_with_ty ctx c (mk_empty_maps ()) pty bound_ty.binder_value
-          && match_name_with_generics ctx c p n g
+          && match_name_with_generics ctx c p { name = n } g
       | ImplElemTrait impl_id ->
           match_expr_with_trait_impl_id ctx c pty impl_id
-          && match_name_with_generics ctx c p n g)
+          && match_name_with_generics ctx c p { name = n } g)
   | PWild :: p, _ :: n ->
       (* Wildcard: skip this element in the name *)
-      match_name_with_generics ctx c p n g
+      match_name_with_generics ctx c p { name = n } g
   | _ -> false
 
 and match_name (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
@@ -733,7 +733,7 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
   match func.kind with
   | FunId (FBuiltin fid) -> (
       let to_name (s : string list) : T.name =
-        List.map (fun s -> T.PeIdent (s, T.Disambiguator.of_int 0)) s
+        { name = List.map (fun s -> T.PeIdent (s, T.Disambiguator.of_int 0)) s }
       in
       match fid with
       | BoxNew -> (
@@ -841,7 +841,7 @@ let lookup_var_in_maps (m : constraints)
     'a option =
   let dbid, varid =
     match var with
-    | Bound (dbid, varid) -> (dbid, varid)
+    | Bound (dbid, varid) -> (dbid.index, varid)
     | Free varid -> (List.length m - 1, varid)
   in
   match List.nth_opt m dbid with
@@ -956,12 +956,12 @@ let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
 let rec name_with_generic_args_to_pattern_aux (ctx : 'fun_body ctx)
     (c : to_pat_config) (n : T.name) (generics : generic_args option) : pattern
     =
-  match n with
+  match n.name with
   | [] -> raise (Failure "Empty names are not valid")
   | [ e ] -> path_elem_with_generic_args_to_pattern ctx c e generics
-  | e :: n ->
+  | e :: n_tail ->
       path_elem_with_generic_args_to_pattern ctx c e None
-      @ name_with_generic_args_to_pattern_aux ctx c n generics
+      @ name_with_generic_args_to_pattern_aux ctx c { name = n_tail } generics
 
 and name_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config) (n : T.name) :
     pattern =
@@ -1490,20 +1490,21 @@ module NameMatcherMap = struct
   let match_name_with_generics_prefix (ctx : 'fun_body ctx) (c : match_config)
       (p : pattern) (n : T.name) (g : T.generic_args) :
       (T.name * T.generic_args) option =
-    if List.length p = List.length n then
+    if List.length p = List.length n.name then
       if match_name_with_generics ctx c p n g then
-        Some ([], TypesUtils.empty_generic_args)
+        Some ({ name = [] }, TypesUtils.empty_generic_args)
       else None
-    else if List.length p < List.length n then
-      let npre, nend = Collections.List.split_at n (List.length p) in
-      if match_name ctx c p npre then Some (nend, g) else None
+    else if List.length p < List.length n.name then
+      let npre, nend = Collections.List.split_at n.name (List.length p) in
+      if match_name ctx c p { name = npre } then Some ({ name = nend }, g)
+      else None
     else None
 
   let rec find_with_generics_opt (ctx : 'fun_body ctx) (c : match_config)
       (name : Types.name) (g : Types.generic_args) (m : 'a t) : 'a option =
     let (Node (node_v, children)) = m in
     (* Check if we reached the destination *)
-    match name with
+    match name.name with
     | [] | [ PeInstantiated _ ] ->
         (* For tree search, we also consider monomorphized elements as terminal
            since they represent instantiation details, not logical structure.

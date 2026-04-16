@@ -19,11 +19,11 @@ where
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
-    fn assert_receiver_is_total_eq<'_0_1> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_1, Self>[Self]
+    fn assert_fields_are_eq<'_0_1> = core::cmp::Eq::assert_fields_are_eq<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
-pub fn core::cmp::Eq::assert_receiver_is_total_eq<'_0, Self>(_1: &'_0 Self)
+pub fn core::cmp::Eq::assert_fields_are_eq<'_0, Self>(_1: &'_0 Self)
 where
     [@TraitClause0]: Eq<Self>,
 = <opaque>
@@ -106,8 +106,8 @@ enum Foo {
   B,
 }
 
-// Full name: test_crate::{impl Eq for Foo}::assert_receiver_is_total_eq
-pub fn {impl Eq for Foo}::assert_receiver_is_total_eq<'_0>(_1: &'_0 Foo)
+// Full name: test_crate::{impl Eq for Foo}::assert_fields_are_eq
+pub fn {impl Eq for Foo}::assert_fields_are_eq<'_0>(_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -161,7 +161,7 @@ impl PartialEq<Foo> for Foo {
 // Full name: test_crate::{impl Eq for Foo}
 impl Eq for Foo {
     parent_clause0 = {impl PartialEq<Foo> for Foo}
-    fn assert_receiver_is_total_eq<'_0_1> = {impl Eq for Foo}::assert_receiver_is_total_eq<'_0_1>
+    fn assert_fields_are_eq<'_0_1> = {impl Eq for Foo}::assert_fields_are_eq<'_0_1>
     non-dyn-compatible
 }
 

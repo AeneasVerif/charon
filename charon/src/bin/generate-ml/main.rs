@@ -6,7 +6,6 @@
 //!
 //! To run it, call `cargo run --bin generate-ml`. It is also run by `make generate-ml` in the
 //! crate root. Don't forget to format the output code after regenerating.
-#![feature(if_let_guard)]
 
 use anyhow::{Context, Result, bail};
 use assert_cmd::cargo::CommandCargoExt;
@@ -555,6 +554,16 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
         TypeDeclKind::Union(..) => todo!(),
         TypeDeclKind::Opaque => todo!(),
         TypeDeclKind::Error(_) => todo!(),
+    };
+    let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
+    let branches = if ty_name == "name" {
+        format!(
+            "{branches}\n| `List _ ->\n  let* name = list_of_json path_elem_of_json ctx js in\n  Ok ({{ name }} : name)"
+        )
+    } else if ty_name == "de_bruijn_id" {
+        format!("{branches}\n| `Int i -> Ok ({{ index = i }} : de_bruijn_id)")
+    } else {
+        branches
     };
     build_function(ctx, decl, &branches)
 }

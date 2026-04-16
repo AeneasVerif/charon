@@ -47,7 +47,7 @@ fn fn_casts() {
 }
 
 fn boxes() {
-    let _ = std::boxed::box_new(42);
+    let _ = Box::new(42);
 }
 
 // We force stealing to get the optimized_mir of the function. Optimizing the whole file would

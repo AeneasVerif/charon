@@ -1,9 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::alloc::layout::Layout
-#[lang_item("alloc_layout")]
-pub opaque type Layout
-
 // Full name: core::ffi::c_void
 #[lang_item("c_void")]
 pub enum c_void {
@@ -34,113 +30,6 @@ pub trait Sized<Self>
 // Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
 pub struct PhantomData<T> {}
-
-// Full name: core::ptr::alignment::Alignment
-pub opaque type Alignment
-
-// Full name: core::mem::SizedTypeProperties
-pub trait SizedTypeProperties<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    const SIZE : usize
-    const ALIGN : usize
-    const ALIGNMENT : Alignment
-    const IS_ZST : bool
-    const LAYOUT : Layout
-    const MAX_SLICE_LEN : usize
-    non-dyn-compatible
-}
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub fn SIZE<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub const SIZE<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = SIZE()
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub fn ALIGN<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub const ALIGN<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = ALIGN()
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub fn ALIGNMENT<Self>() -> Alignment
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub const ALIGNMENT<Self>: Alignment
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = ALIGNMENT()
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub fn IS_ZST<Self>() -> bool
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub const IS_ZST<Self>: bool
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = IS_ZST()
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub fn LAYOUT<Self>() -> Layout
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub const LAYOUT<Self>: Layout
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = LAYOUT()
-
-// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
-pub fn MAX_SLICE_LEN<Self>() -> usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
-pub const MAX_SLICE_LEN<Self>: usize
-where
-    [@TraitClause0]: SizedTypeProperties<Self>,
- = MAX_SLICE_LEN()
-
-// Full name: core::mem::{impl SizedTypeProperties for T}
-impl<T> SizedTypeProperties for T
-where
-    [@TraitClause0]: Sized<T>,
-{
-    parent_clause0 = @TraitClause0
-    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    non-dyn-compatible
-}
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -216,67 +105,69 @@ pub fn advance_slices<'a, '_1, '_2>(_1: &'_1 mut &'_2 mut [std::io::IoSlice<'a>]
     let _16: &'68 mut [std::io::IoSlice<'69>]; // anonymous local
     let len_17: usize; // local
     let ptr_18: NonNull<std::io::IoSlice<'71>>; // local
-    let end_or_len_19: *const std::io::IoSlice<'73>; // local
-    let _20: *mut std::io::IoSlice<'75>; // anonymous local
-    let self_21: *mut std::io::IoSlice<'76>; // local
-    let self_22: *const [std::io::IoSlice<'78>]; // local
-    let _23: *const std::io::IoSlice<'79>; // anonymous local
-    let ptr_24: NonNull<std::io::IoSlice<'80>>; // local
-    let end_or_len_25: *const std::io::IoSlice<'81>; // local
-    let _26: bool; // anonymous local
-    let _27: NonNull<std::io::IoSlice<'88>>; // anonymous local
-    let _28: NonNull<std::io::IoSlice<'89>>; // anonymous local
-    let _29: &'90 std::io::IoSlice<'91>; // anonymous local
-    let _30: *mut std::io::IoSlice<'94>; // anonymous local
-    let _31: *mut std::io::IoSlice<'95>; // anonymous local
-    let _32: *const std::io::IoSlice<'96>; // anonymous local
-    let _33: *const std::io::IoSlice<'97>; // anonymous local
-    let data_34: *const u8; // local
-    let _35: *mut c_void; // anonymous local
-    let len_36: usize; // local
-    let _37: (); // anonymous local
-    let _38: *mut (); // anonymous local
-    let _39: bool; // anonymous local
-    let _40: usize; // anonymous local
-    let src_41: &'103 mut [std::io::IoSlice<'104>]; // local
-    let _42: bool; // anonymous local
-    let _43: usize; // anonymous local
-    let _44: !; // anonymous local
-    let new_len_45: usize; // local
-    let _46: *mut [std::io::IoSlice<'106>]; // anonymous local
-    let ptr_47: *mut [std::io::IoSlice<'107>]; // local
-    let _48: *mut std::io::IoSlice<'108>; // anonymous local
-    let _49: *mut std::io::IoSlice<'109>; // anonymous local
-    let _50: usize; // anonymous local
-    let s_51: &'111 Str; // local
-    let _52: NonNull<u8>; // anonymous local
-    let _53: *const u8; // anonymous local
-    let _54: NonNull<Argument<'114>>; // anonymous local
-    let _55: usize; // anonymous local
-    let _56: usize; // anonymous local
+    let self_19: NonNull<[std::io::IoSlice<'73>]>; // local
+    let end_or_len_20: *const std::io::IoSlice<'75>; // local
+    let _21: *mut std::io::IoSlice<'77>; // anonymous local
+    let self_22: *mut std::io::IoSlice<'78>; // local
+    let _23: *const [std::io::IoSlice<'80>]; // anonymous local
+    let _24: *mut std::io::IoSlice<'81>; // anonymous local
+    let _25: *mut [std::io::IoSlice<'83>]; // anonymous local
+    let ptr_26: NonNull<std::io::IoSlice<'84>>; // local
+    let end_or_len_27: *const std::io::IoSlice<'85>; // local
+    let _28: bool; // anonymous local
+    let _29: NonNull<std::io::IoSlice<'92>>; // anonymous local
+    let _30: NonNull<std::io::IoSlice<'93>>; // anonymous local
+    let _31: &'94 std::io::IoSlice<'95>; // anonymous local
+    let _32: *mut std::io::IoSlice<'98>; // anonymous local
+    let _33: *mut std::io::IoSlice<'99>; // anonymous local
+    let _34: *mut std::io::IoSlice<'100>; // anonymous local
+    let _35: *const std::io::IoSlice<'101>; // anonymous local
+    let data_36: *const u8; // local
+    let _37: *mut c_void; // anonymous local
+    let len_38: usize; // local
+    let _39: (); // anonymous local
+    let _40: *mut (); // anonymous local
+    let _41: bool; // anonymous local
+    let _42: usize; // anonymous local
+    let src_43: &'107 mut [std::io::IoSlice<'108>]; // local
+    let _44: bool; // anonymous local
+    let _45: usize; // anonymous local
+    let _46: !; // anonymous local
+    let new_len_47: usize; // local
+    let _48: *mut [std::io::IoSlice<'109>]; // anonymous local
+    let ptr_49: *mut [std::io::IoSlice<'110>]; // local
+    let _50: *mut std::io::IoSlice<'111>; // anonymous local
+    let _51: *mut std::io::IoSlice<'112>; // anonymous local
+    let _52: usize; // anonymous local
+    let s_53: &'114 Str; // local
+    let _54: NonNull<u8>; // anonymous local
+    let _55: *const u8; // anonymous local
+    let _56: NonNull<Argument<'117>>; // anonymous local
     let _57: usize; // anonymous local
-    let _58: *const Str; // anonymous local
-    let _59: &'116 [u8]; // anonymous local
-    let _60: bool; // anonymous local
-    let _61: usize; // anonymous local
-    let _62: Arguments<'121>; // anonymous local
-    let _63: *mut c_void; // anonymous local
-    let self_64: *mut c_void; // local
-    let s_65: &'122 Str; // local
-    let _66: NonNull<u8>; // anonymous local
-    let _67: *const u8; // anonymous local
-    let _68: NonNull<Argument<'123>>; // anonymous local
-    let _69: usize; // anonymous local
-    let _70: usize; // anonymous local
+    let _58: usize; // anonymous local
+    let _59: usize; // anonymous local
+    let _60: *const Str; // anonymous local
+    let _61: &'119 [u8]; // anonymous local
+    let _62: bool; // anonymous local
+    let _63: usize; // anonymous local
+    let _64: Arguments<'124>; // anonymous local
+    let _65: *mut c_void; // anonymous local
+    let self_66: *mut c_void; // local
+    let s_67: &'125 Str; // local
+    let _68: NonNull<u8>; // anonymous local
+    let _69: *const u8; // anonymous local
+    let _70: NonNull<Argument<'126>>; // anonymous local
     let _71: usize; // anonymous local
-    let _72: *const Str; // anonymous local
-    let _73: &'124 [u8]; // anonymous local
-    let _74: bool; // anonymous local
-    let _75: &'226 mut [std::io::IoSlice<'178>; 0 : usize]; // anonymous local
-    let _76: [std::io::IoSlice<'178>; 0 : usize]; // anonymous local
-    let _77: PhantomData<&'134 std::io::IoSlice<'135>>; // anonymous local
-    let _78: &'_ mut [std::io::IoSlice<'209>]; // anonymous local
-    let _79: &'_ mut std::io::IoSlice<'209>; // anonymous local
+    let _72: usize; // anonymous local
+    let _73: usize; // anonymous local
+    let _74: *const Str; // anonymous local
+    let _75: &'127 [u8]; // anonymous local
+    let _76: bool; // anonymous local
+    let _77: &'231 mut [std::io::IoSlice<'183>; 0 : usize]; // anonymous local
+    let _78: [std::io::IoSlice<'183>; 0 : usize]; // anonymous local
+    let _79: PhantomData<&'139 std::io::IoSlice<'140>>; // anonymous local
+    let _80: &'_ mut [std::io::IoSlice<'214>]; // anonymous local
+    let _81: &'_ mut std::io::IoSlice<'214>; // anonymous local
 
     storage_live(remove_3)
     storage_live(iter_4)
@@ -288,110 +179,119 @@ pub fn advance_slices<'a, '_1, '_2>(_1: &'_1 mut &'_2 mut [std::io::IoSlice<'a>]
     storage_live(self_14)
     storage_live(_15)
     storage_live(_16)
-    storage_live(self_22)
-    storage_live(_33)
-    storage_live(len_36)
-    storage_live(_37)
-    storage_live(_44)
+    storage_live(len_38)
+    storage_live(_39)
+    storage_live(_46)
     _0 = ()
     remove_3 = const 0 : usize
     self_13 = copy (*bufs_1)
     storage_live(len_17)
     storage_live(ptr_18)
-    storage_live(end_or_len_19)
+    storage_live(end_or_len_20)
     len_17 = copy self_13.metadata
-    self_22 = &raw const (*self_13) with_metadata(copy self_13.metadata)
+    storage_live(self_19)
     storage_live(_23)
-    _23 = cast<*const [std::io::IoSlice<'78>], *const std::io::IoSlice<'128>>(copy self_22)
-    ptr_18 = NonNull { 0: copy _23 }
+    _23 = &raw const (*self_13) with_metadata(copy self_13.metadata)
+    self_19 = transmute<*const [std::io::IoSlice<'80>], NonNull<[std::io::IoSlice<'131>]>>(copy _23)
     storage_dead(_23)
-    storage_live(_20)
-    storage_live(self_21)
-    self_21 = cast<*const [std::io::IoSlice<'78>], *mut std::io::IoSlice<'130>>(copy self_22)
-    _20 = copy self_21 offset copy len_17
-    storage_dead(self_21)
-    end_or_len_19 = cast<*mut std::io::IoSlice<'75>, *const std::io::IoSlice<'131>>(copy _20)
-    storage_dead(_20)
-    storage_live(_77)
-    _77 = PhantomData {  }
-    iter_4 = Iter { 0: copy ptr_18, 1: copy end_or_len_19, 2: move _77 }
-    storage_dead(end_or_len_19)
+    storage_live(_24)
+    storage_live(_25)
+    _25 = transmute<NonNull<[std::io::IoSlice<'73>]>, *mut [std::io::IoSlice<'132>]>(copy self_19)
+    _24 = cast<*mut [std::io::IoSlice<'83>], *mut std::io::IoSlice<'133>>(copy _25)
+    storage_dead(_25)
+    ptr_18 = transmute<*mut std::io::IoSlice<'81>, NonNull<std::io::IoSlice<'134>>>(copy _24)
+    storage_dead(_24)
+    storage_dead(self_19)
+    storage_live(_21)
+    storage_live(self_22)
+    self_22 = transmute<NonNull<std::io::IoSlice<'71>>, *mut std::io::IoSlice<'135>>(copy ptr_18)
+    _21 = copy self_22 offset copy len_17
+    storage_dead(self_22)
+    end_or_len_20 = cast<*mut std::io::IoSlice<'77>, *const std::io::IoSlice<'136>>(copy _21)
+    storage_dead(_21)
+    storage_live(_79)
+    _79 = PhantomData {  }
+    iter_4 = Iter { 0: copy ptr_18, 1: copy end_or_len_20, 2: move _79 }
+    storage_dead(end_or_len_20)
     storage_dead(ptr_18)
     storage_dead(len_17)
     loop {
         storage_live(_5)
-        storage_live(ptr_24)
-        storage_live(end_or_len_25)
-        storage_live(_27)
+        storage_live(ptr_26)
+        storage_live(end_or_len_27)
         storage_live(_29)
-        ptr_24 = copy (iter_4).0
-        end_or_len_25 = copy (iter_4).1
-        storage_live(_26)
-        _27 = transmute<*const std::io::IoSlice<'81>, NonNull<std::io::IoSlice<'144>>>(copy end_or_len_25)
-        storage_live(_30)
-        _30 = transmute<NonNull<std::io::IoSlice<'80>>, *mut std::io::IoSlice<'145>>(copy ptr_24)
         storage_live(_31)
-        _31 = transmute<NonNull<std::io::IoSlice<'88>>, *mut std::io::IoSlice<'146>>(copy _27)
-        _26 = copy _30 == copy _31
-        storage_dead(_31)
-        storage_dead(_30)
-        if move _26 {
-            storage_dead(_26)
+        storage_live(_32)
+        ptr_26 = copy (iter_4).0
+        end_or_len_27 = copy (iter_4).1
+        storage_live(_28)
+        _29 = transmute<*const std::io::IoSlice<'85>, NonNull<std::io::IoSlice<'149>>>(copy end_or_len_27)
+        _32 = transmute<NonNull<std::io::IoSlice<'84>>, *mut std::io::IoSlice<'150>>(copy ptr_26)
+        storage_live(_33)
+        _33 = transmute<NonNull<std::io::IoSlice<'92>>, *mut std::io::IoSlice<'151>>(copy _29)
+        _28 = copy _32 == copy _33
+        storage_dead(_33)
+        if move _28 {
+            storage_dead(_28)
+            storage_dead(_32)
+            storage_dead(_31)
             storage_dead(_29)
-            storage_dead(_27)
-            storage_dead(end_or_len_25)
-            storage_dead(ptr_24)
+            storage_dead(end_or_len_27)
+            storage_dead(ptr_26)
             break 0
         } else {
-            storage_dead(_26)
-            storage_live(_28)
-            storage_live(_32)
-            _33 = transmute<NonNull<std::io::IoSlice<'80>>, *const std::io::IoSlice<'147>>(copy ptr_24)
-            _32 = copy _33 offset const 1 : usize
-            _28 = NonNull { 0: copy _32 }
-            storage_dead(_32)
-            (iter_4).0 = move _28
             storage_dead(_28)
-            _29 = &(*_33)
-            _5 = Option::Some { 0: copy _29 }
+            storage_live(_30)
+            storage_live(_34)
+            _34 = copy _32 offset const 1 : usize
+            _30 = transmute<*mut std::io::IoSlice<'100>, NonNull<std::io::IoSlice<'152>>>(copy _34)
+            storage_dead(_34)
+            (iter_4).0 = move _30
+            storage_dead(_30)
+            storage_live(_35)
+            _35 = transmute<NonNull<std::io::IoSlice<'84>>, *const std::io::IoSlice<'154>>(copy ptr_26)
+            _31 = &(*_35)
+            storage_dead(_35)
+            _5 = Option::Some { 0: copy _31 }
+            storage_dead(_32)
+            storage_dead(_31)
             storage_dead(_29)
-            storage_dead(_27)
-            storage_dead(end_or_len_25)
-            storage_dead(ptr_24)
+            storage_dead(end_or_len_27)
+            storage_dead(ptr_26)
             buf_6 = copy (_5 as variant Option::Some).0
             storage_live(_7)
             storage_live(self_8)
             self_8 = copy n_2
-            storage_live(_35)
-            storage_live(data_34)
-            _35 = copy ((((*buf_6)).0).0).iov_base
-            data_34 = cast<*mut c_void, *const u8>(copy _35)
-            len_36 = copy ((((*buf_6)).0).0).iov_len
-            storage_live(_74)
-            _74 = ub_checks<bool>
-            if move _74 {
-                storage_live(_38)
-                _38 = cast<*mut c_void, *mut ()>(copy _35)
-                _37 = precondition_check(move _38, const {impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::SIZE, const {impl SizedTypeProperties for T}<u8>[{built_in impl Sized for u8}]::ALIGN, copy len_36)
-                storage_dead(_38)
+            storage_live(_37)
+            storage_live(data_36)
+            _37 = copy ((((*buf_6)).0).0).iov_base
+            data_36 = cast<*mut c_void, *const u8>(copy _37)
+            len_38 = copy ((((*buf_6)).0).0).iov_len
+            storage_live(_76)
+            _76 = ub_checks<bool>
+            if move _76 {
+                storage_live(_40)
+                _40 = cast<*mut c_void, *mut ()>(copy _37)
+                _39 = precondition_check(move _40, const 1 : usize, const 1 : usize, copy len_38)
+                storage_dead(_40)
             } else {
             }
-            storage_dead(data_34)
-            storage_dead(_35)
-            storage_live(_39)
-            _39 = copy self_8 < copy len_36
-            if move _39 {
-                storage_dead(_39)
+            storage_dead(data_36)
+            storage_dead(_37)
+            storage_live(_41)
+            _41 = copy self_8 < copy len_38
+            if move _41 {
+                storage_dead(_41)
                 storage_dead(self_8)
                 storage_dead(_7)
                 break 0
             } else {
             }
-            storage_live(_40)
-            _40 = copy self_8 ub.- copy len_36
-            _7 = Option::Some { 0: move _40 }
-            storage_dead(_40)
-            storage_dead(_39)
+            storage_live(_42)
+            _42 = copy self_8 ub.- copy len_38
+            _7 = Option::Some { 0: move _42 }
+            storage_dead(_42)
+            storage_dead(_41)
             storage_dead(self_8)
             n_2 = copy (_7 as variant Option::Some).0
             remove_3 = copy remove_3 wrap.+ const 1 : usize
@@ -400,147 +300,147 @@ pub fn advance_slices<'a, '_1, '_2>(_1: &'_1 mut &'_2 mut [std::io::IoSlice<'a>]
             continue 0
         }
     }
-    storage_live(_75)
-    storage_live(_76)
-    _76 = []
-    _75 = &mut _76
+    storage_live(_77)
+    storage_live(_78)
+    _78 = []
+    _77 = &mut _78
     storage_dead(_5)
-    storage_live(src_41)
-    src_41 = @ArrayToSliceMut<'_, std::io::IoSlice<'187>, 0 : usize>(move _75)
+    storage_live(src_43)
+    src_43 = @ArrayToSliceMut<'_, std::io::IoSlice<'192>, 0 : usize>(move _77)
     self_10 = copy (*bufs_1)
-    (*bufs_1) = copy src_41
-    storage_dead(src_41)
-    storage_live(_43)
-    storage_live(new_len_45)
-    storage_live(_42)
-    _43 = copy self_10.metadata
-    _42 = copy remove_3 > copy _43
-    if move _42 {
+    (*bufs_1) = copy src_43
+    storage_dead(src_43)
+    storage_live(_45)
+    storage_live(new_len_47)
+    storage_live(_44)
+    _45 = copy self_10.metadata
+    _44 = copy remove_3 > copy _45
+    if move _44 {
     } else {
-        storage_dead(_42)
-        new_len_45 = copy _43 ub.- copy remove_3
-        storage_live(_46)
-        storage_live(ptr_47)
-        ptr_47 = &raw mut (*self_10) with_metadata(copy self_10.metadata)
+        storage_dead(_44)
+        new_len_47 = copy _45 ub.- copy remove_3
         storage_live(_48)
-        storage_live(_49)
-        _48 = cast<*mut [std::io::IoSlice<'107>], *mut std::io::IoSlice<'193>>(copy ptr_47)
-        _49 = copy _48 offset copy remove_3
-        _46 = @PtrFromPartsMut<'_, [std::io::IoSlice<'194>]>(copy _49, copy new_len_45)
-        storage_dead(_49)
+        storage_live(ptr_49)
+        ptr_49 = &raw mut (*self_10) with_metadata(copy self_10.metadata)
+        storage_live(_50)
+        storage_live(_51)
+        _50 = cast<*mut [std::io::IoSlice<'110>], *mut std::io::IoSlice<'198>>(copy ptr_49)
+        _51 = copy _50 offset copy remove_3
+        _48 = @PtrFromPartsMut<'_, [std::io::IoSlice<'199>]>(copy _51, copy new_len_47)
+        storage_dead(_51)
+        storage_dead(_50)
+        storage_dead(ptr_49)
+        _9 = &mut (*_48) with_metadata(copy _48.metadata)
         storage_dead(_48)
-        storage_dead(ptr_47)
-        _9 = &mut (*_46) with_metadata(copy _46.metadata)
-        storage_dead(_46)
-        storage_dead(new_len_45)
-        storage_dead(_43)
+        storage_dead(new_len_47)
+        storage_dead(_45)
         (*bufs_1) = copy _9
         self_14 = copy (*bufs_1)
-        storage_live(_50)
-        _50 = copy self_14.metadata
-        switch copy _50 {
+        storage_live(_52)
+        _52 = copy self_14.metadata
+        switch copy _52 {
             0 : usize => {
             },
             _ => {
-                storage_dead(_50)
+                storage_dead(_52)
                 _15 = copy (*bufs_1)
                 _16 = copy (*bufs_1)
-                storage_live(_78)
-                _78 = &mut (*_16) with_metadata(copy _16.metadata)
-                storage_live(_79)
-                _79 = @SliceIndexMut<'_, std::io::IoSlice<'209>>(move _78, const 0 : usize)
-                self_12 = &two-phase-mut (*_79)
-                storage_live(_60)
-                storage_live(_61)
-                _61 = copy ((((*self_12)).0).0).iov_len
-                _60 = move _61 < copy n_2
-                if move _60 {
+                storage_live(_80)
+                _80 = &mut (*_16) with_metadata(copy _16.metadata)
+                storage_live(_81)
+                _81 = @SliceIndexMut<'_, std::io::IoSlice<'214>>(move _80, const 0 : usize)
+                self_12 = &two-phase-mut (*_81)
+                storage_live(_62)
+                storage_live(_63)
+                _63 = copy ((((*self_12)).0).0).iov_len
+                _62 = move _63 < copy n_2
+                if move _62 {
                 } else {
-                    storage_dead(_61)
-                    storage_dead(_60)
-                    ((((*self_12)).0).0).iov_len = copy ((((*self_12)).0).0).iov_len wrap.- copy n_2
-                    storage_live(_63)
-                    storage_live(self_64)
-                    self_64 = copy ((((*self_12)).0).0).iov_base
-                    _63 = copy self_64 offset copy n_2
-                    storage_dead(self_64)
-                    ((((*self_12)).0).0).iov_base = copy _63
                     storage_dead(_63)
+                    storage_dead(_62)
+                    ((((*self_12)).0).0).iov_len = copy ((((*self_12)).0).0).iov_len wrap.- copy n_2
+                    storage_live(_65)
+                    storage_live(self_66)
+                    self_66 = copy ((((*self_12)).0).0).iov_base
+                    _65 = copy self_66 offset copy n_2
+                    storage_dead(self_66)
+                    ((((*self_12)).0).0).iov_base = copy _65
+                    storage_dead(_65)
                     return
                 }
-                storage_dead(_61)
-                storage_live(_62)
-                storage_live(s_65)
-                s_65 = const "advancing IoSlice beyond its length"
-                storage_live(_66)
-                storage_live(_67)
-                storage_live(_72)
-                _72 = &raw const (*s_65) with_metadata(copy s_65.metadata)
-                _67 = cast<*const Str, *const u8>(copy _72)
-                storage_dead(_72)
-                _66 = transmute<*const u8, NonNull<u8>>(copy _67)
-                storage_dead(_67)
+                storage_dead(_63)
+                storage_live(_64)
+                storage_live(s_67)
+                s_67 = const "advancing IoSlice beyond its length"
                 storage_live(_68)
                 storage_live(_69)
+                storage_live(_74)
+                _74 = &raw const (*s_67) with_metadata(copy s_67.metadata)
+                _69 = cast<*const Str, *const u8>(copy _74)
+                storage_dead(_74)
+                _68 = transmute<*const u8, NonNull<u8>>(copy _69)
+                storage_dead(_69)
                 storage_live(_70)
                 storage_live(_71)
+                storage_live(_72)
                 storage_live(_73)
-                _73 = transmute<&'215 Str, &'214 [u8]>(const "advancing IoSlice beyond its length")
-                _71 = copy _73.metadata
+                storage_live(_75)
+                _75 = transmute<&'220 Str, &'219 [u8]>(const "advancing IoSlice beyond its length")
+                _73 = copy _75.metadata
+                storage_dead(_75)
+                _72 = move _73 wrap.<< const 1 : i32
                 storage_dead(_73)
-                _70 = move _71 wrap.<< const 1 : i32
+                _71 = move _72 | const 1 : usize
+                storage_dead(_72)
+                _70 = transmute<usize, NonNull<Argument<'221>>>(move _71)
                 storage_dead(_71)
-                _69 = move _70 | const 1 : usize
+                _64 = Arguments { 0: move _68, 1: move _70 }
                 storage_dead(_70)
-                _68 = transmute<usize, NonNull<Argument<'216>>>(move _69)
-                storage_dead(_69)
-                _62 = Arguments { 0: move _66, 1: move _68 }
                 storage_dead(_68)
-                storage_dead(_66)
-                storage_dead(s_65)
+                storage_dead(s_67)
                 panic(core::panicking::panic_fmt)
             },
         }
-        storage_dead(_50)
+        storage_dead(_52)
         switch copy n_2 {
             0 : usize => {
             },
             _ => {
                 storage_live(_11)
-                storage_live(s_51)
-                s_51 = const "advancing io slices beyond their length"
-                storage_live(_52)
-                storage_live(_53)
-                storage_live(_58)
-                _58 = &raw const (*s_51) with_metadata(copy s_51.metadata)
-                _53 = cast<*const Str, *const u8>(copy _58)
-                storage_dead(_58)
-                _52 = transmute<*const u8, NonNull<u8>>(copy _53)
-                storage_dead(_53)
+                storage_live(s_53)
+                s_53 = const "advancing io slices beyond their length"
                 storage_live(_54)
                 storage_live(_55)
+                storage_live(_60)
+                _60 = &raw const (*s_53) with_metadata(copy s_53.metadata)
+                _55 = cast<*const Str, *const u8>(copy _60)
+                storage_dead(_60)
+                _54 = transmute<*const u8, NonNull<u8>>(copy _55)
+                storage_dead(_55)
                 storage_live(_56)
                 storage_live(_57)
+                storage_live(_58)
                 storage_live(_59)
-                _59 = transmute<&'204 Str, &'203 [u8]>(const "advancing io slices beyond their length")
-                _57 = copy _59.metadata
+                storage_live(_61)
+                _61 = transmute<&'209 Str, &'208 [u8]>(const "advancing io slices beyond their length")
+                _59 = copy _61.metadata
+                storage_dead(_61)
+                _58 = move _59 wrap.<< const 1 : i32
                 storage_dead(_59)
-                _56 = move _57 wrap.<< const 1 : i32
+                _57 = move _58 | const 1 : usize
+                storage_dead(_58)
+                _56 = transmute<usize, NonNull<Argument<'210>>>(move _57)
                 storage_dead(_57)
-                _55 = move _56 | const 1 : usize
+                _11 = Arguments { 0: move _54, 1: move _56 }
                 storage_dead(_56)
-                _54 = transmute<usize, NonNull<Argument<'205>>>(move _55)
-                storage_dead(_55)
-                _11 = Arguments { 0: move _52, 1: move _54 }
                 storage_dead(_54)
-                storage_dead(_52)
-                storage_dead(s_51)
+                storage_dead(s_53)
                 panic(core::panicking::panic_fmt)
             },
         }
         return
     }
-    _44 = slice_index_fail(move remove_3, copy _43, move _43)
+    _46 = slice_index_fail(move remove_3, copy _45, move _45)
 }
 
 // Full name: test_crate::foo

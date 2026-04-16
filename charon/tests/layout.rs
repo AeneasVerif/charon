@@ -1,4 +1,3 @@
-#![feature(box_patterns)]
 use std::path::PathBuf;
 
 use charon_lib::ast::*;

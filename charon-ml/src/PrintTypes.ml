@@ -95,7 +95,7 @@ let lookup_var_in_env (env : 'a fmt_env)
   else
     let dbid, varid =
       match var with
-      | Bound (dbid, varid) -> (dbid, varid)
+      | Bound (dbid, varid) -> (dbid.index, varid)
       | Free varid ->
           let len = List.length env.generics in
           let dbid = len - 1 in
@@ -483,7 +483,7 @@ and path_elem_to_string (env : 'a fmt_env) (e : path_elem) : string =
   | PeTarget target -> target
 
 and name_to_string (env : 'a fmt_env) (n : name) : string =
-  let name = List.map (path_elem_to_string env) n in
+  let name = List.map (path_elem_to_string env) n.name in
   String.concat "::" name
 
 and raw_attribute_to_string (attr : raw_attribute) : string =

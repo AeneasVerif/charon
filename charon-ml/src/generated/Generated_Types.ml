@@ -38,7 +38,7 @@ type trait_type_constraint_id = TraitTypeConstraintId.id
 
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
-type de_bruijn_id = int
+type de_bruijn_id = { index : int }
 
 (** Type-level variable.
 
@@ -985,7 +985,7 @@ and layout = {
 
     Also note that the first path element in the name is always the crate name.
 *)
-and name = (path_elem list[@visitors.opaque])
+and name = { name : path_elem list [@visitors.opaque] }
 
 (** See the comments for [Name] *)
 and path_elem =

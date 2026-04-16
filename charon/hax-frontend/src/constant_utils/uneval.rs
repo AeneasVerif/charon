@@ -3,6 +3,7 @@ use super::*;
 use rustc_const_eval::interpret::{FnVal, InterpResult, interp_ok};
 use rustc_middle::mir::interpret;
 use rustc_middle::{mir, ty};
+use rustc_middle::query::QueryKey;
 
 impl ConstantLiteral {
     /// Rustc always represents string constants as `&[u8]`, but this
@@ -133,7 +134,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                 {
                     val.sinto(s)
                 } else {
-                    use crate::rustc_middle::query::Key;
                     let span = tcx
                         .def_ident_span(ucv.def)
                         .unwrap_or_else(|| ucv.def.default_span(tcx));
@@ -192,7 +192,7 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
             ConstantExprKind::Literal(ConstantLiteral::byte_str(bytes))
         }
         (ty::ValTreeKind::Branch(fields), ty::Array(..) | ty::Slice(..) | ty::Tuple(..)) => {
-            let fields = fields.iter().copied().map(|field| field.sinto(s)).collect();
+            let fields = fields.iter().map(|field| field.sinto(s)).collect();
             match ty.kind() {
                 ty::Array(..) | ty::Slice(..) => ConstantExprKind::Array { fields },
                 ty::Tuple(_) => ConstantExprKind::Tuple { fields },

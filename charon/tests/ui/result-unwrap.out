@@ -10,30 +10,6 @@ pub struct FormattingOptions {
   precision: u16,
 }
 
-// Full name: core::fmt::flags::DEBUG_LOWER_HEX_FLAG
-fn DEBUG_LOWER_HEX_FLAG() -> u32
-{
-    let _0: u32; // return
-
-    _0 = const 1 : u32 panic.<< const 25 : i32
-    return
-}
-
-// Full name: core::fmt::flags::DEBUG_LOWER_HEX_FLAG
-const DEBUG_LOWER_HEX_FLAG: u32 = DEBUG_LOWER_HEX_FLAG()
-
-// Full name: core::fmt::flags::DEBUG_UPPER_HEX_FLAG
-fn DEBUG_UPPER_HEX_FLAG() -> u32
-{
-    let _0: u32; // return
-
-    _0 = const 1 : u32 panic.<< const 26 : i32
-    return
-}
-
-// Full name: core::fmt::flags::DEBUG_UPPER_HEX_FLAG
-const DEBUG_UPPER_HEX_FLAG: u32 = DEBUG_UPPER_HEX_FLAG()
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -103,7 +79,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(_1: &'_0 u32, _2: &'_1 mut Forma
     storage_live(_3)
     storage_live(_4)
     _4 = copy (((*f_2)).0).flags
-    _3 = move _4 & copy DEBUG_LOWER_HEX_FLAG
+    _3 = move _4 & const 33554432 : u32
     storage_dead(_4)
     switch copy _3 {
         0 : u32 => {
@@ -118,7 +94,7 @@ pub fn {impl Debug for u32}::fmt<'_0, '_1, '_2>(_1: &'_0 u32, _2: &'_1 mut Forma
     storage_live(_5)
     storage_live(_6)
     _6 = copy (((*f_2)).0).flags
-    _5 = move _6 & copy DEBUG_UPPER_HEX_FLAG
+    _5 = move _6 & const 67108864 : u32
     storage_dead(_6)
     switch copy _5 {
         0 : u32 => {

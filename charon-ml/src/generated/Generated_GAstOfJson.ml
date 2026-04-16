@@ -695,7 +695,10 @@ and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
     (de_bruijn_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | x -> int_of_json ctx x
+    | `Assoc [ ("index", index) ] ->
+        let* index = int_of_json ctx index in
+        Ok ({ index } : de_bruijn_id)
+    | `Int i -> Ok ({ index = i } : de_bruijn_id)
     | _ -> Error "")
 
 and de_bruijn_var_of_json :
@@ -1483,7 +1486,12 @@ and monomorphize_mut_of_json (ctx : of_json_ctx) (js : json) :
 and name_of_json (ctx : of_json_ctx) (js : json) : (name, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | x -> list_of_json path_elem_of_json ctx x
+    | `Assoc [ ("name", name) ] ->
+        let* name = list_of_json path_elem_of_json ctx name in
+        Ok ({ name } : name)
+    | `List _ ->
+        let* name = list_of_json path_elem_of_json ctx js in
+        Ok ({ name } : name)
     | _ -> Error "")
 
 and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =

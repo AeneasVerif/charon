@@ -117,7 +117,7 @@ pub fn def_path_def_ids<'a, 'tcx>(
                                     items = impls
                                         .filter(|impl_def_id| {
                                             let impl_self_ty = tcx
-                                                .impl_trait_ref(impl_def_id)
+                                                .impl_trait_ref(*impl_def_id)
                                                 .skip_binder()
                                                 .self_ty();
                                             if let ty::Adt(adt_def, _) = impl_self_ty.kind() {

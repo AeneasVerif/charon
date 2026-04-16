@@ -926,7 +926,7 @@ where
                 value: const_value(s, def_id, args_or_default()),
             }
         }
-        RDefKind::AssocConst { .. } => FullDefKind::AssocConst {
+        RDefKind::AssocConst { is_type_const: _ } => FullDefKind::AssocConst {
             param_env: get_param_env(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             ty: type_of_self().sinto(s),
@@ -1181,7 +1181,7 @@ impl FullDef {
             let tcx = s.base().tcx;
             for impl_def_id in tcx.inherent_impls(rust_def_id) {
                 children.extend(
-                    tcx.associated_items(impl_def_id)
+                    tcx.associated_items(*impl_def_id)
                         .in_definition_order()
                         .filter_map(|assoc| Some((assoc.opt_name()?, assoc.def_id).sinto(s))),
                 );
