@@ -192,6 +192,12 @@ pub struct TranslatedCrate {
     #[serde(with = "SeqHashMapToArray::<TargetTriple, TargetInfo>")]
     pub target_information: SeqHashMap<TargetTriple, TargetInfo>,
 
+    /// The translated files. This field must come before any field containing spans,
+    /// as the files must be translated before we can translate any span.
+    #[drive(skip)]
+    #[serde_state(stateless)]
+    pub files: IndexVec<FileId, File>,
+
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
     /// Invariant: after translation, any existing `ItemId` must have an associated name, even
@@ -202,10 +208,6 @@ pub struct TranslatedCrate {
     #[serde(with = "SeqHashMapToArray::<ItemId, Name>")]
     pub short_names: SeqHashMap<ItemId, Name>,
 
-    /// The translated files.
-    #[drive(skip)]
-    #[serde_state(stateless)]
-    pub files: IndexVec<FileId, File>,
     /// The translated type definitions
     pub type_decls: IndexMap<TypeDeclId, TypeDecl>,
     /// The translated function definitions

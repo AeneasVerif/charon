@@ -18,30 +18,6 @@ include Generated_OfJson
 
 let option_list_of_json of_json = list_of_json (option_of_json of_json)
 
-(** Deserialize a map from file id to file name.
-
-    In the serialized LLBC, the files in the loc spans are refered to by their
-    ids, in order to save space. In a functional language like OCaml this is not
-    necessary: we thus replace the file ids by the file name themselves in the
-    AST. The "id to file" map is thus only used in the deserialization process.
-*)
-and id_to_file_of_json (ctx : of_json_ctx) (js : json) :
-    (of_json_ctx, string) result =
-  combine_error_msgs js __FUNCTION__
-    ((* The map is stored as a list of pairs (key, value): we deserialize
-      * this list then convert it to a map *)
-     let* files = list_of_json (option_of_json file_of_json) ctx js in
-     let files_with_ids =
-       List.filter_map
-         (fun (i, file) ->
-           match file with
-           | None -> None
-           | Some file -> Some (i, file))
-         (List.mapi (fun i file -> (FileId.of_int i, file)) files)
-     in
-     let id_to_file_map = FileId.Map.of_list files_with_ids in
-     Ok { ctx with id_to_file_map })
-
 let crate_of_json (js : json) : (crate, string) result =
   match js with
   | `Assoc [ ("charon_version", charon_version); ("translated", translated) ]

@@ -24,17 +24,22 @@ module HashConsId = IdGen ()
 (** The default logger *)
 let log = Logging.llbc_of_json_logger
 
+module FileTbl = Hashtbl.Make (struct
+  type t = FileId.id
 
-type id_to_file_map = file FileId.Map.t
+  let equal = FileId.equal_id
+  let hash = Hashtbl.hash
+end)
+
 type of_json_ctx = {
-    id_to_file_map : id_to_file_map;
-    ty_hashcons_map: (ty HashConsId.Map.t) ref;
-    tref_hashcons_map: (trait_ref HashConsId.Map.t) ref;
+  id_to_file_map : file FileTbl.t;
+  ty_hashcons_map : ty HashConsId.Map.t ref;
+  tref_hashcons_map : trait_ref HashConsId.Map.t ref;
 }
 
 let empty_of_json_ctx : of_json_ctx =
   {
-    id_to_file_map = FileId.Map.empty;
+    id_to_file_map = FileTbl.create 8;
     ty_hashcons_map = ref HashConsId.Map.empty;
     tref_hashcons_map = ref HashConsId.Map.empty;
   }

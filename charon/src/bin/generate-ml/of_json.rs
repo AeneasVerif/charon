@@ -34,9 +34,28 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
         indoc!(
             r#"
             let* file_id = FileId.id_of_json ctx json in
-            let file = FileId.Map.find file_id ctx.id_to_file_map in
+            let file = FileTbl.find ctx.id_to_file_map file_id in
             Ok file
             "#,
+        ),
+    ),
+    (
+        "File",
+        indoc!(
+            r#"
+            (match json with
+            | `Assoc
+                [ ("id", id); ("name", name); ("crate_name", crate_name); ("contents", contents) ]
+            ->
+                let* id = FileId.id_of_json ctx id in
+                let* name = file_name_of_json ctx name in
+                let* crate_name = string_of_json ctx crate_name in
+                let* contents = option_of_json string_of_json ctx contents in
+                let file: file = { name; crate_name; contents } in
+                FileTbl.add ctx.id_to_file_map id file;
+                Ok file
+            | _ -> Error "")
+            "#
         ),
     ),
     (

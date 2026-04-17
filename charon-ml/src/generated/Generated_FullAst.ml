@@ -280,6 +280,10 @@ and translated_crate = {
       (** Information about each target platform. When translating a crate
           normally this will have a single entry; when using [--targets] this
           will have one entry per chosen target. *)
+  files : file list;
+      (** The translated files. This field must come before any field containing
+          spans, as the files must be translated before we can translate any
+          span. *)
   item_names : (item_id * name) list;
       (** The names of all registered items. Available so we can know the names
           even of items that failed to translate. Invariant: after translation,
@@ -287,12 +291,14 @@ and translated_crate = {
           corresponding item wasn't translated. *)
   short_names : (item_id * name) list;
       (** Short names, for items whose last PathElem is unique. *)
-  files : file list;  (** The translated files. *)
-  type_decls : type_decl list;  (** The translated type definitions *)
-  fun_decls : fun_decl list;  (** The translated function definitions *)
-  global_decls : global_decl list;  (** The translated global definitions *)
-  trait_decls : trait_decl list;  (** The translated trait declarations *)
-  trait_impls : trait_impl list;  (** The translated trait declarations *)
+  type_decls : type_decl option list;  (** The translated type definitions *)
+  fun_decls : fun_decl option list;  (** The translated function definitions *)
+  global_decls : global_decl option list;
+      (** The translated global definitions *)
+  trait_decls : trait_decl option list;
+      (** The translated trait declarations *)
+  trait_impls : trait_impl option list;
+      (** The translated trait declarations *)
   unit_metadata : global_decl_ref option;
       (** A [const UNIT: () = ();] used whenever we make a thin
           pointer/reference to avoid creating a local [let unit = ();] variable.

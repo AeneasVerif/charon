@@ -259,6 +259,9 @@ pub enum FileName {
     Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize, Drive, DriveMut,
 )]
 pub struct File {
+    /// The file identifier.
+    #[charon::opaque]
+    pub id: FileId,
     /// The path to the file.
     pub name: FileName,
     /// Name of the crate this file comes from.

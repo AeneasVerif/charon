@@ -23,17 +23,22 @@ module HashConsId = IdGen ()
 (** The default logger *)
 let log = Logging.llbc_of_json_logger
 
-type id_to_file_map = file FileId.Map.t
+module FileTbl = Hashtbl.Make (struct
+  type t = FileId.id
+
+  let equal = FileId.equal_id
+  let hash = Hashtbl.hash
+end)
 
 type of_json_ctx = {
-  id_to_file_map : id_to_file_map;
+  id_to_file_map : file FileTbl.t;
   ty_hashcons_map : ty HashConsId.Map.t ref;
   tref_hashcons_map : trait_ref HashConsId.Map.t ref;
 }
 
 let empty_of_json_ctx : of_json_ctx =
   {
-    id_to_file_map = FileId.Map.empty;
+    id_to_file_map = FileTbl.create 8;
     ty_hashcons_map = ref HashConsId.Map.empty;
     tref_hashcons_map = ref HashConsId.Map.empty;
   }
@@ -517,7 +522,7 @@ and file_id_of_json (ctx : of_json_ctx) (js : json) : (file_id, string) result =
     (match js with
     | json ->
         let* file_id = FileId.id_of_json ctx json in
-        let file = FileId.Map.find file_id ctx.id_to_file_map in
+        let file = FileTbl.find ctx.id_to_file_map file_id in
         Ok file
     | _ -> Error "")
 
@@ -2129,13 +2134,23 @@ and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
 and file_of_json (ctx : of_json_ctx) (js : json) : (file, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc
-        [ ("name", name); ("crate_name", crate_name); ("contents", contents) ]
-      ->
-        let* name = file_name_of_json ctx name in
-        let* crate_name = string_of_json ctx crate_name in
-        let* contents = option_of_json string_of_json ctx contents in
-        Ok ({ name; crate_name; contents } : file)
+    | json -> (
+        match json with
+        | `Assoc
+            [
+              ("id", id);
+              ("name", name);
+              ("crate_name", crate_name);
+              ("contents", contents);
+            ] ->
+            let* id = FileId.id_of_json ctx id in
+            let* name = file_name_of_json ctx name in
+            let* crate_name = string_of_json ctx crate_name in
+            let* contents = option_of_json string_of_json ctx contents in
+            let file : file = { name; crate_name; contents } in
+            FileTbl.add ctx.id_to_file_map id file;
+            Ok file
+        | _ -> Error "")
     | _ -> Error "")
 
 and file_name_of_json (ctx : of_json_ctx) (js : json) :
@@ -2755,9 +2770,9 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           ("crate_name", crate_name);
           ("options", options);
           ("target_information", target_information);
+          ("files", files);
           ("item_names", item_names);
           ("short_names", short_names);
-          ("files", files);
           ("type_decls", type_decls);
           ("fun_decls", fun_decls);
           ("global_decls", global_decls);
@@ -2772,6 +2787,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           index_map_of_json string_of_json target_info_of_json int_of_json ctx
             target_information
         in
+        let* files = index_vec_of_json file_id_of_json file_of_json ctx files in
         let* item_names =
           index_map_of_json item_id_of_json name_of_json int_of_json ctx
             item_names
@@ -2780,7 +2796,6 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           index_map_of_json item_id_of_json name_of_json int_of_json ctx
             short_names
         in
-        let* files = index_vec_of_json file_id_of_json file_of_json ctx files in
         let* type_decls =
           indexed_map_of_json type_decl_id_of_json type_decl_of_json ctx
             type_decls
@@ -2813,9 +2828,9 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
              crate_name;
              options;
              target_information;
+             files;
              item_names;
              short_names;
-             files;
              type_decls;
              fun_decls;
              global_decls;
