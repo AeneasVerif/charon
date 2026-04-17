@@ -243,6 +243,9 @@ class ['self] filter_decl_id =
     method visit_trait_decl_id _ (id : TraitDeclId.id) = Some id
     method visit_trait_impl_id _ (id : TraitImplId.id) = Some id
 
+    method visit_trait_type_constraint_id _ (id : TraitTypeConstraintId.id) =
+      Some id
+
     method visit_item_id (env : 'a) (id : item_id) : item_id option =
       match id with
       | IdType id ->

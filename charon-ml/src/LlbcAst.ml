@@ -13,6 +13,10 @@ class ['self] iter_statement =
   object (self : 'self)
     inherit [_] iter_statement_base
 
+    method! visit_trait_type_constraint_id :
+        'env -> trait_type_constraint_id -> unit =
+      fun _ _ -> ()
+
     method! visit_block : 'env -> block -> unit =
       fun env block -> self#visit_block_suffix env block.statements
 
@@ -30,6 +34,10 @@ class ['self] iter_statement =
 class ['self] map_statement =
   object (self : 'self)
     inherit [_] map_statement_base
+
+    method! visit_trait_type_constraint_id :
+        'env -> trait_type_constraint_id -> trait_type_constraint_id =
+      fun env id -> id
 
     method! visit_block : 'env -> block -> block =
       fun env block ->

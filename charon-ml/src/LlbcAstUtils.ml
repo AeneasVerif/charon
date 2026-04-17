@@ -15,8 +15,13 @@ let fun_decl_list_from_crate (crate : crate) : fun_decl list =
     returns None *)
 let get_fun_args (fun_decl : fun_decl) : local list option =
   match fun_decl.body with
-  | Body body -> Some (GAstUtils.locals_get_input_vars body.locals)
-  | _ -> None
+  | Structured { locals; _ } | Unstructured { locals; _ } ->
+      Some (GAstUtils.locals_get_input_vars locals)
+  | TraitMethodWithoutDefault
+  | Opaque
+  | Missing
+  | TargetDispatch _
+  | ErrorBody _ -> None
 
 (** Check if a {!type:Charon.LlbcAst.statement} contains loops *)
 let block_has_loops (blk : block) : bool =
@@ -34,7 +39,7 @@ let block_has_loops (blk : block) : bool =
 (** Check if a {!type:Charon.LlbcAst.fun_decl} contains loops *)
 let fun_decl_has_loops (fd : fun_decl) : bool =
   match fd.body with
-  | Body body -> block_has_loops body.body
+  | Structured body -> block_has_loops body.body
   | _ -> false
 
 let crate_get_item_meta (m : crate) (id : item_id) : Types.item_meta option =
@@ -93,7 +98,8 @@ class ['self] map_crate =
       in
       let body =
         match body with
-        | Body b -> Body (self#visit_expr_body env b)
+        | Structured body ->
+            Structured (self#visit_gexpr_body self#visit_block env body)
         | TraitMethodWithoutDefault -> TraitMethodWithoutDefault
         | Extern sym -> Extern (self#visit_string env sym)
         | Intrinsic { name; arg_names } ->
@@ -239,7 +245,7 @@ class ['self] iter_crate =
       self#visit_item_source env src;
       self#visit_option self#visit_global_decl_id env is_global_initializer;
       match body with
-      | Body b -> self#visit_expr_body env b
+      | Structured body -> self#visit_expr_body env body
       | TraitMethodWithoutDefault -> ()
       | Extern sym -> self#visit_string env sym
       | Intrinsic { name; arg_names } ->
