@@ -48,7 +48,7 @@ let run_tests (folder : string) : unit =
         log#ldebug (lazy ("Deserializing LLBC file: " ^ file));
         (* Load the module *)
         let json = Yojson.Basic.from_file file in
-        match LlbcOfJson.crate_of_json json with
+        match OfJson.crate_of_json json with
         | Error s ->
             log#error "Error when deserializing file %s: %s\n" file s;
             exit 1

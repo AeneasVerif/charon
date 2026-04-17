@@ -1,8 +1,8 @@
-(** WARNING: this file is partially auto-generated. Do not edit `GAstOfJson.ml`
-    by hand. Edit `GAstOfJson.template.ml` instead, or improve the code
+(** WARNING: this file is partially auto-generated. Do not edit `OfJson.ml`
+    by hand. Edit `templates/OfJson.ml` instead, or improve the code
     generation tool so avoid the need for hand-writing things.
 
-    `GAstOfJson.template.ml` contains the manual definitions and some `(*
+    `templates/OfJson.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
     definitions by running `make generate-ml` in the crate root. The
     code-generation code is in `charon/src/bin/generate-ml`.
@@ -11,12 +11,13 @@
 open Yojson.Basic
 open OfJsonBasic
 open Identifiers
-open Meta
-open Values
-open Types
+open Generated_Meta
+open Generated_Values
+open Generated_Types
+open Generated_Expressions
+open Generated_GAst
+open Generated_FullAst
 open Scalars
-open Expressions
-open GAst
 module FileId = IdGen ()
 module HashConsId = IdGen ()
 
@@ -70,3 +71,17 @@ let big_int_of_json _ (js : json) : (big_int, string) result =
       | _ -> Error "")
 
 (* __REPLACE0__ *)
+
+module Ullbc = struct
+  open UllbcAst
+
+  (* __REPLACE1__ *)
+end
+
+module Llbc = struct
+  open LlbcAst
+
+  (* __REPLACE2__ *)
+end
+
+(* __REPLACE3__ *)

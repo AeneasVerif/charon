@@ -433,19 +433,14 @@ fn generate_ml(
             ]),
         },
         GenerateCodeFor {
-            template: template_dir.join("GAstOfJson.ml"),
-            target: output_dir.join("Generated_GAstOfJson.ml"),
-            markers: vec![(GenerationKind::OfJson, gast_types)],
-        },
-        GenerateCodeFor {
-            template: template_dir.join("LlbcOfJson.ml"),
-            target: output_dir.join("Generated_LlbcOfJson.ml"),
-            markers: vec![(GenerationKind::OfJson, llbc_types)],
-        },
-        GenerateCodeFor {
-            template: template_dir.join("UllbcOfJson.ml"),
-            target: output_dir.join("Generated_UllbcOfJson.ml"),
-            markers: vec![(GenerationKind::OfJson, ullbc_types)],
+            template: template_dir.join("OfJson.ml"),
+            target: output_dir.join("Generated_OfJson.ml"),
+            markers: vec![
+                (GenerationKind::OfJson, gast_types),
+                (GenerationKind::OfJson, ullbc_types),
+                (GenerationKind::OfJson, llbc_types),
+                (GenerationKind::OfJson, full_ast_types),
+            ],
         },
     ];
     for file in generate_code_for {

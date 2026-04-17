@@ -224,7 +224,7 @@ let annotated_rust_tests test_file =
   log#ldebug (lazy ("Deserializing LLBC file: " ^ test_file));
   let json = Yojson.Basic.from_file test_file in
   let (crate : crate) =
-    match LlbcOfJson.crate_of_json json with
+    match OfJson.crate_of_json json with
     | Error s ->
         log#error "Error when deserializing file %s: %s\n" test_file s;
         exit 1
