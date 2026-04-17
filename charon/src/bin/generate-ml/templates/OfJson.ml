@@ -75,6 +75,17 @@ let big_int_of_json _ (js : json) : (big_int, string) result =
       | `String is -> Ok (Z.of_string is)
       | _ -> Error "")
 
+let opt_indexed_map_of_json :
+    'a0 'a1.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    (of_json_ctx -> json -> ('a1, string) result) ->
+    of_json_ctx ->
+    json ->
+    ( 'a1 option list, string) result =
+ fun arg0_of_json arg1_of_json ctx js ->
+  list_of_json (option_of_json arg1_of_json) ctx js
+
+
 (* __REPLACE0__ *)
 
 module Ullbc = struct

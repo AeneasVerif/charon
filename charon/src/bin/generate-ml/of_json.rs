@@ -162,6 +162,11 @@ impl<'a> GenerateCtx<'a> {
                             // `RandomState` parameter.
                             expr[2] = "int_of_json".to_string();
                         }
+
+                        if first == "indexed_map" && self.use_opt_index_map() {
+                            first = format!("opt_{first}");
+                        }
+
                         expr.insert(0, first + "_of_json");
                     }
                     TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
@@ -375,11 +380,15 @@ impl<'a> GenerateCtx<'a> {
         self.build_function(decl, &branches)
     }
 
-    pub fn type_decls_to_json(&self, tys: Vec<&TypeDecl>) -> String {
+    pub fn type_decls_to_json(&mut self, tys: Vec<&TypeDecl>) -> String {
         let manual_impls = self.names_to_type_id_map(MANUAL_IMPLS);
         let fns = tys
             .iter()
-            .map(|ty| self.type_decl_to_json_deserializer(&manual_impls, ty))
+            .map(|ty| {
+                self.with_item(ty, |ctx| {
+                    ctx.type_decl_to_json_deserializer(&manual_impls, ty)
+                })
+            })
             .format("\n");
         format!("let rec ___ = ()\n{fns}")
     }

@@ -74,6 +74,16 @@ let big_int_of_json _ (js : json) : (big_int, string) result =
     | `String is -> Ok (Z.of_string is)
     | _ -> Error "")
 
+let opt_indexed_map_of_json :
+    'a0 'a1.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    (of_json_ctx -> json -> ('a1, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a1 option list, string) result =
+ fun arg0_of_json arg1_of_json ctx js ->
+  list_of_json (option_of_json arg1_of_json) ctx js
+
 let rec ___ = ()
 
 and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -2797,22 +2807,23 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
             short_names
         in
         let* type_decls =
-          indexed_map_of_json type_decl_id_of_json type_decl_of_json ctx
+          opt_indexed_map_of_json type_decl_id_of_json type_decl_of_json ctx
             type_decls
         in
         let* fun_decls =
-          indexed_map_of_json fun_decl_id_of_json fun_decl_of_json ctx fun_decls
+          opt_indexed_map_of_json fun_decl_id_of_json fun_decl_of_json ctx
+            fun_decls
         in
         let* global_decls =
-          indexed_map_of_json global_decl_id_of_json global_decl_of_json ctx
+          opt_indexed_map_of_json global_decl_id_of_json global_decl_of_json ctx
             global_decls
         in
         let* trait_decls =
-          indexed_map_of_json trait_decl_id_of_json trait_decl_of_json ctx
+          opt_indexed_map_of_json trait_decl_id_of_json trait_decl_of_json ctx
             trait_decls
         in
         let* trait_impls =
-          indexed_map_of_json trait_impl_id_of_json trait_impl_of_json ctx
+          opt_indexed_map_of_json trait_impl_id_of_json trait_impl_of_json ctx
             trait_impls
         in
         let* unit_metadata =

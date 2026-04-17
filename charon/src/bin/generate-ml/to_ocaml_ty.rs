@@ -429,7 +429,7 @@ impl<'a> GenerateCtx<'a> {
     }
 
     pub fn type_decls_to_ocaml(
-        &self,
+        &mut self,
         visitors: &Option<DeriveVisitors>,
         tys: Vec<&TypeDecl>,
     ) -> String {
@@ -441,7 +441,14 @@ impl<'a> GenerateCtx<'a> {
             .enumerate()
             .map(|(i, ty)| {
                 let co_recursive = i != 0;
-                self.type_decl_to_ocaml_decl(&opaque_for_visitors, &manual_impls, ty, co_recursive)
+                self.with_item(ty, |ctx| {
+                    ctx.type_decl_to_ocaml_decl(
+                        &opaque_for_visitors,
+                        &manual_impls,
+                        ty,
+                        co_recursive,
+                    )
+                })
             })
             .join("\n");
         match visitors {

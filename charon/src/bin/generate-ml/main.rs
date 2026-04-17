@@ -36,6 +36,8 @@ struct GenerateCtx<'a> {
     current_module: Option<String>,
     /// The list of types currently being generated.
     current_ids: Vec<TypeDeclId>,
+    /// The item currently being generated; this matters for TranslatedCrate, where we treat IndexMap differently.
+    current_item: Option<TypeDecl>,
 }
 
 impl<'a> GenerateCtx<'a> {
@@ -73,6 +75,7 @@ impl<'a> GenerateCtx<'a> {
             ambiguous_types: Default::default(),
             current_module: None,
             current_ids: vec![],
+            current_item: None,
         };
 
         ctx.ambiguous_types = ambiguous_types

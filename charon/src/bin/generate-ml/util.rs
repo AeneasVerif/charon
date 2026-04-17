@@ -1,7 +1,10 @@
 use charon_lib::ast::*;
 use convert_case::{Case, Casing};
 use itertools::Itertools;
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    mem,
+};
 
 use crate::GenerateCtx;
 
@@ -168,7 +171,15 @@ impl<'a> GenerateCtx<'a> {
                         if base_ty == "ustr" {
                             base_ty = "string".to_string();
                         }
-                        if base_ty == "indexed_map" || base_ty == "index_vec" {
+                        if base_ty == "indexed_map" {
+                            base_ty = if self.use_opt_index_map() {
+                                "option list".to_string()
+                            } else {
+                                "list".to_string()
+                            };
+                            args.remove(0); // Remove the index generic param
+                        }
+                        if base_ty == "index_vec" {
                             base_ty = "list".to_string();
                             args.remove(0); // Remove the index generic param
                         }
@@ -202,5 +213,23 @@ impl<'a> GenerateCtx<'a> {
 
     pub fn names_to_type_id_set(&self, data: &[&str]) -> HashSet<TypeDeclId> {
         data.iter().map(|name| self.id_from_name(name)).collect()
+    }
+
+    pub fn with_item<F, T>(&mut self, new_item: &TypeDecl, f: F) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
+        let mut item = Some(new_item.clone());
+        mem::swap(&mut self.current_item, &mut item);
+        let res = f(self);
+        self.current_item = item;
+        res
+    }
+
+    pub fn use_opt_index_map(&self) -> bool {
+        match &self.current_item {
+            None => false,
+            Some(ty) => self.type_to_ocaml_ident_raw(ty).0 == "translated_crate",
+        }
     }
 }
