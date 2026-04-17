@@ -166,69 +166,36 @@ fn generate_ml(
 ) -> anyhow::Result<()> {
     // Types for which we don't want to generate a type at all.
     let dont_generate_ty = &[
-        "ItemOpacity",
-        "PredicateOrigin",
-        "TraitTypeConstraintId",
         "charon_lib::ids::index_vec::IndexVec",
         "charon_lib::ids::index_map::IndexMap",
     ];
 
     let ctx = GenerateCtx::new(&crate_data);
 
-    // Items that we don't want to emit in the generated output.
-    let manually_implemented: HashSet<_> = [
-        "ItemOpacity",
-        "PredicateOrigin",
-        "Body",
-        "FunDecl",
-        "TranslatedCrate",
-    ]
-    .iter()
-    .map(|name| ctx.id_from_name(name))
-    .collect();
-
     // Compute type sets for json deserializers.
-    let (gast_types, llbc_types, ullbc_types) = {
+    let mut gast_types: HashSet<TypeDeclId> = HashSet::new();
+    let mut llbc_types: HashSet<TypeDeclId> = HashSet::new();
+    let mut ullbc_types: HashSet<TypeDeclId> = HashSet::new();
+    let mut full_ast_types: HashSet<TypeDeclId> = HashSet::new();
+    {
         let mut all_types: HashSet<_> = ctx.children_of("TranslatedCrate");
         all_types.insert(ctx.id_from_name("indexmap::map::IndexMap")); // Add this one foreign type
-
-        // (u)llbc types are those that are dominated by the entrypoint of the corresponding
-        // module, i.e. those that can't be reached if you remove these entrypoints.
-        let non_llbc_types: HashSet<_> =
-            ctx.children_of_except("TranslatedCrate", &["charon_lib::ast::llbc_ast::Block"]);
-        let non_ullbc_types: HashSet<_> = ctx.children_of_except(
-            "TranslatedCrate",
-            &[
-                "charon_lib::ast::ullbc_ast::BlockData",
-                "charon_lib::ast::ullbc_ast::BlockId",
-            ],
-        );
-        let llbc_types: HashSet<_> = all_types.difference(&non_llbc_types).copied().collect();
-        let ullbc_types: HashSet<_> = all_types.difference(&non_ullbc_types).copied().collect();
-
-        let shared_types: HashSet<_> = llbc_types.intersection(&ullbc_types).copied().collect();
-        let llbc_types: HashSet<_> = llbc_types.difference(&shared_types).copied().collect();
-        let ullbc_types: HashSet<_> = ullbc_types.difference(&shared_types).copied().collect();
-
-        let body_specific_types: HashSet<_> = llbc_types.union(&ullbc_types).copied().collect();
-        let gast_types: HashSet<_> = all_types
-            .difference(&body_specific_types)
-            .copied()
-            .collect();
-
-        let gast_types: HashSet<_> = gast_types
-            .difference(&manually_implemented)
-            .copied()
-            .collect();
-        let llbc_types: HashSet<_> = llbc_types
-            .difference(&manually_implemented)
-            .copied()
-            .collect();
-        let ullbc_types: HashSet<_> = ullbc_types
-            .difference(&manually_implemented)
-            .copied()
-            .collect();
-        (gast_types, llbc_types, ullbc_types)
+        let all_llbc_types: HashSet<_> =
+            ctx.children_of_many(&["charon_lib::ast::llbc_ast::Block"]);
+        let all_ullbc_types: HashSet<_> = ctx.children_of_many(&[
+            "charon_lib::ast::ullbc_ast::BlockData",
+            "charon_lib::ast::ullbc_ast::BlockId",
+        ]);
+        all_types.into_iter().for_each(|ty| {
+            let in_llbc = all_llbc_types.contains(&ty);
+            let in_ullbc = all_ullbc_types.contains(&ty);
+            match (in_llbc, in_ullbc) {
+                (true, false) => llbc_types.insert(ty),
+                (false, true) => ullbc_types.insert(ty),
+                (true, true) => gast_types.insert(ty),
+                (false, false) => full_ast_types.insert(ty),
+            };
+        });
     };
 
     let mut processed_tys: HashSet<TypeDeclId> = dont_generate_ty
@@ -383,11 +350,7 @@ fn generate_ml(
                     extra_types: &[],
                 })), &[
                     "TraitImpl",
-                ]),
-                (GenerationKind::TypeDecl(None), &[
-                    "CliOpts",
                     "GExprBody",
-                    "DeclarationGroup",
                 ]),
             ]),
         },
@@ -416,6 +379,19 @@ fn generate_ml(
                     extra_types: &[],
                 })), &[
                     "charon_lib::ast::ullbc_ast::BodyContents",
+                ]),
+            ]),
+        },
+        GenerateCodeFor {
+            template: template_dir.join("FullAst.ml"),
+            target: output_dir.join("Generated_FullAst.ml"),
+            markers: markers_from_children(&ctx, &[
+                (GenerationKind::TypeDecl(None), &[
+                    "FunDecl",
+                    "Body",
+                    "CliOpts",
+                    "DeclarationGroup",
+                    "TranslatedCrate",
                 ]),
             ]),
         },

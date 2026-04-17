@@ -33,11 +33,6 @@ type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
 type literal_type = Values.literal_type [@@deriving show, ord, eq]
 
-(* Manually implemented because no type uses it (we use plain lists instead of
-   vectors in generic_params), which causes visitor inference problems if we
-   declare it within a visitor group. *)
-type trait_type_constraint_id = TraitTypeConstraintId.id [@@deriving show, ord, eq]
-
 (* __REPLACE0__ *)
 
 (* __REPLACE1__ *)

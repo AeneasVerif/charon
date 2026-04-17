@@ -203,6 +203,7 @@ pub enum ItemOpacity {
     ///
     /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
     /// declared opaque via a command-line argument.
+    #[charon::rename("ItemOpaque")]
     Opaque,
     /// Translate nothing of this item. The corresponding map will not have an entry for the
     /// `ItemId`. Useful when even the signature of the item causes errors.
@@ -232,7 +233,6 @@ pub struct ItemMeta {
     ///
     /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
     /// declared opaque via a command-line argument.
-    #[charon::opaque]
     #[drive(skip)]
     pub opacity: ItemOpacity,
     /// If the item is built-in, record its internal builtin identifier.

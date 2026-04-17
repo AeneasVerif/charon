@@ -66,14 +66,6 @@ impl<'a> GenerateCtx<'a> {
         self.children_of_inner(vec![start_id], |_| true)
     }
 
-    /// List the (recursive) children of the type, except those that are only reachable through
-    /// `except`.
-    pub fn children_of_except(&self, name: &str, except: &[&str]) -> HashSet<TypeDeclId> {
-        let start_id = self.id_from_name(name);
-        let except: HashSet<_> = except.iter().map(|name| self.id_from_name(name)).collect();
-        self.children_of_inner(vec![start_id], |id| !except.contains(&id))
-    }
-
     /// List the (recursive) children of these types.
     pub fn children_of_many(&self, names: &[&str]) -> HashSet<TypeDeclId> {
         self.children_of_inner(

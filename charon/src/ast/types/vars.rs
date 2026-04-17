@@ -147,7 +147,6 @@ pub struct TraitParam {
     // TODO: does not need to be an option.
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
-    #[charon::opaque]
     #[drive(skip)]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.

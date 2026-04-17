@@ -31,6 +31,3 @@ type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 (* __REPLACE2__ *)
 
 (* __REPLACE3__ *)
-
-(* __REPLACE4__ *)
-[@@deriving show]

@@ -50,7 +50,7 @@ let fun_body_get_input_vars (fbody : 'body gexpr_body) : local list =
 
 (** Get the signature of this function as a bound value, i.e. including its
     generics parameters. *)
-let bound_fun_sig_of_decl (def : 'a gfun_decl) : bound_fun_sig =
+let bound_fun_sig_of_decl (def : fun_decl) : bound_fun_sig =
   { item_binder_params = def.generics; item_binder_value = def.signature }
 
 (** Lookup a method in this trait decl. The two levels of binders in the output
@@ -111,6 +111,30 @@ let declaration_group_to_list (g : declaration_group) : item_id list =
   | TraitImplGroup g ->
       List.map (fun id -> IdTraitImpl id) (g_declaration_group_to_list g)
   | MixedGroup g -> g_declaration_group_to_list g
+
+let body_as_structured : body -> LlbcAst.expr_body option = function
+  | Structured body -> Some body
+  | _ -> None
+
+let body_as_structured_exn : body -> LlbcAst.expr_body = function
+  | Structured body -> body
+  | _ -> failwith "Expected a structured body"
+
+let body_as_unstructured : body -> UllbcAst.expr_body option = function
+  | Unstructured body -> Some body
+  | _ -> None
+
+let body_as_unstructured_exn : body -> UllbcAst.expr_body = function
+  | Unstructured body -> body
+  | _ -> failwith "Expected an unstructured body"
+
+let has_body : body -> bool = function
+  | Structured _ | Unstructured _ -> true
+  | Opaque
+  | TraitMethodWithoutDefault
+  | TargetDispatch _
+  | Missing
+  | ErrorBody _ -> false
 
 (** Split a module's declarations between types, functions and globals *)
 let split_declarations (decls : declaration_group list) :

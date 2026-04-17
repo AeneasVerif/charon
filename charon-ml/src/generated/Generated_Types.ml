@@ -30,12 +30,6 @@ type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
 type literal_type = Values.literal_type [@@deriving show, ord, eq]
 
-(* Manually implemented because no type uses it (we use plain lists instead of
-   vectors in generic_params), which causes visitor inference problems if we
-   declare it within a visitor group. *)
-type trait_type_constraint_id = TraitTypeConstraintId.id
-[@@deriving show, ord, eq]
-
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
 type de_bruijn_id = int
@@ -459,6 +453,16 @@ and lifetime_mutability =
 (** .0 outlives .1 *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
+(** Where a given predicate came from. *)
+and predicate_origin =
+  | WhereClauseOnFn
+  | WhereClauseOnType
+  | WhereClauseOnImpl
+  | TraitSelf
+  | WhereClauseOnTrait
+  | TraitItem of trait_item_name
+  | OriginDyn  (** Clauses that are part of a [dyn Trait] type. *)
+
 and provenance =
   | ProvGlobal of global_decl_ref
   | ProvFunction of fun_decl_ref
@@ -525,6 +529,9 @@ and trait_param = {
       (** Index identifying the clause among other clauses bound at the same
           level. *)
   span : span option;
+  origin : predicate_origin;
+      (** Where the predicate was written, relative to the item that requires
+          it. *)
   trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
 
@@ -633,6 +640,8 @@ and trait_type_constraint = {
   type_name : trait_item_name;
   ty : ty;
 }
+
+and trait_type_constraint_id = (TraitTypeConstraintId.id[@visitors.opaque])
 
 (** A type.
 
@@ -850,9 +859,42 @@ and item_meta = {
   is_local : bool;
       (** [true] if the type decl is a local type decl, [false] if it comes from
           an external crate. *)
+  opacity : item_opacity;
+      (** Whether this item is considered opaque. For function and globals, this
+          means we don't translate the body (the code); for ADTs, this means we
+          don't translate the fields/variants. For traits and trait impls, this
+          doesn't change anything. For modules, this means we don't explore its
+          contents (we still translate any of its items mentioned from somewhere
+          else).
+
+          This can happen either if the item was annotated with
+          [#[charon::opaque]] or if it was declared opaque via a command-line
+          argument. *)
   lang_item : string option;
       (** If the item is built-in, record its internal builtin identifier. *)
 }
+
+and item_opacity =
+  | Transparent  (** Translate the item fully. *)
+  | Foreign
+      (** Translate the item depending on the normal rust visibility of its
+          contents: for types, we translate fully if it is a struct with public
+          fields or an enum; for other items this is equivalent to [Opaque]. *)
+  | ItemOpaque
+      (** Translate the item name and signature, but not its contents. For
+          function and globals, this means we don't translate the body (the
+          code); for ADTs, this means we don't translate the fields/variants.
+          For traits and trait impls, this doesn't change anything. For modules,
+          this means we don't explore its contents (we still translate any of
+          its items mentioned from somewhere else).
+
+          This can happen either if the item was annotated with
+          [#[charon::opaque]] or if it was declared opaque via a command-line
+          argument. *)
+  | Invisible
+      (** Translate nothing of this item. The corresponding map will not have an
+          entry for the [ItemId]. Useful when even the signature of the item
+          causes errors. *)
 
 (** Item kind: whether this function/const is part of a trait declaration, trait
     implementation, or neither.

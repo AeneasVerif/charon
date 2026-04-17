@@ -120,6 +120,7 @@ pub enum Body {
     /// We encountered an error while translating this body.
     #[drive(skip)]
     #[serde_state(stateless)]
+    #[charon::rename("ErrorBody")]
     Error(Error),
 }
 
