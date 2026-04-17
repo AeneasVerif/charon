@@ -1,4 +1,5 @@
 use crate::GenerateCtx;
+use crate::util::name_str;
 use charon_lib::ast::*;
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -165,16 +166,7 @@ impl<'a> GenerateCtx<'a> {
                     && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
             {
                 // These are the special strongly-typed integers.
-                let short_name = decl
-                    .item_meta
-                    .name
-                    .name
-                    .last()
-                    .unwrap()
-                    .as_ident()
-                    .unwrap()
-                    .0
-                    .clone();
+                let short_name = name_str(&decl.item_meta.name).clone();
                 format!("{short_name}.id [@visitors.opaque]")
             }
             TypeDeclKind::Struct(fields)

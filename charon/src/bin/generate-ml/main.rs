@@ -47,16 +47,7 @@ impl<'a> GenerateCtx<'a> {
         for ty in &crate_data.type_decls {
             let long_name = repr_name(&ty.item_meta.name);
             if long_name.starts_with("charon_lib") {
-                let short_name = ty
-                    .item_meta
-                    .name
-                    .name
-                    .last()
-                    .unwrap()
-                    .as_ident()
-                    .unwrap()
-                    .0
-                    .clone();
+                let short_name = name_str(&ty.item_meta.name).clone();
                 name_to_type.insert(short_name, ty);
             }
             name_to_type.insert(long_name, ty);
@@ -120,19 +111,7 @@ impl GenerateCodeFor {
             let tys = names
                 .iter()
                 .map(|&id| &ctx.crate_data[id])
-                .sorted_by_key(|tdecl| {
-                    (
-                        tdecl
-                            .item_meta
-                            .name
-                            .name
-                            .last()
-                            .unwrap()
-                            .as_ident()
-                            .unwrap(),
-                        tdecl.def_id,
-                    )
-                })
+                .sorted_by_key(|tdecl| (name_str(&tdecl.item_meta.name), tdecl.def_id))
                 .collect::<Vec<_>>();
             ctx.current_ids = names.iter().copied().collect();
             let generated = match kind {

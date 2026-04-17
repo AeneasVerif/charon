@@ -47,6 +47,10 @@ pub fn make_ocaml_ident(name: &str) -> String {
     name
 }
 
+pub fn name_str(name: &Name) -> &String {
+    name.name.last().unwrap().as_ident().unwrap().0
+}
+
 impl<'a> GenerateCtx<'a> {
     pub fn id_from_name(&self, name: &str) -> TypeDeclId {
         self.name_to_type
@@ -103,7 +107,7 @@ impl<'a> GenerateCtx<'a> {
             .attr_info
             .rename
             .as_ref()
-            .unwrap_or(td.item_meta.name.name.last().unwrap().as_ident().unwrap().0);
+            .unwrap_or(name_str(&td.item_meta.name));
         let module = self.ambiguous_types.get(&td.def_id);
         (make_ocaml_ident(name), module.cloned())
     }
@@ -155,13 +159,7 @@ impl<'a> GenerateCtx<'a> {
                             self.type_to_ocaml_ident(tdecl)
                         } else if let Some(name) = self.crate_data.item_name(id) {
                             eprintln!("Warning: type {} missing from llbc", repr_name(name));
-                            name.name
-                                .last()
-                                .unwrap()
-                                .as_ident()
-                                .unwrap()
-                                .0
-                                .to_lowercase()
+                            name_str(name).to_lowercase()
                         } else {
                             format!("missing_type_{id}")
                         };
