@@ -6,6 +6,7 @@ module EL = Easy_logging.Logging
 let log = main_log
 
 let () =
+  Printexc.record_backtrace true;
   try
     let _ = Unix.getenv "CHARON_LOG" in
     log#set_level EL.Debug
