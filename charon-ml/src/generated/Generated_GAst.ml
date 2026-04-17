@@ -7,9 +7,9 @@
     running `make generate-ml` in the crate root. The code-generation code is in
     `charon/src/bin/generate-ml`. *)
 
-open Types
-open Meta
-open Expressions
+open Generated_Types
+open Generated_Meta
+open Generated_Expressions
 module FunDeclId = Expressions.FunDeclId
 module GlobalDeclId = Expressions.GlobalDeclId
 module TraitDeclId = Types.TraitDeclId

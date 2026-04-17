@@ -10,8 +10,8 @@
  *)
 
 open Identifiers
-open Meta
-open Values
+open Generated_Meta
+open Generated_Values
 
 module TypeVarId = IdGen ()
 module TypeDeclId = IdGen ()
