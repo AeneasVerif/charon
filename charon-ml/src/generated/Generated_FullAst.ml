@@ -18,10 +18,10 @@ open Identifiers
 
 (** The body of a function. *)
 type body =
-  | Unstructured of block list gexpr_body
+  | Unstructured of Generated_UllbcAst.block list gexpr_body
       (** Body represented as a CFG. This is what ullbc is made of, and what we
           get after translating MIR. *)
-  | Structured of block gexpr_body
+  | Structured of Generated_LlbcAst.block gexpr_body
       (** Body represented with structured control flow. This is what llbc is
           made of. We restructure the control flow in the [ullbc_to_llbc] pass.
       *)

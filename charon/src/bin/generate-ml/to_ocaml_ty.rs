@@ -1,5 +1,4 @@
 use crate::GenerateCtx;
-use crate::util::*;
 use charon_lib::ast::*;
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -119,7 +118,7 @@ impl<'a> GenerateCtx<'a> {
     }
 
     fn build_type(&self, decl: &TypeDecl, co_rec: bool, body: &str) -> String {
-        let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
+        let (ty_name, _) = self.type_to_ocaml_ident_raw(decl);
         let generics = decl
             .generics
             .types

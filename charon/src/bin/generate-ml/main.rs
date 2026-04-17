@@ -29,10 +29,17 @@ struct GenerateCtx<'a> {
     name_to_type: HashMap<String, &'a TypeDecl>,
     /// For each type, list the types it contains.
     type_tree: HashMap<TypeDeclId, HashSet<TypeDeclId>>,
+    /// For types that may be ambiguous in OCaml, the generated module name to prefix to them,
+    /// along with the "short" module name for other generators
+    ambiguous_types: HashMap<TypeDeclId, (String, String)>,
+    /// The current module name being compiled.
+    current_module: Option<String>,
+    /// The list of types currently being generated.
+    current_ids: Vec<TypeDeclId>,
 }
 
 impl<'a> GenerateCtx<'a> {
-    fn new(crate_data: &'a TranslatedCrate) -> Self {
+    fn new(crate_data: &'a TranslatedCrate, ambiguous_types: &[(&str, (&str, &str))]) -> Self {
         let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
         let mut type_tree = HashMap::default();
         for ty in &crate_data.type_decls {
@@ -59,11 +66,21 @@ impl<'a> GenerateCtx<'a> {
             type_tree.insert(ty.def_id, contained);
         }
 
-        GenerateCtx {
+        let mut ctx = GenerateCtx {
             crate_data,
             name_to_type,
             type_tree,
-        }
+            ambiguous_types: Default::default(),
+            current_module: None,
+            current_ids: vec![],
+        };
+
+        ctx.ambiguous_types = ambiguous_types
+            .iter()
+            .map(|(name, (m1, m2))| (ctx.id_from_name(name), (m1.to_string(), m2.to_string())))
+            .collect();
+
+        ctx
     }
 }
 
@@ -87,7 +104,13 @@ struct GenerateCodeFor {
 }
 
 impl GenerateCodeFor {
-    fn generate(&self, ctx: &GenerateCtx) -> Result<()> {
+    fn generate(&self, ctx: &mut GenerateCtx) -> Result<()> {
+        ctx.current_module = self
+            .target
+            .file_prefix()
+            .and_then(|s| s.to_str())
+            .map(|s| s.to_string());
+
         let mut template = fs::read_to_string(&self.template)
             .with_context(|| format!("Failed to read template file {}", self.template.display()))?;
         for (i, (kind, names)) in self.markers.iter().enumerate() {
@@ -108,6 +131,7 @@ impl GenerateCodeFor {
                     )
                 })
                 .collect::<Vec<_>>();
+            ctx.current_ids = names.iter().copied().collect();
             let generated = match kind {
                 GenerationKind::OfJson => ctx.type_decls_to_json(tys),
                 GenerationKind::TypeDecl(visitors) => ctx.type_decls_to_ocaml(visitors, tys),
@@ -170,7 +194,20 @@ fn generate_ml(
         "charon_lib::ids::index_map::IndexMap",
     ];
 
-    let ctx = GenerateCtx::new(&crate_data);
+    #[rustfmt::skip]
+    let ambiguous_types = &[
+        ("charon_lib::ast::ullbc_ast::Statement", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::ullbc_ast::StatementKind", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::ullbc_ast::SwitchTargets", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::ullbc_ast::BlockData", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::ullbc_ast::BlockId", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::llbc_ast::Statement", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::llbc_ast::StatementKind", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::llbc_ast::Switch", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::llbc_ast::Block", ("Generated_LlbcAst", "Llbc")),
+    ];
+
+    let mut ctx = GenerateCtx::new(&crate_data, ambiguous_types);
 
     // Compute type sets for json deserializers.
     let mut gast_types: HashSet<TypeDeclId> = HashSet::new();
@@ -412,7 +449,7 @@ fn generate_ml(
         },
     ];
     for file in generate_code_for {
-        file.generate(&ctx)?;
+        file.generate(&mut ctx)?;
     }
     Ok(())
 }

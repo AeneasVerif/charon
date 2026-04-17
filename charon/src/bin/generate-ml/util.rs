@@ -43,14 +43,6 @@ pub fn make_ocaml_ident(name: &str) -> String {
     }
     name
 }
-pub fn type_name_to_ocaml_ident(item_meta: &ItemMeta) -> String {
-    let name = item_meta
-        .attr_info
-        .rename
-        .as_ref()
-        .unwrap_or(item_meta.name.name.last().unwrap().as_ident().unwrap().0);
-    make_ocaml_ident(name)
-}
 
 impl<'a> GenerateCtx<'a> {
     pub fn id_from_name(&self, name: &str) -> TypeDeclId {
@@ -99,6 +91,30 @@ impl<'a> GenerateCtx<'a> {
         children
     }
 
+    /// Returns the OCaml identifier corresponding to this type,
+    /// and the generated module name + short module name associated to it if
+    /// they exist.
+    pub fn type_to_ocaml_ident_raw(&self, td: &TypeDecl) -> (String, Option<(String, String)>) {
+        let name = td
+            .item_meta
+            .attr_info
+            .rename
+            .as_ref()
+            .unwrap_or(td.item_meta.name.name.last().unwrap().as_ident().unwrap().0);
+        let module = self.ambiguous_types.get(&td.def_id);
+        (make_ocaml_ident(name), module.cloned())
+    }
+
+    pub fn type_to_ocaml_ident(&self, td: &TypeDecl) -> String {
+        let (name, module) = self.type_to_ocaml_ident_raw(td);
+        match module {
+            Some((module, _)) if self.current_module.as_ref().is_none_or(|m| m != &module) => {
+                format!("{module}.{name}")
+            }
+            _ => name,
+        }
+    }
+
     /// Converts a type to the appropriate ocaml name. In case of generics, this provides appropriate
     /// parameters.
     pub fn type_to_ocaml_name(&self, ty: &Ty) -> String {
@@ -133,7 +149,7 @@ impl<'a> GenerateCtx<'a> {
                 match tref.id {
                     TypeId::Adt(id) => {
                         let mut base_ty = if let Some(tdecl) = self.crate_data.type_decls.get(id) {
-                            type_name_to_ocaml_ident(&tdecl.item_meta)
+                            self.type_to_ocaml_ident(tdecl)
                         } else if let Some(name) = self.crate_data.item_name(id) {
                             eprintln!("Warning: type {} missing from llbc", repr_name(name));
                             name.name

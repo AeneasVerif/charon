@@ -5,17 +5,18 @@ open GAstOfJson
 
 let rec ___ = ()
 
-and block_of_json (ctx : of_json_ctx) (js : json) : (block, string) result =
+and block_of_json (ctx : of_json_ctx) (js : json) :
+    (Generated_LlbcAst.block, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("span", span); ("statements", statements) ] ->
         let* span = span_of_json ctx span in
         let* statements = list_of_json statement_of_json ctx statements in
-        Ok ({ span; statements } : block)
+        Ok ({ span; statements } : Generated_LlbcAst.block)
     | _ -> Error "")
 
 and statement_of_json (ctx : of_json_ctx) (js : json) :
-    (statement, string) result =
+    (Generated_LlbcAst.statement, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
@@ -31,7 +32,9 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
         let* comments_before =
           list_of_json string_of_json ctx comments_before
         in
-        Ok ({ span; statement_id; kind; comments_before } : statement)
+        Ok
+          ({ span; statement_id; kind; comments_before }
+            : Generated_LlbcAst.statement)
     | _ -> Error "")
 
 and statement_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -42,7 +45,7 @@ and statement_id_of_json (ctx : of_json_ctx) (js : json) :
     | _ -> Error "")
 
 and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (statement_kind, string) result =
+    (Generated_LlbcAst.statement_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Assign", `List [ x_0; x_1 ]) ] ->
@@ -104,7 +107,8 @@ and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Error error)
     | _ -> Error "")
 
-and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =
+and switch_of_json (ctx : of_json_ctx) (js : json) :
+    (Generated_LlbcAst.switch, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("If", `List [ x_0; x_1; x_2 ]) ] ->

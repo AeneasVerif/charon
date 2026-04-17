@@ -60,7 +60,7 @@ impl<'a> GenerateCtx<'a> {
             generics: decl.generics.identity_args().into(),
         })
         .into_ty();
-        let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
+        let (ty_name, _) = self.type_to_ocaml_ident_raw(decl);
         let ty = self.type_to_ocaml_name(&ty);
         let signature = if decl.generics.types.is_empty() {
             format!("{ty_name}_of_json (ctx : of_json_ctx) (js : json) : ({ty}, string) result =")
@@ -122,7 +122,13 @@ impl<'a> GenerateCtx<'a> {
                 match tref.id {
                     TypeId::Adt(id) => {
                         let mut first = if let Some(tdecl) = self.crate_data.type_decls.get(id) {
-                            type_name_to_ocaml_ident(&tdecl.item_meta)
+                            let (name, module) = self.type_to_ocaml_ident_raw(tdecl);
+                            match module {
+                                Some((_, short)) if !self.current_ids.contains(&id) => {
+                                    format!("{short}.{name}")
+                                }
+                                _ => name,
+                            }
                         } else {
                             format!("missing_type_{id}")
                         };
@@ -185,7 +191,7 @@ impl<'a> GenerateCtx<'a> {
         manual_impls: &HashMap<TypeDeclId, String>,
         decl: &TypeDecl,
     ) -> String {
-        let return_ty = type_name_to_ocaml_ident(&decl.item_meta);
+        let return_ty = self.type_to_ocaml_ident(decl);
         let return_ty = if decl.generics.types.is_empty() {
             return_ty
         } else {

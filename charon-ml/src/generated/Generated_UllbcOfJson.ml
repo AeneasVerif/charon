@@ -6,24 +6,25 @@ open GAstOfJson
 
 let rec ___ = ()
 
-and block_of_json (ctx : of_json_ctx) (js : json) : (block, string) result =
+and block_of_json (ctx : of_json_ctx) (js : json) :
+    (Generated_UllbcAst.block, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("statements", statements); ("terminator", terminator) ] ->
         let* statements = list_of_json statement_of_json ctx statements in
         let* terminator = terminator_of_json ctx terminator in
-        Ok ({ statements; terminator } : block)
+        Ok ({ statements; terminator } : Generated_UllbcAst.block)
     | _ -> Error "")
 
-and block_id_of_json (ctx : of_json_ctx) (js : json) : (block_id, string) result
-    =
+and block_id_of_json (ctx : of_json_ctx) (js : json) :
+    (Generated_UllbcAst.block_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> BlockId.id_of_json ctx x
     | _ -> Error "")
 
 and statement_of_json (ctx : of_json_ctx) (js : json) :
-    (statement, string) result =
+    (Generated_UllbcAst.statement, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
@@ -34,11 +35,11 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
         let* comments_before =
           list_of_json string_of_json ctx comments_before
         in
-        Ok ({ span; kind; comments_before } : statement)
+        Ok ({ span; kind; comments_before } : Generated_UllbcAst.statement)
     | _ -> Error "")
 
 and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (statement_kind, string) result =
+    (Generated_UllbcAst.statement_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Assign", `List [ x_0; x_1 ]) ] ->
@@ -73,7 +74,8 @@ and statement_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Nop" -> Ok Nop
     | _ -> Error "")
 
-and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =
+and switch_of_json (ctx : of_json_ctx) (js : json) :
+    (Generated_UllbcAst.switch, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("If", `List [ x_0; x_1 ]) ] ->
