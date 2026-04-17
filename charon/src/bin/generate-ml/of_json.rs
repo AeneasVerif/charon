@@ -1,8 +1,57 @@
+use std::collections::HashMap;
+
 use charon_lib::ast::*;
+use indoc::indoc;
 use itertools::Itertools;
 
 use crate::GenerateCtx;
 use crate::util::*;
+
+const MANUAL_IMPLS: &[(&str, &str)] = &[
+    // Hand-written because we interpret it as a list.
+    (
+        "charon_lib::ids::index_vec::IndexVec",
+        "list_of_json arg1_of_json ctx json",
+    ),
+    // Hand-written because we interpret it as a list.
+    (
+        "charon_lib::ids::index_map::IndexMap",
+        indoc!(
+            r#"
+            let* list = list_of_json (option_of_json arg1_of_json) ctx json in
+            Ok (List.filter_map (fun x -> x) list)
+            "#
+        ),
+    ),
+    // Hand-written because we turn it into a list of pairs.
+    (
+        "indexmap::map::IndexMap",
+        "list_of_json (key_value_pair_of_json arg0_of_json arg1_of_json) ctx json",
+    ),
+    // Hand-written because we replace the `FileId` with the corresponding file name.
+    (
+        "FileId",
+        indoc!(
+            r#"
+            let* file_id = FileId.id_of_json ctx json in
+            let file = FileId.Map.find file_id ctx.id_to_file_map in
+            Ok file
+            "#,
+        ),
+    ),
+    (
+        "HashConsed",
+        r#"Error "use `hash_consed_val_of_json` instead""#,
+    ), // Not actually used
+    (
+        "Ty",
+        "hash_consed_val_of_json ctx.ty_hashcons_map ty_kind_of_json ctx json",
+    ),
+    (
+        "TraitRef",
+        "hash_consed_val_of_json ctx.tref_hashcons_map trait_ref_contents_of_json ctx json",
+    ),
+];
 
 impl<'a> GenerateCtx<'a> {
     fn build_function(&self, decl: &TypeDecl, branches: &str) -> String {
@@ -144,7 +193,7 @@ impl<'a> GenerateCtx<'a> {
         };
 
         let branches = match &decl.kind {
-            _ if let Some(def) = self.manual_json_impls.get(&decl.def_id) => {
+            _ if let Some(def) = manual_impls.get(&decl.def_id) => {
                 format!("| json -> {def}")
             }
             TypeDeclKind::Struct(fields) if fields.is_empty() => {
@@ -302,9 +351,10 @@ impl<'a> GenerateCtx<'a> {
     }
 
     pub fn type_decls_to_json(&self, tys: Vec<&TypeDecl>) -> String {
+        let manual_impls = self.names_to_type_id_map(MANUAL_IMPLS);
         let fns = tys
             .iter()
-            .map(|ty| self.type_decl_to_json_deserializer(ty))
+            .map(|ty| self.type_decl_to_json_deserializer(&manual_impls, ty))
             .format("\n");
         format!("let rec ___ = ()\n{fns}")
     }

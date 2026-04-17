@@ -1,7 +1,7 @@
 use charon_lib::ast::*;
 use convert_case::{Case, Casing};
 use itertools::Itertools;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::GenerateCtx;
 
@@ -184,5 +184,15 @@ impl<'a> GenerateCtx<'a> {
             TyKind::TypeVar(DeBruijnVar::Free(id) | DeBruijnVar::Bound(_, id)) => format!("'a{id}"),
             _ => unimplemented!("{ty:?}"),
         }
+    }
+
+    pub fn names_to_type_id_map(&self, data: &[(&str, &str)]) -> HashMap<TypeDeclId, String> {
+        data.iter()
+            .map(|(name, def)| (self.id_from_name(name), def.to_string()))
+            .collect()
+    }
+
+    pub fn names_to_type_id_set(&self, data: &[&str]) -> HashSet<TypeDeclId> {
+        data.iter().map(|name| self.id_from_name(name)).collect()
     }
 }

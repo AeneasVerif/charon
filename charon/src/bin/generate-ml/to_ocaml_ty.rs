@@ -2,7 +2,18 @@ use crate::GenerateCtx;
 use crate::util::*;
 use charon_lib::ast::*;
 use itertools::Itertools;
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fmt::Write;
+
+const MANUAL_IMPLS: &[(&str, &str)] = &[
+    // Hand-written because we replace the `FileId` with the corresponding file.
+    ("FileId", "file"),
+    (
+        "HashConsed",
+        "'a0 (* Not actually hash-consed on the OCaml side *)",
+    ),
+];
 
 #[derive(Clone, Copy)]
 pub struct DeriveVisitors {
@@ -131,14 +142,20 @@ impl<'a> GenerateCtx<'a> {
     ///
     /// `co_rec` indicates whether this definition is co-recursive with the ones that come before (i.e.
     /// should be declared with `and` instead of `type`).
-    fn type_decl_to_ocaml_decl(&self, decl: &TypeDecl, co_rec: bool) -> String {
-        let opaque = if self.opaque_for_visitor.contains(&decl.def_id) {
+    fn type_decl_to_ocaml_decl(
+        &self,
+        opaque_for_visitor: &HashSet<TypeDeclId>,
+        manual_impls: &HashMap<TypeDeclId, String>,
+        decl: &TypeDecl,
+        co_rec: bool,
+    ) -> String {
+        let opaque = if opaque_for_visitor.contains(&decl.def_id) {
             "[@visitors.opaque]"
         } else {
             ""
         };
         let body = match &decl.kind {
-            _ if let Some(def) = self.manual_type_impls.get(&decl.def_id) => def.clone(),
+            _ if let Some(def) = manual_impls.get(&decl.def_id) => def.clone(),
             TypeDeclKind::Alias(ty) => {
                 let ty = self.type_to_ocaml_name(ty);
                 format!("{ty} {opaque}")
@@ -417,12 +434,15 @@ impl<'a> GenerateCtx<'a> {
         visitors: &Option<DeriveVisitors>,
         tys: Vec<&TypeDecl>,
     ) -> String {
+        // Types that we don't want visitors to go into.
+        let opaque_for_visitors = self.names_to_type_id_set(&["Name"]);
+        let manual_impls = self.names_to_type_id_map(MANUAL_IMPLS);
         let decls = tys
             .into_iter()
             .enumerate()
             .map(|(i, ty)| {
                 let co_recursive = i != 0;
-                self.type_decl_to_ocaml_decl(ty, co_recursive)
+                self.type_decl_to_ocaml_decl(&opaque_for_visitors, &manual_impls, ty, co_recursive)
             })
             .join("\n");
         match visitors {

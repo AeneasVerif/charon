@@ -11,7 +11,6 @@
 use anyhow::{Context, Result, bail};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::ast::*;
-use indoc::indoc;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -30,18 +29,10 @@ struct GenerateCtx<'a> {
     name_to_type: HashMap<String, &'a TypeDecl>,
     /// For each type, list the types it contains.
     type_tree: HashMap<TypeDeclId, HashSet<TypeDeclId>>,
-    manual_type_impls: HashMap<TypeDeclId, String>,
-    manual_json_impls: HashMap<TypeDeclId, String>,
-    opaque_for_visitor: HashSet<TypeDeclId>,
 }
 
 impl<'a> GenerateCtx<'a> {
-    fn new(
-        crate_data: &'a TranslatedCrate,
-        manual_type_impls: &[(&str, &str)],
-        manual_json_impls: &[(&str, &str)],
-        opaque_for_visitor: &[&str],
-    ) -> Self {
+    fn new(crate_data: &'a TranslatedCrate) -> Self {
         let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
         let mut type_tree = HashMap::default();
         for ty in &crate_data.type_decls {
@@ -68,27 +59,11 @@ impl<'a> GenerateCtx<'a> {
             type_tree.insert(ty.def_id, contained);
         }
 
-        let mut ctx = GenerateCtx {
+        GenerateCtx {
             crate_data,
             name_to_type,
             type_tree,
-            manual_type_impls: Default::default(),
-            manual_json_impls: Default::default(),
-            opaque_for_visitor: Default::default(),
-        };
-        ctx.manual_type_impls = manual_type_impls
-            .iter()
-            .map(|(name, def)| (ctx.id_from_name(name), def.to_string()))
-            .collect();
-        ctx.manual_json_impls = manual_json_impls
-            .iter()
-            .map(|(name, def)| (ctx.id_from_name(name), def.to_string()))
-            .collect();
-        ctx.opaque_for_visitor = opaque_for_visitor
-            .iter()
-            .map(|name| ctx.id_from_name(name))
-            .collect();
-        ctx
+        }
     }
 }
 
@@ -189,59 +164,6 @@ fn generate_ml(
     template_dir: PathBuf,
     output_dir: PathBuf,
 ) -> anyhow::Result<()> {
-    let manual_type_impls = &[
-        // Hand-written because we replace the `FileId` with the corresponding file.
-        ("FileId", "file"),
-        (
-            "HashConsed",
-            "'a0 (* Not actually hash-consed on the OCaml side *)",
-        ),
-    ];
-    let manual_json_impls = &[
-        // Hand-written because we interpret it as a list.
-        (
-            "charon_lib::ids::index_vec::IndexVec",
-            "list_of_json arg1_of_json ctx json",
-        ),
-        // Hand-written because we interpret it as a list.
-        (
-            "charon_lib::ids::index_map::IndexMap",
-            indoc!(
-                r#"
-                let* list = list_of_json (option_of_json arg1_of_json) ctx json in
-                Ok (List.filter_map (fun x -> x) list)
-                "#
-            ),
-        ),
-        // Hand-written because we turn it into a list of pairs.
-        (
-            "indexmap::map::IndexMap",
-            "list_of_json (key_value_pair_of_json arg0_of_json arg1_of_json) ctx json",
-        ),
-        // Hand-written because we replace the `FileId` with the corresponding file name.
-        (
-            "FileId",
-            indoc!(
-                r#"
-                let* file_id = FileId.id_of_json ctx json in
-                let file = FileId.Map.find file_id ctx.id_to_file_map in
-                Ok file
-                "#,
-            ),
-        ),
-        (
-            "HashConsed",
-            r#"Error "use `hash_consed_val_of_json` instead""#,
-        ), // Not actually used
-        (
-            "Ty",
-            "hash_consed_val_of_json ctx.ty_hashcons_map ty_kind_of_json ctx json",
-        ),
-        (
-            "TraitRef",
-            "hash_consed_val_of_json ctx.tref_hashcons_map trait_ref_contents_of_json ctx json",
-        ),
-    ];
     // Types for which we don't want to generate a type at all.
     let dont_generate_ty = &[
         "ItemOpacity",
@@ -250,14 +172,8 @@ fn generate_ml(
         "charon_lib::ids::index_vec::IndexVec",
         "charon_lib::ids::index_map::IndexMap",
     ];
-    // Types that we don't want visitors to go into.
-    let opaque_for_visitor = &["Name"];
-    let ctx = GenerateCtx::new(
-        &crate_data,
-        manual_type_impls,
-        manual_json_impls,
-        opaque_for_visitor,
-    );
+
+    let ctx = GenerateCtx::new(&crate_data);
 
     // Items that we don't want to emit in the generated output.
     let manually_implemented: HashSet<_> = [
