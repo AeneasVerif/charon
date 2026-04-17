@@ -676,7 +676,7 @@ and match_generic_args (ctx : 'fun_body ctx) (c : match_config) (m : maps)
        "match_generic_args: " ^ "\n- pgenerics: "
        ^ generic_args_to_string { tgt = TkPattern } pgenerics
        ^ "\n- generics: "
-       ^ PrintTypes.generic_args_to_string fmt_env generics));
+       ^ Print.generic_args_to_string fmt_env generics));
   let merged_generics =
     List.concat
       [
@@ -722,7 +722,7 @@ let builtin_fun_id_to_string (fid : T.builtin_fun_id) : string =
   | Index { is_array; mutability; is_range } ->
       let ty = if is_array then "Array" else "Slice" in
       let op = if is_range then "SubSlice" else "Index" in
-      let mutability = PrintTypes.ref_kind_to_string mutability in
+      let mutability = Print.ref_kind_to_string mutability in
       ty ^ op ^ mutability
   | PtrFromParts mut ->
       let mut = if mut = RMut then "_mut" else "" in
@@ -953,9 +953,8 @@ let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
       raise
         (Failure "Float, string and byte string literals are not valid in names")
 
-let rec name_with_generic_args_to_pattern_aux (ctx : 'fun_body ctx)
-    (c : to_pat_config) (n : T.name) (generics : generic_args option) : pattern
-    =
+let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
+    (n : T.name) (generics : generic_args option) : pattern =
   match n with
   | [] -> raise (Failure "Empty names are not valid")
   | [ e ] -> path_elem_with_generic_args_to_pattern ctx c e generics
@@ -1067,8 +1066,7 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
       let fmt_env = ctx_to_fmt_env ctx in
       raise
         (Failure
-           ("Can't convert type to pattern: "
-           ^ PrintTypes.ty_to_string fmt_env ty))
+           ("Can't convert type to pattern: " ^ Print.ty_to_string fmt_env ty))
 
 and trait_ref_item_with_generics_to_pattern (ctx : 'fun_body ctx)
     (c : to_pat_config) (m : constraints) (trait_ref : T.trait_ref)

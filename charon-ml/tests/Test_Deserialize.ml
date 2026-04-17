@@ -57,12 +57,11 @@ let run_tests (folder : string) : unit =
             (* Test discriminant/tag roundtrip *)
             let print_ctx = PrintUtils.of_crate m in
             let print_var_id_opt = function
-              | Some v ->
-                  "Some (" ^ PrintTypes.variant_id_to_pretty_string v ^ ")"
+              | Some v -> "Some (" ^ Print.variant_id_to_pretty_string v ^ ")"
               | None -> "None"
             in
             let print_scalar_value_opt = function
-              | Some v -> "Some " ^ PrintValues.scalar_value_to_string v
+              | Some v -> "Some " ^ Print.scalar_value_to_string v
               | None -> "None"
             in
             let ptr_size =
@@ -74,7 +73,7 @@ let run_tests (folder : string) : unit =
                 | Enum _, [ (_, layout) ]
                   when Option.is_some layout.discriminant_layout -> begin
                     let name =
-                      PrintTypes.name_to_string print_ctx ty_decl.item_meta.name
+                      Print.name_to_string print_ctx ty_decl.item_meta.name
                     in
                     Types.VariantId.iteri
                       (fun var_id _ ->
@@ -101,7 +100,7 @@ let run_tests (folder : string) : unit =
                 | _ -> () (* Not an enum *))
               m.type_decls;
             (* Test that pretty-printing doesn't crash *)
-            let printed = PrintLlbcAst.Crate.crate_to_string m in
+            let printed = Print.crate_to_string m in
             log#ldebug (lazy ("\n" ^ printed ^ "\n")))
       llbc_files
   in

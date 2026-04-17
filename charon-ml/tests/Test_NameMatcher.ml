@@ -98,7 +98,7 @@ module PatternTest = struct
     let fail () =
       failwith
         ("Couldn't parse attribute: `"
-        ^ PrintTypes.raw_attribute_to_string attribute
+        ^ Print.raw_attribute_to_string attribute
         ^ "`")
     in
     let is_pattern_test =
@@ -202,7 +202,7 @@ module PatternTest = struct
     else if (not test.success) && match_success then (
       log#error "Pattern %s matches function %s but shouldn't\n"
         (pattern_to_string env.print_config (Option.get test.pattern))
-        (PrintTypes.name_to_string env.fmt_env decl.item_meta.name);
+        (Print.name_to_string env.fmt_env decl.item_meta.name);
       false)
     else if test.success && not pattern_to_name_success then (
       let pattern, name = Option.get pattern_name in
