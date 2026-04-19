@@ -8,7 +8,7 @@ Each item has an **opacity** level[^1]:
 
 1. **Transparent** — the item is fully translated.
 2. **Foreign** — the default for items outside the current crate. Translation depends on normal Rust visibility: for types, translate fully if it's a struct with all-public fields or an enum; for other items this is equivalent to Opaque.
-3. **Opaque** — only the name and signature are translated, not the contents. For functions and globals, the body is not translated. For types (structs, enums, unions), the fields/variants are not translated. For traits and trait impls, the default method is  only translated if it is used somewhere else. For modules, the contents are not explored (but items referenced from elsewhere are still translated).
+3. **Opaque** — only the name and signature are translated, not the contents. For functions and globals, the body is not translated. For types (structs, enums, unions), the fields/variants are not translated. For traits and trait impls, provided methods (those with a default body in the trait) are only translated if used somewhere else. For modules, the contents are not explored (but items referenced from elsewhere are still translated).
 4. **Invisible** — nothing is translated for this item. The corresponding map will not have an entry for the item ID. Useful when even the signature causes errors.
 
 ## Selection process
@@ -50,7 +50,7 @@ Concretely: if a module is annotated `#[charon::opaque]`, a function inside it t
 - **`--include <PATTERN>`** — Set matched items to **transparent**.
 - **`--opaque <PATTERN>`** — Set matched items to **opaque**.
 - **`--exclude <PATTERN>`** — Set matched items to **invisible**.
-- **`--extract-opaque-bodies`** — Alias for `--include *`. Makes all items transparent.
+- **`--extract-opaque-bodies`** — Makes all items transparent. Internally changes the base pattern from `_ → Foreign` to `_ → Transparent` (see Pattern list below), so it affects all items including external ones.
 - **`--translate-all-methods`** — Include provided trait methods even if unused. Equivalent to making all trait declarations transparent.  
 
 ### Pattern list
@@ -65,7 +65,7 @@ crate          → Transparent  (current crate is always transparent)
 <--exclude>    → Invisible    (user exclusion)
 ```
 
-The default is equivalent to `--opaque '*' --include crate`: everything is foreign except items in the current crate which are transparent.
+In the default setup, everything outside the current crate is treated as Foreign and items in the current crate are Transparent. Note: there is no `--foreign` CLI flag, so this cannot be expressed directly via CLI flags — `--opaque` would make external items Opaque (signature only), which differs from Foreign for types (Foreign types with all-public fields are fully translated).
 
 ### Pattern syntax
 
