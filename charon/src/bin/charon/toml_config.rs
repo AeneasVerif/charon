@@ -11,6 +11,7 @@ pub struct TomlConfig {
     pub charon: CharonTomlConfig,
     #[serde(default)]
     pub rustc: RustcTomlConfig,
+    /// Extra arguments forwarded to `cargo build` (equivalent to flags after `--`).
     #[serde(default)]
     pub cargo: CargoTomlConfig,
 }
