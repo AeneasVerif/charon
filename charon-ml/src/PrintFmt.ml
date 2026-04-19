@@ -1376,6 +1376,9 @@ let pp_assertion (env : fmt_env) (fmt : Format.formatter) (a : assertion) : unit
         " (misaligned_pointer_dereference)"
     | Some NullPointerDereference -> " (null_pointer_dereference)"
     | Some (InvalidEnumConstruction _) -> " (invalid_enum_construction)"
+    | Some ResumedAfterReturn -> " (resumed_after_return)"
+    | Some ResumedAfterPanic -> " (resumed_after_panic)"
+    | Some ResumedAfterDrop -> " (resumed_after_drop)"
   in
   Format.fprintf fmt "assert(%s == %s)%s"
     (operand_to_string env a.cond)

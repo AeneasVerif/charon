@@ -76,6 +76,9 @@ and builtin_assert_kind =
           - [found] *)
   | NullPointerDereference
   | InvalidEnumConstruction of operand
+  | ResumedAfterReturn
+  | ResumedAfterPanic
+  | ResumedAfterDrop
 
 and call = { func : fn_operand; args : operand list; dest : place }
 and copy_non_overlapping = { src : operand; dst : operand; count : operand }

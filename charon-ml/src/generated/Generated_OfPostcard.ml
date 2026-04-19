@@ -243,6 +243,9 @@ and builtin_assert_kind_of_postcard (ctx : of_postcard_ctx)
      | 7 ->
          let* x_0 = operand_of_postcard ctx st in
          Ok (InvalidEnumConstruction x_0)
+     | 8 -> Ok ResumedAfterReturn
+     | 9 -> Ok ResumedAfterPanic
+     | 10 -> Ok ResumedAfterDrop
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and builtin_fun_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
