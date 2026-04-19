@@ -265,6 +265,9 @@ and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
           operand_of_json ctx invalid_enum_construction
         in
         Ok (InvalidEnumConstruction invalid_enum_construction)
+    | `String "ResumedAfterReturn" -> Ok ResumedAfterReturn
+    | `String "ResumedAfterPanic" -> Ok ResumedAfterPanic
+    | `String "ResumedAfterDrop" -> Ok ResumedAfterDrop
     | _ -> Error "")
 
 and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
