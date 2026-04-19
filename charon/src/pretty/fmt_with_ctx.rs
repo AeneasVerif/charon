@@ -98,6 +98,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for BuiltinAssertKind {
             BuiltinAssertKind::InvalidEnumConstruction(..) => {
                 write!(f, "invalid_enum_construction")
             }
+            BuiltinAssertKind::ResumedAfterReturn => write!(f, "resumed_after_return"),
+            BuiltinAssertKind::ResumedAfterDrop => write!(f, "resumed_after_drop"),
+            BuiltinAssertKind::ResumedAfterPanic => write!(f, "resumed_after_panic"),
         }
     }
 }
