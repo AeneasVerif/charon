@@ -69,7 +69,9 @@ impl TomlConfig {
         }
         config.extract_opaque_bodies |= self.charon.extract_opaque_bodies;
         config.start_from.extend(self.charon.start_from);
-        config.start_from_if_exists.extend(self.charon.start_from_if_exists);
+        config
+            .start_from_if_exists
+            .extend(self.charon.start_from_if_exists);
         if config.start_from_attribute.is_none() {
             config.start_from_attribute = self.charon.start_from_attribute;
         }
