@@ -100,7 +100,7 @@ pub enum Body {
     /// The body of the function item we add for each trait method declaration, if the trait
     /// doesn't provide a default for that method.
     TraitMethodWithoutDefault,
-    /// Function declared in an `extern { ... }` block.
+    /// Function declared in an `extern { ... }` block. The string is the foreign symbol name.
     Extern(#[drive(skip)] String),
     /// Rust intrinsic function.
     Intrinsic {
