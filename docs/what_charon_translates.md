@@ -8,7 +8,7 @@ Each item has an **opacity** level[^1]:
 
 1. **Transparent** — the item is fully translated.
 2. **Foreign** — the default for items outside the current crate. Translation depends on normal Rust visibility: for types, translate fully if it's a struct with all-public fields or an enum; for other items this is equivalent to Opaque.
-3. **Opaque** — only the name and signature are translated, not the contents. For functions and globals, the body is not translated. For types (structs, enums, unions), the fields/variants are not translated. For traits and trait impls, provided methods (those with a default body in the trait) are only translated if used somewhere else. For modules, the contents are not explored (but items referenced from elsewhere are still translated).
+3. **Opaque** — only the name and signature are translated, not the contents. For functions and globals, the body is not translated. For types (structs, enums, unions), the fields/variants are not translated. For traits and trait impls, methods with a default body are only translated if mentioned (used or overridden) anywhere in the final crate. For modules, the contents are not explored (but items referenced from elsewhere are still translated).
 4. **Invisible** — nothing is translated for this item. The corresponding map will not have an entry for the item ID. Useful when even the signature causes errors.
 
 ## Selection process
