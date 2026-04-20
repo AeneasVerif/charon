@@ -10,8 +10,8 @@ detailed documentation with `--help`.
 In particular, you can pretty-print the translated crate with both `--print-ullbc` and `--print-llbc`, depending on the Charon intermediate representation you wish to use.
 
 Charon supports per-project configuration via the standard `[package.metadata.charon]` section in
-`Cargo.toml`. Config file options are merged with CLI options; when both are present, CLI takes
-precedence.
+`Cargo.toml`. Scalar options (e.g. `preset`) use the CLI value if given, otherwise the config file
+value. Boolean options are OR-ed. List options (e.g. `start_from`, `exclude`) are always merged.
 
 ```toml
 [package.metadata.charon]

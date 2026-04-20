@@ -49,7 +49,8 @@ pub struct CargoTomlConfig {
 
 impl TomlConfig {
     /// Applies the options specified in the toml file to the cli options and cargo args.
-    /// In case of conflict, cli options take precedence.
+    /// Scalar options (preset, start_from_attribute): CLI value wins if set; TOML value used
+    /// otherwise. Boolean options: OR of CLI and TOML. List options: always merged (both combined).
     pub(crate) fn apply(self, mut config: CliOpts, cargo_args: &mut Vec<String>) -> CliOpts {
         if config.preset.is_none() {
             config.preset = self.preset.map(|s| {
