@@ -3,3 +3,9 @@ name = "test-cargo-toml"
 version = "0.1.0"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
+
+[package.metadata.charon]
+extract_opaque_bodies = true
+
+[package.metadata.charon.rustc]
+flags = ["--cfg", "abc"]

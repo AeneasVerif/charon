@@ -9,12 +9,12 @@ provides various options and flags to tweak its behaviour: you can display a
 detailed documentation with `--help`.
 In particular, you can pretty-print the translated crate with both `--print-ullbc` and `--print-llbc`, depending on the Charon intermediate representation you wish to use.
 
-If there is a `Charon.toml` file at the root of your project, `charon cargo` will also take options
-from it. Config file options are merged with CLI options; when both are present, CLI takes
-precedence. The following options are supported:
+Charon supports per-project configuration via the standard `[package.metadata.charon]` section in
+`Cargo.toml`. Config file options are merged with CLI options; when both are present, CLI takes
+precedence.
 
 ```toml
-[charon]
+[package.metadata.charon]
 # Preset to apply. Uses the same names as the CLI (e.g. "aeneas", "eurydice", "soteria",
 # "old-defaults", "raw-mir"). CLI --preset takes precedence.
 # preset = "aeneas"
@@ -56,11 +56,11 @@ opaque = [
 # Hide marker traits (e.g. Send, Sync) from the output.
 # hide_marker_traits = false
 
-[cargo]
+[package.metadata.charon.cargo]
 # Extra arguments forwarded to `cargo build` (equivalent to flags after `--` on the CLI).
 flags = ["--features", "my_feature"]
 
-[rustc]
+[package.metadata.charon.rustc]
 # Extra arguments passed directly to rustc.
 # flags = ["--cfg", "some_cfg"]
 ```
