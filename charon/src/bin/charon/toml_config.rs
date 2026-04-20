@@ -51,13 +51,17 @@ impl TomlConfig {
     /// Applies the options specified in the toml file to the cli options and cargo args.
     /// Scalar options (preset, start_from_attribute): CLI value wins if set; TOML value used
     /// otherwise. Boolean options: OR of CLI and TOML. List options: always merged (both combined).
-    pub(crate) fn apply(self, mut config: CliOpts, cargo_args: &mut Vec<String>) -> CliOpts {
-        if config.preset.is_none() {
-            config.preset = self.preset.map(|s| {
-                Preset::from_str(&s, true /* ignore_case */).unwrap_or_else(
-                    |_| panic!("Unknown preset {s:?} in Cargo.toml. Valid values: aeneas, eurydice, soteria, old-defaults, raw-mir, tests"),
-                )
-            });
+    pub(crate) fn apply(
+        self,
+        mut config: CliOpts,
+        cargo_args: &mut Vec<String>,
+    ) -> anyhow::Result<CliOpts> {
+        if let (None, Some(s)) = (&config.preset, self.preset) {
+            config.preset = Some(
+                Preset::from_str(&s, true /* ignore_case */).map_err(|_| {
+                    anyhow::anyhow!("Unknown preset {s:?} in Cargo.toml. Valid values: aeneas, eurydice, soteria, old-defaults, raw-mir, tests")
+                })?,
+            );
         }
         config.extract_opaque_bodies |= self.extract_opaque_bodies;
         config.start_from.extend(self.start_from);
@@ -74,7 +78,7 @@ impl TomlConfig {
         config.exclude.extend(self.exclude);
         config.rustc_args.extend(self.rustc.flags);
         cargo_args.extend(self.cargo.flags);
-        config
+        Ok(config)
     }
 }
 
