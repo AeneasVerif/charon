@@ -61,11 +61,11 @@ impl TomlConfig {
     /// In case of conflict, cli options take precedence.
     pub(crate) fn apply(self, mut config: CliOpts, cargo_args: &mut Vec<String>) -> CliOpts {
         if config.preset.is_none() {
-            if let Some(s) = self.charon.preset {
-                config.preset = Some(Preset::from_str(&s, true /* ignore_case */).unwrap_or_else(
+            config.preset = self.charon.preset.map(|s| {
+                Preset::from_str(&s, true /* ignore_case */).unwrap_or_else(
                     |_| panic!("Unknown preset {s:?} in Charon.toml. Valid values: aeneas, eurydice, soteria, old-defaults, raw-mir, tests"),
-                ));
-            }
+                )
+            });
         }
         config.extract_opaque_bodies |= self.charon.extract_opaque_bodies;
         config.start_from.extend(self.charon.start_from);
