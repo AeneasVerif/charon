@@ -9,15 +9,15 @@ provides various options and flags to tweak its behaviour: you can display a
 detailed documentation with `--help`.
 In particular, you can pretty-print the translated crate with both `--print-ullbc` and `--print-llbc`, depending on the Charon intermediate representation you wish to use.
 
-Charon supports per-project configuration via the standard `[package.metadata.charon]` section in
-`Cargo.toml`. Scalar options (e.g. `preset`) use the CLI value if given, otherwise the config file
-value. Boolean options are OR-ed. List options (e.g. `start_from`, `exclude`) are always merged.
+Charon supports per-project configuration via the `[package.metadata.charon]` section in `Cargo.toml`. 
+Scalar options (e.g. `preset`) use the CLI value if given, otherwise the config file
+value. Boolean options are OR-ed. List options (e.g., `start_from`, `exclude`) are always merged.
 
 ```toml
 [package.metadata.charon]
 # Preset to apply. Uses the same names as the CLI (e.g. "aeneas", "eurydice", "soteria",
 # "old-defaults", "raw-mir"). CLI --preset takes precedence.
-# preset = "aeneas"
+preset = "aeneas"
 
 # Entry points for translation. Charon translates these items and everything they reference,
 # following the opacity rules. When absent (and no --start-from is given on the CLI), the whole
