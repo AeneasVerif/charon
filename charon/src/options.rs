@@ -266,6 +266,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_serialize: bool,
+    /// Skip the typecheck passes.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_typecheck: bool,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long)]
     #[serde(default)]
@@ -514,6 +518,8 @@ pub struct TranslateOptions {
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
     /// List of traits for which we transform associated types to type parameters.
     pub lift_associated_types: Vec<NamePattern>,
+    /// Skip the typecheck passes.
+    pub no_typecheck: bool,
     /// Transform Drop to Call drop_in_place
     pub desugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
@@ -633,6 +639,7 @@ impl TranslateOptions {
             lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
+            no_typecheck: options.no_typecheck,
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
             translate_poly_drop_glue: options.precise_drops,

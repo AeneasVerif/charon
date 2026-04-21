@@ -158,6 +158,9 @@ Options:
       --no-serialize
           Don't serialize the final (U)LLBC to a file
 
+      --no-typecheck
+          Skip the typecheck passes
+
       --abort-on-error
           Panic on the first error. This is useful for debugging
 

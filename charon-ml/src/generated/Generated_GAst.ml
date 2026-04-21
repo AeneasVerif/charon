@@ -518,6 +518,7 @@ type cli_options = {
       (** Don't deduplicate values (types, trait refs) in the .(u)llbc file.
           This makes the file easier to inspect. *)
   no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
+  no_typecheck : bool;  (** Skip the typecheck passes. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Consider any warnings to be errors. *)

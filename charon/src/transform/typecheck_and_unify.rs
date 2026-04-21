@@ -607,6 +607,9 @@ impl Check {
 }
 
 impl TransformPass for Check {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        !options.no_typecheck
+    }
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.for_each_item_mut(|ctx, mut item| {
             let mut visitor = TypeCheckVisitor {
