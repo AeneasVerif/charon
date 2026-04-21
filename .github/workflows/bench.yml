@@ -1,0 +1,86 @@
+name: Benchmark
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Nightly at 06:00 UTC
+  workflow_dispatch:
+
+# Only one benchmark at a time (avoids races on the branch writes).
+concurrency:
+  group: benchmark
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  benchmark:
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build charon
+        run: |
+          CHARON_PATH=$(nix build .#charon --print-out-paths --no-link)
+          echo "CHARON_PATH=$CHARON_PATH" >> "$GITHUB_ENV"
+
+      - name: Clone benchmark crates
+        run: |
+          git clone --depth 1 https://github.com/signalapp/SparsePostQuantumRatchet \
+            "$RUNNER_TEMP/SparsePostQuantumRatchet"
+
+          git clone --depth 1 https://github.com/signalapp/libsignal \
+            "$RUNNER_TEMP/libsignal"
+
+      - name: Measure instruction counts
+        run: |
+          declare -A crates=(
+            [SparsePostQuantumRatchet]="SparsePostQuantumRatchet"
+            [libsignal-crypto]="libsignal/rust/crypto"
+          )
+
+          for crate_name in "${!crates[@]}"; do
+            crate_dir="$RUNNER_TEMP/${crates[$crate_name]}"
+            echo "::group::$crate_name"
+
+            # Run charon under perf to count retired instructions.
+            # perf stat --inherit (the default) counts all child processes,
+            # so this captures charon + cargo + charon_driver.
+            perf stat -e instructions -x ';' \
+              -o "$RUNNER_TEMP/perf_${crate_name}.txt" \
+              -- "$CHARON_PATH/bin/charon" cargo \
+                   --preset=fast \
+                   --dest-file "$RUNNER_TEMP/${crate_name}.llbc" \
+                   -- --manifest-path "$crate_dir/Cargo.toml"
+
+            # perf -x ';' output: <count>;<unit>;<event>;...
+            icount=$(grep 'instructions' "$RUNNER_TEMP/perf_${crate_name}.txt" \
+                     | head -1 | cut -d';' -f1 | tr -d ' ')
+            echo "  $crate_name: $icount instructions"
+
+            # Append one JSON object per line.
+            jq -n --arg name "$crate_name" --argjson val "$icount" \
+              '{"name": $name, "unit": "instructions", "value": $val}' \
+              >> "$RUNNER_TEMP/bench_results.jsonl"
+
+            echo "::endgroup::"
+          done
+
+          jq --slurp . "$RUNNER_TEMP/bench_results.jsonl" > benchmark_result.json
+          cat benchmark_result.json
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark_result.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Push results to the bench-reports branch for the graph.
+          auto-push: true
+          gh-pages-branch: bench-reports
+          benchmark-data-dir-path: bench
+          # Comment on the commit when instruction count regresses by >20%.
+          alert-threshold: '120%'
+          comment-on-alert: true
+          fail-on-alert: false

@@ -37,6 +37,17 @@ jobs:
           # Fill in toolchain placeholder in index.html
           sed "s/nightly-xxxx-xx-xx/$toolchain/" .github/index.html > charon/target/doc/index.html
 
+      - name: Include benchmark dashboard from bench-reports
+        run: |
+          # Fetch the benchmark data that the bench workflow pushes to bench-reports.
+          if git fetch origin bench-reports 2>/dev/null; then
+            git checkout origin/bench-reports -- bench/ 2>/dev/null && \
+              mv bench/ charon/target/doc/bench/ || \
+              echo "No benchmark data on bench-reports yet, skipping."
+          else
+            echo "No bench-reports branch yet, skipping benchmark dashboard."
+          fi
+
       - name: Upload static files as artifact
         uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
         with:
