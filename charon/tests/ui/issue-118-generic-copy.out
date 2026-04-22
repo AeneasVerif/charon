@@ -49,7 +49,7 @@ pub trait Copy<Self>
 struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
-pub fn {impl Clone for Foo}::clone<'_0>(_1: &'_0 Foo) -> Foo
+pub fn {impl Clone for Foo}::clone<'_0>(self_1: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return
     let self_1: &'1 Foo; // arg #1
@@ -80,7 +80,7 @@ impl Copy for Foo {
 }
 
 // Full name: test_crate::copy_foo
-fn copy_foo(_1: Foo)
+fn copy_foo(x_1: Foo)
 {
     let _0: (); // return
     let x_1: Foo; // arg #1
@@ -99,7 +99,7 @@ fn copy_foo(_1: Foo)
 }
 
 // Full name: test_crate::copy_generic
-fn copy_generic<T>(_1: T)
+fn copy_generic<T>(x_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -131,7 +131,7 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::copy_assoc_ty
-fn copy_assoc_ty<T>(_1: @TraitClause1::Ty)
+fn copy_assoc_ty<T>(x_1: @TraitClause1::Ty)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Trait<T>,

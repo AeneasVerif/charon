@@ -250,7 +250,7 @@ pub trait Freeze<Self>
 pub trait Unpin<Self>
 
 // Full name: core::ptr::metadata::from_raw_parts
-pub fn from_raw_parts<T, T1>(_1: *const T1, _2: {built_in impl Pointee for T}::Metadata) -> *const T
+pub fn from_raw_parts<T, T1>(data_pointer_1: *const T1, metadata_2: {built_in impl Pointee for T}::Metadata) -> *const T
 where
     [@TraitClause0]: Sized<T1>,
     [@TraitClause1]: Thin<T1>,

@@ -41,7 +41,7 @@ impl Trait for () {
 struct Bar {}
 
 // Full name: test_crate::{Bar}::bar
-fn bar<'_0>(_1: &'_0 Bar)
+fn bar<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1

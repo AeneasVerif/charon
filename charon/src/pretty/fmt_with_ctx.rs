@@ -251,6 +251,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
                 write!(f, "{{\n{body}{tab}}}")
             }
             Body::TraitMethodWithoutDefault => write!(f, "= <method_without_default_body>"),
+            Body::Extern(name) => write!(f, "= <extern:{name}>"),
+            Body::Intrinsic { name, .. } => write!(f, "= <intrinsic:{name}>"),
             Body::Opaque => write!(f, "= <opaque>"),
             Body::Missing => write!(f, "= <missing>"),
             Body::Error(error) => write!(f, "= error(\"{}\")", error.msg),
@@ -573,12 +575,42 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
         write!(f, "{params}")?;
 
         // Arguments
+        let n_args = self.signature.inputs.len();
+        let args_of_locals = |l: &Locals| {
+            l.locals
+                .iter()
+                .skip(1)
+                .take(n_args)
+                .map(|l| format!("{l}"))
+                .collect::<Vec<String>>()
+        };
+
+        let arg_names = match &self.body {
+            Body::Unstructured(body) => args_of_locals(&body.locals),
+            Body::Structured(body) => args_of_locals(&body.locals),
+            Body::Intrinsic { arg_names, .. } => arg_names
+                .iter()
+                .enumerate()
+                .map(|(i, name)| {
+                    let id = LocalId::new(i + 1);
+                    match name {
+                        Some(name) => format!("{name}_{id}"),
+                        None => format!("_{id}"),
+                    }
+                })
+                .collect(),
+            Body::Error(..)
+            | Body::Extern(..)
+            | Body::Missing
+            | Body::Opaque
+            | Body::TraitMethodWithoutDefault
+            | Body::TargetDispatch(..) => (0..n_args)
+                .map(|i| format!("{}", LocalId::new(i + 1).with_ctx(ctx)))
+                .collect(),
+        };
         let mut args: Vec<String> = Vec::new();
-        for (i, ty) in self.signature.inputs.iter().enumerate() {
-            // The input variables start at index 1
-            // TODO: use the locals to get the variable names
-            let id = LocalId::new(i + 1);
-            args.push(format!("{}: {}", id.with_ctx(ctx), ty.with_ctx(ctx)));
+        for (ty, name) in self.signature.inputs.iter().zip(arg_names.into_iter()) {
+            args.push(format!("{}: {}", name, ty.with_ctx(ctx)));
         }
         let args = args.join(", ");
         write!(f, "({args})")?;

@@ -118,7 +118,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::wrap
-fn wrap<'a>(_1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
+fn wrap<'a>(x_1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 {
     let _0: Option<&'6 u32>[{built_in impl Sized for &'6 u32}]; // return
     let x_1: &'9 u32; // arg #1
@@ -132,7 +132,7 @@ fn wrap<'a>(_1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 }
 
 // Full name: test_crate::wrap2
-fn wrap2<'a>(_1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'_ u32}]
+fn wrap2<'a>(x_1: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'_ u32}]
 where
     [@TraitClause0]: Clone<&'a ()>,
 {

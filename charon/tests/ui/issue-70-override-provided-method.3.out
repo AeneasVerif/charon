@@ -121,7 +121,7 @@ where
     [@TraitClause0]: GenericTrait<Self, T>,
 = <method_without_default_body>
 
-fn test_crate::GenericTrait::provided<Self, T, U>(_1: T, _2: U)
+fn test_crate::GenericTrait::provided<Self, T, U>(x_1: T, y_2: U)
 where
     [@TraitClause0]: GenericTrait<Self, T>,
     [@TraitClause1]: Sized<U>,
@@ -178,7 +178,7 @@ where
 }
 
 // Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided
-fn {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided<T, U>(_1: Option<T>[@TraitClause0], _2: U)
+fn {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided<T, U>(x_1: Option<T>[@TraitClause0], y_2: U)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
@@ -249,7 +249,7 @@ where
 }
 
 // Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided
-fn {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>(_1: Option<T>[@TraitClause0], _2: U)
+fn {impl GenericTrait<Option<T>[@TraitClause0]> for NoOverride<T>[@TraitClause0]}::provided<T, U>(x_1: Option<T>[@TraitClause0], y_2: U)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,

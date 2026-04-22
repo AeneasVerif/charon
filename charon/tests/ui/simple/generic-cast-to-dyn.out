@@ -48,7 +48,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::foo
-fn foo<'_0, T>(_1: &'_0 T) -> &'_0 (dyn Any + 'static)
+fn foo<'_0, T>(x_1: &'_0 T) -> &'_0 (dyn Any + 'static)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Any<T>,

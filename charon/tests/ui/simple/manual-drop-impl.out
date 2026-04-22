@@ -72,7 +72,7 @@ where
 }
 
 // Full name: test_crate::{impl Drop for Foo<T>[@TraitClause0]}::drop
-pub fn {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0, T>(_1: &'_0 mut Foo<T>[@TraitClause0])
+pub fn {impl Drop for Foo<T>[@TraitClause0]}::drop<'_0, T>(self_1: &'_0 mut Foo<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
 {

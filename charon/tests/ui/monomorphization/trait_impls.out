@@ -13,7 +13,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::{impl Trait for bool}::method
-pub fn method<'_0>(_1: &'_0 bool)
+pub fn method<'_0>(self_1: &'_0 bool)
 {
     let _0: (); // return
     let self_1: &'1 bool; // arg #1
@@ -24,7 +24,7 @@ pub fn method<'_0>(_1: &'_0 bool)
 }
 
 // Full name: test_crate::do_test::<bool>
-fn do_test::<bool>(_1: bool)
+fn do_test::<bool>(x_1: bool)
 {
     let _0: (); // return
     let x_1: bool; // arg #1

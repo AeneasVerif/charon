@@ -104,7 +104,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::identity
-fn identity<T>(_1: T) -> T
+fn identity<T>(x_1: T) -> T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -116,7 +116,7 @@ where
     return
 }
 
-fn test_crate::identity::<&_ mut _><'_0, T0>(_1: &'_0 mut T0) -> &'_0 mut T0
+fn test_crate::identity::<&_ mut _><'_0, T0>(x_1: &'_0 mut T0) -> &'_0 mut T0
 where
     [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
 {
@@ -128,7 +128,7 @@ where
     return
 }
 
-fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(_1: Option<&'_0 mut T0>) -> Option<&'_0 mut T0>
+fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(x_1: Option<&'_0 mut T0>) -> Option<&'_0 mut T0>
 where
     [@TraitClause0]: core::marker::Sized::<Option<&_ mut _>><'_0, T0>,
 {
@@ -140,7 +140,7 @@ where
     return
 }
 
-fn test_crate::identity::<Option<Option<&_ mut _>>><'_0, T0>(_1: Option<Option<&'_0 mut T0>>) -> Option<Option<&'_0 mut T0>>
+fn test_crate::identity::<Option<Option<&_ mut _>>><'_0, T0>(x_1: Option<Option<&'_0 mut T0>>) -> Option<Option<&'_0 mut T0>>
 where
     [@TraitClause0]: core::marker::Sized::<Option<Option<&_ mut _>>><'_0, T0>,
 {
@@ -153,7 +153,7 @@ where
 }
 
 // Full name: test_crate::use_id_mut
-fn use_id_mut<X, A>(_1: A)
+fn use_id_mut<X, A>(x_1: A)
 where
     [@TraitClause0]: Sized<X>,
     [@TraitClause1]: Sized<A>,

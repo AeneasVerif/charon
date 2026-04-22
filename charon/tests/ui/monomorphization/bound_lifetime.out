@@ -20,7 +20,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::foo
-fn foo<'_0>(_1: &'_0 u32) -> Option::<&'_ u32>
+fn foo<'_0>(x_1: &'_0 u32) -> Option::<&'_ u32>
 {
     let _0: Option::<&'_ u32>; // return
     let x_1: &'1 u32; // arg #1

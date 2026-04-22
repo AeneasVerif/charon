@@ -50,7 +50,7 @@ where
 }
 
 // Full name: test_crate::assert_is_iterator
-fn assert_is_iterator<I>(_1: I)
+fn assert_is_iterator<I>(it_1: I)
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: IsIterator<I>,
@@ -75,7 +75,7 @@ pub trait IntoIterator<Self, Self_Item, Self_IntoIter>
 }
 
 // Full name: test_crate::check
-fn check<I, Clause1_Item, Clause1_IntoIter>(_1: Clause1_IntoIter)
+fn check<I, Clause1_Item, Clause1_IntoIter>(it_1: Clause1_IntoIter)
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: IntoIterator<I, Clause1_Item, Clause1_IntoIter>,

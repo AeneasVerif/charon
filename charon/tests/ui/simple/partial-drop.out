@@ -17,7 +17,7 @@ struct Foo {
 }
 
 // Full name: test_crate::foo
-fn foo(_1: Foo)
+fn foo(f_1: Foo)
 {
     let _0: (); // return
     let f_1: Foo; // arg #1

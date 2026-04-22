@@ -132,7 +132,7 @@ where
 {}
 
 // Full name: test_crate::Thing::foo::{impl Fn<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call
-fn {impl Fn<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call<'_0, Self>(_1: &'_0 closure<Self>[@TraitClause0], _2: (@TraitClause0::Item,))
+fn {impl Fn<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call<'_0, Self>(_1: &'_0 closure<Self>[@TraitClause0], tupled_args_2: (@TraitClause0::Item,))
 where
     [@TraitClause0]: Thing<Self>,
 {
@@ -150,7 +150,7 @@ where
 }
 
 // Full name: test_crate::Thing::foo
-fn foo<Self>(_1: @TraitClause0::Item)
+fn foo<Self>(i_1: @TraitClause0::Item)
 where
     [@TraitClause0]: Thing<Self>,
 {
@@ -186,7 +186,7 @@ where
 }
 
 // Full name: test_crate::Thing::foo::{impl FnMut<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call_mut
-fn {impl FnMut<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call_mut<'_0, Self>(_1: &'_0 mut closure<Self>[@TraitClause0], _2: (@TraitClause0::Item,))
+fn {impl FnMut<(@TraitClause0::Item,)> for closure<Self>[@TraitClause0]}::call_mut<'_0, Self>(state_1: &'_0 mut closure<Self>[@TraitClause0], args_2: (@TraitClause0::Item,))
 where
     [@TraitClause0]: Thing<Self>,
 {

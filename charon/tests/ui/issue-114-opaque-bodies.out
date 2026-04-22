@@ -31,7 +31,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::bool::{bool}::then_some
-pub fn then_some<T>(_1: bool, _2: T) -> Option<T>[@TraitClause0]
+pub fn then_some<T>(self_1: bool, t_2: T) -> Option<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Destruct<T>,
@@ -72,7 +72,7 @@ where
 
 // Full name: core::cmp::PartialEq::ne
 #[lang_item("cmp_partialeq_ne")]
-pub fn ne<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
+pub fn ne<'_0, '_1, Self, Rhs>(self_1: &'_0 Self, other_2: &'_1 Rhs) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 {
@@ -89,7 +89,7 @@ where
 }
 
 // Full name: core::convert::num::{impl From<i32> for i64}::from
-pub fn {impl From<i32> for i64}::from(_1: i32) -> i64
+pub fn {impl From<i32> for i64}::from(small_1: i32) -> i64
 {
     let _0: i64; // return
     let small_1: i32; // arg #1
@@ -267,7 +267,7 @@ fn use_inlines() -> u32
 }
 
 // Full name: test_crate::bool_to_opt
-fn bool_to_opt(_1: bool) -> Option<()>[{built_in impl Sized for ()}]
+fn bool_to_opt(b_1: bool) -> Option<()>[{built_in impl Sized for ()}]
 {
     let _0: Option<()>[{built_in impl Sized for ()}]; // return
     let b_1: bool; // arg #1
@@ -285,7 +285,7 @@ fn bool_to_opt(_1: bool) -> Option<()>[{built_in impl Sized for ()}]
 }
 
 // Full name: test_crate::convert
-fn convert(_1: i32) -> i64
+fn convert(x_1: i32) -> i64
 {
     let _0: i64; // return
     let x_1: i32; // arg #1
@@ -299,7 +299,7 @@ fn convert(_1: i32) -> i64
 }
 
 // Full name: test_crate::vec
-fn vec(_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
+fn vec(_x_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
     let _x_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
@@ -320,7 +320,7 @@ fn max() -> usize
 }
 
 // Full name: test_crate::partial_eq
-fn partial_eq<T>(_1: T)
+fn partial_eq<T>(_x_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: PartialEq<T, T>,

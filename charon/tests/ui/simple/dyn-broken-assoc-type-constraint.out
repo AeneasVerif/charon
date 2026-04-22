@@ -75,7 +75,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Broken for T}::broken
-pub fn {impl Broken for T}::broken<'_0, T>(_1: &'_0 T)
+pub fn {impl Broken for T}::broken<'_0, T>(self_1: &'_0 T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Foo<()>,
@@ -106,7 +106,7 @@ where
 }
 
 // Full name: test_crate::{impl Broken for T}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}<T>(_1: *mut (dyn Broken<Assoc = ()>))
+unsafe fn {vtable_drop_shim}<T>(dyn_self_1: *mut (dyn Broken<Assoc = ()>))
 where
     [@TraitClause0]: Sized<T>,
 {

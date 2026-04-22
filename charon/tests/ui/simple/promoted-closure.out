@@ -125,7 +125,7 @@ pub fn foo() -> &'static closure
 }
 
 // Full name: test_crate::foo::{impl Fn<(u32,)> for closure}::call
-fn {impl Fn<(u32,)> for closure}::call<'_0>(_1: &'_0 closure, _2: (u32,)) -> u32
+fn {impl Fn<(u32,)> for closure}::call<'_0>(_1: &'_0 closure, tupled_args_2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 closure; // arg #1
@@ -139,7 +139,7 @@ fn {impl Fn<(u32,)> for closure}::call<'_0>(_1: &'_0 closure, _2: (u32,)) -> u32
 }
 
 // Full name: test_crate::foo::{impl FnMut<(u32,)> for closure}::call_mut
-fn {impl FnMut<(u32,)> for closure}::call_mut<'_0>(_1: &'_0 mut closure, _2: (u32,)) -> u32
+fn {impl FnMut<(u32,)> for closure}::call_mut<'_0>(state_1: &'_0 mut closure, args_2: (u32,)) -> u32
 {
     let _0: u32; // return
     let state_1: &'_0 mut closure; // arg #1

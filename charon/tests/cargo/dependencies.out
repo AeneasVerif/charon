@@ -84,7 +84,7 @@ const UNIT_METADATA: () = UNIT_METADATA()
 struct closure {}
 
 // Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}::call_once
-fn {impl FnOnce<(u32,)> for closure}::call_once(_1: closure, _2: (u32,)) -> u32
+fn {impl FnOnce<(u32,)> for closure}::call_once(_1: closure, tupled_args_2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: closure; // arg #1
@@ -117,7 +117,7 @@ impl FnOnce<(u32,)> for closure {
 }
 
 // Full name: test_cargo_dependencies::main::silly_incr
-fn silly_incr<'_0>(_1: &'_0 mut u32)
+fn silly_incr<'_0>(x_1: &'_0 mut u32)
 {
     let _0: (); // return
     let x_1: &'1 mut u32; // arg #1
