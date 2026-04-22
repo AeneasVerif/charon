@@ -27,23 +27,7 @@ fn transform_constant_expr(
     mut val: Box<ConstantExpr>,
 ) -> Operand {
     let rval = match val.kind {
-        ConstantExprKind::Literal(_)
-        | ConstantExprKind::Var(_)
-        | ConstantExprKind::RawMemory(..)
-        | ConstantExprKind::TraitConst(..)
-        | ConstantExprKind::FnDef(..)
-        | ConstantExprKind::Opaque(_) => {
-            // Nothing to do
-            // TODO: for trait const: might come from a top-level impl, so we might
-            // want to introduce an intermediate statement to be able to evaluate
-            // it as a function call, like for globals.
-            return Operand::Const(val);
-        }
-        // Here we use a copy, rather than a move -- moving a global would leave it uninitialized,
-        // which would e.g. make the following code fail:
-        //     const GLOBAL: usize = 0;
-        //     let x = GLOBAL;
-        //     let y = GLOBAL; // if moving, at this point GLOBAL would be uninitialized
+        // Here we use a copy, rather than a move -- moving a global would leave it uninitialized.
         ConstantExprKind::Global(global_ref) => {
             return Operand::Copy(Place::new_global(global_ref, val.ty));
         }
@@ -66,7 +50,7 @@ fn transform_constant_expr(
             let (rk, bval, metadata) = match cexpr {
                 ConstantExprKind::Ref(bval, metadata) => (None, bval, metadata),
                 ConstantExprKind::Ptr(rk, bval, metadata) => (Some(rk), bval, metadata),
-                _ => unreachable!("Unexpected constant expr kind in ref/ptr"),
+                _ => unreachable!(),
             };
 
             // As the value is originally an argument, it must be Sized, hence no metadata
@@ -121,27 +105,19 @@ fn transform_constant_expr(
             let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
             Rvalue::Aggregate(aggregate_kind, fields)
         }
-        ConstantExprKind::Array(fields) => {
+        ConstantExprKind::Array(fields) if let TyKind::Array(ty, _) = val.ty.kind() => {
             let fields = fields
                 .into_iter()
                 .map(|x| transform_constant_expr(ctx, Box::new(x)))
                 .collect_vec();
-
             let len =
                 ConstantExpr::mk_usize(ScalarValue::Unsigned(UIntTy::Usize, fields.len() as u128));
-            let TyKind::Array(ty, _) = val.ty.kind() else {
-                unreachable!("Non array type in array constant");
-            };
             Rvalue::Aggregate(AggregateKind::Array(ty.clone(), Box::new(len)), fields)
         }
-        ConstantExprKind::FnPtr(fptr) => {
-            let TyKind::FnPtr(sig) = val.ty.kind() else {
-                unreachable!("FnPtr constant must have FnPtr type");
-            };
+        ConstantExprKind::FnPtr(fptr) if let TyKind::FnPtr(sig) = val.ty.kind() => {
             let from_ty =
                 TyKind::FnDef(sig.clone().map(|_| fptr.clone().move_under_binder())).into_ty();
             let to_ty = TyKind::FnPtr(sig.clone()).into_ty();
-
             Rvalue::UnaryOp(
                 UnOp::Cast(CastKind::FnPtr(from_ty.clone(), to_ty)),
                 Operand::Const(Box::new(ConstantExpr {
@@ -164,7 +140,7 @@ fn transform_constant_expr(
             // Normalize further into a place access.
             return transform_constant_expr(ctx, val);
         }
-        ConstantExprKind::VTableRef(..) => return Operand::Const(val),
+        _ => return Operand::Const(val),
     };
     Operand::Move(ctx.rval_to_place(rval, val.ty.clone()))
 }
