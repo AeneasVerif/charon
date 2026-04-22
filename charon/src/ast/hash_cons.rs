@@ -40,6 +40,7 @@ pub struct HashConsId(usize);
 // equality on `HashCons` to be broken.
 mod intern_table {
     use indexmap::IndexSet as SeqHashSet;
+    use std::borrow::Borrow;
     use std::sync::{Arc, LazyLock, RwLock};
 
     use super::{HashConsId, HashConsable, HashConsed};
@@ -58,7 +59,13 @@ mod intern_table {
     }
     static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> = LazyLock::new(Default::default);
 
-    pub fn intern<T: HashConsable>(inner: T) -> HashConsed<T> {
+    // The excessive generality is to make it work for both `U = T` and `U = Arc<T>`.
+    pub fn intern<T: HashConsable, U>(inner: U) -> HashConsed<T>
+    where
+        Arc<T>: Borrow<U>,
+        U: Into<Arc<T>> + std::hash::Hash,
+        U: indexmap::Equivalent<Arc<T>>,
+    {
         // Fast read-only check.
         #[expect(irrefutable_let_patterns)] // https://github.com/rust-lang/rust/issues/139369
         let arc = if let read_guard = INTERNED.read().unwrap()
@@ -73,12 +80,47 @@ mod intern_table {
             if let Some(arc) = set.get(&inner) {
                 arc.clone()
             } else {
-                let arc: Arc<T> = Arc::new(inner);
+                let arc: Arc<T> = inner.into();
                 set.insert(arc.clone());
                 arc
             }
         };
         HashConsed(HashByAddr(arc))
+    }
+
+    /// Mutate the contents in-place if possible.
+    pub fn mutate_in_place<T: HashConsable, R, F: FnOnce(&mut T) -> R>(
+        x: &mut HashConsed<T>,
+        f: F,
+    ) -> Result<R, F> {
+        let arc = &mut x.0.0;
+        // Every value has at least two pointers: the current value and the one stored in the
+        // global map. If there are exactly two, we may mutate directly by discarding the one in
+        // the global map temporarily.
+        if Arc::strong_count(arc) != 2 {
+            return Err(f);
+        }
+        {
+            // Take the write guard just long enough to drop the other `Arc` to this value.
+            let mut write_guard = INTERNED.write().unwrap();
+            if let Some(other_arc) = write_guard.or_default::<T>().swap_take(&*arc) {
+                drop(other_arc);
+            } else {
+                // Nothing was removed, early return.
+                return Err(f);
+            }
+            // The Arc was removed from the map; `x` is invalid as interning the same value would
+            // result in a different pointer. NO MORE EARLY RETURN until we fix that.
+        }
+        // If we are still the sole owner, we can now mutate in-place.
+        let ret = match Arc::get_mut(arc) {
+            Some(val) => Ok(f(val)),
+            None => Err(f),
+        };
+        // Re-establish the interning invariant. If the same value was added to the map in the
+        // meantime, we'll get a pointer to that.
+        *x = HashConsed::from_arc(arc.clone());
+        ret
     }
 
     /// Identify this value uniquely amongst values of its type. The id depends on insertion
@@ -105,15 +147,24 @@ where
     pub fn new(inner: T) -> Self {
         intern_table::intern(inner)
     }
+    /// Rarely used: in case we already have an `Arc`, may avoid an allocation.
+    pub fn from_arc(inner: Arc<T>) -> Self {
+        intern_table::intern(inner)
+    }
 
     /// Clones if needed to get mutable access to the inner value.
     pub fn with_inner_mut<R>(&mut self, f: impl FnOnce(&mut T) -> R) -> R {
-        // The value is behind a shared `Arc`, we clone it in order to mutate it.
-        let mut value = self.inner().clone();
-        let ret = f(&mut value);
-        // Re-intern the new value.
-        *self = Self::new(value);
-        ret
+        match intern_table::mutate_in_place(self, f) {
+            Ok(r) => r,
+            Err(f) => {
+                // The value is behind a shared `Arc`, we clone it in order to mutate it.
+                let mut value = self.inner().clone();
+                let ret = f(&mut value);
+                // Re-intern the new value.
+                *self = Self::new(value);
+                ret
+            }
+        }
     }
 
     pub fn id(&self) -> HashConsId {
