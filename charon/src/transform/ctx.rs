@@ -53,12 +53,11 @@ pub trait UllbcPass: Sync {
     /// Log that the pass is about to be run on this body.
     fn log_before_body(&self, ctx: &TransformCtx, name: &Name, body: &Body) {
         let fmt_ctx = &ctx.into_fmt();
-        let body_str = body.to_string_with_ctx(fmt_ctx);
         trace!(
             "# About to run pass [{}] on `{}`:\n{}",
             self.name(),
             name.with_ctx(fmt_ctx),
-            body_str,
+            body.with_ctx(fmt_ctx),
         );
     }
 }

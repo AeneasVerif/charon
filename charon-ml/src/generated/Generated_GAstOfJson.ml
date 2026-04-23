@@ -448,6 +448,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("dest_file", dest_file);
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
           ("no_serialize", no_serialize);
+          ("no_typecheck", no_typecheck);
+          ("no_normalize", no_normalize);
           ("abort_on_error", abort_on_error);
           ("error_on_warnings", error_on_warnings);
           ("preset", preset);
@@ -507,6 +509,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           bool_of_json ctx no_dedup_serialized_ast
         in
         let* no_serialize = bool_of_json ctx no_serialize in
+        let* no_typecheck = bool_of_json ctx no_typecheck in
+        let* no_normalize = bool_of_json ctx no_normalize in
         let* abort_on_error = bool_of_json ctx abort_on_error in
         let* error_on_warnings = bool_of_json ctx error_on_warnings in
         let* preset = option_of_json preset_of_json ctx preset in
@@ -551,6 +555,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              dest_file;
              no_dedup_serialized_ast;
              no_serialize;
+             no_typecheck;
+             no_normalize;
              abort_on_error;
              error_on_warnings;
              preset;
@@ -1591,6 +1597,7 @@ and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
     (match js with
     | `String "OldDefaults" -> Ok OldDefaults
     | `String "RawMir" -> Ok RawMir
+    | `String "Fast" -> Ok Fast
     | `String "Aeneas" -> Ok Aeneas
     | `String "Eurydice" -> Ok Eurydice
     | `String "Soteria" -> Ok Soteria

@@ -20,11 +20,10 @@ pub struct Transform;
 ///
 /// We reconstruct this into a call to `Box::new(x)`.
 impl UllbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.treat_box_as_builtin
+    }
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        if !ctx.options.treat_box_as_builtin {
-            return;
-        }
-
         // We need to find a block that has exchange_malloc as the terminator:
         // ```text
         // @4 := alloc::alloc::exchange_malloc(..)

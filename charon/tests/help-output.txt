@@ -158,6 +158,12 @@ Options:
       --no-serialize
           Don't serialize the final (U)LLBC to a file
 
+      --no-typecheck
+          Skip the typecheck passes
+
+      --no-normalize
+          Don't normalize associated types
+
       --abort-on-error
           Panic on the first error. This is useful for debugging
 
@@ -170,6 +176,7 @@ Options:
           Possible values:
           - old-defaults: The default translation used before May 2025. After that, many passes were made optional and disabled by default
           - raw-mir:      Emit the MIR as unmodified as possible. This is very imperfect for now, we should make more passes optional
+          - fast:         Skip as many optional transformations as possible
           - aeneas
           - eurydice
           - soteria
