@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::hax::prelude::*;
 use paste::paste;
 use rustc_middle::ty::TyCtxt;
 
@@ -58,7 +58,7 @@ macro_rules! mk {
 }
 
 mod types {
-    use crate::prelude::*;
+    use crate::hax::prelude::*;
     use rustc_middle::ty;
     use std::{cell::RefCell, sync::Arc};
 
@@ -109,14 +109,14 @@ mod types {
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
         pub item_refs: HashMap<(DefId, ty::GenericArgsRef<'tcx>, bool), ItemRef>,
         /// Cache the trait resolution engine for each item.
-        pub predicate_searcher: Option<crate::traits::PredicateSearcher<'tcx>>,
+        pub predicate_searcher: Option<crate::hax::traits::PredicateSearcher<'tcx>>,
         /// Cache of trait refs to resolved impl expressions.
-        pub impl_exprs: HashMap<ty::PolyTraitRef<'tcx>, crate::traits::ImplExpr>,
+        pub impl_exprs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::ImplExpr>,
     }
 
     #[derive(Clone)]
     pub struct Base<'tcx> {
-        pub options: Rc<crate::options::Options>,
+        pub options: Rc<crate::hax::options::Options>,
         pub local_ctx: Rc<RefCell<LocalContextS>>,
         pub opt_def_id: Option<rustc_hir::def_id::DefId>,
         pub cache: Rc<RefCell<GlobalCache<'tcx>>>,
@@ -124,7 +124,10 @@ mod types {
     }
 
     impl<'tcx> Base<'tcx> {
-        pub fn new(tcx: rustc_middle::ty::TyCtxt<'tcx>, options: crate::options::Options) -> Self {
+        pub fn new(
+            tcx: rustc_middle::ty::TyCtxt<'tcx>,
+            options: crate::hax::options::Options,
+        ) -> Self {
             Self {
                 tcx,
                 cache: Default::default(),
@@ -155,7 +158,7 @@ pub type StateWithOwner<'tcx> = State<Base<'tcx>, DefId, ()>;
 pub type StateWithBinder<'tcx> = State<Base<'tcx>, DefId, types::UnitBinder<'tcx>>;
 
 impl<'tcx> StateWithBase<'tcx> {
-    pub fn new(tcx: rustc_middle::ty::TyCtxt<'tcx>, options: crate::options::Options) -> Self {
+    pub fn new(tcx: rustc_middle::ty::TyCtxt<'tcx>, options: crate::hax::options::Options) -> Self {
         Self {
             base: Base::new(tcx, options),
             owner: (),

@@ -2,8 +2,8 @@
 //! This module is independent from the rest of hax, in particular it doesn't use its
 //! state-tracking machinery.
 
-use crate::ItemPredicate;
-use crate::options::BoundsOptions;
+use crate::hax::ItemPredicate;
+use crate::hax::options::BoundsOptions;
 use itertools::{Either, Itertools};
 use std::collections::{HashMap, hash_map::Entry};
 
@@ -155,7 +155,7 @@ fn local_bound_predicates<'tcx>(
         options: BoundsOptions,
         predicates: &mut Vec<ItemPredicate<'tcx>>,
     ) {
-        if crate::inherits_parent_clauses(tcx, def_id) {
+        if crate::hax::inherits_parent_clauses(tcx, def_id) {
             let parent = tcx.parent(def_id);
             acc_predicates(tcx, parent, options, predicates);
         }

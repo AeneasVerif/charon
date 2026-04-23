@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::hax::prelude::*;
 
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;

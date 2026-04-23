@@ -1,8 +1,8 @@
 //! Copies of the relevant type-level types. These are semantically-rich representations of
 //! type-level concepts such as types and trait references.
-use crate::prelude::*;
-use crate::sinto_as_usize;
-use crate::sinto_todo;
+use crate::hax::prelude::*;
+use crate::hax::sinto_as_usize;
+use crate::hax::sinto_todo;
 
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
@@ -664,7 +664,7 @@ impl Alias {
 
         // Try to normalize the alias first.
         let ty = ty::Ty::new_alias(tcx, *alias_kind, *alias_ty);
-        let ty = crate::traits::normalize(tcx, typing_env, ty);
+        let ty = crate::hax::traits::normalize(tcx, typing_env, ty);
         let ty::Alias(alias_kind, alias_ty) = ty.kind() else {
             let ty: Ty = ty.sinto(s);
             return ty.kind().clone();
@@ -685,7 +685,7 @@ impl Alias {
                 // yet we dont have a binder around (could even be several). Binding this correctly
                 // is therefore difficult. Since our trait resolution ignores lifetimes anyway, we
                 // just erase them. See also https://github.com/hacspec/hax/issues/747.
-                let trait_ref = crate::traits::erase_free_regions(tcx, trait_ref);
+                let trait_ref = crate::hax::traits::erase_free_regions(tcx, trait_ref);
                 let item = tcx.associated_item(alias_ty.def_id);
                 AliasKind::Projection {
                     assoc_item: AssocItem::sfrom(s, &item),
@@ -1009,7 +1009,7 @@ pub struct ReprOptions {
     pub int_specified: bool,
     /// The actual discriminant type resulting from the representation options.
     #[value({
-        use crate::rustc_middle::ty::util::IntTypeExt;
+        use rustc_middle::ty::util::IntTypeExt;
         self.discr_type().to_ty(s.base().tcx).sinto(s)
     })]
     pub typ: Ty,

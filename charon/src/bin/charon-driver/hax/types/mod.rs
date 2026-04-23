@@ -8,8 +8,8 @@ pub use mir::*;
 pub use new::*;
 pub use ty::*;
 
-use crate::prelude::*;
-use crate::sinto_todo;
+use crate::hax::prelude::*;
+use crate::hax::sinto_todo;
 
 sinto_reexport!(rustc_span::Span);
 

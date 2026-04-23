@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::hax::prelude::*;
 
 use {
     rustc_hir::definitions::DisambiguatorState,

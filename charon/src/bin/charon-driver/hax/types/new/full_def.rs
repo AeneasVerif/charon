@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::hax::prelude::*;
 
 use itertools::Itertools;
 use rustc_hir as hir;
@@ -226,7 +226,7 @@ impl ItemRef {
         let s = &s.with_hax_owner(&self.def_id);
         let def_id = self.def_id.as_def_id_even_synthetic();
         let args = self.rustc_args(s);
-        crate::drop_glue_shim(tcx, def_id, Some(args))
+        crate::hax::drop_glue_shim(tcx, def_id, Some(args))
     }
 
     /// For `FnMut`&`Fn` closures: the MIR for the `call_once` method; it simply calls
@@ -240,7 +240,7 @@ impl ItemRef {
         let args = self.rustc_args(s);
         let def_id = self.def_id.real_rust_def_id();
         let closure_ty = inst_binder(tcx, s.typing_env(), Some(args), tcx.type_of(def_id));
-        crate::closure_once_shim(tcx, closure_ty)
+        crate::hax::closure_once_shim(tcx, closure_ty)
     }
 }
 
@@ -1209,7 +1209,7 @@ fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
     use ty::Upcast;
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();
-    let pred: ty::TraitPredicate = crate::traits::self_predicate(tcx, s.owner_id())
+    let pred: ty::TraitPredicate = crate::hax::traits::self_predicate(tcx, s.owner_id())
         .no_bound_vars()
         .unwrap()
         .upcast(tcx);

@@ -2,7 +2,7 @@
 //! semantically rich representation that contains no high-level control-flow operations like loops
 //! or patterns; instead the control flow is entirely described by gotos and switches on integer
 //! values.
-use crate::prelude::*;
+use crate::hax::prelude::*;
 use rustc_middle::{mir, ty};
 
 sinto_reexport!(rustc_abi::FieldIdx);

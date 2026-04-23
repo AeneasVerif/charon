@@ -1,4 +1,4 @@
-use crate::{id_table::hash_consing::HashConsed, prelude::*};
+use crate::hax::{id_table::hash_consing::HashConsed, prelude::*};
 
 pub mod resolution;
 mod utils;
@@ -205,7 +205,7 @@ pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
         s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref, &warn));
     let impl_expr: ImplExpr = match resolved {
         Ok(x) => x.sinto(s),
-        Err(e) => crate::fatal!(s, "{}", e),
+        Err(e) => crate::hax::fatal!(s, "{}", e),
     };
     s.with_cache(|cache| cache.impl_exprs.insert(trait_ref, impl_expr.clone()));
     impl_expr

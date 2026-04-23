@@ -1,8 +1,9 @@
 use crate::translate::translate_crate::TransItemSourceKind;
 
 use super::translate_ctx::*;
+use crate::hax;
+use crate::hax::FullDefKind;
 use charon_lib::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
-use hax::FullDefKind;
 
 impl ItemTransCtx<'_, '_> {
     fn translate_drop_in_place_method_body(

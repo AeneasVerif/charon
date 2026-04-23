@@ -1,4 +1,5 @@
 //! Functions to translate constants to LLBC.
+use crate::hax;
 use rustc_middle::ty;
 
 use crate::translate::translate_bodies::translate_variant_id;
@@ -27,7 +28,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::ConstantLiteral::Char(c) => Literal::Char(*c),
             hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
             hax::ConstantLiteral::Int(i) => {
-                use hax::ConstantInt;
+                use crate::hax::ConstantInt;
                 let scalar = match i {
                     ConstantInt::Int(v, int_type) => {
                         let ty = Self::translate_hax_int_ty(int_type);
@@ -77,7 +78,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .iter()
                     .map(|f| self.translate_constant_expr(span, &f.value))
                     .try_collect()?;
-                use hax::VariantKind;
+                use crate::hax::VariantKind;
                 let vid = if let VariantKind::Enum { index, .. } = *kind {
                     Some(translate_variant_id(index))
                 } else {

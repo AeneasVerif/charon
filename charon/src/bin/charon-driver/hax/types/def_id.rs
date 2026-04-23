@@ -6,8 +6,8 @@
 //! `hax-engine-names-extract` to have a build dependency on the whole
 //! frontend, that double the build times for the Rust part of hax.
 
-use crate::AdtInto;
-use crate::prelude::*;
+use crate::hax::AdtInto;
+use crate::hax::prelude::*;
 
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
@@ -75,14 +75,14 @@ const SYNTHETIC_CRATE_NAME: &str = "<synthetic>";
 /// have their own ad-hoc numbering scheme in rustc for now).
 #[derive(Clone, PartialEq, Eq)]
 pub struct DefId {
-    pub(crate) contents: crate::id_table::hash_consing::HashConsed<DefIdContents>,
+    pub(crate) contents: crate::hax::id_table::hash_consing::HashConsed<DefIdContents>,
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub struct DefIdContents {
     pub base: DefIdBase,
     /// The kind of definition this `DefId` points to.
-    pub kind: crate::DefKind,
+    pub kind: crate::hax::DefKind,
 }
 
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]

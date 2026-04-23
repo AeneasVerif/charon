@@ -2,7 +2,8 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::mem;
 
-use hax::{BaseState, Symbol};
+use crate::hax;
+use crate::hax::{BaseState, Symbol};
 use rustc_middle::ty;
 
 use super::translate_ctx::{ItemTransCtx, TraitImplSource, TransItemSourceKind};
@@ -97,7 +98,7 @@ impl BindingLevel {
 
     /// Important: we must push all the early-bound regions before pushing any other region.
     pub(crate) fn push_bound_region(&mut self, region: hax::BoundRegionKind) -> RegionId {
-        use hax::BoundRegionKind::*;
+        use crate::hax::BoundRegionKind::*;
         let name = match region {
             Anon => None,
             NamedForPrinting(symbol) | Named(_, symbol) => translate_region_name(symbol),
@@ -159,7 +160,7 @@ impl BindingLevel {
             self.bound_region_vars.is_empty(),
             "Trying to use two binders at the same binding level"
         );
-        use hax::BoundVariableKind::*;
+        use crate::hax::BoundVariableKind::*;
         for p in binder.bound_vars {
             match p {
                 Region(region) => {
@@ -388,7 +389,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         _span: Span,
         def: &hax::FullDef,
     ) -> Result<(), Error> {
-        use hax::FullDefKind;
+        use crate::hax::FullDefKind;
         if let Some(param_env) = def.param_env() {
             // Add the generic params.
             self.push_generic_params(&param_env.generics)?;
@@ -590,7 +591,7 @@ impl LifetimeMutabilityComputer {
             .or_default()
             .start_processing()
         {
-            use hax::SInto;
+            use crate::hax::SInto;
             use ty::{TypeSuperVisitable, TypeVisitable};
 
             struct LtMutabilityVisitor<'a, S> {

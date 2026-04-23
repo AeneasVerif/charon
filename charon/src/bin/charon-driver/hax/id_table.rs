@@ -170,15 +170,6 @@ pub mod hash_consing {
             f.debug_tuple("HashConsed").field(self.inner()).finish()
         }
     }
-
-    #[test]
-    fn test_hash_cons() {
-        let x = HashConsed::new(42u32);
-        let y = HashConsed::new(42u32);
-        assert_eq!(x, y);
-        let z = serde_json::from_value(serde_json::to_value(x.clone()).unwrap()).unwrap();
-        assert_eq!(x, z);
-    }
 }
 
 pub mod hash_by_addr {

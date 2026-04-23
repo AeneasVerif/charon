@@ -234,10 +234,11 @@ dependencies = [
  "derive_generic_visitor",
  "either",
  "env_logger",
+ "extension-traits",
  "flate2",
  "fraction",
  "hashbrown",
- "hax-frontend-exporter",
+ "hax-adt-into",
  "ignore",
  "index_vec",
  "indexmap",
@@ -250,6 +251,7 @@ dependencies = [
  "nom",
  "nom-supreme",
  "num-bigint",
+ "paste",
  "petgraph",
  "regex",
  "reqwest",
@@ -849,18 +851,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "hax-frontend-exporter"
-version = "0.3.5"
-dependencies = [
- "extension-traits",
- "hax-adt-into",
- "itertools 0.11.0",
- "lazy_static",
- "paste",
- "tracing",
 ]
 
 [[package]]

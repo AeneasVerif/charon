@@ -20,10 +20,11 @@ use std::cell::RefCell;
 use std::path::PathBuf;
 
 use super::translate_ctx::*;
+use crate::hax;
+use crate::hax::SInto;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, StartFrom, TranslateOptions};
 use charon_lib::transform::TransformCtx;
-use hax::SInto;
 use macros::VariantIndexArity;
 
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
@@ -208,7 +209,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// Returns the default translation kind for the given `DefId`. Returns `None` for items that
     /// we don't translate. Errors on unexpected items.
     pub fn base_kind_for_item(&mut self, def_id: &hax::DefId) -> Option<TransItemSourceKind> {
-        use hax::DefKind::*;
+        use crate::hax::DefKind::*;
         Some(match &def_id.kind {
             Enum | Struct | Union | TyAlias | ForeignTy => TransItemSourceKind::Type,
             Fn | AssocFn => TransItemSourceKind::Fun,

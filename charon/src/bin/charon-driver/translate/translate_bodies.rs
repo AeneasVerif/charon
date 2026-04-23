@@ -11,6 +11,7 @@ use std::ops::DerefMut;
 use std::panic;
 use std::rc::Rc;
 
+use crate::hax;
 use rustc_middle::mir;
 use rustc_middle::ty;
 
@@ -394,7 +395,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         span: Span,
         mir_place: &mir::Place<'tcx>,
     ) -> Result<Place, Error> {
-        use hax::{HasBase, SInto};
+        use crate::hax::{HasBase, SInto};
         use rustc_middle::ty;
 
         let tcx = self.hax_state.base().tcx;

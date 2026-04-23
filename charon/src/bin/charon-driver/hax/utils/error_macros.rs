@@ -28,7 +28,7 @@ mod internal_helpers {
         ($verb:ident, $s:ident, $span:expr, $message:expr) => {{
             let backtrace = std::backtrace::Backtrace::capture();
             eprintln!("{}", backtrace);
-            let mut builder = $crate::utils::_verb!($verb, $s.base().tcx.dcx(), $message);
+            let mut builder = $crate::hax::utils::_verb!($verb, $s.base().tcx.dcx(), $message);
             if let Some(span) = $span {
                 builder.span(span.clone());
             }
@@ -43,21 +43,21 @@ mod internal_helpers {
 
 macro_rules! report {
     ($verb:ident, $s:ident [$span:expr], $($tt:tt)*) => {
-        $crate::utils::_span_verb_base!($verb, $s, Some($span), $crate::utils::format_with_context!($($tt)*))
+        $crate::hax::utils::_span_verb_base!($verb, $s, Some($span), $crate::hax::utils::format_with_context!($($tt)*))
     };
     ($verb:ident, $s:ident, $($tt:tt)*) => {
-        $crate::utils::_span_verb_base!(
+        $crate::hax::utils::_span_verb_base!(
             $verb,
             $s,
             $s.base().opt_def_id.map(|did| $s.base().tcx.def_span(did)),
-            $crate::utils::format_with_context!($($tt)*)
+            $crate::hax::utils::format_with_context!($($tt)*)
         )
     };
 }
 
 #[allow(unused_macros)]
-macro_rules! warning { ($($tt:tt)*) => {$crate::utils::report!(warn, $($tt)*)} }
-macro_rules! fatal { ($($tt:tt)*) => {$crate::utils::report!(fatal, $($tt)*)} }
+macro_rules! warning { ($($tt:tt)*) => {$crate::hax::utils::report!(warn, $($tt)*)} }
+macro_rules! fatal { ($($tt:tt)*) => {$crate::hax::utils::report!(fatal, $($tt)*)} }
 
 pub(crate) use format_with_context;
 pub(crate) use internal_helpers::_span_verb_base;
@@ -76,7 +76,7 @@ macro_rules! supposely_unreachable_message {
 
 macro_rules! supposely_unreachable_fatal {
     ($s:ident $([$span:expr])?, $label:literal $($tt:tt)*) => {
-        $crate::utils::fatal!($s$([$span])?, $crate::utils::supposely_unreachable_message!($label) $($tt)+)
+        $crate::hax::utils::fatal!($s$([$span])?, $crate::hax::utils::supposely_unreachable_message!($label) $($tt)+)
     };
 }
 
@@ -88,9 +88,9 @@ pub(crate) use warning;
 
 pub trait SExpect: Sized {
     type Output;
-    fn s_expect<'tcx, S: crate::BaseState<'tcx>>(self, s: &S, message: &str) -> Self::Output;
+    fn s_expect<'tcx, S: crate::hax::BaseState<'tcx>>(self, s: &S, message: &str) -> Self::Output;
 
-    fn s_unwrap<'tcx, S: crate::BaseState<'tcx>>(self, s: &S) -> Self::Output {
+    fn s_unwrap<'tcx, S: crate::hax::BaseState<'tcx>>(self, s: &S) -> Self::Output {
         self.s_expect(s, "")
     }
 }
@@ -105,7 +105,7 @@ mod s_expect_impls {
     }
 
     fn s_expect_error<'tcx>(
-        s: &impl crate::BaseState<'tcx>,
+        s: &impl crate::hax::BaseState<'tcx>,
         expected: impl std::fmt::Debug,
         got: impl std::fmt::Debug,
         message: &str,
@@ -121,14 +121,22 @@ mod s_expect_impls {
 
     impl<T: std::fmt::Debug> SExpect for Option<T> {
         type Output = T;
-        fn s_expect<'tcx, S: crate::BaseState<'tcx>>(self, s: &S, message: &str) -> Self::Output {
+        fn s_expect<'tcx, S: crate::hax::BaseState<'tcx>>(
+            self,
+            s: &S,
+            message: &str,
+        ) -> Self::Output {
             self.unwrap_or_else(|| s_expect_error(s, Some(Dummy), None::<()>, message))
         }
     }
 
     impl<T: std::fmt::Debug, E: std::fmt::Debug> SExpect for Result<T, E> {
         type Output = T;
-        fn s_expect<'tcx, S: crate::BaseState<'tcx>>(self, s: &S, message: &str) -> Self::Output {
+        fn s_expect<'tcx, S: crate::hax::BaseState<'tcx>>(
+            self,
+            s: &S,
+            message: &str,
+        ) -> Self::Output {
             self.unwrap_or_else(|e| s_expect_error(s, Ok::<_, ()>(Dummy), Err::<(), _>(e), message))
         }
     }

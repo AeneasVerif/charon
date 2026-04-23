@@ -26,7 +26,7 @@
 //! The current implementation considers all predicates on traits to be outputs, which has the
 //! benefit of reducing the size of signatures. Moreover, the rules on which bounds are required vs
 //! implied are subtle. We may change this if this proves to be a problem.
-use crate::options::BoundsOptions;
+use crate::hax::options::BoundsOptions;
 use itertools::Itertools;
 use rustc_hir::LangItem;
 use rustc_hir::def::DefKind;

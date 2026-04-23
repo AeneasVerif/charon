@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::hax::prelude::*;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ConstantInt {

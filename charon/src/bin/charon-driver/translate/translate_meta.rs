@@ -8,8 +8,9 @@ use std::path::{Component, PathBuf};
 use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use super::translate_generics::BindingLevel;
+use crate::hax;
+use crate::hax::{DefPathItem, SInto};
 use charon_lib::ast::*;
-use hax::{DefPathItem, SInto};
 
 // Spans
 impl<'tcx> TranslateCtx<'tcx> {

@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::hax::prelude::*;
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::{mir, ty};
 
@@ -260,7 +260,7 @@ pub fn dyn_self_ty<'tcx>(
         // Stable sort predicates to prevent platform-specific ordering issues
         let mut preds: Vec<_> = [main_pred].into_iter().chain(ty_constraints).collect();
         preds.sort_by(|a, b| {
-            use crate::rustc_middle::ty::ExistentialPredicateStableCmpExt;
+            use rustc_middle::ty::ExistentialPredicateStableCmpExt;
             a.skip_binder().stable_cmp(tcx, &b.skip_binder())
         });
         tcx.mk_poly_existential_predicates(&preds)

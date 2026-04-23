@@ -133,7 +133,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                 {
                     val.sinto(s)
                 } else {
-                    use crate::rustc_middle::query::Key;
+                    use rustc_middle::query::Key;
                     let span = tcx
                         .def_ident_span(ucv.def)
                         .unwrap_or_else(|| ucv.def.default_span(tcx));
@@ -220,7 +220,7 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
             }
         }
         (ty::ValTreeKind::Leaf(x), ty::RawPtr(_, _)) => {
-            use crate::rustc_type_ir::inherent::Ty;
+            use rustc_type_ir::inherent::Ty;
             let raw_address = x.to_bits_unchecked();
             let uint_ty = UintTy::Usize;
             let usize_ty = rustc_middle::ty::Ty::new_usize(s.base().tcx).sinto(s);
@@ -248,7 +248,7 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     ecx: &rustc_const_eval::const_eval::CompileTimeInterpCx<'tcx>,
     op: rustc_const_eval::interpret::OpTy<'tcx>,
 ) -> InterpResult<'tcx, ConstantExpr> {
-    use crate::rustc_const_eval::interpret::Projectable;
+    use rustc_const_eval::interpret::Projectable;
     // Code inspired from `try_destructure_mir_constant_for_user_output` and
     // `const_eval::eval_queries::op_to_const`.
     let tcx = s.base().tcx;
