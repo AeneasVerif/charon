@@ -122,7 +122,6 @@ fn run_charon() -> Result<usize, CharonFailure> {
     // The bulk of the translation is done, we no longer need to interact with rustc internals. We
     // run several passes that simplify the items and cleanup the bodies.
     for pass in transformation_passes(&options) {
-        trace!("# Starting pass {}", pass.name());
         pass.run(&mut ctx);
     }
 

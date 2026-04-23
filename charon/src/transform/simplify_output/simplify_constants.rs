@@ -13,7 +13,7 @@
 use itertools::Itertools;
 
 use crate::transform::TransformCtx;
-use crate::transform::ctx::{BodyTransformCtx, UllbcPass, UllbcStatementTransformCtx};
+use crate::transform::ctx::{BodyTransformCtx, FusedUllbcPass, UllbcStatementTransformCtx};
 use crate::ullbc_ast::*;
 
 /// If the constant value is a constant ADT, push `Assign::Aggregate` statements
@@ -157,7 +157,7 @@ fn transform_operand(ctx: &mut UllbcStatementTransformCtx<'_>, op: &mut Operand)
 }
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
         !options.raw_consts
     }

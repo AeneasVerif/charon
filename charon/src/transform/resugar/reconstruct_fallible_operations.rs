@@ -13,7 +13,7 @@ use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{BlockId, ExprBody, Statement, StatementKind};
 
-use crate::transform::ctx::UllbcPass;
+use crate::transform::ctx::FusedUllbcPass;
 
 type LocalUses = IndexVec<BlockId, HashSet<LocalId>>;
 
@@ -591,7 +591,7 @@ fn remove_dynamic_checks(
 }
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
         options.reconstruct_fallible_operations
     }
