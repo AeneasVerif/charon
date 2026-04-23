@@ -572,6 +572,7 @@ pub enum Byte {
 /// - a structure with no field is a constant.
 /// - sometimes, Rust stores the initialization of an ADT as a constant
 ///   (if all the fields are constant) rather than as an aggregated value
+///
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
 /// [`ConstantExprKind::Global`] case: access to a global variable. We later desugar it to
@@ -687,6 +688,8 @@ pub struct ConstantExpr {
 /// TODO: we should prefix the type variants with "R" or "Rv", this would avoid collisions
 #[derive(
     Debug,
+    PartialEq,
+    Eq,
     Clone,
     EnumToGetters,
     EnumAsGetters,
@@ -787,7 +790,17 @@ pub enum Rvalue {
 /// initialization, `ls` is initialized to `⊥`, then this `⊥` is expanded to
 /// `Cons (⊥, ⊥)` upon the first assignment, at which point we can initialize
 /// the field 0, etc.).
-#[derive(Debug, Clone, VariantIndexArity, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    VariantIndexArity,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
 #[charon::variants_prefix("Aggregated")]
 pub enum AggregateKind {
     /// A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum

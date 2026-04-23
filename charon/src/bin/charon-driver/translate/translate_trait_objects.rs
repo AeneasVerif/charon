@@ -80,7 +80,7 @@ fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>, for_method: bool) -> T
     x
 }
 
-//// Translate the `dyn Trait` type.
+/// Translate the `dyn Trait` type.
 impl ItemTransCtx<'_, '_> {
     pub fn check_at_most_one_pred_has_methods(
         &mut self,
@@ -164,7 +164,7 @@ impl ItemTransCtx<'_, '_> {
 
         let params = self.binding_levels.pop().unwrap().params;
         Ok(Binder {
-            params: params,
+            params,
             skip_binder: val,
             kind: BinderKind::Dyn,
         })
@@ -187,7 +187,7 @@ pub struct VTableData {
     pub supertrait_map: IndexMap<TraitClauseId, Option<FieldId>>,
 }
 
-//// Generate the vtable struct.
+/// Generate the vtable struct.
 impl ItemTransCtx<'_, '_> {
     /// Query whether a trait is dyn compatible.
     /// TODO(dyn): for now we return `false` if the trait has any associated types, as we don't
@@ -316,7 +316,7 @@ impl ItemTransCtx<'_, '_> {
                     ..
                 } = item_def.kind()
                 {
-                    let name = self.translate_trait_item_name(&item_def_id)?;
+                    let name = self.translate_trait_item_name(item_def_id)?;
                     fields.push(TrVTableField::Method(name, sig.clone()));
                 }
             }
@@ -369,7 +369,7 @@ impl ItemTransCtx<'_, '_> {
         vtable_data: &VTableData,
     ) -> Result<IndexVec<FieldId, Field>, Error> {
         let mut fields = IndexVec::new();
-        let mut supertrait_counter = (0..).into_iter();
+        let mut supertrait_counter = 0..;
         for field in &vtable_data.fields {
             let (name, ty) = match field {
                 TrVTableField::Size => ("size".into(), usize_ty()),
@@ -404,7 +404,7 @@ impl ItemTransCtx<'_, '_> {
                             ctx.innermost_binder_mut()
                                 .trait_preds
                                 .insert(hax::GenericPredicateId::TraitSelf, TraitClauseId::ZERO);
-                            ctx.translate_poly_fun_sig(span, &sig)
+                            ctx.translate_poly_fun_sig(span, sig)
                         })?;
                         let sig = bound_sig.apply(&{
                             let mut generics = GenericArgs::empty();
@@ -449,7 +449,7 @@ impl ItemTransCtx<'_, '_> {
     #[tracing::instrument(skip(self, span))]
     fn register_preshim(&mut self, span: Span, trait_def: &hax::FullDef) -> Result<(), Error> {
         let item_src =
-            TransItemSource::monomorphic_trait(&trait_def.def_id(), TransItemSourceKind::TraitDecl);
+            TransItemSource::monomorphic_trait(trait_def.def_id(), TransItemSourceKind::TraitDecl);
         let item_id = match self.t_ctx.id_map.get(&item_src) {
             Some(tid) => *tid,
             None => {
@@ -507,7 +507,7 @@ impl ItemTransCtx<'_, '_> {
                     ..
                 } = item_def.kind()
                 {
-                    let name = self.translate_trait_item_name(&item_def_id)?;
+                    let name = self.translate_trait_item_name(item_def_id)?;
 
                     let _: FnPtr = self.translate_item(
                         span,
@@ -582,7 +582,7 @@ impl ItemTransCtx<'_, '_> {
                 .map(|_| None)
                 .collect();
         let (mut kind, layout) = if item_meta.opacity.with_private_contents().is_opaque() {
-            (TypeDeclKind::Opaque, None)
+            (TypeDeclKind::Opaque, SeqHashMap::default())
         } else {
             // First construct fields that use the real method signatures (which may use the `Self`
             // type). We fixup the types and generics below.
@@ -590,7 +590,7 @@ impl ItemTransCtx<'_, '_> {
             let fields = self.gen_vtable_struct_fields(span, &self_trait_ref, &vtable_data)?;
 
             let kind = TypeDeclKind::Struct(fields);
-            let layout = self.generate_naive_layout(span, &kind)?;
+            let l = self.generate_naive_layout(span, &kind)?;
             supertrait_map = vtable_data.supertrait_map;
             field_map = vtable_data.fields.map_ref(|tr_field| match *tr_field {
                 TrVTableField::Size => VTableField::Size,
@@ -599,7 +599,8 @@ impl ItemTransCtx<'_, '_> {
                 TrVTableField::Method(name, ..) => VTableField::Method(name),
                 TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(clause_id),
             });
-            (kind, Some(layout))
+            let layout = [(self.get_target_triple(), l)].into();
+            (kind, layout)
         };
 
         let mut generics = Default::default();
@@ -669,10 +670,10 @@ impl ItemTransCtx<'_, '_> {
         };
         Ok(TypeDecl {
             def_id: type_id,
-            item_meta: item_meta,
-            generics: generics,
+            item_meta,
+            generics,
             src: ItemSource::VTableTy {
-                dyn_predicate: dyn_predicate,
+                dyn_predicate,
                 field_map,
                 supertrait_map,
             },
@@ -685,7 +686,7 @@ impl ItemTransCtx<'_, '_> {
     }
 }
 
-//// Generate a vtable value.
+/// Generate a vtable value.
 impl ItemTransCtx<'_, '_> {
     /// Construct a constant that represents a reference to the vtable corresponding to this this trait proof.
     pub fn translate_vtable_instance_const(
@@ -779,10 +780,10 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Local helper function to get the vtable struct reference and trait declaration reference
-    fn get_vtable_instance_info<'a>(
+    fn get_vtable_instance_info(
         &mut self,
         span: Span,
-        impl_def: &'a hax::FullDef,
+        impl_def: &hax::FullDef,
         impl_kind: &TraitImplSource,
     ) -> Result<(Option<TraitImplRef>, TypeDeclRef), Error> {
         let implemented_trait = match impl_def.kind() {
@@ -983,7 +984,7 @@ impl ItemTransCtx<'_, '_> {
         // Retrieve the expected field types from the struct definition. This avoids complicated
         // substitutions.
         let field_tys = {
-            let vtable_decl_id = vtable_struct_ref.id.as_adt().unwrap().clone();
+            let vtable_decl_id = *vtable_struct_ref.id.as_adt().unwrap();
             let ItemRef::Type(vtable_def) = self.t_ctx.get_or_translate(vtable_decl_id.into())?
             else {
                 unreachable!()
@@ -1189,7 +1190,7 @@ impl ItemTransCtx<'_, '_> {
 
         Ok(FunDecl {
             def_id: init_func_id,
-            item_meta: item_meta,
+            item_meta,
             generics: self.into_generics(),
             signature: sig,
             src,
@@ -1247,14 +1248,11 @@ impl ItemTransCtx<'_, '_> {
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
 
-        let fun_id = self.register_item(span, &impl_func_def.this(), TransItemSourceKind::Fun);
+        let fun_id = self.register_item(span, impl_func_def.this(), TransItemSourceKind::Fun);
         let generics = self.outermost_binder().params.identity_args();
         builder.call(Call {
             func: FnOperand::Regular(FnPtr::new(FnPtrKind::Fun(fun_id), generics)),
-            args: method_args
-                .into_iter()
-                .map(|arg| Operand::Move(arg))
-                .collect(),
+            args: method_args.into_iter().map(Operand::Move).collect(),
             dest: ret_place,
         });
 
@@ -1450,7 +1448,7 @@ impl ItemTransCtx<'_, '_> {
                     ..
                 } = item_def.kind()
                 {
-                    let fun_name = self.translate_trait_item_name(&item_def_id)?;
+                    let fun_name = self.translate_trait_item_name(item_def_id)?;
                     if fun_name == *name {
                         assoc_func_def = Some(item_def);
                     }
@@ -1459,10 +1457,10 @@ impl ItemTransCtx<'_, '_> {
                     implied_predicates, ..}
                     = item_def.kind() {
                     trace!("MONO: show:\n {:?}", item_def.kind());
-                    if let Some(pred) = implied_predicates.predicates.first() {
-                        if let hax::ClauseKind::Trait(p) = &pred.clause.kind.value {
-                            assoc_types = Some(p.trait_ref.generic_args.clone());
-                        }
+                    if let Some(pred) = implied_predicates.predicates.first()
+                        && let hax::ClauseKind::Trait(p) = &pred.clause.kind.value
+                    {
+                        assoc_types = Some(p.trait_ref.generic_args.clone());
                     }
                 }
             }
@@ -1475,7 +1473,7 @@ impl ItemTransCtx<'_, '_> {
         // manually translate region params for dyn trait
         assert!(self.binding_levels.len() == 1);
         self.binding_levels.pop();
-        let def = self.poly_hax_def(&assoc_func_def.def_id())?;
+        let def = self.poly_hax_def(assoc_func_def.def_id())?;
         self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
 
         let hax::FullDefKind::AssocFn {
@@ -1515,7 +1513,7 @@ impl ItemTransCtx<'_, '_> {
             &signature.inputs[0],
             &method_ty,
             &trait_def,
-            format!("method_{}", name.to_string()).as_str(),
+            format!("method_{}", name).as_str(),
         )?;
 
         let mut types = vec![];
@@ -1541,7 +1539,7 @@ impl ItemTransCtx<'_, '_> {
                 regions: self.into_generics().regions,
                 ..GenericParams::empty()
             },
-            signature: signature,
+            signature,
             src: ItemSource::VTableMethodPreShim(*trait_id, *name, types),
             is_global_initializer: None,
             body,
@@ -1563,11 +1561,10 @@ impl ItemTransCtx<'_, '_> {
 
         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
         let erased_drop_shim_ptr = builder.new_var(
-            Some(format!("erased_{}_shim_ptr", name).into()),
+            Some(format!("erased_{}_shim_ptr", name)),
             erased_ptr_ty.clone(),
         );
-        let drop_shim_ptr =
-            builder.new_var(Some(format!("{}_shim_ptr", name).into()), drop_ty.clone());
+        let drop_shim_ptr = builder.new_var(Some(format!("{}_shim_ptr", name)), drop_ty.clone());
         // let target_self = builder.new_var(Some("target_self".into()), target_receiver.clone());
 
         // Construct the `(*ptr.ptr_metadata).method_field` place.
@@ -1582,7 +1579,7 @@ impl ItemTransCtx<'_, '_> {
         };
         // Retreive the method field from the vtable struct definition.
         let method_field_name = name;
-        let Some((method_field_id, _)) = vtable_decl.get_field_by_name(None, &method_field_name)
+        let Some((method_field_id, _)) = vtable_decl.get_field_by_name(None, method_field_name)
         else {
             panic!(
                 "Could not determine method index for {} in vtable",
@@ -1703,7 +1700,7 @@ impl ItemTransCtx<'_, '_> {
             panic!("MONO: vtable_decl not found");
         };
         // Retreive the method field from the vtable struct definition.
-        let method_field_name = format!("drop");
+        let method_field_name = "drop".to_string();
         let Some((method_field_id, _)) = vtable_decl.get_field_by_name(None, &method_field_name)
         else {
             panic!(

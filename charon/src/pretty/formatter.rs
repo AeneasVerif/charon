@@ -240,9 +240,9 @@ impl<'a> FmtCtx<'a> {
 
     fn reborrow<'b>(&'b self) -> FmtCtx<'b> {
         FmtCtx {
-            translated: self.translated.as_deref(),
+            translated: self.translated,
             generics: self.generics.clone(),
-            locals: self.locals.as_deref(),
+            locals: self.locals,
             indent_level: self.indent_level,
         }
     }

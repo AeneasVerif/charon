@@ -19,6 +19,8 @@ pub type ExprBody = GExprBody<BodyContents>;
 /// A raw statement: a statement without meta data.
 #[derive(
     Debug,
+    PartialEq,
+    Eq,
     Clone,
     EnumIsA,
     EnumAsGetters,
@@ -51,6 +53,7 @@ pub enum StatementKind {
     /// A non-diverging runtime check for a condition. This can be either:
     /// - Emitted for inlined "assumes" (which cause UB on failure)
     /// - Reconstructed from `if b { panic() }` if `--reconstruct-asserts` is set.
+    ///
     /// This statement comes with the effect that happens when the check fails
     /// (rather than representing it as an unwinding edge).
     Assert {
@@ -61,7 +64,7 @@ pub enum StatementKind {
     Nop,
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
     pub kind: StatementKind,
@@ -73,6 +76,8 @@ pub struct Statement {
 
 #[derive(
     Debug,
+    PartialEq,
+    Eq,
     Clone,
     EnumIsA,
     EnumAsGetters,
@@ -95,7 +100,16 @@ pub enum SwitchTargets {
 
 /// A raw terminator: a terminator without meta data.
 #[derive(
-    Debug, Clone, EnumIsA, EnumAsGetters, SerializeState, DeserializeState, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    EnumIsA,
+    EnumAsGetters,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 pub enum TerminatorKind {
     Goto {
@@ -137,7 +151,7 @@ pub enum TerminatorKind {
     UnwindResume,
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Terminator {
     pub span: Span,
     pub kind: TerminatorKind,
@@ -147,7 +161,7 @@ pub struct Terminator {
     pub comments_before: Vec<String>,
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[charon::rename("Block")]
 pub struct BlockData {
     pub statements: Vec<Statement>,

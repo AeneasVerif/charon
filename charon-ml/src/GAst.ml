@@ -27,6 +27,18 @@ type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
 type mixed_declaration_group = item_id g_declaration_group [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)
+type 'body body =
+  | Body of 'body gexpr_body
+  | TraitMethodWithoutDefault
+  | Extern of string
+  | Intrinsic of { name : string; arg_names : string list }
+  | TargetDispatch of (string * fun_decl_ref) list
+  | Opaque
+  | Missing
+  | Error of error
+[@@deriving show]
+
+(* Hand-written because the rust equivalent isn't generic *)
 type 'body gfun_decl = {
   def_id : FunDeclId.id;
   item_meta : item_meta;
@@ -34,7 +46,7 @@ type 'body gfun_decl = {
   signature : fun_sig;
   src : item_source;
   is_global_initializer : GlobalDeclId.id option;
-  body : 'body gexpr_body option;
+  body : 'body body;
 }
 [@@deriving show]
 
@@ -47,7 +59,7 @@ type target_info = { target_pointer_size : int; is_little_endian : bool }
 type 'fun_body gcrate = {
   name : string;
   options : cli_options;
-  target_information : target_info;
+  target_information : (string * target_info) list;
   declarations : declaration_group list;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;

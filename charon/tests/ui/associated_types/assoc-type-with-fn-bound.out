@@ -73,6 +73,7 @@ where
     [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -81,7 +82,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Trait
 pub trait Trait<Self, Self_Foo>
@@ -99,7 +101,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait<F> for F}::call
-pub fn {impl Trait<F> for F}::call<'_0, F>(_1: &'_0 F)
+pub fn {impl Trait<F> for F}::call<'_0, F>(self_1: &'_0 F)
 where
     [@TraitClause0]: Fn<F, (), ()>,
     [@TraitClause1]: Sized<F>,

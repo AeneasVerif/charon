@@ -7,7 +7,6 @@
 #![allow(dead_code)]
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use itertools::Itertools;
-use snapbox;
 use snapbox::filter::Filter;
 use std::fmt::Display;
 use std::path::Path;
@@ -121,6 +120,7 @@ pub fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
                 ImplElem::Ty(..) => "<inherent impl>".to_string(),
             },
             PathElem::Instantiated(..) => "<mono>".to_string(),
+            PathElem::Target(target) => target.clone(),
         })
         .join("::")
 }

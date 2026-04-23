@@ -21,6 +21,7 @@ pub fn is_some::<i32><'_0>(_1: &'_0 Option::<i32>) -> bool
 pub fn index::<bool, RangeFrom::<usize>><'_0>(_1: &'_0 [bool], _2: RangeFrom::<usize>) -> &'_0 [bool]
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -29,7 +30,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::foo::bar
 fn bar()
@@ -122,7 +124,7 @@ fn test_crate::funs_with_disambiguator::f() -> u32
 }
 
 // Full name: test_crate::funs_with_disambiguator
-fn funs_with_disambiguator(_1: bool) -> u32
+fn funs_with_disambiguator(b_1: bool) -> u32
 {
     let _0: u32; // return
     let b_1: bool; // arg #1
@@ -149,7 +151,7 @@ struct MonoContainer::<&'_ Str> {
   item: &'_ Str,
 }
 
-fn test_crate::{MonoContainer::<i32>}::create::<i32>(_1: i32) -> MonoContainer::<i32>
+fn test_crate::{MonoContainer::<i32>}::create::<i32>(item_1: i32) -> MonoContainer::<i32>
 {
     let _0: MonoContainer::<i32>; // return
     let item_1: i32; // arg #1
@@ -162,7 +164,7 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(_1: i32) -> MonoContainer::
     return
 }
 
-fn test_crate::{MonoContainer::<&'_ Str>}::create::<&'_ Str>(_1: &'_ Str) -> MonoContainer::<&'_ Str>
+fn test_crate::{MonoContainer::<&'_ Str>}::create::<&'_ Str>(item_1: &'_ Str) -> MonoContainer::<&'_ Str>
 {
     let _0: MonoContainer::<&'_ Str>; // return
     let item_1: &'0 Str; // arg #1

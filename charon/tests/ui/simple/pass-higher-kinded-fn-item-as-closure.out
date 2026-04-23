@@ -86,7 +86,7 @@ where
 = <opaque>
 
 // Full name: test_crate::flabada
-pub fn flabada<'a>(_1: &'a ()) -> &'a ()
+pub fn flabada<'a>(x_1: &'a ()) -> &'a ()
 {
     let _0: &'1 (); // return
     let x_1: &'2 (); // arg #1

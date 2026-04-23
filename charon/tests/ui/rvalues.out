@@ -132,6 +132,7 @@ where
     non-dyn-compatible
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -140,7 +141,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::addr_of
 fn addr_of()
@@ -298,7 +300,7 @@ fn ptr_casts()
 struct closure {}
 
 // Full name: test_crate::fn_casts::{impl Fn<(u8,)> for closure}::call
-fn {impl Fn<(u8,)> for closure}::call<'_0>(_1: &'_0 closure, _2: (u8,))
+fn {impl Fn<(u8,)> for closure}::call<'_0>(_1: &'_0 closure, tupled_args_2: (u8,))
 {
     let _0: (); // return
     let _1: &'1 closure; // arg #1
@@ -313,7 +315,7 @@ fn {impl Fn<(u8,)> for closure}::call<'_0>(_1: &'_0 closure, _2: (u8,))
 }
 
 // Full name: test_crate::fn_casts::{impl FnMut<(u8,)> for closure}::call_mut
-fn {impl FnMut<(u8,)> for closure}::call_mut<'_0>(_1: &'_0 mut closure, _2: (u8,))
+fn {impl FnMut<(u8,)> for closure}::call_mut<'_0>(state_1: &'_0 mut closure, args_2: (u8,))
 {
     let _0: (); // return
     let state_1: &'_0 mut closure; // arg #1
@@ -354,7 +356,7 @@ fn {impl FnOnce<(u8,)> for closure}::call_once(_1: closure, _2: (u8,))
 }
 
 // Full name: test_crate::fn_casts::closure::as_fn
-fn as_fn(_1: u8)
+fn as_fn(arg1_1: u8)
 {
     let _0: (); // return
     let arg1_1: u8; // arg #1
@@ -495,7 +497,7 @@ fn STEAL() -> [(); 1 : usize]
 static STEAL: [(); 1 : usize] = STEAL()
 
 // Full name: test_crate::transmute
-fn transmute(_1: [u32; 2 : usize]) -> u64
+fn transmute(x_1: [u32; 2 : usize]) -> u64
 {
     let _0: u64; // return
     let x_1: [u32; 2 : usize]; // arg #1

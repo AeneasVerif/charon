@@ -2,7 +2,8 @@
 use crate::CharonFailure;
 use crate::translate::translate_crate;
 use charon_lib::common::arg_value;
-use charon_lib::options::CliOpts;
+use charon_lib::errors::ErrorCtx;
+use charon_lib::options::{self, CliOpts};
 use charon_lib::transform::TransformCtx;
 use itertools::Itertools;
 use rustc_driver::{Callbacks, Compilation};
@@ -88,7 +89,7 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
 /// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
 /// charon (e.g. because it was a dependency). Otherwise returns the translated crate, ready for
 /// post-processing transformations.
-pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, CharonFailure> {
+pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailure> {
     // Retreive the command-line arguments pased to `charon_driver`. The first arg is the path to
     // the current executable, we skip it.
     let mut compiler_args: Vec<String> = env::args().skip(1).collect();
@@ -102,7 +103,7 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
     // We may however not want to be calling charon on all crates; `CARGO_PRIMARY_PACKAGE` tells us
     // whether the crate was specifically selected or is a dependency.
     let is_workspace_dependency =
-        env::var("CHARON_USING_CARGO").is_ok() && !env::var("CARGO_PRIMARY_PACKAGE").is_ok();
+        env::var("CHARON_USING_CARGO").is_ok() && env::var("CARGO_PRIMARY_PACKAGE").is_err();
     // Determines if we are being invoked to build a crate for the "target" architecture, in
     // contrast to the "host" architecture. Host crates are for build scripts and proc macros and
     // still need to be built like normal; target crates need to be processed by Charon.
@@ -117,22 +118,45 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
     let output = if !is_selected_crate {
         trace!("Skipping charon; running compiler normally instead.");
         // Run the compiler normally.
-        run_compiler_with_callbacks(compiler_args, &mut RunCompilerNormallyCallbacks { options })?;
+        run_compiler_with_callbacks(compiler_args, &mut RunCompilerNormallyCallbacks)?;
         None
     } else {
+        let mut error_ctx = ErrorCtx::new();
+
+        // Retrieve the Charon options by deserializing them from the environment variable
+        // (cargo-charon serialized the arguments and stored them in a specific environment
+        // variable before calling cargo with RUSTC_WRAPPER=charon-driver).
+        let mut options: options::CliOpts = match env::var(options::CHARON_ARGS) {
+            Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
+            Err(_) => {
+                register_error!(
+                    error_ctx,
+                    no_crate,
+                    "environment variable `CHARON_ARGS` not set; \
+                    don't call `charon-driver` directly, call `charon rustc` instead"
+                );
+                return Err(CharonFailure::CharonError(1));
+            }
+        };
+        options.apply_preset();
+
+        error_ctx.continue_on_failure = !options.abort_on_error;
+        error_ctx.error_on_warnings = options.error_on_warnings;
+
         for extra_flag in options.rustc_args.iter().cloned() {
             compiler_args.push(extra_flag);
         }
 
         // Call the Rust compiler with our custom callback.
         let mut callback = CharonCallbacks {
-            options,
+            options: &options,
+            error_ctx: Some(error_ctx),
             transform_ctx: None,
         };
         run_compiler_with_callbacks(compiler_args, &mut callback)?;
         // If `transform_ctx` is not set here, there was a fatal error.
         let ctx = callback.transform_ctx.ok_or(CharonFailure::RustcError)?;
-        Some(ctx)
+        Some((ctx, options))
     };
     Ok(output)
 }
@@ -140,6 +164,8 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
 /// The callbacks for Charon
 pub struct CharonCallbacks<'a> {
     options: &'a CliOpts,
+    /// Context for errors; `take()`n by translation.
+    error_ctx: Option<ErrorCtx>,
     /// This is to be filled during the extraction; it contains the translated crate. `None` at the
     /// start or if we couldn't translate anything.
     transform_ctx: Option<TransformCtx>,
@@ -159,8 +185,9 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
         self.transform_ctx = translate_crate::translate(
-            &self.options,
             tcx,
+            self.options,
+            self.error_ctx.take().unwrap(),
             compiler.sess.opts.sysroot.path().to_owned(),
         )
         .ok();
@@ -174,12 +201,11 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
 }
 
 /// Dummy callbacks used to run the compiler normally when we shouldn't be analyzing the crate.
-pub struct RunCompilerNormallyCallbacks<'a> {
-    options: &'a CliOpts,
-}
-impl<'a> Callbacks for RunCompilerNormallyCallbacks<'a> {
+pub struct RunCompilerNormallyCallbacks;
+
+impl Callbacks for RunCompilerNormallyCallbacks {
     fn config(&mut self, config: &mut Config) {
-        setup_compiler(config, self.options, false);
+        setup_compiler(config, &Default::default(), false);
     }
 }
 

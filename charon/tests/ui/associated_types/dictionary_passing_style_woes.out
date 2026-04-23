@@ -49,6 +49,7 @@ pub trait Destruct<Self>
 unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -57,7 +58,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Iterator
 trait Iterator<Self, Self_Item>
@@ -91,7 +93,7 @@ where
 }
 
 // Full name: test_crate::callee
-fn callee<T, Clause1_Item>(_1: Clause1_Item) -> Clause1_Item
+fn callee<T, Clause1_Item>(t_1: Clause1_Item) -> Clause1_Item
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Iterator<T, Clause1_Item>,
@@ -105,7 +107,7 @@ where
 }
 
 // Full name: test_crate::caller
-fn caller<T, Clause1_Item, Clause2_Item, Clause2_IntoIter>(_1: Clause1_Item) -> Clause2_Item
+fn caller<T, Clause1_Item, Clause2_Item, Clause2_IntoIter>(t_1: Clause1_Item) -> Clause2_Item
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Iterator<T, Clause1_Item>,
@@ -155,7 +157,7 @@ trait B<Self, Self_Clause1_Assoc>
 }
 
 // Full name: test_crate::a
-fn a<T, Clause1_Clause1_Assoc>(_1: T) -> Clause1_Clause1_Assoc
+fn a<T, Clause1_Clause1_Assoc>(x_1: T) -> Clause1_Clause1_Assoc
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: A<T, Clause1_Clause1_Assoc>,
@@ -173,7 +175,7 @@ where
 }
 
 // Full name: test_crate::b
-fn b<T, Clause1_Clause1_Assoc>(_1: T) -> Clause1_Clause1_Assoc
+fn b<T, Clause1_Clause1_Assoc>(x_1: T) -> Clause1_Clause1_Assoc
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: B<T, Clause1_Clause1_Assoc>,
@@ -191,7 +193,7 @@ where
 }
 
 // Full name: test_crate::x
-fn x<T, Clause1_Clause1_Assoc, Clause2_Clause1_Assoc>(_1: T) -> (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc)
+fn x<T, Clause1_Clause1_Assoc, Clause2_Clause1_Assoc>(x_1: T) -> (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: A<T, Clause1_Clause1_Assoc>,

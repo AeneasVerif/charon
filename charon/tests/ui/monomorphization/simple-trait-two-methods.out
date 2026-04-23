@@ -6,6 +6,7 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -14,7 +15,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 struct test_crate::Trait::{vtable} {
   size: usize,
@@ -33,7 +35,7 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::Trait::{vtable_drop_preshim}
-unsafe fn {vtable_drop_preshim}(_1: *mut (dyn Trait))
+unsafe fn {vtable_drop_preshim}(dyn_self_1: *mut (dyn Trait))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait + '0); // arg #1
@@ -49,7 +51,7 @@ unsafe fn {vtable_drop_preshim}(_1: *mut (dyn Trait))
     return
 }
 
-fn test_crate::Trait::consume::{vtable_method_preshim}<'_0>(_1: &'_0 (dyn Trait))
+fn test_crate::Trait::consume::{vtable_method_preshim}<'_0>(dyn_self_1: &'_0 (dyn Trait))
 {
     let ret_0: (); // return
     let dyn_self_1: &'_0 (dyn Trait + '0); // arg #1
@@ -65,7 +67,7 @@ fn test_crate::Trait::consume::{vtable_method_preshim}<'_0>(_1: &'_0 (dyn Trait)
     return
 }
 
-fn test_crate::Trait::another::{vtable_method_preshim}<'_0>(_1: &'_0 (dyn Trait))
+fn test_crate::Trait::another::{vtable_method_preshim}<'_0>(dyn_self_1: &'_0 (dyn Trait))
 {
     let ret_0: (); // return
     let dyn_self_1: &'_0 (dyn Trait + '0); // arg #1
@@ -85,7 +87,7 @@ fn test_crate::Trait::consume<'_0>(_1: &'_0 (dyn Trait))
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for i32}::another
-fn another<'_0>(_1: &'_0 i32)
+fn another<'_0>(self_1: &'_0 i32)
 {
     let _0: (); // return
     let self_1: &'1 i32; // arg #1
@@ -110,7 +112,7 @@ fn {impl Trait for i32}::another::{vtable_method}<'_0>(_1: &'_0 (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for i32}::consume
-fn {impl Trait for i32}::consume<'_0>(_1: &'_0 i32)
+fn {impl Trait for i32}::consume<'_0>(self_1: &'_0 i32)
 {
     let _0: (); // return
     let self_1: &'1 i32; // arg #1
@@ -135,7 +137,7 @@ fn {impl Trait for i32}::consume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for i32}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}(_1: *mut (dyn Trait))
+unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn Trait))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait + '0); // arg #1

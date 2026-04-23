@@ -255,7 +255,7 @@ impl ItemTransCtx<'_, '_> {
                 span,
                 attr_info: AttrInfo::dummy_private(),
                 name: None,
-                ty: ty,
+                ty,
             })
             .collect();
         Ok(TypeDeclKind::Struct(fields))

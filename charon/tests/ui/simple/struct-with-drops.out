@@ -73,6 +73,7 @@ where
     non-dyn-compatible
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -81,7 +82,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::B
 struct B {
@@ -96,7 +98,7 @@ struct A {
 }
 
 // Full name: test_crate::{impl Drop for B}::drop
-pub fn {impl Drop for B}::drop<'_0>(_1: &'_0 mut B)
+pub fn {impl Drop for B}::drop<'_0>(self_1: &'_0 mut B)
 {
     let _0: (); // return
     let self_1: &'1 mut B; // arg #1

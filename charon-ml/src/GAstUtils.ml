@@ -2,6 +2,12 @@ open Types
 open TypesUtils
 open GAst
 
+let get_target_information crate =
+  match crate.target_information with
+  | [ (_, info) ] -> info
+  | _ ->
+      failwith "`get_target_information` can't be used in a multi-layout crate"
+
 (** Small utility: list the transitive parents of a region var group. We don't
     do that in an efficient manner, but it doesn't matter.
 

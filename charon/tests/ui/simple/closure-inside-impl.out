@@ -83,6 +83,7 @@ where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -91,7 +92,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Foo
 pub struct Foo<F>
@@ -126,7 +128,7 @@ where
 }
 
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::{impl Fn<((),)> for closure<F, T>[@TraitClause0, @TraitClause1]}::call
-fn {impl Fn<((),)> for closure<F, T>[@TraitClause0, @TraitClause1]}::call<'_0, F, T>(_1: &'_0 closure<F, T>[@TraitClause0, @TraitClause1], _2: ((),))
+fn {impl Fn<((),)> for closure<F, T>[@TraitClause0, @TraitClause1]}::call<'_0, F, T>(_1: &'_0 closure<F, T>[@TraitClause0, @TraitClause1], tupled_args_2: ((),))
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<T>,
@@ -144,7 +146,7 @@ where
 }
 
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::{impl FnMut<((),)> for closure<F, T>[@TraitClause0, @TraitClause1]}::call_mut
-fn {impl FnMut<((),)> for closure<F, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, F, T>(_1: &'_0 mut closure<F, T>[@TraitClause0, @TraitClause1], _2: ((),))
+fn {impl FnMut<((),)> for closure<F, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, F, T>(state_1: &'_0 mut closure<F, T>[@TraitClause0, @TraitClause1], args_2: ((),))
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<T>,

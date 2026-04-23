@@ -3,14 +3,15 @@
 //! everywhere in the ast.
 //!
 //! The crate defines two traits:
-/// - `AstVisitable` is a trait implemented by all the types that can be visited by this;
-/// - `VisitAst[Mut]` is a (pair of) visitor trait(s) that can be implemented by visitors.
-/// To define a visitor, implement `VisitAst[Mut]` and override the methods you need. Calling
-/// `x.drive[_mut](&mut visitor)` will then traverse `x`, calling the visitor methods on all the
-/// subvalues encountered.
-///
-/// Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
-use std::{any::Any, collections::HashMap};
+//! - `AstVisitable` is a trait implemented by all the types that can be visited by this;
+//! - `VisitAst[Mut]` is a (pair of) visitor trait(s) that can be implemented by visitors.
+//!   To define a visitor, implement `VisitAst[Mut]` and override the methods you need. Calling
+//!   `x.drive[_mut](&mut visitor)` will then traverse `x`, calling the visitor methods on all the
+//!   subvalues encountered.
+//!
+//! Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
+use std::mem;
+use std::{any::Any, hash::Hash};
 
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
@@ -39,21 +40,21 @@ use derive_generic_visitor::*;
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
     // Types that we ignore.
-    skip(()),
+    skip((), String, bool),
     // Types that we unconditionally explore.
     drive(
         AbortKind, Assert, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
-        FnOperand, FunId, FnPtrKind, FunSig, ImplElem, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
+        FnOperand, FunId, FnPtrKind, FunSig, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
-        Locals, Name, NullOp, Operand, PathElem, PlaceKind, ProjectionElem, ConstantExprKind,
+        Loc, Locals, NullOp, Operand, PathElem, PlaceKind, ConstantExprKind,
         RefKind, RegionId, RegionParam, ScalarValue, TraitItemName,
         TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypeVarId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata,
-        TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
+        SpanData, TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
         ItemByVal, VTableField,
         for<Id: AstVisitable> DeclRef<Id>, ItemId,
         for<T: AstVisitable> Box<T>,
@@ -71,15 +72,15 @@ use derive_generic_visitor::*;
     // type but can be overridden.
     override(
         DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
-        TypeDeclRef, FunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
+        TypeDeclRef, FunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef, ImplElem,
         GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue, Body,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
-        AggregateKind, FnPtr, ItemSource, ItemMeta, Span, ConstantExpr,
-        FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
+        AggregateKind, FnPtr, ItemSource, ItemMeta, Name, Span, ConstantExpr, ProjectionElem,
+        FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )
 )]
@@ -98,33 +99,37 @@ pub trait AstVisitable: Any {
     }
 }
 
-/// Manual impl that only visits the values
-impl<K: Any, T: AstVisitable> AstVisitable for HashMap<K, T> {
+/// Manual impl that visits the keys and values
+impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
     fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
-        for x in self.values() {
+        for (k, x) in self {
+            v.visit(k)?;
             v.visit(x)?;
         }
         Continue(())
     }
     fn drive_mut<V: VisitAstMut>(&mut self, v: &mut V) -> ControlFlow<V::Break> {
-        for x in self.values_mut() {
-            v.visit(x)?;
+        for (mut k, mut x) in mem::take(self) {
+            v.visit(&mut k)?;
+            v.visit(&mut x)?;
+            self.insert(k, x);
         }
         Continue(())
     }
 }
-
-/// Manual impl that only visits the values
-impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
-    fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
-        for x in self.values() {
+impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMap<K, T> {
+    fn drive_body<V: VisitBody>(&self, v: &mut V) -> ControlFlow<V::Break> {
+        for (k, x) in self {
+            v.visit(k)?;
             v.visit(x)?;
         }
         Continue(())
     }
-    fn drive_mut<V: VisitAstMut>(&mut self, v: &mut V) -> ControlFlow<V::Break> {
-        for x in self.values_mut() {
-            v.visit(x)?;
+    fn drive_body_mut<V: VisitBodyMut>(&mut self, v: &mut V) -> ControlFlow<V::Break> {
+        for (mut k, mut x) in mem::take(self) {
+            v.visit(&mut k)?;
+            v.visit(&mut x)?;
+            self.insert(k, x);
         }
         Continue(())
     }
@@ -149,9 +154,9 @@ impl<K: Any, T: AstVisitable> AstVisitable for SeqHashMap<K, T> {
     // Types that are ignored when encountered.
     skip(
         AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId, FieldProjKind,
-        TypeDeclRef, FunDeclId, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
+        TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
-        TraitRef, LiteralTy, Literal, RegionId, ()
+        TraitRef, LiteralTy, Literal, RegionId, (), String, bool,
     ),
     // Types that we unconditionally explore.
     drive(
@@ -222,7 +227,7 @@ impl<F> VisitAst for DynVisitor<F>
 where
     F: FnMut(&dyn Any),
 {
-    fn visit<'a, T: AstVisitable>(&'a mut self, x: &T) -> ControlFlow<Self::Break> {
+    fn visit<T: AstVisitable>(&mut self, x: &T) -> ControlFlow<Self::Break> {
         (self.enter)(x);
         x.drive(self)?;
         Continue(())
@@ -232,7 +237,7 @@ impl<F> VisitAstMut for DynVisitor<F>
 where
     F: FnMut(&mut dyn Any),
 {
-    fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
         (self.enter)(x);
         x.drive_mut(self)?;
         Continue(())
@@ -242,7 +247,7 @@ impl<F> VisitBody for DynVisitor<F>
 where
     F: FnMut(&dyn Any),
 {
-    fn visit<'a, T: BodyVisitable>(&'a mut self, x: &T) -> ControlFlow<Self::Break> {
+    fn visit<T: BodyVisitable>(&mut self, x: &T) -> ControlFlow<Self::Break> {
         (self.enter)(x);
         x.drive_body(self)?;
         Continue(())
@@ -252,7 +257,7 @@ impl<F> VisitBodyMut for DynVisitor<F>
 where
     F: FnMut(&mut dyn Any),
 {
-    fn visit<'a, T: BodyVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    fn visit<T: BodyVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
         (self.enter)(x);
         x.drive_body_mut(self)?;
         Continue(())

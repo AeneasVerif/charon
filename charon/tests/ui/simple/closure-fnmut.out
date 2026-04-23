@@ -66,6 +66,7 @@ where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -74,10 +75,11 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::apply_to_zero_mut
-fn apply_to_zero_mut<T0>(_1: T0) -> u8
+fn apply_to_zero_mut<T0>(f_1: T0) -> u8
 where
     [@TraitClause0]: Sized<T0>,
     [@TraitClause1]: FnMut<T0, (u8,)>,
@@ -105,7 +107,7 @@ struct closure<'_0> {
 }
 
 // Full name: test_crate::main::{impl FnMut<(u8,)> for closure<'_0>}::call_mut
-fn {impl FnMut<(u8,)> for closure<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, _2: (u8,)) -> u8
+fn {impl FnMut<(u8,)> for closure<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, tupled_args_2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: &'1 mut closure<'_0>; // arg #1

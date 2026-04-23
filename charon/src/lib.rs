@@ -13,6 +13,13 @@
 
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
+#![allow(clippy::borrowed_box)]
+#![allow(clippy::derivable_impls)]
+#![allow(clippy::field_reassign_with_default)]
+#![allow(clippy::manual_map)]
+#![allow(clippy::mem_replace_with_default)]
+#![allow(clippy::new_without_default)]
+#![allow(clippy::useless_format)]
 #![expect(incomplete_features)]
 #![feature(assert_matches)]
 #![feature(box_patterns)]
@@ -50,17 +57,5 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Read a `.llbc` file.
 pub fn deserialize_llbc(path: &std::path::Path) -> anyhow::Result<ast::TranslatedCrate> {
     use crate::export::CrateData;
-    use anyhow::Context;
-    use serde::Deserialize;
-    use std::fs::File;
-    use std::io::BufReader;
-    let file = File::open(&path)
-        .with_context(|| format!("Failed to read llbc file {}", path.display()))?;
-    let reader = BufReader::new(file);
-    let mut deserializer = serde_json::Deserializer::from_reader(reader);
-    // Deserialize without recursion limit.
-    deserializer.disable_recursion_limit();
-    // Grow stack space as needed.
-    let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
-    Ok(CrateData::deserialize(deserializer)?.translated)
+    Ok(CrateData::deserialize_from_file(path)?.translated)
 }

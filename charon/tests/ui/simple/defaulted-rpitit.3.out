@@ -66,7 +66,7 @@ pub trait MyTrait<Self, T>
     non-dyn-compatible
 }
 
-pub fn test_crate::MyTrait::rows<'_0, Self, T>(_1: &'_0 Self) -> Empty<T>[@TraitClause0::parent_clause1]
+pub fn test_crate::MyTrait::rows<'_0, Self, T>(self_1: &'_0 Self) -> Empty<T>[@TraitClause0::parent_clause1]
 where
     [@TraitClause0]: MyTrait<Self, T>,
 {
@@ -78,7 +78,7 @@ where
 }
 
 // Full name: test_crate::{impl MyTrait<T> for ()}::rows
-pub fn {impl MyTrait<T> for ()}::rows<'_0, T>(_1: &'_0 ()) -> Empty<T>[{impl MyTrait<T> for ()}<T>[@TraitClause0]::parent_clause1]
+pub fn {impl MyTrait<T> for ()}::rows<'_0, T>(self_1: &'_0 ()) -> Empty<T>[{impl MyTrait<T> for ()}<T>[@TraitClause0]::parent_clause1]
 where
     [@TraitClause0]: Sized<T>,
 {

@@ -51,7 +51,7 @@ trait Trait<Self, T>
     non-dyn-compatible
 }
 
-fn test_crate::Trait::foo<Self, T, U>(_1: U)
+fn test_crate::Trait::foo<Self, T, U>(x_1: U)
 where
     [@TraitClause0]: Trait<Self, T>,
     [@TraitClause1]: Sized<U>,
@@ -67,7 +67,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait<u32> for ()}::foo
-fn {impl Trait<u32> for ()}::foo<U>(_1: U)
+fn {impl Trait<u32> for ()}::foo<U>(x_1: U)
 where
     [@TraitClause0]: Sized<U>,
     [@TraitClause1]: Destruct<U>,
@@ -95,7 +95,7 @@ impl Trait<u32> for () {
 }
 
 // Full name: test_crate::use_trait
-fn use_trait<T, X>(_1: T, _2: X)
+fn use_trait<T, X>(_x_1: T, _y_2: X)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<X>,

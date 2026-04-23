@@ -12,6 +12,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -20,7 +21,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Hasher
 pub trait Hasher<Self>
@@ -54,7 +56,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Hash for u32}::hash
-pub fn {impl Hash for u32}::hash<'_0, '_1, H>(_1: &'_0 u32, _2: &'_1 mut H)
+pub fn {impl Hash for u32}::hash<'_0, '_1, H>(self_1: &'_0 u32, _state_2: &'_1 mut H)
 where
     [@TraitClause0]: Sized<H>,
     [@TraitClause1]: Hasher<H>,

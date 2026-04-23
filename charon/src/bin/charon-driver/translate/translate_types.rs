@@ -97,7 +97,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let mut ty = if let Some(ty) = self
             .innermost_binder()
             .type_trans_cache
-            .get(&hax_ty)
+            .get(hax_ty)
             .cloned()
         {
             ty
@@ -565,7 +565,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .as_ref()
                     .expect("No discriminant layout for enum?")
                     .tag_ty;
-                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let ptr_size = self.translated.the_target_information().target_pointer_size;
                 let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
 
                 for (id, variant_layout) in variants.iter_enumerated() {
@@ -622,7 +622,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             TypeDeclKind::Struct(fields) => {
                 let mut size = 0;
                 let mut align = 0;
-                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let ptr_size = self.translated.the_target_information().target_pointer_size;
                 let field_offsets = fields.map_ref(|field| {
                     let offset = size;
                     let size_of_ty = match field.ty.kind() {

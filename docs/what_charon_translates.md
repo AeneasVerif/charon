@@ -8,7 +8,7 @@ Each item has an **opacity** level[^1]:
 
 1. **Transparent** — the item is fully translated.
 2. **Foreign** — the default for items outside the current crate. Translation depends on normal Rust visibility: for types, translate fully if it's a struct with all-public fields or an enum; for other items this is equivalent to Opaque.
-3. **Opaque** — only the name and signature are translated, not the contents. For functions and globals, the body is not translated. For types (structs, enums, unions), the fields/variants are not translated. For traits and trait impls, the default method is  only translated if it is used somewhere else. For modules, the contents are not explored (but items referenced from elsewhere are still translated).
+3. **Opaque** — only the name and signature are translated, not the contents. For functions and globals, the body is not translated. For types (structs, enums, unions), the fields/variants are not translated. For traits and trait impls, methods with a default body are only translated if mentioned (used or overridden) anywhere in the final crate. For modules, the contents are not explored (but items referenced from elsewhere are still translated).
 4. **Invisible** — nothing is translated for this item. The corresponding map will not have an entry for the item ID. Useful when even the signature causes errors.
 
 ## Selection process
@@ -26,6 +26,8 @@ Charon starts from a set of **entry points** and explores outward using a work-q
 
 This is a dependency-driven algorithm that pulls in items as they are needed. With the default settings, the entry point is the current crate (a module), which is transparent, so all its direct items are enqueued. Those items reference foreign items from dependencies, which get enqueued as foreign (signatures only). The result: the whole current crate is translated, plus the signatures of all foreign items it references.
 
+**Opacity vs reachability**: An item's *opacity* (how much of it is translated) is determined solely by its own name and annotations — it does not inherit from the item that references it. But *reachability* (whether the item is queued at all) does depend on the exploration path: an item only reachable through an opaque item's body will not be queued, since opaque bodies are not explored. In the default setup (the whole crate as a transparent entry point), all current-crate items are enqueued via module traversal regardless of call-graph structure. This distinction matters mainly when using custom `--start-from` patterns or opaque modules.
+
 ## How opacity is determined
 
 Each item's opacity is calculated from its name by matching against a list of patterns. The patterns come from two sources: CLI flags and source annotations.
@@ -36,6 +38,10 @@ The source-level attributes `#[charon::opaque]` and `#[charon::exclude]` set the
 
 When both a source annotation and a CLI pattern apply, the more opaque of the two wins (`Transparent < Foreign < Opaque < Invisible`). This means `--include` **cannot** override a `#[charon::opaque]` annotation.
 
+**Scope difference**: `#[charon::opaque]` applies only to the annotated item itself. Items nested within it — functions in a module, methods in an impl block — are separate items with their own opacity, which for current-crate items defaults to Transparent. By contrast, `--opaque crate::module` uses prefix matching[^4], so it makes `crate::module` *and* every item whose path starts with `crate::module` (e.g. `crate::module::foo`) Opaque.
+
+Concretely: if a module is annotated `#[charon::opaque]`, a function inside it that is called from outside the module will still be translated fully (body included), because the function's own opacity is Transparent. Using `--opaque crate::that_module` instead would make that nested function Opaque (signature only).
+
 ### CLI flags
 
 - **`--start-from <PATTERN>`** — Entry points for translation. Can be specified multiple times. Default: `crate` (the entire current crate).
@@ -44,7 +50,7 @@ When both a source annotation and a CLI pattern apply, the more opaque of the tw
 - **`--include <PATTERN>`** — Set matched items to **transparent**.
 - **`--opaque <PATTERN>`** — Set matched items to **opaque**.
 - **`--exclude <PATTERN>`** — Set matched items to **invisible**.
-- **`--extract-opaque-bodies`** — Alias for `--include *`. Makes all items transparent.
+- **`--extract-opaque-bodies`** — Makes all items transparent. Internally changes the base pattern from `_ → Foreign` to `_ → Transparent` (see Pattern list below), so it affects all items including external ones.
 - **`--translate-all-methods`** — Include provided trait methods even if unused. Equivalent to making all trait declarations transparent.  
 
 ### Pattern list
@@ -59,7 +65,7 @@ crate          → Transparent  (current crate is always transparent)
 <--exclude>    → Invisible    (user exclusion)
 ```
 
-The default is equivalent to `--opaque '*' --include crate`: everything is foreign except items in the current crate which are transparent.
+In the default setup, everything outside the current crate is treated as Foreign and items in the current crate are Transparent. Note: there is no `--foreign` CLI flag, so this cannot be expressed directly via CLI flags — `--opaque` would make external items Opaque (signature only), which differs from Foreign for types (Foreign types with all-public fields are fully translated).
 
 ### Pattern syntax
 

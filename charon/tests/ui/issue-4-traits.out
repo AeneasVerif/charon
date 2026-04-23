@@ -150,7 +150,7 @@ where
 = <opaque>
 
 // Full name: test_crate::trait_error
-fn trait_error<'_0>(_1: &'_0 [u8])
+fn trait_error<'_0>(s_1: &'_0 [u8])
 {
     let _0: (); // return
     let s_1: &'1 [u8]; // arg #1

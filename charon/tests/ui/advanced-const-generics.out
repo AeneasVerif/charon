@@ -88,6 +88,7 @@ pub trait ConstParamTy_<Self>
     non-dyn-compatible
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -96,7 +97,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Foo
 enum Foo {
@@ -105,7 +107,7 @@ enum Foo {
 }
 
 // Full name: test_crate::{impl Eq for Foo}::assert_receiver_is_total_eq
-pub fn {impl Eq for Foo}::assert_receiver_is_total_eq<'_0>(_1: &'_0 Foo)
+pub fn {impl Eq for Foo}::assert_receiver_is_total_eq<'_0>(self_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -116,7 +118,7 @@ pub fn {impl Eq for Foo}::assert_receiver_is_total_eq<'_0>(_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
-pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(_1: &'_0 Foo, _2: &'_1 Foo) -> bool
+pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 Foo; // arg #1
@@ -178,7 +180,7 @@ impl ConstParamTy_ for Foo {
 }
 
 // Full name: test_crate::{impl Debug for Foo}::fmt
-pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(_1: &'_0 Foo, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(self_1: &'_0 Foo, f_2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 {
     let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
     let self_1: &'1 Foo; // arg #1

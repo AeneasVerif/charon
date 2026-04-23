@@ -463,6 +463,7 @@ where
     [@TraitClause3]: SliceIndex<I, [T]>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -471,10 +472,11 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::test_loop1
-pub fn test_loop1(_1: u32) -> u32
+pub fn test_loop1(max_1: u32) -> u32
 {
     let _0: u32; // return
     let max_1: u32; // arg #1
@@ -530,7 +532,7 @@ pub fn test_loop1(_1: u32) -> u32
 }
 
 // Full name: test_crate::test_loop2
-pub fn test_loop2(_1: u32) -> u32
+pub fn test_loop2(max_1: u32) -> u32
 {
     let _0: u32; // return
     let max_1: u32; // arg #1
@@ -596,7 +598,7 @@ pub fn test_loop2(_1: u32) -> u32
 }
 
 // Full name: test_crate::test_loop3
-pub fn test_loop3(_1: u32) -> u32
+pub fn test_loop3(max_1: u32) -> u32
 {
     let _0: u32; // return
     let max_1: u32; // arg #1
@@ -714,7 +716,7 @@ pub fn test_loop3(_1: u32) -> u32
 }
 
 // Full name: test_crate::test_loop4
-pub fn test_loop4(_1: u32) -> u32
+pub fn test_loop4(max_1: u32) -> u32
 {
     let _0: u32; // return
     let max_1: u32; // arg #1
@@ -831,7 +833,7 @@ pub fn test_loop4(_1: u32) -> u32
 }
 
 // Full name: test_crate::test_loop5
-pub fn test_loop5(_1: u32) -> u32
+pub fn test_loop5(max_1: u32) -> u32
 {
     let _0: u32; // return
     let max_1: u32; // arg #1
@@ -921,7 +923,7 @@ pub fn test_loop5(_1: u32) -> u32
 }
 
 // Full name: test_crate::test_loop6
-pub fn test_loop6(_1: u32) -> u32
+pub fn test_loop6(max_1: u32) -> u32
 {
     let _0: u32; // return
     let max_1: u32; // arg #1
@@ -992,7 +994,7 @@ pub fn test_loop6(_1: u32) -> u32
 }
 
 // Full name: test_crate::test_loop7
-pub fn test_loop7(_1: u32) -> u32
+pub fn test_loop7(max_1: u32) -> u32
 {
     let _0: u32; // return
     let max_1: u32; // arg #1
@@ -1192,7 +1194,7 @@ pub fn test_loops()
 }
 
 // Full name: test_crate::nested_loops_enum
-pub fn nested_loops_enum(_1: usize, _2: usize) -> usize
+pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
 {
     let _0: usize; // return
     let step_out_1: usize; // arg #1
@@ -1331,7 +1333,7 @@ pub fn nested_loops_enum(_1: usize, _2: usize) -> usize
 }
 
 // Full name: test_crate::loop_inside_if
-pub fn loop_inside_if(_1: bool, _2: u32) -> u32
+pub fn loop_inside_if(b_1: bool, n_2: u32) -> u32
 {
     let _0: u32; // return
     let b_1: bool; // arg #1
@@ -1405,7 +1407,7 @@ pub fn loop_inside_if(_1: bool, _2: u32) -> u32
     return
 }
 
-pub fn test_crate::sum(_1: u32) -> u32
+pub fn test_crate::sum(max_1: u32) -> u32
 {
     let _0: u32; // return
     let max_1: u32; // arg #1
@@ -1461,7 +1463,7 @@ pub fn test_crate::sum(_1: u32) -> u32
 }
 
 // Full name: test_crate::sum_array
-pub fn sum_array<const N : usize>(_1: [u32; N]) -> u32
+pub fn sum_array<const N : usize>(a_1: [u32; N]) -> u32
 {
     let _0: u32; // return
     let a_1: [u32; N]; // arg #1
@@ -1518,7 +1520,7 @@ pub fn sum_array<const N : usize>(_1: [u32; N]) -> u32
 }
 
 // Full name: test_crate::clear
-pub fn clear<'_0>(_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
+pub fn clear<'_0>(v_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
     let v_1: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
@@ -1585,7 +1587,7 @@ where
 }
 
 // Full name: test_crate::get_elem_mut
-pub fn get_elem_mut<'_0>(_1: &'_0 mut List<usize>[{built_in impl Sized for usize}], _2: usize) -> &'_0 mut usize
+pub fn get_elem_mut<'_0>(ls_1: &'_0 mut List<usize>[{built_in impl Sized for usize}], x_2: usize) -> &'_0 mut usize
 {
     let _0: &'1 mut usize; // return
     let ls_1: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
@@ -1639,7 +1641,7 @@ pub fn get_elem_mut<'_0>(_1: &'_0 mut List<usize>[{built_in impl Sized for usize
 }
 
 // Full name: test_crate::list_nth_mut_loop_with_id
-pub fn list_nth_mut_loop_with_id<'_0, T>(_1: &'_0 mut List<T>[@TraitClause0], _2: u32) -> &'_0 mut T
+pub fn list_nth_mut_loop_with_id<'_0, T>(ls_1: &'_0 mut List<T>[@TraitClause0], i_2: u32) -> &'_0 mut T
 where
     [@TraitClause0]: Sized<T>,
 {

@@ -151,6 +151,9 @@ pub struct DepsForItem<'a> {
     ctx: &'a TransformCtx,
     deps: &'a mut Deps,
     current_id: ItemId,
+    // Each item countains its own id; we dont' want to count that as a self-reference. Hence the
+    // first time we see its own id, we skip.
+    seen_current_id: bool,
     // We use this to track the trait impl block the current item belongs to
     // (if relevant).
     //
@@ -208,6 +211,7 @@ impl Deps {
         let mut for_item = DepsForItem {
             ctx,
             deps: self,
+            seen_current_id: false,
             current_id,
             parent_trait_impl: None,
             parent_trait_decl: None,
@@ -232,14 +236,18 @@ impl DepsForItem<'_> {
     fn insert_node(&mut self, tgt: impl Into<ItemId>) {
         let tgt = tgt.into();
         // Only add translated items.
-        if self.ctx.translated.get_item(tgt).is_some() {
-            if !self.deps.visited.contains(&tgt) {
-                self.deps.unprocessed.push(tgt);
-            }
+        if self.ctx.translated.get_item(tgt).is_some() && !self.deps.visited.contains(&tgt) {
+            self.deps.unprocessed.push(tgt);
         }
     }
     fn insert_edge(&mut self, tgt: impl Into<ItemId>) {
         let tgt = tgt.into();
+        if tgt == self.current_id && !self.seen_current_id {
+            // Each item contains its own id; this is a hack to avoid considering that as a self
+            // loop.
+            self.seen_current_id = true;
+            return;
+        }
         self.insert_node(tgt);
         // Only add translated items.
         if self.ctx.translated.get_item(tgt).is_some() {
@@ -291,7 +299,7 @@ impl VisitAst for DepsForItem<'_> {
     }
 }
 
-fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemId, ()> {
+fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
     let mut deps = Deps::default();
     // Start from the items included in `start_from`. We've mostly only translated items accessible
     // from that, but some passes render items inaccessible again, which we filter out here.
@@ -322,7 +330,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
             }
             ItemRef::Fun(d) => {
                 let FunDecl {
-                    def_id: _,
+                    def_id,
                     item_meta: _,
                     generics,
                     signature,
@@ -330,21 +338,19 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
                     is_global_initializer: _,
                     body,
                 } = d;
+                let _ = def_id.drive(&mut visitor); // For `seen_current_id`
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
                 // TODO: add `is_global_initializer` to `ItemSource`.
                 let _ = generics.drive(&mut visitor);
                 let _ = signature.drive(&mut visitor);
                 let _ = body.drive(&mut visitor);
-                match src {
-                    ItemSource::TraitDecl { trait_ref, .. } => {
-                        visitor.insert_edge(trait_ref.id);
-                    }
-                    _ => (),
+                if let ItemSource::TraitDecl { trait_ref, .. } = src {
+                    visitor.insert_edge(trait_ref.id);
                 }
             }
             ItemRef::TraitDecl(d) => {
                 let TraitDecl {
-                    def_id: _,
+                    def_id,
                     item_meta: _,
                     generics,
                     implied_clauses: parent_clauses,
@@ -353,6 +359,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> DiGraphMap<ItemI
                     methods,
                     vtable,
                 } = d;
+                let _ = def_id.drive(&mut visitor); // For `seen_current_id`
                 // Visit the traits referenced in the generics
                 let _ = generics.drive(&mut visitor);
 

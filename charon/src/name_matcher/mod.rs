@@ -83,7 +83,7 @@ impl Pattern {
             let mut mono_args = mono_args.skip_binder.clone();
             if let Some(args) = args {
                 // Late-bound regions are appended after the monomorphized ones.
-                mono_args.regions.extend(args.regions.into_iter());
+                mono_args.regions.extend(args.regions);
             }
             scrutinee_elems = prefix;
             args = Some(mono_args);
@@ -92,14 +92,13 @@ impl Pattern {
         // Patterns that start with an impl block match that impl block anywhere. In such a case we
         // truncate the scrutinee name to start with the rightmost impl in its name. This isn't
         // fully precise in case of impls within impls, but we'll ignore that.
-        if let Some(PatElem::Impl(_)) = self.elems.first() {
-            if let Some((i, _)) = scrutinee_elems
+        if let Some(PatElem::Impl(_)) = self.elems.first()
+            && let Some((i, _)) = scrutinee_elems
                 .iter()
                 .enumerate()
                 .rfind(|(_, elem)| elem.is_impl())
-            {
-                scrutinee_elems = &scrutinee_elems[i..];
-            }
+        {
+            scrutinee_elems = &scrutinee_elems[i..];
         }
 
         let zipped = self.elems.iter().zip_longest(scrutinee_elems).collect_vec();
@@ -216,7 +215,7 @@ impl Ord for Pattern {
 }
 impl PartialOrd for Pattern {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.compare(other))
+        Some(self.cmp(other))
     }
 }
 

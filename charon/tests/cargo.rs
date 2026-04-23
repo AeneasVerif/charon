@@ -72,10 +72,11 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     static RE: LazyLock<Regex> =
         LazyLock::new(|| Regex::new(r"thread '(\w+)' \(\d+\) (panicked|has overflowed)").unwrap());
     let output = RE.replace_all(&output, "thread '$1' $2");
-    // Hide rlib hashes from the output.
-    static RE2: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[a-f0-9]+.rlib").unwrap());
+    // Hide rlib paths from the output.
+    static RE2: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"extern location (.*) does not exist:.*\.rlib").unwrap());
     let mut output = RE2
-        .replace_all(&output, "0123456789abcdef.rlib")
+        .replace_all(&output, "extern location $1 does not exist")
         .to_string();
     match test_case.expect {
         Success if !success => bail!("Command: `{cmd_str}`\nCompilation failed: {output}"),
@@ -160,6 +161,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             "issue-412-dup-deps",
             root.join("issue-412-dup-deps"),
             &["--include=mydup".to_owned()],
+            &[],
+            Success,
+        ),
+        mktest(
+            "multi-targets",
+            root.join("multi-targets"),
+            &[
+                "--targets=i686-unknown-linux-gnu,x86_64-apple-darwin,riscv64gc-unknown-none-elf"
+                    .to_owned(),
+            ],
             &[],
             Success,
         ),

@@ -14,6 +14,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -22,7 +23,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 struct test_crate::Trait::{vtable} {
   size: usize,
@@ -41,7 +43,7 @@ trait Trait<Self, T>
 }
 
 // Full name: test_crate::Trait::{vtable_drop_preshim}::<bool>
-unsafe fn {vtable_drop_preshim}::<bool>(_1: *mut (dyn Trait<bool>))
+unsafe fn {vtable_drop_preshim}::<bool>(dyn_self_1: *mut (dyn Trait<bool>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<bool> + '0); // arg #1
@@ -58,7 +60,7 @@ unsafe fn {vtable_drop_preshim}::<bool>(_1: *mut (dyn Trait<bool>))
 }
 
 // Full name: test_crate::Trait::comsume::{vtable_method_preshim}::<bool>
-fn {vtable_method_preshim}::<bool><'_0>(_1: &'_0 (dyn Trait<bool>)) -> bool
+fn {vtable_method_preshim}::<bool><'_0>(dyn_self_1: &'_0 (dyn Trait<bool>)) -> bool
 {
     let ret_0: (); // return
     let dyn_self_1: &'_0 (dyn Trait<bool> + '0); // arg #1
@@ -77,7 +79,7 @@ fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<bool>)) -> bool
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait<bool> for i32}::comsume
-fn {impl Trait<bool> for i32}::comsume<'_0>(_1: &'_0 i32) -> bool
+fn {impl Trait<bool> for i32}::comsume<'_0>(self_1: &'_0 i32) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 i32; // arg #1
@@ -100,7 +102,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Trait<bool>)) -> bool
 }
 
 // Full name: test_crate::{impl Trait<bool> for i32}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}(_1: *mut (dyn Trait<bool>))
+unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn Trait<bool>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Trait<bool> + '0); // arg #1

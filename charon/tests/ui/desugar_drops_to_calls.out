@@ -99,6 +99,7 @@ where
     [@TraitClause4]: Destruct<A>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -107,7 +108,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::use_string
 fn use_string(_1: String)
@@ -181,7 +183,7 @@ struct Point {
 }
 
 // Full name: test_crate::{impl Drop for Point}::drop
-pub fn {impl Drop for Point}::drop<'_0>(_1: &'_0 mut Point)
+pub fn {impl Drop for Point}::drop<'_0>(self_1: &'_0 mut Point)
 {
     let _0: (); // return
     let self_1: &'1 mut Point; // arg #1

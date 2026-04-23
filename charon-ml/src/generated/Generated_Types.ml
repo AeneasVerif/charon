@@ -288,8 +288,9 @@ and constant_expr = { kind : constant_expr_kind; ty : ty }
     - an enumeration with one variant and no fields is a constant.
     - a structure with no field is a constant.
     - sometimes, Rust stores the initialization of an ADT as a constant (if all
-      the fields are constant) rather than as an aggregated value We later
-      desugar those to regular ADTs, see [regularize_constant_adts.rs].
+      the fields are constant) rather than as an aggregated value
+
+    We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 
     [[ConstantExprKind::Global]] case: access to a global variable. We later
     desugar it to a copy of a place global.
@@ -651,9 +652,11 @@ and ty_kind =
           - user-defined ADTs
           - tuples (including [unit], which is a 0-tuple)
           - built-in types (includes some primitive types, e.g., arrays or
-            slices) The information on the nature of the ADT is stored in
-            ([TypeId])[TypeId]. The last list is used encode const generics,
-            e.g., the size of an array
+            slices)
+
+          The information on the nature of the ADT is stored in
+          ([TypeId])[TypeId]. The last list is used encode const generics, e.g.,
+          the size of an array
 
           Note: this is incorrectly named: this can refer to any valid
           [TypeDecl] including extern types. *)
@@ -992,6 +995,9 @@ and path_elem =
       (** This item was obtained by instantiating its parent with the given
           args. The binder binds the parameters of the new items. If the binder
           binds nothing then this is a monomorphization. *)
+  | PeTarget of string
+      (** This item is only available on the given target. Only appears in
+          multi-target mode. *)
 
 (** The metadata stored in a pointer. That's the information stored in pointers
     alongside their address. It's empty for [Sized] types, and interesting for
@@ -1067,10 +1073,10 @@ and type_decl = {
       (** The context of the type: distinguishes top-level items from
           closure-related items. *)
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
-  layout : layout option;
-      (** The layout of the type. Information may be partial because of generics
-          or dynamically- sized types. If rustc cannot compute a layout, it is
-          [None]. *)
+  layout : (string * layout) list;
+      (** The layout of the type for each target. Information may be partial
+          because of generics or dynamically-sized types. If we cannot compute a
+          layout, the target has no entry. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
   repr : repr_options option;

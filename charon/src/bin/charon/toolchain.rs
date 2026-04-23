@@ -112,6 +112,6 @@ pub fn driver_cmd() -> Result<Command> {
 pub fn toolchain_path() -> Result<PathBuf> {
     let output = in_toolchain("rustc")?.arg("--print=sysroot").output()?;
     let stdout = String::from_utf8(output.stdout)
-        .with_context(|| format!("the output of `rustc --print=sysroot` is not UTF8 encoded"))?;
+        .with_context(|| "the output of `rustc --print=sysroot` is not UTF8 encoded".to_string())?;
     Ok(PathBuf::from(stdout.trim_end()))
 }

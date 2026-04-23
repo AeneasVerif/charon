@@ -34,7 +34,7 @@ impl TransformPass for Transform {
         ];
 
         let types: Vec<NamePattern> = types
-            .into_iter()
+            .iter()
             .map(|s| NamePattern::parse(s).unwrap())
             .collect_vec();
         let types: HashSet<TypeId> = ctx

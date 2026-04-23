@@ -19,6 +19,10 @@ macro_rules! register_error {
         let msg = format!($($fmt)*);
         $ctx.span_err($krate, $span, &msg, $crate::errors::Level::WARNING)
     }};
+    ($ctx:expr, no_crate, $($fmt:tt)*) => {{
+        let msg = format!($($fmt)*);
+        $ctx.span_err(&Default::default(), Default::default(), &msg, $crate::errors::Level::WARNING)
+    }};
     ($ctx:expr, $span: expr, $($fmt:tt)*) => {{
         let msg = format!($($fmt)*);
         $ctx.span_err($span, &msg, $crate::errors::Level::WARNING)
@@ -73,7 +77,7 @@ macro_rules! sanity_check {
 pub use sanity_check;
 
 /// Common error used during the translation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Error {
     pub span: Span,
     pub msg: String,
@@ -94,7 +98,7 @@ impl Error {
         use annotate_snippets::*;
         let span = self.span.data;
 
-        let mut group = Group::with_title(level.title(&self.msg));
+        let mut group = Group::with_title(level.primary_title(&self.msg));
         let origin;
         if let Some(file) = krate.files.get(span.file_id) {
             origin = format!("{}", file.name);
@@ -129,7 +133,7 @@ impl<T: ToString> From<T> for Error {
 /// Display an error without a specific location.
 pub fn display_unspanned_error(level: Level, msg: &str) {
     use annotate_snippets::*;
-    let title = level.title(msg);
+    let title = level.primary_title(msg);
     let message = Renderer::styled()
         .render(&[Group::with_title(title)])
         .to_string();
@@ -215,10 +219,10 @@ pub struct ErrorCtx {
 }
 
 impl ErrorCtx {
-    pub fn new(continue_on_failure: bool, error_on_warnings: bool) -> Self {
+    pub fn new() -> Self {
         Self {
-            continue_on_failure,
-            error_on_warnings,
+            continue_on_failure: true,
+            error_on_warnings: false,
             external_decls_with_errors: HashSet::new(),
             external_dep_graph: DepGraph::new(),
             def_id: None,
@@ -355,7 +359,7 @@ impl ErrorCtx {
              which is (transitively) used at the following location(s):",
             id.with_ctx(&krate.into_fmt())
         );
-        let message = Group::with_title(level.title(&msg)).elements(snippets);
+        let message = Group::with_title(level.primary_title(&msg)).elements(snippets);
         let out = Renderer::styled().render(&[message]).to_string();
         anstream::eprintln!("{}", out);
     }

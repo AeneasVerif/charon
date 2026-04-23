@@ -59,7 +59,7 @@ impl ParentTrait<u32, u32> for u32 {
 }
 
 // Full name: test_crate::{impl ChildTrait<u32, u32> for u32}::convert
-pub fn {impl ChildTrait<u32, u32> for u32}::convert(_1: u32) -> u32
+pub fn {impl ChildTrait<u32, u32> for u32}::convert(x_1: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1

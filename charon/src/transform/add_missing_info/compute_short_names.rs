@@ -39,8 +39,8 @@ impl TransformPass for Transform {
             // Ignoring monomorphizations, if a name is the only one to end with a given suffix, we
             // accumulate the ids of all the items with that name (there may be several thanks to
             // monomorphizations).
-            match name_slice {
-                [.., PathElem::Ident(ident, _)] => match short_names.entry(ident) {
+            if let [.., PathElem::Ident(ident, _)] = name_slice {
+                match short_names.entry(ident) {
                     Entry::Occupied(mut e) => match e.get_mut() {
                         FoundName::Unique { long, ids } => {
                             if *long == name_slice {
@@ -57,8 +57,7 @@ impl TransformPass for Transform {
                             ids: vec![id],
                         });
                     }
-                },
-                _ => {}
+                }
             }
         }
 

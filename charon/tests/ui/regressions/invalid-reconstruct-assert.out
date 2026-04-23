@@ -96,6 +96,7 @@ where
   Err(E),
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -106,7 +107,8 @@ fn UNIT_METADATA()
     }
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 fn core::hint::assert_unchecked::precondition_check(_1: bool)
 = <opaque>
@@ -116,7 +118,7 @@ fn {impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check(_1: usize
 = <opaque>
 
 // Full name: core::slice::{[T]}::binary_search_by
-pub fn binary_search_by<'a, T, F>(_1: &'a [T], _2: F) -> Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]
+pub fn binary_search_by<'a, T, F>(self_1: &'a [T], f_2: F) -> Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<F>,
@@ -428,7 +430,7 @@ where
 struct closure {}
 
 // Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}::call_mut
-fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(_1: &'_1 mut closure, _2: (&'_0 u32,)) -> Ordering
+fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args_2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: &'1 mut closure; // arg #1

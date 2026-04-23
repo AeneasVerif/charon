@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -8,7 +9,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::slice_pat1
 fn slice_pat1()
@@ -210,7 +212,7 @@ fn slice_pat3()
 }
 
 // Full name: test_crate::slice_pat4
-fn slice_pat4<'_0>(_1: &'_0 [u32])
+fn slice_pat4<'_0>(x_1: &'_0 [u32])
 {
     let _0: (); // return
     let x_1: &'1 [u32]; // arg #1
@@ -253,7 +255,7 @@ struct Unsized {
 }
 
 // Full name: test_crate::slice_pat5
-fn slice_pat5<'_0>(_1: &'_0 Unsized)
+fn slice_pat5<'_0>(x_1: &'_0 Unsized)
 {
     let _0: (); // return
     let x_1: &'1 Unsized; // arg #1

@@ -92,7 +92,7 @@ impl<T> CycleDetector<T> {
 
 impl<T> Default for CycleDetector<T> {
     fn default() -> Self {
-        Self::Unprocessed
+        CycleDetector::Unprocessed
     }
 }
 
@@ -152,7 +152,7 @@ pub mod type_map {
         where
             M::Value<T>: Default,
         {
-            self.or_insert_with(|| Default::default())
+            self.or_insert_with(Default::default)
         }
     }
 
@@ -225,10 +225,7 @@ pub mod serialize_map_to_array {
 
     impl<K, V, U> SeqHashMapToArray<K, V, U> {
         /// Serializes the given `map` to an array of named key-values.
-        pub fn serialize<'a, S>(
-            map: &'a SeqHashMap<K, V, U>,
-            serializer: S,
-        ) -> Result<S::Ok, S::Error>
+        pub fn serialize<S>(map: &SeqHashMap<K, V, U>, serializer: S) -> Result<S::Ok, S::Error>
         where
             K: Serialize,
             V: Serialize,
@@ -236,8 +233,8 @@ pub mod serialize_map_to_array {
         {
             serializer.collect_seq(map.into_iter().map(|(key, value)| KeyValue { key, value }))
         }
-        pub fn serialize_state<'a, S, State: ?Sized>(
-            map: &'a SeqHashMap<K, V, U>,
+        pub fn serialize_state<S, State: ?Sized>(
+            map: &SeqHashMap<K, V, U>,
             state: &State,
             serializer: S,
         ) -> Result<S::Ok, S::Error>
@@ -285,10 +282,10 @@ pub mod serialize_map_to_array {
             }
             let map =
                 deserializer.deserialize_seq(SeqHashMapToArrayVisitor::<K, V, U>(PhantomData))?;
-            Ok(map.into())
+            Ok(map)
         }
         /// Deserializes from an array of named key-values.
-        pub fn deserialize_state<'de, D, State>(
+        pub fn deserialize_state<'de, D, State: ?Sized>(
             state: &State,
             deserializer: D,
         ) -> Result<SeqHashMap<K, V, U>, D::Error>
@@ -298,9 +295,12 @@ pub mod serialize_map_to_array {
             U: BuildHasher + Default,
             D: Deserializer<'de>,
         {
-            struct SeqHashMapToArrayVisitor<'a, State, K, V, U>(&'a State, PhantomData<(K, V, U)>);
+            struct SeqHashMapToArrayVisitor<'a, State: ?Sized, K, V, U>(
+                &'a State,
+                PhantomData<(K, V, U)>,
+            );
 
-            impl<'de, State, K, V, U> Visitor<'de> for SeqHashMapToArrayVisitor<'_, State, K, V, U>
+            impl<'de, State: ?Sized, K, V, U> Visitor<'de> for SeqHashMapToArrayVisitor<'_, State, K, V, U>
             where
                 K: DeserializeState<'de, State> + Eq + Hash,
                 V: DeserializeState<'de, State>,
@@ -324,7 +324,7 @@ pub mod serialize_map_to_array {
             }
             let map = deserializer
                 .deserialize_seq(SeqHashMapToArrayVisitor::<_, K, V, U>(state, PhantomData))?;
-            Ok(map.into())
+            Ok(map)
         }
     }
 }

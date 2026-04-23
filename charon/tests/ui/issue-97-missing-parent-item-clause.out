@@ -12,6 +12,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -20,7 +21,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Ord
 pub trait Ord<Self>
@@ -38,7 +40,7 @@ where
 }
 
 // Full name: test_crate::{AVLTree<T>[@TraitClause0]}::insert
-pub fn insert<'_0, T>(_1: &'_0 mut AVLTree<T>[@TraitClause0])
+pub fn insert<'_0, T>(self_1: &'_0 mut AVLTree<T>[@TraitClause0])
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ord<T>,
@@ -57,7 +59,7 @@ impl Ord for u32 {
 }
 
 // Full name: test_crate::test
-pub fn test(_1: AVLTree<u32>[{built_in impl Sized for u32}])
+pub fn test(tree_1: AVLTree<u32>[{built_in impl Sized for u32}])
 {
     let _0: (); // return
     let tree_1: AVLTree<u32>[{built_in impl Sized for u32}]; // arg #1

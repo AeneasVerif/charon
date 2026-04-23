@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.176"
+version = "0.1.181"
 authors = [
     "Son Ho <hosonmarc@gmail.com>",
     "Guillaume Boisseau <nadrieril+git@gmail.com>",
@@ -45,7 +45,7 @@ serde_state = { git = "https://github.com/Nadrieril/serde_state", branch = "main
 # serde_state = { path = "../../../forks/serde_state/serde_state" }
 macros = { path = "./macros" }
 
-annotate-snippets = { git = "https://github.com/rust-lang/annotate-snippets-rs", rev = "74964e91d845e39fb549c4028452beffa7c6562b", version = "0.11.5" }
+annotate-snippets = { version = "0.12" }
 anstream = "0.6.18"
 anyhow = "1.0.81"
 assert_cmd = "2.0"
@@ -78,6 +78,7 @@ smallvec = "1.15.1"
 stacker = "0.1"
 strip-ansi-escapes = "0.2.1"
 take_mut = "0.2.2"
+tempfile = "3"
 tar = { version = "0.4.42", optional = true }
 toml = { version = "0.8", features = ["parse"] }
 tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt", ] }

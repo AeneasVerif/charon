@@ -157,7 +157,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
                 // default value no longer has a cross-crate MIR so it's unclear how to retreive
                 // the value. See the `trait-default-const-cross-crate` test.
-                let c = self.translate_constant_expr(span, &value)?;
+                let c = self.translate_constant_expr(span, value)?;
                 let mut bb = BodyBuilder::new(span, 0);
                 let ret = bb.new_var(None, c.ty.clone());
                 bb.push_statement(StatementKind::Assign(
@@ -188,7 +188,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Stopgap measure because there are still many panics in charon and hax.
         let res = panic::catch_unwind(move || {
             let body = Rc::new({ body }.0);
-            let ctx = BodyTransCtx::new(&mut *ctx, &body, drop_kind);
+            let ctx = BodyTransCtx::new(*ctx, &body, drop_kind);
             ctx.translate_body(&body, source_text)
         });
         match res {
@@ -328,7 +328,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         // Initialize the local variables
         trace!("Translating the body locals");
         self.locals.arg_count = mir_body.arg_count;
-        self.translate_body_locals(&mir_body)?;
+        self.translate_body_locals(mir_body)?;
 
         // Translate the expression body
         trace!("Translating the expression body");
@@ -399,7 +399,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
         let tcx = self.hax_state.base().tcx;
         let local_decls = self.local_decls;
-        let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+        let ptr_size = self.translated.the_target_information().target_pointer_size;
 
         let mut place_ty: mir::PlaceTy = mir::Place::from(mir_place.local).ty(local_decls, tcx);
         let var_id = self.translate_local(&mir_place.local).unwrap();
@@ -826,7 +826,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .iter()
                     .map(|op| self.translate_operand(span, op))
                     .try_collect()?;
-                let ptr_size = self.t_ctx.translated.target_information.target_pointer_size;
+                let ptr_size = self.translated.the_target_information().target_pointer_size;
 
                 match aggregate_kind {
                     mir::AggregateKind::Array(ty) => {
@@ -1213,7 +1213,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             ty::TyKind::FnDef(def_id, generics) => {
                 // The type of the value is one of the singleton types that corresponds to each function,
                 // which is enough information.
-                let item = &hax::translate_item_ref(&self.hax_state, *def_id, *generics);
+                let item = &hax::translate_item_ref(&self.hax_state, *def_id, generics);
                 trace!("func: {:?}", item.def_id);
                 let fun_def = self.hax_def(item)?;
                 let item_src =
@@ -1297,7 +1297,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
     // construct unwind block for the terminators
     fn translate_unwind_action(&mut self, span: Span, unwind: &mir::UnwindAction) -> BlockId {
-        let on_unwind = match unwind {
+        match unwind {
             mir::UnwindAction::Continue => {
                 let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
                 self.blocks.push(unwind_continue.into_block())
@@ -1313,8 +1313,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 self.blocks.push(abort.into_block())
             }
             mir::UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
-        };
-        on_unwind
+        }
     }
 
     fn translate_assert_kind(

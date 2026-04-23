@@ -138,7 +138,7 @@ where
     })
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx> {
+impl<'tcx> TranslateCtx<'tcx> {
     /// Span an error and register the error.
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.errors
@@ -146,12 +146,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             .span_err(&self.translated, span, msg, level)
     }
 
+    pub fn get_target_triple(&self) -> TargetTriple {
+        self.tcx.sess.opts.target_triple.tuple().to_owned()
+    }
+
     /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
     pub fn catch_sinto<S, T, U>(&mut self, s: &S, span: Span, x: &T) -> Result<U, Error>
     where
         T: Debug + SInto<S, U>,
     {
-        catch_sinto(s, &mut *self.errors.borrow_mut(), &self.translated, span, x)
+        catch_sinto(s, &mut self.errors.borrow_mut(), &self.translated, span, x)
     }
 
     /// Return the polymorphic definition for this item. Use with care, prefer `hax_def` whenever
@@ -211,7 +215,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
         use hax::BaseState;
-        let hax_state_with_id = t_ctx.hax_state.clone().with_hax_owner(&item_src.def_id());
+        let hax_state_with_id = t_ctx.hax_state.clone().with_hax_owner(item_src.def_id());
         ItemTransCtx {
             item_src,
             item_id,
@@ -301,7 +305,7 @@ impl<'a> IntoFormatter for &'a ItemTransCtx<'_, '_> {
     }
 }
 
-impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx> {
+impl<'tcx> fmt::Display for TranslateCtx<'tcx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt(f)
     }

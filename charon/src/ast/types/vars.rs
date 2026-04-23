@@ -380,13 +380,13 @@ impl<T> BindingStack<T> {
         self.stack.get_mut(index)
     }
     /// Iterate over the binding levels, from the innermost (0) out.
-    pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator + ExactSizeIterator {
+    pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> + ExactSizeIterator {
         self.stack.iter().rev()
     }
     /// Iterate over the binding levels, from the innermost (0) out.
     pub fn iter_enumerated(
         &self,
-    ) -> impl Iterator<Item = (DeBruijnId, &T)> + DoubleEndedIterator + ExactSizeIterator {
+    ) -> impl DoubleEndedIterator<Item = (DeBruijnId, &T)> + ExactSizeIterator {
         self.iter()
             .enumerate()
             .map(|(i, x)| (DeBruijnId::new(i), x))

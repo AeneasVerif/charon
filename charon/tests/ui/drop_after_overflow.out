@@ -41,6 +41,7 @@ where
 pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -51,13 +52,14 @@ fn UNIT_METADATA()
     }
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Foo
 struct Foo {}
 
 // Full name: test_crate::{impl Drop for Foo}::drop
-pub fn {impl Drop for Foo}::drop<'_0>(_1: &'_0 mut Foo)
+pub fn {impl Drop for Foo}::drop<'_0>(self_1: &'_0 mut Foo)
 {
     let _0: (); // return
     let self_1: &'1 mut Foo; // arg #1

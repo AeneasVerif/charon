@@ -18,6 +18,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -26,7 +27,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 struct test_crate::Super::{vtable}<T> {
   size: usize,
@@ -153,7 +155,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Super<i32> for i32}::super_method
-fn {impl Super<i32> for i32}::super_method<'_0>(_1: &'_0 i32, _2: i32) -> i32
+fn {impl Super<i32> for i32}::super_method<'_0>(self_1: &'_0 i32, arg_2: i32) -> i32
 {
     let _0: i32; // return
     let self_1: &'1 i32; // arg #1
@@ -186,7 +188,7 @@ fn {impl Super<i32> for i32}::super_method::{vtable_method}<'_0>(_1: &'_0 (dyn S
 }
 
 // Full name: test_crate::{impl Super<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(_1: *mut (dyn Super<i32>))
+unsafe fn {impl Super<i32> for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Super<i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Super<i32> + '0); // arg #1
@@ -225,7 +227,7 @@ impl Super<i32> for i32 {
 }
 
 // Full name: test_crate::{impl Internal for i32}::internal_method
-fn {impl Internal for i32}::internal_method<'_0>(_1: &'_0 i32) -> i32
+fn {impl Internal for i32}::internal_method<'_0>(self_1: &'_0 i32) -> i32
 {
     let _0: i32; // return
     let self_1: &'1 i32; // arg #1
@@ -255,7 +257,7 @@ fn {impl Internal for i32}::internal_method::{vtable_method}<'_0>(_1: &'_0 (dyn 
 }
 
 // Full name: test_crate::{impl Internal for i32}::{vtable_drop_shim}
-unsafe fn {impl Internal for i32}::{vtable_drop_shim}(_1: *mut (dyn Internal<Internal = i32>))
+unsafe fn {impl Internal for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Internal<Internal = i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Internal<Internal = i32> + '0); // arg #1
@@ -295,7 +297,7 @@ impl Internal for i32 {
 }
 
 // Full name: test_crate::{impl Left for i32}::left_method
-fn {impl Left for i32}::left_method<'_0>(_1: &'_0 i32) -> i32
+fn {impl Left for i32}::left_method<'_0>(self_1: &'_0 i32) -> i32
 {
     let _0: i32; // return
     let self_1: &'1 i32; // arg #1
@@ -325,7 +327,7 @@ fn {impl Left for i32}::left_method::{vtable_method}<'_0>(_1: &'_0 (dyn Left<par
 }
 
 // Full name: test_crate::{impl Left for i32}::{vtable_drop_shim}
-unsafe fn {impl Left for i32}::{vtable_drop_shim}(_1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32>))
+unsafe fn {impl Left for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Left<parent_clause1::Internal = i32, Left = i32> + '0); // arg #1
@@ -369,7 +371,7 @@ impl Left for i32 {
 }
 
 // Full name: test_crate::{impl Right<i32> for i32}::right_method
-fn {impl Right<i32> for i32}::right_method<'_0>(_1: &'_0 i32) -> i32
+fn {impl Right<i32> for i32}::right_method<'_0>(self_1: &'_0 i32) -> i32
 {
     let _0: i32; // return
     let self_1: &'1 i32; // arg #1
@@ -429,7 +431,7 @@ fn {impl Right<i32> for i32}::right_method::{vtable_method}<'_0>(_1: &'_0 (dyn R
 }
 
 // Full name: test_crate::{impl Right<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Right<i32> for i32}::{vtable_drop_shim}(_1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32>))
+unsafe fn {impl Right<i32> for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Right<i32, parent_clause1::Internal = i32, Right = i32> + '0); // arg #1
@@ -478,7 +480,7 @@ impl Right<i32> for i32 {
 }
 
 // Full name: test_crate::{impl Join<i32> for i32}::join_method
-fn {impl Join<i32> for i32}::join_method<'_0>(_1: &'_0 i32) -> (i32, i32)
+fn {impl Join<i32> for i32}::join_method<'_0>(self_1: &'_0 i32) -> (i32, i32)
 {
     let _0: (i32, i32); // return
     let self_1: &'1 i32; // arg #1
@@ -517,7 +519,7 @@ fn {impl Join<i32> for i32}::join_method::{vtable_method}<'_0>(_1: &'_0 (dyn Joi
 }
 
 // Full name: test_crate::{impl Join<i32> for i32}::{vtable_drop_shim}
-unsafe fn {impl Join<i32> for i32}::{vtable_drop_shim}(_1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32>))
+unsafe fn {impl Join<i32> for i32}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32>))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Join<i32, parent_clause1::parent_clause1::Internal = i32, parent_clause1::parent_clause1::Internal = i32, parent_clause2::Right = i32, parent_clause1::Left = i32> + '0); // arg #1

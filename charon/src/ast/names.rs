@@ -12,6 +12,7 @@ generate_index_type!(Disambiguator);
     Clone,
     PartialEq,
     Eq,
+    Hash,
     SerializeState,
     DeserializeState,
     Drive,
@@ -28,6 +29,9 @@ pub enum PathElem {
     /// the parameters of the new items. If the binder binds nothing then this is a
     /// monomorphization.
     Instantiated(Box<Binder<GenericArgs>>),
+    /// This item is only available on the given target. Only appears in multi-target mode.
+    #[serde_state(stateless)]
+    Target(#[drive(skip)] TargetTriple),
 }
 
 /// There are two kinds of `impl` blocks:
@@ -40,10 +44,10 @@ pub enum PathElem {
 ///   impl<T> PartialEq for List<T> { ...}
 ///   ```
 /// We distinguish the two.
-#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 #[charon::variants_prefix("ImplElem")]
 pub enum ImplElem {
-    Ty(Binder<Ty>),
+    Ty(Box<Binder<Ty>>),
     Trait(TraitImplId),
 }
 
@@ -83,7 +87,7 @@ pub enum ImplElem {
 ///
 /// Also note that the first path element in the name is always the crate name.
 #[derive(
-    Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut,
+    Debug, Default, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut,
 )]
 #[serde(transparent)]
 pub struct Name {

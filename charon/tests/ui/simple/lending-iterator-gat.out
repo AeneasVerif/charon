@@ -102,6 +102,7 @@ pub enum AssertKind {
   Match,
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -110,7 +111,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::LendingIterator
 pub trait LendingIterator<Self>
@@ -150,7 +152,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next
-pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next<'a, 'b, T>(_1: &'b mut Option<&'a T>[{built_in impl Sized for &'_ T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
+pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next<'a, 'b, T>(self_1: &'b mut Option<&'a T>[{built_in impl Sized for &'_ T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -198,7 +200,7 @@ where
 }
 
 // Full name: test_crate::for_each
-pub fn for_each<I, T1>(_1: I, _2: T1)
+pub fn for_each<I, T1>(iter_1: I, f_2: T1)
 where
     [@TraitClause0]: Sized<I>,
     [@TraitClause1]: Sized<T1>,
@@ -265,7 +267,7 @@ struct closure<'_0> {
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut
-fn {impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0>, _2: (&'_1 i32,))
+fn {impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0>, tupled_args_2: (&'_1 i32,))
 {
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1

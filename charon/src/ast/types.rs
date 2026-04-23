@@ -1,4 +1,5 @@
 use crate::ast::*;
+use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::ids::{IndexMap, IndexVec};
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
@@ -401,7 +402,20 @@ pub struct DiscriminantLayout {
 /// Does not include information about niches.
 /// If the type does not have a fully known layout (e.g. it is ?Sized)
 /// some of the layout parts are not available.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
+#[serde_state(stateless)]
 pub struct Layout {
     /// The size of the type in bytes.
     #[drive(skip)]
@@ -492,9 +506,9 @@ pub struct ReprOptions {
 ///
 /// A type can only be an ADT (structure or enumeration), as type aliases are
 /// inlined in MIR.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[serde_state(state_implements = HashConsSerializerState)]
 pub struct TypeDecl {
-    #[drive(skip)]
     pub def_id: TypeDeclId,
     /// Meta information associated with the item.
     pub item_meta: ItemMeta,
@@ -503,10 +517,10 @@ pub struct TypeDecl {
     pub src: ItemSource,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
-    /// The layout of the type. Information may be partial because of generics or dynamically-
-    /// sized types. If rustc cannot compute a layout, it is `None`.
-    #[serde_state(stateless)]
-    pub layout: Option<Layout>,
+    /// The layout of the type for each target. Information may be partial because of generics or
+    /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
+    #[serde(with = "SeqHashMapToArray::<TargetTriple, Layout>")]
+    pub layout: SeqHashMap<TargetTriple, Layout>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
     /// The representation options of this type declaration as annotated by the user.
@@ -520,7 +534,16 @@ generate_index_type!(VariantId, "Variant");
 generate_index_type!(FieldId, "Field");
 
 #[derive(
-    Debug, Clone, EnumIsA, EnumAsGetters, SerializeState, DeserializeState, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    EnumIsA,
+    EnumAsGetters,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
 )]
 pub enum TypeDeclKind {
     Struct(IndexVec<FieldId, Field>),
@@ -540,7 +563,7 @@ pub enum TypeDeclKind {
     Error(String),
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(stateless)]
 pub struct Variant {
     pub span: Span,
@@ -557,7 +580,7 @@ pub struct Variant {
     pub discriminant: Literal,
 }
 
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(stateless)]
 pub struct Field {
     pub span: Span,
@@ -818,6 +841,7 @@ pub enum TyKind {
     /// - user-defined ADTs
     /// - tuples (including `unit`, which is a 0-tuple)
     /// - built-in types (includes some primitive types, e.g., arrays or slices)
+    ///
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
     /// The last list is used encode const generics, e.g., the size of an array
     ///

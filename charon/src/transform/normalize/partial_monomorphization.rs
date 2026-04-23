@@ -56,7 +56,7 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
     /// - `shape.substitute(shape_args) == args`;
     /// - `shape_args` contains no infected types;
     /// - `shape` is as shallow as possible (i.e. takes just enough to get all the infected types
-    ///     and not more).
+    ///   and not more).
     ///
     /// Note: the input arguments are assumed to have been already partially monomorphized, in the
     /// sense that we won't recurse inside ADT args because we assume any ADT applied to infected
@@ -182,7 +182,7 @@ impl<'pm, 'ctx> VisitorWithBinderDepth for MutabilityShapeBuilder<'pm, 'ctx> {
 }
 
 impl<'pm, 'ctx> VisitAstMut for MutabilityShapeBuilder<'pm, 'ctx> {
-    fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
         VisitWithBinderDepth::new(self).visit(x)
     }
 
@@ -447,7 +447,7 @@ impl<'a> PartialMonomorphizer<'a> {
             .translated
             .get_item(*orig_id)
             .unwrap()
-            .clone()
+            .to_owned()
             .substitute_with_self(&shape.skip_binder, &TraitRefKind::SelfId);
 
         let mut decl_mut = decl.as_mut();
@@ -455,7 +455,7 @@ impl<'a> PartialMonomorphizer<'a> {
         *decl_mut.generic_params() = shape.params.clone();
 
         let name_ref = &mut decl_mut.item_meta().name;
-        *name_ref = mem::take(name_ref).instantiate(shape.clone());
+        *name_ref = mem::take::<crate::ast::Name>(name_ref).instantiate(shape.clone());
         self.ctx
             .translated
             .item_names
@@ -471,7 +471,7 @@ impl VisitorWithSpan for PartialMonomorphizer<'_> {
     }
 }
 impl VisitAstMut for PartialMonomorphizer<'_> {
-    fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
         // Track a useful enclosing span, for error messages.
         VisitWithSpan::new(self).visit(x)
     }
@@ -527,13 +527,13 @@ impl TransformPass for Transform {
         while let Some(id) = visitor.to_process.pop_front() {
             // Get the item corresponding to this id, either by creating it or by getting an
             // existing one.
-            let mut decl = if visitor.reverse_shape_map.get(&id).is_some() {
+            let mut decl = if visitor.reverse_shape_map.contains_key(&id) {
                 // Create the required item by instantiating the item it's based on.
                 visitor.create_pending_instantiation(id)
             } else {
                 // Take the item out so we can modify it. Warning: don't look up other items in the
                 // meantime as this would break in recursive cases.
-                match visitor.ctx.translated.remove_item(id) {
+                match visitor.ctx.translated.remove_item_temporarily(id) {
                     Some(decl) => decl,
                     None => continue,
                 }

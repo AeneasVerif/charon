@@ -66,6 +66,7 @@ where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -74,13 +75,14 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Rng
 struct Rng {}
 
 // Full name: test_crate::{Rng}::next_u64
-fn next_u64<'_0>(_1: &'_0 mut Rng)
+fn next_u64<'_0>(self_1: &'_0 mut Rng)
 {
     let _0: (); // return
     let self_1: &'1 mut Rng; // arg #1
@@ -96,7 +98,7 @@ struct closure<'_0> {
 }
 
 // Full name: test_crate::new
-fn new<'_0>(_1: &'_0 mut Rng)
+fn new<'_0>(rng_1: &'_0 mut Rng)
 {
     let _0: (); // return
     let rng_1: &'1 mut Rng; // arg #1
@@ -115,7 +117,7 @@ fn new<'_0>(_1: &'_0 mut Rng)
 }
 
 // Full name: test_crate::new::{impl FnMut<()> for closure<'_0>}::call_mut
-fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, _2: ())
+fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, tupled_args_2: ())
 {
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1

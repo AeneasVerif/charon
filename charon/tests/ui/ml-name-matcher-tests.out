@@ -177,6 +177,7 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -185,7 +186,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::foo::bar
 fn bar()
@@ -343,7 +345,7 @@ fn test_crate::funs_with_disambiguator::f() -> u32
 }
 
 // Full name: test_crate::funs_with_disambiguator
-fn funs_with_disambiguator(_1: bool) -> u32
+fn funs_with_disambiguator(b_1: bool) -> u32
 {
     let _0: u32; // return
     let b_1: bool; // arg #1
@@ -369,7 +371,7 @@ where
 }
 
 // Full name: test_crate::{MonoContainer<T>[@TraitClause0]}::create
-fn create<T>(_1: T) -> MonoContainer<T>[@TraitClause0]
+fn create<T>(item_1: T) -> MonoContainer<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -419,7 +421,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]}::get
-fn {impl Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]}::get<'a, T>(_1: &'a MonoContainer<T>[@TraitClause0]) -> &'a T
+fn {impl Get<'a, T> for &'a MonoContainer<T>[@TraitClause0]}::get<'a, T>(self_1: &'a MonoContainer<T>[@TraitClause0]) -> &'a T
 where
     [@TraitClause0]: Sized<T>,
 {

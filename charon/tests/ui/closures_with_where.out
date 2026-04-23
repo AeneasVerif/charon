@@ -77,6 +77,7 @@ where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -85,7 +86,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::Ops
 trait Ops<Self, const K : usize>
@@ -126,7 +128,7 @@ where
 }
 
 // Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut
-fn {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[@TraitClause0, @TraitClause1], _2: (usize,)) -> T
+fn {impl FnMut<(usize,)> for closure<T, K>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[@TraitClause0, @TraitClause1], tupled_args_2: (usize,)) -> T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Ops<T, K>,

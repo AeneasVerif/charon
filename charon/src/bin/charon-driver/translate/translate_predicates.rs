@@ -351,11 +351,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias),
                     );
                     let mut generics = self.erase_region_binder(trait_decl_ref.clone()).generics;
+
+                    // Remove the generic argument for `Self` in the trait impl block
+                    if self.monomorphize() {
+                        let _ = generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+                    }
                     assert!(
                         generics.trait_refs.is_empty(),
                         "found trait alias with non-empty required predicates"
                     );
-                    generics.trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                    generics.trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
                     TraitRefKind::TraitImpl(TraitImplRef {
                         id: impl_id,
                         generics,
@@ -408,7 +413,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         TraitRefKind::TraitImpl(self.erase_region_binder(binder))
                     } else {
                         let parent_trait_refs =
-                            self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                            self.translate_trait_impl_exprs(span, impl_exprs)?;
                         let types = if self.monomorphize() {
                             vec![]
                         } else {

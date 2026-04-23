@@ -37,7 +37,7 @@ impl TransformPass for Transform {
                                 .unwrap(),
                         );
                     }
-                    (assoc_ty.name().clone(), id_map)
+                    (*assoc_ty.name(), id_map)
                 })
                 .collect()
         });

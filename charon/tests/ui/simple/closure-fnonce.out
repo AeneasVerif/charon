@@ -57,6 +57,7 @@ where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -65,10 +66,11 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::apply_to_zero_once
-fn apply_to_zero_once<T0>(_1: T0) -> u8
+fn apply_to_zero_once<T0>(f_1: T0) -> u8
 where
     [@TraitClause0]: Sized<T0>,
     [@TraitClause1]: FnOnce<T0, (u8,)>,
@@ -118,7 +120,7 @@ struct closure {
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}::call_once
-fn {impl FnOnce<(u8,)> for closure}::call_once(_1: closure, _2: (u8,)) -> u8
+fn {impl FnOnce<(u8,)> for closure}::call_once(_1: closure, tupled_args_2: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: closure; // arg #1

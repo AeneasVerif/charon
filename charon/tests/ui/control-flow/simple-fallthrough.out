@@ -22,6 +22,7 @@ where
   Some(T),
 }
 
+// Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
     let _0: (); // return
@@ -30,7 +31,8 @@ fn UNIT_METADATA()
     return
 }
 
-const UNIT_METADATA: () = @Fun0()
+// Full name: UNIT_METADATA
+const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::do_something
 fn do_something()
@@ -63,7 +65,7 @@ fn do_something_at_the_end()
 }
 
 // Full name: test_crate::foo
-fn foo(_1: Option<u32>[{built_in impl Sized for u32}])
+fn foo(opt_1: Option<u32>[{built_in impl Sized for u32}])
 {
     let _0: (); // return
     let opt_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1

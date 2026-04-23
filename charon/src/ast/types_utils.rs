@@ -246,7 +246,7 @@ impl<T: AstVisitable> Binder<Binder<T>> {
             }
         }
         impl VisitAstMut for FlattenVisitor<'_> {
-            fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+            fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
                 VisitWithBinderDepth::new(self).visit(x)
             }
 
@@ -334,19 +334,21 @@ impl<T: AstVisitable> Binder<Binder<T>> {
             types_outlive,
             trait_type_constraints,
         } = &inner_params;
-        outer_params.regions.extend_from_slice(regions);
-        outer_params.types.extend_from_slice(types);
+        outer_params.regions.clone_extend_from_other(regions);
+        outer_params.types.clone_extend_from_other(types);
         outer_params
             .const_generics
-            .extend_from_slice(const_generics);
-        outer_params.trait_clauses.extend_from_slice(trait_clauses);
+            .clone_extend_from_other(const_generics);
+        outer_params
+            .trait_clauses
+            .clone_extend_from_other(trait_clauses);
         outer_params
             .regions_outlive
             .extend_from_slice(regions_outlive);
         outer_params.types_outlive.extend_from_slice(types_outlive);
         outer_params
             .trait_type_constraints
-            .extend_from_slice(trait_type_constraints);
+            .clone_extend_from_other(trait_type_constraints);
 
         Binder {
             params: outer_params,
@@ -498,10 +500,10 @@ impl GenericArgs {
             const_generics,
             trait_refs,
         } = other;
-        self.regions.extend_from_slice(regions);
-        self.types.extend_from_slice(types);
-        self.const_generics.extend_from_slice(const_generics);
-        self.trait_refs.extend_from_slice(trait_refs);
+        self.regions.clone_extend_from_other(regions);
+        self.types.clone_extend_from_other(types);
+        self.const_generics.clone_extend_from_other(const_generics);
+        self.trait_refs.clone_extend_from_other(trait_refs);
         self
     }
 }
@@ -761,7 +763,7 @@ impl Ty {
     }
 
     pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
-        let ref ty_decls = translated.type_decls;
+        let ty_decls = &translated.type_decls;
         match self.kind() {
             TyKind::Adt(ty_ref) => {
                 // there are two cases:
@@ -875,7 +877,7 @@ impl TypeDeclRef {
 impl TraitDeclRef {
     pub fn self_ty<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a Ty> {
         match self.generics.types.iter().next() {
-            Some(ty) => return Some(ty),
+            Some(ty) => Some(ty),
             // TODO(mono): A monomorphized trait takes no arguments.
             None => {
                 let name = krate.item_name(self.id)?;
@@ -1076,7 +1078,7 @@ impl<'a> SubstVisitor<'a> {
     }
 
     pub fn visit<T: TyVisitable>(mut self, mut x: T) -> Result<T, GenericsMismatch> {
-        let _ = x.visit_vars(&mut self);
+        x.visit_vars(&mut self);
         if self.had_error {
             Err(GenericsMismatch)
         } else {
@@ -1161,7 +1163,7 @@ pub trait TyVisitable: Sized + AstVisitable {
             }
         }
         impl<V: VarsVisitor> VisitAstMut for Wrap<'_, V> {
-            fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+            fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
                 VisitWithBinderDepth::new(self).visit(x)
             }
 
@@ -1398,7 +1400,7 @@ impl<'a, T> Substituted<'a, T> {
         Substituted {
             val,
             generics: self.generics.clone(),
-            trait_self: self.trait_self.clone(),
+            trait_self: self.trait_self,
         }
     }
 
@@ -1435,8 +1437,12 @@ impl TypeDecl {
     ///
     /// If the `tag` does not correspond to any valid discriminant but there is a niche,
     /// the resulting `VariantId` will be for the untagged variant [`TagEncoding::Niche::untagged_variant`].
-    pub fn get_variant_from_tag(&self, tag: ScalarValue) -> Option<VariantId> {
-        let layout = self.layout.as_ref()?;
+    pub fn get_variant_from_tag(
+        &self,
+        target: &TargetTriple,
+        tag: ScalarValue,
+    ) -> Option<VariantId> {
+        let layout = self.layout.get(target)?;
         if layout.uninhabited {
             return None;
         };
