@@ -26,7 +26,7 @@
 //! The current implementation considers all predicates on traits to be outputs, which has the
 //! benefit of reducing the size of signatures. Moreover, the rules on which bounds are required vs
 //! implied are subtle. We may change this if this proves to be a problem.
-use crate::hax::options::BoundsOptions;
+use crate::BoundsOptions;
 use itertools::Itertools;
 use rustc_hir::LangItem;
 use rustc_hir::def::DefKind;
@@ -322,6 +322,16 @@ pub fn implied_predicates<'tcx>(
         prune_sized_predicates(tcx, &mut predicates);
     }
     predicates
+}
+
+pub fn inherits_parent_clauses<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
+    use DefKind::*;
+    match tcx.def_kind(def_id) {
+        AssocTy | AssocFn | AssocConst | Closure | Ctor(..) | Variant | AnonConst | InlineConst => {
+            true
+        }
+        _ => false,
+    }
 }
 
 /// Normalize a value.

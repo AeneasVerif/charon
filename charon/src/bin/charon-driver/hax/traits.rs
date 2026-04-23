@@ -1,18 +1,16 @@
-use crate::hax::prelude::*;
-
-pub mod resolution;
-mod utils;
-use charon_lib::ast::HashConsed;
-pub use utils::{
-    ItemPredicate, ItemPredicateId, ItemPredicates, ToPolyTraitRef, erase_and_norm,
-    erase_free_regions, implied_predicates, normalize, required_predicates, self_predicate,
-};
-
-pub use resolution::PredicateSearcher;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 
-pub use utils::is_sized_related_trait;
+pub use rustc_trait_elaboration as elaboration;
+use rustc_trait_elaboration::inherits_parent_clauses;
+pub use rustc_trait_elaboration::{
+    ItemPredicate, ItemPredicateId, ItemPredicates, PredicateSearcher, ToPolyTraitRef,
+    erase_and_norm, erase_free_regions, implied_predicates, is_sized_related_trait, normalize,
+    required_predicates, self_predicate,
+};
+
+use crate::hax::prelude::*;
+use charon_lib::ast::HashConsed;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ImplExprPathChunk {
@@ -39,10 +37,10 @@ pub enum ImplExprPathChunk {
     },
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for resolution::PathChunk<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for elaboration::PathChunk<'tcx> {
     fn sinto(&self, s: &S) -> ImplExprPathChunk {
         match self {
-            resolution::PathChunk::AssocItem {
+            elaboration::PathChunk::AssocItem {
                 item,
                 generic_args,
                 predicate,
@@ -54,7 +52,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for resolution:
                 predicate: predicate.sinto(s),
                 index: index.sinto(s),
             },
-            resolution::PathChunk::Parent {
+            elaboration::PathChunk::Parent {
                 predicate, index, ..
             } => ImplExprPathChunk::Parent {
                 predicate: predicate.sinto(s),
@@ -67,7 +65,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for resolution:
 /// The source of a particular trait implementation. Most often this is either `Concrete` for a
 /// concrete `impl Trait for Type {}` item, or `LocalBound` for a context-bound `where T: Trait`.
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::ImplExprAtom<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImplExprAtom<'tcx>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ImplExprAtom {
     /// A concrete `impl Trait for Type {}` item.
@@ -112,7 +110,7 @@ pub enum ImplExprAtom {
 }
 
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::BuiltinTraitData<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::BuiltinTraitData<'tcx>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum BuiltinTraitData {
     /// A virtual `Destruct` implementation.
@@ -125,7 +123,7 @@ pub enum BuiltinTraitData {
 }
 
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::DestructData<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::DestructData<'tcx>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum DestructData {
     /// A drop that does nothing, e.g. for scalars and pointers.
@@ -149,7 +147,7 @@ pub enum DestructData {
 pub type ImplExpr = HashConsed<ImplExprContents>;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: resolution::ImplExpr<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImplExpr<'tcx>, state: S as s)]
 pub struct ImplExprContents {
     /// The trait this is an impl for.
     pub r#trait: Binder<TraitRef>,
@@ -157,7 +155,7 @@ pub struct ImplExprContents {
     pub r#impl: ImplExprAtom,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExpr> for resolution::ImplExpr<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExpr> for elaboration::ImplExpr<'tcx> {
     fn sinto(&self, s: &S) -> ImplExpr {
         HashConsed::new(self.sinto(s))
     }
@@ -222,16 +220,6 @@ pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
     ItemRef::translate(s, def_id, generics)
 }
 
-pub fn inherits_parent_clauses<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> bool {
-    use rustc_hir::def::DefKind::*;
-    match tcx.def_kind(def_id) {
-        AssocTy | AssocFn | AssocConst | Closure | Ctor(..) | Variant | AnonConst | InlineConst => {
-            true
-        }
-        _ => false,
-    }
-}
-
 /// Solve the trait obligations for a specific item use (for example, a method call, an ADT, etc.)
 /// in the current context. Just like generic args include generics of parent items, this includes
 /// impl exprs for parent items.
@@ -277,7 +265,7 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
 fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     generics: ty::GenericArgsRef<'tcx>,
-    predicates: utils::ItemPredicates<'tcx>,
+    predicates: ItemPredicates<'tcx>,
 ) -> Vec<ImplExpr> {
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();

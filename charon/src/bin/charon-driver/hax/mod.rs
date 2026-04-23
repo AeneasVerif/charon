@@ -19,6 +19,8 @@ pub use hax_adt_into::AdtInto;
 pub use sinto::SInto;
 
 pub mod options {
+    pub use rustc_trait_elaboration::BoundsOptions;
+
     #[derive(Debug, Clone)]
     pub struct Options {
         /// Whether we should evaluate and inline the value of anonymous constants (inline `const {}`
@@ -27,14 +29,5 @@ pub mod options {
         pub inline_anon_consts: bool,
         /// Options related to bounds.
         pub bounds_options: BoundsOptions,
-    }
-
-    #[derive(Debug, Clone, Copy)]
-    pub struct BoundsOptions {
-        /// Add `T: Destruct` bounds to every type generic, so that we can build `ImplExpr`s to know
-        /// what code is run on drop.
-        pub resolve_destruct: bool,
-        /// Prune `T: Sized` and `T: MetaSized` predicates.
-        pub prune_sized: bool,
     }
 }

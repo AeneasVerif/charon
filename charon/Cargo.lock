@@ -255,6 +255,7 @@ dependencies = [
  "petgraph",
  "regex",
  "reqwest",
+ "rustc_trait_elaboration",
  "rustc_version",
  "serde",
  "serde_json",
@@ -1846,6 +1847,14 @@ name = "rustc-demangle"
 version = "0.1.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56f7d92ca342cea22a06f2121d944b4fd82af56988c270852495420f961d4ace"
+
+[[package]]
+name = "rustc_trait_elaboration"
+version = "0.1.0"
+dependencies = [
+ "itertools 0.13.0",
+ "tracing",
+]
 
 [[package]]
 name = "rustc_version"

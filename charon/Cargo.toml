@@ -42,6 +42,7 @@ harness = false
 
 [dependencies]
 hax-adt-into = { path = "./adt-into", version = "=0.3.5" }
+rustc_trait_elaboration = { path = "./rustc_trait_elaboration" }
 serde_state = { git = "https://github.com/Nadrieril/serde_state", branch = "main" }
 # serde_state = { path = "../../../forks/serde_state/serde_state" }
 macros = { path = "./macros" }

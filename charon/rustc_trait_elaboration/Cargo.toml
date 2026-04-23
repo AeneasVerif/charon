@@ -1,0 +1,20 @@
+[package]
+name = "rustc_trait_elaboration"
+version = "0.1.0"
+edition = "2024"
+authors = [
+    "Son Ho <hosonmarc@gmail.com>",
+    "Guillaume Boisseau <nadrieril+git@gmail.com>",
+    "hax Authors",
+]
+license = "Apache-2.0"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+itertools = "0.13"
+tracing = { version = "0.1", features = ["max_level_trace"] }
+
+[package.metadata.rust-analyzer]
+rustc_private = true

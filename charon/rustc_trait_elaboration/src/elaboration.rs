@@ -1,9 +1,10 @@
 //! Trait resolution: given a trait reference, we track which local clause caused it to be true.
-//! This module is independent from the rest of hax, in particular it doesn't use its
-//! state-tracking machinery.
 
-use crate::hax::ItemPredicate;
-use crate::hax::options::BoundsOptions;
+use crate::{
+    BoundsOptions, ItemPredicate, ItemPredicateId, ItemPredicates, ToPolyTraitRef,
+    implied_predicates, inherits_parent_clauses, normalize_bound_val, required_predicates,
+    self_predicate,
+};
 use itertools::{Either, Itertools};
 use std::collections::{HashMap, hash_map::Entry};
 
@@ -12,12 +13,6 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::traits::CodegenObligationError;
 use rustc_middle::ty::{self, *};
 use rustc_trait_selection::traits::ImplSource;
-
-use super::ItemPredicateId;
-use super::utils::{
-    self, ToPolyTraitRef, erase_and_norm, implied_predicates, normalize_bound_val,
-    required_predicates, self_predicate,
-};
 
 #[derive(Debug, Clone)]
 pub enum PathChunk<'tcx> {
@@ -155,7 +150,7 @@ fn local_bound_predicates<'tcx>(
         options: BoundsOptions,
         predicates: &mut Vec<ItemPredicate<'tcx>>,
     ) {
-        if crate::hax::inherits_parent_clauses(tcx, def_id) {
+        if inherits_parent_clauses(tcx, def_id) {
             let parent = tcx.parent(def_id);
             acc_predicates(tcx, parent, options, predicates);
         }
@@ -468,7 +463,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                     .filter_map(|assoc| {
                         let ty =
                             Ty::new_projection(tcx, assoc.def_id, erased_tref.skip_binder().args);
-                        let ty = erase_and_norm(tcx, self.typing_env, ty);
+                        let ty = crate::erase_and_norm(tcx, self.typing_env, ty);
                         if let TyKind::Alias(_, alias_ty) = ty.kind() {
                             if alias_ty.def_id == assoc.def_id {
                                 // Couldn't normalize the type to anything different than itself;
@@ -617,7 +612,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
     pub fn resolve_predicates(
         &mut self,
         generics: GenericArgsRef<'tcx>,
-        predicates: utils::ItemPredicates<'tcx>,
+        predicates: ItemPredicates<'tcx>,
         // Call back into hax-related code to display a nice warning.
         warn: &impl Fn(&str),
     ) -> Result<Vec<ImplExpr<'tcx>>, String> {
