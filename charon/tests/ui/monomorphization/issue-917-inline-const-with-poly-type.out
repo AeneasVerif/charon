@@ -121,7 +121,7 @@ fn call_once::<()>(_1: closure::<()>, _2: ((),))
 }
 
 // Full name: test_crate::foo::{const}::closure::as_fn::<()>
-fn as_fn::<()>(_1: ())
+fn as_fn::<()>(arg1_1: ())
 {
     let _0: (); // return
     let arg1_1: (); // arg #1
@@ -138,7 +138,7 @@ fn as_fn::<()>(_1: ())
 }
 
 // Full name: test_crate::foo::<()>
-fn foo::<()>(_1: ())
+fn foo::<()>(x_1: ())
 {
     let _0: (); // return
     let x_1: (); // arg #1

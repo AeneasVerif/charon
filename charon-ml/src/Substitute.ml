@@ -428,8 +428,8 @@ let block_substitute (subst : subst) (blk : block) : block =
 
 (** Apply a type substitution to a function body. Return the local variables and
     the body. *)
-let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
-    local list * block =
+let expr_body_substitute (subst : subst) (body : expr_body) : local list * block
+    =
   let locals =
     List.map
       (fun (v : local) -> { v with local_ty = ty_substitute subst v.local_ty })

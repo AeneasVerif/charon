@@ -74,7 +74,7 @@ trait Trait<Self, T, Self_Item>
 struct Struct {}
 
 // Full name: test_crate::{impl Clone for Struct}::clone
-pub fn {impl Clone for Struct}::clone<'_0>(_1: &'_0 Struct) -> Struct
+pub fn {impl Clone for Struct}::clone<'_0>(self_1: &'_0 Struct) -> Struct
 {
     let _0: Struct; // return
     let self_1: &'1 Struct; // arg #1
@@ -127,7 +127,7 @@ where
 }
 
 // Full name: test_crate::takes_alias
-fn takes_alias<T>(_1: T)
+fn takes_alias<T>(x_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Alias<T, ()>,

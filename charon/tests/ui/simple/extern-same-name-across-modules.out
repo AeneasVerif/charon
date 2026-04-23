@@ -1,0 +1,55 @@
+# Final LLBC before serialization:
+
+unsafe fn test_crate::same_name(_1: i32) -> i32
+= <extern:same_name>
+
+// Full name: test_crate::call_root
+unsafe fn call_root() -> i32
+{
+    let _0: i32; // return
+
+    _0 = test_crate::same_name(const 0 : i32)
+    return
+}
+
+unsafe fn test_crate::first::same_name(_1: i32) -> i32
+= <extern:same_name>
+
+pub unsafe fn test_crate::first::call() -> i32
+{
+    let _0: i32; // return
+
+    _0 = test_crate::first::same_name(const 1 : i32)
+    return
+}
+
+unsafe fn test_crate::second::nested::same_name(_1: i32) -> i32
+= <extern:same_name>
+
+pub unsafe fn test_crate::second::nested::call() -> i32
+{
+    let _0: i32; // return
+
+    _0 = test_crate::second::nested::same_name(const 2 : i32)
+    return
+}
+
+pub fn test_crate::local_impl::same_name(x_1: i32) -> i32
+{
+    let _0: i32; // return
+    let x_1: i32; // arg #1
+
+    _0 = copy x_1
+    return
+}
+
+pub fn test_crate::local_impl::call() -> i32
+{
+    let _0: i32; // return
+
+    _0 = test_crate::local_impl::same_name(const 3 : i32)
+    return
+}
+
+
+

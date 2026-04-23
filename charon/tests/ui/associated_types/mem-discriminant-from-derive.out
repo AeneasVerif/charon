@@ -67,7 +67,7 @@ impl StructuralPartialEq for Enum {
 }
 
 // Full name: test_crate::{impl PartialEq<Enum> for Enum}::eq
-pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(_1: &'_0 Enum, _2: &'_1 Enum) -> bool
+pub fn {impl PartialEq<Enum> for Enum}::eq<'_0, '_1>(self_1: &'_0 Enum, other_2: &'_1 Enum) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 Enum; // arg #1

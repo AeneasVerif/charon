@@ -353,6 +353,7 @@ impl CliOpts {
                     self.hide_marker_traits = true;
                     self.hide_allocator = true;
                     self.remove_unused_self_clauses = true;
+                    self.remove_adt_clauses = true;
                     self.unbind_item_vars = true;
                     // Hide drop impls because they often involve nested borrows. which aeneas
                     // doesn't handle yet.

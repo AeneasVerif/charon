@@ -106,7 +106,7 @@ const UNIT_METADATA: () = UNIT_METADATA()
 struct closure<'a> {}
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'a>}::call_mut
-fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
+fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, tupled_args_2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: &'1 mut closure<'a>; // arg #1

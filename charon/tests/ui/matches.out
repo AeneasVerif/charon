@@ -32,7 +32,7 @@ pub enum E1 {
 }
 
 // Full name: test_crate::test1
-pub fn test1(_1: E1) -> bool
+pub fn test1(x_1: E1) -> bool
 {
     let _0: bool; // return
     let x_1: E1; // arg #1
@@ -50,7 +50,7 @@ pub fn test1(_1: E1) -> bool
 }
 
 // Full name: test_crate::id
-pub fn id<T>(_1: T) -> T
+pub fn id<T>(x_1: T) -> T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -70,7 +70,7 @@ pub enum E2 {
 }
 
 // Full name: test_crate::test2
-pub fn test2(_1: E2) -> u32
+pub fn test2(x_1: E2) -> u32
 {
     let _0: u32; // return
     let x_1: E2; // arg #1
@@ -96,7 +96,7 @@ pub fn test2(_1: E2) -> u32
 }
 
 // Full name: test_crate::test3
-pub fn test3(_1: E2) -> u32
+pub fn test3(x_1: E2) -> u32
 {
     let _0: u32; // return
     let x_1: E2; // arg #1

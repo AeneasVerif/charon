@@ -195,7 +195,7 @@ pub struct iovec {
 pub opaque type std::sys::io::io_slice::iovec::IoSlice<'a>
 
 // Full name: std::io::{std::io::IoSlice<'a>}::advance_slices
-pub fn advance_slices<'a, '_1, '_2>(_1: &'_1 mut &'_2 mut [std::io::IoSlice<'a>], _2: usize)
+pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<'a>], n_2: usize)
 {
     let _0: (); // return
     let bufs_1: &'7 mut &'8 mut [std::io::IoSlice<'9>]; // arg #1
@@ -544,7 +544,7 @@ pub fn advance_slices<'a, '_1, '_2>(_1: &'_1 mut &'_2 mut [std::io::IoSlice<'a>]
 }
 
 // Full name: test_crate::foo
-pub fn foo<'_0, '_1, '_2>(_1: &'_0 mut &'_1 mut [std::io::IoSlice<'_2>])
+pub fn foo<'_0, '_1, '_2>(bufs_1: &'_0 mut &'_1 mut [std::io::IoSlice<'_2>])
 {
     let _0: (); // return
     let bufs_1: &'7 mut &'8 mut [std::io::IoSlice<'9>]; // arg #1

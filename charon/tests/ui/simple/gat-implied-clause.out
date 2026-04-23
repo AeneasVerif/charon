@@ -70,7 +70,7 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::lifetime_gat_bound
-fn lifetime_gat_bound<'_0, X>(_1: @TraitClause1::LifetimeGat)
+fn lifetime_gat_bound<'_0, X>(x_1: @TraitClause1::LifetimeGat)
 where
     [@TraitClause0]: Sized<X>,
     [@TraitClause1]: Trait<X>,
@@ -94,7 +94,7 @@ where
 }
 
 // Full name: test_crate::non_lifetime_gat_bound
-fn non_lifetime_gat_bound<X>(_1: @TraitClause1::NonLifetimeGat)
+fn non_lifetime_gat_bound<X>(x_1: @TraitClause1::NonLifetimeGat)
 where
     [@TraitClause0]: Sized<X>,
     [@TraitClause1]: Trait<X>,

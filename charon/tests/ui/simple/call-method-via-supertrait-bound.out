@@ -65,7 +65,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl HasMethod for T}::method
-fn {impl HasMethod for T}::method<'_0, T>(_1: &'_0 T)
+fn {impl HasMethod for T}::method<'_0, T>(self_1: &'_0 T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: OtherTrait<T>,
@@ -90,7 +90,7 @@ where
 }
 
 // Full name: test_crate::call_method
-fn call_method<T>(_1: T)
+fn call_method<T>(x_1: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: ImpliesOtherTrait<T>,
