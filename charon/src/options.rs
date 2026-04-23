@@ -270,6 +270,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_typecheck: bool,
+    /// Don't normalize associated types.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_normalize: bool,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long)]
     #[serde(default)]
@@ -312,6 +316,8 @@ pub enum Preset {
     /// Emit the MIR as unmodified as possible. This is very imperfect for now, we should make more
     /// passes optional.
     RawMir,
+    /// Skip as many optional transformations as possible.
+    Fast,
     Aeneas,
     Eurydice,
     Soteria,
@@ -346,6 +352,13 @@ impl CliOpts {
                     self.extract_opaque_bodies = true;
                     self.raw_consts = true;
                     self.ullbc = true;
+                }
+                Preset::Fast => {
+                    self.ullbc = true;
+                    self.no_typecheck = true;
+                    self.no_normalize = true;
+                    self.hide_marker_traits = true;
+                    self.raw_consts = true;
                 }
                 Preset::Aeneas => {
                     self.lift_associated_types.push("*".to_owned());
@@ -520,6 +533,8 @@ pub struct TranslateOptions {
     pub lift_associated_types: Vec<NamePattern>,
     /// Skip the typecheck passes.
     pub no_typecheck: bool,
+    /// Don't normalize associated types.
+    pub no_normalize: bool,
     /// Transform Drop to Call drop_in_place
     pub desugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
@@ -640,6 +655,7 @@ impl TranslateOptions {
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
             no_typecheck: options.no_typecheck,
+            no_normalize: options.no_normalize,
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
             translate_poly_drop_glue: options.precise_drops,

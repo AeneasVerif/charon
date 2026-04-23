@@ -1272,6 +1272,9 @@ impl VisitAstMut for UpdateItemBody<'_> {
 
 pub struct Transform;
 impl TransformPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        !(options.lift_associated_types.is_empty() && options.no_normalize)
+    }
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Compute all the necessary type info to be able to replace and normalize associated
         // types.

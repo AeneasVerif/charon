@@ -9,6 +9,9 @@ use crate::transform::{TransformCtx, ctx::TransformPass};
 
 pub struct Transform;
 impl TransformPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        !options.no_normalize
+    }
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // For each trait, we move the item-local clauses to be top-level parent clauses, and
         // record the mapping from the old to the new ids.
