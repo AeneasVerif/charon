@@ -36,11 +36,11 @@ trait B<Self>
     vtable: test_crate::B::{vtable}
 }
 
-// Full name: test_crate::B::{impl B for Self}
-impl<Self> B for Self
+// Full name: test_crate::B::{impl B for i32}
+impl B for i32
 where
-    [@TraitClause0]: MetaSized<Self>,
-    [@TraitClause1]: A<Self>,
+    [@TraitClause0]: MetaSized<i32>,
+    [@TraitClause1]: A<i32>,
 {
     parent_clause0 = @TraitClause0
     parent_clause1 = @TraitClause1

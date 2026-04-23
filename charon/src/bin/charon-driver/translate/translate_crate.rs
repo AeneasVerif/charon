@@ -37,13 +37,11 @@ pub struct TransItemSource {
 
 /// Refers to a rustc item. Can be either the polymorphic version (`Poly`) of the item, or a
 /// monomorphization (`Mono` or `MonoTrait`) of it.
-/// For `MonoTrait` items, their kind should be `trait decl` or `struct vtable` or `trait impl` of a `trait alias`:
+/// For `MonoTrait` items, their kind should be either `trait decl` or `struct vtable`:
 ///     1. the trait is translated as in poly mode, except that we don't translate any of its
 ///        associated item lists.
 ///     2. the vtable is translated with erased signature of the methods and without generic types.
 ///        In other words, there is one "opaque" vtable per trait.
-///     3. the impl block of trait alias is translated as in poly mode by preseving its generic types.
-///        This is consistent with the translation of trait declarations in the case `1`.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum RustcItem {
     Poly(hax::DefId),
@@ -392,17 +390,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             item.clone()
         };
         // In mono mode:
-        //   1. If the item being registered is a `trait decl` or a 'trait impl' of a `trait alias`,
-        //      we construct a `monomorphic_trait` item source.
+        //   1. If the item being registered is a `trait decl`, we construct a
+        //      `monomorphic_trait` item source.
         //   2. Otherwise, if the current `item_trans_ctx` is under a `trait decl`
         //      or a `vtable`, we construct a `poly` item.
         //   3. In all other cases, we construct a `mono` item.
-        let item_src = if self.monomorphize()
-            && matches!(
-                kind,
-                TransItemSourceKind::TraitDecl
-                    | TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias)
-            ) {
+        let item_src = if self.monomorphize() && matches!(kind, TransItemSourceKind::TraitDecl) {
             TransItemSource::monomorphic_trait(&item.def_id, kind)
         } else {
             TransItemSource::from_item(
