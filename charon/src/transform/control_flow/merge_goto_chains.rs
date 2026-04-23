@@ -7,7 +7,7 @@ use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
-use crate::transform::ctx::UllbcPass;
+use crate::transform::ctx::FusedUllbcPass;
 
 /// Set of antecedents of a given block. We only care about block ids if there's a single
 /// antecedent.
@@ -32,7 +32,7 @@ impl Antecedents {
 }
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
         // Compute for each block the set of blocks that points to it.
         let mut antecedents: IndexVec<BlockId, Antecedents> =

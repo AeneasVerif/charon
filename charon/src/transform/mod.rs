@@ -70,7 +70,7 @@ pub mod control_flow {
 
 use Pass::*;
 pub use ctx::TransformCtx;
-use ctx::{LlbcPass, TransformPass, UllbcPass};
+use ctx::{FusedUllbcPass, LlbcPass, TransformPass, UllbcPass};
 
 /// Item and type cleanup passes.
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
@@ -121,58 +121,60 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
 pub static ULLBC_PASSES: &[Pass] = &[
     // Inline promoted and inline consts into their parent bodies.
     UnstructuredBody(&simplify_output::inline_anon_consts::Transform),
-    // Remove drop statements that are noops.
-    UnstructuredBody(&simplify_output::filter_trivial_drops::Transform),
-    // Inline all asserts that correspond to dynamic checks into statements.
-    // The following pass will then merge the generated gotos as part of this substitution,
-    // and [reconstruct_fallible_operations] can then use the inlined asserts to reconstruct
-    // the fallible operations.
-    UnstructuredBody(&resugar::move_asserts_to_statements::Transform),
-    // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
-    // graph size of the CFG.
-    // This must be done early as some resugaring passes depend on it.
-    UnstructuredBody(&control_flow::merge_goto_chains::Transform),
-    // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
-    // arithmetic/array operation in the semantics of (U)LLBC.
-    // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
-    // special "assert" construct. Because of this, it must happen *before* the
-    // [reconstruct_asserts] pass. See the comments in [crate::remove_dynamic_checks].
-    // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
-    // it must happen before passes that insert statements like [simplify_constants].
-    UnstructuredBody(&resugar::reconstruct_fallible_operations::Transform),
-    // Recognize calls to the `offset_of` intrinsics and replace them with the corresponding
-    // `NullOp`.
-    UnstructuredBody(&resugar::reconstruct_intrinsics::Transform),
-    // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
-    // macro.
-    // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
-    // it must happen before passes that insert statements like [simplify_constants].
-    // **WARNING**: this pass works across calls, hence must happen after `merge_goto_chains`,
-    UnstructuredBody(&resugar::reconstruct_boxes::Transform),
-    // # Micro-pass: reconstruct the asserts
-    UnstructuredBody(&resugar::reconstruct_asserts::Transform),
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
     UnstructuredBody(&resugar::inline_local_panic_functions::Transform),
-    // # Micro-pass: desugar the constants to other values/operands as much
-    // as possible.
-    UnstructuredBody(&simplify_output::simplify_constants::Transform),
-    // # Micro-pass: introduce intermediate assignments in preparation of the
-    // [`index_to_function_calls`] pass.
-    UnstructuredBody(&simplify_output::index_intermediate_assigns::Transform),
-    // # Micro-pass: remove locals of type `()` which show up a lot.
-    UnstructuredBody(&simplify_output::remove_unit_locals::Transform),
-    // # Micro-pass: duplicate the return blocks
-    UnstructuredBody(&control_flow::duplicate_return::Transform),
-    // Remove the locals which are never used.
-    NonBody(&simplify_output::remove_unused_locals::Transform),
-    // Another round.
-    UnstructuredBody(&control_flow::merge_goto_chains::Transform),
-    // # Micro-pass: filter the "dangling" blocks. Those might have been introduced by,
-    // for instance, [`merge_goto_chains`].
-    UnstructuredBody(&normalize::filter_unreachable_blocks::Transform),
-    // # Micro-pass: make sure the block ids used in the ULLBC are consecutive
-    UnstructuredBody(&simplify_output::update_block_indices::Transform),
+    FusedUnstructuredBody(&[
+        // Remove drop statements that are noops.
+        &simplify_output::filter_trivial_drops::Transform,
+        // Inline all asserts that correspond to dynamic checks into statements.
+        // The following pass will then merge the generated gotos as part of this substitution,
+        // and [reconstruct_fallible_operations] can then use the inlined asserts to reconstruct
+        // the fallible operations.
+        &resugar::move_asserts_to_statements::Transform,
+        // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
+        // graph size of the CFG.
+        // This must be done early as some resugaring passes depend on it.
+        &control_flow::merge_goto_chains::Transform,
+        // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
+        // arithmetic/array operation in the semantics of (U)LLBC.
+        // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
+        // special "assert" construct. Because of this, it must happen *before* the
+        // [reconstruct_asserts] pass. See the comments in [crate::remove_dynamic_checks].
+        // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
+        // it must happen before passes that insert statements like [simplify_constants].
+        &resugar::reconstruct_fallible_operations::Transform,
+        // Recognize calls to the `offset_of` intrinsics and replace them with the corresponding
+        // `NullOp`.
+        &resugar::reconstruct_intrinsics::Transform,
+        // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
+        // macro.
+        // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
+        // it must happen before passes that insert statements like [simplify_constants].
+        // **WARNING**: this pass works across calls, hence must happen after `merge_goto_chains`,
+        &resugar::reconstruct_boxes::Transform,
+        // # Micro-pass: reconstruct the asserts
+        &resugar::reconstruct_asserts::Transform,
+        // # Micro-pass: desugar the constants to other values/operands as much
+        // as possible.
+        &simplify_output::simplify_constants::Transform,
+        // # Micro-pass: introduce intermediate assignments in preparation of the
+        // [`index_to_function_calls`] pass.
+        &simplify_output::index_intermediate_assigns::Transform,
+        // # Micro-pass: remove locals of type `()` which show up a lot.
+        &simplify_output::remove_unit_locals::Transform,
+        // # Micro-pass: duplicate the return blocks
+        &control_flow::duplicate_return::Transform,
+        // Remove the locals which are never used.
+        &simplify_output::remove_unused_locals::Transform,
+        // Another round.
+        &control_flow::merge_goto_chains::Transform,
+        // # Micro-pass: filter the "dangling" blocks. Those might have been introduced by,
+        // for instance, [`merge_goto_chains`].
+        &normalize::filter_unreachable_blocks::Transform,
+        // # Micro-pass: make sure the block ids used in the ULLBC are consecutive
+        &simplify_output::update_block_indices::Transform,
+    ]),
 ];
 
 /// Body cleanup passes after control flow reconstruction.
@@ -226,6 +228,7 @@ pub static FINAL_CLEANUP_PASSES: &[Pass] = &[
 pub enum Pass {
     NonBody(&'static dyn TransformPass),
     UnstructuredBody(&'static dyn UllbcPass),
+    FusedUnstructuredBody(&'static [&'static dyn FusedUllbcPass]),
     StructuredBody(&'static dyn LlbcPass),
 }
 
@@ -234,27 +237,32 @@ impl Pass {
         match self {
             NonBody(pass) => {
                 if pass.should_run(&ctx.options) {
+                    trace!("# Starting pass {}", pass.name());
                     pass.transform_ctx(ctx)
                 }
             }
             UnstructuredBody(pass) => {
                 if pass.should_run(&ctx.options) {
+                    trace!("# Starting pass {}", pass.name());
                     pass.transform_ctx(ctx)
                 }
+            }
+            FusedUnstructuredBody(passes) => {
+                ctx.for_each_fun_decl(|ctx, decl| {
+                    for pass in passes {
+                        if pass.should_run(&ctx.options) {
+                            trace!("# Starting pass {}", pass.name());
+                            pass.transform_function(ctx, decl);
+                        }
+                    }
+                });
             }
             StructuredBody(pass) => {
                 if pass.should_run(&ctx.options) {
+                    trace!("# Starting pass {}", pass.name());
                     pass.transform_ctx(ctx)
                 }
             }
-        }
-    }
-
-    pub fn name(&self) -> &str {
-        match self {
-            NonBody(pass) => pass.name(),
-            UnstructuredBody(pass) => pass.name(),
-            StructuredBody(pass) => pass.name(),
         }
     }
 }
