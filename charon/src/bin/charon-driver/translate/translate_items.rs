@@ -1234,13 +1234,16 @@ impl ItemTransCtx<'_, '_> {
         let span = item_meta.span;
 
         let hax::FullDefKind::TraitAlias {
-            implied_predicates, ..
+            implied_predicates,
+            self_predicate,
+            ..
         } = &def.kind
         else {
             raise_error!(self, span, "Unexpected definition: {def:?}");
         };
 
-        let trait_id = self.register_item(span, def.this(), TransItemSourceKind::TraitDecl);
+        // Retrieve the information about the implemented trait.
+        let implemented_trait = self.translate_trait_ref(span, &self_predicate.trait_ref)?;
 
         // Register the trait implied clauses as required clauses for the impl.
         assert!(self.innermost_generics_mut().trait_clauses.is_empty());
@@ -1249,10 +1252,6 @@ impl ItemTransCtx<'_, '_> {
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.
         let implied_trait_refs = mem::take(&mut generics.trait_refs);
-        let implemented_trait = TraitDeclRef {
-            id: trait_id,
-            generics: Box::new(generics),
-        };
 
         let mut timpl = TraitImpl {
             def_id,

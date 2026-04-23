@@ -440,8 +440,15 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
         let mut name = self.name_for_src(src)?;
         // Push the generics used for monomorphization, if any.
+        // Exclude trait impl of trait alias,
+        //    For exmaple., we use the name `{impl B for i32}` rather than `{impl B for i32}::i32`,
+        //    where `B` is a trait alias and `i32` is the generic argument for `Self`.
         if let RustcItem::Mono(item_ref) = &src.item
             && !item_ref.generic_args.is_empty()
+            && !matches!(
+                src.kind,
+                TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias)
+            )
         {
             // For preshim functions in Mono mode, we compute their generic and associative arguments,
             // which are appended to the name of these functions.
