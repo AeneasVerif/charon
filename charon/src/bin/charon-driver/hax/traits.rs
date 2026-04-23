@@ -2,11 +2,9 @@ use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 
 pub use rustc_trait_elaboration as elaboration;
-use rustc_trait_elaboration::inherits_parent_clauses;
 pub use rustc_trait_elaboration::{
     ItemPredicate, ItemPredicateId, ItemPredicates, PredicateSearcher, ToPolyTraitRef,
-    erase_and_norm, erase_free_regions, implied_predicates, is_sized_related_trait, normalize,
-    required_predicates, self_predicate,
+    erase_and_norm, erase_free_regions, normalize, self_predicate,
 };
 
 use crate::hax::prelude::*;
@@ -26,13 +24,13 @@ pub enum ImplExprPathChunk {
         assoc_item: AssocItem,
         /// The implemented predicate.
         predicate: Binder<TraitPredicate>,
-        /// The index of this predicate in the list returned by `implied_predicates`.
+        /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
         index: usize,
     },
     Parent {
         /// The implemented predicate.
         predicate: Binder<TraitPredicate>,
-        /// The index of this predicate in the list returned by `implied_predicates`.
+        /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
         index: usize,
     },
 }
@@ -229,23 +227,9 @@ pub fn solve_item_required_traits<'tcx, S: UnderOwnerState<'tcx>>(
     def_id: RDefId,
     generics: ty::GenericArgsRef<'tcx>,
 ) -> Vec<ImplExpr> {
-    fn accumulate<'tcx, S: UnderOwnerState<'tcx>>(
-        s: &S,
-        def_id: RDefId,
-        generics: ty::GenericArgsRef<'tcx>,
-        impl_exprs: &mut Vec<ImplExpr>,
-    ) {
-        let tcx = s.base().tcx;
-        if inherits_parent_clauses(tcx, def_id) {
-            let parent = tcx.parent(def_id);
-            accumulate(s, parent, generics, impl_exprs);
-        }
-        let predicates = required_predicates(tcx, def_id, s.base().options.bounds_options);
-        impl_exprs.extend(solve_item_traits_inner(s, generics, predicates));
-    }
-    let mut impl_exprs = vec![];
-    accumulate(s, def_id, generics, &mut impl_exprs);
-    impl_exprs
+    let predicates =
+        ItemPredicates::required_recursively(s.base().tcx, def_id, s.base().options.bounds_options);
+    solve_item_traits_inner(s, generics, predicates)
 }
 
 /// Solve the trait obligations for implementing a trait (or for trait associated type bounds) in
@@ -256,7 +240,7 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
     def_id: RDefId,
     generics: ty::GenericArgsRef<'tcx>,
 ) -> Vec<ImplExpr> {
-    let predicates = implied_predicates(s.base().tcx, def_id, s.base().options.bounds_options);
+    let predicates = ItemPredicates::implied(s.base().tcx, def_id, s.base().options.bounds_options);
     solve_item_traits_inner(s, generics, predicates)
 }
 

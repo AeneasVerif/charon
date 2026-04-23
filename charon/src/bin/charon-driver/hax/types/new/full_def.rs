@@ -1299,7 +1299,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
             predicates: if is_typeck_child {
                 GenericPredicates::default()
             } else {
-                required_predicates(tcx, def_id, s.base().options.bounds_options).sinto(s)
+                ItemPredicates::required(tcx, def_id, s.base().options.bounds_options).sinto(s)
             },
             parent,
         },
@@ -1323,7 +1323,8 @@ fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     let tcx = s.base().tcx;
     let def_id = s.owner_id();
     let typing_env = s.typing_env();
-    let mut implied_predicates = implied_predicates(tcx, def_id, s.base().options.bounds_options);
+    let mut implied_predicates =
+        ItemPredicates::implied(tcx, def_id, s.base().options.bounds_options);
     if args.is_some() {
         for pred in implied_predicates.iter_mut() {
             pred.clause = substitute(tcx, typing_env, args, pred.clause);

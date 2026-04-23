@@ -1,10 +1,6 @@
 //! Trait resolution: given a trait reference, we track which local clause caused it to be true.
 
-use crate::{
-    BoundsOptions, ItemPredicate, ItemPredicateId, ItemPredicates, ToPolyTraitRef,
-    implied_predicates, inherits_parent_clauses, normalize_bound_val, required_predicates,
-    self_predicate,
-};
+use crate::*;
 use itertools::{Either, Itertools};
 use std::collections::{HashMap, hash_map::Entry};
 
@@ -14,108 +10,10 @@ use rustc_middle::traits::CodegenObligationError;
 use rustc_middle::ty::{self, *};
 use rustc_trait_selection::traits::ImplSource;
 
-#[derive(Debug, Clone)]
-pub enum PathChunk<'tcx> {
-    AssocItem {
-        item: AssocItem,
-        /// The arguments provided to the item (for GATs). Includes trait args.
-        generic_args: GenericArgsRef<'tcx>,
-        /// The implemented predicate.
-        predicate: PolyTraitPredicate<'tcx>,
-        /// The index of this predicate in the list returned by `implied_predicates`.
-        index: usize,
-    },
-    Parent {
-        /// The implemented predicate.
-        predicate: PolyTraitPredicate<'tcx>,
-        /// The index of this predicate in the list returned by `implied_predicates`.
-        index: usize,
-    },
-}
-pub type Path<'tcx> = Vec<PathChunk<'tcx>>;
-
-#[derive(Debug, Clone)]
-pub enum ImplExprAtom<'tcx> {
-    /// A concrete `impl Trait for Type {}` item.
-    Concrete {
-        def_id: DefId,
-        generics: GenericArgsRef<'tcx>,
-    },
-    /// A context-bound clause like `where T: Trait`.
-    LocalBound {
-        predicate: Predicate<'tcx>,
-        id: ItemPredicateId,
-        r#trait: PolyTraitRef<'tcx>,
-        path: Path<'tcx>,
-    },
-    /// The automatic clause `Self: Trait` present inside a `impl Trait for Type {}` item.
-    SelfImpl {
-        r#trait: PolyTraitRef<'tcx>,
-        path: Path<'tcx>,
-    },
-    /// `dyn Trait` is a wrapped value with a virtual table for trait
-    /// `Trait`.  In other words, a value `dyn Trait` is a dependent
-    /// triple that gathers a type τ, a value of type τ and an
-    /// instance of type `Trait`.
-    /// `dyn Trait` implements `Trait` using a built-in implementation; this refers to that
-    /// built-in implementation.
-    Dyn,
-    /// A built-in trait whose implementation is computed by the compiler, such as `FnMut`. This
-    /// morally points to an invisible `impl` block; as such it contains the information we may
-    /// need from one.
-    Builtin {
-        /// Extra data for the given trait.
-        trait_data: BuiltinTraitData<'tcx>,
-        /// The `ImplExpr`s required to satisfy the implied predicates on the trait declaration.
-        /// E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have an `ImplExpr` for `T:
-        /// FnOnce`.
-        impl_exprs: Vec<ImplExpr<'tcx>>,
-        /// The values of the associated types for this trait.
-        types: Vec<(DefId, Ty<'tcx>, Vec<ImplExpr<'tcx>>)>,
-    },
-    /// An error happened while resolving traits.
-    Error(String),
-}
-
-#[derive(Debug, Clone)]
-pub enum BuiltinTraitData<'tcx> {
-    /// A virtual `Destruct` implementation.
-    /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
-    /// the information about `drop_in_place` to that trait. This data tells us what kind of
-    /// `drop_in_place` the target type has.
-    Destruct(DestructData<'tcx>),
-    /// Some other builtin trait.
-    Other,
-}
-
-#[derive(Debug, Clone)]
-pub enum DestructData<'tcx> {
-    /// A drop that does nothing, e.g. for scalars and pointers.
-    Noop,
-    /// An implicit `Destruct` local clause, if the `resolve_destruct_bounds` option is `false`. If
-    /// that option is `true`, we'll add `Destruct` bounds to every type param, and use that to
-    /// resolve `Destruct` impls of generics. If it's `false`, we use this variant to indicate that
-    /// the clause comes from a generic or associated type.
-    Implicit,
-    /// The `drop_in_place` is known and non-trivial.
-    Glue {
-        /// The type we're generating glue for.
-        ty: Ty<'tcx>,
-    },
-}
-
-#[derive(Clone, Debug)]
-pub struct ImplExpr<'tcx> {
-    /// The trait this is an impl for.
-    pub r#trait: PolyTraitRef<'tcx>,
-    /// The kind of implemention of the root of the tree.
-    pub r#impl: ImplExprAtom<'tcx>,
-}
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub struct ItemClause<'tcx> {
-    pub id: ItemPredicateId,
-    pub clause: PolyTraitPredicate<'tcx>,
+struct ItemClause<'tcx> {
+    id: ItemPredicateId,
+    clause: PolyTraitPredicate<'tcx>,
 }
 
 /// Returns the predicate to resolve as `Self`, if that makes sense in the current item.
@@ -137,31 +35,6 @@ fn initial_self_pred<'tcx>(
     Some(self_pred)
 }
 
-/// The predicates to use as a starting point for resolving trait references within this item. This
-/// includes the `required_predicates` of this item and all its parents.
-fn local_bound_predicates<'tcx>(
-    tcx: TyCtxt<'tcx>,
-    def_id: rustc_span::def_id::DefId,
-    options: BoundsOptions,
-) -> Vec<ItemPredicate<'tcx>> {
-    fn acc_predicates<'tcx>(
-        tcx: TyCtxt<'tcx>,
-        def_id: rustc_span::def_id::DefId,
-        options: BoundsOptions,
-        predicates: &mut Vec<ItemPredicate<'tcx>>,
-    ) {
-        if inherits_parent_clauses(tcx, def_id) {
-            let parent = tcx.parent(def_id);
-            acc_predicates(tcx, parent, options, predicates);
-        }
-        predicates.extend(required_predicates(tcx, def_id, options).iter());
-    }
-
-    let mut predicates = vec![];
-    acc_predicates(tcx, def_id, options, &mut predicates);
-    predicates
-}
-
 #[tracing::instrument(level = "trace", skip(tcx))]
 fn parents_trait_predicates<'tcx>(
     tcx: TyCtxt<'tcx>,
@@ -169,7 +42,7 @@ fn parents_trait_predicates<'tcx>(
     options: BoundsOptions,
 ) -> Vec<PolyTraitPredicate<'tcx>> {
     let self_trait_ref = pred.to_poly_trait_ref();
-    implied_predicates(tcx, pred.def_id(), options)
+    ItemPredicates::implied(tcx, pred.def_id(), options)
         .iter()
         // Substitute with the `self` args so that the clause makes sense in the
         // outside context.
@@ -237,7 +110,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
             id: ItemPredicateId::TraitSelf,
             clause,
         }));
-        out.insert_bound_predicates(local_bound_predicates(tcx, owner_id, options));
+        out.insert_bound_predicates(
+            ItemPredicates::required_recursively(tcx, owner_id, options).predicates,
+        );
         out
     }
 
@@ -340,7 +215,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         };
 
         // The bounds that hold on the associated type.
-        let item_bounds = implied_predicates(tcx, alias_ty.def_id, self.options);
+        let item_bounds = ItemPredicates::implied(tcx, alias_ty.def_id, self.options);
         let item_bounds = item_bounds
             .iter()
             .filter_map(|pred| pred.clause.as_trait_clause())
@@ -586,7 +461,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let tcx = self.tcx;
         self.resolve_predicates(
             generics,
-            required_predicates(tcx, def_id, self.options),
+            ItemPredicates::required(tcx, def_id, self.options),
             warn,
         )
     }
@@ -602,7 +477,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let tcx = self.tcx;
         self.resolve_predicates(
             generics,
-            implied_predicates(tcx, def_id, self.options),
+            ItemPredicates::implied(tcx, def_id, self.options),
             warn,
         )
     }
@@ -636,7 +511,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
 /// This expects that `trait_ref` is fully normalized.
 ///
 /// This is based on `rustc_traits::codegen::codegen_select_candidate` in rustc.
-pub fn shallow_resolve_trait_ref<'tcx>(
+fn shallow_resolve_trait_ref<'tcx>(
     tcx: TyCtxt<'tcx>,
     param_env: ParamEnv<'tcx>,
     trait_ref: PolyTraitRef<'tcx>,
