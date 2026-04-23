@@ -4,7 +4,6 @@ pub use std::path::PathBuf;
 pub use std::rc::Rc;
 
 pub use crate::hax::constant_utils::*;
-pub use crate::hax::id_table;
 pub use crate::hax::index_vec::*;
 pub use crate::hax::traits::*;
 pub use crate::hax::types::*;

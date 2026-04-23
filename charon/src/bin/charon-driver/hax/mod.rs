@@ -5,7 +5,6 @@ pub mod state;
 mod utils;
 
 mod constant_utils;
-pub mod id_table;
 mod types;
 
 mod index_vec;

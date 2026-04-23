@@ -1,5 +1,6 @@
 use crate::hax::prelude::*;
 
+use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 
@@ -36,12 +37,12 @@ use rustc_span::def_id::DefId as RDefId;
 /// ```
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ItemRef {
-    pub(crate) contents: id_table::hash_consing::HashConsed<ItemRefContents>,
+    pub(crate) contents: HashConsed<ItemRefContents>,
 }
 
 impl ItemRefContents {
     fn intern<'tcx, S: BaseState<'tcx>>(self, _s: &S) -> ItemRef {
-        let contents = id_table::hash_consing::HashConsed::new(self);
+        let contents = HashConsed::new(self);
         ItemRef { contents }
     }
 }

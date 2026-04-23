@@ -8,7 +8,9 @@
 
 use crate::hax::AdtInto;
 use crate::hax::prelude::*;
+use charon_lib::ast::HashConsed;
 
+pub use rustc_middle::mir::Promoted as PromotedId;
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
 sinto_reexport!(hir::Safety);
@@ -66,8 +68,6 @@ pub enum DefKind {
     SyntheticCoroutineBody,
 }
 
-pub use rustc_middle::mir::Promoted as PromotedId;
-
 /// The crate name under which synthetic items are exported under.
 const SYNTHETIC_CRATE_NAME: &str = "<synthetic>";
 
@@ -75,7 +75,7 @@ const SYNTHETIC_CRATE_NAME: &str = "<synthetic>";
 /// have their own ad-hoc numbering scheme in rustc for now).
 #[derive(Clone, PartialEq, Eq)]
 pub struct DefId {
-    pub(crate) contents: crate::hax::id_table::hash_consing::HashConsed<DefIdContents>,
+    pub(crate) contents: HashConsed<DefIdContents>,
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
@@ -128,7 +128,7 @@ impl DefIdBase {
 
 impl DefIdContents {
     pub fn make_def_id<'tcx, S: BaseState<'tcx>>(self, _s: &S) -> DefId {
-        let contents = id_table::hash_consing::HashConsed::new(self);
+        let contents = HashConsed::new(self);
         DefId { contents }
     }
 }

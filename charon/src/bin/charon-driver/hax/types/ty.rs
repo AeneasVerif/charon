@@ -4,6 +4,7 @@ use crate::hax::prelude::*;
 use crate::hax::sinto_as_usize;
 use crate::hax::sinto_todo;
 
+use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 
@@ -720,12 +721,12 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Box<Ty>> for ty::Ty<'tcx> {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Ty {
-    pub(crate) kind: id_table::hash_consing::HashConsed<TyKind>,
+    pub(crate) kind: HashConsed<TyKind>,
 }
 
 impl Ty {
     pub fn new<'tcx, S: BaseState<'tcx>>(_s: &S, kind: TyKind) -> Self {
-        let kind = id_table::hash_consing::HashConsed::new(kind);
+        let kind = HashConsed::new(kind);
         Ty { kind }
     }
 

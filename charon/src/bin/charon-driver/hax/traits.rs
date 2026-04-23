@@ -1,7 +1,8 @@
-use crate::hax::{id_table::hash_consing::HashConsed, prelude::*};
+use crate::hax::prelude::*;
 
 pub mod resolution;
 mod utils;
+use charon_lib::ast::HashConsed;
 pub use utils::{
     ItemPredicate, ItemPredicateId, ItemPredicates, ToPolyTraitRef, erase_and_norm,
     erase_free_regions, implied_predicates, normalize, required_predicates, self_predicate,
