@@ -62,12 +62,7 @@ impl ItemRef {
         def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
     ) -> ItemRef {
-        Self::translate_maybe_resolve_impl(
-            s,
-            s.base().options.item_ref_use_concrete_impl,
-            def_id,
-            generics,
-        )
+        Self::translate_maybe_resolve_impl(s, true, def_id, generics)
     }
 
     /// Makes a `ItemRef` from a `def_id` and generics.
