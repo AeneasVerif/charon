@@ -42,7 +42,8 @@ jobs:
           # Fetch the benchmark data that the bench workflow pushes to bench-reports.
           if git fetch origin bench-reports 2>/dev/null; then
             git checkout origin/bench-reports -- bench/ 2>/dev/null && \
-              mv bench/ charon/target/doc/bench/ || \
+              mv bench/ charon/target/doc/bench/ && \
+              cp .github/bench-index.html charon/target/doc/bench/index.html || \
               echo "No benchmark data on bench-reports yet, skipping."
           else
             echo "No bench-reports branch yet, skipping benchmark dashboard."
