@@ -53,13 +53,13 @@ pub enum PathChunk<'tcx> {
         /// The arguments provided to the item (for GATs). Includes trait args.
         generic_args: ty::GenericArgsRef<'tcx>,
         /// The implemented predicate.
-        predicate: ty::PolyTraitPredicate<'tcx>,
+        predicate: ty::PolyTraitRef<'tcx>,
         /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
         index: usize,
     },
     Parent {
         /// The implemented predicate.
-        predicate: ty::PolyTraitPredicate<'tcx>,
+        predicate: ty::PolyTraitRef<'tcx>,
         /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
         index: usize,
     },

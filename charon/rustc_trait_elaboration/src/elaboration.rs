@@ -13,7 +13,7 @@ use rustc_trait_selection::traits::ImplSource;
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 struct ItemClause<'tcx> {
     id: ItemPredicateId,
-    clause: PolyTraitPredicate<'tcx>,
+    clause: PolyTraitRef<'tcx>,
 }
 
 /// Returns the predicate to resolve as `Self`, if that makes sense in the current item.
@@ -21,7 +21,7 @@ struct ItemClause<'tcx> {
 fn initial_self_pred<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: rustc_span::def_id::DefId,
-) -> Option<PolyTraitPredicate<'tcx>> {
+) -> Option<PolyTraitRef<'tcx>> {
     use DefKind::*;
     let trait_def_id = match tcx.def_kind(def_id) {
         Trait | TraitAlias => def_id,
@@ -38,16 +38,16 @@ fn initial_self_pred<'tcx>(
 #[tracing::instrument(level = "trace", skip(tcx))]
 fn parents_trait_predicates<'tcx>(
     tcx: TyCtxt<'tcx>,
-    pred: PolyTraitPredicate<'tcx>,
+    self_trait_ref: PolyTraitRef<'tcx>,
     options: BoundsOptions,
-) -> Vec<PolyTraitPredicate<'tcx>> {
-    let self_trait_ref = pred.to_poly_trait_ref();
-    ItemPredicates::implied(tcx, pred.def_id(), options)
+) -> Vec<PolyTraitRef<'tcx>> {
+    ItemPredicates::implied(tcx, self_trait_ref.def_id(), options)
         .iter()
         // Substitute with the `self` args so that the clause makes sense in the
         // outside context.
         .map(|pred| pred.clause.instantiate_supertrait(tcx, self_trait_ref))
         .filter_map(|pred| pred.as_trait_clause())
+        .map(|pred| pred.to_poly_trait_ref())
         .collect()
 }
 
@@ -56,14 +56,14 @@ fn parents_trait_predicates<'tcx>(
 #[derive(Debug, Clone)]
 struct Candidate<'tcx> {
     path: Path<'tcx>,
-    pred: PolyTraitPredicate<'tcx>,
+    pred: PolyTraitRef<'tcx>,
     origin: ItemClause<'tcx>,
 }
 
 impl<'tcx> Candidate<'tcx> {
     fn into_impl_expr(self, tcx: TyCtxt<'tcx>, implicit_self_clause: bool) -> ImplExprAtom<'tcx> {
         let path = self.path;
-        let r#trait = self.origin.clause.to_poly_trait_ref();
+        let r#trait = self.origin.clause;
         match self.origin.id {
             ItemPredicateId::TraitSelf if implicit_self_clause => {
                 ImplExprAtom::SelfImpl { r#trait, path }
@@ -84,7 +84,7 @@ pub struct PredicateSearcher<'tcx> {
     tcx: TyCtxt<'tcx>,
     typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
-    candidates: HashMap<PolyTraitPredicate<'tcx>, Candidate<'tcx>>,
+    candidates: HashMap<PolyTraitRef<'tcx>, Candidate<'tcx>>,
     /// Resolution options.
     options: BoundsOptions,
     /// Whether we're in a trait declaration context where an implicit `Self: Trait` clause is
@@ -126,7 +126,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         self.insert_predicates(preds.into_iter().filter_map(|pred| {
             pred.clause.as_trait_clause().map(|clause| ItemClause {
                 id: pred.id,
-                clause,
+                clause: clause.to_poly_trait_ref(),
             })
         }));
     }
@@ -217,10 +217,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
         // The bounds that hold on the associated type.
         let item_bounds = ItemPredicates::implied(tcx, alias_ty.def_id, self.options);
         let item_bounds = item_bounds
-            .iter()
-            .filter_map(|pred| pred.clause.as_trait_clause())
+            .iter_trait_clauses()
             // Substitute the item generics
-            .map(|pred| EarlyBinder::bind(pred).instantiate(tcx, alias_ty.args))
+            .map(|(_, tref)| EarlyBinder::bind(tref).instantiate(tcx, alias_ty.args))
             .enumerate();
 
         // Add all the bounds on the corresponding associated item.
@@ -246,7 +245,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// associated type, we add the relevant implied associated type bounds to the set as well.
     fn resolve_local(
         &mut self,
-        target: PolyTraitPredicate<'tcx>,
+        target: PolyTraitRef<'tcx>,
         // Call back into hax-related code to display a nice warning.
         warn: &impl Fn(&str),
     ) -> Result<Option<Candidate<'tcx>>, String> {

@@ -108,16 +108,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    pub(crate) fn translate_poly_trait_predicate(
-        &mut self,
-        span: Span,
-        bound_trait_ref: &hax::Binder<hax::TraitPredicate>,
-    ) -> Result<PolyTraitDeclRef, Error> {
-        self.translate_region_binder(span, bound_trait_ref, move |ctx, trait_ref| {
-            ctx.translate_trait_predicate(span, trait_ref)
-        })
-    }
-
     pub(crate) fn translate_trait_predicate(
         &mut self,
         span: Span,
@@ -320,14 +310,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                 name,
                                 TraitClauseId::new(*index),
                             );
-                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
+                            current_pred = self.translate_poly_trait_ref(span, predicate)?;
                         }
                         Parent {
                             predicate, index, ..
                         } => {
                             tref_kind =
                                 TraitRefKind::ParentClause(trait_ref, TraitClauseId::new(*index));
-                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
+                            current_pred = self.translate_poly_trait_ref(span, predicate)?;
                         }
                     }
                 }

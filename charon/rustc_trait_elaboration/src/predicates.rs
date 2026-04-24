@@ -33,6 +33,8 @@ use rustc_middle::ty::*;
 use rustc_span::def_id::DefId;
 use rustc_span::{DUMMY_SP, Span};
 
+use crate::ToPolyTraitRef;
+
 #[derive(Debug, Clone, Copy)]
 pub struct BoundsOptions {
     /// Add `T: Destruct` bounds to every type generic, so that we can build `ImplExpr`s to know
@@ -367,6 +369,14 @@ impl<'tcx> ItemPredicates<'tcx> {
 
     pub fn iter(&self) -> impl Iterator<Item = ItemPredicate<'tcx>> {
         self.predicates.iter().copied()
+    }
+    pub fn iter_trait_clauses(
+        &self,
+    ) -> impl Iterator<Item = (ItemPredicateId, PolyTraitRef<'tcx>)> {
+        self.iter().filter_map(|pred| {
+            let tref = pred.clause.as_trait_clause()?.to_poly_trait_ref();
+            Some((pred.id, tref))
+        })
     }
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut ItemPredicate<'tcx>> {
         self.predicates.iter_mut()
