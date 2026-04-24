@@ -195,12 +195,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
     }
 
     /// If the type is a trait associated type, we add any relevant bounds to our context.
-    fn add_associated_type_refs(
-        &mut self,
-        ty: Binder<'tcx, Ty<'tcx>>,
-        // Call back into hax-related code to display a nice warning.
-        warn: &impl Fn(&str),
-    ) -> Result<(), String> {
+    fn add_associated_type_refs(&mut self, ty: Binder<'tcx, Ty<'tcx>>) -> Result<(), String> {
         let tcx = self.tcx;
         // Note: We skip a binder but rebind it just after.
         let TyKind::Alias(AliasTyKind::Projection, alias_ty) = ty.skip_binder().kind() else {
@@ -210,7 +205,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
 
         // The predicate we're looking for is is `<T as Trait>::Type: OtherTrait`. We look up `T as
         // Trait` in the current context and add all the bounds on `Trait::Type` to our context.
-        let Some(trait_candidate) = self.resolve_local(trait_ref, warn)? else {
+        let Some(trait_candidate) = self.resolve_local(trait_ref)? else {
             return Ok(());
         };
 
@@ -246,8 +241,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
     fn resolve_local(
         &mut self,
         target: PolyTraitRef<'tcx>,
-        // Call back into hax-related code to display a nice warning.
-        warn: &impl Fn(&str),
     ) -> Result<Option<Candidate<'tcx>>, String> {
         tracing::trace!("Looking for {target:?}");
 
@@ -258,7 +251,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         }
 
         // Add clauses related to associated type in the `Self` type of the predicate.
-        self.add_associated_type_refs(target.self_ty(), warn)?;
+        self.add_associated_type_refs(target.self_ty())?;
 
         let ret = self.candidates.get(&target).cloned();
         if ret.is_none() {
@@ -274,13 +267,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
     }
 
     /// Resolve the given trait reference in the local context.
-    #[tracing::instrument(level = "trace", skip(self, warn))]
-    pub fn resolve(
-        &mut self,
-        tref: &PolyTraitRef<'tcx>,
-        // Call back into hax-related code to display a nice warning.
-        warn: &impl Fn(&str),
-    ) -> Result<ImplExpr<'tcx>, String> {
+    #[tracing::instrument(level = "trace", skip(self))]
+    pub fn resolve(&mut self, tref: &PolyTraitRef<'tcx>) -> Result<ImplExpr<'tcx>, String> {
         use rustc_trait_selection::traits::{
             BuiltinImplSource, ImplSource, ImplSourceUserDefinedData,
         };
@@ -291,7 +279,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let trait_def_id = erased_tref.skip_binder().def_id;
 
         let error = |msg: String| {
-            warn(&msg);
             Ok(ImplExpr {
                 r#impl: ImplExprAtom::Error(msg),
                 r#trait: *tref,
@@ -308,17 +295,14 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 def_id: impl_def_id,
                 generics,
             },
-            Ok(ImplSource::Param(_)) => {
-                match self.resolve_local(erased_tref.upcast(self.tcx), warn)? {
-                    Some(candidate) => candidate.into_impl_expr(tcx, self.implicit_self_clause),
-                    None => {
-                        let msg = format!(
-                            "Could not find a clause for `{tref:?}` in the item parameters"
-                        );
-                        return error(msg);
-                    }
+            Ok(ImplSource::Param(_)) => match self.resolve_local(erased_tref.upcast(self.tcx))? {
+                Some(candidate) => candidate.into_impl_expr(tcx, self.implicit_self_clause),
+                None => {
+                    let msg =
+                        format!("Could not find a clause for `{tref:?}` in the item parameters");
+                    return error(msg);
                 }
-            }
+            },
             Ok(ImplSource::Builtin(BuiltinImplSource::Object { .. }, _)) => ImplExprAtom::Dyn,
             Ok(ImplSource::Builtin(_, _)) => {
                 // Resolve the predicates implied by the trait.
@@ -328,7 +312,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 let impl_exprs = self.resolve_item_implied_predicates(
                     trait_def_id,
                     erased_tref.skip_binder().args,
-                    warn,
                 )?;
                 let types = tcx
                     .associated_items(trait_def_id)
@@ -355,7 +338,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
                             .resolve_item_implied_predicates(
                                 assoc.def_id,
                                 erased_tref.skip_binder().args,
-                                warn,
                             )
                             .ok()?;
                         Some((assoc.def_id, ty, impl_exprs))
@@ -397,7 +379,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                             if self.options.add_destruct_bounds {
                                 // We've added `Destruct` impls on everything, we should be able to resolve
                                 // it.
-                                match self.resolve_local(erased_tref.upcast(self.tcx), warn)? {
+                                match self.resolve_local(erased_tref.upcast(self.tcx))? {
                                     Some(candidate) => Either::Right(
                                         candidate.into_impl_expr(tcx, self.implicit_self_clause),
                                     ),
@@ -454,14 +436,11 @@ impl<'tcx> PredicateSearcher<'tcx> {
         &mut self,
         def_id: DefId,
         generics: GenericArgsRef<'tcx>,
-        // Call back into hax-related code to display a nice warning.
-        warn: &impl Fn(&str),
     ) -> Result<Vec<ImplExpr<'tcx>>, String> {
         let tcx = self.tcx;
         self.resolve_predicates(
             generics,
             ItemPredicates::required(tcx, def_id, &self.options),
-            warn,
         )
     }
 
@@ -470,14 +449,11 @@ impl<'tcx> PredicateSearcher<'tcx> {
         &mut self,
         def_id: DefId,
         generics: GenericArgsRef<'tcx>,
-        // Call back into hax-related code to display a nice warning.
-        warn: &impl Fn(&str),
     ) -> Result<Vec<ImplExpr<'tcx>>, String> {
         let tcx = self.tcx;
         self.resolve_predicates(
             generics,
             ItemPredicates::implied(tcx, def_id, &self.options),
-            warn,
         )
     }
 
@@ -487,8 +463,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
         &mut self,
         generics: GenericArgsRef<'tcx>,
         predicates: ItemPredicates<'tcx>,
-        // Call back into hax-related code to display a nice warning.
-        warn: &impl Fn(&str),
     ) -> Result<Vec<ImplExpr<'tcx>>, String> {
         let tcx = self.tcx;
         predicates
@@ -498,7 +472,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
             // Substitute the item generics
             .map(|trait_ref| EarlyBinder::bind(trait_ref).instantiate(tcx, generics))
             // Resolve
-            .map(|trait_ref| self.resolve(&trait_ref, warn))
+            .map(|trait_ref| self.resolve(&trait_ref))
             .collect()
     }
 }

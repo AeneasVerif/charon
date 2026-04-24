@@ -928,7 +928,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         let impl_expr = {
                             let poly_trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
                             predicate_searcher
-                                .resolve(&poly_trait_ref, &|_| {})
+                                .resolve(&poly_trait_ref)
                                 .s_unwrap(s)
                                 .sinto(s)
                         };
@@ -1083,7 +1083,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
         (ty::Dynamic(from_preds, _), ty::Dynamic(to_preds, ..)) => {
             let impl_expr = resolve_for_dyn(s, from_preds, |searcher, fresh_ty| {
                 let to_pred = to_preds.principal().unwrap().with_self_ty(tcx, fresh_ty);
-                searcher.resolve(&to_pred, &|_| {}).s_unwrap(s).sinto(s)
+                searcher.resolve(&to_pred).s_unwrap(s).sinto(s)
             });
             UnsizingMetadata::NestedVTable(impl_expr)
         }
