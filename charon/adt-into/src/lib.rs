@@ -63,7 +63,7 @@ mod option_parse {
 /// exists), stripping parenthesis already.
 fn tokens_of_attrs<'a>(
     attr_name: &'a str,
-    attrs: &'a Vec<syn::Attribute>,
+    attrs: &'a [syn::Attribute],
 ) -> impl Iterator<Item = proc_macro2::TokenStream> + 'a {
     attrs
         .iter()
@@ -75,16 +75,16 @@ fn tokens_of_attrs<'a>(
 
 fn parse_attrs<'a, T: syn::parse::Parse>(
     attr_name: &'a str,
-    attrs: &'a Vec<syn::Attribute>,
+    attrs: &'a [syn::Attribute],
 ) -> impl Iterator<Item = T> + 'a {
     tokens_of_attrs(attr_name, attrs).map(move |x| {
         syn::parse::<T>(x.clone().into())
-            .expect(format!("expected attribtue {}", attr_name).as_str())
+            .unwrap_or_else(|_| panic!("expected attribtue {}", attr_name))
     })
 }
 
 /// Parse an attribute as a T if it exists.
-fn parse_attr<T: syn::parse::Parse>(attr_name: &str, attrs: &Vec<syn::Attribute>) -> Option<T> {
+fn parse_attr<T: syn::parse::Parse>(attr_name: &str, attrs: &[syn::Attribute]) -> Option<T> {
     parse_attrs(attr_name, attrs).next()
 }
 
@@ -223,7 +223,7 @@ fn variant_to_arm(
         return quote! {};
     }
     if let Some(custom_arm) = custom_arm {
-        return custom_arm.into();
+        return custom_arm;
     }
 
     let from_variant = from_variant.unwrap_or(to_variant.clone());
@@ -293,7 +293,7 @@ pub fn adt_into(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         parse_macro_input!(input as DeriveInput)
     };
     let attrs = &dinput.attrs;
-    let span = dinput.clone().span().clone();
+    let span = dinput.clone().span();
     let to = dinput.ident;
     let to_generics = dinput.generics;
 
@@ -355,8 +355,7 @@ pub fn adt_into(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let append: proc_macro2::TokenStream = tokens_of_attrs("append", &dinput.attrs)
         .next()
-        .unwrap_or((quote! {}).into())
-        .into();
+        .unwrap_or_default();
 
     let body = match &dinput.data {
         Data::Union(..) => panic!("Union types are not supported"),
@@ -425,7 +424,7 @@ fn merge_generic_params(
     }
     let (a_lt, a_others) = partition(a);
     let (b_lt, b_others) = partition(b);
-    let h = |x: Vec<_>, y: Vec<_>| x.into_iter().chain(y.into_iter());
+    let h = |x: Vec<_>, y: Vec<_>| x.into_iter().chain(y);
     h(a_lt, b_lt).chain(h(a_others, b_others))
 }
 

@@ -265,8 +265,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
             tracing::trace!(
                 "Couldn't find {target:?} in: [\n{}]",
                 self.candidates
-                    .iter()
-                    .map(|(_, c)| format!("  - {:?}\n", c.pred))
+                    .values()
+                    .map(|c| format!("  - {:?}\n", c.pred))
                     .join("")
             );
         }
@@ -338,18 +338,18 @@ impl<'tcx> PredicateSearcher<'tcx> {
                         let ty =
                             Ty::new_projection(tcx, assoc.def_id, erased_tref.skip_binder().args);
                         let ty = crate::erase_and_norm(tcx, self.typing_env, ty);
-                        if let TyKind::Alias(_, alias_ty) = ty.kind() {
-                            if alias_ty.def_id == assoc.def_id {
-                                // Couldn't normalize the type to anything different than itself;
-                                // this must be a built-in associated type such as
-                                // `DiscriminantKind::Discriminant`.
-                                // We can't return the unnormalized associated type as that would
-                                // make the trait ref contain itself, which would make hax's
-                                // `sinto` infrastructure loop. That's ok because we can't provide
-                                // a value for this type other than the associate type alias
-                                // itself.
-                                return None;
-                            }
+                        if let TyKind::Alias(_, alias_ty) = ty.kind()
+                            && alias_ty.def_id == assoc.def_id
+                        {
+                            // Couldn't normalize the type to anything different than itself;
+                            // this must be a built-in associated type such as
+                            // `DiscriminantKind::Discriminant`.
+                            // We can't return the unnormalized associated type as that would
+                            // make the trait ref contain itself, which would make hax's
+                            // `sinto` infrastructure loop. That's ok because we can't provide
+                            // a value for this type other than the associate type alias
+                            // itself.
+                            return None;
                         }
                         let impl_exprs = self
                             .resolve_item_implied_predicates(
@@ -546,7 +546,6 @@ fn shallow_resolve_trait_ref<'tcx>(
     let ocx = ObligationCtxt::new(&infcx);
     let impl_source = selection.map(|obligation| {
         ocx.register_obligation(obligation.clone());
-        ()
     });
 
     let errors = ocx.evaluate_obligations_error_on_ambiguity();

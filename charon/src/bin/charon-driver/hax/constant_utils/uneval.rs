@@ -257,7 +257,7 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     let read_fields = |of: rustc_const_eval::interpret::OpTy<'tcx>, field_count| {
         (0..field_count).map(move |i| {
             let field_op = ecx.project_field(&of, rustc_abi::FieldIdx::from_usize(i))?;
-            op_to_const(s, span, &ecx, field_op)
+            op_to_const(s, span, ecx, field_op)
         })
     };
     let kind = match ty.kind() {

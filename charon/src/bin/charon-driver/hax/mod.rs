@@ -1,4 +1,5 @@
 #![allow(rustdoc::private_intra_doc_links)]
+#![allow(clippy::unneeded_struct_pattern, clippy::should_implement_trait)]
 
 mod rustc_utils;
 pub mod state;

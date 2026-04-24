@@ -502,6 +502,7 @@ pub enum UintTy {
     U128,
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for IntTy {
     fn to_string(&self) -> String {
         use IntTy::*;
@@ -516,6 +517,7 @@ impl ToString for IntTy {
     }
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for UintTy {
     fn to_string(&self) -> String {
         use UintTy::*;

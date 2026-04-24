@@ -43,11 +43,18 @@ impl<'tcx, T: ty::TypeFoldable<ty::TyCtxt<'tcx>>> ty::Binder<'tcx, T> {
 /// Whether the item can have generic parameters.
 pub(crate) fn can_have_generics<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> bool {
     use RDefKind::*;
-    match get_def_kind(tcx, def_id) {
-        Mod | ConstParam | TyParam | LifetimeParam | Macro(..) | ExternCrate | Use | ForeignMod
-        | GlobalAsm => false,
-        _ => true,
-    }
+    !matches!(
+        get_def_kind(tcx, def_id),
+        ConstParam
+            | ExternCrate
+            | ForeignMod
+            | GlobalAsm
+            | LifetimeParam
+            | Macro(..)
+            | Mod
+            | TyParam
+            | Use
+    )
 }
 
 pub(crate) fn get_variant_kind<'s, S: UnderOwnerState<'s>>(
@@ -60,7 +67,7 @@ pub(crate) fn get_variant_kind<'s, S: UnderOwnerState<'s>>(
     } else if adt_def.is_union() {
         VariantKind::Union
     } else {
-        let index = variant_index.into();
+        let index = variant_index;
         VariantKind::Enum { index }
     }
 }

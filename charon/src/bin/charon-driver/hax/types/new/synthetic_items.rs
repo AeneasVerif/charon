@@ -139,7 +139,7 @@ impl<'tcx> GlobalCache<'tcx> {
                 clauses.push(ty_is_sized.upcast(tcx));
             }
             SyntheticItem::Tuple(len) => {
-                let tys = (0..len).into_iter().map(|i| {
+                let tys = (0..len).map(|i| {
                     let name: String = if i < 26 {
                         format!("{}", (b'A' + i as u8) as char)
                     } else {

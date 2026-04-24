@@ -301,6 +301,7 @@ pub enum InlineAttr {
 /// Imbues [`rustc_hir::def::DefKind`] with a lot of extra information.
 
 #[derive(Clone, Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum FullDefKind {
     // Types
     /// ADts (`Struct`, `Enum` and `Union` map to this variant).
@@ -1154,9 +1155,7 @@ impl FullDef {
         let mut children = match self.kind() {
             FullDefKind::Mod { items } => items
                 .iter()
-                .filter_map(|(opt_ident, def_id)| {
-                    Some((opt_ident.as_ref()?.0.clone(), def_id.clone()))
-                })
+                .filter_map(|(opt_ident, def_id)| Some((opt_ident.as_ref()?.0, def_id.clone())))
                 .collect(),
             FullDefKind::Adt {
                 adt_kind: AdtKind::Enum,
@@ -1164,15 +1163,15 @@ impl FullDef {
                 ..
             } => variants
                 .iter()
-                .map(|variant| (variant.name.clone(), variant.def_id.clone()))
+                .map(|variant| (variant.name, variant.def_id.clone()))
                 .collect(),
             FullDefKind::InherentImpl { items, .. } | FullDefKind::Trait { items, .. } => items
                 .iter()
-                .filter_map(|item| Some((item.name.clone()?, item.def_id.clone())))
+                .filter_map(|item| Some((item.name?, item.def_id.clone())))
                 .collect(),
             FullDefKind::TraitImpl { items, .. } => items
                 .iter()
-                .filter_map(|item| Some((item.name.clone()?, item.def_id().clone())))
+                .filter_map(|item| Some((item.name?, item.def_id().clone())))
                 .collect(),
             _ => vec![],
         };
@@ -1232,12 +1231,11 @@ fn get_trait_decl_dyn_self_ty<'tcx, S: UnderOwnerState<'tcx>>(
         args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, def_id)),
     );
     rustc_utils::dyn_self_ty(tcx, typing_env, self_tref).map(|ty| {
-        let ty = if args.is_some() {
+        if args.is_some() {
             erase_free_regions(tcx, ty)
         } else {
             ty
-        };
-        ty
+        }
     })
 }
 

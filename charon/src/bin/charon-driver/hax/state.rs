@@ -221,7 +221,7 @@ pub trait WithGlobalCacheExt<'tcx>: BaseState<'tcx> {
     fn with_global_cache<T>(&self, f: impl FnOnce(&mut GlobalCache<'tcx>) -> T) -> T {
         let base = self.base();
         let mut cache = base.cache.borrow_mut();
-        f(&mut *cache)
+        f(&mut cache)
     }
     /// Access the cache for a given item. You must not call `sinto` within this function as this
     /// will likely result in `BorrowMut` panics.

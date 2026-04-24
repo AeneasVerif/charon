@@ -391,12 +391,10 @@ pub fn self_predicate<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> PolyTraitRef<'t
 
 fn inherits_parent_clauses<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
     use DefKind::*;
-    match tcx.def_kind(def_id) {
-        AssocTy | AssocFn | AssocConst | Closure | Ctor(..) | Variant | AnonConst | InlineConst => {
-            true
-        }
-        _ => false,
-    }
+    matches!(
+        tcx.def_kind(def_id),
+        AnonConst | AssocConst | AssocFn | AssocTy | Closure | Ctor(..) | InlineConst | Variant
+    )
 }
 
 /// Returns true whenever `def_id` is `MetaSized`, `Sized` or `PointeeSized`.
