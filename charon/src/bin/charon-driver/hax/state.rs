@@ -103,7 +103,7 @@ mod types {
         /// and the base one represented by `None`. Moreover we can instantiate definitions with
         /// generic arguments.
         pub full_defs:
-            HashMap<(Option<PromotedId>, Option<ty::GenericArgsRef<'tcx>>), Arc<FullDef>>,
+            HashMap<(Option<PromotedId>, Option<ty::GenericArgsRef<'tcx>>), Arc<FullDef<'tcx>>>,
         /// Cache the `Ty` translations.
         pub tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.

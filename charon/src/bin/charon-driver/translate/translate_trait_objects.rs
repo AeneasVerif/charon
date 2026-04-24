@@ -82,7 +82,7 @@ fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>, for_method: bool) -> T
 }
 
 /// Translate the `dyn Trait` type.
-impl ItemTransCtx<'_, '_> {
+impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn check_at_most_one_pred_has_methods(
         &mut self,
         span: Span,
@@ -189,7 +189,7 @@ pub struct VTableData {
 }
 
 /// Generate the vtable struct.
-impl ItemTransCtx<'_, '_> {
+impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Query whether a trait is dyn compatible.
     /// TODO(dyn): for now we return `false` if the trait has any associated types, as we don't
     /// handle associated types in vtables.
@@ -290,7 +290,7 @@ impl ItemTransCtx<'_, '_> {
 
     fn prepare_vtable_fields(
         &mut self,
-        trait_def: &hax::FullDef,
+        trait_def: &hax::FullDef<'tcx>,
         implied_predicates: &hax::GenericPredicates,
     ) -> Result<VTableData, Error> {
         let mut supertrait_map: IndexVec<TraitClauseId, _> =
@@ -460,7 +460,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         type_id: TypeDeclId,
         item_meta: ItemMeta,
-        trait_def: &hax::FullDef,
+        trait_def: &hax::FullDef<'tcx>,
     ) -> Result<TypeDecl, Error> {
         let mono = self.monomorphize();
         let span = item_meta.span;
@@ -608,7 +608,7 @@ impl ItemTransCtx<'_, '_> {
 }
 
 /// Generate a vtable value.
-impl ItemTransCtx<'_, '_> {
+impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Construct a constant that represents a reference to the vtable corresponding to this this trait proof.
     pub fn translate_vtable_instance_const(
         &mut self,
@@ -704,7 +704,7 @@ impl ItemTransCtx<'_, '_> {
     fn get_vtable_instance_info(
         &mut self,
         span: Span,
-        impl_def: &hax::FullDef,
+        impl_def: &hax::FullDef<'tcx>,
         impl_kind: &TraitImplSource,
     ) -> Result<(Option<TraitImplRef>, TypeDeclRef), Error> {
         let implemented_trait = match impl_def.kind() {
@@ -741,7 +741,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         global_id: GlobalDeclId,
         item_meta: ItemMeta,
-        impl_def: &hax::FullDef,
+        impl_def: &hax::FullDef<'tcx>,
         impl_kind: &TraitImplSource,
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
@@ -776,7 +776,7 @@ impl ItemTransCtx<'_, '_> {
     fn add_method_to_vtable_value(
         &mut self,
         span: Span,
-        impl_def: &hax::FullDef,
+        impl_def: &hax::FullDef<'tcx>,
         item: &hax::ImplAssocItem,
     ) -> Result<Option<VtableMethodValue>, Error> {
         // Exit if the item isn't a vtable safe method.
@@ -859,7 +859,7 @@ impl ItemTransCtx<'_, '_> {
     fn gen_vtable_instance_init_body(
         &mut self,
         span: Span,
-        impl_def: &hax::FullDef,
+        impl_def: &hax::FullDef<'tcx>,
         vtable_struct_ref: TypeDeclRef,
     ) -> Result<Body, Error> {
         let hax::FullDefKind::TraitImpl {
@@ -1059,7 +1059,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         init_func_id: FunDeclId,
         item_meta: ItemMeta,
-        impl_def: &hax::FullDef,
+        impl_def: &hax::FullDef<'tcx>,
         impl_kind: &TraitImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;

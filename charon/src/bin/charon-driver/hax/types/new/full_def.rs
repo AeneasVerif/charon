@@ -6,11 +6,12 @@ use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::mir;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
+use std::marker::PhantomData;
 use std::sync::Arc;
 
 /// Gathers a lot of definition information about a [`rustc_hir::def_id::DefId`].
 #[derive(Clone, Debug)]
-pub struct FullDef {
+pub struct FullDef<'tcx> {
     /// A reference to the current item. If the item was provided with generic args, they are
     /// stored here; otherwise the args are the identity_args for this item.
     pub this: ItemRef,
@@ -28,7 +29,7 @@ pub struct FullDef {
     pub lang_item: Option<Symbol>,
     /// If this definition is a diagnostic item, we store the identifier, e.g. `box_new`.
     pub diagnostic_item: Option<Symbol>,
-    pub kind: FullDefKind,
+    pub kind: FullDefKind<'tcx>,
 }
 
 /// Construct the `FullDefKind` for this item. If `args` is `Some`, the returned `FullDef` will be
@@ -37,7 +38,7 @@ fn translate_full_def<'tcx, S>(
     s: &S,
     def_id: &DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> FullDef
+) -> FullDef<'tcx>
 where
     S: UnderOwnerState<'tcx>,
 {
@@ -60,6 +61,7 @@ where
                 virtual_impl_for(s, ty::TraitRef::new(tcx, destruct_trait, [type_of_self]))
             };
             kind = FullDefKind::Adt {
+                phantom: PhantomData,
                 param_env,
                 adt_kind,
                 variants: [].into_iter().collect(),
@@ -176,7 +178,7 @@ impl DefId {
     }
 
     /// Get the full definition of this item.
-    pub fn full_def<'tcx, S>(&self, s: &S) -> Arc<FullDef>
+    pub fn full_def<'tcx, S>(&self, s: &S) -> Arc<FullDef<'tcx>>
     where
         S: BaseState<'tcx>,
     {
@@ -188,7 +190,7 @@ impl DefId {
         &self,
         s: &S,
         args: Option<ty::GenericArgsRef<'tcx>>,
-    ) -> Arc<FullDef>
+    ) -> Arc<FullDef<'tcx>>
     where
         S: BaseState<'tcx>,
     {
@@ -207,7 +209,7 @@ impl DefId {
 
 impl ItemRef {
     /// Get the full definition of the item, instantiated with the provided generics.
-    pub fn instantiated_full_def<'tcx, S>(&self, s: &S) -> Arc<FullDef>
+    pub fn instantiated_full_def<'tcx, S>(&self, s: &S) -> Arc<FullDef<'tcx>>
     where
         S: BaseState<'tcx>,
     {
@@ -302,10 +304,11 @@ pub enum InlineAttr {
 
 #[derive(Clone, Debug)]
 #[allow(clippy::large_enum_variant)]
-pub enum FullDefKind {
+pub enum FullDefKind<'tcx> {
     // Types
     /// ADts (`Struct`, `Enum` and `Union` map to this variant).
     Adt {
+        phantom: PhantomData<*mut &'tcx ()>,
         param_env: ParamEnv,
         adt_kind: AdtKind,
         variants: IndexVec<VariantIdx, VariantDef>,
@@ -619,7 +622,7 @@ fn translate_full_def_kind<'tcx, S>(
     s: &S,
     def_id: &DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> FullDefKind
+) -> FullDefKind<'tcx>
 where
     S: BaseState<'tcx>,
 {
@@ -652,6 +655,7 @@ where
 
             let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
             FullDefKind::Adt {
+                phantom: PhantomData,
                 param_env: get_param_env(s, args),
                 adt_kind: def.adt_kind().sinto(s),
                 variants,
@@ -1058,7 +1062,7 @@ pub struct VirtualTraitImpl {
     pub types: Vec<(Ty, Vec<ImplExpr>)>,
 }
 
-impl FullDef {
+impl<'tcx> FullDef<'tcx> {
     pub fn def_id(&self) -> &DefId {
         &self.this.def_id
     }
@@ -1068,7 +1072,7 @@ impl FullDef {
         &self.this
     }
 
-    pub fn kind(&self) -> &FullDefKind {
+    pub fn kind(&self) -> &FullDefKind<'tcx> {
         &self.kind
     }
 
@@ -1094,7 +1098,7 @@ impl FullDef {
     }
 
     /// Return the parent of this item if the item inherits the typing context from its parent.
-    pub fn typing_parent<'tcx>(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef> {
+    pub fn typing_parent(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef> {
         use FullDefKind::*;
         match self.kind() {
             AssocTy { .. }
@@ -1151,7 +1155,7 @@ impl FullDef {
 
     /// Lists the children of this item that can be named, in the way of normal rust paths. For
     /// types, this includes inherent items.
-    pub fn nameable_children<'tcx>(&self, s: &impl BaseState<'tcx>) -> Vec<(Symbol, DefId)> {
+    pub fn nameable_children(&self, s: &impl BaseState<'tcx>) -> Vec<(Symbol, DefId)> {
         let mut children = match self.kind() {
             FullDefKind::Mod { items } => items
                 .iter()

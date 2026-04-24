@@ -7,7 +7,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub fn recognize_builtin_impl(
         &self,
         trait_data: &hax::BuiltinTraitData,
-        trait_def: &hax::FullDef,
+        trait_def: &hax::FullDef<'tcx>,
     ) -> Option<BuiltinImplData> {
         Some(match trait_data {
             hax::BuiltinTraitData::Destruct(x) => {

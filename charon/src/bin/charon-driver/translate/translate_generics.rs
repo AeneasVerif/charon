@@ -357,7 +357,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn push_late_bound_generics_for_def(
         &mut self,
         _span: Span,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<(), Error> {
         if let hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } = def.kind()
         {
@@ -370,7 +370,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Add the generics and predicates of this item and its parents to the current context.
     #[tracing::instrument(skip(self, span, def))]
-    fn push_generics_for_def(&mut self, span: Span, def: &hax::FullDef) -> Result<(), Error> {
+    fn push_generics_for_def(&mut self, span: Span, def: &hax::FullDef<'tcx>) -> Result<(), Error> {
         trace!("{:?}", def.param_env());
         // Add generics from the parent item, recursively (recursivity is important for closures,
         // as they can be nested).
@@ -387,7 +387,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn push_generics_for_def_without_parents(
         &mut self,
         _span: Span,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<(), Error> {
         use crate::hax::FullDefKind;
         if let Some(param_env) = def.param_env() {
@@ -428,7 +428,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub fn translate_item_generics(
         &mut self,
         span: Span,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         kind: &TransItemSourceKind,
     ) -> Result<(), Error> {
         assert!(self.binding_levels.is_empty());
@@ -497,7 +497,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         kind: BinderKind,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         f: F,
     ) -> Result<Binder<U>, Error>
     where

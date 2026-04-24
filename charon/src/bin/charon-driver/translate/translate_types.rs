@@ -668,7 +668,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trans_id: TypeDeclId,
         def_span: Span,
         item_meta: &ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<TypeDeclKind, Error> {
         use crate::hax::AdtKind;
         let hax::FullDefKind::Adt {
