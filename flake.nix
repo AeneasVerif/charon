@@ -150,6 +150,21 @@
             pkgs.toml2json
           ];
         };
+        devShells.bench = pkgs.mkShell {
+          buildInputs = [
+            pkgs.openssl
+            pkgs.glibc.out
+            pkgs.glibc.static
+            pkgs.protobuf
+            pkgs.jq
+            pkgs.linuxPackages.perf
+            self.packages.${system}.charon
+          ];
+          # Include the rust toolchain
+          inputsFrom = [
+            self.packages.${system}.charon
+          ];
+        };
         checks = {
           default = charon-ml-tests;
           inherit charon-ml-tests charon-check-fmt charon-check-no-rustc
