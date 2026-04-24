@@ -228,7 +228,7 @@ impl CfgInfo {
 
         // Build the node graph (we ignore unwind paths for now).
         let mut cfg = Cfg::new();
-        for (block_id, block) in body.iter_indexed() {
+        for (block_id, block) in body.iter_enumerated() {
             cfg.add_node(block_id);
             for tgt in block.targets_ignoring_unwind() {
                 cfg.add_edge(block_id, tgt, ());

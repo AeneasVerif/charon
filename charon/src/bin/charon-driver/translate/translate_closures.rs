@@ -361,7 +361,7 @@ impl ItemTransCtx<'_, '_> {
                 }));
 
                 let untupled_args = tupled_ty.as_tuple().unwrap();
-                let closure_arg_count = untupled_args.elem_count();
+                let closure_arg_count = untupled_args.len();
                 let new_stts = untupled_args.iter().cloned().enumerate().map(|(i, ty)| {
                     let nth_field = tupled_arg.clone().project(
                         ProjectionElem::Field(

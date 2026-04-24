@@ -271,7 +271,7 @@ impl ExprBody {
     /// abort block (ie. a block with no statements and an [TerminatorKind::Abort] terminator).
     pub fn as_abort_map(&self) -> HashMap<BlockId, AbortKind> {
         self.body
-            .iter_indexed()
+            .iter_enumerated()
             .filter_map(|(bid, block)| block.as_abort().map(|abort| (bid, abort)))
             .collect()
     }
@@ -280,7 +280,7 @@ impl ExprBody {
     where
         F: FnMut(BlockId, &mut Locals, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
-        for (id, block) in &mut self.body.iter_mut_indexed() {
+        for (id, block) in &mut self.body.iter_mut_enumerated() {
             block.transform_sequences_fwd(|seq| f(id, &mut self.locals, seq));
         }
     }

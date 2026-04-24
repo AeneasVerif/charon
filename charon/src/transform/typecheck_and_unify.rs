@@ -225,7 +225,7 @@ impl TypeCheckVisitor<'_> {
         A: FmtWithCtx<FmtA>,
         B: FmtWithCtx<FmtCtx<'a>>,
     {
-        if a.elem_count() == b.elem_count() {
+        if a.len() == b.len() {
             a.iter()
                 .zip(b.iter())
                 .for_each(|(x, y)| check_inner(self, x, y));

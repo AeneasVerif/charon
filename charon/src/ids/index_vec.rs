@@ -63,16 +63,6 @@ where
         }
     }
 
-    pub fn from_vec(v: Vec<T>) -> Self {
-        Self {
-            vector: index_vec::IndexVec::from_vec(v),
-        }
-    }
-
-    pub fn from_array<const N: usize>(v: [T; N]) -> Self {
-        v.into_iter().collect()
-    }
-
     /// Shadow the `index_vec::IndexVec` method because it silently shifts ids.
     pub fn remove(&mut self, _: I) -> Option<T>
     where
@@ -102,11 +92,6 @@ where
         T: Clone,
     {
         self.vector.extend_from_slice(&other.vector);
-    }
-
-    /// Insert a value at that index, shifting all the values with equal or larger indices.
-    pub fn insert_and_shift_ids(&mut self, id: I, x: T) {
-        self.vector.insert(id, x)
     }
 
     /// Get a mutable reference into the ith element. If the vector is too short, extend it until
@@ -158,40 +143,8 @@ where
         }
     }
 
-    // TODO: rename once we've migrated from `IndexMap` completely.
-    pub fn slot_count(&self) -> usize {
-        self.vector.len()
-    }
-    pub fn elem_count(&self) -> usize {
-        self.vector.len()
-    }
-
-    pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {
-        self.vector.iter_enumerated()
-    }
-
-    pub fn iter_mut_indexed(&mut self) -> impl Iterator<Item = (I, &mut T)> {
-        self.vector.iter_mut_enumerated()
-    }
-
-    pub fn into_iter_indexed(self) -> impl Iterator<Item = (I, T)> {
+    pub fn into_iter_enumerated(self) -> impl Iterator<Item = (I, T)> {
         self.vector.into_iter_enumerated()
-    }
-
-    pub fn iter_indexed_values(&self) -> impl Iterator<Item = (I, &T)> {
-        self.iter_indexed()
-    }
-
-    pub fn into_iter_indexed_values(self) -> impl Iterator<Item = (I, T)> {
-        self.into_iter_indexed()
-    }
-
-    pub fn iter_indices(&self) -> impl Iterator<Item = I> + '_ {
-        self.vector.indices()
-    }
-
-    pub fn all_indices(&self) -> impl Iterator<Item = I> + use<I, T> {
-        self.vector.indices()
     }
 
     /// Like `Vec::split_off`.
@@ -265,7 +218,6 @@ where
     }
 }
 
-// FIXME: this impl is a footgun
 impl<I, T> FromIterator<T> for IndexVec<I, T>
 where
     I: Idx,

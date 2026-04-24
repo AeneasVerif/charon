@@ -41,7 +41,7 @@ impl FusedUllbcPass for Transform {
         // We do so by replacing the terminator (exchange_malloc) with the correct call and adding
         // a `StorageLive`. Everything else becomes Nop.
 
-        for candidate_block_idx in b.body.all_indices() {
+        for candidate_block_idx in b.body.indices() {
             let second_block;
             let box_place;
             let box_generics;

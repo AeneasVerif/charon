@@ -37,14 +37,14 @@ impl FusedUllbcPass for Transform {
         // Compute for each block the set of blocks that points to it.
         let mut antecedents: IndexVec<BlockId, Antecedents> =
             body.body.map_ref(|_| Antecedents::Zero);
-        for (block_id, block) in body.body.iter_indexed() {
+        for (block_id, block) in body.body.iter_enumerated() {
             let is_goto = block.terminator.kind.is_goto();
             for target in block.targets() {
                 antecedents.get_mut(target).unwrap().add(block_id, is_goto);
             }
         }
         // Merge blocks with a single antecedent into their antecedent.
-        for mut id in body.body.all_indices() {
+        for mut id in body.body.indices() {
             // Go up the chain to find the first parent into which we can merge.
             while let Antecedents::One {
                 id: antecedent_id,
@@ -68,7 +68,7 @@ impl FusedUllbcPass for Transform {
         }
         // Skip over trivial gotos.
         let mut visited = HashSet::new(); // detect and skip loops
-        for id in body.body.all_indices() {
+        for id in body.body.indices() {
             if body.body[id]
                 .targets()
                 .into_iter()

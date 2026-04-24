@@ -99,7 +99,7 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
             // of the old params and new trait clauses. The old params may refer to the old explicit
             // params which is wrong and must be fixed up.
             shape_params.trait_clauses = shape_params.trait_clauses.map_indexed(|i, x| {
-                if i.index() < target_params.trait_clauses.slot_count() {
+                if i.index() < target_params.trait_clauses.len() {
                     x.substitute_explicits(&shape_contents)
                 } else {
                     x
@@ -107,7 +107,7 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
             });
             shape_params.trait_type_constraints =
                 shape_params.trait_type_constraints.map_indexed(|i, x| {
-                    if i.index() < target_params.trait_type_constraints.slot_count() {
+                    if i.index() < target_params.trait_type_constraints.len() {
                         x.substitute_explicits(&shape_contents)
                     } else {
                         x
@@ -145,7 +145,7 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
         shape_contents.trait_refs = shape_params.identity_args().trait_refs;
         shape_contents
             .trait_refs
-            .truncate(target_params.trait_clauses.slot_count());
+            .truncate(target_params.trait_clauses.len());
 
         let shape_args = builder.extracted;
         let shape = Binder::new(BinderKind::Other, shape_params, shape_contents);
@@ -217,7 +217,7 @@ impl<'pm, 'ctx> VisitAstMut for MutabilityShapeBuilder<'pm, 'ctx> {
             };
 
             // Add the target predicates (properly substituted) to the new item params.
-            let num_clauses_before_merge = self.params.trait_clauses.slot_count();
+            let num_clauses_before_merge = self.params.trait_clauses.len();
             self.params.merge_predicates_from(
                 target_params
                     .clone()
@@ -230,7 +230,7 @@ impl<'pm, 'ctx> VisitAstMut for MutabilityShapeBuilder<'pm, 'ctx> {
                 .extend(shifted_generics.trait_refs);
 
             // Replace each trait ref with a clause var.
-            for (target_clause_id, tref) in generics.trait_refs.iter_mut_indexed() {
+            for (target_clause_id, tref) in generics.trait_refs.iter_mut_enumerated() {
                 let clause_id = target_clause_id + num_clauses_before_merge;
                 *tref =
                     self.params.trait_clauses[clause_id].identity_tref_at_depth(self.binder_depth);

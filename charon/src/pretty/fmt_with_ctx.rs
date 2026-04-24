@@ -423,7 +423,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
         assert!(regions.is_empty());
         assert!(const_generics.is_empty());
         assert!(regions_outlive.is_empty());
-        assert_eq!(types.elem_count(), 1);
+        assert_eq!(types.len(), 1);
 
         // Format the clauses with their assoc types, e.g. `Iterator<Item = ...>`.
         let mut cstrs_per_clause: IndexVec<TraitClauseId, Vec<String>> =
@@ -885,7 +885,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
         ) -> Result<(), fmt::Error> {
             let tab = ctx.indent();
             let ctx = &ctx.increase_indent();
-            for (bid, block) in body.iter_indexed_values() {
+            for (bid, block) in body.iter_enumerated() {
                 writeln!(f)?;
                 writeln!(f, "{tab}bb{}: {{", bid.index())?;
                 writeln!(f, "{}", block.with_ctx(ctx))?;
@@ -2098,7 +2098,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::Adt(tref) => match tref.id {
                 TypeId::Tuple => {
                     let generics = tref.generics.fmt_explicits(ctx).format(", ");
-                    let trailing_comma = if tref.generics.types.slot_count() == 1 {
+                    let trailing_comma = if tref.generics.types.len() == 1 {
                         ","
                     } else {
                         ""

@@ -25,7 +25,7 @@ impl FusedUllbcPass for Transform {
 
         // Renumerotate
         let mut bid_map: HashMap<BlockId, BlockId> = HashMap::new();
-        for (bid, block) in std::mem::take(&mut b.body).into_iter_indexed() {
+        for (bid, block) in std::mem::take(&mut b.body).into_iter_enumerated() {
             if explored.contains(&bid) {
                 let nbid = b.body.push(block);
                 bid_map.insert(bid, nbid);

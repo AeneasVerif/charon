@@ -232,7 +232,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                 }
                 TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
                 TypeId::Tuple => {
-                    let name = match tref.generics.types.elem_count() {
+                    let name = match tref.generics.types.len() {
                         2 => "pair_of_json".to_string(),
                         3 => "triple_of_json".to_string(),
                         len => format!("tuple_{len}_of_json"),

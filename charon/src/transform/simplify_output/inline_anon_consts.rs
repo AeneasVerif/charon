@@ -24,7 +24,7 @@ impl UllbcPass for Transform {
 
         ctx.for_each_fun_decl(|_ctx, decl| {
             if let Some(outer_body) = decl.body.as_unstructured_mut() {
-                for block_id in outer_body.body.all_indices() {
+                for block_id in outer_body.body.indices() {
                     // Subtle: This generator must be managed to correctly track the indices that will
                     // be generated when pushing onto `outer_body.body`.
                     let mut bid_generator: Generator<BlockId> =

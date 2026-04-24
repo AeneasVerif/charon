@@ -76,7 +76,7 @@ impl Pattern {
             // In this case, we may still have some late-bound generics in `args`, this could ONLY happen for regions
             assert!(
                 args.is_none()
-                    || args.as_ref().unwrap().len() == args.as_ref().unwrap().regions.elem_count(),
+                    || args.as_ref().unwrap().len() == args.as_ref().unwrap().regions.len(),
                 "In pattern \"{}\" matching against name \"{}\": we have both monomorphized generics {} and regular generics {}",
                 self,
                 name.with_ctx(&ctx.into_fmt()),
@@ -280,10 +280,10 @@ impl PatTy {
             return true;
         }
         // We don't include regions in patterns.
-        if pats.len() != generics.types.elem_count() + generics.const_generics.elem_count() {
+        if pats.len() != generics.types.len() + generics.const_generics.len() {
             return false;
         }
-        let (type_pats, const_pats) = pats.split_at(generics.types.elem_count());
+        let (type_pats, const_pats) = pats.split_at(generics.types.len());
         let types_match = generics
             .types
             .iter()

@@ -377,7 +377,7 @@ mod type_constraint_set {
             constraints: &IndexVec<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
         ) -> Self {
             let mut this = TypeConstraintSet::default();
-            for (i, c) in constraints.iter_indexed() {
+            for (i, c) in constraints.iter_enumerated() {
                 this.insert_type_constraint(i, c);
             }
             this
@@ -499,7 +499,7 @@ mod type_constraint_set {
                 }
                 write!(f, "::{name} = {ty:?}, ")?;
             }
-            for (parent_id, parent_trie) in self.parent_clauses.iter_indexed() {
+            for (parent_id, parent_trie) in self.parent_clauses.iter_enumerated() {
                 let mut new_parents = parents.to_vec();
                 new_parents.push(parent_id);
                 parent_trie.debug_fmt(f, base, &new_parents)?;
@@ -511,7 +511,7 @@ mod type_constraint_set {
             for (name, (_, ty)) in &self.assoc_tys {
                 vec.push((base_path.clone().with_assoc_type(*name), ty.clone()));
             }
-            for (clause_id, inner) in self.parent_clauses.iter_indexed() {
+            for (clause_id, inner) in self.parent_clauses.iter_enumerated() {
                 let mut base_path = base_path.clone();
                 base_path.parent_path.push(clause_id);
                 inner.to_vec_inner(vec, &base_path);
@@ -822,7 +822,7 @@ impl<'a> ComputeItemModifications<'a> {
             // Add constraints known from the implied clause proofs. E.g. in an `FnMut` impl,
             // we get the value of the `Output` assoc type using the proof of `Self: FnOnce` in
             // its implied clauses.
-            for (clause_id, tref) in timpl.implied_trait_refs.iter_indexed() {
+            for (clause_id, tref) in timpl.implied_trait_refs.iter_enumerated() {
                 let clause_path = TraitRefPath::parent_clause(clause_id);
                 let pred = &tref.trait_decl_ref;
                 if let Some(pred) = pred.skip_binder.clone().move_from_under_binder()
@@ -1172,13 +1172,13 @@ impl VisitAstMut for UpdateItemBody<'_> {
                 generics: Box::new(tdecl.generics.identity_args()),
             }),
         );
-        for (clause_id, clause) in tdecl.implied_clauses.iter_mut_indexed() {
+        for (clause_id, clause) in tdecl.implied_clauses.iter_mut_enumerated() {
             let self_path = TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id);
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
         }
     }
     fn enter_generic_params(&mut self, params: &mut GenericParams) {
-        for (clause_id, clause) in params.trait_clauses.iter_mut_indexed() {
+        for (clause_id, clause) in params.trait_clauses.iter_mut_enumerated() {
             let self_path = TraitRefKind::Clause(DeBruijnVar::new_at_zero(clause_id));
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
         }

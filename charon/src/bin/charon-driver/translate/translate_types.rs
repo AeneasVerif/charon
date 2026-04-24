@@ -167,7 +167,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Array(item_ref) => {
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
-                assert!(args.types.elem_count() == 1 && args.const_generics.elem_count() == 1);
+                assert!(args.types.len() == 1 && args.const_generics.len() == 1);
                 TyKind::Array(
                     args.types.pop().unwrap(),
                     Box::new(args.const_generics.pop().unwrap()),
@@ -175,7 +175,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Slice(item_ref) => {
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
-                assert!(args.types.elem_count() == 1);
+                assert!(args.types.len() == 1);
                 TyKind::Slice(args.types.pop().unwrap())
             }
             hax::TyKind::Tuple(item_ref) => {
@@ -643,7 +643,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     align: Some(align),
                     discriminant_layout: None,
                     uninhabited: false,
-                    variant_layouts: IndexVec::from_array([VariantLayout {
+                    variant_layouts: IndexVec::from([VariantLayout {
                         field_offsets,
                         tag: None,
                         uninhabited: false,

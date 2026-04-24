@@ -482,7 +482,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             self.register_item(span, hax_item, TransItemSourceKind::Type);
                         let adt_decl = self.get_or_translate(adt_decl_id)?;
                         let adt_generics = adt_decl.generic_params();
-                        adt_generics.regions.elem_count() - generics.regions.elem_count()
+                        adt_generics.regions.len() - generics.regions.len()
                     };
                     generics
                         .regions
