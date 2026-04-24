@@ -158,6 +158,7 @@
             pkgs.protobuf
             pkgs.jq
             pkgs.linuxPackages.perf
+            pkgs.time
             self.packages.${system}.charon
           ];
           # Include the rust toolchain
