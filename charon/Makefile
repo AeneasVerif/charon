@@ -12,7 +12,7 @@ format:
 .PHONY: test
 test:
 	cargo test
-	cargo clippy --all-targets --fix
+	cargo clippy --all-targets --fix --allow-dirty
 
 .PHONY: test-popular-crates
 test-popular-crates:

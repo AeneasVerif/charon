@@ -583,8 +583,6 @@ macro_rules! mk_index_impls {
         }
     };
 }
-pub(crate) use mk_index_impls;
-
 mk_index_impls!(TranslatedCrate.type_decls[TypeDeclId]: TypeDecl);
 mk_index_impls!(TranslatedCrate.fun_decls[FunDeclId]: FunDecl);
 mk_index_impls!(TranslatedCrate.global_decls[GlobalDeclId]: GlobalDecl);

@@ -408,7 +408,7 @@ fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
     let sorted_file_ids: IndexMap<FileId, usize> = ctx
         .translated
         .files
-        .all_indices()
+        .indices()
         .sorted_by_cached_key(|&file_id| {
             let file = &ctx.translated.files[file_id];
             let is_std = file.crate_name == "std" || file.crate_name == "core";

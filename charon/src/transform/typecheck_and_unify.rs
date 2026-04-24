@@ -9,6 +9,7 @@ use crate::{
     ast::*,
     errors::Level,
     formatter::{AstFormatter, FmtCtx, IntoFormatter},
+    ids::IndexVec,
     pretty::FmtWithCtx,
     transform::utils::GenericsSource,
 };
@@ -211,8 +212,8 @@ impl TypeCheckVisitor<'_> {
 
     fn zip_assert_match<'a, I, A, B, FmtA>(
         &'a mut self,
-        a: &IndexMap<I, A>,
-        b: &IndexMap<I, B>,
+        a: &IndexVec<I, A>,
+        b: &IndexVec<I, B>,
         a_fmt: &FmtA,
         kind: &str,
         target: &GenericsSource,
@@ -224,7 +225,7 @@ impl TypeCheckVisitor<'_> {
         A: FmtWithCtx<FmtA>,
         B: FmtWithCtx<FmtCtx<'a>>,
     {
-        if a.elem_count() == b.elem_count() {
+        if a.len() == b.len() {
             a.iter()
                 .zip(b.iter())
                 .for_each(|(x, y)| check_inner(self, x, y));
@@ -279,8 +280,8 @@ impl TypeCheckVisitor<'_> {
     fn assert_clauses_match(
         &mut self,
         params_fmt: &FmtCtx<'_>,
-        clauses: Substituted<'_, IndexMap<TraitClauseId, TraitParam>>,
-        trefs: &IndexMap<TraitClauseId, TraitRef>,
+        clauses: Substituted<'_, IndexVec<TraitClauseId, TraitParam>>,
+        trefs: &IndexVec<TraitClauseId, TraitRef>,
         kind: &str,
         target: &GenericsSource,
     ) {

@@ -39,7 +39,7 @@ fn initial_self_pred<'tcx>(
 fn parents_trait_predicates<'tcx>(
     tcx: TyCtxt<'tcx>,
     self_trait_ref: PolyTraitRef<'tcx>,
-    options: BoundsOptions,
+    options: &BoundsOptions,
 ) -> Vec<PolyTraitRef<'tcx>> {
     ItemPredicates::implied(tcx, self_trait_ref.def_id(), options)
         .iter()
@@ -94,7 +94,7 @@ pub struct PredicateSearcher<'tcx> {
 
 impl<'tcx> PredicateSearcher<'tcx> {
     /// Initialize the elaborator with the predicates accessible within this item.
-    pub fn new_for_owner(tcx: TyCtxt<'tcx>, owner_id: DefId, options: BoundsOptions) -> Self {
+    pub fn new_for_owner(tcx: TyCtxt<'tcx>, owner_id: DefId, options: &BoundsOptions) -> Self {
         let initial_self_pred = initial_self_pred(tcx, owner_id);
         let mut out = Self {
             tcx,
@@ -103,7 +103,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 typing_mode: TypingMode::PostAnalysis,
             },
             candidates: Default::default(),
-            options,
+            options: options.clone(),
             implicit_self_clause: initial_self_pred.is_some(),
         };
         out.insert_predicates(initial_self_pred.map(|clause| ItemClause {
@@ -174,9 +174,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let tcx = self.tcx;
         // Then recursively add their parents. This way ensures a breadth-first order,
         // which means we select the shortest path when looking up predicates.
-        let options = self.options;
+        let options = self.options.clone();
         self.insert_candidates(new_candidates.into_iter().flat_map(|candidate| {
-            parents_trait_predicates(tcx, candidate.pred, options)
+            parents_trait_predicates(tcx, candidate.pred, &options)
                 .into_iter()
                 .enumerate()
                 .map(move |(index, parent_pred)| {
@@ -215,7 +215,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         };
 
         // The bounds that hold on the associated type.
-        let item_bounds = ItemPredicates::implied(tcx, alias_ty.def_id, self.options);
+        let item_bounds = ItemPredicates::implied(tcx, alias_ty.def_id, &self.options);
         let item_bounds = item_bounds
             .iter_trait_clauses()
             // Substitute the item generics
@@ -394,7 +394,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                         // `dyn` has `Destruct` in its list of traits.
                         ty::Dynamic(..) => Either::Right(ImplExprAtom::Dyn),
                         ty::Param(..) | ty::Alias(..) | ty::Bound(..) => {
-                            if self.options.resolve_destruct {
+                            if self.options.add_destruct_bounds {
                                 // We've added `Destruct` impls on everything, we should be able to resolve
                                 // it.
                                 match self.resolve_local(erased_tref.upcast(self.tcx), warn)? {
@@ -460,7 +460,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let tcx = self.tcx;
         self.resolve_predicates(
             generics,
-            ItemPredicates::required(tcx, def_id, self.options),
+            ItemPredicates::required(tcx, def_id, &self.options),
             warn,
         )
     }
@@ -476,7 +476,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let tcx = self.tcx;
         self.resolve_predicates(
             generics,
-            ItemPredicates::implied(tcx, def_id, self.options),
+            ItemPredicates::implied(tcx, def_id, &self.options),
             warn,
         )
     }

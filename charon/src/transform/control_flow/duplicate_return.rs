@@ -39,7 +39,7 @@ impl FusedUllbcPass for Transform {
         // Find the return block id (there should be one).
         let returns: HashMap<BlockId, Span> = b
             .body
-            .iter_indexed()
+            .iter_enumerated()
             .filter_map(|(bid, block)| {
                 if block.statements.is_empty() && block.terminator.kind.is_return() {
                     Some((bid, block.terminator.span))

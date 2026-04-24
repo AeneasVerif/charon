@@ -40,7 +40,7 @@ impl UllbcPass for Transform {
         // Replace each call to one such function with a `Panic`.
         ctx.for_each_fun_decl(|_ctx, decl| {
             if let Some(body) = decl.body.as_unstructured_mut() {
-                for block_id in body.body.all_indices() {
+                for block_id in body.body.indices() {
                     let Some(block) = body.body.get_mut(block_id) else {
                         continue;
                     };

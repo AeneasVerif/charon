@@ -63,16 +63,6 @@ where
         }
     }
 
-    pub fn from_vec(v: Vec<T>) -> Self {
-        Self {
-            vector: index_vec::IndexVec::from_vec(v),
-        }
-    }
-
-    pub fn from_array<const N: usize>(v: [T; N]) -> Self {
-        v.into_iter().collect()
-    }
-
     /// Shadow the `index_vec::IndexVec` method because it silently shifts ids.
     pub fn remove(&mut self, _: I) -> Option<T>
     where
@@ -82,6 +72,14 @@ where
         panic!("remove")
     }
 
+    pub fn remove_and_shift_ids(&mut self, id: I) -> Option<T> {
+        if self.vector.get(id).is_some() {
+            Some(self.vector.remove(id))
+        } else {
+            None
+        }
+    }
+
     pub fn push_with(&mut self, f: impl FnOnce(I) -> T) -> I {
         let id = self.next_idx();
         let x = f(id);
@@ -89,16 +87,20 @@ where
         id
     }
 
-    pub fn extend_from_slice(&mut self, other: &Self)
+    pub fn clone_extend_from_other(&mut self, other: &Self)
     where
         T: Clone,
     {
         self.vector.extend_from_slice(&other.vector);
     }
 
-    /// Insert a value at that index, shifting all the values with equal or larger indices.
-    pub fn insert_and_shift_ids(&mut self, id: I, x: T) {
-        self.vector.insert(id, x)
+    /// Get a mutable reference into the ith element. If the vector is too short, extend it until
+    /// it has enough elements.
+    pub fn get_or_extend_and_insert(&mut self, id: I, f: impl FnMut() -> T) -> &mut T {
+        if id.index() >= self.vector.len() {
+            self.vector.resize_with(id.index() + 1, f);
+        }
+        &mut self.vector[id]
     }
 
     /// Map each entry to a new one, keeping the same ids.
@@ -107,14 +109,12 @@ where
             vector: self.vector.into_iter().map(f).collect(),
         }
     }
-
     /// Map each entry to a new one, keeping the same ids.
     pub fn map_ref<'a, U>(&'a self, f: impl FnMut(&'a T) -> U) -> IndexVec<I, U> {
         IndexVec {
             vector: self.vector.iter().map(f).collect(),
         }
     }
-
     /// Map each entry to a new one, keeping the same ids.
     pub fn map_ref_mut<'a, U>(&'a mut self, f: impl FnMut(&'a mut T) -> U) -> IndexVec<I, U> {
         IndexVec {
@@ -122,6 +122,16 @@ where
         }
     }
 
+    /// Map each entry to a new one, keeping the same ids.
+    pub fn map_indexed<U>(self, mut f: impl FnMut(I, T) -> U) -> IndexVec<I, U> {
+        IndexVec {
+            vector: self
+                .vector
+                .into_iter_enumerated()
+                .map(|(i, x)| f(i, x))
+                .collect(),
+        }
+    }
     /// Map each entry to a new one, keeping the same ids.
     pub fn map_ref_indexed<'a, U>(&'a self, mut f: impl FnMut(I, &'a T) -> U) -> IndexVec<I, U> {
         IndexVec {
@@ -133,33 +143,8 @@ where
         }
     }
 
-    // TODO: rename once we've migrated from `IndexMap` completely.
-    pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {
-        self.vector.iter_enumerated()
-    }
-
-    pub fn iter_mut_indexed(&mut self) -> impl Iterator<Item = (I, &mut T)> {
-        self.vector.iter_mut_enumerated()
-    }
-
-    pub fn into_iter_indexed(self) -> impl Iterator<Item = (I, T)> {
+    pub fn into_iter_enumerated(self) -> impl Iterator<Item = (I, T)> {
         self.vector.into_iter_enumerated()
-    }
-
-    pub fn iter_indexed_values(&self) -> impl Iterator<Item = (I, &T)> {
-        self.iter_indexed()
-    }
-
-    pub fn into_iter_indexed_values(self) -> impl Iterator<Item = (I, T)> {
-        self.into_iter_indexed()
-    }
-
-    pub fn iter_indices(&self) -> impl Iterator<Item = I> + '_ {
-        self.vector.indices()
-    }
-
-    pub fn all_indices(&self) -> impl Iterator<Item = I> + use<I, T> {
-        self.vector.indices()
     }
 
     /// Like `Vec::split_off`.
@@ -226,14 +211,13 @@ where
     I: Idx,
 {
     type Item = T;
-    type IntoIter = impl Iterator<Item = T>;
+    type IntoIter = impl DoubleEndedIterator<Item = T>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.vector.into_iter()
     }
 }
 
-// FIXME: this impl is a footgun
 impl<I, T> FromIterator<T> for IndexVec<I, T>
 where
     I: Idx,
@@ -303,5 +287,22 @@ impl<'s, I: Idx, T, V: VisitMut<'s, T>> DriveMut<'s, V> for IndexVec<I, T> {
             v.visit(x)?;
         }
         Continue(())
+    }
+}
+
+impl<I, T> From<Vec<T>> for IndexVec<I, T>
+where
+    I: Idx,
+{
+    fn from(v: Vec<T>) -> Self {
+        v.into_iter().collect()
+    }
+}
+impl<I, T, const N: usize> From<[T; N]> for IndexVec<I, T>
+where
+    I: Idx,
+{
+    fn from(v: [T; N]) -> Self {
+        v.into_iter().collect()
     }
 }

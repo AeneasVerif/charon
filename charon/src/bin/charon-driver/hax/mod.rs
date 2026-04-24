@@ -22,7 +22,7 @@ pub use sinto::SInto;
 pub mod options {
     pub use rustc_trait_elaboration::BoundsOptions;
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Default, Clone)]
     pub struct Options {
         /// Whether we should evaluate and inline the value of anonymous constants (inline `const {}`
         /// blocks or advanced constant expressions as in `[T; N+1]`), or refer to them as

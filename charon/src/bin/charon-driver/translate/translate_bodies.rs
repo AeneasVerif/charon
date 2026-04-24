@@ -447,14 +447,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                     assert!(generics.regions.is_empty());
                                     assert!(variant.is_none());
                                     assert!(generics.const_generics.is_empty());
-                                    let field_proj =
-                                        FieldProjKind::Tuple(generics.types.elem_count());
+                                    let field_proj = FieldProjKind::Tuple(generics.types.len());
                                     ProjectionElem::Field(field_proj, field_id)
                                 }
                                 TypeId::Builtin(BuiltinTy::Box) => {
                                     // Some sanity checks
                                     assert!(generics.regions.is_empty());
-                                    assert!(generics.types.elem_count() == 2);
+                                    assert!(generics.types.len() == 2);
                                     assert!(generics.const_generics.is_empty());
                                     assert!(field_id == FieldId::ZERO);
                                     // We pretend this is a deref.
@@ -466,7 +465,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             }
                         }
                         ty::Tuple(_types) => {
-                            let field_proj = FieldProjKind::Tuple(tref.generics.types.elem_count());
+                            let field_proj = FieldProjKind::Tuple(tref.generics.types.len());
                             ProjectionElem::Field(field_proj, field_id)
                         }
                         // We get there when we access one of the fields of the the state

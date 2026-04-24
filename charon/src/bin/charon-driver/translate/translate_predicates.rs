@@ -1,7 +1,6 @@
 use super::translate_ctx::*;
 use crate::hax;
-use charon_lib::ast::*;
-use charon_lib::ids::IndexMap;
+use charon_lib::{ast::*, ids::IndexVec};
 use rustc_span::{kw, sym};
 
 impl<'tcx> TranslateCtx<'tcx> {
@@ -67,14 +66,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
         // Either put clauses there or in the innermost binder.
-        mut trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
+        mut trait_clauses: Option<&mut IndexVec<TraitClauseId, TraitParam>>,
     ) -> Result<(), Error> {
         if trait_clauses.is_none() {
             // Register the mapping from trait preds to their id early on, as these can be mentioned
             // while translating any other predicate including themselves. Each trait pred gives rise
             // to exactly one trait clause inserted into `trait_clauses`, which we use to compute
             // clause ids.
-            let next_clause_id = self.innermost_generics_mut().trait_clauses.next_id();
+            let next_clause_id = self.innermost_generics_mut().trait_clauses.next_idx();
             for (i, pred) in preds
                 .predicates
                 .iter()
@@ -131,7 +130,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         pred: &hax::GenericPredicate,
         origin: PredicateOrigin,
         // Either put clauses there or in the innermost binder.
-        mut trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
+        mut trait_clauses: Option<&mut IndexVec<TraitClauseId, TraitParam>>,
     ) -> Result<(), Error> {
         use crate::hax::ClauseKind;
         let clause = &pred.clause;
@@ -225,7 +224,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         impl_sources: &[hax::ImplExpr],
-    ) -> Result<IndexMap<TraitClauseId, TraitRef>, Error> {
+    ) -> Result<IndexVec<TraitClauseId, TraitRef>, Error> {
         impl_sources
             .iter()
             .map(|x| self.translate_trait_impl_expr(span, x))

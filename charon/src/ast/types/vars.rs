@@ -369,11 +369,11 @@ impl<T> BindingStack<T> {
     pub fn get_var<'a, Id: Idx, Inner>(&'a self, var: DeBruijnVar<Id>) -> Option<&'a Inner::Output>
     where
         T: Borrow<Inner>,
-        Inner: HasIdxMapOf<Id> + 'a,
+        Inner: HasIdxVecOf<Id> + 'a,
     {
         let (dbid, varid) = self.as_bound_var(var);
         self.get(dbid)
-            .and_then(|x| x.borrow().get_idx_map().get(varid))
+            .and_then(|x| x.borrow().get_idx_vec().get(varid))
     }
     pub fn get_mut(&mut self, id: DeBruijnId) -> Option<&mut T> {
         let index = self.real_index(id)?;
