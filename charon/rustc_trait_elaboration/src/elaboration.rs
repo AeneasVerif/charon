@@ -286,16 +286,25 @@ impl<'tcx> PredicateSearcher<'tcx> {
         };
 
         let impl_source = shallow_resolve_trait_ref(tcx, self.typing_env.param_env, erased_tref);
+        let impl_source = match impl_source {
+            Ok(impl_source) => impl_source,
+            Err(e) => {
+                return error(format!(
+                    "Could not find a clause for `{tref:?}` \
+                    in the current context: `{e:?}`"
+                ));
+            }
+        };
         let atom = match impl_source {
-            Ok(ImplSource::UserDefined(ImplSourceUserDefinedData {
+            ImplSource::UserDefined(ImplSourceUserDefinedData {
                 impl_def_id,
                 args: generics,
                 ..
-            })) => ImplExprAtom::Concrete {
+            }) => ImplExprAtom::Concrete {
                 def_id: impl_def_id,
                 generics,
             },
-            Ok(ImplSource::Param(_)) => match self.resolve_local(erased_tref.upcast(self.tcx))? {
+            ImplSource::Param(_) => match self.resolve_local(erased_tref.upcast(self.tcx))? {
                 Some(candidate) => candidate.into_impl_expr(tcx, self.implicit_self_clause),
                 None => {
                     let msg =
@@ -303,8 +312,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
                     return error(msg);
                 }
             },
-            Ok(ImplSource::Builtin(BuiltinImplSource::Object { .. }, _)) => ImplExprAtom::Dyn,
-            Ok(ImplSource::Builtin(_, _)) => {
+            ImplSource::Builtin(BuiltinImplSource::Object { .. }, _) => ImplExprAtom::Dyn,
+            ImplSource::Builtin(_, _) => {
                 // Resolve the predicates implied by the trait.
                 // If we wanted to not skip this binder, we'd have to instantiate the bound
                 // regions, solve, then wrap the result in a binder. And track higher-kinded
@@ -415,13 +424,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
                     },
                     Either::Right(atom) => atom,
                 }
-            }
-            Err(e) => {
-                let msg = format!(
-                    "Could not find a clause for `{tref:?}` \
-                    in the current context: `{e:?}`"
-                );
-                return error(msg);
             }
         };
 
