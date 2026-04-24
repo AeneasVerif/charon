@@ -234,7 +234,7 @@ impl<'a> GenerateCtx<'a> {
                     && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
             {
                 // These are the special strongly-typed integers.
-                let short_name = name_str(&decl.item_meta.name).clone();
+                let short_name = decl.item_meta.name.short_str();
                 format!("| x -> {short_name}.id_of_json ctx x")
             }
             TypeDeclKind::Struct(fields)

@@ -18,34 +18,34 @@ open Identifiers
 
 (** The body of a function. *)
 type body =
-  | Unstructured of Generated_UllbcAst.block list gexpr_body
+  | UnstructuredBody of Generated_UllbcAst.block list gexpr_body
       (** Body represented as a CFG. This is what ullbc is made of, and what we
           get after translating MIR. *)
-  | Structured of Generated_LlbcAst.block gexpr_body
+  | StructuredBody of Generated_LlbcAst.block gexpr_body
       (** Body represented with structured control flow. This is what llbc is
           made of. We restructure the control flow in the [ullbc_to_llbc] pass.
       *)
-  | TargetDispatch of (string * fun_decl_ref) list
+  | TargetDispatchBody of (string * fun_decl_ref) list
       (** A façade body that dispatches to one of several per-target function
           bodies. Created during multi-target merging for functions with the
           same signature but different bodies across targets. *)
-  | TraitMethodWithoutDefault
+  | TraitMethodWithoutDefaultBody
       (** The body of the function item we add for each trait method
           declaration, if the trait doesn't provide a default for that method.
       *)
-  | Extern of string
+  | ExternBody of string
       (** Function declared in an [extern { ... }] block. The string is the
           foreign symbol name. *)
-  | Intrinsic of string * string option list
+  | IntrinsicBody of string * string option list
       (** Rust intrinsic function.
 
           Fields:
           - [name]: The intrinsic name.
           - [arg_names]: The argument names, None if not available. *)
-  | Opaque
+  | OpaqueBody
       (** A body that the user chose not to translate, based on opacity settings
           like [--include]/[--opaque]. *)
-  | Missing
+  | MissingBody
       (** A body that was not available. Typically that's function bodies for
           non-generic and non-inlineable std functions, as these are not present
           in the compiled standard library [.rmeta] file shipped with a rust
@@ -292,8 +292,8 @@ and translated_crate = {
           will have one entry per chosen target. *)
   files : file list;
       (** The translated files. This field must come before any field containing
-          spans, as the files must be translated before we can translate any
-          span. *)
+          spans, as the OCaml deserialization of spans requires the files to be
+          deserialized already. *)
   item_names : (item_id * name) list;
       (** The names of all registered items. Available so we can know the names
           even of items that failed to translate. Invariant: after translation,

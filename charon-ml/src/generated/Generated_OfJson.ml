@@ -1857,22 +1857,22 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
             (index_vec_of_json Ullbc.block_id_of_json Ullbc.block_of_json)
             ctx unstructured
         in
-        Ok (Unstructured unstructured)
+        Ok (UnstructuredBody unstructured)
     | `Assoc [ ("Structured", structured) ] ->
         let* structured =
           gexpr_body_of_json Llbc.block_of_json ctx structured
         in
-        Ok (Structured structured)
+        Ok (StructuredBody structured)
     | `Assoc [ ("TargetDispatch", target_dispatch) ] ->
         let* target_dispatch =
           index_map_of_json string_of_json fun_decl_ref_of_json int_of_json ctx
             target_dispatch
         in
-        Ok (TargetDispatch target_dispatch)
-    | `String "TraitMethodWithoutDefault" -> Ok TraitMethodWithoutDefault
+        Ok (TargetDispatchBody target_dispatch)
+    | `String "TraitMethodWithoutDefault" -> Ok TraitMethodWithoutDefaultBody
     | `Assoc [ ("Extern", extern) ] ->
         let* extern = string_of_json ctx extern in
-        Ok (Extern extern)
+        Ok (ExternBody extern)
     | `Assoc
         [ ("Intrinsic", `Assoc [ ("name", name); ("arg_names", arg_names) ]) ]
       ->
@@ -1880,9 +1880,9 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
         let* arg_names =
           list_of_json (option_of_json string_of_json) ctx arg_names
         in
-        Ok (Intrinsic (name, arg_names))
-    | `String "Opaque" -> Ok Opaque
-    | `String "Missing" -> Ok Missing
+        Ok (IntrinsicBody (name, arg_names))
+    | `String "Opaque" -> Ok OpaqueBody
+    | `String "Missing" -> Ok MissingBody
     | `Assoc [ ("Error", error) ] ->
         let* error = error_of_json ctx error in
         Ok (ErrorBody error)

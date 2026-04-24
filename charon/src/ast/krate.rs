@@ -193,7 +193,7 @@ pub struct TranslatedCrate {
     pub target_information: SeqHashMap<TargetTriple, TargetInfo>,
 
     /// The translated files. This field must come before any field containing spans,
-    /// as the files must be translated before we can translate any span.
+    /// as the OCaml deserialization of spans requires the files to be deserialized already.
     #[drive(skip)]
     #[serde_state(stateless)]
     pub files: IndexVec<FileId, File>,

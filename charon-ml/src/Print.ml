@@ -1398,22 +1398,22 @@ let fun_decl_to_string (env : fmt_env) (indent : string) (indent_incr : string)
    * (we have access to a body) *)
   let sg = bound_fun_sig_of_decl def in
   match def.body with
-  | Opaque
+  | OpaqueBody
   | ErrorBody _
-  | Missing
-  | TraitMethodWithoutDefault
-  | Extern _
-  | Intrinsic _
-  | TargetDispatch _ ->
+  | MissingBody
+  | TraitMethodWithoutDefaultBody
+  | ExternBody _
+  | IntrinsicBody _
+  | TargetDispatchBody _ ->
       let attrib =
         match def.body with
-        | Opaque -> "opaque"
+        | OpaqueBody -> "opaque"
         | ErrorBody _ -> "error"
-        | TraitMethodWithoutDefault -> "trait_method_without_default"
-        | Missing -> "missing"
-        | Extern name -> "extern(" ^ name ^ ")"
-        | Intrinsic (name, _) -> "intrinsic(" ^ name ^ ")"
-        | TargetDispatch targets ->
+        | TraitMethodWithoutDefaultBody -> "trait_method_without_default"
+        | MissingBody -> "missing"
+        | ExternBody name -> "extern(" ^ name ^ ")"
+        | IntrinsicBody (name, _) -> "intrinsic(" ^ name ^ ")"
+        | TargetDispatchBody targets ->
             "target_dispatch("
             ^ String.concat ", "
                 (targets
@@ -1424,7 +1424,7 @@ let fun_decl_to_string (env : fmt_env) (indent : string) (indent_incr : string)
       in
       fun_sig_with_name_to_string env indent indent_incr (Some attrib)
         (Some name) None sg
-  | Structured { locals; _ } | Unstructured { locals; _ } ->
+  | StructuredBody { locals; _ } | UnstructuredBody { locals; _ } ->
       (* Locally update the environment *)
       let env_locals = List.map (fun v -> (v.index, v.name)) locals.locals in
       let env = { env with locals = env_locals } in
@@ -1438,9 +1438,9 @@ let fun_decl_to_string (env : fmt_env) (indent : string) (indent_incr : string)
       (* Body *)
       let body =
         match def.body with
-        | Structured { body; _ } ->
+        | StructuredBody { body; _ } ->
             Llbc.block_to_string env (indent ^ indent_incr) indent_incr body
-        | Unstructured { body; _ } ->
+        | UnstructuredBody { body; _ } ->
             Ullbc.blocks_to_string env (indent ^ indent_incr) indent_incr body
         | _ -> failwith "Impossible"
       in

@@ -36,8 +36,9 @@ struct GenerateCtx<'a> {
     current_module: Option<String>,
     /// The list of types currently being generated.
     current_ids: Vec<TypeDeclId>,
-    /// The item currently being generated; this matters for TranslatedCrate, where we treat IndexMap differently.
-    current_item: Option<TypeDecl>,
+    /// The OCaml ident for the item currently being generated; this matters for
+    /// TranslatedCrate, where we treat IndexMap differently.
+    current_item: Option<String>,
 }
 
 impl<'a> GenerateCtx<'a> {
@@ -47,7 +48,7 @@ impl<'a> GenerateCtx<'a> {
         for ty in &crate_data.type_decls {
             let long_name = repr_name(&ty.item_meta.name);
             if long_name.starts_with("charon_lib") {
-                let short_name = name_str(&ty.item_meta.name).clone();
+                let short_name = ty.item_meta.name.short_str().clone();
                 name_to_type.insert(short_name, ty);
             }
             name_to_type.insert(long_name, ty);
@@ -111,7 +112,7 @@ impl GenerateCodeFor {
             let tys = names
                 .iter()
                 .map(|&id| &ctx.crate_data[id])
-                .sorted_by_key(|tdecl| (name_str(&tdecl.item_meta.name), tdecl.def_id))
+                .sorted_by_key(|tdecl| (tdecl.item_meta.name.short_str(), tdecl.def_id))
                 .collect::<Vec<_>>();
             ctx.current_ids = names.iter().copied().collect();
             let generated = match kind {
@@ -172,6 +173,7 @@ fn generate_ml(
 ) -> anyhow::Result<()> {
     // Types for which we don't want to generate a type at all.
     let dont_generate_ty = &[
+        "TraitTypeConstraintId",
         "charon_lib::ids::index_vec::IndexVec",
         "charon_lib::ids::index_map::IndexMap",
     ];

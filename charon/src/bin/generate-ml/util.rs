@@ -1,10 +1,7 @@
 use charon_lib::ast::*;
 use convert_case::{Case, Casing};
 use itertools::Itertools;
-use std::{
-    collections::{HashMap, HashSet},
-    mem,
-};
+use std::collections::{HashMap, HashSet};
 
 use crate::GenerateCtx;
 
@@ -45,10 +42,6 @@ pub fn make_ocaml_ident(name: &str) -> String {
         name += "_";
     }
     name
-}
-
-pub fn name_str(name: &Name) -> &String {
-    name.name.last().unwrap().as_ident().unwrap().0
 }
 
 impl<'a> GenerateCtx<'a> {
@@ -107,7 +100,7 @@ impl<'a> GenerateCtx<'a> {
             .attr_info
             .rename
             .as_ref()
-            .unwrap_or(name_str(&td.item_meta.name));
+            .unwrap_or(td.item_meta.name.short_str());
         let module = self.ambiguous_types.get(&td.def_id);
         (make_ocaml_ident(name), module.cloned())
     }
@@ -159,7 +152,7 @@ impl<'a> GenerateCtx<'a> {
                             self.type_to_ocaml_ident(tdecl)
                         } else if let Some(name) = self.crate_data.item_name(id) {
                             eprintln!("Warning: type {} missing from llbc", repr_name(name));
-                            name_str(name).to_lowercase()
+                            name.short_str().to_lowercase()
                         } else {
                             format!("missing_type_{id}")
                         };
@@ -217,17 +210,14 @@ impl<'a> GenerateCtx<'a> {
     where
         F: FnOnce(&mut Self) -> T,
     {
-        let mut item = Some(new_item.clone());
-        mem::swap(&mut self.current_item, &mut item);
+        let (name, _) = self.type_to_ocaml_ident_raw(new_item);
+        let old_name = self.current_item.replace(name);
         let res = f(self);
-        self.current_item = item;
+        self.current_item = old_name;
         res
     }
 
     pub fn use_opt_index_map(&self) -> bool {
-        match &self.current_item {
-            None => false,
-            Some(ty) => self.type_to_ocaml_ident_raw(ty).0 == "translated_crate",
-        }
+        self.current_item == Some("translated_crate".to_string())
     }
 }

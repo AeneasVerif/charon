@@ -113,29 +113,29 @@ let declaration_group_to_list (g : declaration_group) : item_id list =
   | MixedGroup g -> g_declaration_group_to_list g
 
 let body_as_structured : body -> LlbcAst.expr_body option = function
-  | Structured body -> Some body
+  | StructuredBody body -> Some body
   | _ -> None
 
 let body_as_structured_exn : body -> LlbcAst.expr_body = function
-  | Structured body -> body
+  | StructuredBody body -> body
   | _ -> failwith "Expected a structured body"
 
 let body_as_unstructured : body -> UllbcAst.expr_body option = function
-  | Unstructured body -> Some body
+  | UnstructuredBody body -> Some body
   | _ -> None
 
 let body_as_unstructured_exn : body -> UllbcAst.expr_body = function
-  | Unstructured body -> body
+  | UnstructuredBody body -> body
   | _ -> failwith "Expected an unstructured body"
 
 let has_body : body -> bool = function
-  | Structured _ | Unstructured _ -> true
-  | Intrinsic _
-  | Extern _
-  | Opaque
-  | TraitMethodWithoutDefault
-  | TargetDispatch _
-  | Missing
+  | StructuredBody _ | UnstructuredBody _ -> true
+  | IntrinsicBody _
+  | ExternBody _
+  | OpaqueBody
+  | TraitMethodWithoutDefaultBody
+  | TargetDispatchBody _
+  | MissingBody
   | ErrorBody _ -> false
 
 (** Split a module's declarations between types, functions and globals *)
@@ -244,9 +244,6 @@ class ['self] filter_decl_id =
     method visit_global_decl_id _ (id : GlobalDeclId.id) = Some id
     method visit_trait_decl_id _ (id : TraitDeclId.id) = Some id
     method visit_trait_impl_id _ (id : TraitImplId.id) = Some id
-
-    method visit_trait_type_constraint_id _ (id : TraitTypeConstraintId.id) =
-      Some id
 
     method visit_item_id (env : 'a) (id : item_id) : item_id option =
       match id with
