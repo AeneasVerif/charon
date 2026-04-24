@@ -38,8 +38,10 @@ fn find_primitive_impls<'tcx>(
         "u32" => SimplifiedType::Uint(UintTy::U32),
         "u64" => SimplifiedType::Uint(UintTy::U64),
         "u128" => SimplifiedType::Uint(UintTy::U128),
+        "f16" => SimplifiedType::Float(FloatTy::F16),
         "f32" => SimplifiedType::Float(FloatTy::F32),
         "f64" => SimplifiedType::Float(FloatTy::F64),
+        "f128" => SimplifiedType::Float(FloatTy::F128),
         _ => {
             return [].iter().copied();
         }
