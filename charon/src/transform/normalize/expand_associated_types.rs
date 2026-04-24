@@ -353,7 +353,7 @@ mod type_constraint_set {
     use std::collections::HashMap;
 
     use super::trait_ref_path::*;
-    use crate::ast::*;
+    use crate::{ast::*, ids::IndexVec};
 
     /// A set of local `TraitTypeConstraint`s, represented as a trie.
     #[derive(Default, Clone)]
@@ -369,12 +369,12 @@ mod type_constraint_set {
         /// original constraint if applicable.
         assoc_tys: HashMap<TraitItemName, (Option<TraitTypeConstraintId>, Ty)>,
         /// The types constraints that depend on the ith parent clause.
-        parent_clauses: IndexMap<TraitClauseId, Self>,
+        parent_clauses: IndexVec<TraitClauseId, Self>,
     }
 
     impl TypeConstraintSet {
         pub fn from_constraints(
-            constraints: &IndexMap<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
+            constraints: &IndexVec<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
         ) -> Self {
             let mut this = TypeConstraintSet::default();
             for (i, c) in constraints.iter_indexed() {
@@ -1095,8 +1095,8 @@ impl VisitAstMut for UpdateItemBody<'_> {
             }
         }
         // Remove used constraints.
-        for cid in &modifications.remove_constraints {
-            generics.trait_type_constraints.remove(*cid);
+        for cid in modifications.remove_constraints.iter().sorted().rev() {
+            generics.trait_type_constraints.swap_remove(*cid);
         }
         let replacements = modifications.compute_replacements(|path| {
             let var_id = generics
@@ -1347,8 +1347,8 @@ impl TransformPass for Transform {
             };
 
             // Remove used constraints.
-            for cid in &modifications.remove_constraints {
-                item.generic_params().trait_type_constraints.remove(*cid);
+            for cid in modifications.remove_constraints.iter().sorted().rev() {
+                item.generic_params().trait_type_constraints.swap_remove(*cid);
             }
 
             // Remove trait associated types.

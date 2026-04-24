@@ -6,7 +6,7 @@ use super::translate_ctx::*;
 use crate::hax;
 use crate::hax::{HasOwner, HasParamEnv, Visibility};
 use charon_lib::ast::*;
-use charon_lib::ids::{IndexMap, IndexVec};
+use charon_lib::ids::IndexVec;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
@@ -346,9 +346,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use crate::hax::GenericArg::*;
         trace!("{:?}", substs);
 
-        let mut regions = IndexMap::new();
-        let mut types = IndexMap::new();
-        let mut const_generics = IndexMap::new();
+        let mut regions = IndexVec::new();
+        let mut types = IndexVec::new();
+        let mut const_generics = IndexVec::new();
         for param in substs {
             match param {
                 Type(param_ty) => {

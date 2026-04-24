@@ -1,7 +1,8 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
-use crate::ids::IndexMap;
+use crate::ids::IndexVec;
 use derive_generic_visitor::*;
+use index_vec::Idx;
 use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashSet;
@@ -385,7 +386,7 @@ impl<T> RegionBinder<T> {
     }
 
     /// Substitute the bound variables with the given lifetimes.
-    pub fn apply(self, regions: IndexMap<RegionId, Region>) -> T
+    pub fn apply(self, regions: IndexVec<RegionId, Region>) -> T
     where
         T: TyVisitable,
     {
@@ -442,18 +443,11 @@ impl GenericArgs {
         }
     }
 
-    pub fn new_for_builtin(types: IndexMap<TypeVarId, Ty>) -> Self {
-        GenericArgs {
-            types,
-            ..Self::empty()
-        }
-    }
-
     pub fn new(
-        regions: IndexMap<RegionId, Region>,
-        types: IndexMap<TypeVarId, Ty>,
-        const_generics: IndexMap<ConstGenericVarId, ConstantExpr>,
-        trait_refs: IndexMap<TraitClauseId, TraitRef>,
+        regions: IndexVec<RegionId, Region>,
+        types: IndexVec<TypeVarId, Ty>,
+        const_generics: IndexVec<ConstGenericVarId, ConstantExpr>,
+        trait_refs: IndexVec<TraitClauseId, TraitRef>,
     ) -> Self {
         Self {
             regions,
@@ -462,8 +456,7 @@ impl GenericArgs {
             trait_refs,
         }
     }
-
-    pub fn new_types(types: IndexMap<TypeVarId, Ty>) -> Self {
+    pub fn new_types(types: IndexVec<TypeVarId, Ty>) -> Self {
         Self {
             types,
             ..Self::empty()
@@ -702,7 +695,7 @@ impl Ty {
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
         TyKind::Adt(TypeDeclRef {
             id: TypeId::Tuple,
-            generics: Box::new(GenericArgs::new_for_builtin(tys.into())),
+            generics: Box::new(GenericArgs::new_types(tys.into())),
         })
         .into_ty()
     }
@@ -830,7 +823,7 @@ impl Ty {
         }
     }
 
-    pub fn as_tuple(&self) -> Option<&IndexMap<TypeVarId, Ty>> {
+    pub fn as_tuple(&self) -> Option<&IndexVec<TypeVarId, Ty>> {
         match self.kind() {
             TyKind::Adt(ty_ref) if let TypeId::Tuple = ty_ref.id => Some(&ty_ref.generics.types),
             _ => None,
@@ -900,7 +893,7 @@ impl TraitRef {
     pub fn new_builtin(
         trait_id: TraitDeclId,
         ty: Ty,
-        parents: IndexMap<TraitClauseId, TraitRef>,
+        parents: IndexVec<TraitClauseId, TraitRef>,
         builtin_data: BuiltinImplData,
     ) -> Self {
         let trait_decl_ref = RegionBinder::empty(TraitDeclRef {
@@ -1520,6 +1513,35 @@ impl<T: AstVisitable> TyVisitable for T {}
 
 impl Eq for TraitParam {}
 
+pub trait HasIdxVecOf<Id: Idx>: std::ops::Index<Id, Output: Sized> {
+    fn get_idx_vec(&self) -> &IndexVec<Id, Self::Output>;
+    fn get_idx_vec_mut(&mut self) -> &mut IndexVec<Id, Self::Output>;
+}
+
+/// Delegate `Index` implementations to subfields.
+macro_rules! mk_index_impls {
+    ($ty:ident.$field:ident[$idx:ty]: $output:ty) => {
+        impl std::ops::Index<$idx> for $ty {
+            type Output = $output;
+            fn index(&self, index: $idx) -> &Self::Output {
+                &self.$field[index]
+            }
+        }
+        impl std::ops::IndexMut<$idx> for $ty {
+            fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
+                &mut self.$field[index]
+            }
+        }
+        impl HasIdxVecOf<$idx> for $ty {
+            fn get_idx_vec(&self) -> &IndexVec<$idx, Self::Output> {
+                &self.$field
+            }
+            fn get_idx_vec_mut(&mut self) -> &mut IndexVec<$idx, Self::Output> {
+                &mut self.$field
+            }
+        }
+    };
+}
 mk_index_impls!(GenericArgs.regions[RegionId]: Region);
 mk_index_impls!(GenericArgs.types[TypeVarId]: Ty);
 mk_index_impls!(GenericArgs.const_generics[ConstGenericVarId]: ConstantExpr);

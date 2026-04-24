@@ -1,7 +1,6 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 use crate::ast::*;
 use crate::common::serialize_map_to_array::SeqHashMapToArray;
-use crate::ids::IndexMap;
 use crate::ids::IndexVec;
 use crate::llbc_ast;
 use crate::ullbc_ast;
@@ -190,7 +189,7 @@ pub enum ItemSource {
         field_map: IndexVec<FieldId, VTableField>,
         /// For each implied clause that is also a supertrait clause, reords which field id
         /// corresponds to it.
-        supertrait_map: IndexMap<TraitClauseId, Option<FieldId>>,
+        supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
     },
     /// This is a vtable value for an impl.
     VTableInstance {
@@ -348,7 +347,7 @@ pub struct TraitDecl {
     /// ```
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
-    pub implied_clauses: IndexMap<TraitClauseId, TraitParam>,
+    pub implied_clauses: IndexVec<TraitClauseId, TraitParam>,
     /// The associated constants declared in the trait.
     pub consts: Vec<TraitAssocConst>,
     /// The associated types declared in the trait. The binder binds the generic parameters of the
@@ -389,7 +388,7 @@ pub struct TraitAssocTy {
     pub attr_info: AttrInfo,
     pub default: Option<TraitAssocTyImpl>,
     /// List of trait clauses that apply to this type.
-    pub implied_clauses: IndexMap<TraitClauseId, TraitParam>,
+    pub implied_clauses: IndexVec<TraitClauseId, TraitParam>,
 }
 
 /// A trait method.
@@ -425,7 +424,7 @@ pub struct TraitImpl {
     pub impl_trait: TraitDeclRef,
     pub generics: GenericParams,
     /// The trait references for the parent clauses (see [TraitDecl]).
-    pub implied_trait_refs: IndexMap<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
     /// The implemented associated constants.
     pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
     /// The implemented associated types.
@@ -444,7 +443,7 @@ pub struct TraitAssocTyImpl {
     /// This matches the corresponding vector in `TraitAssocTy`. In the same way, this is empty
     /// after the `lift_associated_item_clauses` pass.
     #[charon::opaque]
-    pub implied_trait_refs: IndexMap<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
 }
 
 /// A function operand is used in function calls.

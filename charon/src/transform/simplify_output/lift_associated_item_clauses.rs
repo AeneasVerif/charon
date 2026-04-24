@@ -3,7 +3,10 @@
 use std::collections::HashMap;
 use std::mem;
 
-use crate::{ast::*, ids::IndexMap};
+use crate::{
+    ast::*,
+    ids::{IndexMap, IndexVec},
+};
 
 use crate::transform::{TransformCtx, ctx::TransformPass};
 
@@ -17,7 +20,7 @@ impl TransformPass for Transform {
         // record the mapping from the old to the new ids.
         let trait_item_clause_ids: IndexMap<
             TraitDeclId,
-            HashMap<TraitItemName, IndexMap<TraitClauseId, TraitClauseId>>,
+            HashMap<TraitItemName, IndexVec<TraitClauseId, TraitClauseId>>,
         > = ctx.translated.trait_decls.map_ref_mut(|decl| {
             decl.types
                 .iter_mut()

@@ -440,7 +440,6 @@ where
     }
 }
 
-// FIXME: this impl is a footgun
 impl<I, T> FromIterator<T> for IndexMap<I, T>
 where
     I: Idx,
@@ -453,7 +452,6 @@ where
     }
 }
 
-// FIXME: this impl is a footgun
 impl<I, T> From<Vec<T>> for IndexMap<I, T>
 where
     I: Idx,
@@ -463,7 +461,6 @@ where
     }
 }
 
-// FIXME: this impl is a footgun
 impl<I, T, const N: usize> From<[T; N]> for IndexMap<I, T>
 where
     I: Idx,

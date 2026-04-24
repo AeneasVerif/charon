@@ -20,6 +20,7 @@ use index_vec::Idx;
 use crate::ast::types_utils::TyVisitable;
 use crate::ast::visitor::{VisitWithBinderDepth, VisitorWithBinderDepth};
 use crate::formatter::IntoFormatter;
+use crate::ids::IndexVec;
 use crate::options::MonomorphizeMut;
 use crate::pretty::FmtWithCtx;
 use crate::register_error;
@@ -74,15 +75,15 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
         let mut builder = Self {
             pm,
             params: GenericParams {
-                regions: IndexMap::new(),
-                types: IndexMap::new(),
-                const_generics: IndexMap::new(),
+                regions: IndexVec::new(),
+                types: IndexVec::new(),
+                const_generics: IndexVec::new(),
                 ..target_params.clone()
             },
             extracted: GenericArgs {
-                regions: IndexMap::new(),
-                types: IndexMap::new(),
-                const_generics: IndexMap::new(),
+                regions: IndexVec::new(),
+                types: IndexVec::new(),
+                const_generics: IndexVec::new(),
                 trait_refs: mem::take(&mut shape_contents.trait_refs),
             },
             binder_depth: DeBruijnId::zero(),
@@ -160,17 +161,17 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
     ) where
         Id: Idx + Display,
         Arg: TyVisitable + Clone,
-        GenericParams: HasIdxMapOf<Id, Output = Param>,
-        GenericArgs: HasIdxMapOf<Id, Output = Arg>,
+        GenericParams: HasIdxVecOf<Id, Output = Param>,
+        GenericArgs: HasIdxVecOf<Id, Output = Arg>,
     {
         let Some(shifted_val) = val.clone().move_from_under_binders(self.binder_depth) else {
             // Give up on this value.
             return;
         };
         // Record the mapping in the output `GenericArgs`.
-        self.extracted.get_idx_map_mut().push(shifted_val);
+        self.extracted.get_idx_vec_mut().push(shifted_val);
         // Put a fresh param in place of `val`.
-        let id = self.params.get_idx_map_mut().push_with(mk_param);
+        let id = self.params.get_idx_vec_mut().push_with(mk_param);
         *val = mk_value(DeBruijnVar::bound(self.binder_depth, id));
     }
 }

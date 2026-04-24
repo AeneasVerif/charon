@@ -121,7 +121,7 @@ impl ItemTransCtx<'_, '_> {
         }
         let dref: DeclRef<ItemId> = self.translate_item(span, &closure.item, kind)?;
         let mut dref = dref.move_under_binder();
-        let mut regions = IndexMap::new();
+        let mut regions = IndexVec::new();
         match target_kind {
             ClosureKind::FnOnce => {}
             ClosureKind::FnMut | ClosureKind::Fn => {
@@ -278,7 +278,7 @@ impl ItemTransCtx<'_, '_> {
             signature.value,
         );
 
-        let mut bound_regions = IndexMap::new();
+        let mut bound_regions = IndexVec::new();
         let mut fun_sig = self
             .translate_fun_sig(span, signature.hax_skip_binder_ref())?
             .move_under_binder();

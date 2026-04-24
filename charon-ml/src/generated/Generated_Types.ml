@@ -425,12 +425,7 @@ and generic_args = {
   trait_refs : trait_ref list;
 }
 
-(** Generic parameters for a declaration. We group the generics which come from
-    the Rust compiler substitutions (the regions, types and const generics) as
-    well as the trait clauses. The reason is that we consider that those are
-    parameters that need to be filled. We group in a different place the
-    predicates which are not trait clauses, because those enforce constraints
-    but do not need to be filled with witnesses/instances. *)
+(** Generic parameters for a declaration, including predicates. *)
 and generic_params = {
   regions : region_param list;
   types : type_param list;
