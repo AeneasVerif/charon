@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 name = "test-cargo-dependencies"
 version = "0.1.0"
