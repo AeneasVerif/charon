@@ -33,6 +33,15 @@ type body =
       (** The body of the function item we add for each trait method
           declaration, if the trait doesn't provide a default for that method.
       *)
+  | Extern of string
+      (** Function declared in an [extern { ... }] block. The string is the
+          foreign symbol name. *)
+  | Intrinsic of string * string option list
+      (** Rust intrinsic function.
+
+          Fields:
+          - [name]: The intrinsic name.
+          - [arg_names]: The argument names, None if not available. *)
   | Opaque
       (** A body that the user chose not to translate, based on opacity settings
           like [--include]/[--opaque]. *)
@@ -184,6 +193,8 @@ and cli_options = {
       (** Don't deduplicate values (types, trait refs) in the .(u)llbc file.
           This makes the file easier to inspect. *)
   no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
+  no_typecheck : bool;  (** Skip the typecheck passes. *)
+  no_normalize : bool;  (** Don't normalize associated types. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Consider any warnings to be errors. *)
@@ -217,9 +228,7 @@ and fun_decl = {
   is_global_initializer : global_decl_id option;
       (** Whether this function is in fact the body of a constant/static that we
           turned into an initializer function. *)
-  body : body;
-      (** The function body, unless the function is opaque. Opaque functions
-          are: external functions, or local functions tagged as opaque. *)
+  body : body;  (** The function body. *)
 }
 
 (** A (group of) top-level declaration(s), properly reordered. "G" stands for
@@ -258,6 +267,7 @@ and preset =
   | RawMir
       (** Emit the MIR as unmodified as possible. This is very imperfect for
           now, we should make more passes optional. *)
+  | Fast  (** Skip as many optional transformations as possible. *)
   | Aeneas
   | Eurydice
   | Soteria

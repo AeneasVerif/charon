@@ -642,17 +642,17 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_refs", trait_refs);
         ] ->
         let* regions =
-          indexed_map_of_json region_id_of_json region_of_json ctx regions
+          index_vec_of_json region_id_of_json region_of_json ctx regions
         in
         let* types =
-          indexed_map_of_json type_var_id_of_json ty_of_json ctx types
+          index_vec_of_json type_var_id_of_json ty_of_json ctx types
         in
         let* const_generics =
-          indexed_map_of_json const_generic_var_id_of_json constant_expr_of_json
+          index_vec_of_json const_generic_var_id_of_json constant_expr_of_json
             ctx const_generics
         in
         let* trait_refs =
-          indexed_map_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
             trait_refs
         in
         Ok ({ regions; types; const_generics; trait_refs } : generic_args)
@@ -673,17 +673,17 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_type_constraints", trait_type_constraints);
         ] ->
         let* regions =
-          indexed_map_of_json region_id_of_json region_param_of_json ctx regions
+          index_vec_of_json region_id_of_json region_param_of_json ctx regions
         in
         let* types =
-          indexed_map_of_json type_var_id_of_json type_param_of_json ctx types
+          index_vec_of_json type_var_id_of_json type_param_of_json ctx types
         in
         let* const_generics =
-          indexed_map_of_json const_generic_var_id_of_json
+          index_vec_of_json const_generic_var_id_of_json
             const_generic_param_of_json ctx const_generics
         in
         let* trait_clauses =
-          indexed_map_of_json trait_clause_id_of_json trait_param_of_json ctx
+          index_vec_of_json trait_clause_id_of_json trait_param_of_json ctx
             trait_clauses
         in
         let* regions_outlive =
@@ -699,7 +699,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
             ctx types_outlive
         in
         let* trait_type_constraints =
-          indexed_map_of_json trait_type_constraint_id_of_json
+          index_vec_of_json trait_type_constraint_id_of_json
             (region_binder_of_json trait_type_constraint_of_json)
             ctx trait_type_constraints
         in
@@ -757,7 +757,7 @@ and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
         Ok (ImplElemTrait trait)
     | _ -> Error "")
 
-and indexed_map_of_json :
+and index_vec_of_json :
     'a0 'a1.
     (of_json_ctx -> json -> ('a0, string) result) ->
     (of_json_ctx -> json -> ('a1, string) result) ->
@@ -767,9 +767,7 @@ and indexed_map_of_json :
  fun arg0_of_json arg1_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
-    | json ->
-        let* list = list_of_json (option_of_json arg1_of_json) ctx json in
-        Ok (List.filter_map (fun x -> x) list)
+    | json -> list_of_json arg1_of_json ctx json
     | _ -> Error "")
 
 and int_ty_of_json (ctx : of_json_ctx) (js : json) : (int_ty, string) result =
@@ -1040,7 +1038,7 @@ and region_binder_of_json :
     (match js with
     | `Assoc [ ("regions", regions); ("skip_binder", skip_binder) ] ->
         let* binder_regions =
-          indexed_map_of_json region_id_of_json region_param_of_json ctx regions
+          index_vec_of_json region_id_of_json region_param_of_json ctx regions
         in
         let* binder_value = arg0_of_json ctx skip_binder in
         Ok ({ binder_regions; binder_value } : _ region_binder)
@@ -1296,7 +1294,7 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* builtin_data = builtin_impl_data_of_json ctx builtin_data in
         let* parent_trait_refs =
-          indexed_map_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
             parent_trait_refs
         in
         let* types =
@@ -1872,6 +1870,17 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
         in
         Ok (TargetDispatch target_dispatch)
     | `String "TraitMethodWithoutDefault" -> Ok TraitMethodWithoutDefault
+    | `Assoc [ ("Extern", extern) ] ->
+        let* extern = string_of_json ctx extern in
+        Ok (Extern extern)
+    | `Assoc
+        [ ("Intrinsic", `Assoc [ ("name", name); ("arg_names", arg_names) ]) ]
+      ->
+        let* name = string_of_json ctx name in
+        let* arg_names =
+          list_of_json (option_of_json string_of_json) ctx arg_names
+        in
+        Ok (Intrinsic (name, arg_names))
     | `String "Opaque" -> Ok Opaque
     | `String "Missing" -> Ok Missing
     | `Assoc [ ("Error", error) ] ->
@@ -1924,6 +1933,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("dest_file", dest_file);
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
           ("no_serialize", no_serialize);
+          ("no_typecheck", no_typecheck);
+          ("no_normalize", no_normalize);
           ("abort_on_error", abort_on_error);
           ("error_on_warnings", error_on_warnings);
           ("preset", preset);
@@ -1983,6 +1994,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           bool_of_json ctx no_dedup_serialized_ast
         in
         let* no_serialize = bool_of_json ctx no_serialize in
+        let* no_typecheck = bool_of_json ctx no_typecheck in
+        let* no_normalize = bool_of_json ctx no_normalize in
         let* abort_on_error = bool_of_json ctx abort_on_error in
         let* error_on_warnings = bool_of_json ctx error_on_warnings in
         let* preset = option_of_json preset_of_json ctx preset in
@@ -2027,6 +2040,8 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              dest_file;
              no_dedup_serialized_ast;
              no_serialize;
+             no_typecheck;
+             no_normalize;
              abort_on_error;
              error_on_warnings;
              preset;
@@ -2305,7 +2320,7 @@ and index_map_of_json :
         list_of_json (key_value_pair_of_json arg0_of_json arg1_of_json) ctx json
     | _ -> Error "")
 
-and index_vec_of_json :
+and indexed_map_of_json :
     'a0 'a1.
     (of_json_ctx -> json -> ('a0, string) result) ->
     (of_json_ctx -> json -> ('a1, string) result) ->
@@ -2315,7 +2330,9 @@ and index_vec_of_json :
  fun arg0_of_json arg1_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
-    | json -> list_of_json arg1_of_json ctx json
+    | json ->
+        let* list = list_of_json (option_of_json arg1_of_json) ctx json in
+        Ok (List.filter_map (fun x -> x) list)
     | _ -> Error "")
 
 and inline_attr_of_json (ctx : of_json_ctx) (js : json) :
@@ -2448,7 +2465,7 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
           index_vec_of_json field_id_of_json v_table_field_of_json ctx field_map
         in
         let* supertrait_map =
-          indexed_map_of_json trait_clause_id_of_json
+          index_vec_of_json trait_clause_id_of_json
             (option_of_json field_id_of_json)
             ctx supertrait_map
         in
@@ -2536,6 +2553,7 @@ and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
     (match js with
     | `String "OldDefaults" -> Ok OldDefaults
     | `String "RawMir" -> Ok RawMir
+    | `String "Fast" -> Ok Fast
     | `String "Aeneas" -> Ok Aeneas
     | `String "Eurydice" -> Ok Eurydice
     | `String "Soteria" -> Ok Soteria
@@ -2653,7 +2671,7 @@ and trait_assoc_ty_of_json (ctx : of_json_ctx) (js : json) :
         let* attr_info = attr_info_of_json ctx attr_info in
         let* default = option_of_json trait_assoc_ty_impl_of_json ctx default in
         let* implied_clauses =
-          indexed_map_of_json trait_clause_id_of_json trait_param_of_json ctx
+          index_vec_of_json trait_clause_id_of_json trait_param_of_json ctx
             implied_clauses
         in
         Ok ({ name; attr_info; default; implied_clauses } : trait_assoc_ty)
@@ -2678,7 +2696,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* implied_clauses =
-          indexed_map_of_json trait_clause_id_of_json trait_param_of_json ctx
+          index_vec_of_json trait_clause_id_of_json trait_param_of_json ctx
             implied_clauses
         in
         let* consts = list_of_json trait_assoc_const_of_json ctx consts in
@@ -2724,7 +2742,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         let* impl_trait = trait_decl_ref_of_json ctx impl_trait in
         let* generics = generic_params_of_json ctx generics in
         let* implied_trait_refs =
-          indexed_map_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
             implied_trait_refs
         in
         let* consts =

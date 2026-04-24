@@ -21,6 +21,8 @@ let get_fun_args (fun_decl : fun_decl) : local list option =
   | Opaque
   | Missing
   | TargetDispatch _
+  | Extern _
+  | Intrinsic _
   | ErrorBody _ -> None
 
 (** Check if a {!type:Charon.LlbcAst.statement} contains loops *)
@@ -100,14 +102,15 @@ class ['self] map_crate =
         match body with
         | Structured body ->
             Structured (self#visit_gexpr_body self#visit_block env body)
+        | Unstructured _ -> (* ULLBC in LLBC visitor: ignore *) body
         | TraitMethodWithoutDefault -> TraitMethodWithoutDefault
         | Extern sym -> Extern (self#visit_string env sym)
-        | Intrinsic { name; arg_names } ->
+        | Intrinsic (name, arg_names) ->
             Intrinsic
-              {
-                name = self#visit_string env name;
-                arg_names = List.map (self#visit_string env) arg_names;
-              }
+              ( self#visit_string env name,
+                self#visit_list
+                  (self#visit_option self#visit_string)
+                  env arg_names )
         | TargetDispatch targets ->
             TargetDispatch
               (self#visit_list
@@ -116,7 +119,7 @@ class ['self] map_crate =
                  env targets)
         | Opaque -> Opaque
         | Missing -> Missing
-        | Error err -> Error (self#visit_error env err)
+        | ErrorBody err -> ErrorBody (self#visit_error env err)
       in
       {
         def_id;
@@ -246,11 +249,12 @@ class ['self] iter_crate =
       self#visit_option self#visit_global_decl_id env is_global_initializer;
       match body with
       | Structured body -> self#visit_expr_body env body
+      | Unstructured body -> (* ULLBC in LLBC visitor: ignore *) ()
       | TraitMethodWithoutDefault -> ()
       | Extern sym -> self#visit_string env sym
-      | Intrinsic { name; arg_names } ->
+      | Intrinsic (name, arg_names) ->
           self#visit_string env name;
-          List.iter (self#visit_string env) arg_names
+          self#visit_list (self#visit_option self#visit_string) env arg_names
       | TargetDispatch targets ->
           self#visit_list
             (fun env (tgt, fref) ->
@@ -259,7 +263,7 @@ class ['self] iter_crate =
             env targets
       | Opaque -> ()
       | Missing -> ()
-      | Error err -> self#visit_error env err
+      | ErrorBody err -> self#visit_error env err
 
     method visit_declaration_group env (g : declaration_group) : unit =
       match g with

@@ -1402,6 +1402,8 @@ let fun_decl_to_string (env : fmt_env) (indent : string) (indent_incr : string)
   | ErrorBody _
   | Missing
   | TraitMethodWithoutDefault
+  | Extern _
+  | Intrinsic _
   | TargetDispatch _ ->
       let attrib =
         match def.body with
@@ -1409,6 +1411,8 @@ let fun_decl_to_string (env : fmt_env) (indent : string) (indent_incr : string)
         | ErrorBody _ -> "error"
         | TraitMethodWithoutDefault -> "trait_method_without_default"
         | Missing -> "missing"
+        | Extern name -> "extern(" ^ name ^ ")"
+        | Intrinsic (name, _) -> "intrinsic(" ^ name ^ ")"
         | TargetDispatch targets ->
             "target_dispatch("
             ^ String.concat ", "

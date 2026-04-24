@@ -130,6 +130,8 @@ let body_as_unstructured_exn : body -> UllbcAst.expr_body = function
 
 let has_body : body -> bool = function
   | Structured _ | Unstructured _ -> true
+  | Intrinsic _
+  | Extern _
   | Opaque
   | TraitMethodWithoutDefault
   | TargetDispatch _
