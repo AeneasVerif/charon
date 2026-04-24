@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::vec::Vec;
-use syn::{parse2, Data, DataEnum, DeriveInput, Fields, Ident, Type};
+use syn::{Data, DataEnum, DeriveInput, Fields, Ident, Type, parse2};
 
 use self::EnumMethodKind::*;
 

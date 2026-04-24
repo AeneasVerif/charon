@@ -38,6 +38,7 @@
 //! }
 //! ```
 
+use crate::hax;
 use itertools::Itertools;
 use std::mem;
 

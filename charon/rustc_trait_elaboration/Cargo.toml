@@ -1,0 +1,16 @@
+[package]
+name = "rustc_trait_elaboration"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+itertools.workspace = true
+tracing.workspace = true
+
+[package.metadata.rust-analyzer]
+rustc_private = true

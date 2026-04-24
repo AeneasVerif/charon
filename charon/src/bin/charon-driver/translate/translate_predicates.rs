@@ -1,4 +1,5 @@
 use super::translate_ctx::*;
+use crate::hax;
 use charon_lib::ast::*;
 use charon_lib::ids::IndexMap;
 use rustc_span::{kw, sym};
@@ -107,16 +108,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    pub(crate) fn translate_poly_trait_predicate(
-        &mut self,
-        span: Span,
-        bound_trait_ref: &hax::Binder<hax::TraitPredicate>,
-    ) -> Result<PolyTraitDeclRef, Error> {
-        self.translate_region_binder(span, bound_trait_ref, move |ctx, trait_ref| {
-            ctx.translate_trait_predicate(span, trait_ref)
-        })
-    }
-
     pub(crate) fn translate_trait_predicate(
         &mut self,
         span: Span,
@@ -142,7 +133,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // Either put clauses there or in the innermost binder.
         mut trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
     ) -> Result<(), Error> {
-        use hax::ClauseKind;
+        use crate::hax::ClauseKind;
         let clause = &pred.clause;
         trace!("{:?}", clause);
         let span = self.translate_span(&pred.span);
@@ -268,8 +259,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
-        use hax::DestructData;
-        use hax::ImplExprAtom;
+        use crate::hax::DestructData;
+        use crate::hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
             ImplExprAtom::Concrete(item) => {
@@ -304,7 +295,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 // Apply the path
                 for path_elem in path {
-                    use hax::ImplExprPathChunk::*;
+                    use crate::hax::ImplExprPathChunk::*;
                     let trait_ref = Box::new(TraitRef::new(tref_kind, current_pred));
                     match path_elem {
                         AssocItem {
@@ -319,14 +310,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                 name,
                                 TraitClauseId::new(*index),
                             );
-                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
+                            current_pred = self.translate_poly_trait_ref(span, predicate)?;
                         }
                         Parent {
                             predicate, index, ..
                         } => {
                             tref_kind =
                                 TraitRefKind::ParentClause(trait_ref, TraitClauseId::new(*index));
-                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
+                            current_pred = self.translate_poly_trait_ref(span, predicate)?;
                         }
                     }
                 }

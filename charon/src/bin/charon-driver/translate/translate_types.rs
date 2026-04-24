@@ -3,9 +3,10 @@ use rustc_middle::ty;
 use rustc_span::sym;
 
 use super::translate_ctx::*;
+use crate::hax;
+use crate::hax::{HasOwner, HasParamEnv, Visibility};
 use charon_lib::ast::*;
 use charon_lib::ids::{IndexMap, IndexVec};
-use hax::{HasOwner, HasParamEnv, Visibility};
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
@@ -33,7 +34,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         region: &hax::Region,
     ) -> Result<Region, Error> {
-        use hax::RegionKind::*;
+        use crate::hax::RegionKind::*;
         match &region.kind {
             ReErased => Ok(self.translate_erased_region()),
             ReStatic => Ok(Region::Static),
@@ -73,7 +74,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_hax_uint_ty(uint_ty: &hax::UintTy) -> UIntTy {
-        use hax::UintTy;
+        use crate::hax::UintTy;
         match uint_ty {
             UintTy::Usize => UIntTy::Usize,
             UintTy::U8 => UIntTy::U8,
@@ -129,7 +130,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Literal(LiteralTy::UInt(Self::translate_hax_uint_ty(uint_ty)))
             }
             hax::TyKind::Float(float_ty) => {
-                use hax::FloatTy;
+                use crate::hax::FloatTy;
                 TyKind::Literal(LiteralTy::Float(match float_ty {
                     FloatTy::F16 => types::FloatTy::F16,
                     FloatTy::F32 => types::FloatTy::F32,
@@ -342,7 +343,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
     ) -> Result<GenericArgs, Error> {
-        use hax::GenericArg::*;
+        use crate::hax::GenericArg::*;
         trace!("{:?}", substs);
 
         let mut regions = IndexMap::new();
@@ -669,7 +670,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item_meta: &ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TypeDeclKind, Error> {
-        use hax::AdtKind;
+        use crate::hax::AdtKind;
         let hax::FullDefKind::Adt {
             adt_kind, variants, ..
         } = def.kind()

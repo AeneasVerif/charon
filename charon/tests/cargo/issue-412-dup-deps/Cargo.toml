@@ -1,3 +1,6 @@
+[workspace]
+exclude = ["dep-v1", "dep-v2"]
+
 [package]
 name = "issue-412-dup-deps"
 version = "0.1.0"

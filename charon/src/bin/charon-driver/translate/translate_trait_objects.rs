@@ -1,5 +1,6 @@
+use crate::hax;
+use crate::hax::{AssocItemContainer, GenericArg, TraitPredicate};
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
-use hax::{AssocItemContainer, GenericArg, TraitPredicate};
 use itertools::Itertools;
 use rustc_span::kw;
 use std::mem;

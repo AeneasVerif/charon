@@ -1,6 +1,6 @@
 [package]
-name = "macros"
-version = "0.1.0"
+name = "hax-adt-into"
+version = "0.3.5"
 authors.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -9,9 +9,8 @@ edition.workspace = true
 proc-macro = true
 
 [dependencies]
+itertools.workspace = true
 proc-macro2.workspace = true
 quote.workspace = true
 syn.workspace = true
-
-[dev-dependencies]
-assert_tokens_eq.workspace = true
+tracing.workspace = true
