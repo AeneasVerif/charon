@@ -1,16 +1,4 @@
-error: Type error after transformations:
-       Found incorrect clause var: Bound(0, 0)
-       Visitor stack:
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::llbc_ast::StatementKind
-         charon_lib::ast::llbc_ast::Statement
-         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
-         charon_lib::ast::llbc_ast::Block
-         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
-         charon_lib::ast::gast::Body
-         charon_lib::ast::gast::FunDecl
-       Binding stack (depth 1):
-         0: <T>
+error: Error during trait resolution: Could not find a clause for `Binder { value: <T as std::marker::Destruct>, bound_vars: [] }` in the item parameters
  --> tests/ui/simple/explicit_destruct_bound.rs:6:29
   |
 6 | fn drop<T: Destruct>(_: T) {}

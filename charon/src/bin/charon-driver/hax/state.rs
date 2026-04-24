@@ -243,7 +243,7 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
                 PredicateSearcher::new_for_owner(
                     self.base().tcx,
                     self.owner_id(),
-                    self.base().options.bounds_options,
+                    &self.base().options.bounds_options,
                 )
             }))
         })

@@ -43,6 +43,12 @@ impl Pattern {
         use std::str::FromStr;
         Self::from_str(i)
     }
+    /// Construct a pattern that matches all the impls for that trait.
+    pub fn impl_for(trait_pat: Self) -> Self {
+        Pattern {
+            elems: vec![PatElem::Impl(Box::new(trait_pat))],
+        }
+    }
 
     fn len(&self) -> usize {
         self.elems.len()

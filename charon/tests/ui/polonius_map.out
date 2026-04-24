@@ -176,10 +176,10 @@ where
     [@TraitClause4]: Eq<K>,
     [@TraitClause5]: Hash<K>,
     [@TraitClause6]: BuildHasher<S>,
-    [@TraitClause8]: MetaSized<Q>,
-    [@TraitClause9]: Borrow<K, Q>,
-    [@TraitClause10]: Hash<Q>,
-    [@TraitClause11]: Eq<Q>,
+    [@TraitClause7]: MetaSized<Q>,
+    [@TraitClause8]: Borrow<K, Q>,
+    [@TraitClause9]: Hash<Q>,
+    [@TraitClause10]: Eq<Q>,
 = <opaque>
 
 // Full name: std::collections::hash::map::{HashMap<K, V, S, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::insert

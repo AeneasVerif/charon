@@ -44,7 +44,6 @@ pub mod resugar {
 pub mod simplify_output {
     pub mod filter_trivial_drops;
     pub mod hide_allocator_param;
-    pub mod hide_marker_traits;
     pub mod index_intermediate_assigns;
     pub mod index_to_function_calls;
     pub mod inline_anon_consts;
@@ -94,8 +93,6 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     NonBody(&finish_translation::insert_storage_lives::Transform),
     // Move clauses on associated types to be implied clauses of the trait.
     NonBody(&simplify_output::lift_associated_item_clauses::Transform),
-    // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
-    NonBody(&simplify_output::hide_marker_traits::Transform),
     // Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
     NonBody(&simplify_output::hide_allocator_param::Transform),
     // # Micro-pass: remove the explicit `Self: Trait` clause of methods/assoc const declaration

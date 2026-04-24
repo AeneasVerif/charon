@@ -226,7 +226,7 @@ pub fn push<'_0, T, A>(_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], _2: T)
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
-    [@TraitClause3]: Destruct<A>,
+    [@TraitClause2]: Destruct<A>,
 = <opaque>
 
 // Full name: UNIT_METADATA

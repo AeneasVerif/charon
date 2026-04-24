@@ -27,6 +27,8 @@
 //! benefit of reducing the size of signatures. Moreover, the rustc rules on which bounds are
 //! required vs implied are subtle. We may change our choice if this proves to be a problem.
 use itertools::Itertools;
+use std::collections::HashSet;
+
 use rustc_hir::LangItem;
 use rustc_hir::def::DefKind;
 use rustc_middle::ty::*;
@@ -35,13 +37,13 @@ use rustc_span::{DUMMY_SP, Span};
 
 use crate::ToPolyTraitRef;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone)]
 pub struct BoundsOptions {
     /// Add `T: Destruct` bounds to every type generic, so that we can build `ImplExpr`s to know
     /// what code is run on drop.
-    pub resolve_destruct: bool,
-    /// Prune `T: Sized` and `T: MetaSized` predicates.
-    pub prune_sized: bool,
+    pub add_destruct_bounds: bool,
+    /// Traits to filter out from the predicate lists.
+    pub remove_traits: HashSet<DefId>,
 }
 
 /// Uniquely identifies a predicate.
@@ -162,14 +164,17 @@ impl<'tcx> ItemPredicates<'tcx> {
             .map(|tref| tref.upcast(tcx));
         self.add_synthetic_predicates(def_id, extra_bounds);
     }
-    /// Prune every occurence of a sized-related clause.
-    /// Prunes bounds of the shape `T: MetaSized`, `T: Sized` or `T: PointeeSized`.
-    fn prune_sized(&mut self, tcx: TyCtxt<'tcx>) {
-        self.predicates.retain(|pred| {
-            pred.clause.as_trait_clause().is_none_or(|trait_predicate| {
-                !is_sized_related_trait(tcx, trait_predicate.skip_binder().def_id())
-            })
-        });
+    /// Remove the traits specified in `options`.
+    fn filter_traits(&mut self, options: &BoundsOptions) {
+        if !options.remove_traits.is_empty() {
+            self.predicates.retain(|pred| {
+                pred.clause.as_trait_clause().is_none_or(|trait_predicate| {
+                    !options
+                        .remove_traits
+                        .contains(&trait_predicate.skip_binder().def_id())
+                })
+            });
+        }
     }
 
     /// Returns a list of type predicates for the definition with id `def_id`, including inferred
@@ -203,7 +208,7 @@ impl<'tcx> ItemPredicates<'tcx> {
     pub fn required(
         tcx: TyCtxt<'tcx>,
         def_id: DefId,
-        options: BoundsOptions,
+        options: &BoundsOptions,
     ) -> ItemPredicates<'tcx> {
         use DefKind::*;
         let def_kind = tcx.def_kind(def_id);
@@ -241,14 +246,12 @@ impl<'tcx> ItemPredicates<'tcx> {
                 },
             );
         }
-        if options.resolve_destruct && !matches!(def_kind, Trait | TraitAlias) {
+        if options.add_destruct_bounds && !matches!(def_kind, Trait | TraitAlias) {
             // Add a `T: Destruct` bound for every generic. For traits we consider these predicates
             // implied instead of required.
             predicates.add_destruct_bounds(tcx, def_id);
         }
-        if options.prune_sized {
-            predicates.prune_sized(tcx);
-        }
+        predicates.filter_traits(options);
         predicates
     }
     /// The predicates that must hold to mention this item, including its parents. E.g.
@@ -263,12 +266,12 @@ impl<'tcx> ItemPredicates<'tcx> {
     pub fn required_recursively(
         tcx: TyCtxt<'tcx>,
         def_id: rustc_span::def_id::DefId,
-        options: BoundsOptions,
+        options: &BoundsOptions,
     ) -> ItemPredicates<'tcx> {
         fn acc_predicates<'tcx>(
             tcx: TyCtxt<'tcx>,
             def_id: rustc_span::def_id::DefId,
-            options: BoundsOptions,
+            options: &BoundsOptions,
             predicates: &mut ItemPredicates<'tcx>,
             is_parent: bool,
         ) {
@@ -308,7 +311,7 @@ impl<'tcx> ItemPredicates<'tcx> {
     pub fn implied(
         tcx: TyCtxt<'tcx>,
         def_id: DefId,
-        options: BoundsOptions,
+        options: &BoundsOptions,
     ) -> ItemPredicates<'tcx> {
         use DefKind::*;
         let parent = tcx.opt_parent(def_id);
@@ -316,7 +319,7 @@ impl<'tcx> ItemPredicates<'tcx> {
             // We consider all predicates on traits to be outputs
             Trait | TraitAlias => {
                 let mut predicates = Self::defined_on(tcx, def_id, false);
-                if options.resolve_destruct {
+                if options.add_destruct_bounds {
                     // Add a `T: Drop` bound for every generic, unless the current trait is `Drop` itself, or a
                     // built-in marker trait that we know doesn't need the bound.
                     if !matches!(
@@ -346,7 +349,7 @@ impl<'tcx> ItemPredicates<'tcx> {
                         .iter()
                         .copied(),
                 );
-                if options.resolve_destruct {
+                if options.add_destruct_bounds {
                     // Add a `Drop` bound to the assoc item.
                     let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
                     let ty = Ty::new_projection(
@@ -361,9 +364,7 @@ impl<'tcx> ItemPredicates<'tcx> {
             }
             _ => ItemPredicates::default(),
         };
-        if options.prune_sized {
-            predicates.prune_sized(tcx);
-        }
+        predicates.filter_traits(options);
         predicates
     }
 
@@ -394,15 +395,5 @@ fn inherits_parent_clauses<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
     matches!(
         tcx.def_kind(def_id),
         AnonConst | AssocConst | AssocFn | AssocTy | Closure | Ctor(..) | InlineConst | Variant
-    )
-}
-
-/// Returns true whenever `def_id` is `MetaSized`, `Sized` or `PointeeSized`.
-fn is_sized_related_trait<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
-    use rustc_hir::lang_items::LangItem;
-    let lang_item = tcx.as_lang_item(def_id);
-    matches!(
-        lang_item,
-        Some(LangItem::PointeeSized | LangItem::MetaSized | LangItem::Sized)
     )
 }

@@ -17,6 +17,7 @@
 use itertools::Itertools;
 use rustc_middle::ty::TyCtxt;
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::path::PathBuf;
 
 use super::translate_ctx::*;
@@ -697,13 +698,21 @@ pub fn translate<'tcx>(
 ) -> Result<TransformCtx, Error> {
     let translate_options = TranslateOptions::new(&mut error_ctx, cli_options);
 
+    let traits_to_remove: HashSet<rustc_hir::def_id::DefId> = {
+        let hax_state = hax::state::State::new(tcx, hax::options::Options::default());
+        translate_options
+            .hide_traits
+            .iter()
+            .flat_map(|pat| super::resolve_path::def_path_def_ids(&hax_state, pat, true).unwrap())
+            .collect()
+    };
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
             inline_anon_consts: !translate_options.raw_consts,
             bounds_options: hax::options::BoundsOptions {
-                resolve_destruct: translate_options.add_destruct_bounds,
-                prune_sized: cli_options.hide_marker_traits,
+                add_destruct_bounds: translate_options.add_destruct_bounds,
+                remove_traits: traits_to_remove,
             },
         },
     );
