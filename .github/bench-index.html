@@ -66,7 +66,10 @@
 
     const chartsDiv = document.getElementById("charts");
 
-    let colorIdx = 0;
+    // Assign a color to each crate.
+    const allCrates = [...new Set(allRuns.flatMap(r => r.benches.map(b => b.name)))].sort();
+    const crateColor = new Map(allCrates.map((c, i) => [c, COLORS[i % COLORS.length]]));
+
     for (const [metric, cratesMap] of metrics) {
       const container = document.createElement("div");
       container.className = "chart-container";
@@ -80,7 +83,7 @@
       // Build one dataset per crate.
       const datasets = [];
       for (const [crate, points] of cratesMap) {
-        const color = COLORS[colorIdx++ % COLORS.length];
+        const color = crateColor.get(crate);
         datasets.push({
           label: crate,
           data: points.map(p => ({
