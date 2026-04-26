@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777103105738,
+  "lastUpdate": 1777190000314,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -113,6 +113,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 45,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 360.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.7,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Nadrieril",
+            "username": "Nadrieril",
+            "email": "Nadrieril@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "c0965bbccdbd87d494b240a4274707356ef0cb88",
+          "message": "Merge pull request #1114 from Nadrieril/bench-graph-color\n\nbench graph: Use the same color for a given crate",
+          "timestamp": "2026-04-24T17:24:10Z",
+          "url": "https://github.com/AeneasVerif/charon/commit/c0965bbccdbd87d494b240a4274707356ef0cb88"
+        },
+        "date": 1777189999131,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 108966048512,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 25.64,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 376.2,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.1,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 410817138540,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 44.98,
             "unit": "wall-clock(s)"
           },
           {
