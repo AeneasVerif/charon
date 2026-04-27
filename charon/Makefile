@@ -11,7 +11,15 @@ format:
 
 .PHONY: test
 test:
+	$(MAKE) test
+	$(MAKE) clippy
+
+.PHONY: test-noclippy
+test-noclippy:
 	cargo test
+
+.PHONY: clippy
+clippy:
 	cargo clippy --all-targets --fix --allow-dirty
 
 .PHONY: test-popular-crates
