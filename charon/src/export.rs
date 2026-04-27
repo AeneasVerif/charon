@@ -1,10 +1,12 @@
 pub mod multi_target;
 
 use crate::ast::*;
+use crate::options::SerializationFormat;
 use crate::transform::TransformCtx;
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 use std::fs::File;
+use std::io::{BufReader, BufWriter, Read};
 use std::path::Path;
 
 /// The data of a generic crate. We serialize this to pass it to `charon-ml`, so this must be as
@@ -79,9 +81,13 @@ impl CrateData {
         }
     }
 
-    /// Export the translated definitions to a JSON file.
+    /// Export the translated definitions to a file.
     #[allow(clippy::result_unit_err)]
-    pub fn serialize_to_file(&self, target_filename: &Path) -> Result<(), ()> {
+    pub fn serialize_to_file(
+        &self,
+        target_filename: &Path,
+        format: SerializationFormat,
+    ) -> Result<(), ()> {
         // Create the directory, if necessary (note that if the target directory
         // is not specified, there is no need to create it: otherwise we
         // couldn't have read the input file in the first place).
@@ -100,12 +106,19 @@ impl CrateData {
             return Err(());
         };
         // Write to the file.
-        let res = serde_json::to_writer(&outfile, self);
-        match res {
-            Ok(()) => {}
-            Err(err) => {
-                error!("Could not serialize to `{target_filename:?}`: {err:?}");
-                return Err(());
+        let mut writer = BufWriter::new(outfile);
+        match format {
+            SerializationFormat::Json => {
+                if let Err(err) = serde_json::to_writer(&mut writer, self) {
+                    error!("Could not serialize to `{target_filename:?}`: {err:?}");
+                    return Err(());
+                }
+            }
+            SerializationFormat::Postcard => {
+                if let Err(err) = postcard::to_io(self, &mut writer) {
+                    error!("Could not serialize to `{target_filename:?}`: {err:?}");
+                    return Err(());
+                }
             }
         }
 
@@ -123,20 +136,37 @@ impl CrateData {
         Ok(())
     }
 
-    pub fn deserialize_from_file(path: &std::path::Path) -> anyhow::Result<Self> {
+    pub fn deserialize_from_file(
+        path: &std::path::Path,
+        format: SerializationFormat,
+    ) -> anyhow::Result<Self> {
         use crate::export::CrateData;
         use anyhow::Context;
         use serde::Deserialize;
         use std::fs::File;
-        use std::io::BufReader;
         let file = File::open(path)
             .with_context(|| format!("Failed to read llbc file {}", path.display()))?;
-        let reader = BufReader::new(file);
-        let mut deserializer = serde_json::Deserializer::from_reader(reader);
-        // Deserialize without recursion limit.
-        deserializer.disable_recursion_limit();
-        // Grow stack space as needed.
-        let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
-        Ok(CrateData::deserialize(deserializer)?)
+        match format {
+            SerializationFormat::Json => {
+                let reader = BufReader::new(file);
+                let mut deserializer = serde_json::Deserializer::from_reader(reader);
+                // Deserialize without recursion limit.
+                deserializer.disable_recursion_limit();
+                // Grow stack space as needed.
+                let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
+                Ok(CrateData::deserialize(deserializer)?)
+            }
+            SerializationFormat::Postcard => {
+                let mut reader = BufReader::new(file);
+                let mut bytes = Vec::new();
+                reader.read_to_end(&mut bytes)?;
+                let (crate_data, rem) = postcard::take_from_bytes::<CrateData>(&bytes)
+                    .map_err(|err| anyhow::anyhow!("postcard deserialize error: {err:?}"))?;
+                if !rem.is_empty() {
+                    anyhow::bail!("postcard deserialize error: trailing bytes left in input");
+                }
+                Ok(crate_data)
+            }
+        }
     }
 }
