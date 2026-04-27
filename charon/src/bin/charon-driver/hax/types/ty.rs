@@ -404,29 +404,6 @@ pub enum GenericArg {
     Const(ConstantExpr),
 }
 
-/// Contents of `ItemRef`.
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct ItemRefContents {
-    /// The item being refered to.
-    pub def_id: DefId,
-    /// The generics passed to the item. If `in_trait` is `Some`, these are only the generics of
-    /// the method/type/const itself; generics for the traits are available in
-    /// `in_trait.unwrap().trait`.
-    pub generic_args: Vec<GenericArg>,
-    /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>` or `B:
-    /// ToOwned` for `Cow<'a, B>`. Same as above, for associated items this only includes clauses
-    /// for the item itself.
-    pub impl_exprs: Vec<ImplExpr>,
-    /// If we're referring to a trait associated item, this gives the trait clause/impl we're
-    /// referring to.
-    pub in_trait: Option<ImplExpr>,
-    /// Whether this contains any reference to a type/lifetime/const parameter.
-    pub has_param: bool,
-    /// Whether this contains any reference to a type/const parameter.
-    pub has_non_lt_param: bool,
-}
-
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericArg> for ty::GenericArg<'tcx> {
     fn sinto(&self, s: &S) -> GenericArg {
         self.kind().sinto(s)
