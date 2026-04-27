@@ -927,10 +927,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         let alias_ty = &proj.skip_binder().projection_term.expect_ty(tcx);
                         let impl_expr = {
                             let poly_trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
-                            predicate_searcher
-                                .resolve(&poly_trait_ref)
-                                .s_unwrap(s)
-                                .sinto(s)
+                            predicate_searcher.resolve(&poly_trait_ref).sinto(s)
                         };
                         let Term::Ty(ty) = proj.skip_binder().term.sinto(s) else {
                             unreachable!()
@@ -1083,7 +1080,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
         (ty::Dynamic(from_preds, _), ty::Dynamic(to_preds, ..)) => {
             let impl_expr = resolve_for_dyn(s, from_preds, |searcher, fresh_ty| {
                 let to_pred = to_preds.principal().unwrap().with_self_ty(tcx, fresh_ty);
-                searcher.resolve(&to_pred).s_unwrap(s).sinto(s)
+                searcher.resolve(&to_pred).sinto(s)
             });
             UnsizingMetadata::NestedVTable(impl_expr)
         }

@@ -197,11 +197,8 @@ pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
     if let Some(impl_expr) = s.with_cache(|cache| cache.impl_exprs.get(&trait_ref).cloned()) {
         return impl_expr;
     }
-    let resolved = s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref));
-    let impl_expr: ImplExpr = match resolved {
-        Ok(x) => x.sinto(s),
-        Err(e) => crate::hax::fatal!(s, "{}", e),
-    };
+    let impl_expr = s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref));
+    let impl_expr: ImplExpr = impl_expr.sinto(s);
     s.with_cache(|cache| cache.impl_exprs.insert(trait_ref, impl_expr.clone()));
     impl_expr
 }
