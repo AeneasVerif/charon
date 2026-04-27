@@ -1,22 +1,15 @@
 (** Basic utilities for postcard deserialization. *)
 
-type postcard_state = { bytes : bytes; len : int; mutable pos : int }
+type postcard_state = { ic : in_channel }
 
 let ( let* ) o f =
   match o with
   | Error e -> Error e
   | Ok x -> f x
 
-let state_of_file (file : string) : (postcard_state, string) result =
-  try
-    let ic = open_in_bin file in
-    Fun.protect
-      ~finally:(fun () -> close_in ic)
-      (fun () ->
-        let len = in_channel_length ic in
-        let bytes = Bytes.create len in
-        really_input ic bytes 0 len;
-        Ok { bytes; len; pos = 0 })
+let with_state_of_file (file : string)
+    (f : postcard_state -> ('a, string) result) : ('a, string) result =
+  try In_channel.with_open_bin file (fun ic -> f { ic })
   with Sys_error e -> Error e
 
 let combine_error_msgs (st : postcard_state) (msg : string)
@@ -24,39 +17,32 @@ let combine_error_msgs (st : postcard_state) (msg : string)
   match res with
   | Ok x -> Ok x
   | Error e ->
-      let rem = st.len - st.pos in
+      let rem = in_channel_length st.ic - pos_in st.ic in
       let n = if rem < 8 then rem else 8 in
+      let pos = pos_in st.ic in
       let preview =
-        List.init n (fun i -> Char.code (Bytes.get st.bytes (st.pos + i)))
+        List.init n (fun i -> try input_byte st.ic with End_of_file -> 0)
         |> List.map (fun b -> Printf.sprintf "%02x" b)
         |> String.concat " "
       in
       Error
-        (msg ^ " failed at byte " ^ string_of_int st.pos ^ " (next: " ^ preview
+        (msg ^ " failed at byte " ^ string_of_int pos ^ " (next: " ^ preview
        ^ "): " ^ e)
 
-let ensure_remaining (st : postcard_state) (needed : int) :
-    (unit, string) result =
-  let remaining = st.len - st.pos in
-  if remaining < needed then
-    Error
-      ("unexpected end of postcard input (need " ^ string_of_int needed
-     ^ " more bytes)")
-  else Ok ()
-
 let take_u8 (st : postcard_state) : (int, string) result =
-  let* () = ensure_remaining st 1 in
-  let b = Char.code (Bytes.get st.bytes st.pos) in
-  st.pos <- st.pos + 1;
-  Ok b
+  try Ok (input_byte st.ic)
+  with End_of_file ->
+    Error "unexpected end of postcard input, expected 1 more byte"
 
 let take_bytes (st : postcard_state) (len : int) : (bytes, string) result =
-  if len < 0 then Error "negative length"
-  else
-    let* () = ensure_remaining st len in
-    let out = Bytes.sub st.bytes st.pos len in
-    st.pos <- st.pos + len;
-    Ok out
+  try
+    let bytes = Bytes.create len in
+    really_input st.ic bytes 0 len;
+    Ok bytes
+  with End_of_file ->
+    Error
+      ("unexpected end of postcard input, expected " ^ string_of_int len
+     ^ " more bytes")
 
 let read_varint_z ~(max_bytes : int) ~(max_last : int) (st : postcard_state) :
     (Z.t, string) result =
@@ -217,7 +203,7 @@ let list_of_postcard
     Error
       ("suspicious postcard sequence length " ^ string_of_int len
      ^ " (varint read at byte "
-      ^ string_of_int (st.pos - 1)
+      ^ string_of_int (pos_in st.ic)
       ^ ")")
   else
     let rec loop i acc =
@@ -271,8 +257,10 @@ let key_value_pair_of_postcard
   Ok (key, value)
 
 let ensure_eof (st : postcard_state) : (unit, string) result =
-  if st.pos = st.len then Ok ()
+  let len = in_channel_length st.ic in
+  let pos = pos_in st.ic in
+  if pos >= len then Ok ()
   else
     Error
-      ("postcard input has trailing bytes (pos=" ^ string_of_int st.pos
-     ^ ", len=" ^ string_of_int st.len ^ ")")
+      ("postcard input has trailing bytes (pos=" ^ string_of_int pos ^ ", len="
+     ^ string_of_int len ^ ")")
