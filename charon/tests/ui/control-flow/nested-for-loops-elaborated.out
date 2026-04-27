@@ -1,0 +1,400 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    non-dyn-compatible
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}::clone
+pub fn {impl Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for usize}
+impl Clone for usize {
+    parent_clause0 = {built_in impl Sized for usize}
+    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::cmp::PartialEq
+#[lang_item("eq")]
+pub trait PartialEq<Self, Rhs>
+{
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
+}
+
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+= <opaque>
+
+// Full name: core::cmp::Ordering
+#[lang_item("Ordering")]
+pub enum Ordering {
+  Less,
+  Equal,
+  Greater,
+}
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::cmp::PartialOrd
+#[lang_item("partial_ord")]
+pub trait PartialOrd<Self, Rhs>
+{
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
+    fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
+}
+
+#[lang_item("cmp_partialord_cmp")]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
+pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> bool
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
+impl PartialEq<usize> for usize {
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<usize> for usize}::eq<'_0_1, '_1_1>
+    vtable: {impl PartialEq<usize> for usize}::{vtable}
+}
+
+// Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
+pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
+impl PartialOrd<usize> for usize {
+    parent_clause0 = {impl PartialEq<usize> for usize}
+    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
+    vtable: {impl PartialOrd<usize> for usize}::{vtable}
+}
+
+// Full name: core::iter::range::Step
+#[lang_item("range_step")]
+pub trait Step<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Clone<Self>
+    parent_clause2 : [@TraitClause2]: PartialOrd<Self, Self>
+    fn steps_between<'_0_1, '_1_1> = core::iter::range::Step::steps_between<'_0_1, '_1_1, Self>[Self]
+    fn forward_checked = core::iter::range::Step::forward_checked<Self>[Self]
+    fn backward_checked = core::iter::range::Step::backward_checked<Self>[Self]
+    non-dyn-compatible
+}
+
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(_1: &'_0 Self, _2: &'_1 Self) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
+
+pub fn core::iter::range::Step::forward_checked<Self>(_1: Self, _2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
+
+pub fn core::iter::range::Step::backward_checked<Self>(_1: Self, _2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Step<Self>,
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for usize}::backward_checked
+pub fn {impl Step for usize}::backward_checked(_1: usize, _2: usize) -> Option<usize>[{built_in impl Sized for usize}]
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for usize}::forward_checked
+pub fn {impl Step for usize}::forward_checked(_1: usize, _2: usize) -> Option<usize>[{built_in impl Sized for usize}]
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for usize}::steps_between
+pub fn {impl Step for usize}::steps_between<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for usize}
+impl Step for usize {
+    parent_clause0 = {built_in impl Sized for usize}
+    parent_clause1 = {impl Clone for usize}
+    parent_clause2 = {impl PartialOrd<usize> for usize}
+    fn steps_between<'_0_1, '_1_1> = {impl Step for usize}::steps_between<'_0_1, '_1_1>
+    fn forward_checked = {impl Step for usize}::forward_checked
+    fn backward_checked = {impl Step for usize}::backward_checked
+    non-dyn-compatible
+}
+
+// Full name: core::ops::range::Range
+#[lang_item("Range")]
+pub struct Range<Idx>
+where
+    [@TraitClause0]: Sized<Idx>,
+{
+  start: Idx,
+  end: Idx,
+}
+
+// Full name: core::iter::traits::iterator::Iterator
+#[lang_item("iterator")]
+pub trait Iterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    type Item
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
+
+// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
+pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(_1: &'_0 mut Range<A>[@TraitClause0]) -> Option<A>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Step<A>,
+= <opaque>
+
+// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}
+impl<A> Iterator for Range<A>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Step<A>,
+{
+    parent_clause0 = {built_in impl MetaSized for Range<A>[@TraitClause0]}
+    parent_clause1 = @TraitClause0
+    type Item = A
+    fn next<'_0_1> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_1, A>[@TraitClause0, @TraitClause1]
+    vtable: {impl Iterator for Range<A>[@TraitClause0]}::{vtable}<A>[@TraitClause0, @TraitClause1]
+}
+
+// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
+pub fn {impl IntoIterator for I}::into_iter<I>(_1: I) -> I
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
+= <opaque>
+
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(_1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+= <opaque>
+
+fn UNIT_METADATA()
+{
+    let _0: (); // return
+
+    _0 = ()
+    return
+}
+
+const UNIT_METADATA: () = @Fun0()
+
+// Full name: test_crate::nested_for_complex
+pub fn nested_for_complex<'_0>(_1: &'_0 mut [[u32; 5 : usize]; 5 : usize])
+{
+    let _0: (); // return
+    let a_1: &'1 mut [[u32; 5 : usize]; 5 : usize]; // arg #1
+    let old_2: [[u32; 5 : usize]; 5 : usize]; // local
+    let _3: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _4: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let iter_5: Range<usize>[{built_in impl Sized for usize}]; // local
+    let _6: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _7: &'3 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _8: &'4 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let i_9: usize; // local
+    let _10: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _11: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let iter_12: Range<usize>[{built_in impl Sized for usize}]; // local
+    let _13: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _14: &'5 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _15: &'6 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let j_16: usize; // local
+    let _17: u32; // anonymous local
+    let _18: usize; // anonymous local
+    let _19: usize; // anonymous local
+    let _20: u32; // anonymous local
+    let _21: usize; // anonymous local
+    let _22: usize; // anonymous local
+    let _23: usize; // anonymous local
+    let _24: usize; // anonymous local
+    let _25: usize; // anonymous local
+    let _26: usize; // anonymous local
+    let _27: usize; // anonymous local
+    let _28: &'_ [[u32; 5 : usize]; 5 : usize]; // anonymous local
+    let _29: &'_ [u32; 5 : usize]; // anonymous local
+    let _30: &'_ [u32; 5 : usize]; // anonymous local
+    let _31: &'_ u32; // anonymous local
+    let _32: &'_ [[u32; 5 : usize]; 5 : usize]; // anonymous local
+    let _33: &'_ [u32; 5 : usize]; // anonymous local
+    let _34: &'_ [u32; 5 : usize]; // anonymous local
+    let _35: &'_ u32; // anonymous local
+    let _36: &'_ mut [[u32; 5 : usize]; 5 : usize]; // anonymous local
+    let _37: &'_ mut [u32; 5 : usize]; // anonymous local
+    let _38: &'_ mut [u32; 5 : usize]; // anonymous local
+    let _39: &'_ mut u32; // anonymous local
+
+    storage_live(_25)
+    _0 = ()
+    storage_live(old_2)
+    old_2 = copy (*a_1)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = Range { start: const 0 : usize, end: const 5 : usize }
+    _3 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _4)
+    storage_dead(_4)
+    storage_live(iter_5)
+    iter_5 = move _3
+    loop {
+        storage_live(_6)
+        storage_live(_7)
+        storage_live(_8)
+        _8 = &mut iter_5
+        _7 = &two-phase-mut (*_8)
+        _6 = {impl Iterator for Range<A>[@TraitClause0]}::next<'8, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _7)
+        storage_dead(_7)
+        match _6 {
+            Option::None => {
+                break 0
+            },
+            Option::Some => {
+            },
+        }
+        storage_live(i_9)
+        i_9 = copy (_6 as variant Option::Some).0
+        storage_live(_10)
+        storage_live(_11)
+        _11 = Range { start: const 0 : usize, end: const 5 : usize }
+        _10 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _11)
+        storage_dead(_11)
+        storage_live(iter_12)
+        iter_12 = move _10
+        loop {
+            storage_live(_13)
+            storage_live(_14)
+            storage_live(_15)
+            _15 = &mut iter_12
+            _14 = &two-phase-mut (*_15)
+            _13 = {impl Iterator for Range<A>[@TraitClause0]}::next<'10, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _14)
+            storage_dead(_14)
+            match _13 {
+                Option::None => {
+                    break 0
+                },
+                Option::Some => {
+                },
+            }
+            storage_live(j_16)
+            j_16 = copy (_13 as variant Option::Some).0
+            storage_live(_17)
+            storage_live(_18)
+            _18 = copy i_9
+            storage_live(_19)
+            _19 = copy j_16
+            storage_live(_28)
+            _28 = &old_2
+            storage_live(_29)
+            _29 = @ArrayIndexShared<'_, [u32; 5 : usize], 5 : usize>(move _28, copy _18)
+            storage_live(_30)
+            _30 = &(*_29)
+            storage_live(_31)
+            _31 = @ArrayIndexShared<'_, u32, 5 : usize>(move _30, copy _19)
+            _17 = copy (*_31)
+            storage_live(_20)
+            storage_live(_21)
+            _21 = copy i_9
+            storage_live(_22)
+            storage_live(_23)
+            storage_live(_24)
+            _24 = copy j_16
+            _25 = copy _24 panic.+ const 1 : usize
+            _23 = move _25
+            storage_dead(_24)
+            _22 = move _23 panic.% const 5 : usize
+            storage_dead(_23)
+            storage_live(_32)
+            _32 = &old_2
+            storage_live(_33)
+            _33 = @ArrayIndexShared<'_, [u32; 5 : usize], 5 : usize>(move _32, copy _21)
+            storage_live(_34)
+            _34 = &(*_33)
+            storage_live(_35)
+            _35 = @ArrayIndexShared<'_, u32, 5 : usize>(move _34, copy _22)
+            _20 = copy (*_35)
+            storage_live(_26)
+            _26 = copy i_9
+            storage_live(_27)
+            _27 = copy j_16
+            storage_live(_36)
+            _36 = &mut (*a_1)
+            storage_live(_37)
+            _37 = @ArrayIndexMut<'_, [u32; 5 : usize], 5 : usize>(move _36, copy _26)
+            storage_live(_38)
+            _38 = &mut (*_37)
+            storage_live(_39)
+            _39 = @ArrayIndexMut<'_, u32, 5 : usize>(move _38, copy _27)
+            (*_39) = move _17 ^ move _20
+            storage_dead(_20)
+            storage_dead(_17)
+            storage_dead(_27)
+            storage_dead(_26)
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(j_16)
+            storage_dead(_15)
+            storage_dead(_13)
+            continue 0
+        }
+        storage_dead(_15)
+        storage_dead(_13)
+        storage_dead(iter_12)
+        storage_dead(_10)
+        storage_dead(i_9)
+        storage_dead(_8)
+        storage_dead(_6)
+        continue 0
+    }
+    _0 = ()
+    storage_dead(_8)
+    storage_dead(_6)
+    storage_dead(iter_5)
+    storage_dead(_3)
+    storage_dead(old_2)
+    return
+}
+
+
+
