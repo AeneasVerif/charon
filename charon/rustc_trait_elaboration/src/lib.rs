@@ -51,9 +51,7 @@ pub enum BuiltinTraitData<'tcx> {
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum PathChunk<'tcx> {
     AssocItem {
-        item: ty::AssocItem,
-        /// The arguments provided to the item (for GATs). Includes trait args.
-        generic_args: ty::GenericArgsRef<'tcx>,
+        item: ItemRef<'tcx>,
         /// The implemented predicate.
         predicate: ty::PolyTraitRef<'tcx>,
         /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
@@ -71,10 +69,7 @@ pub type Path<'tcx> = Vec<PathChunk<'tcx>>;
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ImplExprAtom<'tcx> {
     /// A concrete `impl Trait for Type {}` item.
-    Concrete {
-        def_id: DefId,
-        generics: ty::GenericArgsRef<'tcx>,
-    },
+    Concrete(ItemRef<'tcx>),
     /// A context-bound clause like `where T: Trait`.
     LocalBound {
         predicate: ty::Predicate<'tcx>,

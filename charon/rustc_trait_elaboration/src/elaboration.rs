@@ -209,6 +209,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
             return;
         };
 
+        let item_ref = self.resolve_item_reference(alias_ty.def_id, alias_ty.args, true);
+
         // The bounds that hold on the associated type.
         let item_bounds = ItemPredicates::implied(tcx, alias_ty.def_id, &self.options);
         let item_bounds = item_bounds
@@ -225,8 +227,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 origin: trait_candidate.origin,
             };
             candidate.path.push(PathChunk::AssocItem {
-                item: tcx.associated_item(alias_ty.def_id),
-                generic_args: alias_ty.args,
+                item: item_ref.clone(),
                 predicate: pred,
                 index,
             });
@@ -293,10 +294,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 impl_def_id,
                 args: generics,
                 ..
-            }) => ImplExprAtom::Concrete {
-                def_id: impl_def_id,
-                generics,
-            },
+            }) => ImplExprAtom::Concrete(self.resolve_item_reference(impl_def_id, generics, true)),
             ImplSource::Param(_) => match self.resolve_local(erased_tref.upcast(self.tcx)) {
                 Some(candidate) => candidate.into_impl_expr(tcx, self.implicit_self_clause),
                 None => {

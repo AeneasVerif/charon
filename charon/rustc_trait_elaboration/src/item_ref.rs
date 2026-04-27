@@ -88,18 +88,15 @@ impl<'tcx> PredicateSearcher<'tcx> {
         // If the reference is a known trait impl and the impl implements the target item, we can
         // point directly to the implemented item.
         if let Some((tinfo, _)) = &trait_info
-            && let ImplExprAtom::Concrete {
-                def_id: impl_def_id,
-                generics: impl_generics,
-            } = &tinfo.r#impl
+            && let ImplExprAtom::Concrete(impl_item_ref) = &tinfo.r#impl
             && let Some(implemented_item) = tcx
-                .associated_items(impl_def_id)
+                .associated_items(impl_item_ref.def_id)
                 .in_definition_order()
                 .find(|item| item.trait_item_def_id() == Some(def_id))
         {
             let trait_def_id = tcx.parent(def_id);
             def_id = implemented_item.def_id;
-            generics = generics.rebase_onto(tcx, trait_def_id, *impl_generics);
+            generics = generics.rebase_onto(tcx, trait_def_id, impl_item_ref.generics());
             trait_info = None;
         }
 

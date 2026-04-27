@@ -21,7 +21,6 @@ pub enum ImplExprPathChunk {
         /// }
         /// ```
         item: ItemRef,
-        assoc_item: AssocItem,
         /// The implemented predicate.
         predicate: Binder<TraitRef>,
         /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
@@ -40,13 +39,11 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for elaboration
         match self {
             elaboration::PathChunk::AssocItem {
                 item,
-                generic_args,
                 predicate,
                 index,
                 ..
             } => ImplExprPathChunk::AssocItem {
-                item: translate_item_ref(s, item.def_id, generic_args),
-                assoc_item: AssocItem::sfrom(s, item),
+                item: item.sinto(s),
                 predicate: predicate.sinto(s),
                 index: index.sinto(s),
             },
@@ -67,9 +64,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for elaboration
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ImplExprAtom {
     /// A concrete `impl Trait for Type {}` item.
-    #[custom_arm(FROM_TYPE::Concrete { def_id, generics } => TO_TYPE::Concrete(
-        translate_item_ref(s, *def_id, generics),
-    ),)]
     Concrete(ItemRef),
     /// A context-bound clause like `where T: Trait`.
     LocalBound {

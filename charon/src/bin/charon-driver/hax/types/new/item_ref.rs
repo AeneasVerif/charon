@@ -41,25 +41,46 @@ pub struct ItemRef {
 }
 
 /// Contents of `ItemRef`.
+#[derive(AdtInto)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_trait_elaboration::ItemRef<'tcx>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ItemRefContents {
     /// The item being refered to.
+    #[value(self.def_id.sinto(s))]
     pub def_id: DefId,
     /// The generics passed to the item. If `in_trait` is `Some`, these are only the generics of
     /// the method/type/const itself; generics for the traits are available in
     /// `in_trait.unwrap().trait`.
+    #[value(self.assoc_generics().sinto(s))]
     pub generic_args: Vec<GenericArg>,
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>` or `B:
     /// ToOwned` for `Cow<'a, B>`. Same as above, for associated items this only includes clauses
     /// for the item itself.
+    #[value(self.assoc_impl_exprs().sinto(s))]
     pub impl_exprs: Vec<ImplExpr>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to.
+    #[value(self.in_trait.as_ref().map(|(x, _)| x).sinto(s))]
     pub in_trait: Option<ImplExpr>,
     /// Whether this contains any reference to a type/lifetime/const parameter.
+    #[value(self.has_param)]
     pub has_param: bool,
     /// Whether this contains any reference to a type/const parameter.
+    #[value(self.has_non_lt_param)]
     pub has_non_lt_param: bool,
+}
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef> for rustc_trait_elaboration::ItemRef<'tcx> {
+    fn sinto(&self, s: &S) -> ItemRef {
+        let content: ItemRefContents = self.sinto(s);
+        let item = content.intern(s);
+        s.with_global_cache(|cache| {
+            cache
+                .reverse_item_refs_map
+                .insert(item.clone(), self.generics());
+        });
+        item
+    }
 }
 
 impl ItemRefContents {
@@ -115,11 +136,7 @@ impl ItemRef {
         };
         let content = ItemRefContents {
             def_id,
-            generic_args: item_ref.assoc_generics().sinto(s),
-            impl_exprs: item_ref.assoc_impl_exprs().sinto(s),
-            in_trait: item_ref.in_trait.as_ref().map(|(x, _)| x).sinto(s),
-            has_param: item_ref.has_param,
-            has_non_lt_param: item_ref.has_non_lt_param,
+            ..item_ref.sinto(s)
         };
 
         let item = content.intern(s);
