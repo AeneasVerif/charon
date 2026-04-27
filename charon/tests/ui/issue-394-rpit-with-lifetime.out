@@ -163,7 +163,7 @@ impl<'a> FnMut<()> for closure<'a> {
 }
 
 // Full name: test_crate::sparse_transitions
-fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for closure<'_>}]
+fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for closure<'a>}]
 {
     let _0: FromFn<closure<'6>>[{built_in impl Sized for closure<'6>}]; // return
     let _1: closure<'9>; // anonymous local

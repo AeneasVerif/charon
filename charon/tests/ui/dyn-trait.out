@@ -150,7 +150,7 @@ where
 = <opaque>
 
 // Full name: test_crate::construct
-fn construct<T>(_1: T) -> alloc::boxed::Box<(dyn Display + 'static)>[{built_in impl MetaSized for (dyn Display)}, {built_in impl Sized for Global}]
+fn construct<T>(_1: T) -> alloc::boxed::Box<(dyn Display + 'static)>[{built_in impl MetaSized for (dyn Display + 'static)}, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Display<T>,

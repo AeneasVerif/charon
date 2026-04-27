@@ -81,12 +81,12 @@ impl<'tcx> Candidate<'tcx> {
 /// Stores a set of predicates along with where they came from.
 #[derive(Clone)]
 pub struct PredicateSearcher<'tcx> {
-    tcx: TyCtxt<'tcx>,
-    typing_env: rustc_middle::ty::TypingEnv<'tcx>,
+    pub(crate) tcx: TyCtxt<'tcx>,
+    pub(crate) typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
     candidates: HashMap<PolyTraitRef<'tcx>, Candidate<'tcx>>,
     /// Resolution options.
-    options: BoundsOptions,
+    pub(crate) options: BoundsOptions,
     /// Whether we're in a trait declaration context where an implicit `Self: Trait` clause is
     /// accessible.
     implicit_self_clause: bool,
@@ -430,7 +430,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
     ) -> Vec<ImplExpr<'tcx>> {
         let tcx = self.tcx;
         self.resolve_predicates(
-            ItemPredicates::required(tcx, def_id, &self.options),
+            ItemPredicates::required_recursively(tcx, def_id, &self.options),
             generics,
         )
     }

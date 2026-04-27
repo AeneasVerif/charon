@@ -31,6 +31,7 @@ impl ItemTransCtx<'_, '_> {
 
         let body = {
             let ctx = std::panic::AssertUnwindSafe(&mut *self);
+            let def = std::panic::AssertUnwindSafe(def);
             // This is likely to panic, see the docs of `--precise-drops`.
             let Ok(body) =
                 std::panic::catch_unwind(move || def.this().drop_glue_shim(ctx.hax_state()))

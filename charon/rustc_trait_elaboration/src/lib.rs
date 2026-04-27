@@ -9,17 +9,19 @@ extern crate rustc_trait_selection;
 extern crate rustc_type_ir;
 
 mod elaboration;
+mod item_ref;
 mod predicates;
 mod utils;
 
 pub use elaboration::*;
+pub use item_ref::*;
 pub use predicates::*;
 pub use utils::*;
 
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum DestructData<'tcx> {
     /// A drop that does nothing, e.g. for scalars and pointers.
     Noop,
@@ -35,7 +37,7 @@ pub enum DestructData<'tcx> {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum BuiltinTraitData<'tcx> {
     /// A virtual `Destruct` implementation.
     /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
@@ -46,7 +48,7 @@ pub enum BuiltinTraitData<'tcx> {
     Other,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum PathChunk<'tcx> {
     AssocItem {
         item: ty::AssocItem,
@@ -66,7 +68,7 @@ pub enum PathChunk<'tcx> {
 }
 pub type Path<'tcx> = Vec<PathChunk<'tcx>>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ImplExprAtom<'tcx> {
     /// A concrete `impl Trait for Type {}` item.
     Concrete {
@@ -109,7 +111,7 @@ pub enum ImplExprAtom<'tcx> {
     Error(String),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ImplExpr<'tcx> {
     /// The trait this is an impl for.
     pub r#trait: ty::PolyTraitRef<'tcx>,

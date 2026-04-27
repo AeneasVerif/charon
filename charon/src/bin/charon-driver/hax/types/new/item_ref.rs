@@ -79,101 +79,43 @@ impl ItemRef {
         s: &S,
         // Whether to resolve trait references.
         resolve_trait_ref: bool,
-        mut hax_def_id: DefId,
+        hax_def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
     ) -> ItemRef {
-        use rustc_infer::infer::canonical::ir::TypeVisitableExt;
-        let tcx = s.base().tcx;
-        let typing_env = s.typing_env();
-        let mut def_id = hax_def_id.as_def_id_even_synthetic();
         let key = (hax_def_id.clone(), generics, resolve_trait_ref);
-        // Normalize the generics. This is crucial for `rustc_args()` because if we don't we might
-        // get a `Option<T>` ItemRef with `rustc_args() = Option<<Self as Iterator>::Item>`, but
-        // because the mapping is global we'd return these args in item contexts where they aren't
-        // valid.
-        let mut generics = normalize(tcx, typing_env, generics);
         if let Some(item) = s.with_cache(|cache| cache.item_refs.get(&key).cloned()) {
             return item;
         }
 
-        if tcx.is_typeck_child(def_id) {
-            // Rustc gives closures/inline consts extra generic for inference that we don't care about.
-            generics = generics.truncate_to(tcx, tcx.generics_of(tcx.typeck_root_def_id(def_id)));
-        }
+        let def_id = hax_def_id.as_def_id_even_synthetic();
+        let item_ref = s.with_predicate_searcher(|pred_searcher| {
+            pred_searcher.resolve_item_reference(def_id, generics, resolve_trait_ref)
+        });
 
-        // If this is an associated item, resolve the trait reference.
-        let mut trait_info = if resolve_trait_ref {
-            self_clause_for_item(s, def_id, generics)
+        // If the original `DefId` was a custom one, make sure we keep that around.
+        let def_id = if hax_def_id.as_rust_def_id().is_none() {
+            assert_eq!(hax_def_id.as_def_id_even_synthetic(), item_ref.def_id);
+            hax_def_id
         } else {
-            None
+            item_ref.def_id.sinto(s)
         };
-
-        // If the reference is a known trait impl and the impl implements the target item, we can
-        // point directly to the implemented item.
-        if let Some(tinfo) = &trait_info
-            && let ImplExprAtom::Concrete(impl_ref) = &tinfo.r#impl
-            && let impl_def_id = impl_ref.def_id.real_rust_def_id()
-            && let Some(implemented_item) = tcx
-                .associated_items(impl_def_id)
-                .in_definition_order()
-                .find(|item| item.trait_item_def_id() == Some(def_id))
-        {
-            let trait_def_id = tcx.parent(def_id);
-            def_id = implemented_item.def_id;
-            hax_def_id = def_id.sinto(s);
-            generics = generics.rebase_onto(tcx, trait_def_id, impl_ref.rustc_args(s));
-            trait_info = None;
-        }
-
-        let mut hax_generics = generics.sinto(s);
-        let mut impl_exprs = solve_item_required_traits(s, def_id, generics);
-
-        // Fixup the generics.
-        if let Some(tinfo) = &trait_info {
-            // The generics are split in two: the arguments of the trait and the arguments of the
-            // method/associated item.
-            //
-            // For instance, if we have:
-            // ```
-            // trait Foo<T> {
-            //     fn baz<U>(...) { ... }
-            // }
-            //
-            // fn test<T : Foo<u32>(x: T) {
-            //     x.baz(...);
-            //     ...
-            // }
-            // ```
-            // The generics for the call to `baz` will be the concatenation: `<T, u32, U>`, which we
-            // split into `<T, u32>` and `<U>`.
-            let trait_ref = tinfo.r#trait.hax_skip_binder_ref();
-            let num_trait_generics = trait_ref.generic_args.len();
-            hax_generics.drain(0..num_trait_generics);
-            let mut num_trait_trait_clauses = trait_ref.impl_exprs.len();
-            // Items other than associated types get an extra `Self: Trait` clause as the first
-            // clause, we skip that one too. Note: that clause is the same as `tinfo`.
-            if !matches!(hax_def_id.kind, DefKind::AssocTy) {
-                num_trait_trait_clauses += 1;
-            };
-            impl_exprs.drain(0..num_trait_trait_clauses);
-        }
-
         let content = ItemRefContents {
-            def_id: hax_def_id,
-            generic_args: hax_generics,
-            impl_exprs,
-            in_trait: trait_info,
-            has_param: generics.has_param()
-                || generics.has_escaping_bound_vars()
-                || generics.has_free_regions(),
-            has_non_lt_param: generics.has_param(),
+            def_id,
+            generic_args: item_ref.assoc_generics().sinto(s),
+            impl_exprs: item_ref.assoc_impl_exprs().sinto(s),
+            in_trait: item_ref.in_trait.as_ref().map(|(x, _)| x).sinto(s),
+            has_param: item_ref.has_param,
+            has_non_lt_param: item_ref.has_non_lt_param,
         };
+
         let item = content.intern(s);
         s.with_cache(|cache| {
             cache.item_refs.insert(key, item.clone());
         });
         s.with_global_cache(|cache| {
-            cache.reverse_item_refs_map.insert(item.clone(), generics);
+            cache
+                .reverse_item_refs_map
+                .insert(item.clone(), item_ref.generics());
         });
         item
     }

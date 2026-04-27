@@ -113,7 +113,7 @@ where
 pub struct Global {}
 
 // Full name: std::panic::catch_unwind
-pub fn catch_unwind<F, R>(_1: F) -> Result<R, alloc::boxed::Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send)}, {built_in impl Sized for Global}]>[@TraitClause1, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send)>[{built_in impl MetaSized for (dyn Any + Send)}, {built_in impl Sized for Global}]}]
+pub fn catch_unwind<F, R>(_1: F) -> Result<R, alloc::boxed::Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send + 'static)}, {built_in impl Sized for Global}]>[@TraitClause1, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send + 'static)}, {built_in impl Sized for Global}]}]
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<R>,
