@@ -58,46 +58,38 @@ impl ItemRef {
         Self::translate_from_hax_def_id(s, hax_def_id, generics)
     }
 
-    pub fn translate_from_hax_def_id<'tcx, S: UnderOwnerState<'tcx>>(
-        s: &S,
-        def_id: DefId,
-        generics: ty::GenericArgsRef<'tcx>,
-    ) -> ItemRef {
-        Self::translate_maybe_resolve_impl(s, true, def_id, generics)
-    }
-
     /// Makes a `ItemRef` from a `def_id` and generics.
     ///
-    /// If `resolve_trait_ref == true` and `(def_id, generics)` points to a trait item that
-    /// can be resolved to a specific `impl`, `translate` rewrites `def_id` to the
-    /// concrete associated item from that `impl` and re-bases the generics.
+    /// If `(def_id, generics)` points to a trait item that can be resolved to a specific `impl`,
+    /// `translate` rewrites `def_id` to the concrete associated item from that `impl` and re-bases
+    /// the generics.
     ///
-    /// For instance, [`<u32 as From<u8>>::from`] produces a [`ItemRef`] with a
-    /// [`DefId`] looking like `core::convert::num::Impl#42::from` when
-    /// `resolve_impl` is `true`, `core::convert::From::from` otherwise.
-    pub fn translate_maybe_resolve_impl<'tcx, S: UnderOwnerState<'tcx>>(
+    /// For instance, [`<u32 as From<u8>>::from`] produces a [`ItemRef`] with a [`DefId`] looking
+    /// like `core::convert::num::Impl#42::from` when `resolve_impl` is `true`,
+    /// `core::convert::From::from` otherwise.
+    pub fn translate_from_hax_def_id<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
-        // Whether to resolve trait references.
-        resolve_trait_ref: bool,
         hax_def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
     ) -> ItemRef {
-        let key = (hax_def_id.clone(), generics, resolve_trait_ref);
+        let key = (hax_def_id.clone(), generics);
         if let Some(item) = s.with_cache(|cache| cache.item_refs.get(&key).cloned()) {
             return item;
         }
 
+        // Don't resolve if the DefId isn't real.
+        let is_real_def_id = hax_def_id.as_rust_def_id().is_some();
         let def_id = hax_def_id.as_def_id_even_synthetic();
         let item_ref = s.with_predicate_searcher(|pred_searcher| {
-            pred_searcher.resolve_item_reference(def_id, generics, resolve_trait_ref)
+            pred_searcher.resolve_item_reference(def_id, generics, is_real_def_id)
         });
 
-        // If the original `DefId` was a custom one, make sure we keep that around.
-        let def_id = if hax_def_id.as_rust_def_id().is_none() {
-            assert_eq!(hax_def_id.as_def_id_even_synthetic(), item_ref.def_id);
-            hax_def_id
-        } else {
+        // If the original `DefId` was not real, make sure we keep that around.
+        let def_id = if is_real_def_id {
             item_ref.def_id.sinto(s)
+        } else {
+            assert_eq!(item_ref.def_id, def_id);
+            hax_def_id
         };
         let content = ItemRefContents {
             def_id,
