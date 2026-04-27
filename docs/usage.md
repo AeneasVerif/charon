@@ -9,14 +9,60 @@ provides various options and flags to tweak its behaviour: you can display a
 detailed documentation with `--help`.
 In particular, you can pretty-print the translated crate with both `--print-ullbc` and `--print-llbc`, depending on the Charon intermediate representation you wish to use.
 
-If there is a `Charon.toml` file at the root of your project, `charon` will also take options from it.
-The file supports the same options at the cli interface, except for the options that relate to
-input/output like `--print-llbc`. Example `Charon.toml`:
+Charon supports per-project configuration via the `[package.metadata.charon]` section in `Cargo.toml`. 
+Scalar options (e.g. `preset`) use the CLI value if given, otherwise the config file
+value. Boolean options are OR-ed. List options (e.g., `start_from`, `exclude`) are always merged.
+
 ```toml
-[charon]
-extract_opaque_bodies = true
-[rustc]
-flags = ["--cfg", "abc"]
+[package.metadata.charon]
+# Preset to apply. Uses the same names as the CLI (e.g. "aeneas", "eurydice", "soteria",
+# "old-defaults", "raw-mir"). CLI --preset takes precedence.
+preset = "aeneas"
+
+# Entry points for translation. Charon translates these items and everything they reference,
+# following the opacity rules. When absent (and no --start-from is given on the CLI), the whole
+# crate is translated. Uses name-matcher patterns.
+start_from = [
+    "my_crate::module_a",
+    "my_crate::module_b",
+]
+
+# Like start_from, but silently ignores patterns that match no item (useful for generated lists).
+# start_from_if_exists = []
+
+# Use all items annotated with the given attribute as entry points.
+# start_from_attribute = "verify::start_from"
+
+# Use all pub items in the crate as entry points.
+# start_from_pub = false
+
+# Items to exclude entirely (not even their signature is emitted).
+exclude = [
+    "my_crate::internal::unstable_fn",
+    "log",
+]
+
+# Items to keep opaque (signature only, no body or fields).
+opaque = [
+    "my_crate::crypto::low_level_fn",
+]
+
+# Items to make fully transparent even if they would otherwise be foreign/opaque.
+# include = []
+
+# Translate bodies of all items, including foreign ones (off by default).
+# extract_opaque_bodies = false
+
+# Hide marker traits (e.g. Send, Sync) from the output.
+# hide_marker_traits = false
+
+[package.metadata.charon.cargo]
+# Extra arguments forwarded to `cargo build` (equivalent to flags after `--` on the CLI).
+flags = ["--features", "my_feature"]
+
+[package.metadata.charon.rustc]
+# Extra arguments passed directly to rustc.
+# flags = ["--cfg", "some_cfg"]
 ```
 
 **Remark**: because Charon is compiled with Rust nightly (this is a requirement to implement a rustc
