@@ -11,94 +11,44 @@
 use anyhow::{Context, Result, bail};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::ast::*;
-use convert_case::{Case, Casing};
-use indoc::indoc;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
-use std::fmt::Write;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
-/// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
-fn repr_name(_crate_data: &TranslatedCrate, n: &Name) -> String {
-    n.name
-        .iter()
-        .map(|path_elem| match path_elem {
-            PathElem::Ident(i, _) => i.clone(),
-            PathElem::Impl(..) => "<impl>".to_string(),
-            PathElem::Instantiated(..) => "<mono>".to_string(),
-            PathElem::Target(target) => target.clone(),
-        })
-        .join("::")
-}
+use crate::to_ocaml_ty::DeriveVisitors;
+use crate::util::*;
 
-fn make_ocaml_ident(name: &str) -> String {
-    let mut name = name.to_case(Case::Snake);
-    if matches!(
-        &*name,
-        "assert"
-            | "bool"
-            | "char"
-            | "end"
-            | "float"
-            | "fun"
-            | "function"
-            | "include"
-            | "let"
-            | "method"
-            | "open"
-            | "rec"
-            | "struct"
-            | "to"
-            | "type"
-            | "virtual"
-    ) {
-        name += "_";
-    }
-    name
-}
-fn type_name_to_ocaml_ident(item_meta: &ItemMeta) -> String {
-    let name = item_meta
-        .attr_info
-        .rename
-        .as_ref()
-        .unwrap_or(item_meta.name.name.last().unwrap().as_ident().unwrap().0);
-    make_ocaml_ident(name)
-}
+mod of_json;
+mod to_ocaml_ty;
+mod util;
 
 struct GenerateCtx<'a> {
     crate_data: &'a TranslatedCrate,
     name_to_type: HashMap<String, &'a TypeDecl>,
     /// For each type, list the types it contains.
     type_tree: HashMap<TypeDeclId, HashSet<TypeDeclId>>,
-    manual_type_impls: HashMap<TypeDeclId, String>,
-    manual_json_impls: HashMap<TypeDeclId, String>,
-    opaque_for_visitor: HashSet<TypeDeclId>,
+    /// For types that may be ambiguous in OCaml, the generated module name to prefix to them,
+    /// along with the "short" module name for other generators
+    ambiguous_types: HashMap<TypeDeclId, (String, String)>,
+    /// The current module name being compiled.
+    current_module: Option<String>,
+    /// The list of types currently being generated.
+    current_ids: Vec<TypeDeclId>,
+    /// The OCaml ident for the item currently being generated; this matters for
+    /// TranslatedCrate, where we treat IndexMap differently.
+    current_item: Option<String>,
 }
 
 impl<'a> GenerateCtx<'a> {
-    fn new(
-        crate_data: &'a TranslatedCrate,
-        manual_type_impls: &[(&str, &str)],
-        manual_json_impls: &[(&str, &str)],
-        opaque_for_visitor: &[&str],
-    ) -> Self {
+    fn new(crate_data: &'a TranslatedCrate, ambiguous_types: &[(&str, (&str, &str))]) -> Self {
         let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
         let mut type_tree = HashMap::default();
         for ty in &crate_data.type_decls {
-            let long_name = repr_name(crate_data, &ty.item_meta.name);
+            let long_name = repr_name(&ty.item_meta.name);
             if long_name.starts_with("charon_lib") {
-                let short_name = ty
-                    .item_meta
-                    .name
-                    .name
-                    .last()
-                    .unwrap()
-                    .as_ident()
-                    .unwrap()
-                    .0
-                    .clone();
+                let short_name = ty.item_meta.name.short_str().clone();
                 name_to_type.insert(short_name, ty);
             }
             name_to_type.insert(long_name, ty);
@@ -114,790 +64,19 @@ impl<'a> GenerateCtx<'a> {
             crate_data,
             name_to_type,
             type_tree,
-            manual_type_impls: Default::default(),
-            manual_json_impls: Default::default(),
-            opaque_for_visitor: Default::default(),
+            ambiguous_types: Default::default(),
+            current_module: None,
+            current_ids: vec![],
+            current_item: None,
         };
-        ctx.manual_type_impls = manual_type_impls
+
+        ctx.ambiguous_types = ambiguous_types
             .iter()
-            .map(|(name, def)| (ctx.id_from_name(name), def.to_string()))
+            .map(|(name, (m1, m2))| (ctx.id_from_name(name), (m1.to_string(), m2.to_string())))
             .collect();
-        ctx.manual_json_impls = manual_json_impls
-            .iter()
-            .map(|(name, def)| (ctx.id_from_name(name), def.to_string()))
-            .collect();
-        ctx.opaque_for_visitor = opaque_for_visitor
-            .iter()
-            .map(|name| ctx.id_from_name(name))
-            .collect();
+
         ctx
     }
-
-    fn id_from_name(&self, name: &str) -> TypeDeclId {
-        self.name_to_type
-            .get(name)
-            .unwrap_or_else(|| panic!("Name not found: `{name}`"))
-            .def_id
-    }
-
-    /// List the (recursive) children of this type.
-    fn children_of(&self, name: &str) -> HashSet<TypeDeclId> {
-        let start_id = self.id_from_name(name);
-        self.children_of_inner(vec![start_id], |_| true)
-    }
-
-    /// List the (recursive) children of the type, except those that are only reachable through
-    /// `except`.
-    fn children_of_except(&self, name: &str, except: &[&str]) -> HashSet<TypeDeclId> {
-        let start_id = self.id_from_name(name);
-        let except: HashSet<_> = except.iter().map(|name| self.id_from_name(name)).collect();
-        self.children_of_inner(vec![start_id], |id| !except.contains(&id))
-    }
-
-    /// List the (recursive) children of these types.
-    fn children_of_many(&self, names: &[&str]) -> HashSet<TypeDeclId> {
-        self.children_of_inner(
-            names.iter().map(|name| self.id_from_name(name)).collect(),
-            |_| true,
-        )
-    }
-
-    fn children_of_inner(
-        &self,
-        ty: Vec<TypeDeclId>,
-        explore: impl Fn(TypeDeclId) -> bool,
-    ) -> HashSet<TypeDeclId> {
-        let mut children = HashSet::new();
-        let mut stack = ty.to_vec();
-        while let Some(id) = stack.pop() {
-            if !children.contains(&id)
-                && explore(id)
-                && self
-                    .crate_data
-                    .type_decls
-                    .get(id)
-                    .is_some_and(|decl| decl.item_meta.is_local)
-            {
-                children.insert(id);
-                if let Some(contained) = self.type_tree.get(&id) {
-                    stack.extend(contained);
-                }
-            }
-        }
-        children
-    }
-}
-
-/// Converts a type to the appropriate `*_of_json` call. In case of generics, this combines several
-/// functions, e.g. `list_of_json bool_of_json`.
-fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
-    match ty.kind() {
-        TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
-            // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
-            IntTy::I128 => "big_int_of_json".to_string(),
-            _ => "int_of_json".to_string(),
-        },
-        TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
-            // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
-            UIntTy::U128 => "big_int_of_json".to_string(),
-            _ => "int_of_json".to_string(),
-        },
-        TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
-        TyKind::Adt(tref) => {
-            let mut expr = Vec::new();
-            for ty in &tref.generics.types {
-                expr.push(type_to_ocaml_call(ctx, ty))
-            }
-            match tref.id {
-                TypeId::Adt(id) => {
-                    let mut first = if let Some(tdecl) = ctx.crate_data.type_decls.get(id) {
-                        type_name_to_ocaml_ident(&tdecl.item_meta)
-                    } else {
-                        format!("missing_type_{id}")
-                    };
-                    if first == "vec" {
-                        first = "list".to_string();
-                    }
-                    if first == "ustr" {
-                        first = "string".to_string();
-                    }
-                    if first == "index_map" {
-                        // That's the `indexmap::IndexMap` case. Pass something dummy for the
-                        // `RandomState` parameter.
-                        expr[2] = "int_of_json".to_string();
-                    }
-                    expr.insert(0, first + "_of_json");
-                }
-                TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
-                TypeId::Tuple => {
-                    let name = match tref.generics.types.len() {
-                        2 => "pair_of_json".to_string(),
-                        3 => "triple_of_json".to_string(),
-                        len => format!("tuple_{len}_of_json"),
-                    };
-                    expr.insert(0, name);
-                }
-                _ => unimplemented!("{ty:?}"),
-            }
-            expr.into_iter().map(|f| format!("({f})")).join(" ")
-        }
-        TyKind::TypeVar(DeBruijnVar::Free(id)) => format!("arg{id}_of_json"),
-        _ => unimplemented!("{ty:?}"),
-    }
-}
-
-/// Converts a type to the appropriate ocaml name. In case of generics, this provides appropriate
-/// parameters.
-fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
-    match ty.kind() {
-        TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
-        TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
-        TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
-            // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
-            IntTy::I128 => "big_int".to_string(),
-            _ => "int".to_string(),
-        },
-        TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
-            // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
-            UIntTy::U128 => "big_int".to_string(),
-            _ => "int".to_string(),
-        },
-        TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
-        TyKind::Adt(tref) => {
-            let mut args = tref
-                .generics
-                .types
-                .iter()
-                .map(|ty| type_to_ocaml_name(ctx, ty))
-                .map(|name| {
-                    if !name.chars().all(|c| c.is_alphanumeric()) {
-                        format!("({name})")
-                    } else {
-                        name
-                    }
-                })
-                .collect_vec();
-            match tref.id {
-                TypeId::Adt(id) => {
-                    let mut base_ty = if let Some(tdecl) = ctx.crate_data.type_decls.get(id) {
-                        type_name_to_ocaml_ident(&tdecl.item_meta)
-                    } else if let Some(name) = ctx.crate_data.item_name(id) {
-                        eprintln!(
-                            "Warning: type {} missing from llbc",
-                            repr_name(ctx.crate_data, name)
-                        );
-                        name.name
-                            .last()
-                            .unwrap()
-                            .as_ident()
-                            .unwrap()
-                            .0
-                            .to_lowercase()
-                    } else {
-                        format!("missing_type_{id}")
-                    };
-                    if base_ty == "vec" {
-                        base_ty = "list".to_string();
-                    }
-                    if base_ty == "ustr" {
-                        base_ty = "string".to_string();
-                    }
-                    if base_ty == "indexed_map" || base_ty == "index_vec" {
-                        base_ty = "list".to_string();
-                        args.remove(0); // Remove the index generic param
-                    }
-                    if base_ty == "index_map" {
-                        // That's the `indexmap::IndexMap` case. Translate as a list of pairs.
-                        base_ty = "list".to_string();
-                        args = vec![format!("( {} * {} )", args[0], args[1])]
-                    }
-                    let args = match args.as_slice() {
-                        [] => String::new(),
-                        [arg] => arg.clone(),
-                        args => format!("({})", args.iter().join(",")),
-                    };
-                    format!("{args} {base_ty}")
-                }
-                TypeId::Builtin(BuiltinTy::Box) => args[0].clone(),
-                TypeId::Tuple => args.iter().join("*"),
-                _ => unimplemented!("{ty:?}"),
-            }
-        }
-        TyKind::TypeVar(DeBruijnVar::Free(id) | DeBruijnVar::Bound(_, id)) => format!("'a{id}"),
-        _ => unimplemented!("{ty:?}"),
-    }
-}
-
-fn convert_vars<'a>(ctx: &GenerateCtx, fields: impl IntoIterator<Item = &'a Field>) -> String {
-    fields
-        .into_iter()
-        .filter(|f| !f.is_opaque())
-        .map(|f| {
-            let name = make_ocaml_ident(f.name.as_deref().unwrap());
-            let rename = make_ocaml_ident(f.renamed_name().unwrap());
-            let convert = type_to_ocaml_call(ctx, &f.ty);
-            format!("let* {rename} = {convert} ctx {name} in")
-        })
-        .join("\n")
-}
-
-fn build_branch<'a>(
-    ctx: &GenerateCtx,
-    pat: &str,
-    fields: impl IntoIterator<Item = &'a Field>,
-    construct: &str,
-) -> String {
-    let convert = convert_vars(ctx, fields);
-    format!("| {pat} -> {convert} Ok ({construct})")
-}
-
-fn build_function(ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String {
-    let ty = TyKind::Adt(TypeDeclRef {
-        id: TypeId::Adt(decl.def_id),
-        generics: decl.generics.identity_args().into(),
-    })
-    .into_ty();
-    let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
-    let ty = type_to_ocaml_name(ctx, &ty);
-    let signature = if decl.generics.types.is_empty() {
-        format!("{ty_name}_of_json (ctx : of_json_ctx) (js : json) : ({ty}, string) result =")
-    } else {
-        let types = &decl.generics.types;
-        let gen_vars_space = types
-            .iter()
-            .enumerate()
-            .map(|(i, _)| format!("'a{i}"))
-            .join(" ");
-
-        let mut args = Vec::new();
-        let mut ty_args = Vec::new();
-        for (i, _) in types.iter().enumerate() {
-            args.push(format!("arg{i}_of_json"));
-            ty_args.push(format!("(of_json_ctx -> json -> ('a{i}, string) result)"));
-        }
-        args.push("ctx".to_string());
-        ty_args.push("of_json_ctx".to_string());
-        args.push("js".to_string());
-        ty_args.push("json".to_string());
-
-        let ty_args = ty_args.into_iter().join(" -> ");
-        let args = args.into_iter().join(" ");
-        let fun_ty = format!("{gen_vars_space}. {ty_args} -> ({ty}, string) result");
-        format!("{ty_name}_of_json : {fun_ty} = fun {args} ->")
-    };
-    format!(
-        r#"
-        and {signature}
-          combine_error_msgs js __FUNCTION__
-            (match js with{branches} | _ -> Error "")
-        "#
-    )
-}
-
-fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
-    let return_ty = type_name_to_ocaml_ident(&decl.item_meta);
-    let return_ty = if decl.generics.types.is_empty() {
-        return_ty
-    } else {
-        format!("_ {return_ty}")
-    };
-
-    let branches = match &decl.kind {
-        _ if let Some(def) = ctx.manual_json_impls.get(&decl.def_id) => format!("| json -> {def}"),
-        TypeDeclKind::Struct(fields) if fields.is_empty() => {
-            build_branch(ctx, "`Null", fields, "()")
-        }
-        TypeDeclKind::Struct(fields)
-            if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
-        {
-            // These are the special strongly-typed integers.
-            let short_name = decl
-                .item_meta
-                .name
-                .name
-                .last()
-                .unwrap()
-                .as_ident()
-                .unwrap()
-                .0
-                .clone();
-            format!("| x -> {short_name}.id_of_json ctx x")
-        }
-        TypeDeclKind::Struct(fields)
-            if fields.len() == 1
-                && (fields[0].name.is_none()
-                    || decl
-                        .item_meta
-                        .attr_info
-                        .attributes
-                        .iter()
-                        .filter_map(|a| a.as_unknown())
-                        .any(|a| a.to_string() == "serde(transparent)")) =>
-        {
-            let ty = &fields[0].ty;
-            let call = type_to_ocaml_call(ctx, ty);
-            format!("| x -> {call} ctx x")
-        }
-        TypeDeclKind::Alias(ty) => {
-            let call = type_to_ocaml_call(ctx, ty);
-            format!("| x -> {call} ctx x")
-        }
-        TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => {
-            let mut fields = fields.clone();
-            for (i, f) in fields.iter_mut().enumerate() {
-                f.name = Some(format!("x{i}"));
-            }
-            let pat: String = fields
-                .iter()
-                .map(|f| f.name.as_deref().unwrap())
-                .map(make_ocaml_ident)
-                .join(";");
-            let pat = format!("`List [ {pat} ]");
-            let construct = fields
-                .iter()
-                .map(|f| f.renamed_name().unwrap())
-                .map(make_ocaml_ident)
-                .join(", ");
-            let construct = format!("( {construct} )");
-            build_branch(ctx, &pat, &fields, &construct)
-        }
-        TypeDeclKind::Struct(fields) => {
-            let fields = fields
-                .iter()
-                .filter(|field| {
-                    !field
-                        .attr_info
-                        .attributes
-                        .iter()
-                        .filter_map(|a| a.as_unknown())
-                        .any(|a| a.to_string() == "serde(skip)")
-                })
-                .collect_vec();
-            let pat: String = fields
-                .iter()
-                .map(|f| {
-                    let name = f.name.as_ref().unwrap();
-                    let var = if f.is_opaque() {
-                        "_"
-                    } else {
-                        &make_ocaml_ident(name)
-                    };
-                    format!("(\"{name}\", {var});")
-                })
-                .join("\n");
-            let pat = format!("`Assoc [ {pat} ]");
-            let construct = fields
-                .iter()
-                .filter(|f| !f.is_opaque())
-                .map(|f| f.renamed_name().unwrap())
-                .map(make_ocaml_ident)
-                .join("; ");
-            let construct = format!("({{ {construct} }} : {return_ty})");
-            build_branch(ctx, &pat, fields, &construct)
-        }
-        TypeDeclKind::Enum(variants) => {
-            variants
-                .iter()
-                .filter(|v| !v.is_opaque())
-                .map(|variant| {
-                    let name = &variant.name;
-                    let rename = variant.renamed_name();
-                    if variant.fields.is_empty() {
-                        // Unit variant
-                        let pat = format!("`String \"{name}\"");
-                        build_branch(ctx, &pat, &variant.fields, rename)
-                    } else {
-                        let mut fields = variant.fields.clone();
-                        let inner_pat = if fields.iter().all(|f| f.name.is_none()) {
-                            // Tuple variant
-                            if variant.fields.len() == 1 {
-                                let var = make_ocaml_ident(&variant.name);
-                                fields[0].name = Some(var.clone());
-                                var
-                            } else {
-                                for (i, f) in fields.iter_mut().enumerate() {
-                                    f.name = Some(format!("x_{i}"));
-                                }
-                                let pat =
-                                    fields.iter().map(|f| f.name.as_ref().unwrap()).join("; ");
-                                format!("`List [ {pat} ]")
-                            }
-                        } else {
-                            // Struct variant
-                            let pat = fields
-                                .iter()
-                                .map(|f| {
-                                    let name = f.name.as_ref().unwrap();
-                                    let var = if f.is_opaque() {
-                                        "_"
-                                    } else {
-                                        &make_ocaml_ident(name)
-                                    };
-                                    format!("(\"{name}\", {var});")
-                                })
-                                .join(" ");
-                            format!("`Assoc [ {pat} ]")
-                        };
-                        let pat = format!("`Assoc [ (\"{name}\", {inner_pat}) ]");
-                        let construct_fields = fields
-                            .iter()
-                            .map(|f| f.name.as_ref().unwrap())
-                            .map(|n| make_ocaml_ident(n))
-                            .join(", ");
-                        let construct = format!("{rename} ({construct_fields})");
-                        build_branch(ctx, &pat, &fields, &construct)
-                    }
-                })
-                .join("\n")
-        }
-        TypeDeclKind::Union(..) => todo!(),
-        TypeDeclKind::Opaque => todo!(),
-        TypeDeclKind::Error(_) => todo!(),
-    };
-    build_function(ctx, decl, &branches)
-}
-
-fn extract_doc_comments(attr_info: &AttrInfo) -> String {
-    attr_info
-        .attributes
-        .iter()
-        .filter_map(|a| a.as_doc_comment())
-        .join("\n")
-}
-
-/// Make a doc comment that contains the given string, indenting it if necessary.
-fn build_doc_comment(comment: String, indent_level: usize) -> String {
-    #[derive(Default)]
-    struct Exchanger {
-        is_in_open_escaped_block: bool,
-        is_in_open_inline_escape: bool,
-    }
-    impl Exchanger {
-        pub fn exchange_escape_delimiters(&mut self, line: &str) -> String {
-            if line.contains("```") {
-                // Handle multi-line escaped blocks.
-                let (leading, mut rest) = line.split_once("```").unwrap();
-
-                // Strip all (hard-coded) possible ways to open the block.
-                rest = if rest.starts_with("text") {
-                    rest.strip_prefix("text").unwrap()
-                } else if rest.starts_with("rust,ignore") {
-                    rest.strip_prefix("rust,ignore").unwrap()
-                } else {
-                    rest
-                };
-                let mut result = leading.to_owned();
-                if self.is_in_open_escaped_block {
-                    result.push_str("]}");
-                    self.is_in_open_escaped_block = false;
-                } else {
-                    result.push_str("{@rust[");
-                    self.is_in_open_escaped_block = true;
-                }
-                result.push_str(rest);
-                result
-            } else if line.contains('`') {
-                // Handle inline escaped strings. These can occur in multiple lines, so we track them globally.
-                let mut parts = line.split('`');
-                // Skip after first part (we only need to add escapes after that).
-                let mut result = parts.next().unwrap().to_owned();
-                for part in parts {
-                    if self.is_in_open_inline_escape {
-                        result.push(']');
-                        result.push_str(part);
-                        self.is_in_open_inline_escape = false;
-                    } else {
-                        result.push('[');
-                        result.push_str(part);
-                        self.is_in_open_inline_escape = true;
-                    }
-                }
-                result
-            } else {
-                line.to_owned()
-            }
-        }
-    }
-
-    if comment.is_empty() {
-        return comment;
-    }
-    let is_multiline = comment.contains("\n");
-    if !is_multiline {
-        let fixed_comment = Exchanger::default().exchange_escape_delimiters(&comment);
-        format!("(**{fixed_comment} *)")
-    } else {
-        let indent = "  ".repeat(indent_level);
-        let mut exchanger = Exchanger::default();
-        let comment = comment
-            .lines()
-            .enumerate()
-            .map(|(i, line)| {
-                // Remove one leading space if there is one (there usually is because we write `///
-                // comment` and not `///comment`).
-                let line = line.strip_prefix(" ").unwrap_or(line);
-                let fixed_line = exchanger.exchange_escape_delimiters(line);
-
-                // The first line follows the `(**` marker, it does not need to be indented.
-                // Neither do empty lines.
-                if i == 0 || fixed_line.is_empty() {
-                    fixed_line
-                } else {
-                    format!("{indent}    {fixed_line}")
-                }
-            })
-            .join("\n");
-        format!("(** {comment}\n{indent} *)")
-    }
-}
-
-fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool, body: &str) -> String {
-    let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
-    let generics = decl
-        .generics
-        .types
-        .iter()
-        .enumerate()
-        .map(|(i, _)| format!("'a{i}"))
-        .collect_vec();
-    let generics = match generics.as_slice() {
-        [] => String::new(),
-        [ty] => ty.clone(),
-        generics => format!("({})", generics.iter().join(",")),
-    };
-    let comment = extract_doc_comments(&decl.item_meta.attr_info);
-    let comment = build_doc_comment(comment, 0);
-    let keyword = if co_rec { "and" } else { "type" };
-    format!("\n{comment} {keyword} {generics} {ty_name} = {body}")
-}
-
-/// Generate an ocaml type declaration that mirrors `decl`.
-///
-/// `co_rec` indicates whether this definition is co-recursive with the ones that come before (i.e.
-/// should be declared with `and` instead of `type`).
-fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> String {
-    let opaque = if ctx.opaque_for_visitor.contains(&decl.def_id) {
-        "[@visitors.opaque]"
-    } else {
-        ""
-    };
-    let body = match &decl.kind {
-        _ if let Some(def) = ctx.manual_type_impls.get(&decl.def_id) => def.clone(),
-        TypeDeclKind::Alias(ty) => {
-            let ty = type_to_ocaml_name(ctx, ty);
-            format!("{ty} {opaque}")
-        }
-        TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
-        TypeDeclKind::Struct(fields)
-            if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
-        {
-            // These are the special strongly-typed integers.
-            let short_name = decl
-                .item_meta
-                .name
-                .name
-                .last()
-                .unwrap()
-                .as_ident()
-                .unwrap()
-                .0
-                .clone();
-            format!("{short_name}.id [@visitors.opaque]")
-        }
-        TypeDeclKind::Struct(fields)
-            if fields.len() == 1
-                && (fields[0].name.is_none()
-                    || decl
-                        .item_meta
-                        .attr_info
-                        .attributes
-                        .iter()
-                        .filter_map(|a| a.as_unknown())
-                        .any(|a| a.to_string() == "serde(transparent)")) =>
-        {
-            let ty = type_to_ocaml_name(ctx, &fields[0].ty);
-            format!("{ty} {opaque}")
-        }
-        TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => fields
-            .iter()
-            .filter(|f| !f.is_opaque())
-            .map(|f| {
-                let ty = type_to_ocaml_name(ctx, &f.ty);
-                format!("{ty} {opaque}")
-            })
-            .join("*"),
-        TypeDeclKind::Struct(fields) => {
-            let fields = fields
-                .iter()
-                .filter(|f| !f.is_opaque())
-                .map(|f| {
-                    let name = f.renamed_name().unwrap();
-                    let ty = type_to_ocaml_name(ctx, &f.ty);
-                    let comment = extract_doc_comments(&f.attr_info);
-                    let comment = build_doc_comment(comment, 2);
-                    format!("{name} : {ty} {opaque} {comment}")
-                })
-                .join(";");
-            format!("{{ {fields} }}")
-        }
-        TypeDeclKind::Enum(variants) => {
-            variants
-                .iter()
-                .filter(|v| !v.is_opaque())
-                .map(|variant| {
-                    let mut attr_info = variant.attr_info.clone();
-                    let rename = variant.renamed_name();
-                    let ty = if variant.fields.is_empty() {
-                        // Unit variant
-                        String::new()
-                    } else {
-                        if variant.fields.iter().all(|f| f.name.is_some()) {
-                            let fields = variant
-                                .fields
-                                .iter()
-                                .map(|f| {
-                                    let comment = extract_doc_comments(&f.attr_info);
-                                    let description = if comment.is_empty() {
-                                        comment
-                                    } else {
-                                        format!(": {comment}")
-                                    };
-                                    format!("\n - [{}]{description}", f.name.as_ref().unwrap())
-                                })
-                                .join("");
-                            let field_descriptions = format!("\n Fields:{fields}");
-                            // Add a constructed doc-comment
-                            attr_info
-                                .attributes
-                                .push(Attribute::DocComment(field_descriptions));
-                        }
-                        let fields = variant
-                            .fields
-                            .iter()
-                            .map(|f| {
-                                let ty = type_to_ocaml_name(ctx, &f.ty);
-                                format!("{ty} {opaque}")
-                            })
-                            .join("*");
-                        format!(" of {fields}")
-                    };
-                    let comment = extract_doc_comments(&attr_info);
-                    let comment = build_doc_comment(comment, 3);
-                    format!("\n\n | {rename}{ty} {comment}")
-                })
-                .join("")
-        }
-        TypeDeclKind::Union(..) => todo!(),
-        TypeDeclKind::Opaque => todo!(),
-        TypeDeclKind::Error(_) => todo!(),
-    };
-    build_type(ctx, decl, co_rec, &body)
-}
-
-fn generate_visitor_bases(
-    _ctx: &GenerateCtx,
-    name: &str,
-    inherits: &[&str],
-    reduce: bool,
-    ty_names: &[String],
-) -> String {
-    let mut out = String::new();
-    let make_inherit = |variety| {
-        if !inherits.is_empty() {
-            inherits
-                .iter()
-                .map(|ancestor| {
-                    if let [module, name] = ancestor.split(".").collect_vec().as_slice() {
-                        format!("inherit [_] {module}.{variety}_{name}")
-                    } else {
-                        format!("inherit [_] {variety}_{ancestor}")
-                    }
-                })
-                .join("\n")
-        } else {
-            format!("inherit [_] VisitorsRuntime.{variety}")
-        }
-    };
-
-    let iter_methods = ty_names
-        .iter()
-        .map(|ty| format!("method visit_{ty} : 'env -> {ty} -> unit = fun _ _ -> ()"))
-        .format("\n");
-    let _ = write!(
-        &mut out,
-        "
-        class ['self] iter_{name} =
-          object (self : 'self)
-            {}
-            {iter_methods}
-          end
-        ",
-        make_inherit("iter")
-    );
-
-    let map_methods = ty_names
-        .iter()
-        .map(|ty| format!("method visit_{ty} : 'env -> {ty} -> {ty} = fun _ x -> x"))
-        .format("\n");
-    let _ = write!(
-        &mut out,
-        "
-        class ['self] map_{name} =
-          object (self : 'self)
-            {}
-            {map_methods}
-          end
-        ",
-        make_inherit("map")
-    );
-
-    if reduce {
-        let reduce_methods = ty_names
-            .iter()
-            .map(|ty| format!("method visit_{ty} : 'env -> {ty} -> 'a = fun _ _ -> self#zero"))
-            .format("\n");
-        let _ = write!(
-            &mut out,
-            "
-            class virtual ['self] reduce_{name} =
-              object (self : 'self)
-                {}
-                {reduce_methods}
-              end
-            ",
-            make_inherit("reduce")
-        );
-
-        let mapreduce_methods = ty_names
-            .iter()
-            .map(|ty| {
-                format!("method visit_{ty} : 'env -> {ty} -> {ty} * 'a = fun _ x -> (x, self#zero)")
-            })
-            .format("\n");
-        let _ = write!(
-            &mut out,
-            "
-            class virtual ['self] mapreduce_{name} =
-              object (self : 'self)
-                {}
-                {mapreduce_methods}
-              end
-            ",
-            make_inherit("mapreduce")
-        );
-    }
-
-    out
-}
-
-#[derive(Clone, Copy)]
-struct DeriveVisitors {
-    name: &'static str,
-    ancestors: &'static [&'static str],
-    reduce: bool,
-    extra_types: &'static [&'static str],
 }
 
 /// The kind of code generation to perform.
@@ -920,106 +99,25 @@ struct GenerateCodeFor {
 }
 
 impl GenerateCodeFor {
-    fn generate(&self, ctx: &GenerateCtx) -> Result<()> {
+    fn generate(&self, ctx: &mut GenerateCtx) -> Result<()> {
+        ctx.current_module = self
+            .target
+            .file_prefix()
+            .and_then(|s| s.to_str())
+            .map(|s| s.to_string());
+
         let mut template = fs::read_to_string(&self.template)
             .with_context(|| format!("Failed to read template file {}", self.template.display()))?;
         for (i, (kind, names)) in self.markers.iter().enumerate() {
             let tys = names
                 .iter()
                 .map(|&id| &ctx.crate_data[id])
-                .sorted_by_key(|tdecl| {
-                    (
-                        tdecl
-                            .item_meta
-                            .name
-                            .name
-                            .last()
-                            .unwrap()
-                            .as_ident()
-                            .unwrap(),
-                        tdecl.def_id,
-                    )
-                });
+                .sorted_by_key(|tdecl| (tdecl.item_meta.name.short_str(), tdecl.def_id))
+                .collect::<Vec<_>>();
+            ctx.current_ids = names.iter().copied().collect();
             let generated = match kind {
-                GenerationKind::OfJson => {
-                    let fns = tys
-                        .map(|ty| type_decl_to_json_deserializer(ctx, ty))
-                        .format("\n");
-                    format!("let rec ___ = ()\n{fns}")
-                }
-                GenerationKind::TypeDecl(visitors) => {
-                    let mut decls = tys
-                        .enumerate()
-                        .map(|(i, ty)| {
-                            let co_recursive = i != 0;
-                            type_decl_to_ocaml_decl(ctx, ty, co_recursive)
-                        })
-                        .join("\n");
-                    if let Some(visitors) = visitors {
-                        let &DeriveVisitors {
-                            name,
-                            mut ancestors,
-                            reduce,
-                            extra_types,
-                        } = visitors;
-                        let varieties: &[_] = if reduce {
-                            &["iter", "map", "reduce", "mapreduce"]
-                        } else {
-                            &["iter", "map"]
-                        };
-                        let intermediate_visitor_name;
-                        let intermediate_visitor_name_slice;
-                        if !extra_types.is_empty() {
-                            intermediate_visitor_name = format!("{name}_base");
-                            let intermediate_visitor = generate_visitor_bases(
-                                ctx,
-                                &intermediate_visitor_name,
-                                ancestors,
-                                reduce,
-                                extra_types
-                                    .iter()
-                                    .map(|s| s.to_string())
-                                    .collect_vec()
-                                    .as_slice(),
-                            );
-                            intermediate_visitor_name_slice = [intermediate_visitor_name.as_str()];
-                            ancestors = &intermediate_visitor_name_slice;
-                            decls = format!(
-                                "(* Ancestors for the {name} visitors *){intermediate_visitor}\n{decls}"
-                            );
-                        }
-                        let visitors = varieties
-                            .iter()
-                            .map(|variety| {
-                                let nude = if !ancestors.is_empty() {
-                                    "nude = true (* Don't inherit VisitorsRuntime *);".to_string()
-                                } else {
-                                    String::new()
-                                };
-                                let ancestors = format!(
-                                    "ancestors = [ {} ];",
-                                    ancestors
-                                        .iter()
-                                        .map(|a| format!("\"{variety}_{a}\""))
-                                        .join(";")
-                                );
-                                format!(
-                                    r#"
-                                    visitors {{
-                                        name = "{variety}_{name}";
-                                        monomorphic = ["env"];
-                                        variety = "{variety}";
-                                        {ancestors}
-                                        {nude}
-                                    }}
-                                "#
-                                )
-                            })
-                            .format(", ");
-                        let _ = write!(&mut decls, "\n[@@deriving show, eq, ord, {visitors}]");
-                    };
-                    decls
-                }
+                GenerationKind::OfJson => ctx.type_decls_to_json(tys),
+                GenerationKind::TypeDecl(visitors) => ctx.type_decls_to_ocaml(visitors, tys),
             };
             let placeholder = format!("(* __REPLACE{i}__ *)");
             template = template.replace(&placeholder, &generated);
@@ -1073,130 +171,52 @@ fn generate_ml(
     template_dir: PathBuf,
     output_dir: PathBuf,
 ) -> anyhow::Result<()> {
-    let manual_type_impls = &[
-        // Hand-written because we replace the `FileId` with the corresponding file.
-        ("FileId", "file"),
-        (
-            "HashConsed",
-            "'a0 (* Not actually hash-consed on the OCaml side *)",
-        ),
-    ];
-    let manual_json_impls = &[
-        // Hand-written because we interpret it as a list.
-        (
-            "charon_lib::ids::index_vec::IndexVec",
-            "list_of_json arg1_of_json ctx json",
-        ),
-        // Hand-written because we interpret it as a list.
-        (
-            "charon_lib::ids::index_map::IndexMap",
-            indoc!(
-                r#"
-                let* list = list_of_json (option_of_json arg1_of_json) ctx json in
-                Ok (List.filter_map (fun x -> x) list)
-                "#
-            ),
-        ),
-        // Hand-written because we turn it into a list of pairs.
-        (
-            "indexmap::map::IndexMap",
-            "list_of_json (key_value_pair_of_json arg0_of_json arg1_of_json) ctx json",
-        ),
-        // Hand-written because we replace the `FileId` with the corresponding file name.
-        (
-            "FileId",
-            indoc!(
-                r#"
-                let* file_id = FileId.id_of_json ctx json in
-                let file = FileId.Map.find file_id ctx.id_to_file_map in
-                Ok file
-                "#,
-            ),
-        ),
-        (
-            "HashConsed",
-            r#"Error "use `hash_consed_val_of_json` instead""#,
-        ), // Not actually used
-        (
-            "Ty",
-            "hash_consed_val_of_json ctx.ty_hashcons_map ty_kind_of_json ctx json",
-        ),
-        (
-            "TraitRef",
-            "hash_consed_val_of_json ctx.tref_hashcons_map trait_ref_contents_of_json ctx json",
-        ),
-    ];
     // Types for which we don't want to generate a type at all.
     let dont_generate_ty = &[
-        "ItemOpacity",
-        "PredicateOrigin",
         "TraitTypeConstraintId",
         "charon_lib::ids::index_vec::IndexVec",
         "charon_lib::ids::index_map::IndexMap",
     ];
-    // Types that we don't want visitors to go into.
-    let opaque_for_visitor = &["Name"];
-    let ctx = GenerateCtx::new(
-        &crate_data,
-        manual_type_impls,
-        manual_json_impls,
-        opaque_for_visitor,
-    );
 
-    // Items that we don't want to emit in the generated output.
-    let manually_implemented: HashSet<_> = [
-        "ItemOpacity",
-        "PredicateOrigin",
-        "Body",
-        "FunDecl",
-        "TranslatedCrate",
-    ]
-    .iter()
-    .map(|name| ctx.id_from_name(name))
-    .collect();
+    #[rustfmt::skip]
+    let ambiguous_types = &[
+        ("charon_lib::ast::ullbc_ast::Statement", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::ullbc_ast::StatementKind", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::ullbc_ast::SwitchTargets", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::ullbc_ast::BlockData", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::ullbc_ast::BlockId", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::llbc_ast::Statement", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::llbc_ast::StatementKind", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::llbc_ast::Switch", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::llbc_ast::Block", ("Generated_LlbcAst", "Llbc")),
+    ];
+
+    let mut ctx = GenerateCtx::new(&crate_data, ambiguous_types);
 
     // Compute type sets for json deserializers.
-    let (gast_types, llbc_types, ullbc_types) = {
+    let mut gast_types: HashSet<TypeDeclId> = HashSet::new();
+    let mut llbc_types: HashSet<TypeDeclId> = HashSet::new();
+    let mut ullbc_types: HashSet<TypeDeclId> = HashSet::new();
+    let mut full_ast_types: HashSet<TypeDeclId> = HashSet::new();
+    {
         let mut all_types: HashSet<_> = ctx.children_of("TranslatedCrate");
         all_types.insert(ctx.id_from_name("indexmap::map::IndexMap")); // Add this one foreign type
-
-        // (u)llbc types are those that are dominated by the entrypoint of the corresponding
-        // module, i.e. those that can't be reached if you remove these entrypoints.
-        let non_llbc_types: HashSet<_> =
-            ctx.children_of_except("TranslatedCrate", &["charon_lib::ast::llbc_ast::Block"]);
-        let non_ullbc_types: HashSet<_> = ctx.children_of_except(
-            "TranslatedCrate",
-            &[
-                "charon_lib::ast::ullbc_ast::BlockData",
-                "charon_lib::ast::ullbc_ast::BlockId",
-            ],
-        );
-        let llbc_types: HashSet<_> = all_types.difference(&non_llbc_types).copied().collect();
-        let ullbc_types: HashSet<_> = all_types.difference(&non_ullbc_types).copied().collect();
-
-        let shared_types: HashSet<_> = llbc_types.intersection(&ullbc_types).copied().collect();
-        let llbc_types: HashSet<_> = llbc_types.difference(&shared_types).copied().collect();
-        let ullbc_types: HashSet<_> = ullbc_types.difference(&shared_types).copied().collect();
-
-        let body_specific_types: HashSet<_> = llbc_types.union(&ullbc_types).copied().collect();
-        let gast_types: HashSet<_> = all_types
-            .difference(&body_specific_types)
-            .copied()
-            .collect();
-
-        let gast_types: HashSet<_> = gast_types
-            .difference(&manually_implemented)
-            .copied()
-            .collect();
-        let llbc_types: HashSet<_> = llbc_types
-            .difference(&manually_implemented)
-            .copied()
-            .collect();
-        let ullbc_types: HashSet<_> = ullbc_types
-            .difference(&manually_implemented)
-            .copied()
-            .collect();
-        (gast_types, llbc_types, ullbc_types)
+        let all_llbc_types: HashSet<_> =
+            ctx.children_of_many(&["charon_lib::ast::llbc_ast::Block"]);
+        let all_ullbc_types: HashSet<_> = ctx.children_of_many(&[
+            "charon_lib::ast::ullbc_ast::BlockData",
+            "charon_lib::ast::ullbc_ast::BlockId",
+        ]);
+        all_types.into_iter().for_each(|ty| {
+            let in_llbc = all_llbc_types.contains(&ty);
+            let in_ullbc = all_ullbc_types.contains(&ty);
+            match (in_llbc, in_ullbc) {
+                (true, false) => llbc_types.insert(ty),
+                (false, true) => ullbc_types.insert(ty),
+                (true, true) => gast_types.insert(ty),
+                (false, false) => full_ast_types.insert(ty),
+            };
+        });
     };
 
     let mut processed_tys: HashSet<TypeDeclId> = dont_generate_ty
@@ -1351,11 +371,7 @@ fn generate_ml(
                     extra_types: &[],
                 })), &[
                     "TraitImpl",
-                ]),
-                (GenerationKind::TypeDecl(None), &[
-                    "CliOpts",
                     "GExprBody",
-                    "DeclarationGroup",
                 ]),
             ]),
         },
@@ -1388,23 +404,31 @@ fn generate_ml(
             ]),
         },
         GenerateCodeFor {
-            template: template_dir.join("GAstOfJson.ml"),
-            target: output_dir.join("Generated_GAstOfJson.ml"),
-            markers: vec![(GenerationKind::OfJson, gast_types)],
+            template: template_dir.join("FullAst.ml"),
+            target: output_dir.join("Generated_FullAst.ml"),
+            markers: markers_from_children(&ctx, &[
+                (GenerationKind::TypeDecl(None), &[
+                    "FunDecl",
+                    "Body",
+                    "CliOpts",
+                    "DeclarationGroup",
+                    "TranslatedCrate",
+                ]),
+            ]),
         },
         GenerateCodeFor {
-            template: template_dir.join("LlbcOfJson.ml"),
-            target: output_dir.join("Generated_LlbcOfJson.ml"),
-            markers: vec![(GenerationKind::OfJson, llbc_types)],
-        },
-        GenerateCodeFor {
-            template: template_dir.join("UllbcOfJson.ml"),
-            target: output_dir.join("Generated_UllbcOfJson.ml"),
-            markers: vec![(GenerationKind::OfJson, ullbc_types)],
+            template: template_dir.join("OfJson.ml"),
+            target: output_dir.join("Generated_OfJson.ml"),
+            markers: vec![
+                (GenerationKind::OfJson, gast_types),
+                (GenerationKind::OfJson, ullbc_types),
+                (GenerationKind::OfJson, llbc_types),
+                (GenerationKind::OfJson, full_ast_types),
+            ],
         },
     ];
     for file in generate_code_for {
-        file.generate(&ctx)?;
+        file.generate(&mut ctx)?;
     }
     Ok(())
 }

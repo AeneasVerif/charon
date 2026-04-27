@@ -1,9 +1,9 @@
-open Types
-open Values
-open Expressions
-open Meta
+open Generated_Types
+open Generated_Values
+open Generated_Expressions
+open Generated_Meta
+open Generated_GAst
 open Identifiers
-open GAst
 module BlockId = IdGen ()
 
 type block = { statements : statement list; terminator : terminator }

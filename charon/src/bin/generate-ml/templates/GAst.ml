@@ -8,9 +8,9 @@
     code-generation code is in `charon/src/bin/generate-ml`.
  *)
 
-open Types
-open Meta
-open Expressions
+open Generated_Types
+open Generated_Meta
+open Generated_Expressions
 
 module FunDeclId = Expressions.FunDeclId
 module GlobalDeclId = Expressions.GlobalDeclId
@@ -31,6 +31,3 @@ type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 (* __REPLACE2__ *)
 
 (* __REPLACE3__ *)
-
-(* __REPLACE4__ *)
-[@@deriving show]

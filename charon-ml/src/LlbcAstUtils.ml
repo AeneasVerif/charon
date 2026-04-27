@@ -15,8 +15,15 @@ let fun_decl_list_from_crate (crate : crate) : fun_decl list =
     returns None *)
 let get_fun_args (fun_decl : fun_decl) : local list option =
   match fun_decl.body with
-  | Body body -> Some (GAstUtils.locals_get_input_vars body.locals)
-  | _ -> None
+  | StructuredBody { locals; _ } | UnstructuredBody { locals; _ } ->
+      Some (GAstUtils.locals_get_input_vars locals)
+  | TraitMethodWithoutDefaultBody
+  | OpaqueBody
+  | MissingBody
+  | TargetDispatchBody _
+  | ExternBody _
+  | IntrinsicBody _
+  | ErrorBody _ -> None
 
 (** Check if a {!type:Charon.LlbcAst.statement} contains loops *)
 let block_has_loops (blk : block) : bool =
@@ -34,7 +41,7 @@ let block_has_loops (blk : block) : bool =
 (** Check if a {!type:Charon.LlbcAst.fun_decl} contains loops *)
 let fun_decl_has_loops (fd : fun_decl) : bool =
   match fd.body with
-  | Body body -> block_has_loops body.body
+  | StructuredBody body -> block_has_loops body.body
   | _ -> false
 
 let crate_get_item_meta (m : crate) (id : item_id) : Types.item_meta option =
@@ -93,24 +100,26 @@ class ['self] map_crate =
       in
       let body =
         match body with
-        | Body b -> Body (self#visit_expr_body env b)
-        | TraitMethodWithoutDefault -> TraitMethodWithoutDefault
-        | Extern sym -> Extern (self#visit_string env sym)
-        | Intrinsic { name; arg_names } ->
-            Intrinsic
-              {
-                name = self#visit_string env name;
-                arg_names = List.map (self#visit_string env) arg_names;
-              }
-        | TargetDispatch targets ->
-            TargetDispatch
+        | StructuredBody body ->
+            StructuredBody (self#visit_gexpr_body self#visit_block env body)
+        | UnstructuredBody _ -> (* ULLBC in LLBC visitor: ignore *) body
+        | TraitMethodWithoutDefaultBody -> TraitMethodWithoutDefaultBody
+        | ExternBody sym -> ExternBody (self#visit_string env sym)
+        | IntrinsicBody (name, arg_names) ->
+            IntrinsicBody
+              ( self#visit_string env name,
+                self#visit_list
+                  (self#visit_option self#visit_string)
+                  env arg_names )
+        | TargetDispatchBody targets ->
+            TargetDispatchBody
               (self#visit_list
                  (fun env (tgt, fref) ->
                    (self#visit_string env tgt, self#visit_fun_decl_ref env fref))
                  env targets)
-        | Opaque -> Opaque
-        | Missing -> Missing
-        | Error err -> Error (self#visit_error env err)
+        | OpaqueBody -> OpaqueBody
+        | MissingBody -> MissingBody
+        | ErrorBody err -> ErrorBody (self#visit_error env err)
       in
       {
         def_id;
@@ -239,21 +248,22 @@ class ['self] iter_crate =
       self#visit_item_source env src;
       self#visit_option self#visit_global_decl_id env is_global_initializer;
       match body with
-      | Body b -> self#visit_expr_body env b
-      | TraitMethodWithoutDefault -> ()
-      | Extern sym -> self#visit_string env sym
-      | Intrinsic { name; arg_names } ->
+      | StructuredBody body -> self#visit_expr_body env body
+      | UnstructuredBody body -> (* ULLBC in LLBC visitor: ignore *) ()
+      | TraitMethodWithoutDefaultBody -> ()
+      | ExternBody sym -> self#visit_string env sym
+      | IntrinsicBody (name, arg_names) ->
           self#visit_string env name;
-          List.iter (self#visit_string env) arg_names
-      | TargetDispatch targets ->
+          self#visit_list (self#visit_option self#visit_string) env arg_names
+      | TargetDispatchBody targets ->
           self#visit_list
             (fun env (tgt, fref) ->
               self#visit_string env tgt;
               self#visit_fun_decl_ref env fref)
             env targets
-      | Opaque -> ()
-      | Missing -> ()
-      | Error err -> self#visit_error env err
+      | OpaqueBody -> ()
+      | MissingBody -> ()
+      | ErrorBody err -> self#visit_error env err
 
     method visit_declaration_group env (g : declaration_group) : unit =
       match g with

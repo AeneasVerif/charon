@@ -83,6 +83,7 @@ pub struct GExprBody<T> {
     EnumToGetters,
 )]
 #[serde_state(state_implements = HashConsSerializerState)]
+#[charon::variants_suffix("Body")]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
     Unstructured(ullbc_ast::ExprBody),
