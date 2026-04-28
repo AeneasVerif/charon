@@ -1,6 +1,42 @@
 (** Basic utilities for postcard deserialization. *)
 
 type postcard_state = { ic : in_channel }
+type input_format_hint = Json | Postcard | Empty
+
+(** Attempts detecting the format of a string, which corresponds to the first N
+    bytes of a file. *)
+let format_hint_of_string (s : string) : input_format_hint =
+  let len = String.length s in
+  let rec loop i =
+    if i >= len then Empty
+    else
+      match String.get s i with
+      | ' ' | '\t' | '\n' | '\r' -> loop (i + 1)
+      | '{' -> Json
+      | _ -> Postcard
+  in
+  loop 0
+
+(** Attempts to detect the format of a file by reading a sample of its initial
+    bytes. Returns an error if the file cannot be read. *)
+let format_hint_of_file (file : string) : (input_format_hint, string) result =
+  try
+    In_channel.with_open_bin file (fun ic ->
+        let sample_len = Stdlib.min (in_channel_length ic) 64 in
+        let sample = really_input_string ic sample_len in
+        Ok (format_hint_of_string sample))
+  with Sys_error e -> Error e
+
+(** Same as [format_hint_of_file], but operates on an already-opened in_channel
+    and restores the position after reading the sample. *)
+let format_hint_of_postcard (st : postcard_state) : input_format_hint =
+  let pos = pos_in st.ic in
+  seek_in st.ic 0;
+  let sample_len = min 64 (in_channel_length st.ic) in
+  let sample = really_input_string st.ic sample_len in
+  let hint = format_hint_of_string sample in
+  seek_in st.ic pos;
+  hint
 
 let ( let* ) o f =
   match o with
@@ -261,6 +297,5 @@ let ensure_eof (st : postcard_state) : (unit, string) result =
   let pos = pos_in st.ic in
   if pos >= len then Ok ()
   else
-    Error
-      ("postcard input has trailing bytes (pos=" ^ string_of_int pos ^ ", len="
-     ^ string_of_int len ^ ")")
+    Format.kasprintf Result.error
+      "postcard input has trailing bytes (pos=%d, len=%d)" pos len
