@@ -57,7 +57,10 @@ impl<'tcx> PredicateSearcher<'tcx> {
         // If this is an associated item, resolve the trait reference it is based on.
         resolve_assoc_item_trait_ref: bool,
     ) -> ItemRef<'tcx> {
-        // TODO: cache elaboration
+        let key = (def_id, generics, resolve_assoc_item_trait_ref);
+        if let Some(item_ref) = self.item_refs_cache.get(&key).cloned() {
+            return item_ref;
+        }
         use rustc_infer::infer::canonical::ir::TypeVisitableExt;
         let tcx = self.tcx;
         let typing_env = self.typing_env;
@@ -79,7 +82,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 let self_pred = ty::EarlyBinder::bind(self_pred).instantiate(tcx, generics);
                 let num_trait_req_clauses =
                     ItemPredicates::required_recursively(tcx, tr_def_id, &self.options).len();
-                // TODO: cache resolution
                 Some((self.resolve(&self_pred), num_trait_req_clauses))
             } else {
                 None
@@ -113,7 +115,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 || generics.has_free_regions(),
             has_non_lt_param: generics.has_param(),
         };
-        content.intern()
+        let item_ref = content.intern();
+        self.item_refs_cache.insert(key, item_ref.clone());
+        item_ref
     }
 }
 

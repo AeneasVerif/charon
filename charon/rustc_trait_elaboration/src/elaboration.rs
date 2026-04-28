@@ -90,6 +90,10 @@ pub struct PredicateSearcher<'tcx> {
     /// Whether we're in a trait declaration context where an implicit `Self: Trait` clause is
     /// accessible.
     implicit_self_clause: bool,
+    /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
+    pub(crate) item_refs_cache: HashMap<(DefId, ty::GenericArgsRef<'tcx>, bool), ItemRef<'tcx>>,
+    /// Cache of trait refs to resolved impl expressions.
+    impl_exprs_cache: HashMap<ty::PolyTraitRef<'tcx>, ImplExpr<'tcx>>,
 }
 
 impl<'tcx> PredicateSearcher<'tcx> {
@@ -105,6 +109,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
             candidates: Default::default(),
             options: options.clone(),
             implicit_self_clause: initial_self_pred.is_some(),
+            item_refs_cache: Default::default(),
+            impl_exprs_cache: Default::default(),
         };
         out.insert_predicates(initial_self_pred.map(|clause| ItemClause {
             id: ItemPredicateId::TraitSelf,
@@ -265,6 +271,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// Resolve the given trait reference in the local context.
     #[tracing::instrument(level = "trace", skip(self))]
     pub fn resolve(&mut self, tref: &PolyTraitRef<'tcx>) -> ImplExpr<'tcx> {
+        if let Some(impl_expr) = self.impl_exprs_cache.get(tref).cloned() {
+            return impl_expr;
+        }
         use rustc_trait_selection::traits::{
             BuiltinImplSource, ImplSource, ImplSourceUserDefinedData,
         };
@@ -414,10 +423,12 @@ impl<'tcx> PredicateSearcher<'tcx> {
             }
         };
 
-        ImplExpr {
+        let impl_expr = ImplExpr {
             r#impl: atom,
             r#trait: *tref,
-        }
+        };
+        self.impl_exprs_cache.insert(*tref, impl_expr.clone());
+        impl_expr
     }
 
     /// Resolve the predicates required by the given item.
