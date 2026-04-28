@@ -493,8 +493,16 @@ and file_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (file_id, string) result =
   combine_error_msgs st __FUNCTION__
     (let* file_id = FileId.id_of_postcard ctx st in
-     let file = FileTbl.find ctx.id_to_file_map file_id in
-     Ok file)
+     try Ok (FileTbl.find ctx.id_to_file_map file_id)
+     with Not_found ->
+       let valid_keys =
+         FileTbl.fold
+           (fun key _ acc -> FileId.to_string key :: acc)
+           ctx.id_to_file_map []
+       in
+       Error
+         ("unknown file id: " ^ FileId.to_string file_id ^ ". valid ids are: "
+         ^ String.concat ", " valid_keys))
 
 and float_type_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (float_type, string) result =
