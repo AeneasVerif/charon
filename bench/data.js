@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777279334374,
+  "lastUpdate": 1777365593704,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -247,6 +247,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 4.7,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Nadrieril",
+            "username": "Nadrieril",
+            "email": "Nadrieril@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "db1b72c6b2fdb686fe0c00e95e3415978d3ce1f9",
+          "message": "Merge pull request #1117 from Nadrieril/fix-1116\n\nMake `HashConsId` globally unique instead of per-item",
+          "timestamp": "2026-04-27T13:24:10Z",
+          "url": "https://github.com/AeneasVerif/charon/commit/db1b72c6b2fdb686fe0c00e95e3415978d3ce1f9"
+        },
+        "date": 1777365592764,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 109077094758,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 25.57,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 375.7,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.3,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 411171896765,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 44.81,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 360.4,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.8,
             "unit": "output-size(MB)"
           }
         ]
