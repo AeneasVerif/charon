@@ -6,10 +6,10 @@ use std::collections::{HashMap, HashSet};
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
-use crate::transform::ctx::UllbcPass;
+use crate::transform::ctx::FusedUllbcPass;
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Perform a depth-first search to identify all the blocks reachable
         // from the first block.
@@ -25,7 +25,7 @@ impl UllbcPass for Transform {
 
         // Renumerotate
         let mut bid_map: HashMap<BlockId, BlockId> = HashMap::new();
-        for (bid, block) in std::mem::take(&mut b.body).into_iter_indexed() {
+        for (bid, block) in std::mem::take(&mut b.body).into_iter_enumerated() {
             if explored.contains(&bid) {
                 let nbid = b.body.push(block);
                 bid_map.insert(bid, nbid);

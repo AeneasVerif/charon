@@ -13,7 +13,7 @@ use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{BlockId, ExprBody, Statement, StatementKind};
 
-use crate::transform::ctx::UllbcPass;
+use crate::transform::ctx::FusedUllbcPass;
 
 type LocalUses = IndexVec<BlockId, HashSet<LocalId>>;
 
@@ -580,7 +580,7 @@ fn remove_dynamic_checks(
         if let StatementKind::Assign(place, _) = &statements[i].kind
             && let Some(local) = place.as_local()
             && let mut statements_to_keep = statements[removed_len..].as_ref().iter()
-            && let mut other_blocks = uses.iter_indexed().filter(|(bid, _)| *bid != block_id)
+            && let mut other_blocks = uses.iter_enumerated().filter(|(bid, _)| *bid != block_id)
             && (other_blocks.any(|(_, used)| used.contains(&local))
                 || statements_to_keep.any(|st| uses_local(st, local)))
         {
@@ -591,7 +591,7 @@ fn remove_dynamic_checks(
 }
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
         options.reconstruct_fallible_operations
     }

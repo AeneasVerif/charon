@@ -1,11 +1,12 @@
 use super::translate_crate::*;
 use super::translate_ctx::*;
+use crate::hax;
+use crate::hax::SInto;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
-use hax::SInto;
 use itertools::Itertools;
 use rustc_span::sym;
 use std::mem;
@@ -1045,7 +1046,7 @@ impl ItemTransCtx<'_, '_> {
         }
 
         for impl_item in impl_items {
-            use hax::ImplAssocItemValue::*;
+            use crate::hax::ImplAssocItemValue::*;
             let name = self
                 .t_ctx
                 .translate_trait_item_name(&impl_item.decl_def_id)?;

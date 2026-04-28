@@ -1,6 +1,6 @@
 use super::translate_ctx::*;
-use charon_lib::ast::*;
-use charon_lib::ids::IndexMap;
+use crate::hax;
+use charon_lib::{ast::*, ids::IndexVec};
 use rustc_span::{kw, sym};
 
 impl<'tcx> TranslateCtx<'tcx> {
@@ -66,14 +66,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
         // Either put clauses there or in the innermost binder.
-        mut trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
+        mut trait_clauses: Option<&mut IndexVec<TraitClauseId, TraitParam>>,
     ) -> Result<(), Error> {
         if trait_clauses.is_none() {
             // Register the mapping from trait preds to their id early on, as these can be mentioned
             // while translating any other predicate including themselves. Each trait pred gives rise
             // to exactly one trait clause inserted into `trait_clauses`, which we use to compute
             // clause ids.
-            let next_clause_id = self.innermost_generics_mut().trait_clauses.next_id();
+            let next_clause_id = self.innermost_generics_mut().trait_clauses.next_idx();
             for (i, pred) in preds
                 .predicates
                 .iter()
@@ -107,16 +107,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    pub(crate) fn translate_poly_trait_predicate(
-        &mut self,
-        span: Span,
-        bound_trait_ref: &hax::Binder<hax::TraitPredicate>,
-    ) -> Result<PolyTraitDeclRef, Error> {
-        self.translate_region_binder(span, bound_trait_ref, move |ctx, trait_ref| {
-            ctx.translate_trait_predicate(span, trait_ref)
-        })
-    }
-
     pub(crate) fn translate_trait_predicate(
         &mut self,
         span: Span,
@@ -140,9 +130,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         pred: &hax::GenericPredicate,
         origin: PredicateOrigin,
         // Either put clauses there or in the innermost binder.
-        mut trait_clauses: Option<&mut IndexMap<TraitClauseId, TraitParam>>,
+        mut trait_clauses: Option<&mut IndexVec<TraitClauseId, TraitParam>>,
     ) -> Result<(), Error> {
-        use hax::ClauseKind;
+        use crate::hax::ClauseKind;
         let clause = &pred.clause;
         trace!("{:?}", clause);
         let span = self.translate_span(&pred.span);
@@ -234,7 +224,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         impl_sources: &[hax::ImplExpr],
-    ) -> Result<IndexMap<TraitClauseId, TraitRef>, Error> {
+    ) -> Result<IndexVec<TraitClauseId, TraitRef>, Error> {
         impl_sources
             .iter()
             .map(|x| self.translate_trait_impl_expr(span, x))
@@ -268,8 +258,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
-        use hax::DestructData;
-        use hax::ImplExprAtom;
+        use crate::hax::DestructData;
+        use crate::hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
             ImplExprAtom::Concrete(item) => {
@@ -304,7 +294,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 // Apply the path
                 for path_elem in path {
-                    use hax::ImplExprPathChunk::*;
+                    use crate::hax::ImplExprPathChunk::*;
                     let trait_ref = Box::new(TraitRef::new(tref_kind, current_pred));
                     match path_elem {
                         AssocItem {
@@ -319,14 +309,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                 name,
                                 TraitClauseId::new(*index),
                             );
-                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
+                            current_pred = self.translate_poly_trait_ref(span, predicate)?;
                         }
                         Parent {
                             predicate, index, ..
                         } => {
                             tref_kind =
                                 TraitRefKind::ParentClause(trait_ref, TraitClauseId::new(*index));
-                            current_pred = self.translate_poly_trait_predicate(span, predicate)?;
+                            current_pred = self.translate_poly_trait_ref(span, predicate)?;
                         }
                     }
                 }
@@ -352,9 +342,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     );
                     let mut generics = self.erase_region_binder(trait_decl_ref.clone()).generics;
 
-                    // Remove the generic argument for `Self` in the trait impl block
+                    // In Mono mode, we remove types in generic argument list `generics` for the trait impl block.
+                    // This makes trait impl for aliases close to those for normal traits.
+                    //
+                    // For example, in Mono mode, the Rust code
+                    // ```
+                    // trait A<T> {}
+                    // trait B<T> = A<T>;
+                    // impl A<u32> for i32 {}
+                    // ```
+                    //
+                    // is translated to:
+                    //
+                    // ```
+                    // trait A<Self, T> { ... }
+                    // trait B<Self, T> { ... }
+                    // impl A<u32> for i32 { ... }
+                    // impl B<u32> for i32 { ... }
+                    // ```
                     if self.monomorphize() {
-                        let _ = generics.types.remove_and_shift_ids(TypeVarId::ZERO);
+                        generics.types = Default::default();
                     }
                     assert!(
                         generics.trait_refs.is_empty(),

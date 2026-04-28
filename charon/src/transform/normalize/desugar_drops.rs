@@ -73,10 +73,10 @@ impl<'a> UllbcStatementTransformCtx<'a> {
 pub struct Transform;
 
 impl UllbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.desugar_drops
+    }
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
-        if !ctx.options.desugar_drops {
-            return;
-        }
         decl.transform_ullbc_terminators(ctx, |ctx, term| {
             ctx.transform_drop_to_call(term);
         });

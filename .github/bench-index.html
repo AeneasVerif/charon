@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Charon Benchmarks</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f6f8fa;
+      color: #24292f;
+    }
+    h1 { margin-bottom: 4px; }
+    .subtitle { color: #57606a; margin-bottom: 24px; }
+    .chart-container {
+      background: #fff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .chart-container h2 {
+      margin-top: 0;
+      font-size: 1.2em;
+    }
+    canvas { max-height: 350px; }
+  </style>
+</head>
+<body>
+  <h1>Charon Benchmarks</h1>
+  <p class="subtitle">Performance tracking across commits (lower is better)</p>
+  <div id="charts"></div>
+
+  <script src="data.js"></script>
+  <script>
+    // Gather all benchmark runs across suites.
+    const data = window.BENCHMARK_DATA;
+    const allRuns = Object.values(data.entries).flat();
+    allRuns.sort((a, b) => a.date - b.date);
+
+    // Group by unit (one chart per unit), with each crate as a separate line.
+    const metrics = new Map();   // unit -> Map<crate, [{date, commit, value}]>
+    for (const run of allRuns) {
+      for (const bench of run.benches) {
+        const unit = bench.unit;
+        const crate = bench.name;
+        if (!metrics.has(unit)) metrics.set(unit, new Map());
+        const byUnit = metrics.get(unit);
+        if (!byUnit.has(crate)) byUnit.set(crate, []);
+        byUnit.get(crate).push({
+          date: run.date,
+          commit: run.commit,
+          value: bench.value,
+        });
+      }
+    }
+
+    // Color palette.
+    const COLORS = [
+      "#0969da", "#cf222e", "#1a7f37", "#8250df",
+      "#bf8700", "#0550ae", "#b35900", "#6e7781",
+    ];
+
+    const chartsDiv = document.getElementById("charts");
+
+    // Assign a color to each crate.
+    const allCrates = [...new Set(allRuns.flatMap(r => r.benches.map(b => b.name)))].sort();
+    const crateColor = new Map(allCrates.map((c, i) => [c, COLORS[i % COLORS.length]]));
+
+    for (const [metric, cratesMap] of metrics) {
+      const container = document.createElement("div");
+      container.className = "chart-container";
+      const heading = document.createElement("h2");
+      heading.textContent = metric;
+      container.appendChild(heading);
+      const canvas = document.createElement("canvas");
+      container.appendChild(canvas);
+      chartsDiv.appendChild(container);
+
+      // Build one dataset per crate.
+      const datasets = [];
+      for (const [crate, points] of cratesMap) {
+        const color = crateColor.get(crate);
+        datasets.push({
+          label: crate,
+          data: points.map(p => ({
+            x: p.date,
+            y: p.value,
+            commit: p.commit,
+          })),
+          borderColor: color,
+          backgroundColor: color + "22",
+          borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          tension: 0.1,
+        });
+      }
+
+      new Chart(canvas, {
+        type: "line",
+        data: { datasets },
+        options: {
+          responsive: true,
+          interaction: { mode: "nearest", intersect: false },
+          scales: {
+            x: {
+              type: "linear",
+              title: { display: true, text: "Date" },
+              ticks: {
+                callback: v => new Date(v).toLocaleDateString(),
+              },
+            },
+            y: {
+              title: { display: true, text: metric },
+              beginAtZero: false,
+            },
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title: items => {
+                  const p = items[0].raw;
+                  const d = new Date(p.x).toLocaleString();
+                  const sha = p.commit?.id?.slice(0, 8) ?? "";
+                  return `${d}  (${sha})`;
+                },
+                afterTitle: items => {
+                  const msg = items[0].raw.commit?.message ?? "";
+                  // First line of commit message, truncated.
+                  const first = msg.split("\n")[0];
+                  return first.length > 80 ? first.slice(0, 77) + "..." : first;
+                },
+                label: item => `${item.dataset.label}: ${item.raw.y}`,
+              },
+            },
+          },
+          onClick: (_event, elements) => {
+            if (elements.length === 0) return;
+            const el = elements[0];
+            const p = datasets[el.datasetIndex].data[el.index];
+            if (p.commit?.url) window.open(p.commit.url, "_blank");
+          },
+        },
+      });
+    }
+
+    if (metrics.size === 0) {
+      chartsDiv.innerHTML = "<p>No benchmark data yet.</p>";
+    }
+  </script>
+</body>
+</html>

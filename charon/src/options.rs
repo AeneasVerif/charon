@@ -266,6 +266,14 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_serialize: bool,
+    /// Skip the typecheck passes.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_typecheck: bool,
+    /// Don't normalize associated types.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_normalize: bool,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long)]
     #[serde(default)]
@@ -308,6 +316,8 @@ pub enum Preset {
     /// Emit the MIR as unmodified as possible. This is very imperfect for now, we should make more
     /// passes optional.
     RawMir,
+    /// Skip as many optional transformations as possible.
+    Fast,
     Aeneas,
     Eurydice,
     Soteria,
@@ -342,6 +352,13 @@ impl CliOpts {
                     self.extract_opaque_bodies = true;
                     self.raw_consts = true;
                     self.ullbc = true;
+                }
+                Preset::Fast => {
+                    self.ullbc = true;
+                    self.no_typecheck = true;
+                    self.no_normalize = true;
+                    self.hide_marker_traits = true;
+                    self.raw_consts = true;
                 }
                 Preset::Aeneas => {
                     self.lift_associated_types.push("*".to_owned());
@@ -477,13 +494,16 @@ pub struct TranslateOptions {
     /// If `Some(_)`, run the partial mutability monomorphization pass. The contained enum
     /// indicates whether to partially monomorphize types.
     pub monomorphize_mut: Option<MonomorphizeMut>,
-    /// Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct`
-    /// anywhere they show up.
-    pub hide_marker_traits: bool,
     /// Remove trait clauses attached to type declarations.
     pub remove_adt_clauses: bool,
+    /// Whether to hide various marker traits such as `*Sized` and `Destruct` anywhere they show
+    /// up.
+    pub hide_marker_traits: bool,
     /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
     pub hide_allocator: bool,
+    /// List of traits to remove any mentions of. Influenced by `hide_marker_traits`,
+    /// `hide_allocator`, and `precise_drops`.
+    pub hide_traits: Vec<NamePattern>,
     /// Remove unused `Self: Trait` clauses on method declarations.
     pub remove_unused_self_clauses: bool,
     /// Monomorphize code using hax's instantiation mechanism.
@@ -514,6 +534,10 @@ pub struct TranslateOptions {
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
     /// List of traits for which we transform associated types to type parameters.
     pub lift_associated_types: Vec<NamePattern>,
+    /// Skip the typecheck passes.
+    pub no_typecheck: bool,
+    /// Don't normalize associated types.
+    pub no_normalize: bool,
     /// Transform Drop to Call drop_in_place
     pub desugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
@@ -568,6 +592,25 @@ impl TranslateOptions {
             });
         }
 
+        let hide_traits = options
+            .hide_marker_traits
+            .then_some([
+                "core::marker::Sized",
+                "core::marker::MetaSized",
+                "core::marker::PointeeSized",
+                "core::marker::Tuple",
+                "core::clone::TrivialClone",
+            ])
+            .into_iter()
+            .flatten()
+            .chain(
+                (options.hide_marker_traits && !options.precise_drops)
+                    .then_some("core::marker::Destruct"),
+            )
+            .chain(options.hide_allocator.then_some("core::alloc::Allocator"))
+            .filter_map(|s| parse_pattern(s).ok())
+            .collect_vec();
+
         let item_opacities = {
             use ItemOpacity::*;
             let mut opacities = vec![];
@@ -592,17 +635,20 @@ impl TranslateOptions {
                 opacities.push((pat.to_string(), Invisible));
             }
 
-            if options.hide_allocator {
-                opacities.push(("core::alloc::Allocator".to_string(), Invisible));
-                opacities.push((
-                    "alloc::alloc::{impl core::alloc::Allocator for _}".to_string(),
-                    Invisible,
-                ));
+            for trait_name in &hide_traits {
+                opacities.push((trait_name.to_string(), Invisible));
             }
 
+            // Hide trait impls and defs for the excluded traits.
+            let hide_traits = hide_traits
+                .iter()
+                .cloned()
+                .flat_map(|pat| [pat.clone(), NamePattern::impl_for(pat)])
+                .map(|pat| (pat, Invisible));
             opacities
                 .into_iter()
                 .filter_map(|(s, opacity)| parse_pattern(&s).ok().map(|pat| (pat, opacity)))
+                .chain(hide_traits)
                 .collect()
         };
 
@@ -616,9 +662,10 @@ impl TranslateOptions {
             start_from,
             mir_level,
             monomorphize_mut: options.monomorphize_mut,
-            hide_marker_traits: options.hide_marker_traits,
             remove_adt_clauses: options.remove_adt_clauses,
+            hide_marker_traits: options.hide_marker_traits,
             hide_allocator: options.hide_allocator,
+            hide_traits,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
             monomorphize_with_hax: options.monomorphize,
             ops_to_function_calls: options.ops_to_function_calls,
@@ -633,6 +680,8 @@ impl TranslateOptions {
             lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
+            no_typecheck: options.no_typecheck,
+            no_normalize: options.no_normalize,
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
             translate_poly_drop_glue: options.precise_drops,

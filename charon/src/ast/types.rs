@@ -1,6 +1,6 @@
 use crate::ast::*;
 use crate::common::serialize_map_to_array::SeqHashMapToArray;
-use crate::ids::{IndexMap, IndexVec};
+use crate::ids::IndexVec;
 use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -116,7 +116,7 @@ pub enum TraitRefKind {
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
-        parent_trait_refs: IndexMap<TraitClauseId, TraitRef>,
+        parent_trait_refs: IndexVec<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
         types: Vec<(TraitItemName, TraitAssocTyImpl)>,
     },
@@ -219,11 +219,10 @@ pub struct TraitTypeConstraint {
 /// A set of generic arguments.
 #[derive(Clone, Eq, PartialEq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct GenericArgs {
-    pub regions: IndexMap<RegionId, Region>,
-    pub types: IndexMap<TypeVarId, Ty>,
-    pub const_generics: IndexMap<ConstGenericVarId, ConstantExpr>,
-    // TODO: rename to match [GenericParams]?
-    pub trait_refs: IndexMap<TraitClauseId, TraitRef>,
+    pub regions: IndexVec<RegionId, Region>,
+    pub types: IndexVec<TypeVarId, Ty>,
+    pub const_generics: IndexVec<ConstGenericVarId, ConstantExpr>,
+    pub trait_refs: IndexVec<TraitClauseId, TraitRef>,
 }
 
 pub type BoxedArgs = Box<GenericArgs>;
@@ -234,7 +233,7 @@ pub type BoxedArgs = Box<GenericArgs>;
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     #[serde_state(stateless)]
-    pub regions: IndexMap<RegionId, RegionParam>,
+    pub regions: IndexVec<RegionId, RegionParam>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -274,32 +273,24 @@ pub struct Binder<T> {
     pub kind: BinderKind,
 }
 
-/// Generic parameters for a declaration.
-/// We group the generics which come from the Rust compiler substitutions
-/// (the regions, types and const generics) as well as the trait clauses.
-/// The reason is that we consider that those are parameters that need to
-/// be filled. We group in a different place the predicates which are not
-/// trait clauses, because those enforce constraints but do not need to
-/// be filled with witnesses/instances.
-// FIXME: we use `IndexMap` instead of `IndexVec` because the `remove_marker_traits` pass would
-// otherwise need to renumber clauses across the whole crate and that was too painful.
+/// Generic parameters for a declaration, including predicates.
 #[derive(
     Default, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut,
 )]
 pub struct GenericParams {
     #[serde_state(stateless)]
-    pub regions: IndexMap<RegionId, RegionParam>,
+    pub regions: IndexVec<RegionId, RegionParam>,
     #[serde_state(stateless)]
-    pub types: IndexMap<TypeVarId, TypeParam>,
-    pub const_generics: IndexMap<ConstGenericVarId, ConstGenericParam>,
+    pub types: IndexVec<TypeVarId, TypeParam>,
+    pub const_generics: IndexVec<ConstGenericVarId, ConstGenericParam>,
     // TODO: rename to match [GenericArgs]?
-    pub trait_clauses: IndexMap<TraitClauseId, TraitParam>,
+    pub trait_clauses: IndexVec<TraitClauseId, TraitParam>,
     /// The first region in the pair outlives the second region
     pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
     /// The type outlives the region
     pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: IndexMap<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
+    pub trait_type_constraints: IndexVec<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
 
 /// Where a given predicate came from.
@@ -345,6 +336,7 @@ pub enum PredicateOrigin {
     // ```
     TraitItem(TraitItemName),
     /// Clauses that are part of a `dyn Trait` type.
+    #[charon::rename("OriginDyn")]
     Dyn,
 }
 

@@ -1,5 +1,6 @@
+use crate::hax;
+use crate::hax::{AssocItemContainer, GenericArg, TraitPredicate};
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
-use hax::{AssocItemContainer, GenericArg, TraitPredicate};
 use itertools::Itertools;
 use rustc_span::kw;
 use std::mem;
@@ -8,7 +9,7 @@ use super::{
     translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
 };
 use charon_lib::formatter::IntoFormatter;
-use charon_lib::ids::{IndexMap, IndexVec};
+use charon_lib::ids::IndexVec;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 
@@ -184,7 +185,7 @@ pub enum TrVTableField {
 
 pub struct VTableData {
     pub fields: IndexVec<FieldId, TrVTableField>,
-    pub supertrait_map: IndexMap<TraitClauseId, Option<FieldId>>,
+    pub supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
 }
 
 /// Generate the vtable struct.
@@ -292,7 +293,7 @@ impl ItemTransCtx<'_, '_> {
         trait_def: &hax::FullDef,
         implied_predicates: &hax::GenericPredicates,
     ) -> Result<VTableData, Error> {
-        let mut supertrait_map: IndexMap<TraitClauseId, _> =
+        let mut supertrait_map: IndexVec<TraitClauseId, _> =
             (0..implied_predicates.predicates.len())
                 .map(|_| None)
                 .collect();
@@ -577,7 +578,7 @@ impl ItemTransCtx<'_, '_> {
         );
 
         let mut field_map = IndexVec::new();
-        let mut supertrait_map: IndexMap<TraitClauseId, _> =
+        let mut supertrait_map: IndexVec<TraitClauseId, _> =
             (0..implied_predicates.predicates.len())
                 .map(|_| None)
                 .collect();

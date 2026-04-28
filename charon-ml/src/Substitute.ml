@@ -601,7 +601,7 @@ let lookup_and_subst_trait_impl_method (timpl : trait_impl)
    generics. Returns [None] if the trait or method declarations could not be
    found.
 *)
-let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
+let lookup_method_sig (crate : crate) (trait_id : trait_decl_id)
     (name : trait_item_name) : fun_sig binder item_binder option =
   let* tdecl = TraitDeclId.Map.find_opt trait_id crate.trait_decls in
   let* {
@@ -629,14 +629,14 @@ let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
 
 (* Like [lookup_method_sig], but with no binder shenanigans: the returned
    binder binds the concatenation of trait generics and method generics. *)
-let lookup_flat_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
+let lookup_flat_method_sig (crate : crate) (trait_id : trait_decl_id)
     (name : trait_item_name) : bound_fun_sig option =
   let* bound_sig = lookup_method_sig crate trait_id name in
   let bound_sig = fuse_binders st_substitute_visitor#visit_fun_sig bound_sig in
   Some bound_sig
 
 (* Lookup the signature of a `Ty::FnDef`. *)
-let lookup_fndef_sig (crate : 'a gcrate) (fn_ptr : fn_ptr region_binder) :
+let lookup_fndef_sig (crate : crate) (fn_ptr : fn_ptr region_binder) :
     fun_sig region_binder option =
   match fn_ptr.binder_value.kind with
   | FunId (FRegular fun_decl_id) ->

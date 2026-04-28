@@ -71,7 +71,7 @@ impl Locals {
 
     /// Locals that aren't arguments or return values.
     pub fn non_argument_locals(&self) -> impl Iterator<Item = (LocalId, &Local)> {
-        self.locals.iter_indexed().skip(1 + self.arg_count)
+        self.locals.iter_enumerated().skip(1 + self.arg_count)
     }
 }
 

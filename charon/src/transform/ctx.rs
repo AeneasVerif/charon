@@ -53,13 +53,37 @@ pub trait UllbcPass: Sync {
     /// Log that the pass is about to be run on this body.
     fn log_before_body(&self, ctx: &TransformCtx, name: &Name, body: &Body) {
         let fmt_ctx = &ctx.into_fmt();
-        let body_str = body.to_string_with_ctx(fmt_ctx);
         trace!(
             "# About to run pass [{}] on `{}`:\n{}",
             self.name(),
             name.with_ctx(fmt_ctx),
-            body_str,
+            body.with_ctx(fmt_ctx),
         );
+    }
+}
+
+/// A pass that modifies ullbc bodies and can be fused with previous passes so that we run all of
+/// them on a given body.
+pub trait FusedUllbcPass: Sync {
+    /// Whether the pass should run.
+    fn should_run(&self, _options: &TranslateOptions) -> bool {
+        true
+    }
+
+    /// Transform a body.
+    fn transform_body(&self, _ctx: &mut TransformCtx, _body: &mut ullbc_ast::ExprBody) {}
+
+    /// Transform a function declaration. This forwards to `transform_body` by default.
+    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
+        if let Some(body) = decl.body.as_unstructured_mut() {
+            self.transform_body(ctx, body)
+        }
+    }
+
+    /// The name of the pass, used for debug logging. The default implementation uses the type
+    /// name.
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
     }
 }
 

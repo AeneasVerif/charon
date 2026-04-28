@@ -34,7 +34,7 @@
 //! ```
 
 use crate::transform::TransformCtx;
-use crate::transform::ctx::{BodyTransformCtx, UllbcPass};
+use crate::transform::ctx::{BodyTransformCtx, FusedUllbcPass};
 use crate::ullbc_ast::*;
 
 fn contains_index_proj<T: BodyVisitable>(x: &T) -> bool {
@@ -62,7 +62,7 @@ impl Rvalue {
 
 pub struct Transform;
 
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         decl.transform_ullbc_statements(ctx, |ctx, st: &mut Statement| {
             // Introduce an intermediate statement if both the rhs and the lhs contain an
