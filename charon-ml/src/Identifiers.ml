@@ -94,6 +94,10 @@ module type Id = sig
   val pp_id : Format.formatter -> id -> unit
   val show_id : id -> string
   val id_of_json : 'ctx -> Yojson.Basic.t -> (id, string) result
+
+  val id_of_postcard :
+    'ctx -> OfPostcardBasic.postcard_state -> (id, string) result
+
   val compare_id : id -> id -> int
   val equal_id : id -> id -> bool
   val max : id -> id -> id
@@ -218,6 +222,7 @@ module IdGen () : Id = struct
   let to_int x = x
   let of_int x = x
   let id_of_json = OfJsonBasic.int_of_json
+  let id_of_postcard = OfPostcardBasic.int_of_postcard
   let compare_id = compare
   let equal_id = ( = )
   let max id0 id1 = if id0 > id1 then id0 else id1

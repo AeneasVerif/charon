@@ -148,7 +148,7 @@ fn run_charon() -> Result<usize, CharonFailure> {
         let dest_file = options.target_filename(&ctx.translated.crate_name);
         trace!("Target file: {:?}", dest_file);
         export::CrateData::new(ctx)
-            .serialize_to_file(&dest_file)
+            .serialize_to_file(&dest_file, options.format)
             .map_err(|()| CharonFailure::Serialize)?;
     }
 

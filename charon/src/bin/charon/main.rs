@@ -57,7 +57,8 @@ pub fn main() -> Result<()> {
     let cli = Cli::parse();
     let exit_status = match cli.command {
         Charon::PrettyPrint(pretty_print) => {
-            let krate = charon_lib::deserialize_llbc(&pretty_print.file)?;
+            let krate =
+                charon_lib::deserialize_llbc_with_format(&pretty_print.file, pretty_print.format)?;
             println!("{krate}");
             ExitStatus::default()
         }
@@ -121,7 +122,8 @@ fn translate_multi_target(
             .map(|(i, target)| {
                 scope.spawn(move || -> anyhow::Result<_> {
                     let mut opts = options.clone();
-                    let temp_file = temp_dir.join(format!("target_{i}.json"));
+                    let extension = options.format.output_extension(options.ullbc);
+                    let temp_file = temp_dir.join(format!("target_{i}.{extension}"));
                     opts.dest_file = Some(temp_file.clone());
                     // Don't recurse into multi-target.
                     opts.targets.clear();
@@ -137,8 +139,8 @@ fn translate_multi_target(
                         handle_exit_status(status)?;
                     }
 
-                    let krate =
-                        CrateData::deserialize_from_file(&temp_file).with_context(|| {
+                    let krate = CrateData::deserialize_from_file(&temp_file, options.format)
+                        .with_context(|| {
                             format!("failed to load translation result for target {target}")
                         })?;
                     Ok(krate)
@@ -162,7 +164,7 @@ fn translate_multi_target(
     if !options.no_serialize {
         let target_filename = options.target_filename(&merged.translated.crate_name);
         merged
-            .serialize_to_file(&target_filename)
+            .serialize_to_file(&target_filename, options.format)
             .map_err(|()| anyhow::anyhow!("failed to serialize merged crate"))?;
     }
 

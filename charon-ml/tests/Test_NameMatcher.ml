@@ -222,9 +222,8 @@ end
 let annotated_rust_tests test_file =
   (* We read the llbc file generated from the annotated rust file. *)
   log#ldebug (lazy ("Deserializing LLBC file: " ^ test_file));
-  let json = Yojson.Basic.from_file test_file in
   let (crate : crate) =
-    match OfJson.crate_of_json json with
+    match OfJson.crate_of_json_file test_file with
     | Error s ->
         log#error "Error when deserializing file %s: %s\n" test_file s;
         exit 1
@@ -253,6 +252,39 @@ let annotated_rust_tests test_file =
   in
 
   if all_pass then log#linfo (lazy "Name matcher tests: success") else exit 1
+
+let annotated_rust_tests_postcard test_file =
+  log#ldebug (lazy ("Deserializing postcard LLBC file: " ^ test_file));
+  let (crate : crate) =
+    match OfPostcard.crate_of_postcard_file test_file with
+    | Error s ->
+        log#error "Error when deserializing postcard file %s: %s\n" test_file s;
+        exit 1
+    | Ok crate -> crate
+  in
+
+  let ctx = ctx_from_crate crate in
+  let env = PatternTest.mk_env ctx test_file in
+  let all_pass =
+    T.FunDeclId.Map.for_all
+      (fun _ (decl : fun_decl) ->
+        let attrs =
+          List.filter_map
+            (function
+              | AttrUnknown attr -> Some attr
+              | _ -> None)
+            decl.item_meta.attr_info.attributes
+        in
+        let tests = List.filter_map PatternTest.parse attrs in
+        let test_results =
+          List.map (PatternTest.check_fun_decl env decl) tests
+        in
+        List.for_all (fun b -> b) test_results)
+      crate.fun_decls
+  in
+
+  if all_pass then log#linfo (lazy "Name matcher postcard tests: success")
+  else exit 1
 
 let run_tests test_file =
   parse_tests ();

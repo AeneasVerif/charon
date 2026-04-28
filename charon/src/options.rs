@@ -247,14 +247,14 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub print_llbc: bool,
-
-    /// The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
-    /// unless `dest_file` is set. `dest_dir` defaults to the current directory.
+    /// The destination directory. Files will be generated as
+    /// `<dest_dir>/<crate_name>.{u}llbc` for json and `<dest_dir>/<crate_name>.{u}llbc.postcard`
+    /// for postcard, unless `dest_file` is set. `dest_dir` defaults to the current directory.
     #[clap(long = "dest", value_parser)]
     #[serde(default)]
     pub dest_dir: Option<PathBuf>,
-    /// The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore
-    /// `dest_dir`.
+    /// The destination file. By default this depends on `format` and `ullbc`. If this is set we
+    /// ignore `dest_dir`.
     #[clap(long, value_parser)]
     #[serde(default)]
     pub dest_file: Option<PathBuf>,
@@ -262,6 +262,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_dedup_serialized_ast: bool,
+    /// Serialization format for emitted (U)LLBC files.
+    #[clap(long, value_enum, default_value_t)]
+    #[serde(default)]
+    pub format: SerializationFormat,
     /// Don't serialize the final (U)LLBC to a file.
     #[clap(long)]
     #[serde(default)]
@@ -333,6 +337,26 @@ pub enum MonomorphizeMut {
     All,
     /// Monomorphize all non-typedecl items instantiated with `&mut`.
     ExceptTypes,
+}
+
+#[derive(
+    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
+)]
+pub enum SerializationFormat {
+    #[default]
+    Json,
+    Postcard,
+}
+
+impl SerializationFormat {
+    pub fn output_extension(self, ullbc: bool) -> &'static str {
+        match (ullbc, self) {
+            (true, SerializationFormat::Json) => "ullbc",
+            (false, SerializationFormat::Json) => "llbc",
+            (true, SerializationFormat::Postcard) => "ullbc.postcard",
+            (false, SerializationFormat::Postcard) => "llbc.postcard",
+        }
+    }
 }
 
 impl CliOpts {
@@ -446,7 +470,7 @@ impl CliOpts {
             Some(f) => f,
             None => {
                 let mut target_filename = self.dest_dir.clone().unwrap_or_default();
-                let extension = if self.ullbc { "ullbc" } else { "llbc" };
+                let extension = self.format.output_extension(self.ullbc);
                 target_filename.push(format!("{crate_name}.{extension}"));
                 target_filename
             }
