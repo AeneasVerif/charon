@@ -22,12 +22,21 @@ let dir_contents dir =
   in
   loop [] [ dir ]
 
+let string_contains ~(sub : string) (s : string) : bool =
+  try
+    let re = Str.regexp_string sub in
+    ignore @@ Str.search_forward re s 0;
+    true
+  with Not_found -> false
+
 let assert_eq x y msg arg_to_string =
   if x <> y then
-    raise
-      (Failure
-         ("Real: " ^ arg_to_string x ^ ", Expected: " ^ arg_to_string y
-        ^ " for " ^ msg))
+    Format.kasprintf failwith "Real: %s, Expected: %s for %s" (arg_to_string x)
+      (arg_to_string y) msg
+
+let assert_contains ~msg ~sub s =
+  if not (string_contains ~sub s) then
+    Format.kasprintf failwith "%s, expected substring: '%s' in '%s'" msg sub s
 
 let test_discriminant_roundtrip (crate : LlbcAst.crate) =
   let print_ctx = PrintUtils.of_crate crate in
@@ -69,13 +78,34 @@ let test_discriminant_roundtrip (crate : LlbcAst.crate) =
       | _ -> () (* Not an enum *))
     crate.type_decls
 
+let test_cross_format_errors json postcard =
+  (match OfPostcard.crate_of_postcard_file json with
+  | Ok _ ->
+      Format.kasprintf failwith
+        "Expected postcard deserializer to reject JSON file: %s" json
+  | Error e ->
+      assert_contains ~msg:"Wrong error for JSON fed to Postcard"
+        ~sub:"looks like JSON" e);
+  (match OfJson.crate_of_json_file postcard with
+  | Ok _ ->
+      Format.kasprintf failwith
+        "Expected JSON deserializer to reject postcard file: %s" postcard
+  | Error e ->
+      assert_contains ~msg:"Wrong error for Postcard fed to JSON"
+        ~sub:"looks like Postcard" e);
+  log#linfo
+    (lazy
+      (Printf.sprintf
+         "Cross-format error tests passed for JSON file %s and Postcard file %s"
+         json postcard))
+
 (* Run the tests *)
 let run_tests (folder : string) : unit =
   (* List the LLBC files.
 
      Remark: we do not deserialize the ULLBC files.
   *)
-  let llbc_files =
+  let json_files =
     dir_contents folder
     |> List.filter (fun file -> Filename.check_suffix file ".llbc")
   in
@@ -94,8 +124,7 @@ let run_tests (folder : string) : unit =
         log#ldebug (lazy ("Deserializing LLBC file: " ^ file));
         (* Load the module *)
         let start_time = Unix.gettimeofday () in
-        let json = Yojson.Basic.from_file file in
-        match OfJson.crate_of_json json with
+        match OfJson.crate_of_json_file file with
         | Error s ->
             log#error "Error when deserializing file %s: %s\n" file s;
             exit 1
@@ -107,7 +136,7 @@ let run_tests (folder : string) : unit =
             (* Test that pretty-printing doesn't crash *)
             let printed = Print.crate_to_string m in
             log#ldebug (lazy ("\n" ^ printed ^ "\n")))
-      llbc_files
+      json_files
   in
   let () =
     List.iter
@@ -130,7 +159,7 @@ let run_tests (folder : string) : unit =
     if List.length vals > 0 then !time /. float_of_int (List.length vals)
     else 0.0
   in
-  let avg_json_time = avg_of json_time llbc_files in
+  let avg_json_time = avg_of json_time json_files in
   let avg_postcard_time = avg_of postcard_time postcard_files in
   log#linfo
     (lazy
@@ -143,7 +172,7 @@ let run_tests (folder : string) : unit =
 
   (* for each JSON and Postcard file pair, check the size of the file and print the ratio *)
   let ratios = ref [] in
-  llbc_files
+  json_files
   |> List.iter (fun json_file ->
          let postcard_file = json_file ^ ".postcard" in
          if List.exists (fun f -> f = postcard_file) postcard_files then
@@ -177,5 +206,11 @@ let run_tests (folder : string) : unit =
            "Size ratio (JSON/Postcard): min: %f, max: %f, avg: %f, med: %f"
            min_ratio max_ratio avg_ratio med_ratio));
 
-    (* Done *)
-    ()
+    match (json_files, postcard_files) with
+    | json :: _, postcard :: _ -> test_cross_format_errors json postcard
+    | _ ->
+        log#linfo
+          (lazy "No JSON or Postcard files found, skipping cross-format tests.");
+
+        (* Done *)
+        ()
