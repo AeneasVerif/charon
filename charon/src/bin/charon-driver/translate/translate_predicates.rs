@@ -341,6 +341,28 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias),
                     );
                     let mut generics = self.erase_region_binder(trait_decl_ref.clone()).generics;
+
+                    // In Mono mode, we remove types in generic argument list `generics` for the trait impl block.
+                    // This makes trait impl for aliases close to those for normal traits.
+                    //
+                    // For example, in Mono mode, the Rust code
+                    // ```
+                    // trait A<T> {}
+                    // trait B<T> = A<T>;
+                    // impl A<u32> for i32 {}
+                    // ```
+                    //
+                    // is translated to:
+                    //
+                    // ```
+                    // trait A<Self, T> { ... }
+                    // trait B<Self, T> { ... }
+                    // impl A<u32> for i32 { ... }
+                    // impl B<u32> for i32 { ... }
+                    // ```
+                    if self.monomorphize() {
+                        generics.types = Default::default();
+                    }
                     assert!(
                         generics.trait_refs.is_empty(),
                         "found trait alias with non-empty required predicates"
