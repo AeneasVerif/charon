@@ -30,8 +30,10 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
         indoc!(
             r#"
             let* file_id = FileId.id_of_postcard ctx st in
-            let file = FileTbl.find ctx.id_to_file_map file_id in
-            Ok file
+            try Ok (FileTbl.find ctx.id_to_file_map file_id)
+            with Not_found ->
+              let valid_keys = FileTbl.fold (fun key _ acc -> FileId.to_string key :: acc) ctx.id_to_file_map [] in
+              Error ("unknown file id: " ^ FileId.to_string file_id ^ ". valid ids are: " ^ String.concat ", " valid_keys)
             "#
         ),
     ),

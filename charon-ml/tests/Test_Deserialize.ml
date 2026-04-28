@@ -108,10 +108,12 @@ let run_tests (folder : string) : unit =
   let json_files =
     dir_contents folder
     |> List.filter (fun file -> Filename.check_suffix file ".llbc")
+    |> List.sort String.compare
   in
   let postcard_files =
     dir_contents folder
     |> List.filter (fun file -> Filename.check_suffix file ".llbc.postcard")
+    |> List.sort String.compare
   in
 
   let json_time = ref 0.0 in
