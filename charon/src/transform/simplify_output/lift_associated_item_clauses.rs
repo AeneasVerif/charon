@@ -3,18 +3,24 @@
 use std::collections::HashMap;
 use std::mem;
 
-use crate::{ast::*, ids::IndexMap};
+use crate::{
+    ast::*,
+    ids::{IndexMap, IndexVec},
+};
 
 use crate::transform::{TransformCtx, ctx::TransformPass};
 
 pub struct Transform;
 impl TransformPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        !options.no_normalize
+    }
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // For each trait, we move the item-local clauses to be top-level parent clauses, and
         // record the mapping from the old to the new ids.
         let trait_item_clause_ids: IndexMap<
             TraitDeclId,
-            HashMap<TraitItemName, IndexMap<TraitClauseId, TraitClauseId>>,
+            HashMap<TraitItemName, IndexVec<TraitClauseId, TraitClauseId>>,
         > = ctx.translated.trait_decls.map_ref_mut(|decl| {
             decl.types
                 .iter_mut()

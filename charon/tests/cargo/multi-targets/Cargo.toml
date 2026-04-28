@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 name = "multi-targets"
 version = "0.1.0"

@@ -3,9 +3,10 @@ use rustc_middle::ty;
 use rustc_span::sym;
 
 use super::translate_ctx::*;
+use crate::hax;
+use crate::hax::{HasOwner, HasParamEnv, Visibility};
 use charon_lib::ast::*;
-use charon_lib::ids::{IndexMap, IndexVec};
-use hax::{HasOwner, HasParamEnv, Visibility};
+use charon_lib::ids::IndexVec;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
@@ -33,7 +34,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         region: &hax::Region,
     ) -> Result<Region, Error> {
-        use hax::RegionKind::*;
+        use crate::hax::RegionKind::*;
         match &region.kind {
             ReErased => Ok(self.translate_erased_region()),
             ReStatic => Ok(Region::Static),
@@ -73,7 +74,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_hax_uint_ty(uint_ty: &hax::UintTy) -> UIntTy {
-        use hax::UintTy;
+        use crate::hax::UintTy;
         match uint_ty {
             UintTy::Usize => UIntTy::Usize,
             UintTy::U8 => UIntTy::U8,
@@ -129,7 +130,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Literal(LiteralTy::UInt(Self::translate_hax_uint_ty(uint_ty)))
             }
             hax::TyKind::Float(float_ty) => {
-                use hax::FloatTy;
+                use crate::hax::FloatTy;
                 TyKind::Literal(LiteralTy::Float(match float_ty {
                     FloatTy::F16 => types::FloatTy::F16,
                     FloatTy::F32 => types::FloatTy::F32,
@@ -166,7 +167,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Array(item_ref) => {
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
-                assert!(args.types.elem_count() == 1 && args.const_generics.elem_count() == 1);
+                assert!(args.types.len() == 1 && args.const_generics.len() == 1);
                 TyKind::Array(
                     args.types.pop().unwrap(),
                     Box::new(args.const_generics.pop().unwrap()),
@@ -174,7 +175,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Slice(item_ref) => {
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
-                assert!(args.types.elem_count() == 1);
+                assert!(args.types.len() == 1);
                 TyKind::Slice(args.types.pop().unwrap())
             }
             hax::TyKind::Tuple(item_ref) => {
@@ -342,12 +343,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
     ) -> Result<GenericArgs, Error> {
-        use hax::GenericArg::*;
+        use crate::hax::GenericArg::*;
         trace!("{:?}", substs);
 
-        let mut regions = IndexMap::new();
-        let mut types = IndexMap::new();
-        let mut const_generics = IndexMap::new();
+        let mut regions = IndexVec::new();
+        let mut types = IndexVec::new();
+        let mut const_generics = IndexVec::new();
         for param in substs {
             match param {
                 Type(param_ty) => {
@@ -642,7 +643,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     align: Some(align),
                     discriminant_layout: None,
                     uninhabited: false,
-                    variant_layouts: IndexVec::from_array([VariantLayout {
+                    variant_layouts: IndexVec::from([VariantLayout {
                         field_offsets,
                         tag: None,
                         uninhabited: false,
@@ -669,7 +670,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item_meta: &ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TypeDeclKind, Error> {
-        use hax::AdtKind;
+        use crate::hax::AdtKind;
         let hax::FullDefKind::Adt {
             adt_kind, variants, ..
         } = def.kind()

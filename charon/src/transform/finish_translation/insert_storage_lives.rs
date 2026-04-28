@@ -81,7 +81,7 @@ impl TransformPass for Transform {
             // Insert StorageLive instructions for the always initialised locals.
             let locals_with_missing_storage = storage_visitor
                 .local_status
-                .iter_indexed()
+                .iter_enumerated()
                 .filter(|(_, status)| matches!(status, LocalStatus::UsedAndNoExplicitStorage))
                 .map(|(local, _)| local);
             match body {

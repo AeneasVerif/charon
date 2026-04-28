@@ -1,6 +1,7 @@
 open Charon
 open Charon.LlbcAst
 open Charon.Meta
+open Charon.GAstUtils
 open Logging
 open NameMatcher
 
@@ -73,15 +74,15 @@ module PatternTest = struct
   }
 
   type env = {
-    ctx : LlbcAst.block ctx;
+    ctx : ctx;
     file_name : string;
     match_config : match_config;
-    fmt_env : PrintLlbcAst.fmt_env;
+    fmt_env : Print.fmt_env;
     print_config : print_config;
     to_pat_config : to_pat_config;
   }
 
-  let mk_env (ctx : LlbcAst.block ctx) file_name : env =
+  let mk_env (ctx : ctx) file_name : env =
     let tgt = TkPattern in
     let match_with_trait_decl_refs = true in
     {
@@ -98,7 +99,7 @@ module PatternTest = struct
     let fail () =
       failwith
         ("Couldn't parse attribute: `"
-        ^ PrintTypes.raw_attribute_to_string attribute
+        ^ Print.raw_attribute_to_string attribute
         ^ "`")
     in
     let is_pattern_test =
@@ -155,12 +156,9 @@ module PatternTest = struct
           and list_block_calls (blk : block) : call list =
             List.concat_map list_stmt_calls blk.statements
           in
-          let body =
-            match decl.body with
-            | Body body -> body
-            | _ -> failwith "Expected a function body with contents"
+          let calls =
+            list_block_calls (body_as_structured_exn decl.body).body
           in
-          let calls = list_block_calls body.body in
           let fn_ptrs =
             List.map
               (fun call ->
@@ -202,7 +200,7 @@ module PatternTest = struct
     else if (not test.success) && match_success then (
       log#error "Pattern %s matches function %s but shouldn't\n"
         (pattern_to_string env.print_config (Option.get test.pattern))
-        (PrintTypes.name_to_string env.fmt_env decl.item_meta.name);
+        (Print.name_to_string env.fmt_env decl.item_meta.name);
       false)
     else if test.success && not pattern_to_name_success then (
       let pattern, name = Option.get pattern_name in
@@ -226,7 +224,7 @@ let annotated_rust_tests test_file =
   log#ldebug (lazy ("Deserializing LLBC file: " ^ test_file));
   let json = Yojson.Basic.from_file test_file in
   let (crate : crate) =
-    match LlbcOfJson.crate_of_json json with
+    match OfJson.crate_of_json json with
     | Error s ->
         log#error "Error when deserializing file %s: %s\n" test_file s;
         exit 1

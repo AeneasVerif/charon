@@ -1,12 +1,33 @@
-[package]
-name = "charon"
-version = "0.1.181"
+[workspace]
+members = [
+    "adt-into",
+    "macros",
+    "rustc_trait_elaboration",
+]
+
+[workspace.package]
 authors = [
     "Son Ho <hosonmarc@gmail.com>",
     "Guillaume Boisseau <nadrieril+git@gmail.com>",
+    "hax Authors",
 ]
-edition = "2024"
 license = "Apache-2.0"
+edition = "2024"
+
+[workspace.dependencies]
+assert_tokens_eq = "0.1.0"
+itertools = "0.13"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "1.0.107", features = ["extra-traits", "full"] }
+tracing = { version = "0.1", features = ["max_level_trace"] }
+
+[package]
+name = "charon"
+version = "0.1.184"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
 
 [lib]
 name = "charon_lib"
@@ -40,10 +61,12 @@ path = "tests/cargo.rs"
 harness = false
 
 [dependencies]
-hax = { package = "hax-frontend-exporter", path = "./hax-frontend", optional = true }
+hax-adt-into = { path = "./adt-into" }
+macros = { path = "./macros" }
+rustc_trait_elaboration = { path = "./rustc_trait_elaboration" }
+
 serde_state = { git = "https://github.com/Nadrieril/serde_state", branch = "main" }
 # serde_state = { path = "../../../forks/serde_state/serde_state" }
-macros = { path = "./macros" }
 
 annotate-snippets = { version = "0.12" }
 anstream = "0.6.18"
@@ -56,18 +79,20 @@ crates_io_api = { version = "0.11.0", optional = true }
 derive_generic_visitor = "0.2.0"
 either = "1.15.0"
 env_logger = { version = "0.11", features = ["color"] }
+extension-traits = "1.0.1"
 flate2 = { version = "1.0.34", optional = true }
 fraction = "0.15.3"
 hashbrown = { version = "0.15.0", default-features = false }
 indexmap = { version = "2.7.1", features = ["serde"] }
 index_vec = { version = "0.1.3", features = ["serde"] }
 indoc = "2"
-itertools = "0.13"
+itertools.workspace = true
 lazy_static = "1.4.0"
 log = "0.4.17"
 nom = "7.1.3"
 nom-supreme = "0.8.0"
 num-bigint = "0.4.6"
+paste = "1.0.11"
 petgraph = "0.8.0"
 reqwest = { version = "0.12.8", optional = true }
 rustc_version = "0.4"
@@ -78,22 +103,18 @@ smallvec = "1.15.1"
 stacker = "0.1"
 strip-ansi-escapes = "0.2.1"
 take_mut = "0.2.2"
-tempfile = "3"
 tar = { version = "0.4.42", optional = true }
+tempfile = "3"
 toml = { version = "0.8", features = ["parse"] }
 tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt", ] }
 tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [ "time", ] } # Fork with improved formating and timing info.
-tracing = { version = "0.1", features = ["max_level_trace"] }
+tracing.workspace = true
 ustr = { version = "1.1.0", features = ["serde"] }
 wait-timeout = { version = "0.2.0", optional = true }
 which = "7.0"
 
 [features]
-default = ["rustc"]
-# This feature enables the translation of rust code into charon's format. When
-# disabled, the binaries won't build but the main crate (with the ast
-# definitions) still does. It is enabled by default.
-rustc = ["dep:hax"]
+default = []
 # This feature enables the `popular-crates` test which runs Charon on the most downloaded crates from crates.io.
 popular-crates-test = [
     "dep:crates_io_api",

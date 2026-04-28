@@ -8,8 +8,8 @@
     code-generation code is in `charon/src/bin/generate-ml`.
  *)
 open Identifiers
-open Types
-open Values
+open Generated_Types
+open Generated_Values
 module LocalId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId

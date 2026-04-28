@@ -3,6 +3,7 @@
 //! us to handle, and easier to maintain - rustc's representation can evolve
 //! independently.
 
+use crate::hax;
 use itertools::Itertools;
 use rustc_span::sym;
 

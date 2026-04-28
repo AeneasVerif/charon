@@ -29,9 +29,9 @@ impl<T> HashConsed<T> {
 
 pub trait HashConsable = Hash + PartialEq + Eq + Clone + Mappable;
 
-/// Unique id identifying a hashconsed value amongst those with the same type.
+/// Unique id identifying a hashconsed value amongst all hashconsed values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct HashConsId(usize);
+pub struct HashConsId(u64);
 
 // Private module that contains the static we'll use as interning map. A value of type
 // `HashCons` MUST NOT be created in any other way than this table, else hashing and euqality
@@ -39,12 +39,20 @@ pub struct HashConsId(usize);
 // direct dependency and as a dylib, then the static will be duplicated, causing hashing and
 // equality on `HashCons` to be broken.
 mod intern_table {
-    use indexmap::IndexSet as SeqHashSet;
+    use indexmap::IndexMap as SeqHashMap;
+    use std::borrow::Borrow;
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::sync::{Arc, LazyLock, RwLock};
 
     use super::{HashConsId, HashConsable, HashConsed};
     use crate::common::hash_by_addr::HashByAddr;
     use crate::common::type_map::{Mappable, Mapper, TypeMap};
+
+    // Only way we create a `HashConsId`.
+    fn fresh_id() -> HashConsId {
+        static ID: AtomicU64 = AtomicU64::new(0);
+        HashConsId(ID.fetch_add(1, Ordering::Relaxed))
+    }
 
     // This is a static mutable `SeqHashSet<Arc<T>>` that records for each `T` value a unique
     // `Arc<T>` that contains the same value. Values inside the set are hashed/compared
@@ -52,47 +60,87 @@ mod intern_table {
     // Once we've gotten an `Arc` out of the set however, we're sure that "T-equality"
     // implies address-equality, hence the `HashByAddr` wrapper preserves correct equality
     // and hashing behavior.
+    // Note that we also store a `HashConsId` for each item so this is a map instead of a set, but
+    // what matters is really the map keys.
     struct InternMapper;
     impl Mapper for InternMapper {
-        type Value<T: Mappable> = SeqHashSet<Arc<T>>;
+        type Value<T: Mappable> = SeqHashMap<Arc<T>, HashConsId>;
     }
     static INTERNED: LazyLock<RwLock<TypeMap<InternMapper>>> = LazyLock::new(Default::default);
 
-    pub fn intern<T: HashConsable>(inner: T) -> HashConsed<T> {
+    // The excessive generality is to make it work for both `U = T` and `U = Arc<T>`.
+    pub fn intern<T: HashConsable, U>(inner: U) -> HashConsed<T>
+    where
+        Arc<T>: Borrow<U>,
+        U: Into<Arc<T>> + std::hash::Hash,
+        U: indexmap::Equivalent<Arc<T>>,
+    {
         // Fast read-only check.
         #[expect(irrefutable_let_patterns)] // https://github.com/rust-lang/rust/issues/139369
         let arc = if let read_guard = INTERNED.read().unwrap()
-            && let Some(set) = read_guard.get::<T>()
-            && let Some(arc) = set.get(&inner)
+            && let Some(map) = read_guard.get::<T>()
+            && let Some((arc, _id)) = map.get_key_value(&inner)
         {
             arc.clone()
         } else {
             // Concurrent access is possible right here, so we have to check everything again.
             let mut write_guard = INTERNED.write().unwrap();
-            let set: &mut SeqHashSet<Arc<T>> = write_guard.or_default::<T>();
-            if let Some(arc) = set.get(&inner) {
+            let map: &mut SeqHashMap<Arc<T>, _> = write_guard.or_default::<T>();
+            if let Some((arc, _id)) = map.get_key_value(&inner) {
                 arc.clone()
             } else {
-                let arc: Arc<T> = Arc::new(inner);
-                set.insert(arc.clone());
+                let arc: Arc<T> = inner.into();
+                map.insert(arc.clone(), fresh_id());
                 arc
             }
         };
         HashConsed(HashByAddr(arc))
     }
 
+    /// Mutate the contents in-place if possible.
+    pub fn mutate_in_place<T: HashConsable, R, F: FnOnce(&mut T) -> R>(
+        x: &mut HashConsed<T>,
+        f: F,
+    ) -> Result<R, F> {
+        let arc = &mut x.0.0;
+        // Every value has at least two pointers: the current value and the one stored in the
+        // global map. If there are exactly two, we may mutate directly by discarding the one in
+        // the global map temporarily.
+        if Arc::strong_count(arc) != 2 {
+            return Err(f);
+        }
+        {
+            // Take the write guard just long enough to drop the other `Arc` to this value.
+            let mut write_guard = INTERNED.write().unwrap();
+            if let Some((other_arc, _)) = write_guard.or_default::<T>().swap_remove_entry(&*arc) {
+                drop(other_arc);
+            } else {
+                // Nothing was removed, early return.
+                return Err(f);
+            }
+            // The Arc was removed from the map; `x` is invalid as interning the same value would
+            // result in a different pointer. NO MORE EARLY RETURN until we fix that.
+        }
+        // If we are still the sole owner, we can now mutate in-place.
+        let ret = match Arc::get_mut(arc) {
+            Some(val) => Ok(f(val)),
+            None => Err(f),
+        };
+        // Re-establish the interning invariant. If the same value was added to the map in the
+        // meantime, we'll get a pointer to that.
+        *x = HashConsed::from_arc(arc.clone());
+        ret
+    }
+
     /// Identify this value uniquely amongst values of its type. The id depends on insertion
     /// order into the interning table which makes them in principle deterministic.
     pub fn id<T: HashConsable>(x: &HashConsed<T>) -> HashConsId {
-        // `HashConsed` can only be constructed via `intern`, so we know this value exists in
-        // the table.
-        HashConsId(
-            (*INTERNED.read().unwrap())
-                .get::<T>()
-                .unwrap()
-                .get_index_of(&x.0.0)
-                .unwrap(),
-        )
+        // `HashConsed` can only be constructed via `intern`, so we know this value exists in the
+        // table.
+        let read_guard = INTERNED.read().unwrap();
+        let map = read_guard.get::<T>().unwrap();
+        let (_arc, id) = map.get_key_value(&x.0.0).unwrap();
+        *id
     }
 }
 
@@ -105,15 +153,24 @@ where
     pub fn new(inner: T) -> Self {
         intern_table::intern(inner)
     }
+    /// Rarely used: in case we already have an `Arc`, may avoid an allocation.
+    pub fn from_arc(inner: Arc<T>) -> Self {
+        intern_table::intern(inner)
+    }
 
     /// Clones if needed to get mutable access to the inner value.
     pub fn with_inner_mut<R>(&mut self, f: impl FnOnce(&mut T) -> R) -> R {
-        // The value is behind a shared `Arc`, we clone it in order to mutate it.
-        let mut value = self.inner().clone();
-        let ret = f(&mut value);
-        // Re-intern the new value.
-        *self = Self::new(value);
-        ret
+        match intern_table::mutate_in_place(self, f) {
+            Ok(r) => r,
+            Err(f) => {
+                // The value is behind a shared `Arc`, we clone it in order to mutate it.
+                let mut value = self.inner().clone();
+                let ret = f(&mut value);
+                // Re-intern the new value.
+                *self = Self::new(value);
+                ret
+            }
+        }
     }
 
     pub fn id(&self) -> HashConsId {

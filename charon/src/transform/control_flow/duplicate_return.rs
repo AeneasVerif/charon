@@ -31,15 +31,15 @@ use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use std::collections::HashMap;
 
-use crate::transform::ctx::UllbcPass;
+use crate::transform::ctx::FusedUllbcPass;
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Find the return block id (there should be one).
         let returns: HashMap<BlockId, Span> = b
             .body
-            .iter_indexed()
+            .iter_enumerated()
             .filter_map(|(bid, block)| {
                 if block.statements.is_empty() && block.terminator.kind.is_return() {
                     Some((bid, block.terminator.span))
