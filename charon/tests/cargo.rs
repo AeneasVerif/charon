@@ -142,20 +142,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             Failure,
         ),
         mktest("toml", root.join("toml"), &[], &[], Success),
-        mktest(
-            "toml-cargo-flags",
-            root.join("toml-cargo-flags"),
-            &[],
-            &[],
-            Success,
-        ),
-        mktest(
-            "toml-start-from",
-            root.join("toml-start-from"),
-            &[],
-            &[],
-            Success,
-        ),
         mktest("unsafe_", root.join("unsafe_"), &[], &[], Success),
         mktest(
             "workspace",

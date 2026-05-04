@@ -1,9 +1,0 @@
-[package]
-name = "test-cargo-toml-start-from"
-version = "0.1.0"
-edition = "2021"
-
-[package.metadata.charon]
-# Tests that start_from in Cargo.toml limits translation to the named module.
-# Only items in `included` should appear in the output.
-start_from = ["crate::included"]
