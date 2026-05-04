@@ -35,8 +35,8 @@ pub struct RustcTomlConfig {
 }
 
 impl TomlConfig {
-    /// Applies the options specified in the toml file to the cli options.
-    /// CLI options take precedence when relevant.
+    /// Applies the options specified in the toml file to the cli options. In case of conflict, cli
+    /// options take precedence.
     pub(crate) fn apply(self, mut config: CliOpts) -> CliOpts {
         config.extract_opaque_bodies |= self.extract_opaque_bodies;
         config.start_from.extend(self.start_from);
