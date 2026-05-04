@@ -4,7 +4,7 @@ use crate::register_error;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
-use crate::transform::ctx::UllbcPass;
+use crate::transform::ctx::FusedUllbcPass;
 
 pub struct Transform;
 
@@ -19,12 +19,11 @@ pub struct Transform;
 /// ```
 ///
 /// We reconstruct this into a call to `Box::new(x)`.
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.treat_box_as_builtin
+    }
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        if !ctx.options.treat_box_as_builtin {
-            return;
-        }
-
         // We need to find a block that has exchange_malloc as the terminator:
         // ```text
         // @4 := alloc::alloc::exchange_malloc(..)
@@ -42,7 +41,7 @@ impl UllbcPass for Transform {
         // We do so by replacing the terminator (exchange_malloc) with the correct call and adding
         // a `StorageLive`. Everything else becomes Nop.
 
-        for candidate_block_idx in b.body.all_indices() {
+        for candidate_block_idx in b.body.indices() {
             let second_block;
             let box_place;
             let box_generics;

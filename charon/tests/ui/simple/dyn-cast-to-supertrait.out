@@ -119,7 +119,7 @@ impl Destruct for HouseCat {
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::hunt
-fn {impl Feline for HouseCat}::hunt<'_0>(_1: &'_0 HouseCat)
+fn {impl Feline for HouseCat}::hunt<'_0>(self_1: &'_0 HouseCat)
 {
     let _0: (); // return
     let self_1: &'1 HouseCat; // arg #1
@@ -144,7 +144,7 @@ fn {impl Feline for HouseCat}::hunt::{vtable_method}<'_0>(_1: &'_0 (dyn Feline))
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::{vtable_drop_shim}
-unsafe fn {impl Feline for HouseCat}::{vtable_drop_shim}(_1: *mut (dyn Feline))
+unsafe fn {impl Feline for HouseCat}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Feline))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Feline + '0); // arg #1
@@ -183,7 +183,7 @@ impl Feline for HouseCat {
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::pet
-fn {impl Pettable for HouseCat}::pet<'_0>(_1: &'_0 HouseCat)
+fn {impl Pettable for HouseCat}::pet<'_0>(self_1: &'_0 HouseCat)
 {
     let _0: (); // return
     let self_1: &'1 HouseCat; // arg #1
@@ -208,7 +208,7 @@ fn {impl Pettable for HouseCat}::pet::{vtable_method}<'_0>(_1: &'_0 (dyn Pettabl
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::{vtable_drop_shim}
-unsafe fn {impl Pettable for HouseCat}::{vtable_drop_shim}(_1: *mut (dyn Pettable))
+unsafe fn {impl Pettable for HouseCat}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Pettable))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Pettable + '0); // arg #1
@@ -247,7 +247,7 @@ impl Pettable for HouseCat {
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::meow
-fn {impl Cat for HouseCat}::meow<'_0>(_1: &'_0 HouseCat)
+fn {impl Cat for HouseCat}::meow<'_0>(self_1: &'_0 HouseCat)
 {
     let _0: (); // return
     let self_1: &'1 HouseCat; // arg #1
@@ -272,7 +272,7 @@ fn {impl Cat for HouseCat}::meow::{vtable_method}<'_0>(_1: &'_0 (dyn Cat))
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::{vtable_drop_shim}
-unsafe fn {impl Cat for HouseCat}::{vtable_drop_shim}(_1: *mut (dyn Cat))
+unsafe fn {impl Cat for HouseCat}::{vtable_drop_shim}(dyn_self_1: *mut (dyn Cat))
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Cat + '0); // arg #1

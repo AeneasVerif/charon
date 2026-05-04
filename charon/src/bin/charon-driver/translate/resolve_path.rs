@@ -1,9 +1,10 @@
 //! Machinery to resolve a string path into a `DefId`. Based on `clippy_utils::def_path_res`.
 use std::sync::Arc;
 
+use crate::hax;
+use crate::hax::{BaseState, SInto};
 use anyhow::bail;
 use charon_lib::name_matcher::NamePattern;
-use hax::{BaseState, SInto};
 use itertools::Itertools;
 use rustc_ast::Mutability;
 use rustc_hir::def_id::{CrateNum, DefId, LOCAL_CRATE};
@@ -37,8 +38,10 @@ fn find_primitive_impls<'tcx>(
         "u32" => SimplifiedType::Uint(UintTy::U32),
         "u64" => SimplifiedType::Uint(UintTy::U64),
         "u128" => SimplifiedType::Uint(UintTy::U128),
+        "f16" => SimplifiedType::Float(FloatTy::F16),
         "f32" => SimplifiedType::Float(FloatTy::F32),
         "f64" => SimplifiedType::Float(FloatTy::F64),
+        "f128" => SimplifiedType::Float(FloatTy::F128),
         _ => {
             return [].iter().copied();
         }

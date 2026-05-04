@@ -176,10 +176,10 @@ where
     [@TraitClause4]: Eq<K>,
     [@TraitClause5]: Hash<K>,
     [@TraitClause6]: BuildHasher<S>,
-    [@TraitClause8]: MetaSized<Q>,
-    [@TraitClause9]: Borrow<K, Q>,
-    [@TraitClause10]: Hash<Q>,
-    [@TraitClause11]: Eq<Q>,
+    [@TraitClause7]: MetaSized<Q>,
+    [@TraitClause8]: Borrow<K, Q>,
+    [@TraitClause9]: Hash<Q>,
+    [@TraitClause10]: Eq<Q>,
 = <opaque>
 
 // Full name: std::collections::hash::map::{HashMap<K, V, S, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::insert
@@ -264,7 +264,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::get_or_insert
-pub fn get_or_insert<'_0>(_1: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32
+pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32
 {
     let _0: &'1 u32; // return
     let map_1: &'3 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // arg #1

@@ -14,7 +14,7 @@ pub opaque type Argument<'a>
 
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
-= <opaque>
+= <intrinsic:cold_path>
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
@@ -144,7 +144,7 @@ pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 pub opaque type NonNull<T>
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::precondition_check
-fn precondition_check(_1: *const (), _2: isize, _3: usize)
+fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
 {
     let _0: (); // return
     let this_1: *const (); // arg #1
@@ -272,7 +272,7 @@ fn precondition_check(_1: *const (), _2: isize, _3: usize)
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset
-pub unsafe fn offset<T>(_1: *const T, _2: isize) -> *const T
+pub unsafe fn offset<T>(self_1: *const T, count_2: isize) -> *const T
 where
     [@TraitClause0]: Sized<T>,
 {

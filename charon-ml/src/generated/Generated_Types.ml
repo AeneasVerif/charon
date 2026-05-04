@@ -8,8 +8,8 @@
     code-generation code is in `charon/src/bin/generate-ml`. *)
 
 open Identifiers
-open Meta
-open Values
+open Generated_Meta
+open Generated_Values
 module TypeVarId = IdGen ()
 module TypeDeclId = IdGen ()
 module VariantId = IdGen ()
@@ -425,12 +425,7 @@ and generic_args = {
   trait_refs : trait_ref list;
 }
 
-(** Generic parameters for a declaration. We group the generics which come from
-    the Rust compiler substitutions (the regions, types and const generics) as
-    well as the trait clauses. The reason is that we consider that those are
-    parameters that need to be filled. We group in a different place the
-    predicates which are not trait clauses, because those enforce constraints
-    but do not need to be filled with witnesses/instances. *)
+(** Generic parameters for a declaration, including predicates. *)
 and generic_params = {
   regions : region_param list;
   types : type_param list;
@@ -463,6 +458,16 @@ and lifetime_mutability =
 
 (** .0 outlives .1 *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
+
+(** Where a given predicate came from. *)
+and predicate_origin =
+  | WhereClauseOnFn
+  | WhereClauseOnType
+  | WhereClauseOnImpl
+  | TraitSelf
+  | WhereClauseOnTrait
+  | TraitItem of trait_item_name
+  | OriginDyn  (** Clauses that are part of a [dyn Trait] type. *)
 
 and provenance =
   | ProvGlobal of global_decl_ref
@@ -530,6 +535,9 @@ and trait_param = {
       (** Index identifying the clause among other clauses bound at the same
           level. *)
   span : span option;
+  origin : predicate_origin;
+      (** Where the predicate was written, relative to the item that requires
+          it. *)
   trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
 
@@ -855,9 +863,42 @@ and item_meta = {
   is_local : bool;
       (** [true] if the type decl is a local type decl, [false] if it comes from
           an external crate. *)
+  opacity : item_opacity;
+      (** Whether this item is considered opaque. For function and globals, this
+          means we don't translate the body (the code); for ADTs, this means we
+          don't translate the fields/variants. For traits and trait impls, this
+          doesn't change anything. For modules, this means we don't explore its
+          contents (we still translate any of its items mentioned from somewhere
+          else).
+
+          This can happen either if the item was annotated with
+          [#[charon::opaque]] or if it was declared opaque via a command-line
+          argument. *)
   lang_item : string option;
       (** If the item is built-in, record its internal builtin identifier. *)
 }
+
+and item_opacity =
+  | Transparent  (** Translate the item fully. *)
+  | Foreign
+      (** Translate the item depending on the normal rust visibility of its
+          contents: for types, we translate fully if it is a struct with public
+          fields or an enum; for other items this is equivalent to [Opaque]. *)
+  | ItemOpaque
+      (** Translate the item name and signature, but not its contents. For
+          function and globals, this means we don't translate the body (the
+          code); for ADTs, this means we don't translate the fields/variants.
+          For traits and trait impls, this doesn't change anything. For modules,
+          this means we don't explore its contents (we still translate any of
+          its items mentioned from somewhere else).
+
+          This can happen either if the item was annotated with
+          [#[charon::opaque]] or if it was declared opaque via a command-line
+          argument. *)
+  | Invisible
+      (** Translate nothing of this item. The corresponding map will not have an
+          entry for the [ItemId]. Useful when even the signature of the item
+          causes errors. *)
 
 (** Item kind: whether this function/const is part of a trait declaration, trait
     implementation, or neither.

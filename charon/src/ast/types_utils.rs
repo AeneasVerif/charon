@@ -1,7 +1,8 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
-use crate::ids::IndexMap;
+use crate::ids::IndexVec;
 use derive_generic_visitor::*;
+use index_vec::Idx;
 use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashSet;
@@ -83,13 +84,13 @@ impl GenericParams {
             types_outlive,
             trait_type_constraints,
         } = self;
-        regions.elem_count()
-            + types.elem_count()
-            + const_generics.elem_count()
-            + trait_clauses.elem_count()
+        regions.len()
+            + types.len()
+            + const_generics.len()
+            + trait_clauses.len()
             + regions_outlive.len()
             + types_outlive.len()
-            + trait_type_constraints.elem_count()
+            + trait_type_constraints.len()
     }
 
     /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
@@ -122,7 +123,7 @@ impl GenericParams {
     /// already consistent.
     pub fn take_predicates_from(&mut self, other: GenericParams) {
         assert!(!other.has_explicits());
-        let num_clauses = self.trait_clauses.slot_count();
+        let num_clauses = self.trait_clauses.len();
         let GenericParams {
             regions: _,
             types: _,
@@ -164,7 +165,7 @@ impl GenericParams {
                 }
             }
         }
-        let num_clauses = self.trait_clauses.slot_count();
+        let num_clauses = self.trait_clauses.len();
         other.visit_vars(&mut ShiftClausesVisitor(num_clauses));
         self.take_predicates_from(other);
     }
@@ -263,28 +264,28 @@ impl<T: AstVisitable> Binder<Binder<T>> {
                 if let Region::Var(var) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
-                    *id += self.shift_by.regions.slot_count();
+                    *id += self.shift_by.regions.len();
                 }
             }
             fn enter_ty_kind(&mut self, x: &mut TyKind) {
                 if let TyKind::TypeVar(var) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
-                    *id += self.shift_by.types.slot_count();
+                    *id += self.shift_by.types.len();
                 }
             }
             fn enter_constant_expr(&mut self, x: &mut ConstantExpr) {
                 if let ConstantExprKind::Var(ref mut var) = x.kind
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
-                    *id += self.shift_by.const_generics.slot_count();
+                    *id += self.shift_by.const_generics.len();
                 }
             }
             fn enter_trait_ref_kind(&mut self, x: &mut TraitRefKind) {
                 if let TraitRefKind::Clause(var) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
-                    *id += self.shift_by.trait_clauses.slot_count();
+                    *id += self.shift_by.trait_clauses.len();
                 }
             }
         }
@@ -311,19 +312,19 @@ impl<T: AstVisitable> Binder<Binder<T>> {
         inner_params
             .regions
             .iter_mut()
-            .for_each(|v| v.index += outer_params.regions.slot_count());
+            .for_each(|v| v.index += outer_params.regions.len());
         inner_params
             .types
             .iter_mut()
-            .for_each(|v| v.index += outer_params.types.slot_count());
+            .for_each(|v| v.index += outer_params.types.len());
         inner_params
             .const_generics
             .iter_mut()
-            .for_each(|v| v.index += outer_params.const_generics.slot_count());
+            .for_each(|v| v.index += outer_params.const_generics.len());
         inner_params
             .trait_clauses
             .iter_mut()
-            .for_each(|v| v.clause_id += outer_params.trait_clauses.slot_count());
+            .for_each(|v| v.clause_id += outer_params.trait_clauses.len());
 
         let GenericParams {
             regions,
@@ -385,11 +386,11 @@ impl<T> RegionBinder<T> {
     }
 
     /// Substitute the bound variables with the given lifetimes.
-    pub fn apply(self, regions: IndexMap<RegionId, Region>) -> T
+    pub fn apply(self, regions: IndexVec<RegionId, Region>) -> T
     where
         T: TyVisitable,
     {
-        assert_eq!(regions.slot_count(), self.regions.slot_count());
+        assert_eq!(regions.len(), self.regions.len());
         let args = GenericArgs {
             regions,
             ..GenericArgs::empty()
@@ -415,10 +416,7 @@ impl GenericArgs {
             const_generics,
             trait_refs,
         } = self;
-        regions.elem_count()
-            + types.elem_count()
-            + const_generics.elem_count()
-            + trait_refs.elem_count()
+        regions.len() + types.len() + const_generics.len() + trait_refs.len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -442,18 +440,11 @@ impl GenericArgs {
         }
     }
 
-    pub fn new_for_builtin(types: IndexMap<TypeVarId, Ty>) -> Self {
-        GenericArgs {
-            types,
-            ..Self::empty()
-        }
-    }
-
     pub fn new(
-        regions: IndexMap<RegionId, Region>,
-        types: IndexMap<TypeVarId, Ty>,
-        const_generics: IndexMap<ConstGenericVarId, ConstantExpr>,
-        trait_refs: IndexMap<TraitClauseId, TraitRef>,
+        regions: IndexVec<RegionId, Region>,
+        types: IndexVec<TypeVarId, Ty>,
+        const_generics: IndexVec<ConstGenericVarId, ConstantExpr>,
+        trait_refs: IndexVec<TraitClauseId, TraitRef>,
     ) -> Self {
         Self {
             regions,
@@ -462,8 +453,7 @@ impl GenericArgs {
             trait_refs,
         }
     }
-
-    pub fn new_types(types: IndexMap<TypeVarId, Ty>) -> Self {
+    pub fn new_types(types: IndexVec<TypeVarId, Ty>) -> Self {
         Self {
             types,
             ..Self::empty()
@@ -473,10 +463,10 @@ impl GenericArgs {
     /// Check whether this matches the given `GenericParams`.
     /// TODO: check more things, e.g. that the trait refs use the correct trait and generics.
     pub fn matches(&self, params: &GenericParams) -> bool {
-        params.regions.elem_count() == self.regions.elem_count()
-            && params.types.elem_count() == self.types.elem_count()
-            && params.const_generics.elem_count() == self.const_generics.elem_count()
-            && params.trait_clauses.elem_count() == self.trait_refs.elem_count()
+        params.regions.len() == self.regions.len()
+            && params.types.len() == self.types.len()
+            && params.const_generics.len() == self.const_generics.len()
+            && params.trait_clauses.len() == self.trait_refs.len()
     }
 
     /// Return the same generics, but where we pop the first type arguments.
@@ -702,7 +692,7 @@ impl Ty {
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
         TyKind::Adt(TypeDeclRef {
             id: TypeId::Tuple,
-            generics: Box::new(GenericArgs::new_for_builtin(tys.into())),
+            generics: Box::new(GenericArgs::new_types(tys.into())),
         })
         .into_ty()
     }
@@ -830,7 +820,7 @@ impl Ty {
         }
     }
 
-    pub fn as_tuple(&self) -> Option<&IndexMap<TypeVarId, Ty>> {
+    pub fn as_tuple(&self) -> Option<&IndexVec<TypeVarId, Ty>> {
         match self.kind() {
             TyKind::Adt(ty_ref) if let TypeId::Tuple = ty_ref.id => Some(&ty_ref.generics.types),
             _ => None,
@@ -900,7 +890,7 @@ impl TraitRef {
     pub fn new_builtin(
         trait_id: TraitDeclId,
         ty: Ty,
-        parents: IndexMap<TraitClauseId, TraitRef>,
+        parents: IndexVec<TraitClauseId, TraitRef>,
         builtin_data: BuiltinImplData,
     ) -> Self {
         let trait_decl_ref = RegionBinder::empty(TraitDeclRef {
@@ -1486,7 +1476,7 @@ impl TypeDecl {
             _ => return None,
         };
         fields
-            .iter_indexed()
+            .iter_enumerated()
             .find(|(_, field)| field.name.as_deref() == Some(field_name))
     }
 }
@@ -1520,6 +1510,35 @@ impl<T: AstVisitable> TyVisitable for T {}
 
 impl Eq for TraitParam {}
 
+pub trait HasIdxVecOf<Id: Idx>: std::ops::Index<Id, Output: Sized> {
+    fn get_idx_vec(&self) -> &IndexVec<Id, Self::Output>;
+    fn get_idx_vec_mut(&mut self) -> &mut IndexVec<Id, Self::Output>;
+}
+
+/// Delegate `Index` implementations to subfields.
+macro_rules! mk_index_impls {
+    ($ty:ident.$field:ident[$idx:ty]: $output:ty) => {
+        impl std::ops::Index<$idx> for $ty {
+            type Output = $output;
+            fn index(&self, index: $idx) -> &Self::Output {
+                &self.$field[index]
+            }
+        }
+        impl std::ops::IndexMut<$idx> for $ty {
+            fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
+                &mut self.$field[index]
+            }
+        }
+        impl HasIdxVecOf<$idx> for $ty {
+            fn get_idx_vec(&self) -> &IndexVec<$idx, Self::Output> {
+                &self.$field
+            }
+            fn get_idx_vec_mut(&mut self) -> &mut IndexVec<$idx, Self::Output> {
+                &mut self.$field
+            }
+        }
+    };
+}
 mk_index_impls!(GenericArgs.regions[RegionId]: Region);
 mk_index_impls!(GenericArgs.types[TypeVarId]: Ty);
 mk_index_impls!(GenericArgs.const_generics[ConstGenericVarId]: ConstantExpr);

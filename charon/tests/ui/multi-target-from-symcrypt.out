@@ -307,7 +307,7 @@ where
 
 pub struct test_crate::ntt_xmm::NttIntrinsicsXmm::x86_64-apple-darwin {}
 
-fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm::x86_64-apple-darwin}::vec128_add::x86_64-apple-darwin(_1: core::core_arch::x86::__m128i::x86_64-apple-darwin, _2: core::core_arch::x86::__m128i::x86_64-apple-darwin) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
+fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm::x86_64-apple-darwin}::vec128_add::x86_64-apple-darwin(a_1: core::core_arch::x86::__m128i::x86_64-apple-darwin, b_2: core::core_arch::x86::__m128i::x86_64-apple-darwin) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
 {
     let _0: core::core_arch::x86::__m128i::x86_64-apple-darwin; // return
     let a_1: core::core_arch::x86::__m128i::x86_64-apple-darwin; // arg #1
@@ -325,7 +325,7 @@ fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate:
     return
 }
 
-fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm::x86_64-apple-darwin}::vec128_store::x86_64-apple-darwin<'_0>(_1: &'_0 mut [u16; 8 : usize], _2: core::core_arch::x86::__m128i::x86_64-apple-darwin)
+fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm::x86_64-apple-darwin}::vec128_store::x86_64-apple-darwin<'_0>(dst_1: &'_0 mut [u16; 8 : usize], val_2: core::core_arch::x86::__m128i::x86_64-apple-darwin)
 {
     let _0: (); // return
     let dst_1: &'1 mut [u16; 8 : usize]; // arg #1
@@ -356,7 +356,7 @@ fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate:
     return
 }
 
-fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm::x86_64-apple-darwin}::vec128_load::x86_64-apple-darwin<'_0>(_1: &'_0 [u16; 8 : usize]) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
+fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm::x86_64-apple-darwin}::vec128_load::x86_64-apple-darwin<'_0>(src_1: &'_0 [u16; 8 : usize]) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
 {
     let _0: core::core_arch::x86::__m128i::x86_64-apple-darwin; // return
     let src_1: &'1 [u16; 8 : usize]; // arg #1
@@ -395,7 +395,7 @@ impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXm
 
 pub struct test_crate::ntt_neon::NttIntrinsicsNeon::aarch64-apple-darwin {}
 
-fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon::aarch64-apple-darwin}::vec128_add::aarch64-apple-darwin(_1: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin, _2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
+fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon::aarch64-apple-darwin}::vec128_add::aarch64-apple-darwin(a_1: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin, b_2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
 {
     let _0: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // return
     let a_1: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // arg #1
@@ -413,7 +413,7 @@ fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate
     return
 }
 
-fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon::aarch64-apple-darwin}::vec128_store::aarch64-apple-darwin<'_0>(_1: &'_0 mut [u16; 8 : usize], _2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin)
+fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon::aarch64-apple-darwin}::vec128_store::aarch64-apple-darwin<'_0>(dst_1: &'_0 mut [u16; 8 : usize], val_2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin)
 {
     let _0: (); // return
     let dst_1: &'1 mut [u16; 8 : usize]; // arg #1
@@ -440,7 +440,7 @@ fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate
     return
 }
 
-fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon::aarch64-apple-darwin}::vec128_load::aarch64-apple-darwin<'_0>(_1: &'_0 [u16; 8 : usize]) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
+fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon::aarch64-apple-darwin}::vec128_load::aarch64-apple-darwin<'_0>(src_1: &'_0 [u16; 8 : usize]) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
 {
     let _0: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // return
     let src_1: &'1 [u16; 8 : usize]; // arg #1
@@ -473,7 +473,7 @@ impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsN
     non-dyn-compatible
 }
 
-fn test_crate::ntt_layer_generic<'_0, '_1>(_1: &'_0 mut [u16; 8 : usize], _2: &'_1 [u16; 8 : usize])
+fn test_crate::ntt_layer_generic<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: &'_1 [u16; 8 : usize])
 {
     let _0: (); // return
     let a_1: &'1 mut [u16; 8 : usize]; // arg #1
@@ -567,7 +567,7 @@ fn test_crate::ntt_layer_generic<'_0, '_1>(_1: &'_0 mut [u16; 8 : usize], _2: &'
     return
 }
 
-fn test_crate::ntt_layer_vec128<'_0, '_1, T>(_1: &'_0 mut [u16; 8 : usize], _2: &'_1 [u16; 8 : usize])
+fn test_crate::ntt_layer_vec128<'_0, '_1, T>(a_1: &'_0 mut [u16; 8 : usize], b_2: &'_1 [u16; 8 : usize])
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::NttIntrinsicsInterface<T>,
@@ -641,7 +641,7 @@ fn test_crate::SYMCRYPT_CPU_FEATURE_NEON() -> u32
 
 const test_crate::SYMCRYPT_CPU_FEATURE_NEON: u32 = test_crate::SYMCRYPT_CPU_FEATURE_NEON()
 
-fn test_crate::cpu_features_present(_1: u32) -> bool
+fn test_crate::cpu_features_present(_mask_1: u32) -> bool
 {
     let _0: bool; // return
     let _mask_1: u32; // arg #1
@@ -650,7 +650,7 @@ fn test_crate::cpu_features_present(_1: u32) -> bool
     return
 }
 
-fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(_1: &'_0 mut [u16; 8 : usize], _2: &'_1 [u16; 8 : usize])
+fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: &'_1 [u16; 8 : usize])
 {
     let _0: (); // return
     let a_1: &'1 mut [u16; 8 : usize]; // arg #1
@@ -693,7 +693,7 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(_1: &'_0 mu
     return
 }
 
-fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(_1: &'_0 mut [u16; 8 : usize], _2: &'_1 [u16; 8 : usize])
+fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: &'_1 [u16; 8 : usize])
 {
     let _0: (); // return
     let a_1: &'1 mut [u16; 8 : usize]; // arg #1

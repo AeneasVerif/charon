@@ -77,11 +77,6 @@ where
         self.vector.len()
     }
 
-    /// Gets the value of the next available id. Avoid if possible; use `reserve_slot` instead.
-    pub fn next_id(&self) -> I {
-        self.vector.next_idx()
-    }
-
     /// Reserve a spot in the vector.
     pub fn reserve_slot(&mut self) -> I {
         // Push a `None` to ensure we don't reuse the id.
@@ -132,20 +127,6 @@ where
         let x = f(id);
         self.set_slot(id, x);
         id
-    }
-
-    pub fn push_all<It>(&mut self, it: It) -> impl Iterator<Item = I> + use<'_, I, T, It>
-    where
-        It: IntoIterator<Item = T>,
-    {
-        it.into_iter().map(move |x| self.push(x))
-    }
-
-    pub fn extend<It>(&mut self, it: It)
-    where
-        It: IntoIterator<Item = T>,
-    {
-        self.push_all(it).for_each(|_| ())
     }
 
     pub fn extend_from_other(&mut self, other: Self) {
@@ -440,7 +421,6 @@ where
     }
 }
 
-// FIXME: this impl is a footgun
 impl<I, T> FromIterator<T> for IndexMap<I, T>
 where
     I: Idx,
@@ -450,26 +430,6 @@ where
         let mut elem_count = 0;
         let vector = IndexVec::from_iter(iter.into_iter().inspect(|_| elem_count += 1).map(Some));
         IndexMap { vector, elem_count }
-    }
-}
-
-// FIXME: this impl is a footgun
-impl<I, T> From<Vec<T>> for IndexMap<I, T>
-where
-    I: Idx,
-{
-    fn from(v: Vec<T>) -> Self {
-        v.into_iter().collect()
-    }
-}
-
-// FIXME: this impl is a footgun
-impl<I, T, const N: usize> From<[T; N]> for IndexMap<I, T>
-where
-    I: Idx,
-{
-    fn from(v: [T; N]) -> Self {
-        v.into_iter().collect()
     }
 }
 

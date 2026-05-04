@@ -251,6 +251,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
                 write!(f, "{{\n{body}{tab}}}")
             }
             Body::TraitMethodWithoutDefault => write!(f, "= <method_without_default_body>"),
+            Body::Extern(name) => write!(f, "= <extern:{name}>"),
+            Body::Intrinsic { name, .. } => write!(f, "= <intrinsic:{name}>"),
             Body::Opaque => write!(f, "= <opaque>"),
             Body::Missing => write!(f, "= <missing>"),
             Body::Error(error) => write!(f, "= error(\"{}\")", error.msg),
@@ -421,10 +423,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
         assert!(regions.is_empty());
         assert!(const_generics.is_empty());
         assert!(regions_outlive.is_empty());
-        assert_eq!(types.elem_count(), 1);
+        assert_eq!(types.len(), 1);
 
         // Format the clauses with their assoc types, e.g. `Iterator<Item = ...>`.
-        let mut cstrs_per_clause: IndexMap<TraitClauseId, Vec<String>> =
+        let mut cstrs_per_clause: IndexVec<TraitClauseId, Vec<String>> =
             trait_clauses.map_ref(|_| vec![]);
         for cstr in trait_type_constraints {
             let mut tgt_clause = None;
@@ -573,12 +575,42 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
         write!(f, "{params}")?;
 
         // Arguments
+        let n_args = self.signature.inputs.len();
+        let args_of_locals = |l: &Locals| {
+            l.locals
+                .iter()
+                .skip(1)
+                .take(n_args)
+                .map(|l| format!("{l}"))
+                .collect::<Vec<String>>()
+        };
+
+        let arg_names = match &self.body {
+            Body::Unstructured(body) => args_of_locals(&body.locals),
+            Body::Structured(body) => args_of_locals(&body.locals),
+            Body::Intrinsic { arg_names, .. } => arg_names
+                .iter()
+                .enumerate()
+                .map(|(i, name)| {
+                    let id = LocalId::new(i + 1);
+                    match name {
+                        Some(name) => format!("{name}_{id}"),
+                        None => format!("_{id}"),
+                    }
+                })
+                .collect(),
+            Body::Error(..)
+            | Body::Extern(..)
+            | Body::Missing
+            | Body::Opaque
+            | Body::TraitMethodWithoutDefault
+            | Body::TargetDispatch(..) => (0..n_args)
+                .map(|i| format!("{}", LocalId::new(i + 1).with_ctx(ctx)))
+                .collect(),
+        };
         let mut args: Vec<String> = Vec::new();
-        for (i, ty) in self.signature.inputs.iter().enumerate() {
-            // The input variables start at index 1
-            // TODO: use the locals to get the variable names
-            let id = LocalId::new(i + 1);
-            args.push(format!("{}: {}", id.with_ctx(ctx), ty.with_ctx(ctx)));
+        for (ty, name) in self.signature.inputs.iter().zip(arg_names.into_iter()) {
+            args.push(format!("{}: {}", name, ty.with_ctx(ctx)));
         }
         let args = args.join(", ");
         write!(f, "({args})")?;
@@ -853,7 +885,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
         ) -> Result<(), fmt::Error> {
             let tab = ctx.indent();
             let ctx = &ctx.increase_indent();
-            for (bid, block) in body.iter_indexed_values() {
+            for (bid, block) in body.iter_enumerated() {
                 writeln!(f)?;
                 writeln!(f, "{tab}bb{}: {{", bid.index())?;
                 writeln!(f, "{}", block.with_ctx(ctx))?;
@@ -2066,7 +2098,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::Adt(tref) => match tref.id {
                 TypeId::Tuple => {
                     let generics = tref.generics.fmt_explicits(ctx).format(", ");
-                    let trailing_comma = if tref.generics.types.slot_count() == 1 {
+                    let trailing_comma = if tref.generics.types.len() == 1 {
                         ","
                     } else {
                         ""

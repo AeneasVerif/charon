@@ -102,7 +102,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::T6::f
-pub fn f<Self, T>(_1: u64)
+pub fn f<Self, T>(x_1: u64)
 where
     [@TraitClause0]: T6<Self, T>,
 {

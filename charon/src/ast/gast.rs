@@ -1,7 +1,6 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 use crate::ast::*;
 use crate::common::serialize_map_to_array::SeqHashMapToArray;
-use crate::ids::IndexMap;
 use crate::ids::IndexVec;
 use crate::llbc_ast;
 use crate::ullbc_ast;
@@ -84,6 +83,7 @@ pub struct GExprBody<T> {
     EnumToGetters,
 )]
 #[serde_state(state_implements = HashConsSerializerState)]
+#[charon::variants_suffix("Body")]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
     Unstructured(ullbc_ast::ExprBody),
@@ -100,6 +100,17 @@ pub enum Body {
     /// The body of the function item we add for each trait method declaration, if the trait
     /// doesn't provide a default for that method.
     TraitMethodWithoutDefault,
+    /// Function declared in an `extern { ... }` block. The string is the foreign symbol name.
+    Extern(#[drive(skip)] String),
+    /// Rust intrinsic function.
+    Intrinsic {
+        /// The intrinsic name.
+        #[drive(skip)]
+        name: String,
+        /// The argument names, None if not available.
+        #[drive(skip)]
+        arg_names: Vec<Option<String>>,
+    },
     /// A body that the user chose not to translate, based on opacity settings like
     /// `--include`/`--opaque`.
     Opaque,
@@ -179,7 +190,7 @@ pub enum ItemSource {
         field_map: IndexVec<FieldId, VTableField>,
         /// For each implied clause that is also a supertrait clause, reords which field id
         /// corresponds to it.
-        supertrait_map: IndexMap<TraitClauseId, Option<FieldId>>,
+        supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
     },
     /// This is a vtable value for an impl.
     VTableInstance {
@@ -218,9 +229,7 @@ pub struct FunDecl {
     /// Whether this function is in fact the body of a constant/static that we turned into an
     /// initializer function.
     pub is_global_initializer: Option<GlobalDeclId>,
-    /// The function body, unless the function is opaque.
-    /// Opaque functions are: external functions, or local functions tagged
-    /// as opaque.
+    /// The function body.
     pub body: Body,
 }
 
@@ -339,7 +348,7 @@ pub struct TraitDecl {
     /// ```
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
-    pub implied_clauses: IndexMap<TraitClauseId, TraitParam>,
+    pub implied_clauses: IndexVec<TraitClauseId, TraitParam>,
     /// The associated constants declared in the trait.
     pub consts: Vec<TraitAssocConst>,
     /// The associated types declared in the trait. The binder binds the generic parameters of the
@@ -380,7 +389,7 @@ pub struct TraitAssocTy {
     pub attr_info: AttrInfo,
     pub default: Option<TraitAssocTyImpl>,
     /// List of trait clauses that apply to this type.
-    pub implied_clauses: IndexMap<TraitClauseId, TraitParam>,
+    pub implied_clauses: IndexVec<TraitClauseId, TraitParam>,
 }
 
 /// A trait method.
@@ -416,7 +425,7 @@ pub struct TraitImpl {
     pub impl_trait: TraitDeclRef,
     pub generics: GenericParams,
     /// The trait references for the parent clauses (see [TraitDecl]).
-    pub implied_trait_refs: IndexMap<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
     /// The implemented associated constants.
     pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
     /// The implemented associated types.
@@ -435,7 +444,7 @@ pub struct TraitAssocTyImpl {
     /// This matches the corresponding vector in `TraitAssocTy`. In the same way, this is empty
     /// after the `lift_associated_item_clauses` pass.
     #[charon::opaque]
-    pub implied_trait_refs: IndexMap<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
 }
 
 /// A function operand is used in function calls.

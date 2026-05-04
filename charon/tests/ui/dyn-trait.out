@@ -158,7 +158,7 @@ where
 = <opaque>
 
 // Full name: test_crate::destruct
-fn destruct<'_0>(_1: &'_0 (dyn Display + '_0)) -> String
+fn destruct<'_0>(x_1: &'_0 (dyn Display + '_0)) -> String
 {
     let _0: String; // return
     let x_1: &'3 (dyn Display + '4); // arg #1

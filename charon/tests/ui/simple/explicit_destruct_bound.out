@@ -1,0 +1,7 @@
+error: Error during trait resolution: Could not find a clause for `Binder { value: <T as std::marker::Destruct>, bound_vars: [] }` in the item parameters
+ --> tests/ui/simple/explicit_destruct_bound.rs:6:29
+  |
+6 | fn drop<T: Destruct>(_: T) {}
+  |                             ^
+
+ERROR Charon failed to translate this code (1 errors)

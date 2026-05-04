@@ -167,7 +167,7 @@ where
 fn with_capacity_in<A>(_1: usize, _2: A, _3: Layout) -> RawVecInner<A>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
-    [@TraitClause2]: Destruct<A>,
+    [@TraitClause1]: Destruct<A>,
 = <opaque>
 
 // Full name: alloc::vec::Vec
@@ -200,7 +200,7 @@ where
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::with_capacity
 #[lang_item("vec_with_capacity")]
-pub fn with_capacity<T>(_1: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
+pub fn with_capacity<T>(capacity_1: usize) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
 {

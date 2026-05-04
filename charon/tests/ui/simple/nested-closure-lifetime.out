@@ -128,7 +128,7 @@ where
 }
 
 // Full name: test_crate::foo::{impl Fn<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call
-fn {impl Fn<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call<'_0, '_1, '_2, '_3, T>(_1: &'_3 test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1], _2: ()) -> test_crate::foo::closure::closure<'_, T>[@TraitClause0, @TraitClause1]
+fn {impl Fn<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call<'_0, '_1, '_2, '_3, T>(_1: &'_3 test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1], tupled_args_2: ()) -> test_crate::foo::closure::closure<'_, T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -142,7 +142,7 @@ where
 }
 
 // Full name: test_crate::foo
-fn foo<'a, T>(_1: &'a T) -> test_crate::foo::closure::closure<'_, T>[@TraitClause0, @TraitClause1]
+fn foo<'a, T>(x_1: &'a T) -> test_crate::foo::closure::closure<'_, T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -167,7 +167,7 @@ where
 }
 
 // Full name: test_crate::foo::{impl FnMut<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_mut
-fn {impl FnMut<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, '_1, '_2, '_3, T>(_1: &'_3 mut test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1], _2: ()) -> test_crate::foo::closure::closure<'_, T>[@TraitClause0, @TraitClause1]
+fn {impl FnMut<()> for test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, '_1, '_2, '_3, T>(state_1: &'_3 mut test_crate::foo::closure<'_0, T>[@TraitClause0, @TraitClause1], args_2: ()) -> test_crate::foo::closure::closure<'_, T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -262,7 +262,7 @@ where
 }
 
 // Full name: test_crate::foo::closure::{impl Fn<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call
-fn {impl Fn<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call<'_0, '_1, '_2, T>(_1: &'_2 test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1], _2: ()) -> &'_1 T
+fn {impl Fn<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call<'_0, '_1, '_2, T>(_1: &'_2 test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1], tupled_args_2: ()) -> &'_1 T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,
@@ -276,7 +276,7 @@ where
 }
 
 // Full name: test_crate::foo::closure::{impl FnMut<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_mut
-fn {impl FnMut<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, '_1, '_2, T>(_1: &'_2 mut test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1], _2: ()) -> &'_1 T
+fn {impl FnMut<()> for test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, '_1, '_2, T>(state_1: &'_2 mut test_crate::foo::closure::closure<'_0, T>[@TraitClause0, @TraitClause1], args_2: ()) -> &'_1 T
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Clone<T>,

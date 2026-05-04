@@ -102,7 +102,7 @@ where
 pub struct BoxFamily {}
 
 // Full name: test_crate::{impl PointerFamily for BoxFamily}::new
-pub fn {impl PointerFamily for BoxFamily}::new<T>(_1: T) -> alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]
+pub fn {impl PointerFamily for BoxFamily}::new<T>(value_1: T) -> alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -127,7 +127,7 @@ impl PointerFamily for BoxFamily {
 }
 
 // Full name: test_crate::make_pointer
-pub fn make_pointer<F, T>(_1: T) -> @TraitClause2::Pointer
+pub fn make_pointer<F, T>(x_1: T) -> @TraitClause2::Pointer
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Sized<T>,

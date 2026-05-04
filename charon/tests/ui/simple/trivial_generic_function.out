@@ -25,7 +25,7 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: test_crate::ignore
-fn ignore<T>(_1: T)
+fn ignore<T>(t_1: T)
 where
     [@TraitClause0]: Sized<T>,
 {

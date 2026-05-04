@@ -1,0 +1,40 @@
+name: Benchmark
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Nightly at 06:00 UTC
+  workflow_dispatch:
+
+# Only one benchmark at a time (avoids races on the branch writes).
+concurrency:
+  group: benchmark
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  benchmark:
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run benchmarks
+        run: |
+          nix develop '.#bench' --command ./scripts/ci-bench.sh benchmark_result.json
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark_result.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Push results to the bench-reports branch for the graph.
+          auto-push: true
+          gh-pages-branch: bench-reports
+          benchmark-data-dir-path: bench
+          # Comment on the commit when instruction count regresses by >20%.
+          alert-threshold: '120%'
+          comment-on-alert: true
+          fail-on-alert: false

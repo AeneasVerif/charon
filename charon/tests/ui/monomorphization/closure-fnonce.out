@@ -75,7 +75,7 @@ impl FnOnce<(u8,)> for closure {
 }
 
 // Full name: test_crate::apply_to_zero_once::<closure>
-fn apply_to_zero_once::<closure>(_1: closure) -> u8
+fn apply_to_zero_once::<closure>(f_1: closure) -> u8
 {
     let _0: u8; // return
     let f_1: closure; // arg #1

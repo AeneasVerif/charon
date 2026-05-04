@@ -101,7 +101,7 @@ struct closure<'_0, '_1> {
 }
 
 // Full name: test_crate::call_fn::{impl Fn<(usize,)> for closure<'_0, '_1>}::call
-fn {impl Fn<(usize,)> for closure<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, _2: (usize,)) -> u8
+fn {impl Fn<(usize,)> for closure<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args_2: (usize,)) -> u8
 {
     let _0: u8; // return
     let _1: &'1 closure<'_0, '_1>; // arg #1
@@ -129,7 +129,7 @@ fn {impl Fn<(usize,)> for closure<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 closu
 }
 
 // Full name: test_crate::call_fn
-fn call_fn<'_0>(_1: &'_0 [u8], _2: usize) -> u8
+fn call_fn<'_0>(a_1: &'_0 [u8], i_2: usize) -> u8
 {
     let _0: u8; // return
     let a_1: &'1 [u8]; // arg #1
@@ -160,7 +160,7 @@ fn call_fn<'_0>(_1: &'_0 [u8], _2: usize) -> u8
 }
 
 // Full name: test_crate::call_fn::{impl FnMut<(usize,)> for closure<'_0, '_1>}::call_mut
-fn {impl FnMut<(usize,)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0, '_1>, _2: (usize,)) -> u8
+fn {impl FnMut<(usize,)> for closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(state_1: &'_2 mut closure<'_0, '_1>, args_2: (usize,)) -> u8
 {
     let _0: u8; // return
     let state_1: &'_2 mut closure<'_0, '_1>; // arg #1

@@ -2,10 +2,11 @@
 use super::translate_crate::RustcItem;
 pub use super::translate_crate::{TraitImplSource, TransItemSource, TransItemSourceKind};
 use super::translate_generics::{BindingLevel, LifetimeMutabilityComputer};
+use crate::hax;
+use crate::hax::SInto;
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::options::TranslateOptions;
-use hax::SInto;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -214,7 +215,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item_id: Option<ItemId>,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
-        use hax::BaseState;
+        use crate::hax::BaseState;
         let hax_state_with_id = t_ctx.hax_state.clone().with_hax_owner(item_src.def_id());
         ItemTransCtx {
             item_src,

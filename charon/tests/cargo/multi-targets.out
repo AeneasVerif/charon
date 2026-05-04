@@ -1,4 +1,4 @@
-pub fn multi_targets::no_os::riscv64gc-unknown-none-elf(_1: u64, _2: u64) -> u64
+pub fn multi_targets::no_os::riscv64gc-unknown-none-elf(left_1: u64, right_2: u64) -> u64
 {
     let _0: u64; // return
     let left_1: u64; // arg #1
@@ -20,7 +20,7 @@ pub fn multi_targets::no_os::riscv64gc-unknown-none-elf(_1: u64, _2: u64) -> u64
     return
 }
 
-pub fn multi_targets::on_unix::i686-unknown-linux-gnu(_1: u64, _2: u64) -> u64
+pub fn multi_targets::on_unix::i686-unknown-linux-gnu(left_1: u64, right_2: u64) -> u64
 {
     let _0: u64; // return
     let left_1: u64; // arg #1
@@ -42,7 +42,7 @@ pub fn multi_targets::on_unix::i686-unknown-linux-gnu(_1: u64, _2: u64) -> u64
     return
 }
 
-pub fn multi_targets::on_unix::x86_64-apple-darwin(_1: u64, _2: u64) -> u64
+pub fn multi_targets::on_unix::x86_64-apple-darwin(left_1: u64, right_2: u64) -> u64
 {
     let _0: u64; // return
     let left_1: u64; // arg #1

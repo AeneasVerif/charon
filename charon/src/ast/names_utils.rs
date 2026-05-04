@@ -95,4 +95,10 @@ impl Name {
         }
         self
     }
+
+    /// Get the last identifier of the name, if any. This is useful for error messages and such.
+    /// Panics if the name is empty or if the last element is not an identifier.
+    pub fn short_str(&self) -> &String {
+        self.name.last().unwrap().as_ident().unwrap().0
+    }
 }

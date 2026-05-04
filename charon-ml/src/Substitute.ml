@@ -428,8 +428,8 @@ let block_substitute (subst : subst) (blk : block) : block =
 
 (** Apply a type substitution to a function body. Return the local variables and
     the body. *)
-let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
-    local list * block =
+let expr_body_substitute (subst : subst) (body : expr_body) : local list * block
+    =
   let locals =
     List.map
       (fun (v : local) -> { v with local_ty = ty_substitute subst v.local_ty })
@@ -601,7 +601,7 @@ let lookup_and_subst_trait_impl_method (timpl : trait_impl)
    generics. Returns [None] if the trait or method declarations could not be
    found.
 *)
-let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
+let lookup_method_sig (crate : crate) (trait_id : trait_decl_id)
     (name : trait_item_name) : fun_sig binder item_binder option =
   let* tdecl = TraitDeclId.Map.find_opt trait_id crate.trait_decls in
   let* {
@@ -629,14 +629,14 @@ let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
 
 (* Like [lookup_method_sig], but with no binder shenanigans: the returned
    binder binds the concatenation of trait generics and method generics. *)
-let lookup_flat_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
+let lookup_flat_method_sig (crate : crate) (trait_id : trait_decl_id)
     (name : trait_item_name) : bound_fun_sig option =
   let* bound_sig = lookup_method_sig crate trait_id name in
   let bound_sig = fuse_binders st_substitute_visitor#visit_fun_sig bound_sig in
   Some bound_sig
 
 (* Lookup the signature of a `Ty::FnDef`. *)
-let lookup_fndef_sig (crate : 'a gcrate) (fn_ptr : fn_ptr region_binder) :
+let lookup_fndef_sig (crate : crate) (fn_ptr : fn_ptr region_binder) :
     fun_sig region_binder option =
   match fn_ptr.binder_value.kind with
   | FunId (FRegular fun_decl_id) ->

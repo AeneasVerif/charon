@@ -44,7 +44,7 @@ where
     [@TraitClause0]: Clone<Self>,
 = <method_without_default_body>
 
-pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 Self)
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self_1: &'_0 mut Self, source_2: &'_1 Self)
 where
     [@TraitClause0]: Clone<Self>,
     [@TraitClause1]: Destruct<Self>,
@@ -64,7 +64,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn {impl Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
+pub fn {impl Clone for usize}::clone<'_0>(self_1: &'_0 usize) -> usize
 {
     let _0: usize; // return
     let self_1: &'1 usize; // arg #1
@@ -74,7 +74,7 @@ pub fn {impl Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone_from
-pub fn {impl Clone for usize}::clone_from<'_0, '_1>(_1: &'_0 mut usize, _2: &'_1 usize)
+pub fn {impl Clone for usize}::clone_from<'_0, '_1>(self_1: &'_0 mut usize, source_2: &'_1 usize)
 where
     [@TraitClause0]: Destruct<usize>,
 {
@@ -153,19 +153,14 @@ pub trait Copy<Self>
 }
 
 // Full name: core::intrinsics::ctpop
-pub fn ctpop<T>(_1: T) -> u32
+pub fn ctpop<T>(x_1: T) -> u32
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Copy<T>,
-{
-    let _0: u32; // return
-    let x_1: T; // arg #1
-
-    undefined_behavior
-}
+= <intrinsic:ctpop>
 
 // Full name: core::panicking::panic_nounwind_fmt::compiletime
-fn compiletime<'_0>(_1: Arguments<'_0>, _2: bool) -> !
+fn compiletime<'_0>(fmt_1: Arguments<'_0>, force_no_backtrace_2: bool) -> !
 {
     let _0: !; // return
     let fmt_1: Arguments<'1>; // arg #1
@@ -178,20 +173,12 @@ fn compiletime<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 pub fn size_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    undefined_behavior
-}
+= <intrinsic:size_of>
 
 pub fn core::intrinsics::align_of<T>() -> usize
 where
     [@TraitClause0]: Sized<T>,
-{
-    let _0: usize; // return
-
-    undefined_behavior
-}
+= <intrinsic:align_of>
 
 // Full name: core::marker::{impl Copy for usize}
 impl Copy for usize {
@@ -205,7 +192,7 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 = <missing>
 
 // Full name: core::panicking::panic_nounwind_fmt
-pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
+pub fn panic_nounwind_fmt<'_0>(fmt_1: Arguments<'_0>, force_no_backtrace_2: bool) -> !
 {
     let _0: !; // return
     let fmt_1: Arguments<'1>; // arg #1
@@ -225,7 +212,7 @@ pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
     _0 = compiletime<'6>(move _3.0, move _3.1)
 }
 
-fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(_1: usize)
+fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1: usize)
 {
     let _0: (); // return
     let align_1: usize; // arg #1
@@ -370,7 +357,7 @@ where
 }
 
 // Full name: core::ptr::alignment::{Alignment}::new
-pub fn new(_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
+pub fn new(align_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
 {
     let _0: Option<Alignment>[{built_in impl Sized for Alignment}]; // return
     let align_1: usize; // arg #1
@@ -418,7 +405,7 @@ fn unwrap_failed() -> !
 
 // Full name: core::option::{Option<T>[@TraitClause0]}::unwrap
 #[lang_item("option_unwrap")]
-pub fn unwrap<T>(_1: Option<T>[@TraitClause0]) -> T
+pub fn unwrap<T>(self_1: Option<T>[@TraitClause0]) -> T
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -657,7 +644,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(_1: *const (), _2: *mut ()
 
 // Full name: core::ptr::copy_nonoverlapping
 #[lang_item("ptr_copy_nonoverlapping")]
-pub unsafe fn copy_nonoverlapping<T>(_1: *const T, _2: *mut T, _3: usize)
+pub unsafe fn copy_nonoverlapping<T>(src_1: *const T, dst_2: *mut T, count_3: usize)
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -701,7 +688,7 @@ fn UNIT_METADATA()
 const UNIT_METADATA: () = UNIT_METADATA()
 
 // Full name: test_crate::write
-fn write<'_0, '_1, T>(_1: &'_0 mut T, _2: &'_1 T)
+fn write<'_0, '_1, T>(x_1: &'_0 mut T, y_2: &'_1 T)
 where
     [@TraitClause0]: Sized<T>,
 {

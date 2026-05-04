@@ -10,8 +10,8 @@
  *)
 
 open Identifiers
-open Meta
-open Values
+open Generated_Meta
+open Generated_Values
 
 module TypeVarId = IdGen ()
 module TypeDeclId = IdGen ()
@@ -37,6 +37,7 @@ type literal_type = Values.literal_type [@@deriving show, ord, eq]
    vectors in generic_params), which causes visitor inference problems if we
    declare it within a visitor group. *)
 type trait_type_constraint_id = TraitTypeConstraintId.id [@@deriving show, ord, eq]
+
 
 (* __REPLACE0__ *)
 

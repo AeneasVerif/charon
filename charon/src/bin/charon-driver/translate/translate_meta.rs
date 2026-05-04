@@ -8,8 +8,9 @@ use std::path::{Component, PathBuf};
 use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use super::translate_generics::BindingLevel;
+use crate::hax;
+use crate::hax::{DefPathItem, SInto};
 use charon_lib::ast::*;
-use hax::{DefPathItem, SInto};
 
 // Spans
 impl<'tcx> TranslateCtx<'tcx> {
@@ -22,12 +23,12 @@ impl<'tcx> TranslateCtx<'tcx> {
             None => {
                 let source_file = self.tcx.sess.source_map().lookup_source_file(span.lo());
                 let crate_name = self.tcx.crate_name(source_file.cnum).to_string();
-                let file = File {
+                let id = self.translated.files.push_with(|id| File {
+                    id,
                     name: filename.clone(),
                     crate_name,
                     contents: source_file.src.as_deref().cloned(),
-                };
-                let id = self.translated.files.push(file);
+                });
                 self.file_to_id.insert(filename, id);
                 id
             }
@@ -736,6 +737,20 @@ impl<'tcx> TranslateCtx<'tcx> {
         def.def_id()
             .parent(&self.hax_state)
             .is_some_and(|parent| matches!(parent.kind, hax::DefKind::ForeignMod))
+    }
+
+    /// If this is an item declared in an `extern { .. }` block, return its symbol name.
+    pub(crate) fn extern_item_symbol_name(&mut self, def: &hax::FullDef) -> Option<String> {
+        if !self.is_extern_item(def) {
+            return None;
+        }
+        let path_item = def.def_id().path_item(&self.hax_state);
+        match path_item.data {
+            hax::DefPathItem::ValueNs(name) | hax::DefPathItem::TypeNs(name) => {
+                Some(name.to_string())
+            }
+            _ => None,
+        }
     }
 
     /// Compute the meta information for a Rust item.
