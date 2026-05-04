@@ -171,11 +171,11 @@ fn translate_multi_target(
 
 fn translate_with_cargo(
     mut options: CliOpts,
-    mut cargo_args: Vec<String>,
+    cargo_args: Vec<String>,
 ) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
     if let Some(toml) = toml_config::read_toml() {
-        options = toml.apply(options, &mut cargo_args)?;
+        options = toml.apply(options);
     }
     options.validate()?;
     let mut cmd = toolchain::in_toolchain("cargo")?;

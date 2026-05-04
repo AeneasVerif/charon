@@ -1,15 +1,11 @@
 //! Processing of the contents of `[package.metadata.charon]` in `Cargo.toml`.
-use charon_lib::options::{CliOpts, Preset};
-use clap::ValueEnum;
+use charon_lib::options::CliOpts;
 use serde::Deserialize;
 
 /// The struct used to define the options available under `[package.metadata.charon]` in
 /// `Cargo.toml`. These all mirror the corresponding cli option.
 #[derive(Debug, Default, Deserialize)]
 pub struct TomlConfig {
-    /// Corresponds to `--preset`. Use the same names as the CLI (e.g. `"aeneas"`).
-    #[serde(default)]
-    pub preset: Option<String>,
     #[serde(default)]
     pub extract_opaque_bodies: bool,
     #[serde(default)]
@@ -30,8 +26,6 @@ pub struct TomlConfig {
     pub exclude: Vec<String>,
     #[serde(default)]
     pub rustc: RustcTomlConfig,
-    #[serde(default)]
-    pub cargo: CargoTomlConfig,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -40,29 +34,10 @@ pub struct RustcTomlConfig {
     pub flags: Vec<String>,
 }
 
-/// Extra arguments forwarded to `cargo build` (equivalent to flags after `--`).
-#[derive(Debug, Default, Deserialize)]
-pub struct CargoTomlConfig {
-    #[serde(default)]
-    pub flags: Vec<String>,
-}
-
 impl TomlConfig {
-    /// Applies the options specified in the toml file to the cli options and cargo args.
-    /// Scalar options (preset, start_from_attribute): CLI value wins if set; TOML value used
-    /// otherwise. Boolean options: OR of CLI and TOML. List options: always merged (both combined).
-    pub(crate) fn apply(
-        self,
-        mut config: CliOpts,
-        cargo_args: &mut Vec<String>,
-    ) -> anyhow::Result<CliOpts> {
-        if let (None, Some(s)) = (&config.preset, self.preset) {
-            config.preset = Some(
-                Preset::from_str(&s, true /* ignore_case */).map_err(|_| {
-                    anyhow::anyhow!("Unknown preset {s:?} in Cargo.toml. Valid values: aeneas, eurydice, soteria, old-defaults, raw-mir, tests")
-                })?,
-            );
-        }
+    /// Applies the options specified in the toml file to the cli options.
+    /// CLI options take precedence when relevant.
+    pub(crate) fn apply(self, mut config: CliOpts) -> CliOpts {
         config.extract_opaque_bodies |= self.extract_opaque_bodies;
         config.start_from.extend(self.start_from);
         config
@@ -77,8 +52,7 @@ impl TomlConfig {
         config.opaque.extend(self.opaque);
         config.exclude.extend(self.exclude);
         config.rustc_args.extend(self.rustc.flags);
-        cargo_args.extend(self.cargo.flags);
-        Ok(config)
+        config
     }
 }
 
