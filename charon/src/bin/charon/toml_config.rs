@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 /// The struct used to define the options available under `[package.metadata.charon]` in
 /// `Cargo.toml`. These all mirror the corresponding cli option.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct TomlConfig {
     #[serde(default)]
     pub extract_opaque_bodies: bool,
