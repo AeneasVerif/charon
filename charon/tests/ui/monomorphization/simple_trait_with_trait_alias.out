@@ -1,0 +1,81 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+struct test_crate::A::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::A
+trait A<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    vtable: test_crate::A::{vtable}
+}
+
+struct test_crate::B::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static test_crate::A::{vtable},
+}
+
+// Full name: test_crate::B
+trait B<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: A<Self>
+    vtable: test_crate::B::{vtable}
+}
+
+// Full name: test_crate::B::{impl B for i32}
+impl B for i32
+where
+    [@TraitClause0]: MetaSized<i32>,
+    [@TraitClause1]: A<i32>,
+{
+    parent_clause0 = @TraitClause0
+    parent_clause1 = @TraitClause1
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl A for i32}
+impl A for i32 {
+    parent_clause0 = {built_in impl MetaSized for i32}
+    vtable: {impl A for i32}::{vtable}
+}
+
+// Full name: test_crate::f::<i32>
+fn f::<i32>()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    _1 = f::<i32>()
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+
