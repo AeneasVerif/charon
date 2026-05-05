@@ -264,7 +264,7 @@ fn generate_ml(
                     ancestors: &["big_int"],
                     name: "literal",
                     reduce: true,
-                    extra_types: &[],
+                    extra_types: &["char_value"],
                 })), &[
                     "Literal",
                     "IntegerTy",

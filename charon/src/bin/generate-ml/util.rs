@@ -126,7 +126,7 @@ impl<'a> GenerateCtx<'a> {
     pub fn type_to_ocaml_name(&self, ty: &Ty) -> String {
         match ty.kind() {
             TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
-            TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
+            TyKind::Literal(LiteralTy::Char) => "char_value".to_string(),
             TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
                 // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
                 IntTy::I128 => "big_int".to_string(),
