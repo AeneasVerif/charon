@@ -173,8 +173,7 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
             match ucv.promoted {
                 Some(promoted) => {
                     let def_id = ucv.def.sinto(s).make_promoted_child(s, promoted);
-                    // The def_id is not the real one: we don't want trait resolution to happen.
-                    let item = ItemRef::translate_maybe_resolve_impl(s, false, def_id, ucv.args);
+                    let item = ItemRef::translate_from_hax_def_id(s, def_id, ucv.args);
                     assert!(item.in_trait.is_none());
                     Promoted(item)
                 }

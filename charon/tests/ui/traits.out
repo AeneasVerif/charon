@@ -1395,7 +1395,7 @@ pub fn test_crate::call<'a, F>(_1: F)
 where
     [@TraitClause0]: Sized<F>,
     [@TraitClause1]: Fn<F, (&'a (),)>,
-    @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'_ ())}],
+    @TraitClause1::parent_clause1::parent_clause1::Output = Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}],
 {
     let _0: (); // return
     let _1: F; // arg #1

@@ -266,7 +266,7 @@ where
     T : 'a,
 {
   head: &'a mut T,
-  tail: core::option::Option::<&_ mut _><'a, T>[{built_in impl core::marker::Sized::<&_ mut _><'_> for T}],
+  tail: core::option::Option::<&_ mut _><'a, T>[{built_in impl core::marker::Sized::<&_ mut _><'a> for T}],
 }
 
 #[lang_item("Option")]
@@ -666,7 +666,7 @@ where
 // Full name: test_crate::Example
 type Example<'a, 'b, T>
 where
-    [@TraitClause0]: Sized<T>, = test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[@TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'_, '_> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_>[{built_in impl core::marker::Sized::<&_ mut _><'_> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'_> for bool}]
+    [@TraitClause0]: Sized<T>, = test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[@TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'a, 'b> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'a>[{built_in impl core::marker::Sized::<&_ mut _><'a> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'a> for bool}]
 
 // Full name: test_crate::use_example
 fn use_example<'a, 'b, T>(_1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[@TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'a, 'b> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'a>[{built_in impl core::marker::Sized::<&_ mut _><'a> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'a> for bool}])

@@ -1,5 +1,6 @@
 //! Trait elaboration: given a trait reference, we track which impl and/or local clauses caused it to be true.
 #![feature(rustc_private)]
+#![allow(clippy::len_without_is_empty)]
 
 extern crate rustc_hir;
 extern crate rustc_infer;
@@ -9,17 +10,19 @@ extern crate rustc_trait_selection;
 extern crate rustc_type_ir;
 
 mod elaboration;
+mod item_ref;
 mod predicates;
 mod utils;
 
 pub use elaboration::*;
+pub use item_ref::*;
 pub use predicates::*;
 pub use utils::*;
 
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum DestructData<'tcx> {
     /// A drop that does nothing, e.g. for scalars and pointers.
     Noop,
@@ -35,7 +38,7 @@ pub enum DestructData<'tcx> {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum BuiltinTraitData<'tcx> {
     /// A virtual `Destruct` implementation.
     /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
@@ -46,12 +49,10 @@ pub enum BuiltinTraitData<'tcx> {
     Other,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum PathChunk<'tcx> {
     AssocItem {
-        item: ty::AssocItem,
-        /// The arguments provided to the item (for GATs). Includes trait args.
-        generic_args: ty::GenericArgsRef<'tcx>,
+        item: ItemRef<'tcx>,
         /// The implemented predicate.
         predicate: ty::PolyTraitRef<'tcx>,
         /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
@@ -66,13 +67,10 @@ pub enum PathChunk<'tcx> {
 }
 pub type Path<'tcx> = Vec<PathChunk<'tcx>>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ImplExprAtom<'tcx> {
     /// A concrete `impl Trait for Type {}` item.
-    Concrete {
-        def_id: DefId,
-        generics: ty::GenericArgsRef<'tcx>,
-    },
+    Concrete(ItemRef<'tcx>),
     /// A context-bound clause like `where T: Trait`.
     LocalBound {
         predicate: ty::Predicate<'tcx>,
@@ -109,7 +107,7 @@ pub enum ImplExprAtom<'tcx> {
     Error(String),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ImplExpr<'tcx> {
     /// The trait this is an impl for.
     pub r#trait: ty::PolyTraitRef<'tcx>,

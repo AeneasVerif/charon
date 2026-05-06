@@ -2569,7 +2569,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::find
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_1, T, P>(_1: &'_1 mut Iter<'a, T>[@TraitClause0], _2: P) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::find<'a, '_1, T, P>(_1: &'_1 mut Iter<'a, T>[@TraitClause0], _2: P) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<P>,
@@ -2619,7 +2619,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::last<'a, T>(_1: Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::last<'a, T>(_1: Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -2631,7 +2631,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[@TraitClause0], _2: usize) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[@TraitClause0], _2: usize) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -2649,13 +2649,13 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(_1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Result<[&'a T; N], IntoIter<&'a T, N>[{built_in impl Sized for &'_ T}]>[{built_in impl Sized for [&'_ T; N]}, {built_in impl Sized for IntoIter<&'_ T, N>[{built_in impl Sized for &'_ T}]}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next_chunk<'a, '_1, T, const N : usize>(_1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Result<[&'a T; N], IntoIter<&'a T, N>[{built_in impl Sized for &'a T}]>[{built_in impl Sized for [&'a T; N]}, {built_in impl Sized for IntoIter<&'a T, N>[{built_in impl Sized for &'a T}]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'_ T}]
+pub fn {impl Iterator for Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[@TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -3380,13 +3380,13 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::last<'a, T>(_1: Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::last<'a, T>(_1: Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[@TraitClause0], _2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[@TraitClause0], _2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -3404,7 +3404,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+pub fn {impl Iterator for Chunks<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -4236,13 +4236,13 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last<'a, T>(_1: ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::last<'a, T>(_1: ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(_1: &'_1 mut ChunksExact<'a, T>[@TraitClause0], _2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::nth<'a, '_1, T>(_1: &'_1 mut ChunksExact<'a, T>[@TraitClause0], _2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>
@@ -4260,7 +4260,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next
-pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'_ [T]}]
+pub fn {impl Iterator for ChunksExact<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut ChunksExact<'a, T>[@TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     [@TraitClause0]: Sized<T>,
 = <opaque>

@@ -368,6 +368,9 @@ impl<'tcx> ItemPredicates<'tcx> {
         predicates
     }
 
+    pub fn len(&self) -> usize {
+        self.predicates.len()
+    }
     pub fn iter(&self) -> impl Iterator<Item = ItemPredicate<'tcx>> {
         self.predicates.iter().copied()
     }

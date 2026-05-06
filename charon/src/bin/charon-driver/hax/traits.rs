@@ -21,7 +21,6 @@ pub enum ImplExprPathChunk {
         /// }
         /// ```
         item: ItemRef,
-        assoc_item: AssocItem,
         /// The implemented predicate.
         predicate: Binder<TraitRef>,
         /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
@@ -40,13 +39,11 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for elaboration
         match self {
             elaboration::PathChunk::AssocItem {
                 item,
-                generic_args,
                 predicate,
                 index,
                 ..
             } => ImplExprPathChunk::AssocItem {
-                item: translate_item_ref(s, item.def_id, generic_args),
-                assoc_item: AssocItem::sfrom(s, item),
+                item: item.sinto(s),
                 predicate: predicate.sinto(s),
                 index: index.sinto(s),
             },
@@ -67,9 +64,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for elaboration
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ImplExprAtom {
     /// A concrete `impl Trait for Type {}` item.
-    #[custom_arm(FROM_TYPE::Concrete { def_id, generics } => TO_TYPE::Concrete(
-        translate_item_ref(s, *def_id, generics),
-    ),)]
     Concrete(ItemRef),
     /// A context-bound clause like `where T: Trait`.
     LocalBound {
@@ -194,16 +188,11 @@ pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     trait_ref: rustc_middle::ty::PolyTraitRef<'tcx>,
 ) -> ImplExpr {
-    let warn = |_msg: &str| {};
     if let Some(impl_expr) = s.with_cache(|cache| cache.impl_exprs.get(&trait_ref).cloned()) {
         return impl_expr;
     }
-    let resolved =
-        s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref, &warn));
-    let impl_expr: ImplExpr = match resolved {
-        Ok(x) => x.sinto(s),
-        Err(e) => crate::hax::fatal!(s, "{}", e),
-    };
+    let impl_expr = s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref));
+    let impl_expr: ImplExpr = impl_expr.sinto(s);
     s.with_cache(|cache| cache.impl_exprs.insert(trait_ref, impl_expr.clone()));
     impl_expr
 }

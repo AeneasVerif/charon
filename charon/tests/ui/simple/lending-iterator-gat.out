@@ -151,8 +151,8 @@ where
     [@TraitClause0]: LendingIterator<Self>,
 = <method_without_default_body>
 
-// Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next
-pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next<'a, 'b, T>(self_1: &'b mut Option<&'a T>[{built_in impl Sized for &'_ T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
+// Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next
+pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>(self_1: &'b mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
 where
     [@TraitClause0]: Sized<T>,
 {
@@ -188,14 +188,14 @@ where
     return
 }
 
-// Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}
-impl<'a, T> LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]
+// Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}
+impl<'a, T> LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = {built_in impl MetaSized for Option<&'_ T>[{built_in impl Sized for &'_ T}]}
-    type Item<'b, Option<&'a T>[{built_in impl Sized for &'_ T}] : 'b> = &'b T
-    fn next<'b> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}::next<'a, 'b, T>[@TraitClause0]
+    type Item<'b, Option<&'a T>[{built_in impl Sized for &'a T}] : 'b> = &'b T
+    fn next<'b> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>[@TraitClause0]
     non-dyn-compatible
 }
 
@@ -395,7 +395,7 @@ pub fn main()
     _8 = &mut sum_4
     _7 = closure { 0: move _8 }
     storage_dead(_8)
-    _5 = for_each<Option<&'47 i32>[{built_in impl Sized for &'47 i32}], closure<'50>>[{built_in impl Sized for Option<&'47 i32>[{built_in impl Sized for &'47 i32}]}, {built_in impl Sized for closure<'50>}, {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'_ T}]}<'47, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ i32,)> for closure<'_0>}<'50, '86>](move _6, move _7)
+    _5 = for_each<Option<&'49 i32>[{built_in impl Sized for &'49 i32}], closure<'50>>[{built_in impl Sized for Option<&'49 i32>[{built_in impl Sized for &'49 i32}]}, {built_in impl Sized for closure<'50>}, {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}<'49, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ i32,)> for closure<'_0>}<'50, '86>](move _6, move _7)
     storage_live(_28)
     storage_live(_29)
     _29 = const 42 : i32
