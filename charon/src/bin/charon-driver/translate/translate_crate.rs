@@ -447,7 +447,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
-        // In mono mode, we keep generics of trait decls.
+        // In mono mode, we keep trait decls generic.
         let mut generics = if self.monomorphize() && !matches!(kind, TransItemSourceKind::TraitDecl)
         {
             GenericArgs::empty()

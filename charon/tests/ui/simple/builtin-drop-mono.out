@@ -31,12 +31,12 @@ impl Destruct for Global {    non-dyn-compatible
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: test_crate::<slice>::{impl Destruct for [String]}::<String>
+// Full name: test_crate::<slice>::{impl Destruct for [String]}
 impl Destruct for [String] {    non-dyn-compatible
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}::<String>, {impl Destruct for Global}]}::<[String], Global>
-impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}::<String>, {impl Destruct for Global}] {    non-dyn-compatible
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]}
+impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}] {    non-dyn-compatible
 }
 
 // Full name: alloc::string::String::{impl Destruct for String}
@@ -55,11 +55,11 @@ fn UNIT_METADATA()
 // Full name: UNIT_METADATA
 const UNIT_METADATA: () = UNIT_METADATA()
 
-// Full name: test_crate::<array>::{impl Destruct for [String; 4 : usize]}::<String, 4 : usize>
+// Full name: test_crate::<array>::{impl Destruct for [String; 4 : usize]}
 impl Destruct for [String; 4 : usize] {    non-dyn-compatible
 }
 
-// Full name: test_crate::<tuple_2>::{impl Destruct for (String, String)}::<String, String>
+// Full name: test_crate::<tuple_2>::{impl Destruct for (String, String)}
 impl Destruct for (String, String) {    non-dyn-compatible
 }
 
@@ -172,19 +172,19 @@ fn drop_array(_1: [String; 4 : usize])
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for [String; 4 : usize]}::<String, 4 : usize>] _1
+    drop[{impl Destruct for [String; 4 : usize]}] _1
     return
 }
 
 // Full name: test_crate::drop_slice
-fn drop_slice(_1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}::<String>, {impl Destruct for Global}])
+fn drop_slice(_1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}])
 {
     let _0: (); // return
-    let _1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}::<String>, {impl Destruct for Global}]; // arg #1
+    let _1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}::<String>, {impl Destruct for Global}]}::<[String], Global>] _1
+    drop[{impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]}] _1
     return
 }
 
@@ -196,7 +196,7 @@ fn drop_tuple(_1: (String, String))
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for (String, String)}::<String, String>] _1
+    drop[{impl Destruct for (String, String)}] _1
     return
 }
 

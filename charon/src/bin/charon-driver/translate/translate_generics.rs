@@ -475,7 +475,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        assert!(!self.binding_levels.is_empty());
         self.binding_levels.push(BindingLevel::new());
 
         // Call the continuation. Important: do not short-circuit on error here.

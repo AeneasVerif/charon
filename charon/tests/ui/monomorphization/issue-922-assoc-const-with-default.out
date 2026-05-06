@@ -22,7 +22,7 @@ pub trait SizedTypeProperties<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl SizedTypeProperties for ()}::<()>
+// Full name: test_crate::{impl SizedTypeProperties for ()}
 impl SizedTypeProperties for () {
     parent_clause0 = {built_in impl Sized for ()}
     non-dyn-compatible
@@ -36,7 +36,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = const {impl SizedTypeProperties for ()}::<()>::IS_ZST
+    _1 = const {impl SizedTypeProperties for ()}::IS_ZST
     storage_dead(_1)
     _0 = ()
     return
