@@ -1,5 +1,6 @@
 //! Trait elaboration: given a trait reference, we track which impl and/or local clauses caused it to be true.
 #![feature(rustc_private)]
+#![allow(clippy::len_without_is_empty)]
 
 extern crate rustc_hir;
 extern crate rustc_infer;
