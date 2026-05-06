@@ -9,15 +9,9 @@ provides various options and flags to tweak its behaviour: you can display a
 detailed documentation with `--help`.
 In particular, you can pretty-print the translated crate with both `--print-ullbc` and `--print-llbc`, depending on the Charon intermediate representation you wish to use.
 
-If there is a `Charon.toml` file at the root of your project, `charon` will also take options from it.
-The file supports the same options at the cli interface, except for the options that relate to
-input/output like `--print-llbc`. Example `Charon.toml`:
-```toml
-[charon]
-extract_opaque_bodies = true
-[rustc]
-flags = ["--cfg", "abc"]
-```
+Charon supports per-crate configuration via the `[package.metadata.charon]` section in `Cargo.toml`. 
+The exact list can be found by looking at `src/bin/charon/toml_config.rs`. 
+If an option is set both as a CLI flag and as a toml value and we can't merge them, the CLI flag wins.
 
 **Remark**: because Charon is compiled with Rust nightly (this is a requirement to implement a rustc
 driver), it will build your crate with Rust nightly. You can find the nightly version pinned for

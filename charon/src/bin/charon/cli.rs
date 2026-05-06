@@ -13,7 +13,8 @@ pub struct Cli {
 pub enum Charon {
     /// Runs charon on a single rust file (and the modules it references, if any).
     Rustc(RustcArgs),
-    /// Runs charon on a cargo project.
+    /// Runs charon on a cargo project. If a `[package.metadata.charon]` section is present in
+    /// `Cargo.toml`, options are also read from it.
     Cargo(CargoArgs),
     /// Print the path to the rustc toolchain used by charon.
     ToolchainPath(ToolchainPathArgs),

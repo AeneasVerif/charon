@@ -49,8 +49,8 @@ fn UNIT_METADATA()
 // Full name: UNIT_METADATA
 const UNIT_METADATA: () = UNIT_METADATA()
 
-// Full name: test_cargo_toml::main
-fn main()
+// Full name: test_cargo_toml::included::run
+pub fn run()
 {
     let _0: (); // return
     let _1: bool; // anonymous local
