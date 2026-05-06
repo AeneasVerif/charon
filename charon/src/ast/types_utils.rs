@@ -459,6 +459,12 @@ impl GenericArgs {
             ..Self::empty()
         }
     }
+    pub fn new_lifetimes(regions: IndexVec<RegionId, Region>) -> Self {
+        Self {
+            regions,
+            ..Self::empty()
+        }
+    }
 
     /// Check whether this matches the given `GenericParams`.
     /// TODO: check more things, e.g. that the trait refs use the correct trait and generics.

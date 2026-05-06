@@ -47,12 +47,6 @@ pub opaque type String
 unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
-// Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
-    fn drop_in_place = {impl Destruct for String}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
 pub fn new() -> String
@@ -98,7 +92,7 @@ unsafe fn {impl Destruct for Foo}::drop_in_place(_1: *mut Foo)
     storage_live(_2)
     _0 = ()
     _2 = &mut (*_1)
-    drop[{impl Destruct for String}] ((*_2)).1
+    drop[{impl Destruct for String}::drop_in_place] ((*_2)).1
     return
 }
 
@@ -196,7 +190,7 @@ fn main()
     _9 = Foo(const 42 : u32, move _11)
     storage_dead(_11)
     storage_dead(_10)
-    conditional_drop[{impl Destruct for Foo}] _9
+    conditional_drop[{impl Destruct for Foo}::drop_in_place] _9
     storage_live(_18)
     storage_live(_19)
     _19 = const 42 : i32

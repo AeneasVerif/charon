@@ -81,17 +81,6 @@ impl Display for Str {
     vtable: {impl Display for Str}::{vtable}
 }
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
-= <opaque>
-
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -116,12 +105,6 @@ pub opaque type String
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
-
-// Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
-    fn drop_in_place = {impl Destruct for String}::drop_in_place
-    non-dyn-compatible
-}
 
 // Full name: alloc::string::{String}::is_empty
 pub fn is_empty<'_0>(_1: &'_0 String) -> bool
@@ -1278,8 +1261,8 @@ fn main()
     if move _10 {
     } else {
         storage_dead(_11)
-        conditional_drop[{impl Destruct for String}] _12
-        conditional_drop[{impl Destruct for String}] _15
+        conditional_drop[{impl Destruct for String}::drop_in_place] _12
+        conditional_drop[{impl Destruct for String}::drop_in_place] _15
         storage_dead(_17)
         storage_dead(_15)
         storage_dead(_14)
@@ -1507,8 +1490,8 @@ fn main()
         return
     }
     storage_dead(_11)
-    conditional_drop[{impl Destruct for String}] _12
-    conditional_drop[{impl Destruct for String}] _15
+    conditional_drop[{impl Destruct for String}::drop_in_place] _12
+    conditional_drop[{impl Destruct for String}::drop_in_place] _15
     storage_dead(_17)
     storage_dead(_15)
     storage_dead(_14)

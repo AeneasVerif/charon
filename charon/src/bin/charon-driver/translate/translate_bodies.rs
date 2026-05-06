@@ -1277,11 +1277,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         target: &mir::BasicBlock,
         unwind: &mir::UnwindAction,
     ) -> Result<TerminatorKind, Error> {
-        let tref = {
-            let place_ty = place.ty(self.local_decls, self.tcx).ty;
-            let impl_expr = &hax::solve_destruct(&self.hax_state, place_ty);
-            self.translate_trait_impl_expr(span, impl_expr)?
-        };
+        let place_ty = place.ty(self.local_decls, self.tcx).ty;
+        let fn_ptr = self.translate_drop_in_place_method_call(span, place_ty)?;
         let place = self.translate_place(span, place)?;
         let target = self.translate_basic_block_id(*target);
         let on_unwind = self.translate_unwind_action(span, unwind);
@@ -1289,7 +1286,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         Ok(TerminatorKind::Drop {
             kind: self.drop_kind,
             place,
-            tref,
+            fn_ptr,
             target,
             on_unwind,
         })

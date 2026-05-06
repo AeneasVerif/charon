@@ -38,17 +38,6 @@ where
     [@TraitClause0]: Debug<Self>,
 = <opaque>
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
-= <opaque>
-
 // Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap
 pub fn unwrap<T, E>(_1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
@@ -92,16 +81,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 = <opaque>
-
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
-}
 
 // Full name: alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::new
 #[lang_item("vec_new")]
@@ -162,7 +141,7 @@ fn main()
     storage_dead(_7)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf_1
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf_1
     storage_dead(buf_1)
     return
 }

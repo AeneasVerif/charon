@@ -81,7 +81,7 @@ where
     _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for @TraitClause1::Type}] x_1
+    conditional_drop[{built_in impl Destruct for @TraitClause1::Type}::drop_in_place] x_1
     return
 }
 

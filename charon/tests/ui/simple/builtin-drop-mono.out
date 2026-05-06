@@ -19,6 +19,17 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+unsafe fn core::marker::Destruct::drop_in_place::<[String; 4 : usize]>(_1: *mut [String; 4 : usize])
+= <missing>
+
+// Full name: test_crate::<slice>::{impl Destruct for [String]}
+impl Destruct for [String] {    non-dyn-compatible
+}
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -27,13 +38,14 @@ pub struct Global {}
 impl Destruct for Global {    non-dyn-compatible
 }
 
-// Full name: alloc::string::String
-#[lang_item("String")]
-pub opaque type String
+unsafe fn core::marker::Destruct::drop_in_place::<alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]>(_1: *mut alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}])
+= <missing>
 
-// Full name: test_crate::<slice>::{impl Destruct for [String]}
-impl Destruct for [String] {    non-dyn-compatible
-}
+unsafe fn core::marker::Destruct::drop_in_place::<(String, String)>(_1: *mut (String, String))
+= <missing>
+
+unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
+= <missing>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]}
 impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}] {    non-dyn-compatible
@@ -102,7 +114,7 @@ unsafe fn {impl Destruct for [String; 4 : usize]}::drop_in_place::<String, 4 : u
             _10 = @SliceIndexMut<'_, String>(move _9, copy _6)
             _7 = &raw mut (*_10)
             _6 = move _6 wrap.+ const 1 : usize
-            drop[{impl Destruct for String}] (*_7)
+            drop[{impl Destruct for String}::drop_in_place] (*_7)
             continue 0
         }
     }
@@ -142,7 +154,7 @@ unsafe fn {impl Destruct for [String]}::drop_in_place::<String>(_1: *mut [String
             _8 = @SliceIndexMut<'_, String>(move _7, copy _4)
             _5 = &raw mut (*_8)
             _4 = move _4 wrap.+ const 1 : usize
-            drop[{impl Destruct for String}] (*_5)
+            drop[{impl Destruct for String}::drop_in_place] (*_5)
             continue 0
         }
     }
@@ -159,8 +171,8 @@ unsafe fn {impl Destruct for (String, String)}::drop_in_place::<String, String>(
     storage_live(_2)
     _0 = ()
     _2 = &mut (*_1)
-    drop[{impl Destruct for String}] (*_2).0
-    drop[{impl Destruct for String}] (*_2).1
+    drop[{impl Destruct for String}::drop_in_place] (*_2).0
+    drop[{impl Destruct for String}::drop_in_place] (*_2).1
     return
 }
 
@@ -172,7 +184,7 @@ fn drop_array(_1: [String; 4 : usize])
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for [String; 4 : usize]}] _1
+    drop[{impl Destruct for [String; 4 : usize]}::drop_in_place] _1
     return
 }
 
@@ -184,7 +196,7 @@ fn drop_slice(_1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [Stri
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]}] _1
+    drop[{impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]}::drop_in_place] _1
     return
 }
 
@@ -196,7 +208,7 @@ fn drop_tuple(_1: (String, String))
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for (String, String)}] _1
+    drop[{impl Destruct for (String, String)}::drop_in_place] _1
     return
 }
 

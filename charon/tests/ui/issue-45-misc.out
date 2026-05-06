@@ -344,7 +344,7 @@ fn {impl FnOnce<(i32,)> for closure}::call_once(_1: closure, _2: (i32,)) -> i32
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(i32,)> for closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for closure}] _1
+    drop[{impl Destruct for closure}::drop_in_place] _1
     return
 }
 

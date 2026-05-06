@@ -105,7 +105,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for F}] _1
+    conditional_drop[{built_in impl Destruct for F}::drop_in_place] _1
     return
 }
 

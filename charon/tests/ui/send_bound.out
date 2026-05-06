@@ -39,7 +39,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for M}] _msg_1
+    conditional_drop[{built_in impl Destruct for M}::drop_in_place] _msg_1
     return
 }
 

@@ -55,7 +55,7 @@ pub enum StatementKind {
     /// Depending on `DropKind`, this may be a real call to `drop_in_place`, or a conditional call
     /// that should only happen if the place has not been moved out of. See the docs of `DropKind`
     /// for more details; to get precise drops use `--precise-drops`.
-    Drop(Place, TraitRef, #[drive(skip)] DropKind),
+    Drop(Place, FnPtr, #[drive(skip)] DropKind),
     Assert {
         assert: Assert,
         on_failure: AbortKind,

@@ -137,12 +137,6 @@ fn foo()
 unsafe fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(_1: *mut closure<'_0>)
 = <missing>
 
-// Full name: test_crate::foo::closure::{impl Destruct for closure<'_0>}
-impl<'_0> Destruct for closure<'_0> {
-    fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::foo::{impl FnOnce<()> for closure<'_0>}::call_once
 fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(_1: closure<'_0>, _2: ())
 {
@@ -155,7 +149,7 @@ fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(_1: closure<'_0>, _2: ())
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '5>(move _3, move _2)
-    drop[{impl Destruct for closure<'_0>}<'_0>] _1
+    drop[{impl Destruct for closure<'_0>}::drop_in_place<'_0>] _1
     return
 }
 
@@ -177,6 +171,12 @@ impl<'_0> FnMut<()> for closure<'_0> {
     parent_clause2 = {built_in impl Sized for ()}
     parent_clause3 = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::foo::closure::{impl Destruct for closure<'_0>}
+impl<'_0> Destruct for closure<'_0> {
+    fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
     non-dyn-compatible
 }
 

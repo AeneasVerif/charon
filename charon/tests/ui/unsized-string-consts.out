@@ -49,17 +49,6 @@ impl Display for Str {
     vtable: {impl Display for Str}::{vtable}
 }
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
-= <opaque>
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -67,12 +56,6 @@ pub opaque type String
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
-
-// Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
-    fn drop_in_place = {impl Destruct for String}::drop_in_place
-    non-dyn-compatible
-}
 
 // Full name: alloc::string::{impl ToString for T}::to_string
 pub fn {impl ToString for T}::to_string<'_0, T>(_1: &'_0 T) -> String
@@ -167,7 +150,7 @@ fn main()
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[{impl Destruct for String}] _s_1
+    conditional_drop[{impl Destruct for String}::drop_in_place] _s_1
     storage_dead(_s_1)
     return
 }

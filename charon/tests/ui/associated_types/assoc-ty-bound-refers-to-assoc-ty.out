@@ -60,7 +60,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for I}] it_1
+    conditional_drop[{built_in impl Destruct for I}::drop_in_place] it_1
     return
 }
 
@@ -93,7 +93,7 @@ where
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for Clause1_IntoIter}] it_1
+    conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_in_place] it_1
     return
 }
 

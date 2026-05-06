@@ -59,7 +59,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for I}] iter_1
+    conditional_drop[{built_in impl Destruct for I}::drop_in_place] iter_1
     return
 }
 

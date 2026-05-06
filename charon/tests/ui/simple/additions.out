@@ -36,6 +36,10 @@ where
     [@TraitClause0]: Clone<Self>,
 = <method_without_default_body>
 
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(_1: *mut Self)
+= <missing>
+
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self_1: &'_0 mut Self, source_2: &'_1 Self)
 where
     [@TraitClause0]: Clone<Self>,
@@ -49,7 +53,7 @@ where
     _0 = ()
     storage_live(_3)
     _3 = @TraitClause0::clone<'5>(move source_2)
-    drop[@TraitClause1] (*self_1)
+    drop[@TraitClause1::drop_in_place] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
     return
@@ -78,7 +82,7 @@ where
     _0 = ()
     storage_live(_3)
     _3 = {impl Clone for u8}::clone<'5>(move source_2)
-    drop[@TraitClause0] (*self_1)
+    drop[@TraitClause0::drop_in_place] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
     return
@@ -113,10 +117,6 @@ impl Copy for u8 {
     parent_clause1 = {impl Clone for u8}
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(_1: *mut Self)
-= <missing>
 
 pub fn core::num::{u8}::saturating_add(self_1: u8, rhs_2: u8) -> u8
 {

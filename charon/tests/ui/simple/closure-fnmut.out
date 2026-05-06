@@ -97,7 +97,7 @@ where
     _0 = @TraitClause1::call_mut<'3>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T0}] f_1
+    conditional_drop[{built_in impl Destruct for T0}::drop_in_place] f_1
     return
 }
 
@@ -139,12 +139,6 @@ fn {impl FnMut<(u8,)> for closure<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut closure
 unsafe fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(_1: *mut closure<'_0>)
 = <missing>
 
-// Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
-impl<'_0> Destruct for closure<'_0> {
-    fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure<'_0>}::call_once
 fn {impl FnOnce<(u8,)> for closure<'_0>}::call_once<'_0>(_1: closure<'_0>, _2: (u8,)) -> u8
 {
@@ -156,7 +150,7 @@ fn {impl FnOnce<(u8,)> for closure<'_0>}::call_once<'_0>(_1: closure<'_0>, _2: (
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u8,)> for closure<'_0>}::call_mut<'_0, '5>(move _3, move _2)
-    drop[{impl Destruct for closure<'_0>}<'_0>] _1
+    drop[{impl Destruct for closure<'_0>}::drop_in_place<'_0>] _1
     return
 }
 
@@ -205,6 +199,12 @@ fn main()
     _0 = ()
     storage_dead(z_1)
     return
+}
+
+// Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
+impl<'_0> Destruct for closure<'_0> {
+    fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
+    non-dyn-compatible
 }
 
 

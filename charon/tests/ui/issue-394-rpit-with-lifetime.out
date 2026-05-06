@@ -120,12 +120,6 @@ fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>,
 unsafe fn {impl Destruct for closure<'a>}::drop_in_place<'a>(_1: *mut closure<'a>)
 = <missing>
 
-// Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}
-impl<'a> Destruct for closure<'a> {
-    fn drop_in_place = {impl Destruct for closure<'a>}::drop_in_place<'a>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'a>}::call_once
 fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(_1: closure<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
@@ -137,7 +131,7 @@ fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(_1: closure<'a>, _2: ()) -> 
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<()> for closure<'a>}::call_mut<'a, '5>(move _3, move _2)
-    drop[{impl Destruct for closure<'a>}<'a>] _1
+    drop[{impl Destruct for closure<'a>}::drop_in_place<'a>] _1
     return
 }
 
@@ -173,6 +167,12 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for clos
     _0 = from_fn<u8, closure<'11>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'11>}, {impl FnMut<()> for closure<'a>}<'11>](move _1)
     storage_dead(_1)
     return
+}
+
+// Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}
+impl<'a> Destruct for closure<'a> {
+    fn drop_in_place = {impl Destruct for closure<'a>}::drop_in_place<'a>
+    non-dyn-compatible
 }
 
 

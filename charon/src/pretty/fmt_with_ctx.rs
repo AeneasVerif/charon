@@ -1815,7 +1815,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             TerminatorKind::Drop {
                 kind,
                 place,
-                tref,
+                fn_ptr,
                 target,
                 on_unwind,
             } => {
@@ -1826,7 +1826,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 write!(
                     f,
                     "{kind}[{}] {} -> bb{target} (unwind: bb{on_unwind})",
-                    tref.with_ctx(ctx),
+                    fn_ptr.with_ctx(ctx),
                     place.with_ctx(ctx),
                 )
             }

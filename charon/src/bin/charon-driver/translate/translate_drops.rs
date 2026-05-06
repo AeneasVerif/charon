@@ -1,11 +1,36 @@
-use crate::translate::translate_crate::TransItemSourceKind;
+use rustc_middle::ty;
 
 use super::translate_ctx::*;
 use crate::hax;
 use crate::hax::FullDefKind;
+use crate::translate::translate_crate::TransItemSourceKind;
 use charon_lib::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
 
-impl ItemTransCtx<'_, '_> {
+impl<'tcx> ItemTransCtx<'tcx, '_> {
+    /// Translate a call to `drop_in_place` for that type.
+    pub fn translate_drop_in_place_method_call(
+        &mut self,
+        span: Span,
+        ty: ty::Ty<'tcx>,
+    ) -> Result<FnPtr, Error> {
+        let impl_expr = hax::solve_destruct(self.hax_state_with_id(), ty);
+        let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
+        let method_id = self.register_item(
+            span,
+            impl_expr.r#trait.hax_skip_binder_ref(),
+            TransItemSourceKind::DropInPlaceMethod(None),
+        );
+        let fn_ptr = FnPtr {
+            kind: Box::new(FnPtrKind::Trait(
+                tref,
+                TraitItemName("drop_in_place".into()),
+                method_id,
+            )),
+            generics: Box::new(GenericArgs::empty()),
+        };
+        Ok(fn_ptr)
+    }
+
     fn translate_drop_in_place_method_body(
         &mut self,
         span: Span,

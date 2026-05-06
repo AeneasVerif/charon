@@ -44,6 +44,10 @@ where
     [@TraitClause0]: Clone<Self>,
 = <method_without_default_body>
 
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(_1: *mut Self)
+= <missing>
+
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self_1: &'_0 mut Self, source_2: &'_1 Self)
 where
     [@TraitClause0]: Clone<Self>,
@@ -57,7 +61,7 @@ where
     _0 = ()
     storage_live(_3)
     _3 = @TraitClause0::clone<'5>(move source_2)
-    drop[@TraitClause1] (*self_1)
+    drop[@TraitClause1::drop_in_place] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
     return
@@ -86,7 +90,7 @@ where
     _0 = ()
     storage_live(_3)
     _3 = {impl Clone for usize}::clone<'5>(move source_2)
-    drop[@TraitClause0] (*self_1)
+    drop[@TraitClause0::drop_in_place] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
     return
@@ -186,10 +190,6 @@ impl Copy for usize {
     parent_clause1 = {impl Clone for usize}
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(_1: *mut Self)
-= <missing>
 
 // Full name: core::panicking::panic_nounwind_fmt
 pub fn panic_nounwind_fmt<'_0>(fmt_1: Arguments<'_0>, force_no_backtrace_2: bool) -> !

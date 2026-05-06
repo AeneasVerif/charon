@@ -18,6 +18,30 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 
+struct test_crate::main::closure<'_0> {
+  &'_0 u8,
+}
+
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure<'_>>(_1: *mut test_crate::main::closure<'_>)
+= <opaque>
+
+struct test_crate::main::closure#1<'_0> {
+  &'_0 mut u8,
+}
+
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#1<'_>>(_1: *mut test_crate::main::closure#1<'_>)
+= <opaque>
+
+// Full name: test_crate::Thing
+struct Thing {}
+
+struct test_crate::main::closure#2 {
+  Thing,
+}
+
+unsafe fn core::marker::Destruct::drop_in_place::<test_crate::main::closure#2>(_1: *mut test_crate::main::closure#2)
+= <opaque>
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -64,28 +88,13 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}
 }
 
-struct test_crate::main::closure<'_0> {
-  &'_0 u8,
-}
-
 // Full name: core::ops::function::Fn::call
 pub fn call<'_0>(_1: &'_0 test_crate::main::closure<'_>, _2: (u8,)) -> u8
 = <opaque>
 
-struct test_crate::main::closure#1<'_0> {
-  &'_0 mut u8,
-}
-
 // Full name: core::ops::function::FnMut::call_mut
 pub fn call_mut<'_0>(_1: &'_0 mut test_crate::main::closure#1<'_>, _2: (u8,)) -> u8
 = <opaque>
-
-// Full name: test_crate::Thing
-struct Thing {}
-
-struct test_crate::main::closure#2 {
-  Thing,
-}
 
 // Full name: core::ops::function::FnOnce::call_once
 pub fn call_once(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
@@ -148,7 +157,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(f_1: test_crate::main::closure
     _0 = {impl Fn<(u8,)> for test_crate::main::closure<'_0>}<'8>::call<'9>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for test_crate::main::closure<'_0>}<'15>] f_1
+    conditional_drop[{impl Destruct for test_crate::main::closure<'_0>}<'15>::drop_in_place] f_1
     return
 }
 
@@ -188,7 +197,7 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(f_1: test_crate::main::c
     _0 = {impl FnMut<(u8,)> for test_crate::main::closure#1<'_0>}<'8>::call_mut<'9>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for test_crate::main::closure#1<'_0>}<'15>] f_1
+    conditional_drop[{impl Destruct for test_crate::main::closure#1<'_0>}<'15>::drop_in_place] f_1
     return
 }
 
@@ -219,7 +228,7 @@ fn apply_to_zero_once::<test_crate::main::closure#2>(f_1: test_crate::main::clos
     _0 = {impl FnOnce<(u8,)> for test_crate::main::closure#2}::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for test_crate::main::closure#2}] f_1
+    conditional_drop[{impl Destruct for test_crate::main::closure#2}::drop_in_place] f_1
     return
 }
 

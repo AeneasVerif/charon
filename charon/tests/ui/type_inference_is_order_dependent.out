@@ -216,7 +216,7 @@ where
     _1 = _print<'29>(move _2)
     storage_dead(_2)
     storage_dead(args_6)
-    conditional_drop[{built_in impl Destruct for U}] _5
+    conditional_drop[{built_in impl Destruct for U}::drop_in_place] _5
     storage_dead(_5)
     storage_dead(args_3)
     storage_dead(_1)

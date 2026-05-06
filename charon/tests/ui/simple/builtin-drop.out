@@ -46,18 +46,6 @@ where
     [@TraitClause3]: Destruct<A>,
 = <opaque>
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}
-impl<T, A> Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Destruct<T>,
-    [@TraitClause3]: Destruct<A>,
-{
-    fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-    non-dyn-compatible
-}
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -126,7 +114,7 @@ where
             _10 = @SliceIndexMut<'_, T>(move _9, copy _6)
             _7 = &raw mut (*_10)
             _6 = move _6 wrap.+ const 1 : usize
-            drop[@TraitClause1] (*_7)
+            drop[@TraitClause1::drop_in_place] (*_7)
             continue 0
         }
     }
@@ -179,7 +167,7 @@ where
             _8 = @SliceIndexMut<'_, T>(move _7, copy _4)
             _5 = &raw mut (*_8)
             _4 = move _4 wrap.+ const 1 : usize
-            drop[@TraitClause1] (*_5)
+            drop[@TraitClause1::drop_in_place] (*_5)
             continue 0
         }
     }
@@ -210,8 +198,8 @@ where
     storage_live(_2)
     _0 = ()
     _2 = &mut (*_1) with_metadata(copy _1.metadata)
-    drop[@TraitClause1] (*_2).0
-    drop[@TraitClause2] (*_2).1
+    drop[@TraitClause1::drop_in_place] (*_2).0
+    drop[@TraitClause2::drop_in_place] (*_2).1
     return
 }
 
@@ -234,7 +222,7 @@ fn drop_array(_1: [String; 4 : usize])
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for [T; N]}<String, 4 : usize>[{built_in impl Sized for String}, {impl Destruct for String}]] _1
+    drop[{impl Destruct for [T; N]}::drop_in_place<String, 4 : usize>[{built_in impl Sized for String}, {impl Destruct for String}]] _1
     return
 }
 
@@ -246,7 +234,7 @@ fn drop_slice(_1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [Stri
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}<[String], Global>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]] _1
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<[String], Global>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]] _1
     return
 }
 
@@ -263,7 +251,7 @@ where
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for (A, B)}<A, B>[@TraitClause0, @TraitClause2, @TraitClause3]] _1
+    drop[{impl Destruct for (A, B)}::drop_in_place<A, B>[@TraitClause0, @TraitClause2, @TraitClause3]] _1
     return
 }
 

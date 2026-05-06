@@ -133,7 +133,8 @@ pub enum TerminatorKind {
         #[drive(skip)]
         kind: DropKind,
         place: Place,
-        tref: TraitRef,
+        /// Reference to the `drop_in_place` code to call on drop.
+        fn_ptr: FnPtr,
         target: BlockId,
         on_unwind: BlockId,
     },

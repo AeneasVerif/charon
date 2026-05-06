@@ -74,8 +74,8 @@ fn foo(f_1: Foo)
     storage_dead(_2)
     _0 = ()
     // Only `y` and `z` should be dropped here
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Destruct for u32}, {impl Destruct for Global}]] (f_1).y
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Destruct for u32}, {impl Destruct for Global}]] (f_1).z
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Destruct for u32}, {impl Destruct for Global}]] (f_1).y
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Destruct for u32}, {impl Destruct for Global}]] (f_1).z
     return
 }
 

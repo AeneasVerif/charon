@@ -117,7 +117,7 @@ unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn MyTrait))
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn MyTrait + '1), *mut MyStruct>(move dyn_self_1)
-    drop[{impl Destruct for MyStruct}] (*target_self_2)
+    drop[{impl Destruct for MyStruct}::drop_in_place] (*target_self_2)
     return
 }
 

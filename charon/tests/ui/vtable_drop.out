@@ -209,7 +209,7 @@ where
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>(move dyn_self_1)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]] (*target_self_2)
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]] (*target_self_2)
     return
 }
 
@@ -288,7 +288,7 @@ where
     _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]] _5
+    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]] _5
     storage_dead(_5)
     storage_dead(x_2)
     return

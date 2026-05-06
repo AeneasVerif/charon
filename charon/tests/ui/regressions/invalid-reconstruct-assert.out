@@ -199,7 +199,7 @@ where
         _46 = Result::Err { 0: const 0 : usize };
         _0 = move _46;
         storage_dead(size_3);
-        drop[{built_in impl Destruct for F}] f_2 -> bb31 (unwind: bb3);
+        drop[{built_in impl Destruct for F}::drop_in_place] f_2 -> bb31 (unwind: bb3);
     }
 
     bb2: {
@@ -302,7 +302,7 @@ where
     }
 
     bb13: {
-        drop[{built_in impl Destruct for F}] f_2 -> bb18 (unwind: bb19);
+        drop[{built_in impl Destruct for F}::drop_in_place] f_2 -> bb18 (unwind: bb19);
     }
 
     bb14: {
@@ -406,7 +406,7 @@ where
     bb28: {
         storage_dead(cmp_18);
         storage_dead(size_3);
-        drop[{built_in impl Destruct for F}] f_2 -> bb32 (unwind: bb30);
+        drop[{built_in impl Destruct for F}::drop_in_place] f_2 -> bb32 (unwind: bb30);
     }
 
     bb29: {
@@ -477,12 +477,6 @@ fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(_1: &'_1 mut closure
 unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
 = <missing>
 
-// Full name: test_crate::main::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}::call_once
 fn {impl FnOnce<(&'_ u32,)> for closure}::call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
 {
@@ -498,11 +492,11 @@ fn {impl FnOnce<(&'_ u32,)> for closure}::call_once<'_0>(_1: closure, _2: (&'_0 
     }
 
     bb1: {
-        drop[{impl Destruct for closure}] _1 -> bb3 (unwind: bb4);
+        drop[{impl Destruct for closure}::drop_in_place] _1 -> bb3 (unwind: bb4);
     }
 
     bb2: {
-        drop[{impl Destruct for closure}] _1 -> bb6 (unwind: bb5);
+        drop[{impl Destruct for closure}::drop_in_place] _1 -> bb6 (unwind: bb5);
     }
 
     bb3: {
@@ -592,6 +586,12 @@ fn main()
         storage_dead(a_1);
         return;
     }
+}
+
+// Full name: test_crate::main::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
 }
 
 

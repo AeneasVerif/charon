@@ -2,14 +2,24 @@ use crate::transform::TransformCtx;
 use crate::transform::ctx::FusedUllbcPass;
 use crate::ullbc_ast::*;
 
+fn is_noop_destruct(glue: &FnPtr) -> bool {
+    match glue.kind.as_ref() {
+        FnPtrKind::Trait(tref, _, _) => matches!(
+            &tref.kind,
+            TraitRefKind::BuiltinOrAuto {
+                builtin_data: BuiltinImplData::NoopDestruct,
+                ..
+            }
+        ),
+        _ => false,
+    }
+}
+
 fn is_trivial_drop(stmt: &Terminator) -> bool {
     matches!(
         &stmt.kind,
-        TerminatorKind::Drop {  tref, .. }
-            if matches!(
-                &tref.kind,
-                TraitRefKind::BuiltinOrAuto { builtin_data: BuiltinImplData::NoopDestruct, .. }
-            )
+        TerminatorKind::Drop { fn_ptr, .. }
+            if is_noop_destruct(fn_ptr)
     )
 }
 

@@ -30,6 +30,9 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+= <missing>
+
 // Full name: core::bool::{bool}::then_some
 pub fn then_some<T>(self_1: bool, t_2: T) -> Option<T>[@TraitClause0]
 where
@@ -44,7 +47,7 @@ where
     if copy self_1 {
     } else {
         _0 = Option::None {  }
-        drop[@TraitClause1] t_2
+        drop[@TraitClause1::drop_in_place] t_2
         return
     }
     storage_live(_3)
@@ -101,9 +104,6 @@ pub fn {impl From<i32> for i64}::from(small_1: i32) -> i64
 // Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
 pub struct PhantomData<T> {}
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
-= <missing>
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
@@ -175,16 +175,6 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 = <opaque>
-
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
-}
 
 // Full name: issue_114_opaque_bodies_aux::inline_always
 pub fn inline_always() -> u32
@@ -306,7 +296,7 @@ fn vec(_x_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Gl
 
     _0 = ()
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
     return
 }
 
@@ -330,7 +320,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}] _x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_in_place] _x_1
     return
 }
 
