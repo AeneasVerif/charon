@@ -64,7 +64,7 @@ fn foo(_1: PortableHash<42 : usize>)
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for PortableHash<K>}<42 : usize>] _1
+    drop[{impl Destruct for PortableHash<K>}::drop_in_place<42 : usize>] _1
     return
 }
 

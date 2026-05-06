@@ -110,6 +110,10 @@ where
 
 struct test_crate::main::closure#1 {}
 
+// Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1}::drop_in_place
+unsafe fn {impl Destruct for test_crate::main::closure#1}::drop_in_place(_1: *mut test_crate::main::closure#1)
+= <missing>
+
 // Full name: test_crate::main::{impl Fn<(&'_ u16,)> for test_crate::main::closure#1}::call
 fn {impl Fn<(&'_ u16,)> for test_crate::main::closure#1}::call<'_0, '_1>(_1: &'_1 test_crate::main::closure#1, tupled_args_2: (&'_0 u16,))
 {
@@ -140,16 +144,6 @@ fn {impl FnMut<(&'_ u16,)> for test_crate::main::closure#1}::call_mut<'_0, '_1>(
     return
 }
 
-// Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1}::drop_in_place
-unsafe fn {impl Destruct for test_crate::main::closure#1}::drop_in_place(_1: *mut test_crate::main::closure#1)
-= <missing>
-
-// Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1}
-impl Destruct for test_crate::main::closure#1 {
-    fn drop_in_place = {impl Destruct for test_crate::main::closure#1}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: test_crate::main::{impl FnOnce<(&'_ u16,)> for test_crate::main::closure#1}::call_once
 fn {impl FnOnce<(&'_ u16,)> for test_crate::main::closure#1}::call_once<'_0>(_1: test_crate::main::closure#1, _2: (&'_0 u16,))
 {
@@ -162,7 +156,7 @@ fn {impl FnOnce<(&'_ u16,)> for test_crate::main::closure#1}::call_once<'_0>(_1:
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u16,)> for test_crate::main::closure#1}::call_mut<'_0, '8>(move _3, move _2)
-    drop[{impl Destruct for test_crate::main::closure#1}] _1
+    drop[{impl Destruct for test_crate::main::closure#1}::drop_in_place] _1
     return
 }
 
@@ -211,6 +205,10 @@ fn main()
     return
 }
 
+// Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure}::drop_in_place
+unsafe fn {impl Destruct for test_crate::main::closure}::drop_in_place(_1: *mut test_crate::main::closure)
+= <missing>
+
 // Full name: test_crate::main::{impl Fn<(&'_ u8,)> for test_crate::main::closure}::call
 fn {impl Fn<(&'_ u8,)> for test_crate::main::closure}::call<'_0, '_1>(_1: &'_1 test_crate::main::closure, tupled_args_2: (&'_0 u8,))
 {
@@ -241,16 +239,6 @@ fn {impl FnMut<(&'_ u8,)> for test_crate::main::closure}::call_mut<'_0, '_1>(sta
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::main::closure}::drop_in_place(_1: *mut test_crate::main::closure)
-= <missing>
-
-// Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure}
-impl Destruct for test_crate::main::closure {
-    fn drop_in_place = {impl Destruct for test_crate::main::closure}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: test_crate::main::{impl FnOnce<(&'_ u8,)> for test_crate::main::closure}::call_once
 fn {impl FnOnce<(&'_ u8,)> for test_crate::main::closure}::call_once<'_0>(_1: test_crate::main::closure, _2: (&'_0 u8,))
 {
@@ -263,7 +251,7 @@ fn {impl FnOnce<(&'_ u8,)> for test_crate::main::closure}::call_once<'_0>(_1: te
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u8,)> for test_crate::main::closure}::call_mut<'_0, '8>(move _3, move _2)
-    drop[{impl Destruct for test_crate::main::closure}] _1
+    drop[{impl Destruct for test_crate::main::closure}::drop_in_place] _1
     return
 }
 
@@ -298,6 +286,12 @@ impl<'_0> Fn<(&'_ u8,)> for test_crate::main::closure {
     non-dyn-compatible
 }
 
+// Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure}
+impl Destruct for test_crate::main::closure {
+    fn drop_in_place = {impl Destruct for test_crate::main::closure}::drop_in_place
+    non-dyn-compatible
+}
+
 // Full name: test_crate::main::{impl FnOnce<(&'_ u16,)> for test_crate::main::closure#1}
 impl<'_0> FnOnce<(&'_ u16,)> for test_crate::main::closure#1 {
     parent_clause0 = {built_in impl MetaSized for test_crate::main::closure#1}
@@ -326,6 +320,12 @@ impl<'_0> Fn<(&'_ u16,)> for test_crate::main::closure#1 {
     parent_clause2 = {built_in impl Sized for (&'_ u16,)}
     parent_clause3 = {built_in impl Tuple for (&'_ u16,)}
     fn call<'_0_1> = {impl Fn<(&'_ u16,)> for test_crate::main::closure#1}::call<'_0, '_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1}
+impl Destruct for test_crate::main::closure#1 {
+    fn drop_in_place = {impl Destruct for test_crate::main::closure#1}::drop_in_place
     non-dyn-compatible
 }
 

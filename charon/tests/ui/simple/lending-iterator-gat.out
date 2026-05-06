@@ -86,15 +86,6 @@ where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: core::option::Option::{impl Destruct for Option<T>[@TraitClause0]}
-impl<T> Destruct for Option<T>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<T>,
-{
-    fn drop_in_place = {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
-    non-dyn-compatible
-}
-
 // Full name: core::panicking::AssertKind
 pub enum AssertKind {
   Eq,
@@ -136,7 +127,7 @@ unsafe fn {impl Destruct for (A,)}::drop_in_place<A>(_1: *mut (A,))
     storage_live(_2)
     _0 = ()
     _2 = &mut (*_1) with_metadata(copy _1.metadata)
-    drop[{built_in impl Destruct for A}] (*_2).0
+    drop[{built_in impl Destruct for A}::drop_in_place] (*_2).0
     return
 }
 
@@ -243,21 +234,21 @@ where
         _9 = move item_6
         _8 = (move _9,)
         _3 = @TraitClause3::call_mut<'7>(move _7, move _8)
-        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}] _9
+        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}::drop_in_place] _9
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
-        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}] item_6
+        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}::drop_in_place] item_6
         storage_dead(item_6)
-        conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4
+        conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4
         storage_dead(_4)
         continue 0
     }
     _0 = ()
-    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4
+    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T1}] f_2
-    conditional_drop[{built_in impl Destruct for I}] iter_1
+    conditional_drop[{built_in impl Destruct for T1}::drop_in_place] f_2
+    conditional_drop[{built_in impl Destruct for I}::drop_in_place] iter_1
     return
 }
 
@@ -293,12 +284,6 @@ fn {impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 m
 unsafe fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(_1: *mut closure<'_0>)
 = <missing>
 
-// Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
-impl<'_0> Destruct for closure<'_0> {
-    fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::main::{impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once
 fn {impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once<'_0, '_1>(_1: closure<'_0>, _2: (&'_1 i32,))
 {
@@ -311,7 +296,7 @@ fn {impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once<'_0, '_1>(_1: closure<'
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut<'_0, '_1, '10>(move _3, move _2)
-    drop[{impl Destruct for closure<'_0>}<'_0>] _1
+    drop[{impl Destruct for closure<'_0>}::drop_in_place<'_0>] _1
     return
 }
 
@@ -453,6 +438,12 @@ pub fn main()
     storage_dead(iter_2)
     storage_dead(x_1)
     return
+}
+
+// Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
+impl<'_0> Destruct for closure<'_0> {
+    fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
+    non-dyn-compatible
 }
 
 

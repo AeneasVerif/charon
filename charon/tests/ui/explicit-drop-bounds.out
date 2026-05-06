@@ -62,7 +62,7 @@ where
 
     _0 = ()
     _0 = ()
-    drop[@TraitClause2] x_1
+    drop[@TraitClause2::drop_in_place] x_1
     return
 }
 
@@ -77,7 +77,7 @@ where
 
     _0 = ()
     _0 = ()
-    drop[@TraitClause1] x_1
+    drop[@TraitClause1::drop_in_place] x_1
     return
 }
 
@@ -109,8 +109,8 @@ where
 
     _0 = ()
     _0 = ()
-    drop[@TraitClause4] _y_2
-    drop[@TraitClause3] _x_1
+    drop[@TraitClause4::drop_in_place] _y_2
+    drop[@TraitClause3::drop_in_place] _x_1
     return
 }
 

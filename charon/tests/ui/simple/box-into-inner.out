@@ -16,17 +16,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
-= <opaque>
-
 // Full name: core::ptr::alignment::Alignment
 pub opaque type Alignment
 
@@ -160,12 +149,6 @@ pub opaque type String
 unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
 
-// Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
-    fn drop_in_place = {impl Destruct for String}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: UNIT_METADATA
 fn UNIT_METADATA()
 {
@@ -217,7 +200,7 @@ fn into_inner(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String
     assert(copy _12 == true) (null_pointer_dereference) else undefined_behavior
     _x_2 = move (*_6)
     _0 = ()
-    drop[{impl Destruct for String}] _x_2
+    drop[{impl Destruct for String}::drop_in_place] _x_2
     storage_dead(_x_2)
     _5 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
     _3 = &mut b_1

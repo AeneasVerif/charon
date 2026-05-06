@@ -24,7 +24,7 @@ tracing = { version = "0.1", features = ["max_level_trace"] }
 
 [package]
 name = "charon"
-version = "0.1.184"
+version = "0.1.185"
 authors.workspace = true
 edition.workspace = true
 license.workspace = true

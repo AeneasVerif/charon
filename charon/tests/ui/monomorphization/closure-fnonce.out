@@ -18,6 +18,17 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 
+// Full name: test_crate::NotCopy
+struct NotCopy {}
+
+// Full name: test_crate::main::closure
+struct closure {
+  NotCopy,
+}
+
+unsafe fn core::marker::Destruct::drop_in_place::<closure>(_1: *mut closure)
+= <opaque>
+
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -36,14 +47,6 @@ pub trait FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     vtable: core::ops::function::FnOnce::{vtable}
-}
-
-// Full name: test_crate::NotCopy
-struct NotCopy {}
-
-// Full name: test_crate::main::closure
-struct closure {
-  NotCopy,
 }
 
 // Full name: core::ops::function::FnOnce::call_once
@@ -89,7 +92,7 @@ fn apply_to_zero_once::<closure>(f_1: closure) -> u8
     _0 = {impl FnOnce<(u8,)> for closure}::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for closure}] f_1
+    conditional_drop[{impl Destruct for closure}::drop_in_place] f_1
     return
 }
 
@@ -116,7 +119,7 @@ fn main()
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn drop_in_place(_1: *mut closure)
+unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
 {
     let _0: (); // return
     let _1: *mut closure; // arg #1

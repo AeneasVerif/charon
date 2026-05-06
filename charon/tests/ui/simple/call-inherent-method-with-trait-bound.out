@@ -74,8 +74,8 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for Q}] _k_2
-    conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x_1
+    conditional_drop[{built_in impl Destruct for Q}::drop_in_place] _k_2
+    conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>[@TraitClause0]] _x_1
     return
 }
 
@@ -92,8 +92,8 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for Q}] _k_2
-    conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x_1
+    conditional_drop[{built_in impl Destruct for Q}::drop_in_place] _k_2
+    conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>[@TraitClause0]] _x_1
     return
 }
 

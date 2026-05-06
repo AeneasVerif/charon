@@ -150,7 +150,7 @@ fn main()
     }
 
     bb1: {
-        conditional_drop[{impl Destruct for Foo}] f_1 -> bb3 (unwind: bb4);
+        conditional_drop[{impl Destruct for Foo}::drop_in_place] f_1 -> bb3 (unwind: bb4);
     }
 
     bb2: {
@@ -160,7 +160,7 @@ fn main()
         f_ref_4 = &f_1;
         _0 = ();
         storage_dead(f_ref_4);
-        conditional_drop[{impl Destruct for Foo}] f_1 -> bb5 (unwind: bb3);
+        conditional_drop[{impl Destruct for Foo}::drop_in_place] f_1 -> bb5 (unwind: bb3);
     }
 
     bb3: {

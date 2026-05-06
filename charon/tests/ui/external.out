@@ -205,16 +205,6 @@ where
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}
-impl<T, A> Destruct for Vec<T>[@TraitClause0, @TraitClause1]
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-    fn drop_in_place = {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>[@TraitClause0, @TraitClause1]
-    non-dyn-compatible
-}
-
 #[lang_item("vec_new")]
 pub fn alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::new<T>() -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
 where
@@ -298,7 +288,7 @@ pub fn test_vec_push()
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v_1
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v_1
     storage_dead(v_1)
     return
 }

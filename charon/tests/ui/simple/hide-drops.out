@@ -1,16 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
-= <opaque>
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
@@ -18,12 +7,6 @@ pub opaque type String
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
 unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 = <opaque>
-
-// Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
-    fn drop_in_place = {impl Destruct for String}::drop_in_place
-    non-dyn-compatible
-}
 
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
@@ -38,7 +21,7 @@ fn use_string(_1: String)
 
     _0 = ()
     _0 = ()
-    conditional_drop[{impl Destruct for String}] _1
+    conditional_drop[{impl Destruct for String}::drop_in_place] _1
     return
 }
 
@@ -52,7 +35,7 @@ fn main()
     storage_live(_s_1)
     _s_1 = new()
     _0 = ()
-    conditional_drop[{impl Destruct for String}] _s_1
+    conditional_drop[{impl Destruct for String}::drop_in_place] _s_1
     storage_dead(_s_1)
     return
 }

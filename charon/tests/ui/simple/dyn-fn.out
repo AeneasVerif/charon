@@ -179,12 +179,6 @@ fn {impl FnMut<(&'_ mut u32,)> for closure}::call_mut<'_0, '_1>(state_1: &'_1 mu
 unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
 = <missing>
 
-// Full name: test_crate::gives_fn::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
-    non-dyn-compatible
-}
-
 // Full name: test_crate::gives_fn::{impl FnOnce<(&'_ mut u32,)> for closure}::call_once
 fn {impl FnOnce<(&'_ mut u32,)> for closure}::call_once<'_0>(_1: closure, _2: (&'_0 mut u32,)) -> bool
 {
@@ -196,7 +190,7 @@ fn {impl FnOnce<(&'_ mut u32,)> for closure}::call_once<'_0>(_1: closure, _2: (&
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ mut u32,)> for closure}::call_mut<'_0, '8>(move _3, move _2)
-    drop[{impl Destruct for closure}] _1
+    drop[{impl Destruct for closure}::drop_in_place] _1
     return
 }
 
@@ -260,6 +254,12 @@ fn gives_fn()
     storage_dead(_1)
     storage_dead(_3)
     return
+}
+
+// Full name: test_crate::gives_fn::closure::{impl Destruct for closure}
+impl Destruct for closure {
+    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+    non-dyn-compatible
 }
 
 

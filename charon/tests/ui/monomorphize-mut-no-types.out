@@ -112,7 +112,7 @@ where
     let x_1: T; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
     return
 }
 
@@ -124,7 +124,7 @@ where
     let x_1: &'_0 mut T0; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_in_place] x_1
     return
 }
 
@@ -136,7 +136,7 @@ where
     let x_1: Option<&'_0 mut T0>; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}::drop_in_place] x_1
     return
 }
 
@@ -148,7 +148,7 @@ where
     let x_1: Option<Option<&'_0 mut T0>>; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut _>>><'_0> for T0}] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut _>>><'_0> for T0}::drop_in_place] x_1
     return
 }
 
@@ -224,7 +224,7 @@ where
     storage_dead(_12)
     storage_dead(_11)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for A}] x_1
+    conditional_drop[{built_in impl Destruct for A}::drop_in_place] x_1
     return
 }
 

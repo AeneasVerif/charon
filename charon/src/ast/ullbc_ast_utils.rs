@@ -401,7 +401,7 @@ impl BodyBuilder {
         self.current_block = next_block;
     }
 
-    pub fn insert_drop(&mut self, place: Place, tref: TraitRef) {
+    pub fn insert_drop(&mut self, place: Place, fn_ptr: FnPtr) {
         let next_block = self
             .body
             .body
@@ -409,7 +409,7 @@ impl BodyBuilder {
         let term = TerminatorKind::Drop {
             kind: DropKind::Precise,
             place,
-            tref,
+            fn_ptr,
             target: next_block,
             on_unwind: self.unwind_block(),
         };

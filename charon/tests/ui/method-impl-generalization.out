@@ -93,7 +93,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}] _other_2
+    conditional_drop[{built_in impl Destruct for T}::drop_in_place] _other_2
     return
 }
 

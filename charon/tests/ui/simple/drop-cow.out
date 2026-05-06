@@ -107,7 +107,7 @@ where
         Cow::Borrowed => {
         },
         _ => {
-            drop[@TraitClause1::parent_clause4] ((*_2) as variant Cow::Owned).0
+            drop[@TraitClause1::parent_clause4::drop_in_place] ((*_2) as variant Cow::Owned).0
             return
         },
     }
@@ -140,7 +140,7 @@ where
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}<'4, B>[@TraitClause0, @TraitClause1, @TraitClause2]] _1
+    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<'4, B>[@TraitClause0, @TraitClause1, @TraitClause2]] _1
     return
 }
 

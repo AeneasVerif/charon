@@ -1294,24 +1294,13 @@ impl ItemTransCtx<'_, '_> {
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
 
-        // Build a reference to `impl Destruct for T`. Given the
-        // target_receiver type `T`, use Hax to solve `T: Destruct`
-        // and translate the resolved result to `TraitRef` of the
-        // `drop_in_place`
-        let destruct_trait = self.tcx.lang_items().destruct_trait().unwrap();
-        let impl_expr: hax::ImplExpr = {
-            let s = self.hax_state_with_id();
-            let rustc_trait_args = trait_pred.trait_ref.rustc_args(s);
-            let generics = self.tcx.mk_args(&rustc_trait_args[..1]); // keep only the `Self` type
-            let tref =
-                rustc_middle::ty::TraitRef::new_from_args(self.tcx, destruct_trait, generics);
-            hax::solve_trait(s, rustc_middle::ty::Binder::dummy(tref))
-        };
-        let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
+        let rustc_trait_args = trait_pred.trait_ref.rustc_args(self.hax_state_with_id());
+        let rustc_self_ty = rustc_trait_args[0].as_type().unwrap();
+        let fn_ptr = self.translate_drop_in_place_method_call(span, rustc_self_ty)?;
 
         // Drop(*target_self)
         let drop_arg = target_self.clone().deref();
-        builder.insert_drop(drop_arg, tref);
+        builder.insert_drop(drop_arg, fn_ptr);
 
         Ok(Body::Unstructured(builder.build()))
     }

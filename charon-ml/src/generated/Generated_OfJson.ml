@@ -1621,17 +1621,17 @@ module Ullbc = struct
                 [
                   ("kind", kind);
                   ("place", place);
-                  ("tref", tref);
+                  ("fn_ptr", fn_ptr);
                   ("target", target);
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
           let* kind = drop_kind_of_json ctx kind in
           let* place = place_of_json ctx place in
-          let* tref = trait_ref_of_json ctx tref in
+          let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
           let* target = block_id_of_json ctx target in
           let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (Drop (kind, place, tref, target, on_unwind))
+          Ok (Drop (kind, place, fn_ptr, target, on_unwind))
       | `Assoc
           [
             ( "Assert",
@@ -1726,7 +1726,7 @@ module Llbc = struct
           Ok (PlaceMention place_mention)
       | `Assoc [ ("Drop", `List [ x_0; x_1; x_2 ]) ] ->
           let* x_0 = place_of_json ctx x_0 in
-          let* x_1 = trait_ref_of_json ctx x_1 in
+          let* x_1 = fn_ptr_of_json ctx x_1 in
           let* x_2 = drop_kind_of_json ctx x_2 in
           Ok (Drop (x_0, x_1, x_2))
       | `Assoc

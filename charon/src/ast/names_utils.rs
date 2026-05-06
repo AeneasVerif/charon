@@ -16,6 +16,10 @@ impl PathElem {
         let binder = self.as_instantiated()?;
         binder.params.is_empty().then_some(&binder.skip_binder)
     }
+    pub fn as_monomorphized_mut(&mut self) -> Option<&mut GenericArgs> {
+        let binder = self.as_instantiated_mut()?;
+        binder.params.is_empty().then_some(&mut binder.skip_binder)
+    }
     pub fn is_monomorphized(&self) -> bool {
         self.as_monomorphized().is_some()
     }
@@ -41,6 +45,10 @@ impl Name {
     /// If this item comes from monomorphization, return the arguments used.
     pub fn mono_args(&self) -> Option<&GenericArgs> {
         self.name.last()?.as_monomorphized()
+    }
+    /// If this item comes from monomorphization, return the arguments used.
+    pub fn mono_args_mut(&mut self) -> Option<&mut GenericArgs> {
+        self.name.last_mut()?.as_monomorphized_mut()
     }
 
     /// Strip the trailing `PathElem::Target` from a name, if any.
