@@ -439,33 +439,11 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// Retrieve the name for an item.
     pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
         let mut name = self.name_for_src(src)?;
-        // Push the generics used for monomorphization, if any.
-        // As an exception, we do not push generics for impls of trait aliases,
-        // since this information is already encoded in the impl block itself,
-        // just like impls of normal traits.
-        //
-        // For example, in Mono mode, given the Rust code
-        // ```
-        // trait A<T> {}
-        // trait B<T> = A<T>;
-        // impl A<u32> for i32 {}
-        // ```
-        //
-        // the resulting names of trait impls are:
-        //
-        // ```
-        // // Full name: crate::{impl A<u32> for i32}
-        // impl A<u32> for i32 { ... }
-        //
-        // // Full name: crate::B::{impl B<u32> for i32}
-        // impl B<u32> for i32 { ... }
-        // ```
+        // Push the generics used for monomorphization, if any. We skip mono trait impls as the
+        // generics are already included in the `PathElem::Impl` reference.
         if let RustcItem::Mono(item_ref) = &src.item
             && !item_ref.generic_args.is_empty()
-            && !matches!(
-                src.kind,
-                TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias)
-            )
+            && !matches!(src.kind, TransItemSourceKind::TraitImpl(..))
         {
             let trans_id = self.register_no_enqueue(&None, src).unwrap();
             let span = self.def_span(&item_ref.def_id);
