@@ -7,7 +7,6 @@ use std::path::{Component, PathBuf};
 
 use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
-use super::translate_generics::BindingLevel;
 use crate::hax;
 use crate::hax::{DefPathItem, SInto};
 use charon_lib::ast::*;
@@ -468,63 +467,36 @@ impl<'tcx> TranslateCtx<'tcx> {
                 TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias)
             )
         {
-            // For preshim functions in Mono mode, we compute their generic and associative arguments,
-            // which are appended to the name of these functions.
-            let is_preshim = matches!(
-                src.kind,
-                TransItemSourceKind::VTableDropPreShim
-                    | TransItemSourceKind::VTableMethodPreShim(..)
-            );
-
             let trans_id = self.register_no_enqueue(&None, src).unwrap();
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
-            bt_ctx.binding_levels.push(BindingLevel::new());
-
-            let trait_def = bt_ctx.t_ctx.hax_def_for_item(&src.item)?;
-            let mut assoc_types = None;
-
-            // fetch associative arguments
-            if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
-                for item in items {
-                    if matches!(item.kind, hax::AssocKind::Type { .. }) {
-                        let item_def_id = &item.def_id;
-                        // This is ok because dyn-compatible methods don't have generics.
-                        let item_def = bt_ctx.hax_def(
-                            &trait_def
-                                .this()
-                                .with_def_id(bt_ctx.hax_state(), item_def_id),
-                        )?;
-                        if let hax::FullDefKind::AssocTy {
-                            implied_predicates, ..
-                        } = item_def.kind()
-                            && let Some(pred) = implied_predicates.predicates.first()
-                            && let hax::ClauseKind::Trait(p) = &pred.clause.kind.value
-                        {
-                            assoc_types = Some(p.trait_ref.generic_args.clone());
-                            break;
-                        }
+            let binder = bt_ctx.inside_binder(BinderKind::Other, |bt_ctx| {
+                let mut args = bt_ctx.translate_generic_args(
+                    span,
+                    &item_ref.generic_args,
+                    &item_ref.impl_exprs,
+                )?;
+                // Preshim functions in mono mode take the same arguments as the corresponding
+                // trait, but in practice are only ever instantiated with `dyn Trait` as self type.
+                // We pretend they take trait args (with no `Self`) + values for each assoc type
+                // instead.
+                if matches!(
+                    src.kind,
+                    TransItemSourceKind::VTableDropPreShim
+                        | TransItemSourceKind::VTableMethodPreShim(..)
+                ) {
+                    // Remove the `Self` type variable from the generic parameters.
+                    args.types.remove_and_shift_ids(TypeVarId::ZERO);
+                    // Append the assoc types.
+                    for ty in item_ref.trait_associated_types(bt_ctx.hax_state_with_id()) {
+                        let ty = bt_ctx.translate_ty(span, &ty)?;
+                        args.types.push(ty);
                     }
-                }
-            }
-            // fetch generic arguments
-            let mut substs = item_ref.generic_args.clone();
-
-            if !(is_preshim && item_ref.generic_args.len() == 1 && assoc_types.is_none()) {
-                // For preshim functions, skip the first argument, which is the dyn trait type.
-                let args = if is_preshim {
-                    if let Some(mut assoc_types) = assoc_types {
-                        substs.append(&mut assoc_types);
-                    }
-                    bt_ctx.translate_generic_args(span, &substs[1..], &item_ref.impl_exprs)?
-                } else {
-                    bt_ctx.translate_generic_args(span, &substs, &item_ref.impl_exprs)?
                 };
-                name.name.push(PathElem::Instantiated(Box::new(Binder {
-                    params: GenericParams::empty(),
-                    skip_binder: args,
-                    kind: BinderKind::Other,
-                })));
+                Ok(args)
+            })?;
+            if !binder.skip_binder.is_empty() {
+                name.name.push(PathElem::Instantiated(Box::new(binder)));
             }
         }
         Ok(name)
