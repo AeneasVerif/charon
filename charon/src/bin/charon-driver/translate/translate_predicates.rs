@@ -335,43 +335,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     self.hax_def(&tref.hax_skip_binder_ref().erase(self.hax_state_with_id()))?;
                 let kind = if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
-                    let impl_id = self.register_item(
+                    let mut impl_ref: TraitImplRef = self.translate_item(
                         span,
-                        tref.hax_skip_binder_ref(),
+                        &tref.hax_skip_binder_ref().erase(self.hax_state_with_id()),
                         TransItemSourceKind::TraitImpl(TraitImplSource::TraitAlias),
-                    );
-                    let mut generics = self.erase_region_binder(trait_decl_ref.clone()).generics;
-
-                    // In Mono mode, we remove types in generic argument list `generics` for the trait impl block.
-                    // This makes trait impl for aliases close to those for normal traits.
-                    //
-                    // For example, in Mono mode, the Rust code
-                    // ```
-                    // trait A<T> {}
-                    // trait B<T> = A<T>;
-                    // impl A<u32> for i32 {}
-                    // ```
-                    //
-                    // is translated to:
-                    //
-                    // ```
-                    // trait A<Self, T> { ... }
-                    // trait B<Self, T> { ... }
-                    // impl A<u32> for i32 { ... }
-                    // impl B<u32> for i32 { ... }
-                    // ```
-                    if self.monomorphize() {
-                        generics.types = Default::default();
-                    }
+                    )?;
                     assert!(
-                        generics.trait_refs.is_empty(),
+                        impl_ref.generics.trait_refs.is_empty(),
                         "found trait alias with non-empty required predicates"
                     );
-                    generics.trait_refs = self.translate_trait_impl_exprs(span, impl_exprs)?;
-                    TraitRefKind::TraitImpl(TraitImplRef {
-                        id: impl_id,
-                        generics,
-                    })
+                    impl_ref.generics.trait_refs =
+                        self.translate_trait_impl_exprs(span, impl_exprs)?;
+                    TraitRefKind::TraitImpl(impl_ref)
                 } else if let hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) =
                     trait_data
                 {
