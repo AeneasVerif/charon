@@ -52,20 +52,29 @@ impl TransformPass for Transform {
             if let Some(&id) = id.as_adt()
                 && let Some(tdecl) = ctx.translated.type_decls.get_mut(id)
             {
-                struct SubstWithErrorVisitor(TypeVarId);
-                impl VarsVisitor for SubstWithErrorVisitor {
-                    fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
-                        if let DeBruijnVar::Bound(DeBruijnId::ZERO, var_id) = v
-                            && var_id == self.0
-                        {
-                            Some(TyKind::Error("removed allocator parameter".to_owned()).into_ty())
-                        } else {
-                            None
+                if tdecl.generics.types.is_empty() {
+                    // We monomorpohized this type.
+                    let args = tdecl.item_meta.name.mono_args_mut().unwrap();
+                    args.types.pop().unwrap();
+                } else {
+                    struct SubstWithErrorVisitor(TypeVarId);
+                    impl VarsVisitor for SubstWithErrorVisitor {
+                        fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
+                            if let DeBruijnVar::Bound(DeBruijnId::ZERO, var_id) = v
+                                && var_id == self.0
+                            {
+                                Some(
+                                    TyKind::Error("removed allocator parameter".to_owned())
+                                        .into_ty(),
+                                )
+                            } else {
+                                None
+                            }
                         }
                     }
+                    let tvar = tdecl.generics.types.pop().unwrap();
+                    tdecl.visit_vars(&mut SubstWithErrorVisitor(tvar.index));
                 }
-                let tvar = tdecl.generics.types.pop().unwrap();
-                tdecl.visit_vars(&mut SubstWithErrorVisitor(tvar.index));
             }
         }
 
