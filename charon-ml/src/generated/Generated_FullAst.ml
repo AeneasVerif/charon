@@ -309,10 +309,6 @@ and translated_crate = {
       (** The translated trait declarations *)
   trait_impls : trait_impl option list;
       (** The translated trait declarations *)
-  unit_metadata : global_decl_ref option;
-      (** A [const UNIT: () = ();] used whenever we make a thin
-          pointer/reference to avoid creating a local [let unit = ();] variable.
-          It is always [Some]. *)
   ordered_decls : declaration_group list option;
       (** The re-ordered groups of declarations, initialized as empty. *)
 }

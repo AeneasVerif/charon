@@ -100,18 +100,6 @@ pub fn call_mut<'_0>(_1: &'_0 mut test_crate::main::closure#1<'_>, _2: (u8,)) ->
 pub fn call_once(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}
 impl<'_0> Destruct for test_crate::main::closure<'_0> {    non-dyn-compatible
 }

@@ -52,18 +52,6 @@ unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 pub fn new() -> String
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::F
 fn F() -> fn(u8) -> Option<u8>[{built_in impl Sized for u8}]
 {

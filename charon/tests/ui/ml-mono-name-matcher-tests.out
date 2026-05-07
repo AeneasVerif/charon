@@ -21,18 +21,6 @@ pub fn is_some::<i32><'_0>(_1: &'_0 Option::<i32>) -> bool
 pub fn index::<bool, RangeFrom::<usize>><'_0>(_1: &'_0 [bool], _2: RangeFrom::<usize>) -> &'_0 [bool]
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::foo::bar
 fn bar()
 {

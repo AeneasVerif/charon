@@ -74,18 +74,6 @@ pub trait Fn<Self, Args>
 pub fn call_mut<'_0>(_1: &'_0 mut closure::<()>, _2: ((),))
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}
 impl Destruct for closure::<()> {    non-dyn-compatible
 }

@@ -48,18 +48,6 @@ where
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::Pair
 pub struct Pair<T1, T2>
 where

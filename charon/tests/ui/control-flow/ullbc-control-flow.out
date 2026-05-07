@@ -266,20 +266,6 @@ where
     [@TraitClause0]: Iterator<Self>,
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    bb0: {
-        _0 = ();
-        return;
-    }
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::nested_loops_enum
 pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
 {

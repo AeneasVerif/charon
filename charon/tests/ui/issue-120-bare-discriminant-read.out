@@ -28,18 +28,6 @@ where
     [@TraitClause0]: Sized<T>,
 = <missing>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::discriminant_value
 fn discriminant_value<'_0, T>(opt_1: &'_0 Option<T>[@TraitClause0]) -> isize
 where

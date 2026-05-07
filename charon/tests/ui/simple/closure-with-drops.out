@@ -99,18 +99,6 @@ where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 struct test_crate::foo::closure<T>
 where
     [@TraitClause0]: Sized<T>,

@@ -94,6 +94,10 @@ fn transform_constant_expr(
                 }
             }
         }
+        ConstantExprKind::Adt(..) if val.ty.is_unit() => {
+            // Keep unit constants to avoid adding countless unit locals.
+            return Operand::Const(val);
+        }
         ConstantExprKind::Adt(variant, fields) => {
             let fields = fields
                 .into_iter()
@@ -175,6 +179,9 @@ impl FusedUllbcPass for Transform {
                                 && let Ok(op) = fields.iter().dedup().exactly_one() =>
                         {
                             Rvalue::Repeat(op.clone(), ty.clone(), len)
+                        }
+                        Rvalue::Use(Operand::Const(e)) if e.kind.is_adt() && e.ty.is_unit() => {
+                            Rvalue::unit_value()
                         }
                         _ => rvalue,
                     });

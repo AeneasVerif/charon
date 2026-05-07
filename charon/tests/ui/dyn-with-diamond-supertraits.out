@@ -18,18 +18,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 struct test_crate::Super::{vtable}<T> {
   size: usize,
   align: usize,

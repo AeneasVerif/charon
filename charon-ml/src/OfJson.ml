@@ -54,6 +54,5 @@ let crate_of_json (js : json) : (crate, string) result =
             global_decls;
             trait_decls;
             trait_impls;
-            unit_metadata = Option.get crate.unit_metadata;
           }
   | _ -> combine_error_msgs js __FUNCTION__ (Error "")

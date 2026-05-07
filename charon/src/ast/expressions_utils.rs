@@ -90,6 +90,13 @@ impl Place {
 }
 
 impl ConstantExpr {
+    pub fn mk_unit() -> Self {
+        ConstantExpr {
+            kind: ConstantExprKind::Adt(None, Vec::new()),
+            ty: Ty::mk_unit(),
+        }
+    }
+
     pub fn mk_usize(scalar: ScalarValue) -> Self {
         ConstantExpr {
             kind: ConstantExprKind::Literal(Literal::Scalar(scalar)),
@@ -100,10 +107,7 @@ impl ConstantExpr {
 
 impl Operand {
     pub fn mk_const_unit() -> Self {
-        Operand::Const(Box::new(ConstantExpr {
-            kind: ConstantExprKind::Adt(None, Vec::new()),
-            ty: Ty::mk_unit(),
-        }))
+        Operand::Const(Box::new(ConstantExpr::mk_unit()))
     }
 
     pub fn ty(&self) -> &Ty {

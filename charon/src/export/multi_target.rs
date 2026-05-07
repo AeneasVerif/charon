@@ -149,7 +149,6 @@ impl CrateMerger {
             global_decls,
             trait_decls,
             trait_impls,
-            unit_metadata,
             ordered_decls: _, // Recomputed on the merged crate
         } = krate;
         if self.merged.translated.crate_name.is_empty() {
@@ -180,9 +179,6 @@ impl CrateMerger {
             .translated
             .trait_impls
             .extend_from_other(trait_impls);
-        if self.merged.translated.unit_metadata.is_none() {
-            self.merged.translated.unit_metadata = unit_metadata;
-        }
     }
 }
 

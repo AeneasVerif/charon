@@ -2806,7 +2806,6 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           ("global_decls", global_decls);
           ("trait_decls", trait_decls);
           ("trait_impls", trait_impls);
-          ("unit_metadata", unit_metadata);
           ("ordered_decls", ordered_decls);
         ] ->
         let* crate_name = string_of_json ctx crate_name in
@@ -2844,9 +2843,6 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           opt_indexed_map_of_json trait_impl_id_of_json trait_impl_of_json ctx
             trait_impls
         in
-        let* unit_metadata =
-          option_of_json global_decl_ref_of_json ctx unit_metadata
-        in
         let* ordered_decls =
           option_of_json
             (list_of_json declaration_group_of_json)
@@ -2865,7 +2861,6 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
              global_decls;
              trait_decls;
              trait_impls;
-             unit_metadata;
              ordered_decls;
            }
             : translated_crate)

@@ -85,18 +85,6 @@ pub fn call_mut<'_0>(_1: &'_0 mut closure<'_, '_>, _2: (u8, u8)) -> u8
 pub fn call_once(_1: closure<'_, '_>, _2: (u8, u8)) -> u8
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
     parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}

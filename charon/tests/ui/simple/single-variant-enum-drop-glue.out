@@ -34,18 +34,6 @@ where
     [@TraitClause1]: Sized<A>,
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::Thing
 pub enum Thing {
   A(alloc::boxed::Box<()>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]),

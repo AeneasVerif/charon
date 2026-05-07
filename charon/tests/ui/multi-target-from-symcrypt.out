@@ -268,16 +268,6 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
 = <opaque>
 
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-const UNIT_METADATA: () = UNIT_METADATA()
-
 trait test_crate::NttIntrinsicsInterface<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>

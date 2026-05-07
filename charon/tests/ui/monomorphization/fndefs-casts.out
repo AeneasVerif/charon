@@ -75,18 +75,6 @@ fn foo::<u32><'a>(x_1: &'a u32)
 pub fn call<'_0>(_1: &'_0 for<'a> foo::<u32><'a>, _2: (&'_ u32,))
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::foo::<u8>
 fn foo::<u8><'a>(x_1: &'a u8)
 {
