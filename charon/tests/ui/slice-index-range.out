@@ -72,18 +72,6 @@ enum ArgumentType<'a> {
 #[lang_item("format_argument")]
 pub opaque type Argument<'a>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2: usize) -> !
 {
     let _0: !; // return

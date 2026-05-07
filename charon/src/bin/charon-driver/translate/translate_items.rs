@@ -2,7 +2,6 @@ use super::translate_crate::*;
 use super::translate_ctx::*;
 use crate::hax;
 use crate::hax::SInto;
-use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
@@ -276,64 +275,6 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
         let item = self.translated.get_item(id);
         Ok(item.unwrap())
-    }
-
-    /// Add a `const UNIT: () = ();` const, used as metadata for thin pointers/references.
-    pub fn translate_unit_metadata_const(&mut self) {
-        use charon_lib::ullbc_ast::*;
-        let name = Name::from_path(&["UNIT_METADATA"]);
-        let item_meta = ItemMeta {
-            name: name.clone(),
-            span: Span::dummy(),
-            source_text: None,
-            attr_info: AttrInfo::default(),
-            is_local: false,
-            opacity: ItemOpacity::Foreign,
-            lang_item: None,
-        };
-
-        let body = {
-            let mut builder = BodyBuilder::new(Span::dummy(), 0);
-            let _ = builder.new_var(None, Ty::mk_unit());
-            builder.build()
-        };
-
-        let global_id = self.translated.global_decls.reserve_slot();
-        let initializer = self.translated.fun_decls.push_with(|def_id| FunDecl {
-            def_id,
-            item_meta: item_meta.clone(),
-            src: ItemSource::TopLevel,
-            is_global_initializer: Some(global_id),
-            generics: Default::default(),
-            signature: FunSig {
-                is_unsafe: false,
-                inputs: vec![],
-                output: Ty::mk_unit(),
-            },
-            body: Body::Unstructured(body),
-        });
-        self.translated
-            .item_names
-            .insert(ItemId::Fun(initializer), name.clone());
-        self.translated.global_decls.set_slot(
-            global_id,
-            GlobalDecl {
-                def_id: global_id,
-                item_meta,
-                generics: Default::default(),
-                ty: Ty::mk_unit(),
-                src: ItemSource::TopLevel,
-                global_kind: GlobalKind::NamedConst,
-                init: initializer,
-            },
-        );
-        self.translated
-            .item_names
-            .insert(ItemId::Global(global_id), name);
-        self.translated.unit_metadata = Some(GlobalDeclRef {
-            id: global_id,
-            generics: Box::new(GenericArgs::empty()),
-        });
     }
 
     /// Keep only the methods we marked as "used".

@@ -142,18 +142,6 @@ where
     [@TraitClause0]: ToOwned<Self, Clause0_Owned>,
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 trait test_crate::Foo<'a, Self, Self_Item>
 where
     Self_Item : 'a,

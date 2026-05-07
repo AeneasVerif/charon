@@ -1,4 +1,5 @@
 open Types
+open TypesUtils
 open Expressions
 
 let unop_can_fail : unop -> bool = function
@@ -14,3 +15,5 @@ let binop_can_fail : binop -> bool = function
   | Shr OWrap
   | AddChecked | SubChecked | MulChecked | Cmp -> false
   | Div _ | Rem _ | Add _ | Sub _ | Mul _ | Shl _ | Shr _ | Offset -> true
+
+let mk_unit_const : constant_expr = { kind = CAdt (None, []); ty = mk_unit_ty }

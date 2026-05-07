@@ -4,18 +4,6 @@
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::Trait
 trait Trait<Self>
 {

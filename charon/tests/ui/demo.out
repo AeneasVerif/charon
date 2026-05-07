@@ -16,18 +16,6 @@ pub trait Sized<Self>
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::choose
 pub fn choose<'a, T>(b_1: bool, x_2: &'a mut T, y_3: &'a mut T) -> &'a mut T
 where

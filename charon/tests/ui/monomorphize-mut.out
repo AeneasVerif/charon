@@ -315,18 +315,6 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::option_mut
 fn option_mut<X, A>(x_1: A)
 where

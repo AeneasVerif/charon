@@ -359,13 +359,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ClauseDbVar {
     }
 }
 
-impl_display_via_ctx!(ConstantExpr);
-impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.kind.with_ctx(ctx))
-    }
-}
-
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericDbVar {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         ctx.format_bound_var(f, *self, "@ConstGeneric", |v| Some(v.name.clone()))
@@ -1287,20 +1280,52 @@ impl<C: AstFormatter> FmtWithCtx<C> for Byte {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for ConstantExprKind {
+impl_display_via_ctx!(ConstantExpr);
+impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
+        match &self.kind {
             ConstantExprKind::Literal(c) => write!(f, "{}", c),
             ConstantExprKind::Adt(variant_id, values) => {
-                // It is a bit annoying: in order to properly format the value,
-                // we need the type (which contains the type def id).
-                // Anyway, the printing utilities are mostly for debugging.
-                let variant_id = match variant_id {
-                    Some(id) => format!("Some({id})"),
-                    None => "None".to_string(),
-                };
-                let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
-                write!(f, "ConstAdt {} [{}]", variant_id, values)
+                let values = values.iter().map(|v| v.with_ctx(ctx));
+                match self.ty.as_adt() {
+                    Some(ty_ref) => match ty_ref.id {
+                        TypeId::Tuple => {
+                            let trailing_comma = if values.len() == 1 { "," } else { "" };
+                            let values = values.format(", ");
+                            write!(f, "({values}{trailing_comma})")
+                        }
+                        TypeId::Builtin(BuiltinTy::Box) => {
+                            let values = values.format(", ");
+                            write!(f, "Box({values})")
+                        }
+                        TypeId::Builtin(BuiltinTy::Str) => {
+                            let values = values.format(", ");
+                            write!(f, "[{values}]")
+                        }
+                        TypeId::Adt(ty_id) => {
+                            match variant_id {
+                                None => ty_id.fmt_with_ctx(ctx, f)?,
+                                Some(variant_id) => {
+                                    ctx.format_enum_variant(f, ty_id, *variant_id)?
+                                }
+                            }
+                            write!(f, " {{ ")?;
+                            for (comma, (i, val)) in
+                                repeat_except_first(", ").zip(values.enumerate())
+                            {
+                                write!(f, "{}", comma.unwrap_or_default())?;
+                                let field_id = FieldId::new(i);
+                                ctx.format_field_name(f, ty_id, *variant_id, field_id)?;
+                                write!(f, ": {}", val)?;
+                            }
+                            write!(f, " }}")
+                        }
+                    },
+                    None => {
+                        let values = values.format(", ");
+                        write!(f, "ConstAdt [{values}]")
+                    }
+                }
             }
             ConstantExprKind::Array(values) => {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");

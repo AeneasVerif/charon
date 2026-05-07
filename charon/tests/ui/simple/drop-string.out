@@ -52,18 +52,6 @@ pub struct String {
   vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}],
 }
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place
 unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3])
 where

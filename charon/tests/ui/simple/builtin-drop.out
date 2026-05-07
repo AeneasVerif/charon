@@ -60,18 +60,6 @@ impl Destruct for String {
     non-dyn-compatible
 }
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_in_place
 unsafe fn {impl Destruct for [T; N]}::drop_in_place<T, const N : usize>(_1: *mut [T; N])
 where

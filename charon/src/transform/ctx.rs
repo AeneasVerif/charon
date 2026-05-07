@@ -365,13 +365,6 @@ pub trait BodyTransformCtx: Sized {
     /// and return `Operand::Move(len)`.
     ///
     fn compute_place_metadata(&mut self, place: &Place) -> Operand {
-        /// No metadata. We use the `unit_metadata` global to avoid having to define unit locals
-        /// everywhere.
-        fn no_metadata<T: BodyTransformCtx>(ctx: &T) -> Operand {
-            let unit_meta = ctx.get_crate().unit_metadata.clone().unwrap();
-            Operand::Copy(Place::new_global(unit_meta, Ty::mk_unit()))
-        }
-
         /// Compute the metadata for a place. Return `None` if the place has no metadata.
         fn compute_place_metadata_inner<T: BodyTransformCtx>(
             ctx: &mut T,
@@ -416,13 +409,14 @@ pub trait BodyTransformCtx: Sized {
             || matches!(metadata_ty.kind(), TyKind::PtrMetadata(ty) if self.is_sized_type_var(ty))
         {
             // If the type var is known to be `Sized`, then no metadata is needed
-            return no_metadata(self);
+            return Operand::mk_const_unit();
         }
         trace!(
             "computed metadata type: {}",
             metadata_ty.with_ctx(&self.to_fmt())
         );
-        compute_place_metadata_inner(self, place, &metadata_ty).unwrap_or_else(|| no_metadata(self))
+        compute_place_metadata_inner(self, place, &metadata_ty)
+            .unwrap_or_else(Operand::mk_const_unit)
     }
 
     /// Create a `&` borrow of the place.

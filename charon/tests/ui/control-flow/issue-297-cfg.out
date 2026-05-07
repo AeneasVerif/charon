@@ -77,18 +77,6 @@ where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::f1
 fn f1<'_0>(a_1: &'_0 [u8]) -> usize
 {

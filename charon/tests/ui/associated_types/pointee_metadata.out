@@ -213,18 +213,6 @@ pub trait Pointee<Self>
 pub fn to_raw_parts<T>(_1: *const T) -> (*const (), {built_in impl Pointee for T}::Metadata)
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::empty_metadata
 fn empty_metadata()
 {

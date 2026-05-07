@@ -136,18 +136,6 @@ where
     [@TraitClause0]: Sized<T>,
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_in_place
 unsafe fn {impl Destruct for (A,)}::drop_in_place<A>(_1: *mut (A,))
 {

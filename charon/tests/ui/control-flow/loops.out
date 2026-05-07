@@ -463,18 +463,6 @@ where
     [@TraitClause3]: SliceIndex<I, [T]>,
 = <opaque>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: test_crate::test_loop1
 pub fn test_loop1(max_1: u32) -> u32
 {

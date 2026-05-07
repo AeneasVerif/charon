@@ -174,18 +174,6 @@ fn precondition_check(_1: *mut (), _2: usize, _3: usize, _4: usize)
 
 pub opaque type std::io::IoSlice<'a>
 
-// Full name: UNIT_METADATA
-fn UNIT_METADATA()
-{
-    let _0: (); // return
-
-    _0 = ()
-    return
-}
-
-// Full name: UNIT_METADATA
-const UNIT_METADATA: () = UNIT_METADATA()
-
 // Full name: libc::unix::iovec
 pub struct iovec {
   iov_base: *mut c_void,
