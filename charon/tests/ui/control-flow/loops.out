@@ -321,17 +321,16 @@ where
     [@TraitClause0]: Iterator<Self>,
 = <opaque>
 
-// Full name: core::slice::index::private_slice_index::Sealed
-pub trait Sealed<Self>
+pub trait core::slice::index::private_slice_index::Sealed<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
     vtable: core::slice::index::private_slice_index::Sealed::{vtable}
 }
 
-// Full name: core::slice::index::private_slice_index::{impl Sealed for usize}
-impl Sealed for usize {
+// Full name: core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for usize}
+impl core::slice::index::private_slice_index::Sealed for usize {
     parent_clause0 = {built_in impl MetaSized for usize}
-    vtable: {impl Sealed for usize}::{vtable}
+    vtable: {impl core::slice::index::private_slice_index::Sealed for usize}::{vtable}
 }
 
 // Full name: core::slice::index::SliceIndex
@@ -339,7 +338,7 @@ impl Sealed for usize {
 pub trait SliceIndex<Self, T>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sealed<Self>
+    parent_clause1 : [@TraitClause1]: core::slice::index::private_slice_index::Sealed<Self>
     parent_clause2 : [@TraitClause2]: MetaSized<T>
     parent_clause3 : [@TraitClause3]: MetaSized<Self::Output>
     type Output
@@ -424,7 +423,7 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = {built_in impl MetaSized for usize}
-    parent_clause1 = {impl Sealed for usize}
+    parent_clause1 = {impl core::slice::index::private_slice_index::Sealed for usize}
     parent_clause2 = {built_in impl MetaSized for [T]}
     parent_clause3 = @TraitClause0::parent_clause0
     type Output = T

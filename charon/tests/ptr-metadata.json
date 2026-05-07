@@ -46,5 +46,6 @@
   "core::fmt::Formatter": "None",
   "core::fmt::Error": "None",
   "core::cmp::Ordering": "None",
-  "core::option::Option": "None"
+  "core::option::Option": "None",
+  "core::ops::control_flow::ControlFlow": "None"
 }

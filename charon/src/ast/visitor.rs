@@ -45,7 +45,7 @@ use derive_generic_visitor::*;
     drive(
         AbortKind, Assert, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
-        Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
+        Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind, ConstantExprKind,
