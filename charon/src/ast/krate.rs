@@ -194,7 +194,6 @@ pub struct TranslatedCrate {
 
     /// The translated files. This field must come before any field containing spans,
     /// as the OCaml deserialization of spans requires the files to be deserialized already.
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub files: IndexVec<FileId, File>,
 

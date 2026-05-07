@@ -85,7 +85,11 @@ impl CrateMerger {
                 if let Some(&existing_id) = self.file_name_to_id.get(&file.name) {
                     existing_id
                 } else {
-                    let new_id = self.merged.translated.files.push(file.clone());
+                    let new_id = self.merged.translated.files.push_with(|new_id| {
+                        let mut file = file.clone();
+                        file.id = new_id;
+                        file
+                    });
                     self.file_name_to_id.insert(file.name.clone(), new_id);
                     new_id
                 }
