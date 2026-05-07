@@ -301,6 +301,7 @@ and trait_decl = {
 and trait_method = {
   name : trait_item_name;
   attr_info : attr_info;
+  signature : fun_sig;
   item : fun_decl_ref;
       (** Each method declaration is represented by a function item. That
           function contains the signature of the method as well as information
