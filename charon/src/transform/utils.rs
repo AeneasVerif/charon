@@ -11,7 +11,7 @@ pub enum GenericsSource {
     /// A top-level item.
     Item(ItemId),
     /// A trait method.
-    Method(TraitDeclId, TraitItemName),
+    Method(TraitDeclId, TraitMethodId),
     /// A builtin item like `Box`.
     Builtin,
     /// Some other use of generics outside the main Charon ast.

@@ -28,6 +28,22 @@ type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 
 (* __REPLACE1__ *)
 
+class ['self] iter_trait_decl_base =
+  object (self : 'self)
+    inherit [_] iter_global_decl
+    method visit_trait_method_id_map
+        : 'a. ('env -> 'a -> unit) -> 'env -> 'a trait_method_id_map -> unit =
+      TraitMethodId.Map.visit_iter
+  end
+
+class ['self] map_trait_decl_base =
+  object (self : 'self)
+    inherit [_] map_global_decl
+    method visit_trait_method_id_map
+        : 'a 'b. ('env -> 'a -> 'b) -> 'env -> 'a trait_method_id_map -> 'b trait_method_id_map =
+      TraitMethodId.Map.visit_map
+  end
+
 (* __REPLACE2__ *)
 
 (* __REPLACE3__ *)

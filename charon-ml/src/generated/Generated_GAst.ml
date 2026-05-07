@@ -209,6 +209,28 @@ and global_kind =
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
+class ['self] iter_trait_decl_base =
+  object (self : 'self)
+    inherit [_] iter_global_decl
+
+    method visit_trait_method_id_map :
+        'a. ('env -> 'a -> unit) -> 'env -> 'a trait_method_id_map -> unit =
+      TraitMethodId.Map.visit_iter
+  end
+
+class ['self] map_trait_decl_base =
+  object (self : 'self)
+    inherit [_] map_global_decl
+
+    method visit_trait_method_id_map :
+        'a 'b.
+        ('env -> 'a -> 'b) ->
+        'env ->
+        'a trait_method_id_map ->
+        'b trait_method_id_map =
+      TraitMethodId.Map.visit_map
+  end
+
 (** An associated constant in a trait. *)
 type trait_assoc_const = {
   name : trait_item_name;
@@ -281,7 +303,7 @@ and trait_decl = {
       (** The associated types declared in the trait. The binder binds the
           generic parameters of the type if it is a GAT (Generic Associated
           Type). For a plain associated type the binder binds nothing. *)
-  methods : trait_method binder list;
+  methods : trait_method binder trait_method_id_map;
       (** The methods declared by the trait. The binder binds the generic
           parameters of the method.
 
@@ -292,6 +314,10 @@ and trait_decl = {
               fn method<'a, U>(x: &'a U);
             }
           ]} *)
+  method_names : trait_item_name list;
+      (** In mono mode we can't translate [TraitMethod]s because they'd include
+          the polymorphic signature. In order to keep access to the method
+          names, we store them here too; this is empty in poly mode. *)
   vtable : type_decl_ref option;
       (** The virtual table struct for this trait, if it has one. It is
           guaranteed that the trait has a vtable iff it is dyn-compatible. *)
@@ -317,7 +343,7 @@ and trait_method = {
       name = "iter_trait_decl";
       monomorphic = [ "env" ];
       variety = "iter";
-      ancestors = [ "iter_global_decl" ];
+      ancestors = [ "iter_trait_decl_base" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -325,7 +351,7 @@ and trait_method = {
       name = "map_trait_decl";
       monomorphic = [ "env" ];
       variety = "map";
-      ancestors = [ "map_global_decl" ];
+      ancestors = [ "map_trait_decl_base" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
@@ -364,7 +390,7 @@ and trait_impl = {
       (** The implemented associated constants. *)
   types : (trait_item_name * trait_assoc_ty_impl binder) list;
       (** The implemented associated types. *)
-  methods : (trait_item_name * fun_decl_ref binder) list;
+  methods : fun_decl_ref binder trait_method_id_map;
       (** The implemented methods *)
   vtable : global_decl_ref option;
       (** The virtual table instance for this trait implementation. This is

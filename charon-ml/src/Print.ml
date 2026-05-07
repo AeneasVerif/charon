@@ -376,7 +376,11 @@ and fun_id_to_string (env : fmt_env) (fid : fun_id) : string =
 
 and fn_ptr_kind_to_string (env : fmt_env) (r : fn_ptr_kind) : string =
   match r with
-  | TraitMethod (trait_ref, method_name, _) ->
+  | TraitMethod (trait_ref, method_id, _) ->
+      let method_name =
+        GAstUtils.format_method_name env.crate
+          trait_ref.trait_decl_ref.binder_value.id method_id
+      in
       trait_ref_to_string env trait_ref ^ "::" ^ method_name
   | FunId fid -> fun_id_to_string env fid
 
@@ -1078,7 +1082,7 @@ let trait_decl_to_string (env : fmt_env) (indent : string)
           indent1 ^ "fn " ^ m.binder_value.name ^ " : "
           ^ fun_decl_id_to_string env m.binder_value.item.id
           ^ "\n")
-        def.methods
+        (TraitMethodId.Map.values def.methods)
     in
     let items = List.concat [ parent_clauses; consts; types; methods ] in
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
@@ -1138,12 +1142,18 @@ let trait_impl_to_string (env : fmt_env) (indent : string)
           ^ "\n")
         def.types
     in
-    let env_method ((name, f) : _ * fun_decl_ref binder) =
-      indent1 ^ "fn " ^ name ^ " : "
-      ^ fun_decl_id_to_string env f.binder_value.id
-      ^ "\n"
+    let methods =
+      let trait_id = def.impl_trait.id in
+      List.map
+        (fun (method_id, (f : fun_decl_ref binder)) ->
+          let name =
+            GAstUtils.format_method_name env.crate trait_id method_id
+          in
+          indent1 ^ "fn " ^ name ^ " : "
+          ^ fun_decl_id_to_string env f.binder_value.id
+          ^ "\n")
+        (TraitMethodId.Map.to_list def.methods)
     in
-    let methods = List.map env_method def.methods in
     let items = List.concat [ parent_clauses; consts; types; methods ] in
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
   in

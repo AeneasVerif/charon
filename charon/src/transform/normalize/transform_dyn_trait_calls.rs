@@ -40,7 +40,7 @@ fn transform_dyn_trait_call(
     let FnOperand::Regular(fn_ptr) = &call.func else {
         return Ok(()); // Not a regular function call
     };
-    let FnPtrKind::Trait(trait_ref, method_name, _) = fn_ptr.kind.as_ref() else {
+    let FnPtrKind::Trait(trait_ref, method_id, _) = fn_ptr.kind.as_ref() else {
         return Ok(()); // Not a trait method call
     };
     let TraitRefKind::Dyn = &trait_ref.kind else {
@@ -78,14 +78,14 @@ fn transform_dyn_trait_call(
     // Retrieve the method field from the vtable struct definition.
     let Some((method_field_id, _)) = field_map
         .iter_enumerated()
-        .find(|(_, field)| **field == VTableField::Method(*method_name))
+        .find(|(_, field)| **field == VTableField::Method(*method_id))
     else {
         let vtable_name = vtable_decl_ref.id.with_ctx(fmt_ctx).to_string();
         raise_error!(
             ctx.ctx,
             ctx.span,
-            "Could not determine method index for {} in vtable {}",
-            method_name,
+            "Could not determine method index for method {} in vtable {}",
+            method_id,
             vtable_name
         );
     };

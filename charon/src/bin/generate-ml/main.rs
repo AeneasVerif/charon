@@ -359,7 +359,7 @@ fn generate_ml(
                     "GlobalDecl",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    ancestors: &["global_decl"],
+                    ancestors: &["trait_decl_base"],
                     name: "trait_decl",
                     reduce: false,
                     extra_types: &[],

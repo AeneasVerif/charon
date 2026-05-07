@@ -145,7 +145,7 @@ impl<'a> GenerateCtx<'a> {
                     .iter()
                     .map(|ty| self.type_to_ocaml_name(ty))
                     .map(|name| {
-                        if !name.chars().all(|c| c.is_alphanumeric()) {
+                        if !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
                             format!("({name})")
                         } else {
                             name
@@ -169,10 +169,8 @@ impl<'a> GenerateCtx<'a> {
                             base_ty = "string".to_string();
                         }
                         if base_ty == "indexed_map" {
-                            let index_name =
-                                self.type_to_rust_name(&tref.generics.types[0]).unwrap();
-                            base_ty = format!("{index_name}.Map.t");
-                            args.remove(0); // Remove the index generic param
+                            let index_name = args.remove(0); // Remove the index generic param
+                            base_ty = format!("{index_name}_map");
                         }
                         if base_ty == "index_vec" {
                             base_ty = "list".to_string();
@@ -185,10 +183,10 @@ impl<'a> GenerateCtx<'a> {
                         }
                         let args = match args.as_slice() {
                             [] => String::new(),
-                            [arg] => arg.clone(),
+                            [arg] => format!("{arg} "),
                             args => format!("({})", args.iter().join(",")),
                         };
-                        format!("{args} {base_ty}")
+                        format!("{args}{base_ty}")
                     }
                     TypeId::Builtin(BuiltinTy::Box) => args[0].clone(),
                     TypeId::Tuple => args.iter().join("*"),

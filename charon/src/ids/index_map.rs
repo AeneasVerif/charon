@@ -73,12 +73,23 @@ where
         // Push a `None` to ensure we don't reuse the id.
         self.vector.push(None)
     }
+    /// Ensure there's a slot for this id.
+    fn ensure_slot_for(&mut self, id: I) {
+        if id.index() >= self.vector.len() {
+            self.vector.resize_with(id.index() + 1, || None);
+        }
+    }
 
     /// Fill the reserved slot.
     pub fn set_slot(&mut self, id: I, x: T) {
         assert!(self.vector[id].is_none());
         self.vector[id] = Some(x);
         self.elem_count += 1;
+    }
+    /// Fill the given slot even if it hadn't been reserved before.
+    pub fn set_slot_extend(&mut self, id: I, x: T) {
+        self.ensure_slot_for(id);
+        self.set_slot(id, x);
     }
 
     /// Remove the value from this slot, leaving other ids unchanged.
@@ -142,9 +153,7 @@ where
     /// it has enough elements. If the element doesn't exist, use the provided function to
     /// initialize it.
     pub fn get_or_extend_and_insert(&mut self, id: I, f: impl FnOnce() -> T) -> &mut T {
-        if id.index() >= self.vector.len() {
-            self.vector.resize_with(id.index() + 1, || None);
-        }
+        self.ensure_slot_for(id);
         self.vector[id].get_or_insert_with(f)
     }
 
@@ -304,7 +313,7 @@ where
 
     /// Remove matching items and return and iterator over the removed items. This is lazy: items
     /// are only removed as the iterator is consumed.
-    pub fn extract<'a, F: FnMut(&mut T) -> bool>(
+    pub fn extract<'a, F: FnMut(I, &mut T) -> bool>(
         &'a mut self,
         mut f: F,
     ) -> impl Iterator<Item = (I, T)> + use<'a, I, T, F> {
@@ -312,7 +321,7 @@ where
         self.vector
             .iter_mut_enumerated()
             .filter_map(move |(i, opt)| {
-                if f(opt.as_mut()?) {
+                if f(i, opt.as_mut()?) {
                     *elem_count -= 1;
                     let elem = opt.take()?;
                     Some((i, elem))
@@ -323,8 +332,8 @@ where
     }
 
     /// Remove the elements that don't match the predicate.
-    pub fn retain(&mut self, mut f: impl FnMut(&mut T) -> bool) {
-        self.extract(|x| !f(x)).for_each(drop);
+    pub fn retain(&mut self, mut f: impl FnMut(I, &mut T) -> bool) {
+        self.extract(|i, x| !f(i, x)).for_each(drop);
     }
 
     /// Like `Vec::clear`.

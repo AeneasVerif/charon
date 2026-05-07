@@ -1637,6 +1637,17 @@ impl AssocItem {
             has_value: item.defaultness(tcx).has_value(),
         }
     }
+
+    /// The `DefId` of the item being implemented.
+    pub fn implemented_trait_item_id(&self) -> &DefId {
+        match &self.container {
+            AssocItemContainer::TraitImplContainer {
+                implemented_trait_item,
+                ..
+            } => &implemented_trait_item.def_id,
+            _ => &self.def_id,
+        }
+    }
 }
 
 /// Reflects [`ty::AssocKind`]

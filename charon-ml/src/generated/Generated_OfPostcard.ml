@@ -185,7 +185,7 @@ and binder_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (BKTraitType (x_0, x_1))
      | 1 ->
          let* x_0 = trait_decl_id_of_postcard ctx st in
-         let* x_1 = trait_item_name_of_postcard ctx st in
+         let* x_1 = trait_method_id_of_postcard ctx st in
          Ok (BKTraitMethod (x_0, x_1))
      | 2 -> Ok BKInherentImplBlock
      | 3 -> Ok BKDyn
@@ -553,7 +553,7 @@ and fn_ptr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (FunId x_0)
      | 1 ->
          let* x_0 = trait_ref_of_postcard ctx st in
-         let* x_1 = trait_item_name_of_postcard ctx st in
+         let* x_1 = trait_method_id_of_postcard ctx st in
          let* x_2 = fun_decl_id_of_postcard ctx st in
          Ok (TraitMethod (x_0, x_1, x_2))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -1117,6 +1117,10 @@ and trait_impl_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and trait_item_name_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (trait_item_name, string) result =
   combine_error_msgs st __FUNCTION__ (string_of_postcard ctx st)
+
+and trait_method_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (trait_method_id, string) result =
+  combine_error_msgs st __FUNCTION__ (TraitMethodId.id_of_postcard ctx st)
 
 and trait_param_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (trait_param, string) result =
@@ -2275,7 +2279,16 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        list_of_postcard (binder_of_postcard trait_assoc_ty_of_postcard) ctx st
      in
      let* methods =
-       list_of_postcard (binder_of_postcard trait_method_of_postcard) ctx st
+       (fun ctx st ->
+         Result.map TraitMethodId.map_of_indexed_list
+           (opt_indexed_map_of_postcard trait_method_id_of_postcard
+              (binder_of_postcard trait_method_of_postcard)
+              ctx st))
+         ctx st
+     in
+     let* method_names =
+       index_vec_of_postcard trait_method_id_of_postcard
+         trait_item_name_of_postcard ctx st
      in
      let* vtable = option_of_postcard type_decl_ref_of_postcard ctx st in
      Ok
@@ -2287,6 +2300,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           consts;
           types;
           methods;
+          method_names;
           vtable;
         }
          : trait_decl))
@@ -2315,9 +2329,11 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          ctx st
      in
      let* methods =
-       list_of_postcard
-         (pair_of_postcard trait_item_name_of_postcard
-            (binder_of_postcard fun_decl_ref_of_postcard))
+       (fun ctx st ->
+         Result.map TraitMethodId.map_of_indexed_list
+           (opt_indexed_map_of_postcard trait_method_id_of_postcard
+              (binder_of_postcard fun_decl_ref_of_postcard)
+              ctx st))
          ctx st
      in
      let* vtable = option_of_postcard global_decl_ref_of_postcard ctx st in
@@ -2478,7 +2494,7 @@ and v_table_field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 -> Ok VTableAlign
      | 2 -> Ok VTableDrop
      | 3 ->
-         let* x_0 = trait_item_name_of_postcard ctx st in
+         let* x_0 = trait_method_id_of_postcard ctx st in
          Ok (VTableMethod x_0)
      | 4 ->
          let* x_0 = trait_clause_id_of_postcard ctx st in

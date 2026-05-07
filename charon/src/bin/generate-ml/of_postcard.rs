@@ -166,7 +166,7 @@ impl<'a> GenerateCtx<'a> {
 
                         if first == "indexed_map" {
                             wrap_in_map = true;
-                            first = format!("opt_indexed_map");
+                            first = "opt_indexed_map".to_string();
                         }
 
                         expr.insert(0, first + "_of_postcard");

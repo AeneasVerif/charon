@@ -510,7 +510,7 @@ pub enum FnPtrKind {
     /// The fun decl id is not really necessary - we put it here for convenience
     /// purposes.
     #[charon::rename("TraitMethod")]
-    Trait(TraitRef, TraitItemName, FunDeclId),
+    Trait(TraitRef, TraitMethodId, FunDeclId),
 }
 
 impl From<FunId> for FnPtrKind {

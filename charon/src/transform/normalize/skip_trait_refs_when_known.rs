@@ -28,7 +28,7 @@ impl VisitAstMut for NormalizeFnPtr<'_> {
 
 fn transform_fn_ptr(ctx: &TransformCtx, span: Span, fn_ptr: &mut FnPtr) {
     // We find references to a trait method where the impl is known; otherwise we return.
-    let FnPtrKind::Trait(trait_ref, name, _) = fn_ptr.kind.as_ref() else {
+    let FnPtrKind::Trait(trait_ref, method_id, _) = fn_ptr.kind.as_ref() else {
         return;
     };
     let TraitRefKind::TraitImpl(impl_ref) = &trait_ref.kind else {
@@ -38,7 +38,7 @@ fn transform_fn_ptr(ctx: &TransformCtx, span: Span, fn_ptr: &mut FnPtr) {
         return;
     };
     // Find the function declaration corresponding to this impl.
-    let Some((_, bound_fn)) = trait_impl.methods().find(|(n, _)| n == name) else {
+    let Some(bound_fn) = trait_impl.methods.get(*method_id) else {
         return;
     };
     let method_generics = &fn_ptr.generics;

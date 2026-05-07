@@ -119,7 +119,7 @@ impl TraitDecl {
     }
 }
 impl TraitImpl {
-    pub fn methods(&self) -> impl Iterator<Item = &(TraitItemName, Binder<FunDeclRef>)> {
+    pub fn methods(&self) -> impl Iterator<Item = &Binder<FunDeclRef>> {
         self.methods.iter()
     }
 }

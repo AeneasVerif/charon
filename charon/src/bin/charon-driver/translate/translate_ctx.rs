@@ -44,12 +44,14 @@ pub struct TranslateCtx<'tcx> {
     /// When we find a use of a method, we mark it "used" using `mark_method_as_used`. This
     /// enqueues all known and future impls of this method. We also mark a method as used if we
     /// find an implementation of it in a non-opaque impl, and if the method is a required method.
-    pub method_status: IndexMap<TraitDeclId, HashMap<TraitItemName, MethodStatus>>,
+    pub method_status: IndexMap<TraitDeclId, IndexMap<TraitMethodId, MethodStatus>>,
 
     /// The map from rustc id to translated id.
     pub id_map: HashMap<TransItemSource, ItemId>,
     /// The reverse map of ids.
     pub reverse_id_map: HashMap<ItemId, TransItemSource>,
+    /// Map from rustc id to method id
+    pub method_id_map: HashMap<hax::DefId, TraitMethodId>,
     /// The reverse filename map.
     pub file_to_id: HashMap<FileName, FileId>,
 

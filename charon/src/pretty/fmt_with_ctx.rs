@@ -543,7 +543,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
             FnPtrKind::Fun(FunId::Regular(def_id)) => write!(f, "{}", def_id.with_ctx(ctx))?,
             FnPtrKind::Fun(FunId::Builtin(builtin)) => write!(f, "@{}", builtin)?,
             FnPtrKind::Trait(trait_ref, method_id, _) => {
-                write!(f, "{}::{}", trait_ref.with_ctx(ctx), &method_id.0)?
+                write!(f, "{}::", trait_ref.with_ctx(ctx))?;
+                ctx.format_method_name(f, trait_ref.trait_id(), *method_id)?;
             }
         };
         write!(f, "{}", self.generics.with_ctx(ctx))
@@ -1993,6 +1994,7 @@ impl TraitDeclRef {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let trait_id = self.impl_trait.id;
         let full_name = self.item_meta.name.with_ctx(ctx);
         writeln!(f, "// Full name: {full_name}")?;
 
@@ -2030,9 +2032,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                     .fmt_split_with(ctx, |ctx, assoc_ty| assoc_ty.value.to_string_with_ctx(ctx));
                 writeln!(f, "{TAB_INCR}type {name}{params} = {ty}",)?;
             }
-            for (name, bound_fn) in self.methods() {
+            for (method_id, bound_fn) in self.methods.iter_enumerated() {
                 let (params, fn_ref) = bound_fn.fmt_split(ctx);
-                writeln!(f, "{TAB_INCR}fn {name}{params} = {fn_ref}")?;
+                write!(f, "{TAB_INCR}fn ")?;
+                ctx.format_method_name(f, trait_id, method_id)?;
+                writeln!(f, "{params} = {fn_ref}")?;
             }
         }
         if let Some(vtb_ref) = &self.vtable {

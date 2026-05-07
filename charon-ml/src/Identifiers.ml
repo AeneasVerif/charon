@@ -48,6 +48,29 @@ module type Id = sig
     include C.Map
 
     val add_in_place : id -> 'a -> 'a t ref -> unit
+    val to_list : 'a t -> (id * 'a) list
+    val values : 'a t -> 'a list
+
+    (** Visitor helpers for the [visitors] ppx. *)
+
+    val visit_iter : ('env -> 'a -> unit) -> 'env -> 'a t -> unit
+    val visit_map : ('env -> 'a -> 'b) -> 'env -> 'a t -> 'b t
+
+    val visit_reduce :
+      zero:'z ->
+      plus:('z -> 'z -> 'z) ->
+      ('env -> 'a -> 'z) ->
+      'env ->
+      'a t ->
+      'z
+
+    val visit_mapreduce :
+      zero:'z ->
+      plus:('z -> 'z -> 'z) ->
+      ('env -> 'a -> 'b * 'z) ->
+      'env ->
+      'a t ->
+      'b t * 'z
   end
   with type key = id
 
@@ -174,6 +197,20 @@ module IdGen () : Id = struct
     include C.MakeMap (Ord)
 
     let add_in_place id x m = m := add id x !m
+    let to_list m = bindings m
+    let values m = List.map (fun (_k, v) -> v) (bindings m)
+    let visit_iter visit_a env m = iter (fun _ v -> visit_a env v) m
+    let visit_map visit_a env m = map (fun v -> visit_a env v) m
+
+    let visit_reduce ~zero ~plus visit_a env m =
+      fold (fun _ v acc -> plus acc (visit_a env v)) m zero
+
+    let visit_mapreduce ~zero ~plus visit_a env m =
+      fold
+        (fun k v (m', acc) ->
+          let v', z = visit_a env v in
+          (add k v' m', plus acc z))
+        m (empty, zero)
   end
 
   module InjSubst = C.MakeInjMap (Ord) (Ord)

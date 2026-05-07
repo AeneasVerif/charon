@@ -1051,7 +1051,6 @@ pub enum ImplAssocItemValue {
 
 /// Partial data for a trait impl, used for fake trait impls that we generate ourselves such as
 /// `FnOnce` and `Drop` impls.
-
 #[derive(Clone, Debug)]
 pub struct VirtualTraitImpl {
     /// The trait that is implemented by this impl block.
@@ -1060,6 +1059,8 @@ pub struct VirtualTraitImpl {
     pub implied_impl_exprs: Vec<ImplExpr>,
     /// The associated types and their predicates, in definition order.
     pub types: Vec<(Ty, Vec<ImplExpr>)>,
+    /// The methods, in definition order.
+    pub methods: Vec<DefId>,
 }
 
 impl<'tcx> FullDef<'tcx> {
@@ -1269,10 +1270,17 @@ where
             (ty, required_impl_exprs)
         })
         .collect();
+    let methods = tcx
+        .associated_items(trait_ref.def_id)
+        .in_definition_order()
+        .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Fn { .. }))
+        .map(|assoc| assoc.def_id.sinto(s))
+        .collect();
     Box::new(VirtualTraitImpl {
         trait_pred,
         implied_impl_exprs: required_impl_exprs,
         types,
+        methods,
     })
 }
 

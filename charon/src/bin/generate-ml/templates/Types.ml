@@ -21,13 +21,13 @@ module GlobalDeclId = IdGen ()
 module ConstGenericVarId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
+module TraitMethodId = IdGen ()
 module TraitClauseId = IdGen ()
 module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
 module RegionId = IdGen ()
 module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
-module BodyId = IdGen ()
 
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
@@ -37,6 +37,13 @@ type literal_type = Values.literal_type [@@deriving show, ord, eq]
    vectors in generic_params), which causes visitor inference problems if we
    declare it within a visitor group. *)
 type trait_type_constraint_id = TraitTypeConstraintId.id [@@deriving show, ord, eq]
+
+type 'a fun_decl_id_map = 'a FunDeclId.Map.t
+and 'a global_decl_id_map = 'a GlobalDeclId.Map.t
+and 'a type_decl_id_map = 'a TypeDeclId.Map.t
+and 'a trait_decl_id_map = 'a TraitDeclId.Map.t
+and 'a trait_impl_id_map = 'a TraitImplId.Map.t
+and 'a trait_method_id_map = 'a TraitMethodId.Map.t [@@deriving show, eq, ord]
 
 
 (* __REPLACE0__ *)

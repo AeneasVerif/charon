@@ -7,6 +7,29 @@ use crate::translate::translate_crate::TransItemSourceKind;
 use charon_lib::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
+    pub fn translate_drop_in_place_method_ref(
+        &mut self,
+        span: Span,
+        item_ref: &hax::ItemRef,
+        destruct_trait_id: TraitDeclId,
+        impl_kind: Option<TraitImplSource>,
+    ) -> (FunDeclId, TraitMethodId, TraitItemName) {
+        let fun_id = self.register_item(
+            span,
+            item_ref,
+            TransItemSourceKind::DropInPlaceMethod(impl_kind),
+        );
+        let method_id = TraitMethodId::ZERO; // It's the only method
+        // Make sure `method_id` is a valid id into `self.method_status[destruct_trait_id]`.
+        let _ = self
+            .method_status
+            .get_or_extend_and_insert(destruct_trait_id, || {
+                [MethodStatus::default()].into_iter().collect()
+            });
+        let method_name = TraitItemName("drop_in_place".into());
+        (fun_id, method_id, method_name)
+    }
+
     /// Translate a call to `drop_in_place` for that type.
     pub fn translate_drop_in_place_method_call(
         &mut self,
@@ -15,17 +38,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<FnPtr, Error> {
         let impl_expr = hax::solve_destruct(self.hax_state_with_id(), ty);
         let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
-        let method_id = self.register_item(
+        let (fun_id, method_id, _) = self.translate_drop_in_place_method_ref(
             span,
             impl_expr.r#trait.hax_skip_binder_ref(),
-            TransItemSourceKind::DropInPlaceMethod(None),
+            tref.trait_id(),
+            None,
         );
         let fn_ptr = FnPtr {
-            kind: Box::new(FnPtrKind::Trait(
-                tref,
-                TraitItemName("drop_in_place".into()),
-                method_id,
-            )),
+            kind: Box::new(FnPtrKind::Trait(tref, method_id, fun_id)),
             generics: Box::new(GenericArgs::empty()),
         };
         Ok(fn_ptr)
@@ -176,28 +196,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         destruct_trait_id: TraitDeclId,
         impl_kind: Option<TraitImplSource>,
-    ) -> (TraitItemName, Binder<FunDeclRef>) {
-        let method_id = self.register_item(
-            span,
-            def.this(),
-            TransItemSourceKind::DropInPlaceMethod(impl_kind),
-        );
-        let method_name = TraitItemName("drop_in_place".into());
+    ) -> (TraitMethodId, TraitItemName, Binder<FunDeclRef>) {
+        let (fun_id, method_id, method_name) =
+            self.translate_drop_in_place_method_ref(span, def.this(), destruct_trait_id, impl_kind);
         let method_binder = {
             let generics = self
                 .outermost_binder()
                 .params
                 .identity_args_at_depth(DeBruijnId::one());
             Binder::new(
-                BinderKind::TraitMethod(destruct_trait_id, method_name),
+                BinderKind::TraitMethod(destruct_trait_id, method_id),
                 GenericParams::empty(),
                 FunDeclRef {
-                    id: method_id,
+                    id: fun_id,
                     generics: Box::new(generics),
                 },
             )
         };
-        (method_name, method_binder)
+        (method_id, method_name, method_binder)
     }
 
     #[tracing::instrument(skip(self, item_meta, def))]
@@ -217,12 +233,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut timpl = self.translate_virtual_trait_impl(impl_id, item_meta, destruct_impl)?;
 
         // Add the `drop_in_place(*mut self)` method.
-        timpl.methods.push(self.prepare_drop_in_place_method(
+        let destruct_trait_id = timpl.impl_trait.id;
+        let (method_id, _, method_binder) = self.prepare_drop_in_place_method(
             def,
             span,
-            timpl.impl_trait.id,
+            destruct_trait_id,
             Some(TraitImplSource::ImplicitDestruct),
-        ));
+        );
+        timpl.methods.set_slot_extend(method_id, method_binder);
 
         Ok(timpl)
     }

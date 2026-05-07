@@ -357,6 +357,7 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
                     consts,
                     types,
                     methods,
+                    method_names: _,
                     vtable,
                 } = d;
                 let _ = def_id.drive(&mut visitor); // For `seen_current_id`
