@@ -57,20 +57,26 @@ let bound_fun_sig_of_decl (def : fun_decl) : bound_fun_sig =
     reflect that there are two binding levels: the trait generics and the method
     generics. *)
 let lookup_trait_decl_method (tdecl : trait_decl) (name : trait_item_name) :
+    trait_method binder item_binder option =
+  Option.map
+    (fun m -> { item_binder_params = tdecl.generics; item_binder_value = m })
+    (List.find_opt
+       (fun (m : trait_method binder) -> m.binder_value.name = name)
+       tdecl.methods)
+
+let lookup_trait_decl_method_ref (tdecl : trait_decl) (name : trait_item_name) :
     fun_decl_ref binder item_binder option =
   Option.map
     (fun m ->
       {
-        item_binder_params = tdecl.generics;
+        item_binder_params = m.item_binder_params;
         item_binder_value =
           {
-            binder_params = m.binder_params;
-            binder_value = m.binder_value.item;
+            binder_params = m.item_binder_value.binder_params;
+            binder_value = m.item_binder_value.binder_value.item;
           };
       })
-    (List.find_opt
-       (fun (m : trait_method binder) -> m.binder_value.name = name)
-       tdecl.methods)
+    (lookup_trait_decl_method tdecl name)
 
 (** Lookup a method in this trait impl. The two levels of binders in the output
     reflect that there are two binding levels: the impl generics and the method

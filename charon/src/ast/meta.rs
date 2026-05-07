@@ -263,6 +263,7 @@ pub struct File {
     #[charon::opaque]
     pub id: FileId,
     /// The path to the file.
+    #[drive(skip)]
     pub name: FileName,
     /// Name of the crate this file comes from.
     pub crate_name: String,
