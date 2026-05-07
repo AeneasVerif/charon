@@ -34,7 +34,7 @@ use charon_lib::{
     common::arg_value,
     export::{CrateData, multi_target},
     logger,
-    options::{CHARON_ARGS, CliOpts},
+    options::{CHARON_ARGS, CliOpts, SerializationFormat, SerializationFormatArg},
 };
 use clap::Parser;
 use cli::{Charon, Cli};
@@ -122,7 +122,13 @@ fn translate_multi_target(
             .map(|(i, target)| {
                 scope.spawn(move || -> anyhow::Result<_> {
                     let mut opts = options.clone();
-                    let extension = options.format.output_extension(options.ullbc);
+                    let format = match opts.format {
+                        None | Some(SerializationFormatArg::All | SerializationFormatArg::Json) => {
+                            SerializationFormat::Json
+                        }
+                        Some(SerializationFormatArg::Postcard) => SerializationFormat::Postcard,
+                    };
+                    let extension = format.output_extension(options.ullbc);
                     let temp_file = temp_dir.join(format!("target_{i}.{extension}"));
                     opts.dest_file = Some(temp_file.clone());
                     // Don't recurse into multi-target.
@@ -132,6 +138,7 @@ fn translate_multi_target(
                     opts.print_llbc = false;
                     // Ensure serialization so we can load the result.
                     opts.no_serialize = false;
+                    opts.format = Some(format.into());
 
                     let status = translate_one(opts, target)?;
                     if !status.success() {
@@ -139,10 +146,9 @@ fn translate_multi_target(
                         handle_exit_status(status)?;
                     }
 
-                    let krate = CrateData::deserialize_from_file(&temp_file, options.format)
-                        .with_context(|| {
-                            format!("failed to load translation result for target {target}")
-                        })?;
+                    let krate = CrateData::deserialize_from_file(&temp_file, format).with_context(
+                        || format!("failed to load translation result for target {target}"),
+                    )?;
                     Ok(krate)
                 })
             })
@@ -160,13 +166,11 @@ fn translate_multi_target(
         println!("{}", merged.translated);
     }
 
-    // Serialize the merged result unless --no-serialize was passed.
-    if !options.no_serialize {
-        let target_filename = options.target_filename(&merged.translated.crate_name);
-        merged
-            .serialize_to_file(&target_filename, options.format)
-            .map_err(|()| anyhow::anyhow!("failed to serialize merged crate"))?;
-    }
+    // Serialize the merged result
+    let targets = options.targets(&merged.translated.crate_name);
+    merged
+        .serialize_to_files(targets)
+        .map_err(|()| anyhow::anyhow!("failed to serialize merged crate"))?;
 
     Ok(ExitStatus::default())
 }

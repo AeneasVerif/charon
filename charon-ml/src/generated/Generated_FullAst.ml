@@ -189,12 +189,14 @@ and cli_options = {
           [dest_file] is set. [dest_dir] defaults to the current directory. *)
   dest_file : path_buf option;
       (** The destination file. By default this depends on [format] and [ullbc].
-          If this is set we ignore [dest_dir]. *)
+          If this is set we ignore [dest_dir]. If used with [format=all], will
+          add an extension corresponding to the file format at the end of the
+          provided file name. *)
   no_dedup_serialized_ast : bool;
       (** Don't deduplicate values (types, trait refs) in the .(u)llbc file.
           This makes the file easier to inspect. *)
-  format : serialization_format;
-      (** Serialization format for emitted (U)LLBC files. *)
+  format : serialization_format_arg option;
+      (** Serialization format for emitted (U)LLBC files. Defaults to json. *)
   no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
   no_typecheck : bool;  (** Skip the typecheck passes. *)
   no_normalize : bool;  (** Don't normalize associated types. *)
@@ -276,7 +278,7 @@ and preset =
   | Soteria
   | Tests
 
-and serialization_format = Json | Postcard
+and serialization_format_arg = Json | Postcard | AllFormats
 
 and target_info = {
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)

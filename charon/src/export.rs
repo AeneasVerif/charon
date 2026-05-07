@@ -7,7 +7,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// The data of a generic crate. We serialize this to pass it to `charon-ml`, so this must be as
 /// stable as possible. This is used for both ULLBC and LLBC.
@@ -79,6 +79,17 @@ impl CrateData {
             has_errors: ctx.has_errors(),
             translated: ctx.translated,
         }
+    }
+
+    #[allow(clippy::result_unit_err)]
+    pub fn serialize_to_files(
+        &self,
+        targets: Vec<(PathBuf, SerializationFormat)>,
+    ) -> Result<(), ()> {
+        for (target_filename, format) in targets {
+            self.serialize_to_file(&target_filename, format)?;
+        }
+        Ok(())
     }
 
     /// Export the translated definitions to a file.

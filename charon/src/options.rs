@@ -254,7 +254,8 @@ pub struct CliOpts {
     #[serde(default)]
     pub dest_dir: Option<PathBuf>,
     /// The destination file. By default this depends on `format` and `ullbc`. If this is set we
-    /// ignore `dest_dir`.
+    /// ignore `dest_dir`. If used with `format=all`, will add an extension corresponding to the file format
+    /// at the end of the provided file name.
     #[clap(long, value_parser)]
     #[serde(default)]
     pub dest_file: Option<PathBuf>,
@@ -262,10 +263,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_dedup_serialized_ast: bool,
-    /// Serialization format for emitted (U)LLBC files.
-    #[clap(long, value_enum, default_value_t)]
+    /// Serialization format for emitted (U)LLBC files. Defaults to json.
+    #[clap(long, value_enum)]
     #[serde(default)]
-    pub format: SerializationFormat,
+    pub format: Option<SerializationFormatArg>,
     /// Don't serialize the final (U)LLBC to a file.
     #[clap(long)]
     #[serde(default)]
@@ -339,6 +340,14 @@ pub enum MonomorphizeMut {
     ExceptTypes,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, ValueEnum, Serialize, Deserialize)]
+pub enum SerializationFormatArg {
+    Json,
+    Postcard,
+    #[charon::rename("AllFormats")]
+    All,
+}
+
 #[derive(
     Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
 )]
@@ -346,6 +355,25 @@ pub enum SerializationFormat {
     #[default]
     Json,
     Postcard,
+}
+
+impl SerializationFormatArg {
+    pub fn as_format(self) -> Option<SerializationFormat> {
+        match self {
+            SerializationFormatArg::Json => Some(SerializationFormat::Json),
+            SerializationFormatArg::Postcard => Some(SerializationFormat::Postcard),
+            SerializationFormatArg::All => None,
+        }
+    }
+}
+
+impl From<SerializationFormat> for SerializationFormatArg {
+    fn from(format: SerializationFormat) -> SerializationFormatArg {
+        match format {
+            SerializationFormat::Json => SerializationFormatArg::Json,
+            SerializationFormat::Postcard => SerializationFormatArg::Postcard,
+        }
+    }
 }
 
 impl SerializationFormat {
@@ -462,17 +490,44 @@ impl CliOpts {
                 to avoid generics mismatches"
             )
         }
+        if self.no_serialize && self.format.is_some() {
+            anyhow::bail!(
+                "`--no-serialize` is not compatible with `--format`, the format is only relevant if we serialize"
+            );
+        }
         Ok(())
     }
 
-    pub fn target_filename(&self, crate_name: &str) -> PathBuf {
-        match self.dest_file.clone() {
-            Some(f) => f,
+    fn target_filename(
+        &self,
+        path_base: PathBuf,
+        format: SerializationFormat,
+    ) -> (PathBuf, SerializationFormat) {
+        let extension = format.output_extension(self.ullbc);
+        let target_filename = path_base.with_added_extension(extension);
+        (target_filename, format)
+    }
+
+    pub fn targets(&self, crate_name: &str) -> Vec<(PathBuf, SerializationFormat)> {
+        if self.no_serialize {
+            return vec![];
+        }
+
+        let format = self.format.unwrap_or(SerializationFormatArg::Json);
+        let mut path_base = self.dest_dir.clone().unwrap_or_default();
+        path_base.push(crate_name);
+
+        match format.as_format() {
+            Some(format) => match self.dest_file.clone() {
+                Some(dest) => vec![(dest, format)],
+                None => vec![self.target_filename(path_base, format)],
+            },
             None => {
-                let mut target_filename = self.dest_dir.clone().unwrap_or_default();
-                let extension = self.format.output_extension(self.ullbc);
-                target_filename.push(format!("{crate_name}.{extension}"));
-                target_filename
+                let path_base = self.dest_file.clone().unwrap_or(path_base);
+                vec![
+                    self.target_filename(path_base.clone(), SerializationFormat::Json),
+                    self.target_filename(path_base, SerializationFormat::Postcard),
+                ]
             }
         }
     }

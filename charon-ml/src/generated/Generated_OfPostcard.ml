@@ -1712,7 +1712,9 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* dest_dir = option_of_postcard path_buf_of_postcard ctx st in
      let* dest_file = option_of_postcard path_buf_of_postcard ctx st in
      let* no_dedup_serialized_ast = bool_of_postcard ctx st in
-     let* format = serialization_format_of_postcard ctx st in
+     let* format =
+       option_of_postcard serialization_format_arg_of_postcard ctx st
+     in
      let* no_serialize = bool_of_postcard ctx st in
      let* no_typecheck = bool_of_postcard ctx st in
      let* no_normalize = bool_of_postcard ctx st in
@@ -2228,13 +2230,14 @@ and repr_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({ repr_algo; align_modif; transparent; explicit_discr_type }
          : repr_options))
 
-and serialization_format_of_postcard (ctx : of_postcard_ctx)
-    (st : postcard_state) : (serialization_format, string) result =
+and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (serialization_format_arg, string) result =
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 -> Ok Json
      | 1 -> Ok Postcard
+     | 2 -> Ok AllFormats
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and tag_encoding_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

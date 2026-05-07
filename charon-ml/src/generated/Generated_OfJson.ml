@@ -1995,7 +1995,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* no_dedup_serialized_ast =
           bool_of_json ctx no_dedup_serialized_ast
         in
-        let* format = serialization_format_of_json ctx format in
+        let* format =
+          option_of_json serialization_format_arg_of_json ctx format
+        in
         let* no_serialize = bool_of_json ctx no_serialize in
         let* no_typecheck = bool_of_json ctx no_typecheck in
         let* no_normalize = bool_of_json ctx no_normalize in
@@ -2618,12 +2620,13 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
             : repr_options)
     | _ -> Error "")
 
-and serialization_format_of_json (ctx : of_json_ctx) (js : json) :
-    (serialization_format, string) result =
+and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
+    (serialization_format_arg, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Json" -> Ok Json
     | `String "Postcard" -> Ok Postcard
+    | `String "All" -> Ok AllFormats
     | _ -> Error "")
 
 and tag_encoding_of_json (ctx : of_json_ctx) (js : json) :
