@@ -28,15 +28,6 @@ where
     elem_count: usize,
 }
 
-impl<I: std::fmt::Debug, T: std::fmt::Debug> std::fmt::Debug for IndexMap<I, T>
-where
-    I: Idx,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        <IndexVec<_, _> as std::fmt::Debug>::fmt(&self.vector, f)
-    }
-}
-
 impl<I, T> IndexMap<I, T>
 where
     I: Idx,
@@ -257,28 +248,35 @@ where
         self.vector.iter_mut().filter_map(|opt| opt.as_mut())
     }
 
-    pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {
+    pub fn iter_enumerated(&self) -> impl Iterator<Item = (I, &T)> {
         self.vector
             .iter_enumerated()
             .flat_map(|(i, opt)| Some((i, opt.as_ref()?)))
     }
-
-    pub fn iter_mut_indexed(&mut self) -> impl Iterator<Item = (I, &mut T)> {
-        self.vector
-            .iter_mut_enumerated()
-            .flat_map(|(i, opt)| Some((i, opt.as_mut()?)))
+    pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {
+        self.iter_enumerated()
     }
-
-    pub fn into_iter_indexed(self) -> impl Iterator<Item = (I, T)> {
-        self.vector
-            .into_iter_enumerated()
-            .flat_map(|(i, opt)| Some((i, opt?)))
-    }
-
     pub fn iter_indexed_values(&self) -> impl Iterator<Item = (I, &T)> {
         self.iter_indexed()
     }
 
+    pub fn iter_mut_enumerated(&mut self) -> impl Iterator<Item = (I, &mut T)> {
+        self.vector
+            .iter_mut_enumerated()
+            .flat_map(|(i, opt)| Some((i, opt.as_mut()?)))
+    }
+    pub fn iter_mut_indexed(&mut self) -> impl Iterator<Item = (I, &mut T)> {
+        self.iter_mut_enumerated()
+    }
+
+    pub fn into_iter_enumerated(self) -> impl Iterator<Item = (I, T)> {
+        self.vector
+            .into_iter_enumerated()
+            .flat_map(|(i, opt)| Some((i, opt?)))
+    }
+    pub fn into_iter_indexed(self) -> impl Iterator<Item = (I, T)> {
+        self.into_iter_enumerated()
+    }
     pub fn into_iter_indexed_values(self) -> impl Iterator<Item = (I, T)> {
         self.into_iter_indexed()
     }
@@ -288,8 +286,11 @@ where
         self.vector.iter()
     }
 
-    pub fn iter_indexed_all_slots(&self) -> impl Iterator<Item = (I, &Option<T>)> {
+    pub fn iter_enumerated_all_slots(&self) -> impl Iterator<Item = (I, &Option<T>)> {
         self.vector.iter_enumerated()
+    }
+    pub fn iter_indexed_all_slots(&self) -> impl Iterator<Item = (I, &Option<T>)> {
+        self.iter_enumerated_all_slots()
     }
 
     pub fn iter_indices(&self) -> impl Iterator<Item = I> + '_ {
@@ -361,6 +362,15 @@ where
 impl<I: Idx, T> Default for IndexMap<I, T> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<I: std::fmt::Debug, T: std::fmt::Debug> std::fmt::Debug for IndexMap<I, T>
+where
+    I: Idx,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        <IndexVec<_, _> as std::fmt::Debug>::fmt(&self.vector, f)
     }
 }
 
