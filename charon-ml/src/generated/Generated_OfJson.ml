@@ -2782,11 +2782,18 @@ and trait_method_of_json (ctx : of_json_ctx) (js : json) :
     (trait_method, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("name", name); ("attr_info", attr_info); ("item", item) ] ->
+    | `Assoc
+        [
+          ("name", name);
+          ("attr_info", attr_info);
+          ("signature", signature);
+          ("item", item);
+        ] ->
         let* name = trait_item_name_of_json ctx name in
         let* attr_info = attr_info_of_json ctx attr_info in
+        let* signature = fun_sig_of_json ctx signature in
         let* item = fun_decl_ref_of_json ctx item in
-        Ok ({ name; attr_info; item } : trait_method)
+        Ok ({ name; attr_info; signature; item } : trait_method)
     | _ -> Error "")
 
 and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
