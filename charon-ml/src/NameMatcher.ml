@@ -493,9 +493,7 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
       && T.Disambiguator.of_int pd = d
       && match_generic_args ctx c m pg g
   | [ PIdent (pid, pd, pg) ], [ PeTarget target ] ->
-      pid = target
-      && pd = 0
-      && match_generic_args ctx c m pg g
+      pid = target && pd = 0 && match_generic_args ctx c m pg g
   | [ PImpl pty ], [ PeImpl impl ] -> (
       (* We can get there when matching a prefix of the name with a pattern *)
       (* We have to distinguish two cases:
@@ -517,10 +515,7 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
       && pg = []
       && match_name_with_generics ctx c p n g
   | PIdent (pid, pd, pg) :: p, PeTarget target :: n ->
-      pid = target
-      && pd = 0
-      && pg = []
-      && match_name_with_generics ctx c p n g
+      pid = target && pd = 0 && pg = [] && match_name_with_generics ctx c p n g
   | PImpl pty :: p, PeImpl impl :: n -> (
       (* We have to distinguish two cases:
          - the impl is an inherent impl (linked to a type)
