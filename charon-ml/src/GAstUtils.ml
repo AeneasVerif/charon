@@ -5,6 +5,9 @@ open GAst
 let get_target_information crate =
   match crate.target_information with
   | [ (_, info) ] -> info
+  | (_, info) :: rest when List.for_all (fun (_, i) -> i = info) rest ->
+      (* All targets agree on the layout — safe to use any one. *)
+      info
   | _ ->
       failwith "`get_target_information` can't be used in a multi-layout crate"
 
