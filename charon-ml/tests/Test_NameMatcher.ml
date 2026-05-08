@@ -34,6 +34,8 @@ let parse_tests () =
       "{fn (@T, @U) -> u32}";
       "{*const @T}";
       "{*mut @T}";
+      "x::y::x86_64-apple-darwin";
+      "test_crate::foo::aarch64-unknown-linux-gnu";
     ]
   in
   let _ = List.map parse_pattern patterns in

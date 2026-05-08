@@ -5,7 +5,7 @@
 
 let digit = ['0'-'9']
 let alpha = ['a'-'z' 'A'-'Z']
-let ident = (alpha | '_') (alpha | digit | '_')*
+let ident = (alpha | '_') (alpha | digit | '_')* ('-' (alpha | digit | '_')+)*
 let whitespace = [' ']+
 
 (* Rules *)
