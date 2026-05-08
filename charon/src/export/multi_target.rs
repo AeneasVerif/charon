@@ -383,6 +383,7 @@ impl<'a> ItemDeduplicator<'a> {
             let prev_len = groups_map.len();
             let remap: HashMap<ItemId, ItemId> = groups_map
                 .values()
+                .filter(|ids| ids.len() == num_targets)
                 .cloned()
                 .map(|ids| TargetGroup { ids })
                 .flat_map(|g| g.into_remap_entries())
@@ -402,16 +403,18 @@ impl<'a> ItemDeduplicator<'a> {
                     }
                 }
             }
+            // Only retain complete groups after checking for convergence: incomplete
+            // groups might merge into complete ones after ID remapping.
+            let new_len = groups_map.len();
             groups_map.retain(|_, v| v.len() == num_targets);
-            if prev_len == groups_map.len() {
+            if new_len == prev_len {
                 break;
             }
         }
         let groups: IndexVec<TargetGroupId, TargetGroup> = groups_map
-            .values()
-            .filter(|&per_target| per_target.len() == num_targets)
-            .cloned()
-            .map(|ids| TargetGroup { ids })
+            .into_iter()
+            .filter(|(_, per_target)| per_target.len() == num_targets)
+            .map(|(_name, ids)| TargetGroup { ids })
             .collect();
         groups
     }
@@ -552,11 +555,53 @@ fn normalize_item(
         .name
         .name
         .retain(|elem| !matches!(elem, PathElem::Target(_)));
+    // Normalize spans, file IDs, and attributes for cross-target comparison.
+    item.as_mut().drive_mut(&mut NormalizeFileIdsVisitor);
+    strip_unknown_attributes(&mut item);
+    // Clear source text: it can have OS-specific line endings.
+    item.as_mut().item_meta().source_text = None;
     if let ItemByVal::Type(ty_decl) = &mut item {
         // Layouts are allowed to differ per-target.
         ty_decl.layout.clear();
     }
     item
+}
+
+/// Visitor that normalizes items for cross-target comparison:
+/// - File IDs are reset (they differ across targets for the same source file).
+/// Visitor that normalizes file IDs for cross-target comparison.
+#[derive(Visitor)]
+struct NormalizeFileIdsVisitor;
+
+impl VisitAstMut for NormalizeFileIdsVisitor {
+    fn enter_file_id(&mut self, id: &mut FileId) {
+        *id = FileId::from_raw(0);
+    }
+}
+
+/// Strip `Unknown` attributes from an item and all its nested declarations.
+/// These are rustc-internal attributes (like `rustc_diagnostic_item`) whose
+/// arguments can vary across targets.
+fn strip_unknown_attributes(item: &mut ItemByVal) {
+    fn strip_in_vec(attrs: &mut Vec<Attribute>) {
+        attrs.retain(|attr| !matches!(attr, Attribute::Unknown(..)));
+    }
+
+    // Strip from the top-level item_meta
+    strip_in_vec(&mut item.as_mut().item_meta().attr_info.attributes);
+
+    // Strip from nested items in trait declarations
+    if let ItemByVal::TraitDecl(d) = item {
+        for method in &mut d.methods {
+            strip_in_vec(&mut method.skip_binder.attr_info.attributes);
+        }
+        for cst in &mut d.consts {
+            strip_in_vec(&mut cst.attr_info.attributes);
+        }
+        for ty in &mut d.types {
+            strip_in_vec(&mut ty.skip_binder.attr_info.attributes);
+        }
+    }
 }
 
 /// Visitor that remaps references to the given items.
