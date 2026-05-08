@@ -110,6 +110,11 @@ pub enum TraitRefKind {
     /// A trait implementation that is computed by the compiler, such as for built-in trait
     /// `Sized`. This morally points to an invisible `impl` block; as such it contains
     /// the information we may need from one.
+    ///
+    /// Also used as a placeholder for trait clauses that were stripped by the
+    /// `--remove-adt-clauses` pass: the original `Clause` reference is replaced with a
+    /// `BuiltinOrAuto { builtin_data: RemovedAdtClause, .. }`. See
+    /// [`BuiltinImplData::RemovedAdtClause`].
     BuiltinOrAuto {
         #[drive(skip)]
         builtin_data: BuiltinImplData,
@@ -155,6 +160,10 @@ pub enum BuiltinImplData {
     FnOnce,
     Copy,
     Clone,
+    /// Placeholder used by the `--remove-adt-clauses` pass when it strips a trait clause from a
+    /// type declaration. References to the removed clause are rewritten as
+    /// `BuiltinOrAuto { builtin_data: RemovedAdtClause, .. }`.
+    RemovedAdtClause,
 }
 
 /// A reference to a trait.

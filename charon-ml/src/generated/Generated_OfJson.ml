@@ -286,6 +286,7 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     | `String "FnOnce" -> Ok BuiltinFnOnce
     | `String "Copy" -> Ok BuiltinCopy
     | `String "Clone" -> Ok BuiltinClone
+    | `String "RemovedAdtClause" -> Ok BuiltinRemovedAdtClause
     | _ -> Error "")
 
 and builtin_index_op_of_json (ctx : of_json_ctx) (js : json) :

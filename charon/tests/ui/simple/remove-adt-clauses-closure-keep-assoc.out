@@ -1,0 +1,114 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = drop_in_place<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(_1: *mut Self)
+= <opaque>
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+= <opaque>
+
+// Full name: test_crate::HasAssoc
+trait HasAssoc<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Output>
+    type Output
+    vtable: test_crate::HasAssoc::{vtable}<Self::Output>
+}
+
+// Full name: test_crate::make_closure::closure
+struct closure<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: HasAssoc<T>,
+{}
+
+// Full name: test_crate::make_closure
+fn make_closure<T>(x_1: T) -> closure<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: HasAssoc<T>,
+{
+    let _0: closure<T>[@TraitClause0, @TraitClause1]; // return
+    let x_1: T; // arg #1
+
+    _0 = closure {  }
+    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    return
+}
+
+// Full name: test_crate::make_closure::{impl FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]}::call_once
+fn {impl FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>(_1: closure<T>[@TraitClause0, @TraitClause1], tupled_args_2: ())
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: HasAssoc<T>,
+{
+    let _0: (); // return
+    let _1: closure<T>[@TraitClause0, @TraitClause1]; // arg #1
+    let tupled_args_2: (); // arg #2
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::make_closure::{impl FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]}
+impl<T> FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: HasAssoc<T>,
+{
+    parent_clause0 = {built_in impl MetaSized for closure<T>[@TraitClause0, @TraitClause1]}
+    parent_clause1 = {built_in impl Sized for ()}
+    parent_clause2 = {built_in impl Tuple for ()}
+    parent_clause3 = {built_in impl Sized for ()}
+    type Output = ()
+    fn call_once = {impl FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
+    non-dyn-compatible
+}
+
+
+
