@@ -22,3 +22,7 @@ let () = Test_NameMatcher.run_tests (llbc_dir ^ "/ml-name-matcher-tests.llbc")
 
 let () =
   Test_NameMatcher.run_tests (llbc_dir ^ "/ml-mono-name-matcher-tests.llbc")
+
+let () =
+  Test_NameMatcher.run_tests
+    (llbc_dir ^ "/ml-multi-target-name-matcher-tests.llbc")
