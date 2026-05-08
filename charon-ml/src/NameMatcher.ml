@@ -492,6 +492,10 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
       pid = id
       && T.Disambiguator.of_int pd = d
       && match_generic_args ctx c m pg g
+  | [ PIdent (pid, pd, pg) ], [ PeTarget target ] ->
+      pid = target
+      && pd = 0
+      && match_generic_args ctx c m pg g
   | [ PImpl pty ], [ PeImpl impl ] -> (
       (* We can get there when matching a prefix of the name with a pattern *)
       (* We have to distinguish two cases:
@@ -510,6 +514,11 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
       (* This is not the end: check that the generics are empty *)
       pid = id
       && T.Disambiguator.of_int pd = d
+      && pg = []
+      && match_name_with_generics ctx c p n g
+  | PIdent (pid, pd, pg) :: p, PeTarget target :: n ->
+      pid = target
+      && pd = 0
       && pg = []
       && match_name_with_generics ctx c p n g
   | PImpl pty :: p, PeImpl impl :: n -> (
@@ -974,7 +983,12 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
       | Some args -> [ PIdent (s, d, args) ]
     end
   | PeImpl impl -> [ impl_elem_to_pattern ctx c impl ]
-  | PeInstantiated _ | PeTarget _ ->
+  | PeTarget tgt -> begin
+      match generics with
+      | None -> [ PIdent (tgt, 0, []) ]
+      | Some args -> [ PIdent (tgt, 0, args) ]
+    end
+  | PeInstantiated _ ->
       (* In pattern generation, we skip monomorphized elements since patterns
          are meant to match the logical structure, not the instantiation details *)
       []

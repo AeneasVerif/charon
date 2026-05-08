@@ -1,0 +1,25 @@
+fn test_crate::x86_only::x86_64-apple-darwin() -> u64
+{
+    let _0: u64; // return
+
+    _0 = const 42 : u64
+    return
+}
+
+fn test_crate::arm_only::aarch64-apple-darwin() -> u64
+{
+    let _0: u64; // return
+
+    _0 = const 99 : u64
+    return
+}
+
+fn test_crate::shared_fn() -> u64
+{
+    let _0: u64; // return
+
+    _0 = const 0 : u64
+    return
+}
+
+
