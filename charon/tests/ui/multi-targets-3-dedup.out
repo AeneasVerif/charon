@@ -1,0 +1,72 @@
+pub fn core::clone::impls::{impl core::clone::Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+fn test_crate::clone_it<'_0>(x_1: &'_0 u32) -> u32
+{
+    let _0: u32; // return
+    let x_1: &'1 u32; // arg #1
+    let _2: &'2 u32; // anonymous local
+
+    storage_live(_2)
+    _2 = &(*x_1)
+    _0 = core::clone::impls::{impl core::clone::Clone for u32}::clone<'4>(move _2)
+    storage_dead(_2)
+    return
+}
+
+fn test_crate::platform_specific::x86_64-pc-windows-msvc() -> u32
+{
+    let _0: u32; // return
+
+    _0 = const 42 : u32
+    return
+}
+
+fn test_crate::platform_specific::i686-pc-windows-msvc() -> u32
+{
+    let _0: u32; // return
+
+    _0 = const 44 : u32
+    return
+}
+
+fn test_crate::platform_specific::aarch64-apple-darwin() -> u32
+{
+    let _0: u32; // return
+
+    _0 = const 43 : u32
+    return
+}
+
+fn test_crate::platform_specific() -> u32
+= target_dispatch {
+    x86_64-pc-windows-msvc => test_crate::platform_specific::x86_64-pc-windows-msvc,
+    aarch64-apple-darwin => test_crate::platform_specific::aarch64-apple-darwin,
+    i686-pc-windows-msvc => test_crate::platform_specific::i686-pc-windows-msvc,
+}
+
+pub fn test_crate::call_both<'_0>(x_1: &'_0 u32) -> u32
+{
+    let _0: u32; // return
+    let x_1: &'1 u32; // arg #1
+    let _2: u32; // anonymous local
+    let _3: &'2 u32; // anonymous local
+    let _4: u32; // anonymous local
+    let _5: u32; // anonymous local
+
+    storage_live(_5)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &(*x_1)
+    _2 = test_crate::clone_it<'4>(move _3)
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = test_crate::platform_specific()
+    _5 = copy _2 panic.+ copy _4
+    _0 = move _5
+    storage_dead(_4)
+    storage_dead(_2)
+    return
+}
+
+
