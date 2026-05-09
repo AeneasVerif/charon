@@ -28,11 +28,10 @@ let crate_of_json (js : json) : (crate, string) result =
       if
         not (String.equal charon_version CharonVersion.supported_charon_version)
       then
-        Error
-          ("Incompatible version of charon: this program supports llbc emitted \
-            by charon v" ^ CharonVersion.supported_charon_version
-         ^ " but attempted to read a file emitted by charon v" ^ charon_version
-         ^ ".")
+        Format.kasprintf Result.error
+          "Incompatible version of charon: this program supports llbc emitted \
+           by charon v%s but attempted to read a file emitted by charon v%s."
+          CharonVersion.supported_charon_version charon_version
       else
         let ctx = empty_of_json_ctx in
         let* crate = translated_crate_of_json ctx translated in
@@ -56,3 +55,17 @@ let crate_of_json (js : json) : (crate, string) result =
             trait_impls;
           }
   | _ -> combine_error_msgs js __FUNCTION__ (Error "")
+
+let crate_of_json_file (file : string) : (crate, string) result =
+  let* format = OfPostcardBasic.format_hint_of_file file in
+  match format with
+  | Json ->
+      let json = Yojson.Basic.from_file file in
+      crate_of_json json
+  | Postcard ->
+      Format.kasprintf Result.error
+        "This file looks like Postcard, but JSON deserialization was \
+         requested: %s. Please use Postcard deserialization or regenerate as \
+         JSON."
+        file
+  | Empty -> Error ("Input file is empty: " ^ file)

@@ -56,6 +56,14 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Read a `.llbc` file.
 pub fn deserialize_llbc(path: &std::path::Path) -> anyhow::Result<ast::TranslatedCrate> {
+    deserialize_llbc_with_format(path, options::SerializationFormat::Json)
+}
+
+/// Read a serialized (U)LLBC file.
+pub fn deserialize_llbc_with_format(
+    path: &std::path::Path,
+    format: options::SerializationFormat,
+) -> anyhow::Result<ast::TranslatedCrate> {
     use crate::export::CrateData;
-    Ok(CrateData::deserialize_from_file(path)?.translated)
+    Ok(CrateData::deserialize_from_file(path, format)?.translated)
 }

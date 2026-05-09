@@ -208,7 +208,8 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
         cmd.arg("--no-serialize");
     } else {
         cmd.arg("--dest-file");
-        cmd.arg(test_case.input_path.with_extension("llbc"));
+        cmd.arg(test_case.input_path.with_extension("")); // extension will be added by format=all
+        cmd.arg("--format=all");
     }
     cmd.args(&test_case.magic_comments.charon_opts);
 

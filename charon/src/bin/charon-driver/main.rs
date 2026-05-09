@@ -144,13 +144,11 @@ fn run_charon() -> Result<usize, CharonFailure> {
     let error_count = ctx.errors.borrow().error_count;
 
     // # Final step: generate the files.
-    if !options.no_serialize {
-        let dest_file = options.target_filename(&ctx.translated.crate_name);
-        trace!("Target file: {:?}", dest_file);
-        export::CrateData::new(ctx)
-            .serialize_to_file(&dest_file)
-            .map_err(|()| CharonFailure::Serialize)?;
-    }
+    let targets = options.targets(&ctx.translated.crate_name);
+    trace!("Targets: {:?}", targets);
+    export::CrateData::new(ctx)
+        .serialize_to_files(targets)
+        .map_err(|()| CharonFailure::Serialize)?;
 
     if options.error_on_warnings && error_count != 0 {
         return Err(CharonFailure::CharonError(error_count));

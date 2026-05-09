@@ -1933,6 +1933,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("dest_dir", dest_dir);
           ("dest_file", dest_file);
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
+          ("format", format);
           ("no_serialize", no_serialize);
           ("no_typecheck", no_typecheck);
           ("no_normalize", no_normalize);
@@ -1994,6 +1995,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* no_dedup_serialized_ast =
           bool_of_json ctx no_dedup_serialized_ast
         in
+        let* format =
+          option_of_json serialization_format_arg_of_json ctx format
+        in
         let* no_serialize = bool_of_json ctx no_serialize in
         let* no_typecheck = bool_of_json ctx no_typecheck in
         let* no_normalize = bool_of_json ctx no_normalize in
@@ -2040,6 +2044,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              dest_dir;
              dest_file;
              no_dedup_serialized_ast;
+             format;
              no_serialize;
              no_typecheck;
              no_normalize;
@@ -2613,6 +2618,15 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
         Ok
           ({ repr_algo; align_modif; transparent; explicit_discr_type }
             : repr_options)
+    | _ -> Error "")
+
+and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
+    (serialization_format_arg, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Json" -> Ok Json
+    | `String "Postcard" -> Ok Postcard
+    | `String "All" -> Ok AllFormats
     | _ -> Error "")
 
 and tag_encoding_of_json (ctx : of_json_ctx) (js : json) :
