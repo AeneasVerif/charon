@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1778314100475,
+  "lastUpdate": 1778401342700,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -986,6 +986,68 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 369.2,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.9,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Nadrieril",
+            "username": "Nadrieril",
+            "email": "Nadrieril@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "d55bec9306288c19be9b3816353561d88db9a835",
+          "message": "Merge pull request #1118 from soteria-tools/postcard2\n\nAdd support for postcard format",
+          "timestamp": "2026-05-09T13:24:15Z",
+          "url": "https://github.com/AeneasVerif/charon/commit/d55bec9306288c19be9b3816353561d88db9a835"
+        },
+        "date": 1778401341712,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 108323915355,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 13.33,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 386.5,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.5,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 413463416332,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 42.48,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 369.9,
             "unit": "max-rss(MB)"
           },
           {
