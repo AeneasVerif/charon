@@ -445,17 +445,25 @@ impl ItemTransCtx<'_, '_> {
     // Register preshim functions for the drop shim function and method shim functions.
     // See `translate_vtable_method_preshim` for the description of preshim functions.
     #[tracing::instrument(skip(self, span))]
-    fn register_preshim(&mut self, span: Span, trait_def: &hax::FullDef) -> Result<(), Error> {
-        let item_src =
-            TransItemSource::monomorphic_trait(trait_def.def_id(), TransItemSourceKind::TraitDecl);
-        let item_id = match self.t_ctx.id_map.get(&item_src) {
-            Some(tid) => *tid,
-            None => {
-                panic!("MONO: expected trait has not been translated");
-            }
+    fn register_preshims(&mut self, span: Span, trait_def: &hax::FullDef) -> Result<(), Error> {
+        let hax::FullDefKind::Trait {
+            dyn_self: Some(dyn_self),
+            items,
+            ..
+        } = trait_def.kind()
+        else {
+            unreachable!("register_preshims takes a trait decl")
         };
 
-        let trait_id = item_id
+        let item_src =
+            TransItemSource::monomorphic_trait(trait_def.def_id(), TransItemSourceKind::TraitDecl);
+        let trait_id = match self.t_ctx.id_map.get(&item_src) {
+            Some(tid) => *tid,
+            None => {
+                panic!("MONO: expected trait has not been translated")
+            }
+        };
+        let trait_id = trait_id
             .try_into()
             .expect("MONO: The item_id should be a trait decl id");
 
@@ -465,16 +473,11 @@ impl ItemTransCtx<'_, '_> {
                 preshim_types.push(self.translate_ty(span, hax_ty)?);
             }
         }
-        if let hax::FullDefKind::Trait {
-            dyn_self: Some(dyn_self),
-            ..
-        } = trait_def.kind()
-        {
-            let dyn_self = self.translate_ty(span, dyn_self)?;
-            if let TyKind::DynTrait(pred) = dyn_self.kind() {
-                for ttc in &pred.binder.params.trait_type_constraints {
-                    preshim_types.push(ttc.skip_binder.ty.clone());
-                }
+
+        let dyn_self = self.translate_ty(span, dyn_self)?;
+        if let TyKind::DynTrait(pred) = dyn_self.kind() {
+            for ttc in &pred.binder.params.trait_type_constraints {
+                preshim_types.push(ttc.skip_binder.ty.clone());
             }
         }
 
@@ -494,25 +497,21 @@ impl ItemTransCtx<'_, '_> {
         )?;
 
         // Method fields.
-        if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
-            for item in items {
-                let item_def_id = &item.def_id;
-                // This is ok because dyn-compatible methods don't have generics.
-                let item_def =
-                    self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
-                if let hax::FullDefKind::AssocFn {
-                    vtable_sig: Some(_),
-                    ..
-                } = item_def.kind()
-                {
-                    let name = self.translate_trait_item_name(item_def_id)?;
-
-                    let _: FnPtr = self.translate_item(
-                        span,
-                        trait_def.this(),
-                        TransItemSourceKind::VTableMethodPreShim(trait_id, name),
-                    )?;
-                }
+        for item in items {
+            // This is ok because dyn-compatible methods don't have generics.
+            let item_ref = trait_def.this().with_def_id(self.hax_state(), &item.def_id);
+            let item_def = self.hax_def(&item_ref)?;
+            if let hax::FullDefKind::AssocFn {
+                vtable_sig: Some(_),
+                ..
+            } = item_def.kind()
+            {
+                let name = self.translate_trait_item_name(&item.def_id)?;
+                let _: FnPtr = self.translate_item(
+                    span,
+                    &item_ref,
+                    TransItemSourceKind::VTableMethodPreShim(trait_id, name),
+                )?;
             }
         }
 
@@ -838,7 +837,7 @@ impl ItemTransCtx<'_, '_> {
                 _ => unreachable!(),
             };
             let trait_def = self.hax_def(&trait_pred.trait_ref)?;
-            self.register_preshim(span, &trait_def)?;
+            self.register_preshims(span, &trait_def)?;
         }
 
         // Initializer function for this global.
@@ -1408,65 +1407,20 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         fun_id: FunDeclId,
         item_meta: ItemMeta,
-        trait_def: &hax::FullDef,
+        assoc_func_def: &hax::FullDef,
         name: &TraitItemName,
         trait_id: &TraitDeclId,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        let mut assoc_func_def = None;
-        let mut assoc_types = None;
-
-        if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
-            for item in items {
-                let item_def_id = &item.def_id;
-                // This is ok because dyn-compatible methods don't have generics.
-                let item_def =
-                    self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
-                if let hax::FullDefKind::AssocFn {
-                    // sig,
-                    // vtable_sig: Some(_),
-                    ..
-                } = item_def.kind()
-                {
-                    let fun_name = self.translate_trait_item_name(item_def_id)?;
-                    if fun_name == *name {
-                        assoc_func_def = Some(item_def);
-                    }
-                }
-                else if let hax::FullDefKind::AssocTy {
-                    implied_predicates, ..}
-                    = item_def.kind() {
-                    trace!("MONO: show:\n {:?}", item_def.kind());
-                    if let Some(pred) = implied_predicates.predicates.first()
-                        && let hax::ClauseKind::Trait(p) = &pred.clause.kind.value
-                    {
-                        assoc_types = Some(p.trait_ref.generic_args.clone());
-                    }
-                }
-            }
-        }
-
-        let Some(assoc_func_def) = assoc_func_def else {
-            panic!("MONO: assoc_func_def is not found");
-        };
-
-        // manually translate region params for dyn trait
-        assert!(self.binding_levels.len() == 1);
-        self.binding_levels.pop();
-        let def = self.poly_hax_def(assoc_func_def.def_id())?;
-        self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
-
         let hax::FullDefKind::AssocFn {
             vtable_sig: Some(vtable_sig),
-            // sig: sig,
             associated_item,
             ..
         } = assoc_func_def.kind()
         else {
-            raise_error!(self, span, "MONO: expected associative methods");
+            raise_error!(self, span, "MONO: expected dyn-compatible method");
         };
-
         let AssocItemContainer::TraitContainer {
             trait_ref: tref, ..
         } = &associated_item.container
@@ -1474,11 +1428,43 @@ impl ItemTransCtx<'_, '_> {
             raise_error!(
                 self,
                 span,
-                "MONO: expected trait ref of associative methods"
+                "MONO: expected method declaration {associated_item:?}"
             );
         };
 
-        let trait_def = self.poly_hax_def(&tref.def_id)?;
+        let trait_def = self.hax_def(tref)?;
+        let hax::FullDefKind::Trait {
+            items: trait_items, ..
+        } = trait_def.kind()
+        else {
+            unreachable!()
+        };
+
+        let mut assoc_types = None;
+        for item in trait_items {
+            let item_def_id = &item.def_id;
+            // This is ok because dyn-compatible methods don't have generics.
+            let item_def =
+                self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
+            if let hax::FullDefKind::AssocTy {
+                implied_predicates, ..
+            } = item_def.kind()
+            {
+                if let Some(pred) = implied_predicates.predicates.first()
+                    && let hax::ClauseKind::Trait(p) = &pred.clause.kind.value
+                {
+                    // FIXME: I have no idea what this is supposed to be doing.
+                    assoc_types = Some(p.trait_ref.generic_args.clone());
+                    break;
+                }
+            }
+        }
+
+        // manually translate region params for dyn trait
+        assert!(self.binding_levels.len() == 1);
+        self.binding_levels.pop();
+        let def = self.poly_hax_def(assoc_func_def.def_id())?;
+        self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
 
         // The signature of the shim function.
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;

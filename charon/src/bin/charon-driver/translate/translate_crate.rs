@@ -86,9 +86,11 @@ pub enum TransItemSourceKind {
     /// this takes a `Ptr<dyn Trait>` and forwards to the method. The `DefId` refers to the method
     /// implementation.
     VTableMethod,
-    /// The drop shim function to be used in the vtable as a field, the ID is an `impl`.
+    /// The drop shim function to be used in the vtable as a field, the `DefId` is an `impl`.
     VTableDropShim,
+    /// The `DefId` is the `Destruct` trait.
     VTableDropPreShim,
+    /// The `DefId` is the method.
     VTableMethodPreShim(TraitDeclId, TraitItemName),
 }
 
@@ -174,6 +176,7 @@ impl TransItemSource {
                 TransItemSourceKind::TraitImpl(impl_kind)
             }
             TransItemSourceKind::DropInPlaceMethod(None) => TransItemSourceKind::TraitDecl,
+            TransItemSourceKind::VTableMethodPreShim(..) => TransItemSourceKind::Fun,
             _ => return None,
         };
         Some(self.with_kind(parent_kind))

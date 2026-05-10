@@ -38,23 +38,6 @@ unsafe fn {vtable_drop_preshim}::<bool>(dyn_self_1: *mut (dyn Trait<Item = bool>
     return
 }
 
-// Full name: test_crate::Trait::comsume::{vtable_method_preshim}::<bool>
-fn {vtable_method_preshim}::<bool><'_0>(dyn_self_1: &'_0 (dyn Trait<Item = bool>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: &'_0 (dyn Trait<Item = bool> + '0); // arg #1
-    let erased_method_comsume_shim_ptr_2: *const (); // local
-    let method_comsume_shim_ptr_3: fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '1)); // local
-
-    ret_0 = ()
-    storage_live(erased_method_comsume_shim_ptr_2)
-    storage_live(method_comsume_shim_ptr_3)
-    erased_method_comsume_shim_ptr_2 = copy ((*dyn_self_1.metadata)).method_comsume
-    method_comsume_shim_ptr_3 = cast<*const (), fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '4))>(move erased_method_comsume_shim_ptr_2)
-    ret_0 = (move method_comsume_shim_ptr_3)(move dyn_self_1)
-    return
-}
-
 // Full name: test_crate::Trait::{vtable_drop_preshim}::<u32>
 unsafe fn {vtable_drop_preshim}::<u32>(dyn_self_1: *mut (dyn Trait<Item = u32>))
 {
@@ -69,6 +52,29 @@ unsafe fn {vtable_drop_preshim}::<u32>(dyn_self_1: *mut (dyn Trait<Item = u32>))
     erased_drop_shim_ptr_2 = copy ((*dyn_self_1.metadata)).drop
     drop_shim_ptr_3 = cast<*const (), unsafe fn(*mut (dyn Trait<Item = u32> + '4))>(move erased_drop_shim_ptr_2)
     ret_0 = (move drop_shim_ptr_3)(move dyn_self_1)
+    return
+}
+
+fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<Item = bool>))
+= <method_without_default_body>
+
+fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<Item = u32>))
+= <method_without_default_body>
+
+// Full name: test_crate::Trait::comsume::{vtable_method_preshim}::<bool>
+fn {vtable_method_preshim}::<bool><'_0>(dyn_self_1: &'_0 (dyn Trait<Item = bool>))
+{
+    let ret_0: (); // return
+    let dyn_self_1: &'_0 (dyn Trait<Item = bool> + '0); // arg #1
+    let erased_method_comsume_shim_ptr_2: *const (); // local
+    let method_comsume_shim_ptr_3: fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '1)); // local
+
+    ret_0 = ()
+    storage_live(erased_method_comsume_shim_ptr_2)
+    storage_live(method_comsume_shim_ptr_3)
+    erased_method_comsume_shim_ptr_2 = copy ((*dyn_self_1.metadata)).method_comsume
+    method_comsume_shim_ptr_3 = cast<*const (), fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '4))>(move erased_method_comsume_shim_ptr_2)
+    ret_0 = (move method_comsume_shim_ptr_3)(move dyn_self_1)
     return
 }
 
@@ -88,12 +94,6 @@ fn {vtable_method_preshim}::<u32><'_0>(dyn_self_1: &'_0 (dyn Trait<Item = u32>))
     ret_0 = (move method_comsume_shim_ptr_3)(move dyn_self_1)
     return
 }
-
-fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<Item = bool>))
-= <method_without_default_body>
-
-fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<Item = u32>))
-= <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for i32}::comsume
 fn {impl Trait for i32}::comsume<'_0>(self_1: &'_0 i32)

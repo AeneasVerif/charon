@@ -422,11 +422,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
-            TransItemSourceKind::VTableMethodPreShim(_, method_name) => {
-                name.name.push(PathElem::Ident(
-                    method_name.to_string(),
-                    Disambiguator::ZERO,
-                ));
+            TransItemSourceKind::VTableMethodPreShim(..) => {
                 name.name.push(PathElem::Ident(
                     "{vtable_method_preshim}".into(),
                     Disambiguator::ZERO,
@@ -463,10 +459,19 @@ impl<'tcx> TranslateCtx<'tcx> {
                     TransItemSourceKind::VTableDropPreShim
                         | TransItemSourceKind::VTableMethodPreShim(..)
                 ) {
+                    let tref = match src.kind {
+                        TransItemSourceKind::VTableDropPreShim => item_ref,
+                        TransItemSourceKind::VTableMethodPreShim(..) => {
+                            let s = &bt_ctx.hax_state;
+                            // This is ok because dyn-compatible methods don't have generics.
+                            &item_ref.with_def_id(s, &item_ref.def_id.parent(s).unwrap())
+                        }
+                        _ => unreachable!(),
+                    };
                     // Remove the `Self` type variable from the generic parameters.
                     args.types.remove_and_shift_ids(TypeVarId::ZERO);
                     // Append the assoc types.
-                    for ty in item_ref.trait_associated_types(bt_ctx.hax_state_with_id()) {
+                    for ty in tref.trait_associated_types(bt_ctx.hax_state_with_id()) {
                         let ty = bt_ctx.translate_ty(span, &ty)?;
                         args.types.push(ty);
                     }

@@ -47,6 +47,9 @@ unsafe fn {vtable_drop_preshim}::<usize, bool>(dyn_self_1: *mut (dyn Trait<usize
     return
 }
 
+fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<usize, Item = bool>))
+= <method_without_default_body>
+
 // Full name: test_crate::Trait::comsume::{vtable_method_preshim}::<usize, bool>
 fn {vtable_method_preshim}::<usize, bool><'_0>(dyn_self_1: &'_0 (dyn Trait<usize, Item = bool>))
 {
@@ -63,9 +66,6 @@ fn {vtable_method_preshim}::<usize, bool><'_0>(dyn_self_1: &'_0 (dyn Trait<usize
     ret_0 = (move method_comsume_shim_ptr_3)(move dyn_self_1)
     return
 }
-
-fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<usize, Item = bool>))
-= <method_without_default_body>
 
 // Full name: test_crate::{impl Trait<usize> for i32}::comsume
 fn {impl Trait<usize> for i32}::comsume<'_0>(self_1: &'_0 i32)
