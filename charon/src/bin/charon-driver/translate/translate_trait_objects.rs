@@ -1432,49 +1432,16 @@ impl ItemTransCtx<'_, '_> {
             );
         };
 
-        let trait_def = self.hax_def(tref)?;
-        let hax::FullDefKind::Trait {
-            items: trait_items, ..
-        } = trait_def.kind()
-        else {
-            unreachable!()
-        };
-
-        let mut assoc_types = None;
-        for item in trait_items {
-            let item_def_id = &item.def_id;
-            // This is ok because dyn-compatible methods don't have generics.
-            let item_def =
-                self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
-            if let hax::FullDefKind::AssocTy {
-                implied_predicates, ..
-            } = item_def.kind()
-            {
-                if let Some(pred) = implied_predicates.predicates.first()
-                    && let hax::ClauseKind::Trait(p) = &pred.clause.kind.value
-                {
-                    // FIXME: I have no idea what this is supposed to be doing.
-                    assoc_types = Some(p.trait_ref.generic_args.clone());
-                    break;
-                }
-            }
-        }
-
-        // manually translate region params for dyn trait
-        assert!(self.binding_levels.len() == 1);
-        self.binding_levels.pop();
-        let def = self.poly_hax_def(assoc_func_def.def_id())?;
-        self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
-
         // The signature of the shim function.
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
 
-        // Add regions. this is ad-hoc...
+        // Add regions. FIXME: incorrect if the trait has regions?
         let method_ty = Ty::new(TyKind::FnPtr(RegionBinder {
             regions: self.outermost_generics().regions.clone(),
             skip_binder: signature.clone(),
         }));
 
+        let trait_def = self.hax_def(tref)?;
         let body: Body = self.translate_vtable_method_preshim_body(
             span,
             &signature.inputs[0],
@@ -1483,19 +1450,11 @@ impl ItemTransCtx<'_, '_> {
             format!("method_{}", name).as_str(),
         )?;
 
-        let mut types = vec![];
-        let generic_args = tref.generic_args.clone();
-        for arg in generic_args.iter().skip(1) {
-            if let GenericArg::Type(hax_ty) = arg {
-                types.push(self.translate_ty(span, hax_ty)?);
-            }
-        }
-        if let Some(assoc_types) = assoc_types {
-            for arg in assoc_types.iter() {
-                if let GenericArg::Type(hax_ty) = arg {
-                    types.push(self.translate_ty(span, hax_ty)?);
-                }
-            }
+        let trait_generics = self.translate_generic_args(span, &tref.generic_args, &[])?;
+        let mut types = trait_generics.types.into_iter().skip(1).collect_vec();
+        for ty in tref.trait_associated_types(self.hax_state_with_id()) {
+            let ty = self.translate_ty(span, &ty)?;
+            types.push(ty);
         }
 
         Ok(FunDecl {
