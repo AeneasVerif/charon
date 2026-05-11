@@ -13,12 +13,12 @@ use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
 use charon_lib::ullbc_ast::*;
 
-impl ItemTransCtx<'_, '_> {
+impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Generate a fake function body for ADT constructors.
     pub(crate) fn build_ctor_body(
         &mut self,
         span: Span,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<Body, Error> {
         let hax::FullDefKind::Ctor {
             adt_def_id,
@@ -78,7 +78,7 @@ impl ItemTransCtx<'_, '_> {
     pub fn translate_argument_names(
         &mut self,
         span: Span,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         n_args: usize,
     ) -> Vec<Option<String>> {
         let Ok(Some(body)) = self.get_mir(def.this(), span) else {

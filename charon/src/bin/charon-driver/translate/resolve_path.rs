@@ -147,7 +147,7 @@ pub fn def_path_def_ids<'a, 'tcx>(
             }
         } else {
             let nameable_children = items.iter().copied().flat_map(|def_id| {
-                let hax_def: Arc<hax::FullDef> = def_id.sinto(s).full_def(s);
+                let hax_def: Arc<hax::FullDef<'tcx>> = def_id.sinto(s).full_def(s);
                 hax_def.nameable_children(s)
             });
             match elem {

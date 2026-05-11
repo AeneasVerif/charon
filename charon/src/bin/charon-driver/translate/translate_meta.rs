@@ -617,7 +617,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
     }
 
-    pub(crate) fn translate_inline(&self, def: &hax::FullDef) -> Option<InlineAttr> {
+    pub(crate) fn translate_inline(&self, def: &hax::FullDef<'tcx>) -> Option<InlineAttr> {
         match def.kind() {
             hax::FullDefKind::Fn { inline, .. }
             | hax::FullDefKind::AssocFn { inline, .. }
@@ -632,7 +632,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
     }
 
-    pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef) -> AttrInfo {
+    pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef<'tcx>) -> AttrInfo {
         // Default to `false` for impl blocks and closures.
         let public = def.visibility.unwrap_or(false);
         let inline = self.translate_inline(def);
@@ -669,14 +669,14 @@ impl<'tcx> TranslateCtx<'tcx> {
 // `ItemMeta`
 impl<'tcx> TranslateCtx<'tcx> {
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
-    pub(crate) fn is_extern_item(&mut self, def: &hax::FullDef) -> bool {
+    pub(crate) fn is_extern_item(&mut self, def: &hax::FullDef<'tcx>) -> bool {
         def.def_id()
             .parent(&self.hax_state)
             .is_some_and(|parent| matches!(parent.kind, hax::DefKind::ForeignMod))
     }
 
     /// If this is an item declared in an `extern { .. }` block, return its symbol name.
-    pub(crate) fn extern_item_symbol_name(&mut self, def: &hax::FullDef) -> Option<String> {
+    pub(crate) fn extern_item_symbol_name(&mut self, def: &hax::FullDef<'tcx>) -> Option<String> {
         if !self.is_extern_item(def) {
             return None;
         }
@@ -692,7 +692,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// Compute the meta information for a Rust item.
     pub(crate) fn translate_item_meta(
         &mut self,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         item_src: &TransItemSource,
         name: Name,
         name_opacity: ItemOpacity,

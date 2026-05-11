@@ -138,14 +138,18 @@ fn translate_borrow_kind(borrow_kind: mir::BorrowKind) -> BorrowKind {
 impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Translate the MIR body of this definition if it has one. Catches any error and returns
     /// `Body::Error` instead
-    pub fn translate_def_body(&mut self, span: Span, def: &hax::FullDef) -> Body {
+    pub fn translate_def_body(&mut self, span: Span, def: &hax::FullDef<'tcx>) -> Body {
         match self.translate_def_body_inner(span, def) {
             Ok(body) => body,
             Err(e) => Body::Error(e),
         }
     }
 
-    fn translate_def_body_inner(&mut self, span: Span, def: &hax::FullDef) -> Result<Body, Error> {
+    fn translate_def_body_inner(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef<'tcx>,
+    ) -> Result<Body, Error> {
         // Retrieve the body
         if let Some(body) = self.get_mir(def.this(), span)? {
             Ok(self.translate_body(span, body, &def.source_text))

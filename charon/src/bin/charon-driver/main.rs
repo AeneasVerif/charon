@@ -1,12 +1,13 @@
 //! The Charon driver, which calls Rustc with callbacks to compile some Rust
 //! crate to LLBC.
 #![feature(rustc_private)]
-#![allow(clippy::useless_format)]
+#![allow(clippy::arc_with_non_send_sync)]
+#![allow(clippy::borrowed_box)]
+#![allow(clippy::derivable_impls)]
+#![allow(clippy::field_reassign_with_default)]
 #![allow(clippy::manual_map)]
 #![allow(clippy::mem_replace_with_default)]
-#![allow(clippy::derivable_impls)]
-#![allow(clippy::borrowed_box)]
-#![allow(clippy::field_reassign_with_default)]
+#![allow(clippy::useless_format)]
 #![expect(incomplete_features)]
 #![feature(box_patterns)]
 #![feature(deref_patterns)]

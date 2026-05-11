@@ -159,13 +159,13 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// possible.
     ///
     /// Used for computing names, for associated items, and for various checks.
-    pub fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+    pub fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
         self.hax_def_for_item(&RustcItem::Poly(def_id.clone()))
     }
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
     /// depending on user choice.
-    pub fn hax_def_for_item(&mut self, item: &RustcItem) -> Result<Arc<hax::FullDef>, Error> {
+    pub fn hax_def_for_item(&mut self, item: &RustcItem) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
         let def_id = item.def_id();
         let span = self.def_span(def_id);
         if let RustcItem::Mono(item_ref) = item
@@ -253,7 +253,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
     /// depending on user choice. For `TraitDecl` or `VTable`, we always use polymorphic definitions.
-    pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef>, Error> {
+    pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
         let item = if self.monomorphize()
             && !matches!(
                 self.item_src.kind,
@@ -266,7 +266,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.hax_def_for_item(&item)
     }
 
-    pub(crate) fn poly_hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+    pub(crate) fn poly_hax_def(
+        &mut self,
+        def_id: &hax::DefId,
+    ) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
         self.t_ctx.poly_hax_def(def_id)
     }
 }

@@ -61,7 +61,7 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
 /// the normal generics: the upvars, the higher-kindedness of the closure itself, and the
 /// late-bound generics of the `call`/`call_mut` methods. One must be careful to choose the right
 /// method from these.
-impl ItemTransCtx<'_, '_> {
+impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Translate a reference to a closure item that takes late-bound lifetimes. The binder binds
     /// the late-bound lifetimes of the closure itself, if it is higher-kinded.
     fn translate_closure_bound_ref_with_late_bound(
@@ -137,7 +137,7 @@ impl ItemTransCtx<'_, '_> {
     }
 }
 
-impl ItemTransCtx<'_, '_> {
+impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Translate a reference to the closure ADT.
     pub fn translate_closure_type_ref(
         &mut self,
@@ -266,7 +266,7 @@ impl ItemTransCtx<'_, '_> {
     /// `call_once`/`call_mut`/`call` method (depending on `target_kind`).
     fn translate_closure_method_sig(
         &mut self,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         span: Span,
         args: &hax::ClosureArgs,
         target_kind: ClosureKind,
@@ -313,7 +313,7 @@ impl ItemTransCtx<'_, '_> {
     fn translate_closure_method_body(
         &mut self,
         span: Span,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         target_kind: ClosureKind,
         args: &hax::ClosureArgs,
         signature: &FunSig,
@@ -470,7 +470,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         def_id: FunDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         target_kind: ClosureKind,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
@@ -534,7 +534,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         def_id: TraitImplId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         target_kind: ClosureKind,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
@@ -590,7 +590,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         def_id: FunDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
         let hax::FullDefKind::Closure { args: closure, .. } = &def.kind else {

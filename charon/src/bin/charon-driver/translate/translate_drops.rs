@@ -34,7 +34,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     fn translate_drop_in_place_method_body(
         &mut self,
         span: Span,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         self_ty: &Ty,
     ) -> Result<Body, Error> {
         let (hax::FullDefKind::Adt { .. } | hax::FullDefKind::Closure { .. }) = def.kind() else {
@@ -93,7 +93,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         mut self,
         def_id: FunDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         impl_kind: Option<TraitImplSource>,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
@@ -172,7 +172,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     // Small helper to deduplicate.
     pub fn prepare_drop_in_place_method(
         &mut self,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         span: Span,
         destruct_trait_id: TraitDeclId,
         impl_kind: Option<TraitImplSource>,
@@ -205,7 +205,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         mut self,
         impl_id: TraitImplId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 

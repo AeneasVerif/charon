@@ -284,12 +284,12 @@ impl<'tcx> TranslateCtx<'tcx> {
     }
 }
 
-impl ItemTransCtx<'_, '_> {
+impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Register the items inside this module or inherent impl.
     // TODO: we may want to accumulate the set of modules we found, to check that all
     // the opaque modules given as arguments actually exist
     #[tracing::instrument(skip(self, item_meta, def))]
-    pub(crate) fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef) {
+    pub(crate) fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef<'tcx>) {
         if !item_meta.opacity.is_transparent() {
             return;
         }
@@ -316,7 +316,7 @@ impl ItemTransCtx<'_, '_> {
     pub(crate) fn get_item_source(
         &mut self,
         span: Span,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<ItemSource, Error> {
         let assoc = match def.kind() {
             hax::FullDefKind::AssocTy {
@@ -401,7 +401,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         trans_id: TypeDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<TypeDecl, Error> {
         let span = item_meta.span;
 
@@ -457,7 +457,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         def_id: FunDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
@@ -560,7 +560,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         def_id: GlobalDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
 
@@ -606,7 +606,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         def_id: TraitDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<TraitDecl, Error> {
         let span = item_meta.span;
 
@@ -906,7 +906,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         def_id: TraitImplId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
@@ -1177,7 +1177,7 @@ impl ItemTransCtx<'_, '_> {
         mut self,
         def_id: TraitImplId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
@@ -1374,7 +1374,7 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         def_id: FunDeclId,
         item_meta: ItemMeta,
-        def: &hax::FullDef,
+        def: &hax::FullDef<'tcx>,
         impl_kind: TraitImplSource,
         method_name: TraitItemName,
     ) -> Result<FunDecl, Error> {
