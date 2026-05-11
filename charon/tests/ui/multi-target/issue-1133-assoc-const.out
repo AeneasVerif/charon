@@ -1,0 +1,81 @@
+pub struct test_crate::Foo::x86_64-pc-windows-msvc {
+  x: u64,
+}
+
+pub struct test_crate::Foo::i686-unknown-linux-gnu {
+  x: u32,
+}
+
+fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu() -> [u32; 4 : usize]
+{
+    let _0: [u32; 4 : usize]; // return
+
+    _0 = [const 10 : u32, const 20 : u32, const 30 : u32, const 40 : u32]
+    return
+}
+
+fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc() -> [u32; 4 : usize]
+{
+    let _0: [u32; 4 : usize]; // return
+
+    _0 = [const 10 : u32, const 20 : u32, const 30 : u32, const 40 : u32]
+    return
+}
+
+fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE() -> [u32; 4 : usize]
+= target_dispatch {
+    x86_64-pc-windows-msvc => test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc,
+    i686-unknown-linux-gnu => test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu,
+}
+
+const test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc: [u32; 4 : usize] = test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE()
+
+pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64-pc-windows-msvc<'_0>(self_1: &'_0 test_crate::Foo::x86_64-pc-windows-msvc) -> u32
+{
+    let _0: u32; // return
+    let self_1: &'1 test_crate::Foo::x86_64-pc-windows-msvc; // arg #1
+    let _2: [u32; 4 : usize]; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: &'_ [u32; 4 : usize]; // anonymous local
+    let _5: &'_ u32; // anonymous local
+
+    storage_live(_2)
+    _2 = copy test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc
+    storage_live(_3)
+    _3 = const 0 : usize
+    storage_live(_4)
+    _4 = &_2
+    storage_live(_5)
+    _5 = @ArrayIndexShared<'_, u32, 4 : usize>(move _4, copy _3)
+    _0 = copy (*_5)
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
+const test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu: [u32; 4 : usize] = test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE()
+
+pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-unknown-linux-gnu<'_0>(self_1: &'_0 test_crate::Foo::i686-unknown-linux-gnu) -> u32
+{
+    let _0: u32; // return
+    let self_1: &'1 test_crate::Foo::i686-unknown-linux-gnu; // arg #1
+    let _2: [u32; 4 : usize]; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: &'_ [u32; 4 : usize]; // anonymous local
+    let _5: &'_ u32; // anonymous local
+
+    storage_live(_2)
+    _2 = copy test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu
+    storage_live(_3)
+    _3 = const 0 : usize
+    storage_live(_4)
+    _4 = &_2
+    storage_live(_5)
+    _5 = @ArrayIndexShared<'_, u32, 4 : usize>(move _4, copy _3)
+    _0 = copy (*_5)
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
+
