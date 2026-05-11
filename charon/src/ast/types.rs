@@ -256,7 +256,7 @@ pub enum BinderKind {
     TraitType(TraitDeclId, TraitItemName),
     /// The parameters of a trait method. Used in the `methods` lists in trait decls and trait
     /// impls.
-    TraitMethod(TraitDeclId, TraitItemName),
+    TraitMethod(TraitDeclId, TraitMethodId),
     /// The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods.
     InherentImplBlock,
     /// Binder used for `dyn Trait` existential predicates.

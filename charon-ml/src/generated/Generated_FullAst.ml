@@ -308,13 +308,15 @@ and translated_crate = {
           corresponding item wasn't translated. *)
   short_names : (item_id * name) list;
       (** Short names, for items whose last PathElem is unique. *)
-  type_decls : type_decl option list;  (** The translated type definitions *)
-  fun_decls : fun_decl option list;  (** The translated function definitions *)
-  global_decls : global_decl option list;
+  type_decls : type_decl type_decl_id_map;
+      (** The translated type definitions *)
+  fun_decls : fun_decl fun_decl_id_map;
+      (** The translated function definitions *)
+  global_decls : global_decl global_decl_id_map;
       (** The translated global definitions *)
-  trait_decls : trait_decl option list;
+  trait_decls : trait_decl trait_decl_id_map;
       (** The translated trait declarations *)
-  trait_impls : trait_impl option list;
+  trait_impls : trait_impl trait_impl_id_map;
       (** The translated trait declarations *)
   ordered_decls : declaration_group list option;
       (** The re-ordered groups of declarations, initialized as empty. *)

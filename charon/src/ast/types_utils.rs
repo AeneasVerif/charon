@@ -1471,6 +1471,15 @@ impl TypeDecl {
             .is_some_and(|repr| repr.repr_algo == ReprAlgorithm::C)
     }
 
+    pub fn get_field(&self, variant: Option<VariantId>, field: FieldId) -> Option<&Field> {
+        let fields = match &self.kind {
+            TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields) => fields,
+            TypeDeclKind::Enum(variants) => &variants[variant.unwrap()].fields,
+            _ => return None,
+        };
+        fields.get(field)
+    }
+
     pub fn get_field_by_name(
         &self,
         variant: Option<VariantId>,

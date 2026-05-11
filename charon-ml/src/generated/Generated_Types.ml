@@ -18,13 +18,13 @@ module GlobalDeclId = IdGen ()
 module ConstGenericVarId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
+module TraitMethodId = IdGen ()
 module TraitClauseId = IdGen ()
 module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
 module RegionId = IdGen ()
 module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
-module BodyId = IdGen ()
 
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
@@ -35,6 +35,13 @@ type literal_type = Values.literal_type [@@deriving show, ord, eq]
    declare it within a visitor group. *)
 type trait_type_constraint_id = TraitTypeConstraintId.id
 [@@deriving show, ord, eq]
+
+type 'a fun_decl_id_map = 'a FunDeclId.Map.t
+and 'a global_decl_id_map = 'a GlobalDeclId.Map.t
+and 'a type_decl_id_map = 'a TypeDeclId.Map.t
+and 'a trait_decl_id_map = 'a TraitDeclId.Map.t
+and 'a trait_impl_id_map = 'a TraitImplId.Map.t
+and 'a trait_method_id_map = 'a TraitMethodId.Map.t [@@deriving show, eq, ord]
 
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
@@ -160,7 +167,7 @@ type 'a0 binder = {
 and binder_kind =
   | BKTraitType of trait_decl_id * trait_item_name
       (** The parameters of a generic associated type. *)
-  | BKTraitMethod of trait_decl_id * trait_item_name
+  | BKTraitMethod of trait_decl_id * trait_method_id
       (** The parameters of a trait method. Used in the [methods] lists in trait
           decls and trait impls. *)
   | BKInherentImplBlock
@@ -395,7 +402,7 @@ and fn_ptr = { kind : fn_ptr_kind; generics : generic_args }
 
 and fn_ptr_kind =
   | FunId of fun_id
-  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
+  | TraitMethod of trait_ref * trait_method_id * fun_decl_id
       (** If a trait: the reference to the trait and the id of the trait method.
           The fun decl id is not really necessary - we put it here for
           convenience purposes. *)
@@ -531,6 +538,7 @@ and trait_decl_ref = { id : trait_decl_id; generics : generic_args }
 and trait_impl_ref = { id : trait_impl_id; generics : generic_args }
 
 and trait_item_name = string
+and trait_method_id = (TraitMethodId.id[@visitors.opaque])
 
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
     functions like a variable binder, to which variables of the form
@@ -1154,7 +1162,7 @@ and v_table_field =
   | VTableSize
   | VTableAlign
   | VTableDrop
-  | VTableMethod of trait_item_name
+  | VTableMethod of trait_method_id
   | VTableSuperTrait of trait_clause_id
 
 and variant = {

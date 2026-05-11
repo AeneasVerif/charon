@@ -1284,11 +1284,11 @@ impl TransformPass for Transform {
                 let modifications = computer.compute_item_modifications(item);
                 item_modifications.insert(GenericsSource::Item(id), modifications);
                 if let ItemRef::TraitDecl(tdecl) = item {
-                    for method in &tdecl.methods {
+                    for (method_id, method) in tdecl.methods.iter_enumerated() {
                         let modifications =
                             computer.compute_non_trait_modifications(&method.params);
                         item_modifications.insert(
-                            GenericsSource::Method(tdecl.def_id, method.skip_binder.name),
+                            GenericsSource::Method(tdecl.def_id, method_id),
                             modifications,
                         );
                     }

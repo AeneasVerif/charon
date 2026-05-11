@@ -59,15 +59,13 @@ let bound_fun_sig_of_decl (def : fun_decl) : bound_fun_sig =
 (** Lookup a method in this trait decl. The two levels of binders in the output
     reflect that there are two binding levels: the trait generics and the method
     generics. *)
-let lookup_trait_decl_method (tdecl : trait_decl) (name : trait_item_name) :
+let lookup_trait_decl_method (tdecl : trait_decl) (id : trait_method_id) :
     trait_method binder item_binder option =
   Option.map
     (fun m -> { item_binder_params = tdecl.generics; item_binder_value = m })
-    (List.find_opt
-       (fun (m : trait_method binder) -> m.binder_value.name = name)
-       tdecl.methods)
+    (TraitMethodId.Map.find_opt id tdecl.methods)
 
-let lookup_trait_decl_method_ref (tdecl : trait_decl) (name : trait_item_name) :
+let lookup_trait_decl_method_ref (tdecl : trait_decl) (id : trait_method_id) :
     fun_decl_ref binder item_binder option =
   Option.map
     (fun m ->
@@ -79,17 +77,34 @@ let lookup_trait_decl_method_ref (tdecl : trait_decl) (name : trait_item_name) :
             binder_value = m.item_binder_value.binder_value.item;
           };
       })
-    (lookup_trait_decl_method tdecl name)
+    (lookup_trait_decl_method tdecl id)
 
 (** Lookup a method in this trait impl. The two levels of binders in the output
     reflect that there are two binding levels: the impl generics and the method
     generics. *)
-let lookup_trait_impl_method (timpl : trait_impl) (name : trait_item_name) :
+let lookup_trait_impl_method (timpl : trait_impl) (id : trait_method_id) :
     fun_decl_ref binder item_binder option =
   Option.map
-    (fun (_, bound_fn) ->
+    (fun bound_fn ->
       { item_binder_params = timpl.generics; item_binder_value = bound_fn })
-    (List.find_opt (fun (s, _) -> s = name) timpl.methods)
+    (TraitMethodId.Map.find_opt id timpl.methods)
+
+(** Resolve a [trait_method_id] to a method name, following the same logic as
+    the Rust [format_method_name]: first try the method map, then fall back to
+    [method_names] (for mono mode), then to the raw id. *)
+let format_method_name (crate : crate) (trait_id : trait_decl_id)
+    (method_id : trait_method_id) : trait_item_name =
+  match TraitDeclId.Map.find_opt trait_id crate.trait_decls with
+  | Some tdecl -> begin
+      match TraitMethodId.Map.find_opt method_id tdecl.methods with
+      | Some m -> m.binder_value.name
+      | None -> begin
+          match TraitMethodId.nth_opt tdecl.method_names method_id with
+          | Some name -> name
+          | None -> TraitMethodId.to_string method_id
+        end
+    end
+  | None -> TraitMethodId.to_string method_id
 
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
   match g with

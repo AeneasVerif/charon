@@ -179,7 +179,7 @@ pub enum TrVTableField {
     Size,
     Align,
     Drop,
-    Method(TraitItemName, hax::Binder<hax::TyFnSig>),
+    Method(TraitMethodId, TraitItemName, hax::Binder<hax::TyFnSig>),
     SuperTrait(TraitClauseId, hax::Clause),
 }
 
@@ -291,6 +291,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     fn prepare_vtable_fields(
         &mut self,
         trait_def: &hax::FullDef<'tcx>,
+        trait_id: TraitDeclId,
         implied_predicates: &hax::GenericPredicates,
     ) -> Result<VTableData, Error> {
         let mut supertrait_map: IndexVec<TraitClauseId, _> =
@@ -317,8 +318,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     ..
                 } = item_def.kind()
                 {
+                    let id = self.register_trait_method_id_no_enqueue(trait_id, item_def_id)?;
                     let name = self.translate_trait_item_name(item_def_id)?;
-                    fields.push(TrVTableField::Method(name, sig.clone()));
+                    fields.push(TrVTableField::Method(id, name, sig.clone()));
                 }
             }
         }
@@ -389,7 +391,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         ("drop".into(), drop_ty)
                     }
                 }
-                TrVTableField::Method(item_name, sig) => {
+                TrVTableField::Method(_, item_name, sig) => {
                     let field_name = format!("method_{}", item_name.0);
                     // In Mono mode, method shims are opaque function pointers.
                     if self.monomorphize() {
@@ -496,6 +498,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             TraitRefKind::SelfId,
             RegionBinder::empty(self.translate_trait_predicate(span, self_predicate)?),
         );
+        let trait_id = self_trait_ref.trait_id();
 
         let mut field_map = IndexVec::new();
         let mut supertrait_map: IndexVec<TraitClauseId, _> =
@@ -507,7 +510,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         } else {
             // First construct fields that use the real method signatures (which may use the `Self`
             // type). We fixup the types and generics below.
-            let vtable_data = self.prepare_vtable_fields(trait_def, implied_predicates)?;
+            let vtable_data =
+                self.prepare_vtable_fields(trait_def, trait_id, implied_predicates)?;
             let fields = self.gen_vtable_struct_fields(span, &self_trait_ref, &vtable_data)?;
 
             let kind = TypeDeclKind::Struct(fields);
@@ -517,7 +521,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 TrVTableField::Size => VTableField::Size,
                 TrVTableField::Align => VTableField::Align,
                 TrVTableField::Drop => VTableField::Drop,
-                TrVTableField::Method(name, ..) => VTableField::Method(name),
+                TrVTableField::Method(id, ..) => VTableField::Method(id),
                 TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(clause_id),
             });
             let layout = [(self.get_target_triple(), l)].into();
@@ -884,6 +888,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
+        let trait_id = implemented_trait.id;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
 
@@ -891,7 +896,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
         let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
 
-        let vtable_data = self.prepare_vtable_fields(&trait_def, implied_preds)?;
+        let vtable_data = self.prepare_vtable_fields(&trait_def, trait_id, implied_preds)?;
         // Retrieve the expected field types from the struct definition. This avoids complicated
         // substitutions.
         let field_tys = {

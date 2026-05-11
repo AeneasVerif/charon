@@ -53,6 +53,25 @@ pub trait AstFormatter: Sized {
     where
         GenericParams: HasIdxVecOf<Id, Output = T>;
 
+    fn format_method_name(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        trait_id: TraitDeclId,
+        method_id: TraitMethodId,
+    ) -> fmt::Result {
+        if let Some(translated) = self.get_crate()
+            && let Some(def) = translated.trait_decls.get(trait_id)
+            && let Some(name) = def
+                .methods
+                .get(method_id)
+                .map(|m| m.name())
+                .or(def.method_names.get(method_id).copied())
+        {
+            write!(f, "{name}")
+        } else {
+            write!(f, "{}", &method_id.to_pretty_string())
+        }
+    }
     fn format_enum_variant_name(
         &self,
         f: &mut fmt::Formatter<'_>,

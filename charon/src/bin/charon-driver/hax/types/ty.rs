@@ -1594,11 +1594,18 @@ impl AssocItem {
                 let implemented_trait_ref = tcx
                     .impl_trait_ref(container_id)
                     .instantiate(tcx, container_args);
-                let implemented_trait_item = translate_item_ref(
-                    s,
-                    implemented_item_id,
-                    item_args.rebase_onto(tcx, container_id, implemented_trait_ref.args),
-                );
+                let implemented_trait_item = {
+                    let implemented_item_id = implemented_item_id.sinto(s);
+                    let generics =
+                        item_args.rebase_onto(tcx, container_id, implemented_trait_ref.args);
+                    // Don't resolve, otherwise we'll always get the impl item id back.
+                    ItemRef::translate_from_hax_def_id_maybe_resolve(
+                        s,
+                        implemented_item_id,
+                        generics,
+                        false,
+                    )
+                };
                 AssocItemContainer::TraitImplContainer {
                     impl_: item,
                     implemented_trait_ref: implemented_trait_ref.sinto(s),
@@ -1628,6 +1635,17 @@ impl AssocItem {
             kind: item.kind.sinto(s),
             container,
             has_value: item.defaultness(tcx).has_value(),
+        }
+    }
+
+    /// The `DefId` of the item being implemented.
+    pub fn implemented_trait_item_id(&self) -> &DefId {
+        match &self.container {
+            AssocItemContainer::TraitImplContainer {
+                implemented_trait_item,
+                ..
+            } => &implemented_trait_item.def_id,
+            _ => &self.def_id,
         }
     }
 }

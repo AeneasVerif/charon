@@ -432,14 +432,7 @@ impl<'a> GenerateCtx<'a> {
             .enumerate()
             .map(|(i, ty)| {
                 let co_recursive = i != 0;
-                self.with_item(ty, |ctx| {
-                    ctx.type_decl_to_ocaml_decl(
-                        &opaque_for_visitors,
-                        &manual_impls,
-                        ty,
-                        co_recursive,
-                    )
-                })
+                self.type_decl_to_ocaml_decl(&opaque_for_visitors, &manual_impls, ty, co_recursive)
             })
             .join("\n");
         match visitors {

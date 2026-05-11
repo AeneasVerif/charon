@@ -333,6 +333,64 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
     }
 
+    /// Register a trait method and return its `TraitMethodId`. This id is unique per trait.
+    /// This does not make the method be considered "used"; use `mark_method_as_used` for that.
+    pub fn register_trait_method_id_no_enqueue(
+        &mut self,
+        trait_id: TraitDeclId,
+        method_def_id: &hax::DefId,
+    ) -> Result<TraitMethodId, Error> {
+        if let Some(&method_id) = self.method_id_map.get(method_def_id) {
+            return Ok(method_id);
+        }
+
+        let method_def = self.poly_hax_def(method_def_id)?;
+        let hax::FullDefKind::AssocFn {
+            associated_item, ..
+        } = method_def.kind()
+        else {
+            unreachable!()
+        };
+        let decl_def_id = associated_item.implemented_trait_item_id();
+
+        if let Some(&method_id) = self.method_id_map.get(decl_def_id) {
+            self.method_id_map.insert(method_def_id.clone(), method_id);
+            return Ok(method_id);
+        }
+
+        // Allocate method ids in item definition order.
+        let map: IndexMap<TraitMethodId, MethodStatus> = {
+            let trait_def_id = decl_def_id.parent(&self.hax_state).unwrap();
+            let trait_def = self.poly_hax_def(&trait_def_id)?;
+            let hax::FullDefKind::Trait { items, .. } = trait_def.kind() else {
+                unreachable!()
+            };
+            let mut map = IndexMap::new();
+            for item in items {
+                if matches!(item.kind, hax::AssocKind::Fn { .. }) {
+                    let id = map.push(MethodStatus::default());
+                    self.method_id_map.insert(item.def_id.clone(), id);
+                }
+            }
+            map
+        };
+        self.method_status
+            .get_or_extend_and_insert(trait_id, || map);
+        let method_id = *self.method_id_map.get(decl_def_id).unwrap();
+        Ok(method_id)
+    }
+    /// Register a trait method and return its `TraitMethodId`. This id is unique per trait.
+    /// This makes the method be considered "used".
+    pub fn register_trait_method_id(
+        &mut self,
+        trait_id: TraitDeclId,
+        def_id: &hax::DefId,
+    ) -> Result<TraitMethodId, Error> {
+        let method_id = self.register_trait_method_id_no_enqueue(trait_id, def_id)?;
+        self.mark_method_as_used(trait_id, method_id);
+        Ok(method_id)
+    }
+
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
         let triple = self.get_target_triple();
@@ -610,13 +668,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             None => FnPtrKind::Fun(fun_item.id),
             // Trait method
             Some(trait_ref) => {
-                let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
                 let method_decl_id = *fun_item
                     .id
                     .as_regular()
                     .expect("methods are not builtin functions");
-                self.mark_method_as_used(trait_ref.trait_decl_ref.skip_binder.id, name);
-                FnPtrKind::Trait(trait_ref.move_under_binder(), name, method_decl_id)
+                let trait_decl_id = trait_ref.trait_id();
+                let method_id = self.register_trait_method_id(trait_decl_id, &item.def_id)?;
+                FnPtrKind::Trait(trait_ref.move_under_binder(), method_id, method_decl_id)
             }
         };
         let late_bound = match self.hax_def(item)?.kind() {
@@ -729,6 +787,7 @@ pub fn translate<'tcx>(
             ..TranslatedCrate::default()
         },
         method_status: Default::default(),
+        method_id_map: Default::default(),
         id_map: Default::default(),
         reverse_id_map: Default::default(),
         file_to_id: Default::default(),

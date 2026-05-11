@@ -562,7 +562,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
 
         // Construct the `call_*` method reference.
-        let call_fn_name = TraitItemName(target_kind.method_name().into());
+        let trait_decl_id = timpl.impl_trait.id;
+        let trait_method_id = self.register_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
         let call_fn_binder = {
             let kind = TransItemSourceKind::ClosureMethod(target_kind);
             let bound_method_ref: RegionBinder<DeclRef<ItemId>> =
@@ -573,12 +574,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             };
             let fn_decl_ref: FunDeclRef = bound_method_ref.skip_binder.try_into().unwrap();
             Binder::new(
-                BinderKind::TraitMethod(timpl.impl_trait.id, call_fn_name),
+                BinderKind::TraitMethod(trait_decl_id, trait_method_id),
                 params,
                 fn_decl_ref,
             )
         };
-        timpl.methods.push((call_fn_name, call_fn_binder));
+        timpl
+            .methods
+            .set_slot_extend(trait_method_id, call_fn_binder);
 
         Ok(timpl)
     }

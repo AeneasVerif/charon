@@ -14,7 +14,7 @@ impl UllbcPass for Transform {
         let anon_consts: HashMap<GlobalDeclId, ExprBody> = ctx
             .translated
             .global_decls
-            .extract(|gdecl| matches!(gdecl.global_kind, GlobalKind::AnonConst))
+            .extract(|_, gdecl| matches!(gdecl.global_kind, GlobalKind::AnonConst))
             .filter_map(|(id, gdecl)| {
                 let fdecl = ctx.translated.fun_decls.remove(gdecl.init)?;
                 let body = fdecl.body.to_unstructured()?;

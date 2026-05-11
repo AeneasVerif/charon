@@ -35,24 +35,17 @@ let crate_of_json (js : json) : (crate, string) result =
       else
         let ctx = empty_of_json_ctx in
         let* crate = translated_crate_of_json ctx translated in
-        let type_decls = TypeDeclId.map_of_indexed_list crate.type_decls in
-        let fun_decls = FunDeclId.map_of_indexed_list crate.fun_decls in
-        let global_decls =
-          GlobalDeclId.map_of_indexed_list crate.global_decls
-        in
-        let trait_decls = TraitDeclId.map_of_indexed_list crate.trait_decls in
-        let trait_impls = TraitImplId.map_of_indexed_list crate.trait_impls in
         Ok
           {
             name = crate.crate_name;
             options = crate.options;
             target_information = crate.target_information;
             declarations = Option.value ~default:[] crate.ordered_decls;
-            type_decls;
-            fun_decls;
-            global_decls;
-            trait_decls;
-            trait_impls;
+            type_decls = crate.type_decls;
+            fun_decls = crate.fun_decls;
+            global_decls = crate.global_decls;
+            trait_decls = crate.trait_decls;
+            trait_impls = crate.trait_impls;
           }
   | _ -> combine_error_msgs js __FUNCTION__ (Error "")
 

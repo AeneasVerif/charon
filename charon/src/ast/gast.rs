@@ -209,7 +209,7 @@ pub enum VTableField {
     Size,
     Align,
     Drop,
-    Method(TraitItemName),
+    Method(TraitMethodId),
     SuperTrait(TraitClauseId),
 }
 
@@ -296,6 +296,8 @@ pub struct GlobalDeclRef {
 #[serde_state(stateless)]
 pub struct TraitItemName(pub ustr::Ustr);
 
+generate_index_type!(TraitMethodId, "TraitMethod");
+
 /// A trait **declaration**.
 ///
 /// For instance:
@@ -362,7 +364,11 @@ pub struct TraitDecl {
     ///   fn method<'a, U>(x: &'a U);
     /// }
     /// ```
-    pub methods: Vec<Binder<TraitMethod>>,
+    pub methods: IndexMap<TraitMethodId, Binder<TraitMethod>>,
+    /// In mono mode we can't translate `TraitMethod`s because they'd include the polymorphic
+    /// signature. In order to keep access to the method names, we store them here too; this is
+    /// empty in poly mode.
+    pub method_names: IndexVec<TraitMethodId, TraitItemName>,
     /// The virtual table struct for this trait, if it has one.
     /// It is guaranteed that the trait has a vtable iff it is dyn-compatible.
     pub vtable: Option<TypeDeclRef>,
@@ -431,7 +437,7 @@ pub struct TraitImpl {
     /// The implemented associated types.
     pub types: Vec<(TraitItemName, Binder<TraitAssocTyImpl>)>,
     /// The implemented methods
-    pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    pub methods: IndexMap<TraitMethodId, Binder<FunDeclRef>>,
     /// The virtual table instance for this trait implementation. This is `Some` iff the trait is
     /// dyn-compatible.
     pub vtable: Option<GlobalDeclRef>,

@@ -115,6 +115,12 @@ impl<'a> GenerateCtx<'a> {
         }
     }
 
+    /// For a type that refers to an ADT, return the name of that ADT.
+    pub fn type_to_rust_name(&self, ty: &Ty) -> Option<&String> {
+        let index_ty: TypeDeclId = *ty.as_adt()?.id.as_adt()?;
+        Some(self.crate_data.item_name(index_ty)?.short_str())
+    }
+
     /// Converts a type to the appropriate ocaml name. In case of generics, this provides appropriate
     /// parameters.
     pub fn type_to_ocaml_name(&self, ty: &Ty) -> String {
@@ -139,7 +145,7 @@ impl<'a> GenerateCtx<'a> {
                     .iter()
                     .map(|ty| self.type_to_ocaml_name(ty))
                     .map(|name| {
-                        if !name.chars().all(|c| c.is_alphanumeric()) {
+                        if !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
                             format!("({name})")
                         } else {
                             name
@@ -163,12 +169,8 @@ impl<'a> GenerateCtx<'a> {
                             base_ty = "string".to_string();
                         }
                         if base_ty == "indexed_map" {
-                            base_ty = if self.use_opt_index_map() {
-                                "option list".to_string()
-                            } else {
-                                "list".to_string()
-                            };
-                            args.remove(0); // Remove the index generic param
+                            let index_name = args.remove(0); // Remove the index generic param
+                            base_ty = format!("{index_name}_map");
                         }
                         if base_ty == "index_vec" {
                             base_ty = "list".to_string();
@@ -181,10 +183,10 @@ impl<'a> GenerateCtx<'a> {
                         }
                         let args = match args.as_slice() {
                             [] => String::new(),
-                            [arg] => arg.clone(),
+                            [arg] => format!("{arg} "),
                             args => format!("({})", args.iter().join(",")),
                         };
-                        format!("{args} {base_ty}")
+                        format!("{args}{base_ty}")
                     }
                     TypeId::Builtin(BuiltinTy::Box) => args[0].clone(),
                     TypeId::Tuple => args.iter().join("*"),
@@ -204,20 +206,5 @@ impl<'a> GenerateCtx<'a> {
 
     pub fn names_to_type_id_set(&self, data: &[&str]) -> HashSet<TypeDeclId> {
         data.iter().map(|name| self.id_from_name(name)).collect()
-    }
-
-    pub fn with_item<F, T>(&mut self, new_item: &TypeDecl, f: F) -> T
-    where
-        F: FnOnce(&mut Self) -> T,
-    {
-        let (name, _) = self.type_to_ocaml_ident_raw(new_item);
-        let old_name = self.current_item.replace(name);
-        let res = f(self);
-        self.current_item = old_name;
-        res
-    }
-
-    pub fn use_opt_index_map(&self) -> bool {
-        self.current_item == Some("translated_crate".to_string())
     }
 }

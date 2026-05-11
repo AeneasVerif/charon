@@ -352,15 +352,15 @@ impl TypeCheckVisitor<'_> {
     fn assert_matches_method(
         &mut self,
         trait_ref: &TraitRef,
-        method_name: TraitItemName,
+        method_id: TraitMethodId,
         args: &mut GenericArgs,
     ) {
         let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
-        let target = &GenericsSource::Method(trait_id, method_name);
+        let target = &GenericsSource::Method(trait_id, method_id);
         let Some(trait_decl) = self.ctx.translated.trait_decls.get(trait_id) else {
             return;
         };
-        let Some(bound_fn) = trait_decl.methods().find(|m| m.name() == method_name) else {
+        let Some(bound_fn) = trait_decl.methods.get(method_id) else {
             return;
         };
         if let Ok(bound_fn) = Substituted::new_for_trait_ref(bound_fn, trait_ref).try_substitute() {
@@ -482,8 +482,8 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
             FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &mut x.generics),
             // TODO: check builtin generics.
             FnPtrKind::Fun(FunId::Builtin(_)) => {}
-            FnPtrKind::Trait(trait_ref, method_name, _) => {
-                self.assert_matches_method(trait_ref, *method_name, &mut x.generics);
+            FnPtrKind::Trait(trait_ref, method_id, _) => {
+                self.assert_matches_method(trait_ref, *method_id, &mut x.generics);
             }
         }
     }
@@ -530,7 +530,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
             return;
         };
 
-        let fmt1 = self.ctx.into_fmt();
+        let fmt1 = &self.ctx.into_fmt();
         let tdecl_fmt = fmt1.push_binder(Cow::Borrowed(&tdecl.generics));
         let impl_tref_kind = TraitRefKind::TraitImpl(TraitImplRef {
             id: timpl.def_id,
@@ -571,15 +571,21 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
                 "The associated consts supplied by the trait impl don't match the trait decl.",
             )
         }
-        let methods_match = timpl.methods.len() == tdecl.methods.len();
+        let methods_match = timpl.methods.elem_count() == tdecl.methods.elem_count();
         if !methods_match && self.phase != Check::PostTranslation {
             let decl_methods = tdecl
                 .methods()
                 .map(|m| format!("- {}", m.name()))
                 .join("\n");
             let impl_methods = timpl
-                .methods()
-                .map(|(name, _)| format!("- {name}"))
+                .methods
+                .iter_enumerated()
+                .map(|(id, _)| {
+                    std::fmt::from_fn(move |f| {
+                        write!(f, "- ")?;
+                        fmt1.format_method_name(f, tdecl.def_id, id)
+                    })
+                })
                 .join("\n");
             self.error(format!(
                 "The methods supplied by the trait impl don't match the trait decl.\n\

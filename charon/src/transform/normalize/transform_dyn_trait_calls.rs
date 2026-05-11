@@ -40,7 +40,7 @@ fn transform_dyn_trait_call(
     let FnOperand::Regular(fn_ptr) = &call.func else {
         return Ok(()); // Not a regular function call
     };
-    let FnPtrKind::Trait(trait_ref, method_name, _) = fn_ptr.kind.as_ref() else {
+    let FnPtrKind::Trait(trait_ref, method_id, _) = fn_ptr.kind.as_ref() else {
         return Ok(()); // Not a trait method call
     };
     let TraitRefKind::Dyn = &trait_ref.kind else {
@@ -68,24 +68,29 @@ fn transform_dyn_trait_call(
     let Some(vtable_decl) = ctx.ctx.translated.type_decls.get(vtable_decl_id) else {
         return Ok(()); // Missing data
     };
-    if matches!(vtable_decl.kind, TypeDeclKind::Opaque) {
-        return Ok(()); // Missing data
-    }
 
-    // Retreive the method field from the vtable struct definition.
-    let method_field_name = format!("method_{}", method_name);
-    let Some((method_field_id, method_field)) =
-        vtable_decl.get_field_by_name(None, &method_field_name)
+    let TypeDeclKind::Struct(fields) = &vtable_decl.kind else {
+        return Ok(()); // Missing data
+    };
+    let ItemSource::VTableTy { field_map, .. } = &vtable_decl.src else {
+        return Ok(()); // Weird
+    };
+    // Retrieve the method field from the vtable struct definition.
+    let Some((method_field_id, _)) = field_map
+        .iter_enumerated()
+        .find(|(_, field)| **field == VTableField::Method(*method_id))
     else {
         let vtable_name = vtable_decl_ref.id.with_ctx(fmt_ctx).to_string();
         raise_error!(
             ctx.ctx,
             ctx.span,
-            "Could not determine method index for {} in vtable {}",
-            method_name,
+            "Could not determine method index for method {} in vtable {}",
+            method_id,
             vtable_name
         );
     };
+
+    let method_field = &fields[method_field_id];
     let method_ty = method_field
         .ty
         .clone()
