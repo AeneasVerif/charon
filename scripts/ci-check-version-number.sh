@@ -7,6 +7,7 @@ else
     echo -n '`charon-ml` was changed in this PR '
     if git diff origin/main --quiet -- charon-ml/src/CharonVersion.ml; then
         echo 'but the charon version was not updated properly!'
+        echo 'Please increment the version number in `Cargo.toml` and run `make test` in the root to propagate the version.'
         exit 1
     else
         echo 'and the charon version was updated properly.'

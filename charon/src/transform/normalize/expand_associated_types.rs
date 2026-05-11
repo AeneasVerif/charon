@@ -1191,7 +1191,6 @@ impl VisitAstMut for UpdateItemBody<'_> {
             | ItemSource::VTableInstance { .. }
             | ItemSource::VTableMethodShim => {}
             ItemSource::VTableInstanceMono => {}
-            ItemSource::VTableMethodPreShim(..) => {}
             // Inside method declarations, the implicit `Self` clause is the first clause.
             ItemSource::TraitDecl { trait_ref, .. } => self.process_trait_decl_ref(
                 trait_ref,

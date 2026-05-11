@@ -21,40 +21,6 @@ trait Trait<Self>
     vtable: test_crate::Trait::{vtable}
 }
 
-// Full name: test_crate::Trait::{vtable_drop_preshim}::<bool>
-unsafe fn {vtable_drop_preshim}::<bool>(dyn_self_1: *mut (dyn Trait<Item = bool>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Trait<Item = bool> + '0); // arg #1
-    let erased_drop_shim_ptr_2: *const (); // local
-    let drop_shim_ptr_3: unsafe fn(*mut (dyn Trait<Item = bool> + '1)); // local
-
-    ret_0 = ()
-    storage_live(erased_drop_shim_ptr_2)
-    storage_live(drop_shim_ptr_3)
-    erased_drop_shim_ptr_2 = copy ((*dyn_self_1.metadata)).drop
-    drop_shim_ptr_3 = cast<*const (), unsafe fn(*mut (dyn Trait<Item = bool> + '4))>(move erased_drop_shim_ptr_2)
-    ret_0 = (move drop_shim_ptr_3)(move dyn_self_1)
-    return
-}
-
-// Full name: test_crate::Trait::comsume::{vtable_method_preshim}::<bool>
-fn {vtable_method_preshim}::<bool><'_0>(dyn_self_1: &'_0 (dyn Trait<Item = bool>))
-{
-    let ret_0: (); // return
-    let dyn_self_1: &'_0 (dyn Trait<Item = bool> + '0); // arg #1
-    let erased_method_comsume_shim_ptr_2: *const (); // local
-    let method_comsume_shim_ptr_3: fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '1)); // local
-
-    ret_0 = ()
-    storage_live(erased_method_comsume_shim_ptr_2)
-    storage_live(method_comsume_shim_ptr_3)
-    erased_method_comsume_shim_ptr_2 = copy ((*dyn_self_1.metadata)).method_comsume
-    method_comsume_shim_ptr_3 = cast<*const (), fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '4))>(move erased_method_comsume_shim_ptr_2)
-    ret_0 = (move method_comsume_shim_ptr_3)(move dyn_self_1)
-    return
-}
-
 fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<Item = bool>))
 = <method_without_default_body>
 
@@ -142,19 +108,20 @@ fn main()
     let _4: (); // anonymous local
     let _5: &'8 (dyn Trait<Item = bool> + '9); // anonymous local
     let _6: &'10 i32; // anonymous local
-    let _7: &'19 i32; // anonymous local
-    let _8: i32; // anonymous local
+    let _7: unsafe fn(&'8 (dyn Trait<Item = bool> + '9)); // anonymous local
+    let _8: &'19 i32; // anonymous local
+    let _9: i32; // anonymous local
 
-    storage_live(_7)
     storage_live(_8)
-    _8 = const 42 : i32
-    _7 = &_8
+    storage_live(_9)
+    _9 = const 42 : i32
+    _8 = &_9
     storage_live(_6)
     _0 = ()
     storage_live(a_1)
     storage_live(_2)
     storage_live(_3)
-    _6 = move _7
+    _6 = move _8
     _3 = &(*_6)
     _2 = &(*_3)
     a_1 = unsize_cast<&'6 i32, &'12 (dyn Trait<Item = bool> + '13), &{impl Trait for i32}::{vtable}>(move _2)
@@ -163,7 +130,9 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*a_1) with_metadata(copy a_1.metadata)
-    _4 = {vtable_method_preshim}::<bool><'_>(move _5)
+    storage_live(_7)
+    _7 = cast<*const (), unsafe fn(&'8 (dyn Trait<Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
+    _4 = (copy _7)(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

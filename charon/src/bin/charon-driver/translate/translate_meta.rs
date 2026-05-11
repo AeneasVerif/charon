@@ -416,22 +416,6 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
-            TransItemSourceKind::VTableDropPreShim => {
-                name.name.push(PathElem::Ident(
-                    "{vtable_drop_preshim}".into(),
-                    Disambiguator::ZERO,
-                ));
-            }
-            TransItemSourceKind::VTableMethodPreShim(_, method_name) => {
-                name.name.push(PathElem::Ident(
-                    method_name.to_string(),
-                    Disambiguator::ZERO,
-                ));
-                name.name.push(PathElem::Ident(
-                    "{vtable_method_preshim}".into(),
-                    Disambiguator::ZERO,
-                ));
-            }
         }
         Ok(name)
     }
@@ -449,29 +433,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
             let binder = bt_ctx.inside_binder(BinderKind::Other, |bt_ctx| {
-                let mut args = bt_ctx.translate_generic_args(
-                    span,
-                    &item_ref.generic_args,
-                    &item_ref.impl_exprs,
-                )?;
-                // Preshim functions in mono mode take the same arguments as the corresponding
-                // trait, but in practice are only ever instantiated with `dyn Trait` as self type.
-                // We pretend they take trait args (with no `Self`) + values for each assoc type
-                // instead.
-                if matches!(
-                    src.kind,
-                    TransItemSourceKind::VTableDropPreShim
-                        | TransItemSourceKind::VTableMethodPreShim(..)
-                ) {
-                    // Remove the `Self` type variable from the generic parameters.
-                    args.types.remove_and_shift_ids(TypeVarId::ZERO);
-                    // Append the assoc types.
-                    for ty in item_ref.trait_associated_types(bt_ctx.hax_state_with_id()) {
-                        let ty = bt_ctx.translate_ty(span, &ty)?;
-                        args.types.push(ty);
-                    }
-                };
-                Ok(args)
+                bt_ctx.translate_generic_args(span, &item_ref.generic_args, &item_ref.impl_exprs)
             })?;
             if !binder.skip_binder.is_empty() {
                 name.name.push(PathElem::Instantiated(Box::new(binder)));

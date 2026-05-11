@@ -618,11 +618,6 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
     fn enter_trait_method_ref(&mut self, x: &mut TraitMethodRef) {
         self.map(&mut x.method_decl_id);
     }
-    fn enter_item_source(&mut self, x: &mut ItemSource) {
-        if let ItemSource::VTableMethodPreShim(id, _, _) = x {
-            self.map(id);
-        }
-    }
     fn enter_global_decl(&mut self, x: &mut GlobalDecl) {
         self.map(&mut x.init);
     }
