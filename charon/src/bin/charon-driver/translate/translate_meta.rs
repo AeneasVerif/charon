@@ -81,7 +81,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                                 rewritten_path.extend(path);
                                 rewritten_path
                             } else {
-                                path.into()
+                                path
                             }
                         };
                         FileName::Local(path)
