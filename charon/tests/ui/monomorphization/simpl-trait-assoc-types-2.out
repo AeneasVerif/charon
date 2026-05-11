@@ -259,22 +259,24 @@ fn main()
     let _10: &'18 (dyn Trait<Item = u32> + '19); // anonymous local
     let _11: &'20 usize; // anonymous local
     let _12: &'21 i32; // anonymous local
-    let _13: &'38 i32; // anonymous local
-    let _14: i32; // anonymous local
-    let _15: &'39 usize; // anonymous local
-    let _16: usize; // anonymous local
+    let _13: unsafe fn(&'8 (dyn Trait<Item = bool> + '9)); // anonymous local
+    let _14: unsafe fn(&'18 (dyn Trait<Item = u32> + '19)); // anonymous local
+    let _15: &'38 i32; // anonymous local
+    let _16: i32; // anonymous local
+    let _17: &'39 usize; // anonymous local
+    let _18: usize; // anonymous local
 
-    storage_live(_13)
-    storage_live(_14)
-    _14 = const 42 : i32
-    _13 = &_14
+    storage_live(_15)
+    storage_live(_16)
+    _16 = const 42 : i32
+    _15 = &_16
     storage_live(_11)
     storage_live(_12)
     _0 = ()
     storage_live(a_1)
     storage_live(_2)
     storage_live(_3)
-    _12 = move _13
+    _12 = move _15
     _3 = &(*_12)
     _2 = &(*_3)
     a_1 = unsize_cast<&'6 i32, &'23 (dyn Trait<Item = bool> + '24), &{impl Trait for i32}::{vtable}>(move _2)
@@ -283,17 +285,19 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*a_1) with_metadata(copy a_1.metadata)
-    _4 = {vtable_method_preshim}::<bool><'_>(move _5)
-    storage_live(_15)
-    storage_live(_16)
-    _16 = const 42 : usize
-    _15 = &_16
+    storage_live(_13)
+    _13 = cast<*const (), unsafe fn(&'8 (dyn Trait<Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
+    _4 = (copy _13)(move _5)
+    storage_live(_17)
+    storage_live(_18)
+    _18 = const 42 : usize
+    _17 = &_18
     storage_dead(_5)
     storage_dead(_4)
     storage_live(b_6)
     storage_live(_7)
     storage_live(_8)
-    _11 = move _15
+    _11 = move _17
     _8 = &(*_11)
     _7 = &(*_8)
     b_6 = unsize_cast<&'16 usize, &'31 (dyn Trait<Item = u32> + '32), &{impl Trait for usize}::{vtable}>(move _7)
@@ -302,7 +306,9 @@ fn main()
     storage_live(_9)
     storage_live(_10)
     _10 = &(*b_6) with_metadata(copy b_6.metadata)
-    _9 = {vtable_method_preshim}::<u32><'_>(move _10)
+    storage_live(_14)
+    _14 = cast<*const (), unsafe fn(&'18 (dyn Trait<Item = u32> + '19))>(copy ((*_10.metadata)).method_comsume)
+    _9 = (copy _14)(move _10)
     storage_dead(_10)
     storage_dead(_9)
     _0 = ()

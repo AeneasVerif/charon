@@ -152,19 +152,20 @@ fn main()
     let _4: (); // anonymous local
     let _5: &'8 (dyn Trait<usize, Item = bool> + '9); // anonymous local
     let _6: &'10 i32; // anonymous local
-    let _7: &'19 i32; // anonymous local
-    let _8: i32; // anonymous local
+    let _7: unsafe fn(&'8 (dyn Trait<usize, Item = bool> + '9)); // anonymous local
+    let _8: &'19 i32; // anonymous local
+    let _9: i32; // anonymous local
 
-    storage_live(_7)
     storage_live(_8)
-    _8 = const 42 : i32
-    _7 = &_8
+    storage_live(_9)
+    _9 = const 42 : i32
+    _8 = &_9
     storage_live(_6)
     _0 = ()
     storage_live(a_1)
     storage_live(_2)
     storage_live(_3)
-    _6 = move _7
+    _6 = move _8
     _3 = &(*_6)
     _2 = &(*_3)
     a_1 = unsize_cast<&'6 i32, &'12 (dyn Trait<usize, Item = bool> + '13), &{impl Trait<usize> for i32}::{vtable}>(move _2)
@@ -173,7 +174,9 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*a_1) with_metadata(copy a_1.metadata)
-    _4 = {vtable_method_preshim}::<usize, bool><'_>(move _5)
+    storage_live(_7)
+    _7 = cast<*const (), unsafe fn(&'8 (dyn Trait<usize, Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
+    _4 = (copy _7)(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

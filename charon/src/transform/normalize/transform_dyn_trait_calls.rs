@@ -16,16 +16,16 @@
 //! ```text
 //! @0 := (move (*@receiver.ptr_metadata).method_check)(move (@receiver), move (@args)) // Call through function pointer
 //! ```
-
-use itertools::Itertools;
-
 use super::super::ctx::UllbcPass;
 use crate::{
     errors::Error,
     formatter::IntoFormatter,
     pretty::FmtWithCtx,
     raise_error, register_error,
-    transform::{TransformCtx, ctx::UllbcStatementTransformCtx},
+    transform::{
+        TransformCtx,
+        ctx::{BodyTransformCtx, UllbcStatementTransformCtx},
+    },
     ullbc_ast::*,
 };
 
@@ -40,101 +40,12 @@ fn transform_dyn_trait_call(
     let FnOperand::Regular(fn_ptr) = &call.func else {
         return Ok(()); // Not a regular function call
     };
-    let FnPtrKind::Trait(trait_ref, method_name, _) = &fn_ptr.kind else {
+    let FnPtrKind::Trait(trait_ref, method_name, _) = fn_ptr.kind.as_ref() else {
         return Ok(()); // Not a trait method call
     };
     let TraitRefKind::Dyn = &trait_ref.kind else {
         return Ok(()); // Not a dyn trait trait call
     };
-
-    // mono mode
-    // We fetch the specific preshim function
-    // by iterating `fun_decls` in `translated` with `trait_decl_id` and generic and associative arguments.
-    if ctx.ctx.options.monomorphize_with_hax {
-        // `receiver_types` contains associative arguments, if any.
-        let mut receiver_types = None;
-        // `types` contains generic arguments,
-        // which will be appended with `receiver_types` to form the complete list of arguments.
-        let mut types: Vec<_> = trait_ref
-            .trait_decl_ref
-            .skip_binder
-            .generics
-            .types
-            .clone()
-            .into_iter()
-            .skip(1)
-            .collect_vec();
-
-        // fetch associative arguments
-        if let Some(Operand::Copy(receiver) | Operand::Move(receiver)) = call.args.first() {
-            receiver_types = match receiver.ty().kind() {
-                TyKind::Ref(_, dyn_ty, _) | TyKind::RawPtr(dyn_ty, _) => match dyn_ty.kind() {
-                    TyKind::DynTrait(pred) => {
-                        let trait_type_constraints: Vec<_> = pred
-                            .binder
-                            .params
-                            .trait_type_constraints
-                            .clone()
-                            .into_iter()
-                            .collect();
-                        Some(
-                            trait_type_constraints
-                                .iter()
-                                .map(|ttc| ttc.skip_binder.ty.clone())
-                                .collect_vec(),
-                        )
-                    }
-                    _ => None,
-                },
-                TyKind::DynTrait(pred) => {
-                    let trait_type_constraints: Vec<_> =
-                        pred.binder.params.trait_type_constraints.iter().collect();
-                    // None
-                    Some(
-                        trait_type_constraints
-                            .iter()
-                            .map(|ttc| ttc.skip_binder.ty.clone())
-                            .collect_vec(),
-                    )
-                }
-                _ => None,
-            };
-        }
-
-        if let Some(mut receiver_types) = receiver_types {
-            types.append(&mut receiver_types);
-        }
-
-        // find the specific preshim function
-        let mut preshim = None;
-        for fun_decl in ctx.ctx.translated.fun_decls.iter() {
-            if let ItemSource::VTableMethodPreShim(t_id, m_name, m_types) = &fun_decl.src
-                && *t_id == trait_ref.trait_id()
-                && *m_name == *method_name
-                && *m_types == types
-            {
-                preshim = Some(fun_decl);
-            }
-        }
-
-        let Some(preshim) = preshim else {
-            panic!("MONO: preshim for {} is not translated", method_name);
-        };
-        // let preshim_fn_ptr = FnPtr::new(preshim.def_id.into(), GenericArgs::empty());
-        let preshim_args = GenericArgs::new(
-            preshim
-                .generics
-                .regions
-                .map_ref_indexed(|_, _| Region::Erased),
-            [].into(),
-            [].into(),
-            [].into(),
-        );
-        let preshim_fn_ptr = FnPtr::new(preshim.def_id.into(), preshim_args);
-        call.func = FnOperand::Regular(preshim_fn_ptr);
-
-        return Ok(());
-    }
 
     // Get the type of the vtable struct.
     let vtable_decl_ref: TypeDeclRef = {
@@ -203,8 +114,31 @@ fn transform_dyn_trait_call(
             method_ty,
         );
 
+    let fn_ptr_place = if ctx.ctx.options.monomorphize_with_hax {
+        // In mono mode, the vtable contains erased function pointers, cast to `*const ()`.
+        // This casts back to the expected signature.
+        let real_sig_ty = TyKind::FnPtr(RegionBinder::empty(FunSig {
+            is_unsafe: true,
+            inputs: call.args.iter().map(|op| op.ty().clone()).collect(),
+            output: call.dest.ty.clone(),
+        }))
+        .into_ty();
+        let fn_ptr_place = ctx.fresh_var(None, real_sig_ty);
+        let rval_cast = Rvalue::UnaryOp(
+            UnOp::Cast(CastKind::RawPtr(
+                method_field_place.ty().clone(),
+                fn_ptr_place.ty().clone(),
+            )),
+            Operand::Copy(method_field_place),
+        );
+        ctx.insert_assn_stmt(fn_ptr_place.clone(), rval_cast);
+        fn_ptr_place
+    } else {
+        method_field_place
+    };
+
     // Transform the original call to use the function pointer
-    call.func = FnOperand::Dynamic(Operand::Copy(method_field_place));
+    call.func = FnOperand::Dynamic(Operand::Copy(fn_ptr_place));
 
     Ok(())
 }
