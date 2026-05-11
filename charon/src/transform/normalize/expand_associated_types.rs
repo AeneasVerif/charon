@@ -84,6 +84,8 @@ use crate::transform::{TransformCtx, ctx::TransformPass, utils::GenericsSource};
 /// Represent some `TraitRef`s as paths for easier manipulation.
 use trait_ref_path::*;
 mod trait_ref_path {
+    use std::fmt::Display;
+
     use macros::{EnumIsA, EnumToGetters};
 
     use crate::ast::*;
@@ -117,38 +119,44 @@ mod trait_ref_path {
         /// }
         /// ```
         pub parent_path: Vec<TraitClauseId>,
+        /// The id of the trait at the end of this path. This is the trait that the final clause
+        /// implements.
+        pub trait_decl_id: TraitDeclId,
     }
 
     impl TraitRefPath {
         /// Make a trait ref that refers to the special `Self` clause.
-        pub fn self_ref() -> Self {
+        pub fn self_ref(trait_decl_id: TraitDeclId) -> Self {
             Self {
                 base: BaseClause::SelfClause,
                 parent_path: vec![],
+                trait_decl_id,
             }
         }
         /// Make a trait ref that refers to the given clause at depth 0.
-        pub fn local_clause(clause_id: TraitClauseId) -> Self {
+        pub fn local_clause(clause_id: TraitClauseId, trait_decl_id: TraitDeclId) -> Self {
             Self {
                 base: BaseClause::Local(DeBruijnVar::new_at_zero(clause_id)),
                 parent_path: vec![],
+                trait_decl_id,
             }
         }
         /// Make a trait ref that refers to the given parent clause on `Self`.
         /// Given a ref on a local clause, move it to refer to `Self`. This is used when we generate
         /// paths for the `GenericParams` of a trait: within the `GenericParams` we don't know whether
         /// we're talking about local clauses of trait implied clauses; we fix this here.
-        pub fn parent_clause(id: TraitClauseId) -> Self {
+        pub fn parent_clause(id: TraitClauseId, trait_decl_id: TraitDeclId) -> Self {
             Self {
                 base: BaseClause::SelfClause,
                 parent_path: vec![id],
+                trait_decl_id,
             }
         }
 
-        pub fn with_assoc_type(self, type_name: TraitItemName) -> AssocTypePath {
+        pub fn with_assoc_type(self, type_id: AssocTypeId) -> AssocTypePath {
             AssocTypePath {
                 tref: self,
-                type_name,
+                type_id,
             }
         }
 
@@ -165,6 +173,7 @@ mod trait_ref_path {
             assert!(matches!(self.base, BaseClause::SelfClause));
             let mut new_ref = tref.clone();
             new_ref.parent_path.extend(self.parent_path.iter().copied());
+            new_ref.trait_decl_id = self.trait_decl_id;
             new_ref
         }
 
@@ -221,20 +230,24 @@ mod trait_ref_path {
         }
     }
 
-    impl TraitRefKind {
+    impl TraitRef {
         pub fn to_path(&self) -> Option<TraitRefPath> {
-            match self {
+            let trait_decl_id = self.trait_id();
+            match &self.kind {
                 TraitRefKind::SelfId => Some(TraitRefPath {
                     base: BaseClause::SelfClause,
                     parent_path: vec![],
+                    trait_decl_id,
                 }),
                 TraitRefKind::Clause(id) => Some(TraitRefPath {
                     base: BaseClause::Local(*id),
                     parent_path: vec![],
+                    trait_decl_id,
                 }),
                 TraitRefKind::ParentClause(tref, id) => {
                     let mut path = tref.to_path()?;
                     path.parent_path.push(*id);
+                    path.trait_decl_id = trait_decl_id;
                     Some(path)
                 }
                 TraitRefKind::ItemClause(..)
@@ -246,19 +259,13 @@ mod trait_ref_path {
         }
     }
 
-    impl TraitRef {
-        pub fn to_path(&self) -> Option<TraitRefPath> {
-            self.kind.to_path()
-        }
-    }
-
     /// The path to an associated type that depends on a local clause.
     #[derive(Debug, Clone)]
     pub struct AssocTypePath {
         /// The trait clause that has the associated type.
         pub tref: TraitRefPath,
-        /// The name of the associated type.
-        pub type_name: TraitItemName,
+        /// The id of the associated type.
+        pub type_id: AssocTypeId,
     }
 
     impl AssocTypePath {
@@ -266,7 +273,7 @@ mod trait_ref_path {
         pub fn on_local_clause(&self, id: TraitClauseId) -> AssocTypePath {
             Self {
                 tref: self.tref.on_local_clause(id),
-                type_name: self.type_name,
+                type_id: self.type_id,
             }
         }
 
@@ -274,7 +281,7 @@ mod trait_ref_path {
         pub fn on_tref(&self, tref: &TraitRefPath) -> AssocTypePath {
             Self {
                 tref: self.tref.on_tref(tref),
-                type_name: self.type_name,
+                type_id: self.type_id,
             }
         }
 
@@ -282,7 +289,7 @@ mod trait_ref_path {
         pub fn pop_base(&self) -> Self {
             Self {
                 tref: self.tref.pop_base(),
-                type_name: self.type_name,
+                type_id: self.type_id,
             }
         }
 
@@ -292,7 +299,7 @@ mod trait_ref_path {
             let (clause_id, sub_tref) = self.tref.pop_first_parent()?;
             let sub_path = Self {
                 tref: sub_tref,
-                type_name: self.type_name,
+                type_id: self.type_id,
             };
             Some((clause_id, sub_path))
         }
@@ -310,14 +317,15 @@ mod trait_ref_path {
                 .unwrap();
             Some(AssocTypePath {
                 tref,
-                type_name: cstr.skip_binder.type_name,
+                type_id: cstr.skip_binder.type_id,
             })
         }
 
         /// Construct a name that can be used to name a new type parameter/associated type
         /// corresponding to this path.
-        pub fn to_name(&self) -> String {
+        pub fn to_name(&self, krate: &TranslatedCrate) -> String {
             use std::fmt::Write;
+            let type_name = krate.assoc_item_name(self.tref.trait_decl_id, self.type_id);
             let mut buf = match &self.tref.base {
                 BaseClause::SelfClause => "Self".to_string(),
                 BaseClause::Local(var) => {
@@ -327,8 +335,23 @@ mod trait_ref_path {
             for id in &self.tref.parent_path {
                 let _ = write!(&mut buf, "_Clause{id}");
             }
-            let _ = write!(&mut buf, "_{}", self.type_name);
+            let _ = write!(&mut buf, "_{type_name}");
             buf
+        }
+
+        pub fn fmt_with_krate(&self, krate: &TranslatedCrate) -> impl Display {
+            std::fmt::from_fn(|f| {
+                let type_name = krate.assoc_item_name(self.tref.trait_decl_id, self.type_id);
+                match &self.tref.base {
+                    BaseClause::SelfClause => write!(f, "Self")?,
+                    BaseClause::Local(var) => write!(f, "Clause{var}")?,
+                };
+                for id in &self.tref.parent_path {
+                    write!(f, "::Clause{id}")?;
+                }
+                write!(f, "::{type_name}")?;
+                Ok(())
+            })
         }
     }
 
@@ -341,7 +364,7 @@ mod trait_ref_path {
             for id in &self.tref.parent_path {
                 write!(f, "::Clause{id}")?;
             }
-            write!(f, "::{}", self.type_name)?;
+            write!(f, "::Type{}", self.type_id)?;
             Ok(())
         }
     }
@@ -365,9 +388,12 @@ mod type_constraint_set {
     /// A set of `TraitTypeConstraint`s that apply to a trait.
     #[derive(Debug, Default, Clone)]
     struct TypeConstraintSetInner {
+        /// The trait that the clause at the current path implements, if known. Must be `Some` if
+        /// `assoc_tys` is non-empty.
+        trait_decl_id: Option<TraitDeclId>,
         /// The types that correspond to `Self::<Name>` for each `Name`. We also remember the id of the
         /// original constraint if applicable.
-        assoc_tys: HashMap<TraitItemName, (Option<TraitTypeConstraintId>, Ty)>,
+        assoc_tys: IndexMap<AssocTypeId, (Option<TraitTypeConstraintId>, Ty)>,
         /// The types constraints that depend on the ith parent clause.
         parent_clauses: IndexVec<TraitClauseId, Self>,
     }
@@ -396,7 +422,8 @@ mod type_constraint_set {
                     .parent_clauses
                     .get_or_extend_and_insert(*id, Default::default);
             }
-            trie.assoc_tys.insert(path.type_name, (cid, ty));
+            trie.trait_decl_id = Some(path.tref.trait_decl_id);
+            trie.assoc_tys.insert(path.type_id, (cid, ty));
         }
 
         /// Add a type constraint to the set that doesn't come from a `TraitTypeConstraint`.
@@ -435,9 +462,7 @@ mod type_constraint_set {
             for id in &path.tref.parent_path {
                 trie = trie.parent_clauses.get(*id)?;
             }
-            trie.assoc_tys
-                .get(&path.type_name)
-                .map(|(id, ty)| (*id, ty))
+            trie.assoc_tys.get(path.type_id).map(|(id, ty)| (*id, ty))
         }
         /// Find the entry at that path from the trie, if it exists.
         pub fn find(&self, path: &AssocTypePath) -> Option<&Ty> {
@@ -447,13 +472,13 @@ mod type_constraint_set {
         pub fn iter(&self) -> impl Iterator<Item = (AssocTypePath, Ty)> {
             let mut vec = vec![];
             for (base, inner) in &self.clauses {
-                inner.to_vec_inner(
-                    &mut vec,
-                    &TraitRefPath {
-                        base: *base,
-                        parent_path: vec![],
-                    },
-                )
+                let base_path = TraitRefPath {
+                    base: *base,
+                    parent_path: vec![],
+                    // If the trait id is not set it will not be observed, so we put a dummy value.
+                    trait_decl_id: inner.trait_decl_id.unwrap_or(TraitDeclId::MAX),
+                };
+                inner.to_vec_inner(&mut vec, &base_path)
             }
             vec.into_iter()
         }
@@ -489,7 +514,7 @@ mod type_constraint_set {
             base: BaseClause,
             parents: &[TraitClauseId],
         ) -> std::fmt::Result {
-            for (name, (_, ty)) in &self.assoc_tys {
+            for (type_id, (_, ty)) in self.assoc_tys.iter_enumerated() {
                 match base {
                     BaseClause::SelfClause => write!(f, "Self")?,
                     BaseClause::Local(id) => write!(f, "Clause{id}")?,
@@ -497,7 +522,7 @@ mod type_constraint_set {
                 for id in parents {
                     write!(f, "::Clause{id}")?;
                 }
-                write!(f, "::{name} = {ty:?}, ")?;
+                write!(f, "::Type{type_id} = {ty:?}, ")?;
             }
             for (parent_id, parent_trie) in self.parent_clauses.iter_enumerated() {
                 let mut new_parents = parents.to_vec();
@@ -508,12 +533,14 @@ mod type_constraint_set {
         }
 
         fn to_vec_inner(&self, vec: &mut Vec<(AssocTypePath, Ty)>, base_path: &TraitRefPath) {
-            for (name, (_, ty)) in &self.assoc_tys {
-                vec.push((base_path.clone().with_assoc_type(*name), ty.clone()));
+            for (type_id, (_, ty)) in self.assoc_tys.iter_enumerated() {
+                vec.push((base_path.clone().with_assoc_type(type_id), ty.clone()));
             }
             for (clause_id, inner) in self.parent_clauses.iter_enumerated() {
                 let mut base_path = base_path.clone();
                 base_path.parent_path.push(clause_id);
+                // If the trait id is not set it will not be observed, so we put a dummy value.
+                base_path.trait_decl_id = inner.trait_decl_id.unwrap_or(TraitDeclId::MAX);
                 inner.to_vec_inner(vec, &base_path);
             }
         }
@@ -755,9 +782,9 @@ impl<'a> ComputeItemModifications<'a> {
             if modifications.add_type_params {
                 // Remove all associated types and turn them into new parameters. We add these
                 // before the paths in `replace` because this gives a better output.
-                for bound_assoc_ty in &tr.types {
+                for (type_id, bound_assoc_ty) in tr.types.iter_enumerated() {
                     if !bound_assoc_ty.binds_anything() {
-                        let path = TraitRefPath::self_ref().with_assoc_type(*bound_assoc_ty.name());
+                        let path = TraitRefPath::self_ref(id).with_assoc_type(type_id);
                         modifications.replace_path(path);
                     }
                 }
@@ -794,10 +821,10 @@ impl<'a> ComputeItemModifications<'a> {
     fn compute_extra_params_for_clause<'b>(
         &'b mut self,
         clause: &TraitParam,
-        clause_to_path: fn(TraitClauseId) -> TraitRefPath,
+        clause_to_path: fn(TraitClauseId, TraitDeclId) -> TraitRefPath,
     ) -> impl Iterator<Item = AssocTypePath> + use<'a, 'b> {
         let trait_id = clause.trait_.skip_binder.id;
-        let clause_path = clause_to_path(clause.clause_id);
+        let clause_path = clause_to_path(clause.clause_id, trait_id);
         self.compute_extra_params_for_trait(trait_id)
             .map(move |path| path.on_tref(&clause_path))
     }
@@ -812,10 +839,11 @@ impl<'a> ComputeItemModifications<'a> {
             // Put the sentinel value to detect loops.
             self.impl_assoc_tys[id] = CycleDetector::Processing;
 
+            let impl_trait_id = timpl.impl_trait.id;
             let mut set = self.compute_constraint_set(&timpl.generics);
-            for (name, assoc_ty) in &timpl.types {
+            for (type_id, assoc_ty) in timpl.types.iter_enumerated() {
                 if let Some(assoc_ty) = assoc_ty.get_if_binds_nothing() {
-                    let path = TraitRefPath::self_ref().with_assoc_type(*name);
+                    let path = TraitRefPath::self_ref(impl_trait_id).with_assoc_type(type_id);
                     set.insert_path(&path, assoc_ty.value);
                 }
             }
@@ -823,19 +851,19 @@ impl<'a> ComputeItemModifications<'a> {
             // we get the value of the `Output` assoc type using the proof of `Self: FnOnce` in
             // its implied clauses.
             for (clause_id, tref) in timpl.implied_trait_refs.iter_enumerated() {
-                let clause_path = TraitRefPath::parent_clause(clause_id);
+                let clause_path = TraitRefPath::parent_clause(clause_id, tref.trait_id());
                 let pred = &tref.trait_decl_ref;
                 if let Some(pred) = pred.skip_binder.clone().move_from_under_binder()
-                            // This takes a `&mut self`, so we reborrow it shared below.
-                            && let _ = self.compute_trait_modifications(pred.id)
-                            && let Some(trait_mods) = self.trait_modifications[pred.id].as_processed()
+                    // This takes a `&mut self`, so we reborrow it shared below.
+                    && let _ = self.compute_trait_modifications(pred.id)
+                    && let Some(trait_mods) = self.trait_modifications[pred.id].as_processed()
                 {
                     for path in trait_mods.required_extra_params() {
                         if let Some(tref) =
                             path.tref.on_real_tref(&self.ctx.translated, tref.clone())
                         {
                             // This will get normalized further by `lookup_type_replacement`.
-                            let ty = TyKind::TraitType(tref, path.type_name).into_ty();
+                            let ty = TyKind::TraitType(tref, path.type_id).into_ty();
                             let path = path.on_tref(&clause_path);
                             set.insert_path(&path, ty);
                         }
@@ -892,8 +920,8 @@ impl UpdateItemBody<'_> {
         };
         let ty = self.type_replacements[dbid].find(&path)?;
         let mut ty = ty.clone().move_under_binders(dbid);
-        if let TyKind::TraitType(tref, name) = ty.kind() {
-            let path = TraitRefPath::self_ref().with_assoc_type(*name);
+        if let TyKind::TraitType(tref, type_id) = ty.kind() {
+            let path = TraitRefPath::self_ref(tref.trait_id()).with_assoc_type(*type_id);
             // Unnormalizable types may very well show up, e.g. when trait loopiness forces us to
             // create new assoc types.
             if let Some(new_ty) = self.lookup_path_on_trait_ref(&path, tref) {
@@ -925,7 +953,7 @@ impl UpdateItemBody<'_> {
                 self.lookup_type_replacement(&path)
             }
             TraitRefKind::ParentClause(parent, clause_id) => {
-                let path = path.on_tref(&TraitRefPath::parent_clause(*clause_id));
+                let path = path.on_tref(&TraitRefPath::parent_clause(*clause_id, tref.trait_id()));
                 self.lookup_path_on_trait_ref(&path, parent)
             }
             TraitRefKind::ItemClause(..) => None,
@@ -935,9 +963,8 @@ impl UpdateItemBody<'_> {
                 ..
             } => match path.pop_first_parent() {
                 None => types
-                    .iter()
-                    .find(|(name, _)| name == &path.type_name)
-                    .map(|(_, assoc_ty)| assoc_ty.value.clone()),
+                    .get(path.type_id)
+                    .map(|assoc_ty| assoc_ty.value.clone()),
                 Some((parent_clause_id, sub_path)) => {
                     let parent_ref = &parent_trait_refs[parent_clause_id];
                     self.lookup_path_on_trait_ref(&sub_path, parent_ref)
@@ -994,6 +1021,7 @@ impl UpdateItemBody<'_> {
                 ty.clone()
             } else {
                 if self.is_type_alias {
+                    let path = path.fmt_with_krate(&self.ctx.translated);
                     register_error!(
                         self.ctx,
                         self.span,
@@ -1098,10 +1126,11 @@ impl VisitAstMut for UpdateItemBody<'_> {
         for cid in modifications.remove_constraints.iter().sorted().rev() {
             generics.trait_type_constraints.swap_remove(*cid);
         }
+        let krate = &self.ctx.translated;
         let replacements = modifications.compute_replacements(|path| {
             let var_id = generics
                 .types
-                .push_with(|id| TypeParam::new(id, path.to_name()));
+                .push_with(|id| TypeParam::new(id, path.to_name(krate)));
             TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
         });
         self.under_binder(replacements, |this| this.visit_inner(binder))
@@ -1132,24 +1161,21 @@ impl VisitAstMut for UpdateItemBody<'_> {
         let trait_id = timpl.impl_trait.id;
         if let Some(decl_modifs) = self.item_modifications.get(&GenericsSource::item(trait_id)) {
             if decl_modifs.add_type_params {
-                timpl
-                    .types
-                    .retain(|(_, assoc_ty)| assoc_ty.binds_anything());
+                timpl.types.retain(|_, assoc_ty| assoc_ty.binds_anything());
             }
             for path in decl_modifs.required_extra_assoc_types() {
-                let new_type_name = TraitItemName(path.to_name().into());
+                let new_type_name = TraitItemName(path.to_name(&self.ctx.translated).into());
                 if let Some(ty) = self.lookup_type_replacement(path) {
                     trace!("Adding associated type {new_type_name} = {ty:?}");
-                    timpl.types.push((
-                        new_type_name,
+                    timpl.types.push_with(|type_id| {
                         Binder::empty(
-                            BinderKind::TraitType(trait_id, new_type_name),
+                            BinderKind::TraitType(trait_id, type_id),
                             TraitAssocTyImpl {
                                 value: ty.clone(),
                                 implied_trait_refs: Default::default(),
                             },
-                        ),
-                    ));
+                        )
+                    });
                 } else {
                     register_error!(
                         self.ctx,
@@ -1238,8 +1264,8 @@ impl VisitAstMut for UpdateItemBody<'_> {
 
     // Normalize associated types.
     fn enter_ty_kind(&mut self, kind: &mut TyKind) {
-        if let TyKind::TraitType(tref, name) = kind {
-            let path = TraitRefPath::self_ref().with_assoc_type(*name);
+        if let TyKind::TraitType(tref, type_id) = kind {
+            let path = TraitRefPath::self_ref(tref.trait_id()).with_assoc_type(*type_id);
             if let Some(new_ty) = self.lookup_path_on_trait_ref(&path, tref) {
                 *kind = new_ty.kind().clone();
                 trace!(
@@ -1322,10 +1348,12 @@ impl TransformPass for Transform {
                         generics: Box::new(tr.generics.identity_args()),
                     }),
                 );
+                let trait_def_id = tr.def_id;
                 modifications.compute_replacements(|path| {
-                    let new_type_name = TraitItemName(path.to_name().into());
-                    tr.types.push(Binder::empty(
-                        BinderKind::TraitType(tr.def_id, new_type_name),
+                    let new_type_name = TraitItemName(path.to_name(&ctx.translated).into());
+                    let new_type_id = ctx.translated.assoc_item_names[trait_def_id].types.push(new_type_name);
+                    tr.types.set_slot_extend(new_type_id, Binder::empty(
+                        BinderKind::TraitType(tr.def_id, new_type_id),
                         TraitAssocTy {
                             name: new_type_name,
                             attr_info: AttrInfo::dummy_public(),
@@ -1333,14 +1361,14 @@ impl TransformPass for Transform {
                             implied_clauses: Default::default(),
                         },
                     ));
-                    TyKind::TraitType(self_tref.clone(), new_type_name).into_ty()
+                    TyKind::TraitType(self_tref.clone(), new_type_id).into_ty()
                 })
             } else {
                 modifications.compute_replacements(|path| {
                     let var_id = item
                         .generic_params()
                         .types
-                        .push_with(|id| TypeParam::new(id, path.to_name()));
+                        .push_with(|id| TypeParam::new(id, path.to_name(&ctx.translated)));
                     TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
                 })
             };
@@ -1354,7 +1382,7 @@ impl TransformPass for Transform {
             if let ItemRefMut::TraitDecl(tr) = &mut item
                 && modifications.add_type_params
             {
-                tr.types.retain(|assoc_ty| assoc_ty.binds_anything());
+                tr.types.retain(|_, assoc_ty| assoc_ty.binds_anything());
             }
 
             // Update the rest of the items: all the `GenericArgs` and the non-top-level binders

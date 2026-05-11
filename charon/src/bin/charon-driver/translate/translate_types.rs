@@ -146,8 +146,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     assoc_item,
                 } => {
                     let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
-                    let name = self.t_ctx.translate_trait_item_name(&assoc_item.def_id)?;
-                    TyKind::TraitType(trait_ref, name)
+                    let assoc_type_id =
+                        self.register_assoc_type_id(trait_ref.trait_id(), &assoc_item.def_id)?;
+                    TyKind::TraitType(trait_ref, assoc_type_id)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {
                     return self.translate_ty(span, hidden_ty);

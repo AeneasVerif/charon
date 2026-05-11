@@ -439,19 +439,14 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
                     &target,
                 );
 
-                let types_match = types.len() == tdecl.types.len()
-                    && tdecl
-                        .types
-                        .iter()
-                        .zip(types.iter())
-                        .all(|(dty, (iname, _))| dty.name() == iname);
+                let types_match = types.elem_count() == tdecl.types.elem_count();
                 if !types_match {
                     let args_fmt = &self.val_fmt_ctx();
                     let target = target.with_ctx(args_fmt);
                     let a = tdecl.types.iter().map(|t| t.name()).format(", ");
                     let b = types
                         .iter()
-                        .map(|(_, assoc_ty)| assoc_ty.value.with_ctx(args_fmt))
+                        .map(|assoc_ty| assoc_ty.value.with_ctx(args_fmt))
                         .format(", ");
                     self.error(format!(
                         "Mismatched types in builtin trait ref:\
@@ -549,12 +544,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
             &GenericsSource::item(timpl.impl_trait.id),
         );
         // TODO: check type clauses
-        let types_match = timpl.types.len() == tdecl.types.len()
-            && tdecl
-                .types
-                .iter()
-                .zip(timpl.types.iter())
-                .all(|(dty, (iname, _))| dty.name() == iname);
+        let types_match = timpl.types.elem_count() == tdecl.types.elem_count();
         if !types_match {
             self.error(
                 "The associated types supplied by the trait impl don't match the trait decl.",

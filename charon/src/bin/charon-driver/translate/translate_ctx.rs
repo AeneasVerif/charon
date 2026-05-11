@@ -50,8 +50,8 @@ pub struct TranslateCtx<'tcx> {
     pub id_map: HashMap<TransItemSource, ItemId>,
     /// The reverse map of ids.
     pub reverse_id_map: HashMap<ItemId, TransItemSource>,
-    /// Map from rustc id to method id
-    pub method_id_map: HashMap<hax::DefId, TraitMethodId>,
+    /// Map from rustc id to associated item id
+    pub assoc_item_id_map: HashMap<hax::DefId, AssocItemId>,
     /// The reverse filename map.
     pub file_to_id: HashMap<FileName, FileId>,
 

@@ -187,10 +187,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     let trait_ref = ctx.translate_trait_impl_expr(span, &p.impl_expr)?;
                     let ty = ctx.translate_ty(span, &p.ty)?;
-                    let type_name = ctx.t_ctx.translate_trait_item_name(&p.assoc_item.def_id)?;
+                    let type_id =
+                        ctx.register_assoc_type_id(trait_ref.trait_id(), &p.assoc_item.def_id)?;
                     Ok(TraitTypeConstraint {
                         trait_ref,
-                        type_name,
+                        type_id,
                         ty,
                     })
                 })?;
@@ -295,6 +296,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // Apply the path
                 for path_elem in path {
                     use crate::hax::ImplExprPathChunk::*;
+                    let current_trait_id = current_pred.skip_binder.id;
                     let trait_ref = Box::new(TraitRef::new(tref_kind, current_pred));
                     match path_elem {
                         AssocItem {
@@ -303,10 +305,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             index,
                             ..
                         } => {
-                            let name = self.t_ctx.translate_trait_item_name(&item.def_id)?;
+                            let assoc_type_id =
+                                self.register_assoc_type_id(current_trait_id, &item.def_id)?;
                             tref_kind = TraitRefKind::ItemClause(
                                 trait_ref,
-                                name,
+                                assoc_type_id,
                                 TraitClauseId::new(*index),
                             );
                             current_pred = self.translate_poly_trait_ref(span, predicate)?;
@@ -395,21 +398,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     } else {
                         let parent_trait_refs =
                             self.translate_trait_impl_exprs(span, impl_exprs)?;
-                        let types = if self.monomorphize() {
-                            vec![]
+                        let types: IndexMap<AssocTypeId, _> = if self.monomorphize() {
+                            IndexMap::new()
                         } else {
-                            types
-                                .iter()
-                                .map(|(def_id, ty, impl_exprs)| -> Result<_, Error> {
-                                    let name = self.t_ctx.translate_trait_item_name(def_id)?;
-                                    let assoc_ty = TraitAssocTyImpl {
-                                        value: self.translate_ty(span, ty)?,
-                                        implied_trait_refs: self
-                                            .translate_trait_impl_exprs(span, impl_exprs)?,
-                                    };
-                                    Ok((name, assoc_ty))
-                                })
-                                .try_collect()?
+                            let tdecl_id = trait_decl_ref.skip_binder.id;
+                            let mut type_map = IndexMap::new();
+                            for (def_id, ty, impl_exprs) in types {
+                                let assoc_type_id =
+                                    self.register_assoc_type_id(tdecl_id, def_id)?;
+                                let assoc_ty = TraitAssocTyImpl {
+                                    value: self.translate_ty(span, ty)?,
+                                    implied_trait_refs: self
+                                        .translate_trait_impl_exprs(span, impl_exprs)?,
+                                };
+                                type_map.set_slot_extend(assoc_type_id, assoc_ty);
+                            }
+                            type_map
                         };
                         TraitRefKind::BuiltinOrAuto {
                             builtin_data,

@@ -16,6 +16,7 @@
 //! signature) but not its contents.
 use itertools::Itertools;
 use rustc_middle::ty::TyCtxt;
+use rustc_span::sym;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -333,52 +334,109 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
     }
 
+    /// Register the associated types of this trait.
+    pub fn register_assoc_items(
+        &mut self,
+        trait_def_id: &hax::DefId,
+        trait_id: TraitDeclId,
+    ) -> Result<(), Error> {
+        if self.translated.assoc_item_names.get(trait_id).is_some() {
+            return Ok(());
+        }
+        let trait_def = self.poly_hax_def(trait_def_id)?;
+        let hax::FullDefKind::Trait { items, .. } = trait_def.kind() else {
+            unreachable!()
+        };
+        let names = self
+            .translated
+            .assoc_item_names
+            .get_or_extend_and_insert(trait_id, Default::default);
+        let mut method_statuses: IndexMap<TraitMethodId, MethodStatus> = IndexMap::new();
+        for item in items {
+            let name = TraitItemName(
+                item.name
+                    .as_ref()
+                    .map(|n| n.to_string().into())
+                    .unwrap_or_default(),
+            );
+            let id = match item.kind {
+                hax::AssocKind::Type { .. } => {
+                    let id = names.types.push(name);
+                    AssocItemId::Type(id)
+                }
+                hax::AssocKind::Fn { .. } => {
+                    let id = names.methods.push(name);
+                    method_statuses.set_slot_extend(id, MethodStatus::default());
+                    AssocItemId::Method(id)
+                }
+                hax::AssocKind::Const { .. } => {
+                    let id = names.consts.push(name);
+                    AssocItemId::Const(id)
+                }
+            };
+            self.assoc_item_id_map.insert(item.def_id.clone(), id);
+        }
+        // Add a virtual method to the `Destruct` trait.
+        if trait_def.lang_item == Some(sym::destruct) {
+            let method_name = TraitItemName("drop_in_place".into());
+            let id = names.methods.push(method_name);
+            method_statuses.set_slot_extend(id, MethodStatus::default());
+        }
+        self.method_status
+            .get_or_extend_and_insert(trait_id, || method_statuses);
+        Ok(())
+    }
+
+    /// Get the unique per-trait id corresponding to this associated item. The `DefId` can be of an
+    /// item declaration or item implementation.
+    pub fn translate_assoc_item_id(
+        &mut self,
+        trait_id: TraitDeclId,
+        item_def_id: &hax::DefId,
+    ) -> Result<AssocItemId, Error> {
+        if let Some(&item_id) = self.assoc_item_id_map.get(item_def_id) {
+            return Ok(item_id);
+        }
+
+        let item_def = self.poly_hax_def(item_def_id)?;
+        let assoc = match item_def.kind() {
+            hax::FullDefKind::AssocTy {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocConst {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocFn {
+                associated_item, ..
+            } => associated_item,
+            _ => panic!("Unexpected def for associated item: {item_def:?}"),
+        };
+        let decl_def_id = assoc.implemented_trait_item_id();
+
+        if decl_def_id != item_def_id
+            && let Some(&item_id) = self.assoc_item_id_map.get(decl_def_id)
+        {
+            self.assoc_item_id_map.insert(item_def_id.clone(), item_id);
+            return Ok(item_id);
+        }
+
+        let trait_def_id = decl_def_id.parent(&self.hax_state).unwrap();
+        self.register_assoc_items(&trait_def_id, trait_id)?;
+        let item_id = *self.assoc_item_id_map.get(decl_def_id).unwrap();
+        Ok(item_id)
+    }
+
     /// Register a trait method and return its `TraitMethodId`. This id is unique per trait.
     /// This does not make the method be considered "used"; use `mark_method_as_used` for that.
     pub fn register_trait_method_id_no_enqueue(
         &mut self,
         trait_id: TraitDeclId,
-        method_def_id: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> Result<TraitMethodId, Error> {
-        if let Some(&method_id) = self.method_id_map.get(method_def_id) {
-            return Ok(method_id);
-        }
-
-        let method_def = self.poly_hax_def(method_def_id)?;
-        let hax::FullDefKind::AssocFn {
-            associated_item, ..
-        } = method_def.kind()
-        else {
-            unreachable!()
-        };
-        let decl_def_id = associated_item.implemented_trait_item_id();
-
-        if let Some(&method_id) = self.method_id_map.get(decl_def_id) {
-            self.method_id_map.insert(method_def_id.clone(), method_id);
-            return Ok(method_id);
-        }
-
-        // Allocate method ids in item definition order.
-        let map: IndexMap<TraitMethodId, MethodStatus> = {
-            let trait_def_id = decl_def_id.parent(&self.hax_state).unwrap();
-            let trait_def = self.poly_hax_def(&trait_def_id)?;
-            let hax::FullDefKind::Trait { items, .. } = trait_def.kind() else {
-                unreachable!()
-            };
-            let mut map = IndexMap::new();
-            for item in items {
-                if matches!(item.kind, hax::AssocKind::Fn { .. }) {
-                    let id = map.push(MethodStatus::default());
-                    self.method_id_map.insert(item.def_id.clone(), id);
-                }
-            }
-            map
-        };
-        self.method_status
-            .get_or_extend_and_insert(trait_id, || map);
-        let method_id = *self.method_id_map.get(decl_def_id).unwrap();
-        Ok(method_id)
+        let item_id = self.translate_assoc_item_id(trait_id, def_id)?;
+        Ok(*item_id.as_method().unwrap())
     }
+
     /// Register a trait method and return its `TraitMethodId`. This id is unique per trait.
     /// This makes the method be considered "used".
     pub fn register_trait_method_id(
@@ -389,6 +447,16 @@ impl<'tcx> TranslateCtx<'tcx> {
         let method_id = self.register_trait_method_id_no_enqueue(trait_id, def_id)?;
         self.mark_method_as_used(trait_id, method_id);
         Ok(method_id)
+    }
+
+    /// Register a trait associated type and return its `AssocTypeId`. This id is unique per trait.
+    pub fn register_assoc_type_id(
+        &mut self,
+        trait_id: TraitDeclId,
+        def_id: &hax::DefId,
+    ) -> Result<AssocTypeId, Error> {
+        let item_id = self.translate_assoc_item_id(trait_id, def_id)?;
+        Ok(*item_id.as_type().unwrap())
     }
 
     pub(crate) fn register_target_info(&mut self) {
@@ -787,7 +855,7 @@ pub fn translate<'tcx>(
             ..TranslatedCrate::default()
         },
         method_status: Default::default(),
-        method_id_map: Default::default(),
+        assoc_item_id_map: Default::default(),
         id_map: Default::default(),
         reverse_id_map: Default::default(),
         file_to_id: Default::default(),

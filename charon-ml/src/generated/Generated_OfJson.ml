@@ -134,6 +134,13 @@ and assertion_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ cond; expected; check_kind } : assertion)
     | _ -> Error "")
 
+and assoc_type_id_of_json (ctx : of_json_ctx) (js : json) :
+    (assoc_type_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> AssocTypeId.id_of_json ctx x
+    | _ -> Error "")
+
 and binop_of_json (ctx : of_json_ctx) (js : json) : (binop, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -196,7 +203,7 @@ and binder_kind_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("TraitType", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_decl_id_of_json ctx x_0 in
-        let* x_1 = trait_item_name_of_json ctx x_1 in
+        let* x_1 = assoc_type_id_of_json ctx x_1 in
         Ok (BKTraitType (x_0, x_1))
     | `Assoc [ ("TraitMethod", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_decl_id_of_json ctx x_0 in
@@ -966,7 +973,7 @@ and predicate_origin_of_json (ctx : of_json_ctx) (js : json) :
     | `String "TraitSelf" -> Ok TraitSelf
     | `String "WhereClauseOnTrait" -> Ok WhereClauseOnTrait
     | `Assoc [ ("TraitItem", trait_item) ] ->
-        let* trait_item = trait_item_name_of_json ctx trait_item in
+        let* trait_item = assoc_type_id_of_json ctx trait_item in
         Ok (TraitItem trait_item)
     | `String "Dyn" -> Ok OriginDyn
     | _ -> Error "")
@@ -1289,7 +1296,7 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (ParentClause (x_0, x_1))
     | `Assoc [ ("ItemClause", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = box_of_json trait_ref_of_json ctx x_0 in
-        let* x_1 = trait_item_name_of_json ctx x_1 in
+        let* x_1 = assoc_type_id_of_json ctx x_1 in
         let* x_2 = trait_clause_id_of_json ctx x_2 in
         Ok (ItemClause (x_0, x_1, x_2))
     | `String "SelfId" -> Ok Self
@@ -1309,8 +1316,10 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
             parent_trait_refs
         in
         let* types =
-          list_of_json
-            (pair_of_json trait_item_name_of_json trait_assoc_ty_impl_of_json)
+          (fun ctx json ->
+            Result.map AssocTypeId.map_of_indexed_list
+              (opt_indexed_map_of_json assoc_type_id_of_json
+                 trait_assoc_ty_impl_of_json ctx json))
             ctx types
         in
         Ok (BuiltinOrAuto (builtin_data, parent_trait_refs, types))
@@ -1324,12 +1333,11 @@ and trait_type_constraint_of_json (ctx : of_json_ctx) (js : json) :
     (trait_type_constraint, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("trait_ref", trait_ref); ("type_name", type_name); ("ty", ty) ]
-      ->
+    | `Assoc [ ("trait_ref", trait_ref); ("type_id", type_id); ("ty", ty) ] ->
         let* trait_ref = trait_ref_of_json ctx trait_ref in
-        let* type_name = trait_item_name_of_json ctx type_name in
+        let* type_id = assoc_type_id_of_json ctx type_id in
         let* ty = ty_of_json ctx ty in
-        Ok ({ trait_ref; type_name; ty } : trait_type_constraint)
+        Ok ({ trait_ref; type_id; ty } : trait_type_constraint)
     | _ -> Error "")
 
 and trait_type_constraint_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -1372,7 +1380,7 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
         Ok (TRawPtr (x_0, x_1))
     | `Assoc [ ("TraitType", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_ref_of_json ctx x_0 in
-        let* x_1 = trait_item_name_of_json ctx x_1 in
+        let* x_1 = assoc_type_id_of_json ctx x_1 in
         Ok (TTraitType (x_0, x_1))
     | `Assoc [ ("DynTrait", dyn_trait) ] ->
         let* dyn_trait = dyn_predicate_of_json ctx dyn_trait in
@@ -1816,6 +1824,33 @@ and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Pack", pack) ] ->
         let* pack = int_of_json ctx pack in
         Ok (Pack pack)
+    | _ -> Error "")
+
+and assoc_const_id_of_json (ctx : of_json_ctx) (js : json) :
+    (assoc_const_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> AssocConstId.id_of_json ctx x
+    | _ -> Error "")
+
+and assoc_item_names_of_json (ctx : of_json_ctx) (js : json) :
+    (assoc_item_names, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("types", types); ("methods", methods); ("consts", consts) ] ->
+        let* types =
+          index_vec_of_json assoc_type_id_of_json trait_item_name_of_json ctx
+            types
+        in
+        let* methods =
+          index_vec_of_json trait_method_id_of_json trait_item_name_of_json ctx
+            methods
+        in
+        let* consts =
+          index_vec_of_json assoc_const_id_of_json trait_item_name_of_json ctx
+            consts
+        in
+        Ok ({ types; methods; consts } : assoc_item_names)
     | _ -> Error "")
 
 and attr_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -2695,7 +2730,6 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("consts", consts);
           ("types", types);
           ("methods", methods);
-          ("method_names", method_names);
           ("vtable", vtable);
         ] ->
         let* def_id = trait_decl_id_of_json ctx def_id in
@@ -2707,7 +2741,12 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* consts = list_of_json trait_assoc_const_of_json ctx consts in
         let* types =
-          list_of_json (binder_of_json trait_assoc_ty_of_json) ctx types
+          (fun ctx json ->
+            Result.map AssocTypeId.map_of_indexed_list
+              (opt_indexed_map_of_json assoc_type_id_of_json
+                 (binder_of_json trait_assoc_ty_of_json)
+                 ctx json))
+            ctx types
         in
         let* methods =
           (fun ctx json ->
@@ -2716,10 +2755,6 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
                  (binder_of_json trait_method_of_json)
                  ctx json))
             ctx methods
-        in
-        let* method_names =
-          index_vec_of_json trait_method_id_of_json trait_item_name_of_json ctx
-            method_names
         in
         let* vtable = option_of_json type_decl_ref_of_json ctx vtable in
         Ok
@@ -2731,7 +2766,6 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
              consts;
              types;
              methods;
-             method_names;
              vtable;
            }
             : trait_decl)
@@ -2767,9 +2801,11 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
             ctx consts
         in
         let* types =
-          list_of_json
-            (pair_of_json trait_item_name_of_json
-               (binder_of_json trait_assoc_ty_impl_of_json))
+          (fun ctx json ->
+            Result.map AssocTypeId.map_of_indexed_list
+              (opt_indexed_map_of_json assoc_type_id_of_json
+                 (binder_of_json trait_assoc_ty_impl_of_json)
+                 ctx json))
             ctx types
         in
         let* methods =
@@ -2825,6 +2861,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           ("target_information", target_information);
           ("files", files);
           ("item_names", item_names);
+          ("assoc_item_names", assoc_item_names);
           ("short_names", short_names);
           ("type_decls", type_decls);
           ("fun_decls", fun_decls);
@@ -2843,6 +2880,13 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
         let* item_names =
           index_map_of_json item_id_of_json name_of_json int_of_json ctx
             item_names
+        in
+        let* assoc_item_names =
+          (fun ctx json ->
+            Result.map TraitDeclId.map_of_indexed_list
+              (opt_indexed_map_of_json trait_decl_id_of_json
+                 assoc_item_names_of_json ctx json))
+            ctx assoc_item_names
         in
         let* short_names =
           index_map_of_json item_id_of_json name_of_json int_of_json ctx
@@ -2895,6 +2939,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
              target_information;
              files;
              item_names;
+             assoc_item_names;
              short_names;
              type_decls;
              fun_decls;

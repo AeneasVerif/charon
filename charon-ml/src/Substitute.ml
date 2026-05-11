@@ -440,11 +440,11 @@ let expr_body_substitute (subst : subst) (body : expr_body) : local list * block
 
 let trait_type_constraint_substitute (subst : subst)
     (ttc : trait_type_constraint) : trait_type_constraint =
-  let { trait_ref; type_name; ty } = ttc in
+  let { trait_ref; type_id; ty } = ttc in
   let visitor = st_substitute_visitor in
   let trait_ref = visitor#visit_trait_ref subst trait_ref in
   let ty = visitor#visit_ty subst ty in
-  { trait_ref; type_name; ty }
+  { trait_ref; type_id; ty }
 
 (** Substitute variable identifiers in a type *)
 let block_substitute_ids (ty_subst : TypeVarId.id -> TypeVarId.id)

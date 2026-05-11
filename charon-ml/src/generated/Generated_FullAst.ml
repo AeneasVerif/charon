@@ -16,8 +16,16 @@ open Generated_Expressions
 open Generated_Meta
 open Identifiers
 
+type assoc_const_id = (AssocConstId.id[@visitors.opaque])
+
+and assoc_item_names = {
+  types : trait_item_name list;
+  methods : trait_item_name list;
+  consts : trait_item_name list;
+}
+
 (** The body of a function. *)
-type body =
+and body =
   | UnstructuredBody of Generated_UllbcAst.block list gexpr_body
       (** Body represented as a CFG. This is what ullbc is made of, and what we
           get after translating MIR. *)
@@ -306,6 +314,11 @@ and translated_crate = {
           even of items that failed to translate. Invariant: after translation,
           any existing [ItemId] must have an associated name, even if the
           corresponding item wasn't translated. *)
+  assoc_item_names : assoc_item_names trait_decl_id_map;
+      (** The names of all the registered associated items. Available so we can
+          know the names even of items that failed to translate. Invariant:
+          after translation, any existing [AssocItemId] must have an associated
+          name, even if the corresponding item wasn't translated. *)
   short_names : (item_id * name) list;
       (** Short names, for items whose last PathElem is unique. *)
   type_decls : type_decl type_decl_id_map;

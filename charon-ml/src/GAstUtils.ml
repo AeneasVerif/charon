@@ -89,22 +89,29 @@ let lookup_trait_impl_method (timpl : trait_impl) (id : trait_method_id) :
       { item_binder_params = timpl.generics; item_binder_value = bound_fn })
     (TraitMethodId.Map.find_opt id timpl.methods)
 
-(** Resolve a [trait_method_id] to a method name, following the same logic as
-    the Rust [format_method_name]: first try the method map, then fall back to
-    [method_names] (for mono mode), then to the raw id. *)
+(** Resolve a [trait_method_id] to a method name. *)
 let format_method_name (crate : crate) (trait_id : trait_decl_id)
     (method_id : trait_method_id) : trait_item_name =
-  match TraitDeclId.Map.find_opt trait_id crate.trait_decls with
-  | Some tdecl -> begin
-      match TraitMethodId.Map.find_opt method_id tdecl.methods with
-      | Some m -> m.binder_value.name
-      | None -> begin
-          match TraitMethodId.nth_opt tdecl.method_names method_id with
-          | Some name -> name
-          | None -> TraitMethodId.to_string method_id
-        end
-    end
+  let name =
+    match TraitDeclId.Map.find_opt trait_id crate.assoc_item_names with
+    | Some names -> TraitMethodId.nth_opt names.methods method_id
+    | None -> None
+  in
+  match name with
+  | Some name -> name
   | None -> TraitMethodId.to_string method_id
+
+(** Resolve a [assoc_type_id] to a type name. *)
+let format_assoc_type_name (crate : crate) (trait_id : trait_decl_id)
+    (type_id : assoc_type_id) : trait_item_name =
+  let name =
+    match TraitDeclId.Map.find_opt trait_id crate.assoc_item_names with
+    | Some names -> AssocTypeId.nth_opt names.types type_id
+    | None -> None
+  in
+  match name with
+  | Some name -> name
+  | None -> AssocTypeId.to_string type_id
 
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
   match g with

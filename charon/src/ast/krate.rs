@@ -51,6 +51,34 @@ pub enum ItemId {
     Global(GlobalDeclId),
 }
 
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    PartialOrd,
+    Ord,
+    PartialEq,
+    Eq,
+    Hash,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Serialize,
+    Deserialize,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
+#[charon::variants_prefix("AssocId")]
+#[serde_state(stateless)]
+pub enum AssocItemId {
+    Type(AssocTypeId),
+    Method(TraitMethodId),
+    Const(AssocConstId),
+}
+
 /// Implement `TryFrom`  and `From` to convert between an enum and its variants.
 macro_rules! wrap_unwrap_enum {
     ($enum:ident::$variant:ident($variant_ty:ident)) => {
@@ -89,6 +117,10 @@ impl TryFrom<ItemId> for FunId {
         Ok(FunId::Regular(x.try_into()?))
     }
 }
+
+wrap_unwrap_enum!(AssocItemId::Type(AssocTypeId));
+wrap_unwrap_enum!(AssocItemId::Method(TraitMethodId));
+wrap_unwrap_enum!(AssocItemId::Const(AssocConstId));
 
 /// A translated item.
 #[derive(
@@ -171,6 +203,13 @@ pub struct TargetInfo {
     pub is_little_endian: bool,
 }
 
+#[derive(Default, Clone, Drive, DriveMut, SerializeState, DeserializeState)]
+pub struct AssocItemNames {
+    pub types: IndexVec<AssocTypeId, TraitItemName>,
+    pub methods: IndexVec<TraitMethodId, TraitItemName>,
+    pub consts: IndexVec<AssocConstId, TraitItemName>,
+}
+
 /// The data of a translated crate.
 #[derive(Default, Clone, Drive, DriveMut, SerializeState, DeserializeState)]
 #[serde_state(state_implements = HashConsSerializerState)]
@@ -203,6 +242,11 @@ pub struct TranslatedCrate {
     /// if the corresponding item wasn't translated.
     #[serde(with = "SeqHashMapToArray::<ItemId, Name>")]
     pub item_names: SeqHashMap<ItemId, Name>,
+    /// The names of all the registered associated items. Available so we can know the names even
+    /// of items that failed to translate.
+    /// Invariant: after translation, any existing `AssocItemId` must have an associated name, even
+    /// if the corresponding item wasn't translated.
+    pub assoc_item_names: IndexMap<TraitDeclId, AssocItemNames>,
     /// Short names, for items whose last PathElem is unique.
     #[serde(with = "SeqHashMapToArray::<ItemId, Name>")]
     pub short_names: SeqHashMap<ItemId, Name>,
@@ -226,6 +270,18 @@ pub struct TranslatedCrate {
 impl TranslatedCrate {
     pub fn item_name(&self, id: impl Into<ItemId>) -> Option<&Name> {
         self.item_names.get(&id.into())
+    }
+    pub fn assoc_item_name(
+        &self,
+        trait_id: TraitDeclId,
+        id: impl Into<AssocItemId>,
+    ) -> TraitItemName {
+        let names = &self.assoc_item_names[trait_id];
+        match id.into() {
+            AssocItemId::Type(id) => names.types[id],
+            AssocItemId::Method(id) => names.methods[id],
+            AssocItemId::Const(id) => names.consts[id],
+        }
     }
 
     pub fn item_short_name(&self, id: impl Into<ItemId>) -> Option<&Name> {

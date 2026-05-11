@@ -461,6 +461,15 @@ impl<'a> PartialMonomorphizer<'a> {
             .translated
             .item_names
             .insert(new_id, decl.as_ref().item_meta().name.clone());
+        if let (ItemId::TraitDecl(orig_trait_id), ItemId::TraitDecl(new_trait_id)) =
+            (*orig_id, new_id)
+        {
+            let names = self.ctx.translated.assoc_item_names[orig_trait_id].clone();
+            self.ctx
+                .translated
+                .assoc_item_names
+                .insert(new_trait_id, names);
+        }
 
         decl
     }

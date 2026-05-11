@@ -29,6 +29,9 @@ macro_rules! generate_index_type {
 
         impl $name {
             pub const ZERO: Self = Self { _raw: 0 };
+            pub const MAX: Self = Self {
+                _raw: Self::MAX_INDEX,
+            };
             pub fn is_zero(&self) -> bool {
                 self.index() == 0
             }

@@ -22,6 +22,8 @@ module ConstGenericVarId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module TraitMethodId = IdGen ()
+module AssocTypeId = IdGen ()
+module AssocConstId = IdGen ()
 module TraitClauseId = IdGen ()
 module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
@@ -43,10 +45,29 @@ and 'a global_decl_id_map = 'a GlobalDeclId.Map.t
 and 'a type_decl_id_map = 'a TypeDeclId.Map.t
 and 'a trait_decl_id_map = 'a TraitDeclId.Map.t
 and 'a trait_impl_id_map = 'a TraitImplId.Map.t
-and 'a trait_method_id_map = 'a TraitMethodId.Map.t [@@deriving show, eq, ord]
+and 'a trait_method_id_map = 'a TraitMethodId.Map.t
+and 'a assoc_type_id_map = 'a AssocTypeId.Map.t [@@deriving show, eq, ord]
 
 
 (* __REPLACE0__ *)
+
+class ['self] iter_ty_base =
+  object (self : 'self)
+    inherit [_] iter_type_vars
+    method visit_span : 'env -> span -> unit = fun _ _ -> ()
+    method visit_assoc_type_id_map
+        : 'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_type_id_map -> unit =
+      AssocTypeId.Map.visit_iter
+  end
+
+class ['self] map_ty_base =
+  object (self : 'self)
+    inherit [_] map_type_vars
+    method visit_span : 'env -> span -> span = fun _ x -> x
+    method visit_assoc_type_id_map
+        : 'a 'b. ('env -> 'a -> 'b) -> 'env -> 'a assoc_type_id_map -> 'b assoc_type_id_map =
+      AssocTypeId.Map.visit_map
+  end
 
 (* __REPLACE1__ *)
 

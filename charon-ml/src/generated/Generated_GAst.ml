@@ -299,7 +299,7 @@ and trait_decl = {
           trait declarations are parent clauses. *)
   consts : trait_assoc_const list;
       (** The associated constants declared in the trait. *)
-  types : trait_assoc_ty binder list;
+  types : trait_assoc_ty binder assoc_type_id_map;
       (** The associated types declared in the trait. The binder binds the
           generic parameters of the type if it is a GAT (Generic Associated
           Type). For a plain associated type the binder binds nothing. *)
@@ -314,10 +314,6 @@ and trait_decl = {
               fn method<'a, U>(x: &'a U);
             }
           ]} *)
-  method_names : trait_item_name list;
-      (** In mono mode we can't translate [TraitMethod]s because they'd include
-          the polymorphic signature. In order to keep access to the method
-          names, we store them here too; this is empty in poly mode. *)
   vtable : type_decl_ref option;
       (** The virtual table struct for this trait, if it has one. It is
           guaranteed that the trait has a vtable iff it is dyn-compatible. *)
@@ -388,7 +384,7 @@ and trait_impl = {
       (** The trait references for the parent clauses (see [TraitDecl]). *)
   consts : (trait_item_name * global_decl_ref) list;
       (** The implemented associated constants. *)
-  types : (trait_item_name * trait_assoc_ty_impl binder) list;
+  types : trait_assoc_ty_impl binder assoc_type_id_map;
       (** The implemented associated types. *)
   methods : fun_decl_ref binder trait_method_id_map;
       (** The implemented methods *)

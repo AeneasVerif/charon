@@ -146,6 +146,7 @@ impl CrateMerger {
             options: _, // We discard the per-target options we made
             target_information,
             item_names,
+            assoc_item_names,
             short_names: _, // TODO
             files: _,       // Done above
             type_decls,
@@ -163,6 +164,10 @@ impl CrateMerger {
             .target_information
             .extend(target_information);
         self.merged.translated.item_names.extend(item_names);
+        self.merged
+            .translated
+            .assoc_item_names
+            .extend_from_other(assoc_item_names);
         self.merged
             .translated
             .type_decls
