@@ -1,18 +1,5 @@
-pub fn core::clone::impls::{impl core::clone::Clone::aarch64-apple-darwin for u32}::clone::aarch64-apple-darwin<'_0>(_1: &'_0 u32) -> u32
+pub fn core::clone::impls::{impl core::clone::Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
-
-pub fn core::clone::impls::{impl core::clone::Clone::i686-unknown-linux-gnu for u32}::clone::i686-unknown-linux-gnu<'_0>(_1: &'_0 u32) -> u32
-= <opaque>
-
-pub fn core::clone::impls::{impl core::clone::Clone::x86_64-pc-windows-msvc for u32}::clone::x86_64-pc-windows-msvc<'_0>(_1: &'_0 u32) -> u32
-= <opaque>
-
-pub fn core::clone::impls::{impl core::clone::Clone::x86_64-pc-windows-msvc for u32}::clone<'_0>(_1: &'_0 u32) -> u32
-= target_dispatch {
-    x86_64-pc-windows-msvc => core::clone::impls::{impl core::clone::Clone::x86_64-pc-windows-msvc for u32}::clone::x86_64-pc-windows-msvc<'_0>,
-    aarch64-apple-darwin => core::clone::impls::{impl core::clone::Clone::aarch64-apple-darwin for u32}::clone::aarch64-apple-darwin<'_0>,
-    i686-unknown-linux-gnu => core::clone::impls::{impl core::clone::Clone::i686-unknown-linux-gnu for u32}::clone::i686-unknown-linux-gnu<'_0>,
-}
 
 fn test_crate::clone_it<'_0>(x_1: &'_0 u32) -> u32
 {
@@ -22,7 +9,7 @@ fn test_crate::clone_it<'_0>(x_1: &'_0 u32) -> u32
 
     storage_live(_2)
     _2 = &(*x_1)
-    _0 = core::clone::impls::{impl core::clone::Clone::x86_64-pc-windows-msvc for u32}::clone<'4>(move _2)
+    _0 = core::clone::impls::{impl core::clone::Clone for u32}::clone<'4>(move _2)
     storage_dead(_2)
     return
 }
