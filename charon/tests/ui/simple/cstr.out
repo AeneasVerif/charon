@@ -1,0 +1,30 @@
+# Final LLBC before serialization:
+
+// Full name: core::ffi::c_str::CStr
+#[lang_item("CStr")]
+pub struct CStr {
+  inner: [i8],
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: &'1 CStr; // anonymous local
+    let _2: CStr; // anonymous local
+    let _3: &'2 CStr; // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 = CStr { inner: const [49 : i8, 50 : i8, 51 : i8, 0 : i8] }
+    storage_live(_3)
+    _3 = &_2
+    _1 = move _3
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+

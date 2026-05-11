@@ -281,9 +281,13 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
         }
         ty::Adt(adt_def, ..) => {
             let variant = ecx.read_discriminant(&op)?;
-            let down = ecx.project_downcast(&op, variant)?;
+            let op = if adt_def.is_enum() {
+                ecx.project_downcast(&op, variant)?
+            } else {
+                op
+            };
             let field_count = adt_def.variants()[variant].fields.len();
-            let fields = read_fields(down, field_count)
+            let fields = read_fields(op, field_count)
                 .zip(&adt_def.variant(variant).fields)
                 .map(|(value, field)| {
                     interp_ok(ConstantFieldExpr {
