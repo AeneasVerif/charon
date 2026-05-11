@@ -255,7 +255,7 @@ impl TargetGroup {
             && items
                 .iter()
                 .map(|item| item.as_fun().unwrap())
-                .map(|d| (&d.generics, &d.signature))
+                .map(|d| (&d.item_meta.name, &d.generics, &d.signature))
                 .all_equal()
         {
             MergeDecision::Facade
