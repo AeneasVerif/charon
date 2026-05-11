@@ -199,7 +199,6 @@ impl DefId {
         if let Some(def) = s.with_cache(|cache| cache.full_defs.get(&cache_key).cloned()) {
             return def;
         }
-        #[allow(clippy::arc_with_non_send_sync)]
         let def = Arc::new(translate_full_def(s, self, args));
         s.with_cache(|cache| {
             cache.full_defs.insert(cache_key, def.clone());
