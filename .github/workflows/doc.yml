@@ -3,6 +3,8 @@ name: Deploy Doc
 on:
   push:
     branches: [ main ]
+  # Makes it possible to run the workflow by hand from GitHub's interface.
+  workflow_dispatch:
 
 jobs:
   # Build job

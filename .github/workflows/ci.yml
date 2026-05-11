@@ -10,7 +10,7 @@ on:
   pull_request:
   # Runs the check when a PR is added to the merge queue.
   merge_group:
-  # Makes it possible to run the forkflow by hand from GitHub's interface.
+  # Makes it possible to run the workflow by hand from GitHub's interface.
   workflow_dispatch:
 
 # Cancel previous versions of this job that are still running.
