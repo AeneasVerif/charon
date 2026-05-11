@@ -88,10 +88,6 @@ pub enum TransItemSourceKind {
     VTableMethod,
     /// The drop shim function to be used in the vtable as a field, the `DefId` is an `impl`.
     VTableDropShim,
-    /// The `DefId` is the `Destruct` trait.
-    VTableDropPreShim,
-    /// The `DefId` is the method.
-    VTableMethodPreShim(TraitDeclId, TraitItemName),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -176,7 +172,6 @@ impl TransItemSource {
                 TransItemSourceKind::TraitImpl(impl_kind)
             }
             TransItemSourceKind::DropInPlaceMethod(None) => TransItemSourceKind::TraitDecl,
-            TransItemSourceKind::VTableMethodPreShim(..) => TransItemSourceKind::Fun,
             _ => return None,
         };
         Some(self.with_kind(parent_kind))
@@ -299,11 +294,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     | DropInPlaceMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod
-                    | VTableDropShim
-                    | VTableDropPreShim
-                    | VTableMethodPreShim(..) => {
-                        ItemId::Fun(self.translated.fun_decls.reserve_slot())
-                    }
+                    | VTableDropShim => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -747,7 +738,6 @@ pub fn translate<'tcx>(
         cached_item_metas: Default::default(),
         cached_names: Default::default(),
         lt_mutability_computer: Default::default(),
-        translated_preshims: Default::default(),
     };
     ctx.register_target_info();
 

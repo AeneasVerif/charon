@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--monomorphize
 //@ charon-args=--start-from=crate::main
 use std::fmt::Display;

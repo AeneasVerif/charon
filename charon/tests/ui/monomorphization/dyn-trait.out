@@ -1,24 +1,98 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:1632:13:
-Could not determine method index for drop in vtable
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `core::fmt::Display`.
- --> /rustc/library/core/src/fmt/mod.rs:1186:1
+opaque type core::fmt::Display::{vtable}
 
-note: the error occurred when translating `core::fmt::Display::{vtable_drop_preshim}`, which is (transitively) used at the following location(s):
-  --> tests/ui/monomorphization/dyn-trait.rs:12:27
-   |
-12 |     let _ = dyn_to_string(&str);
-   |                           ----
+// Full name: core::fmt::Display
+#[lang_item("Display")]
+pub trait Display<Self>
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:1510:13:
-Could not determine method index for method_fmt in vtable
-error: Thread panicked when extracting item `core::fmt::Display::fmt`.
- --> /rustc/library/core/src/fmt/mod.rs:1211:5
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
 
-note: the error occurred when translating `core::fmt::Display::fmt::{vtable_method_preshim}`, which is (transitively) used at the following location(s):
-  --> tests/ui/monomorphization/dyn-trait.rs:12:27
-   |
-12 |     let _ = dyn_to_string(&str);
-   |                           ----
-ERROR Charon failed to translate this code (2 errors)
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
+= <opaque>
+
+// Full name: alloc::string::String::{impl Destruct for String}
+impl Destruct for String {    non-dyn-compatible
+}
+
+// Full name: alloc::string::{impl Display for String}::{vtable}
+fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
+= <opaque>
+
+// Full name: alloc::string::{impl Display for String}::{vtable}
+static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl Display for String}::{vtable}()
+
+// Full name: alloc::string::{impl Display for String}
+impl Display for String {    vtable: {impl Display for String}::{vtable}
+}
+
+// Full name: alloc::string::{impl ToString for Str}::to_string::<Str>
+pub fn {impl ToString for Str}::to_string::<Str><'_0>(_1: &'_0 Str) -> String
+= <opaque>
+
+// Full name: alloc::string::{impl ToString for (dyn Display)}::to_string::<(dyn Display)>
+pub fn {impl ToString for (dyn Display)}::to_string::<(dyn Display)><'_0>(_1: &'_0 (dyn Display)) -> String
+= <opaque>
+
+// Full name: test_crate::dyn_to_string
+fn dyn_to_string<'_0>(x_1: &'_0 (dyn Display + '_0)) -> String
+{
+    let _0: String; // return
+    let x_1: &'3 (dyn Display + '4); // arg #1
+    let _2: &'5 (dyn Display + '6); // anonymous local
+
+    storage_live(_2)
+    _2 = &(*x_1) with_metadata(copy x_1.metadata)
+    _0 = {impl ToString for (dyn Display)}::to_string::<(dyn Display)><'9>(move _2)
+    storage_dead(_2)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let str_1: String; // local
+    let _2: &'1 Str; // anonymous local
+    let _3: &'2 Str; // anonymous local
+    let _4: String; // anonymous local
+    let _5: &'6 (dyn Display + '7); // anonymous local
+    let _6: &'9 String; // anonymous local
+    let _7: &'10 String; // anonymous local
+
+    _0 = ()
+    storage_live(str_1)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = const "hello"
+    _2 = &(*_3) with_metadata(copy _3.metadata)
+    str_1 = {impl ToString for Str}::to_string::<Str><'13>(move _2)
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = &str_1
+    _6 = &(*_7)
+    _5 = unsize_cast<&'9 String, &'14 (dyn Display + '15), &{impl Display for String}::{vtable}>(move _6)
+    storage_dead(_6)
+    _4 = dyn_to_string<'17>(move _5)
+    storage_dead(_5)
+    conditional_drop[{impl Destruct for String}::drop_in_place] _4
+    storage_dead(_7)
+    storage_dead(_4)
+    _0 = ()
+    conditional_drop[{impl Destruct for String}::drop_in_place] str_1
+    storage_dead(str_1)
+    return
+}
+
+
+
