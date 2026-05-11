@@ -38,9 +38,6 @@ struct GenerateCtx<'a> {
     current_module: Option<String>,
     /// The list of types currently being generated.
     current_ids: Vec<TypeDeclId>,
-    /// The OCaml ident for the item currently being generated; this matters for
-    /// TranslatedCrate, where we treat IndexMap differently.
-    current_item: Option<String>,
 }
 
 impl<'a> GenerateCtx<'a> {
@@ -69,7 +66,6 @@ impl<'a> GenerateCtx<'a> {
             ambiguous_types: Default::default(),
             current_module: None,
             current_ids: vec![],
-            current_item: None,
         };
 
         ctx.ambiguous_types = ambiguous_types
@@ -206,6 +202,7 @@ fn generate_ml(
     {
         let mut all_types: HashSet<_> = ctx.children_of("TranslatedCrate");
         all_types.insert(ctx.id_from_name("indexmap::map::IndexMap")); // Add this one foreign type
+        all_types.remove(&ctx.id_from_name("charon_lib::ids::index_map::IndexMap"));
         let all_llbc_types: HashSet<_> =
             ctx.children_of_many(&["charon_lib::ast::llbc_ast::Block"]);
         let all_ullbc_types: HashSet<_> = ctx.children_of_many(&[

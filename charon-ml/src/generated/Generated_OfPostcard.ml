@@ -1989,20 +1989,6 @@ and index_map_of_postcard :
        (key_value_pair_of_postcard arg0_of_postcard arg1_of_postcard)
        ctx st)
 
-and indexed_map_of_postcard :
-    'a0 'a1.
-    (of_postcard_ctx -> postcard_state -> ('a0, string) result) ->
-    (of_postcard_ctx -> postcard_state -> ('a1, string) result) ->
-    of_postcard_ctx ->
-    postcard_state ->
-    ('a1 list, string) result =
- fun arg0_of_postcard arg1_of_postcard ctx st ->
-  combine_error_msgs st __FUNCTION__
-    (let* list =
-       list_of_postcard (option_of_postcard arg1_of_postcard) ctx st
-     in
-     Ok (List.filter_map (fun x -> x) list))
-
 and inline_attr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (inline_attr, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2379,24 +2365,39 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          int_of_postcard ctx st
      in
      let* type_decls =
-       opt_indexed_map_of_postcard type_decl_id_of_postcard
-         type_decl_of_postcard ctx st
+       (fun ctx st ->
+         Result.map TypeDeclId.map_of_indexed_list
+           (opt_indexed_map_of_postcard type_decl_id_of_postcard
+              type_decl_of_postcard ctx st))
+         ctx st
      in
      let* fun_decls =
-       opt_indexed_map_of_postcard fun_decl_id_of_postcard fun_decl_of_postcard
+       (fun ctx st ->
+         Result.map FunDeclId.map_of_indexed_list
+           (opt_indexed_map_of_postcard fun_decl_id_of_postcard
+              fun_decl_of_postcard ctx st))
          ctx st
      in
      let* global_decls =
-       opt_indexed_map_of_postcard global_decl_id_of_postcard
-         global_decl_of_postcard ctx st
+       (fun ctx st ->
+         Result.map GlobalDeclId.map_of_indexed_list
+           (opt_indexed_map_of_postcard global_decl_id_of_postcard
+              global_decl_of_postcard ctx st))
+         ctx st
      in
      let* trait_decls =
-       opt_indexed_map_of_postcard trait_decl_id_of_postcard
-         trait_decl_of_postcard ctx st
+       (fun ctx st ->
+         Result.map TraitDeclId.map_of_indexed_list
+           (opt_indexed_map_of_postcard trait_decl_id_of_postcard
+              trait_decl_of_postcard ctx st))
+         ctx st
      in
      let* trait_impls =
-       opt_indexed_map_of_postcard trait_impl_id_of_postcard
-         trait_impl_of_postcard ctx st
+       (fun ctx st ->
+         Result.map TraitImplId.map_of_indexed_list
+           (opt_indexed_map_of_postcard trait_impl_id_of_postcard
+              trait_impl_of_postcard ctx st))
+         ctx st
      in
      let* ordered_decls =
        option_of_postcard

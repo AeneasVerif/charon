@@ -140,6 +140,7 @@ impl<'a> GenerateCtx<'a> {
                 for ty in &tref.generics.types {
                     expr.push(self.type_to_ocaml_postcard_call(ty))
                 }
+                let mut wrap_in_map = false;
                 match tref.id {
                     TypeId::Adt(id) => {
                         let mut first = if let Some(tdecl) = self.crate_data.type_decls.get(id) {
@@ -163,8 +164,9 @@ impl<'a> GenerateCtx<'a> {
                             expr[2] = "int_of_postcard".to_string();
                         }
 
-                        if first == "indexed_map" && self.use_opt_index_map() {
-                            first = format!("opt_{first}");
+                        if first == "indexed_map" {
+                            wrap_in_map = true;
+                            first = format!("opt_indexed_map");
                         }
 
                         expr.insert(0, first + "_of_postcard");
@@ -180,7 +182,14 @@ impl<'a> GenerateCtx<'a> {
                     }
                     _ => unimplemented!("{ty:?}"),
                 }
-                expr.into_iter().map(|f| format!("({f})")).join(" ")
+                let mut expr = expr.into_iter().map(|f| format!("({f})")).join(" ");
+                if wrap_in_map {
+                    let index_name = self.type_to_rust_name(&tref.generics.types[0]).unwrap();
+                    expr = format!(
+                        "(fun ctx st -> Result.map {index_name}.map_of_indexed_list ({expr} ctx st))"
+                    );
+                }
+                expr
             }
             TyKind::TypeVar(DeBruijnVar::Free(id)) => format!("arg{id}_of_postcard"),
             _ => unimplemented!("{ty:?}"),
@@ -321,11 +330,7 @@ impl<'a> GenerateCtx<'a> {
         let manual_impls = self.names_to_type_id_map(MANUAL_IMPLS);
         let fns = tys
             .iter()
-            .map(|ty| {
-                self.with_item(ty, |ctx| {
-                    ctx.type_decl_to_postcard_deserializer(&manual_impls, ty)
-                })
-            })
+            .map(|ty| self.type_decl_to_postcard_deserializer(&manual_impls, ty))
             .format("\n");
         format!("let rec ___ = ()\n{fns}")
     }

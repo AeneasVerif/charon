@@ -115,6 +115,12 @@ impl<'a> GenerateCtx<'a> {
         }
     }
 
+    /// For a type that refers to an ADT, return the name of that ADT.
+    pub fn type_to_rust_name(&self, ty: &Ty) -> Option<&String> {
+        let index_ty: TypeDeclId = *ty.as_adt()?.id.as_adt()?;
+        Some(self.crate_data.item_name(index_ty)?.short_str())
+    }
+
     /// Converts a type to the appropriate ocaml name. In case of generics, this provides appropriate
     /// parameters.
     pub fn type_to_ocaml_name(&self, ty: &Ty) -> String {
@@ -163,11 +169,9 @@ impl<'a> GenerateCtx<'a> {
                             base_ty = "string".to_string();
                         }
                         if base_ty == "indexed_map" {
-                            base_ty = if self.use_opt_index_map() {
-                                "option list".to_string()
-                            } else {
-                                "list".to_string()
-                            };
+                            let index_name =
+                                self.type_to_rust_name(&tref.generics.types[0]).unwrap();
+                            base_ty = format!("{index_name}.Map.t");
                             args.remove(0); // Remove the index generic param
                         }
                         if base_ty == "index_vec" {
@@ -204,20 +208,5 @@ impl<'a> GenerateCtx<'a> {
 
     pub fn names_to_type_id_set(&self, data: &[&str]) -> HashSet<TypeDeclId> {
         data.iter().map(|name| self.id_from_name(name)).collect()
-    }
-
-    pub fn with_item<F, T>(&mut self, new_item: &TypeDecl, f: F) -> T
-    where
-        F: FnOnce(&mut Self) -> T,
-    {
-        let (name, _) = self.type_to_ocaml_ident_raw(new_item);
-        let old_name = self.current_item.replace(name);
-        let res = f(self);
-        self.current_item = old_name;
-        res
-    }
-
-    pub fn use_opt_index_map(&self) -> bool {
-        self.current_item == Some("translated_crate".to_string())
     }
 }

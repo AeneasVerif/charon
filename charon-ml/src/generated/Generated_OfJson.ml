@@ -2326,21 +2326,6 @@ and index_map_of_json :
         list_of_json (key_value_pair_of_json arg0_of_json arg1_of_json) ctx json
     | _ -> Error "")
 
-and indexed_map_of_json :
-    'a0 'a1.
-    (of_json_ctx -> json -> ('a0, string) result) ->
-    (of_json_ctx -> json -> ('a1, string) result) ->
-    of_json_ctx ->
-    json ->
-    ('a1 list, string) result =
- fun arg0_of_json arg1_of_json ctx js ->
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | json ->
-        let* list = list_of_json (option_of_json arg1_of_json) ctx json in
-        Ok (List.filter_map (fun x -> x) list)
-    | _ -> Error "")
-
 and inline_attr_of_json (ctx : of_json_ctx) (js : json) :
     (inline_attr, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2841,24 +2826,39 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
             short_names
         in
         let* type_decls =
-          opt_indexed_map_of_json type_decl_id_of_json type_decl_of_json ctx
-            type_decls
+          (fun ctx json ->
+            Result.map TypeDeclId.map_of_indexed_list
+              (opt_indexed_map_of_json type_decl_id_of_json type_decl_of_json
+                 ctx json))
+            ctx type_decls
         in
         let* fun_decls =
-          opt_indexed_map_of_json fun_decl_id_of_json fun_decl_of_json ctx
-            fun_decls
+          (fun ctx json ->
+            Result.map FunDeclId.map_of_indexed_list
+              (opt_indexed_map_of_json fun_decl_id_of_json fun_decl_of_json ctx
+                 json))
+            ctx fun_decls
         in
         let* global_decls =
-          opt_indexed_map_of_json global_decl_id_of_json global_decl_of_json ctx
-            global_decls
+          (fun ctx json ->
+            Result.map GlobalDeclId.map_of_indexed_list
+              (opt_indexed_map_of_json global_decl_id_of_json
+                 global_decl_of_json ctx json))
+            ctx global_decls
         in
         let* trait_decls =
-          opt_indexed_map_of_json trait_decl_id_of_json trait_decl_of_json ctx
-            trait_decls
+          (fun ctx json ->
+            Result.map TraitDeclId.map_of_indexed_list
+              (opt_indexed_map_of_json trait_decl_id_of_json trait_decl_of_json
+                 ctx json))
+            ctx trait_decls
         in
         let* trait_impls =
-          opt_indexed_map_of_json trait_impl_id_of_json trait_impl_of_json ctx
-            trait_impls
+          (fun ctx json ->
+            Result.map TraitImplId.map_of_indexed_list
+              (opt_indexed_map_of_json trait_impl_id_of_json trait_impl_of_json
+                 ctx json))
+            ctx trait_impls
         in
         let* ordered_decls =
           option_of_json
