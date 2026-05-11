@@ -39,6 +39,17 @@ impl<'tcx> TranslateCtx<'tcx> {
             rustc_span::FileName::Real(name) => {
                 match name.local_path() {
                     Some(path) => {
+                        // Normalize path separators: cross-compiling to Windows uses `\` as path
+                        // separators.
+                        let path: PathBuf = {
+                            let mut normalized = PathBuf::new();
+                            for comp in path.components() {
+                                for segment in comp.as_os_str().to_string_lossy().split("\\") {
+                                    normalized.push(segment);
+                                }
+                            }
+                            normalized
+                        };
                         let path = if let Ok(path) = path.strip_prefix(&self.sysroot) {
                             // The path to files in the standard library may be full paths to somewhere
                             // in the sysroot. This may depend on how the toolchain is installed
@@ -70,7 +81,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                                 rewritten_path.extend(path);
                                 rewritten_path
                             } else {
-                                path.into()
+                                path
                             }
                         };
                         FileName::Local(path)

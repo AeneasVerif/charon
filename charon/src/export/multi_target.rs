@@ -383,6 +383,7 @@ impl<'a> ItemDeduplicator<'a> {
             let prev_len = groups_map.len();
             let remap: HashMap<ItemId, ItemId> = groups_map
                 .values()
+                .filter(|ids| ids.len() == num_targets)
                 .cloned()
                 .map(|ids| TargetGroup { ids })
                 .flat_map(|g| g.into_remap_entries())
@@ -408,9 +409,8 @@ impl<'a> ItemDeduplicator<'a> {
             }
         }
         let groups: IndexVec<TargetGroupId, TargetGroup> = groups_map
-            .values()
-            .filter(|&per_target| per_target.len() == num_targets)
-            .cloned()
+            .into_values()
+            .filter(|per_target| per_target.len() == num_targets)
             .map(|ids| TargetGroup { ids })
             .collect();
         groups
@@ -552,11 +552,39 @@ fn normalize_item(
         .name
         .name
         .retain(|elem| !matches!(elem, PathElem::Target(_)));
+
+    strip_unstable_attributes(&mut item);
+    // Don't compare source text: span is enough, and it can have OS-specific line endings.
+    item.as_mut().item_meta().source_text = None;
     if let ItemByVal::Type(ty_decl) = &mut item {
         // Layouts are allowed to differ per-target.
         ty_decl.layout.clear();
     }
     item
+}
+
+/// Strip attributes such as `rustc_diagnostic_item` whose arguments can vary across targets in a
+/// way that doesn't matter to us.
+fn strip_unstable_attributes(item: &mut ItemByVal) {
+    fn strip_in_vec(attr_info: &mut AttrInfo) {
+        attr_info.attributes.retain(
+            |attr| !matches!(attr, Attribute::Unknown(attr) if attr.path.starts_with("rustc_")),
+        );
+    }
+
+    strip_in_vec(&mut item.as_mut().item_meta().attr_info);
+
+    if let ItemByVal::TraitDecl(d) = item {
+        for method in &mut d.methods {
+            strip_in_vec(&mut method.skip_binder.attr_info);
+        }
+        for cst in &mut d.consts {
+            strip_in_vec(&mut cst.attr_info);
+        }
+        for ty in &mut d.types {
+            strip_in_vec(&mut ty.skip_binder.attr_info);
+        }
+    }
 }
 
 /// Visitor that remaps references to the given items.
