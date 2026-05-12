@@ -74,6 +74,9 @@ let big_int_of_json _ (js : json) : (big_int, string) result =
     | `String is -> Ok (Z.of_string is)
     | _ -> Error "")
 
+let char_value_of_json : of_json_ctx -> json -> (char_value, string) result =
+  char_of_json
+
 let opt_indexed_map_of_json :
     'a0 'a1.
     (of_json_ctx -> json -> ('a0, string) result) ->
@@ -804,7 +807,7 @@ and literal_of_json (ctx : of_json_ctx) (js : json) : (literal, string) result =
         let* bool_ = bool_of_json ctx bool_ in
         Ok (VBool bool_)
     | `Assoc [ ("Char", char_) ] ->
-        let* char_ = char_of_json ctx char_ in
+        let* char_ = char_value_of_json ctx char_ in
         Ok (VChar char_)
     | `Assoc [ ("ByteStr", byte_str) ] ->
         let* byte_str = list_of_json int_of_json ctx byte_str in
