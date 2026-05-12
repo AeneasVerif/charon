@@ -1,0 +1,9 @@
+error: Could not compute the value of (Self::Item::[@TraitClause1])::Size on a GAT: lifting associated types can fail in the presence of GATs. To fix this, `--exclude` this trait.
+ --> tests/ui/associated_types/issue-1068-gat-with-assoc-ty.rs:7:1
+  |
+7 | / pub trait Bar {
+8 | |     type Item<T>: Foo;
+9 | | }
+  | |_^
+
+ERROR Charon failed to translate this code (1 errors)
