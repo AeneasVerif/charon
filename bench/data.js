@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1778600973920,
+  "lastUpdate": 1778604756249,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -1362,6 +1362,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 370.7,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.9,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "791a9dd75fea91b443774d9c9cc7547cc2a30460",
+          "message": "Merge pull request #1147 from Nadrieril/fix-1068\n\nImprove error message when trying to lift a type across a GAT",
+          "timestamp": "2026-05-12T16:48:07Z",
+          "tree_id": "667dd27238d664376af5ed788c4a86a78c3ce681",
+          "url": "https://github.com/AeneasVerif/charon/commit/791a9dd75fea91b443774d9c9cc7547cc2a30460"
+        },
+        "date": 1778604755442,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 113580068500,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 14.23,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 387.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.4,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 450528517233,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 47.65,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 370.6,
             "unit": "max-rss(MB)"
           },
           {
