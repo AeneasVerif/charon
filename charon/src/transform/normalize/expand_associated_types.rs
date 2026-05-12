@@ -1300,7 +1300,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
     }
 
     // Normalize associated types.
-    fn enter_ty_kind(&mut self, kind: &mut TyKind) {
+    fn visit_ty_kind(&mut self, kind: &mut TyKind) -> ControlFlow<Self::Break> {
         if let TyKind::TraitType(tref, type_id) = kind {
             let path = TraitRefPath::self_ref(tref.trait_id()).with_assoc_type(*type_id);
             if let Some(new_ty) = self.lookup_path_on_trait_ref(&path, tref) {
@@ -1309,10 +1309,12 @@ impl VisitAstMut for UpdateItemBody<'_> {
                     "fixing up substituted type {}",
                     new_ty.with_ctx(&self.ctx.into_fmt())
                 );
-                // Fix the newly-substituted type.
-                let _ = self.visit(kind);
+                // Fix the newly-substituted type if it is a `TraitType` again. Return early to
+                // avoid visiting children twice.
+                return self.visit(kind);
             }
         }
+        self.visit_inner(kind)
     }
 
     // Track span for more precise error messages.

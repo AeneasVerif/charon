@@ -1,5 +1,4 @@
 //@ charon-args=--lift-associated-types=*
-//@ known-failure
 //! Regression test: associated type lifting caused double-processing of type args.
 pub struct Witness1;
 pub struct Witness2;
