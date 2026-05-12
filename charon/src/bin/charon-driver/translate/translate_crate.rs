@@ -351,7 +351,6 @@ impl<'tcx> TranslateCtx<'tcx> {
             .translated
             .assoc_item_names
             .get_or_extend_and_insert(trait_id, Default::default);
-        let mut method_statuses: IndexMap<TraitMethodId, MethodStatus> = IndexMap::new();
         for item in items {
             let name = TraitItemName(
                 item.name
@@ -359,31 +358,21 @@ impl<'tcx> TranslateCtx<'tcx> {
                     .map(|n| n.to_string().into())
                     .unwrap_or_default(),
             );
-            let id = match item.kind {
-                hax::AssocKind::Type { .. } => {
-                    let id = names.types.push(name);
-                    AssocItemId::Type(id)
-                }
-                hax::AssocKind::Fn { .. } => {
-                    let id = names.methods.push(name);
-                    method_statuses.set_slot_extend(id, MethodStatus::default());
-                    AssocItemId::Method(id)
-                }
-                hax::AssocKind::Const { .. } => {
-                    let id = names.consts.push(name);
-                    AssocItemId::Const(id)
-                }
+            let id: AssocItemId = match item.kind {
+                hax::AssocKind::Type { .. } => names.types.push(name).into(),
+                hax::AssocKind::Fn { .. } => names.methods.push(name).into(),
+                hax::AssocKind::Const { .. } => names.consts.push(name).into(),
             };
             self.assoc_item_id_map.insert(item.def_id.clone(), id);
         }
         // Add a virtual method to the `Destruct` trait.
         if trait_def.lang_item == Some(sym::destruct) {
             let method_name = TraitItemName("drop_in_place".into());
-            let id = names.methods.push(method_name);
-            method_statuses.set_slot_extend(id, MethodStatus::default());
+            names.methods.push(method_name);
         }
-        self.method_status
-            .get_or_extend_and_insert(trait_id, || method_statuses);
+        self.method_status.get_or_extend_and_insert(trait_id, || {
+            names.methods.map_ref(|_| MethodStatus::default())
+        });
         Ok(())
     }
 
