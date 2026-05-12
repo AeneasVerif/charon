@@ -120,7 +120,7 @@ pub fn get_mod_children<'tcx>(
         None => tcx
             .module_children(def_id)
             .iter()
-            .map(|child| (Some(child.ident), child.res.def_id()))
+            .filter_map(|child| Some((Some(child.ident), child.res.opt_def_id()?)))
             .collect(),
     }
 }
