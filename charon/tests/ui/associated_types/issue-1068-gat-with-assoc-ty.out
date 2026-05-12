@@ -1,6 +1,4 @@
-error: Could not compute the value of Self::Size (on (Self::Item::[@TraitClause1])) needed to update item reference test_crate::Foo<Self::Item>.
-       Constraints in scope:
-       
+error: Could not compute the value of (Self::Item::[@TraitClause1])::Size on a GAT: lifting associated types can fail in the presence of GATs. To fix this, `--exclude` this trait.
  --> tests/ui/associated_types/issue-1068-gat-with-assoc-ty.rs:7:1
   |
 7 | / pub trait Bar {

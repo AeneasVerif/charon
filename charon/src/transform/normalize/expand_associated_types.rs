@@ -321,6 +321,15 @@ mod trait_ref_path {
             })
         }
 
+        /// Apply `self` onto a real `TraitRef`, going up through the `tref`'s parent
+        /// clauses. Returns `None` if the crate did not contain all the `TraitDecl`s we need to do
+        /// that.
+        pub fn on_real_tref(&self, krate: &TranslatedCrate, tref: TraitRef) -> Option<Ty> {
+            let tref = self.tref.on_real_tref(krate, tref)?;
+            let ty = TyKind::TraitType(tref, self.type_id).into_ty();
+            Some(ty)
+        }
+
         /// Construct a name that can be used to name a new type parameter/associated type
         /// corresponding to this path.
         pub fn to_name(&self, krate: &TranslatedCrate) -> String {
@@ -859,11 +868,8 @@ impl<'a> ComputeItemModifications<'a> {
                     && let Some(trait_mods) = self.trait_modifications[pred.id].as_processed()
                 {
                     for path in trait_mods.required_extra_params() {
-                        if let Some(tref) =
-                            path.tref.on_real_tref(&self.ctx.translated, tref.clone())
-                        {
+                        if let Some(ty) = path.on_real_tref(&self.ctx.translated, tref.clone()) {
                             // This will get normalized further by `lookup_type_replacement`.
-                            let ty = TyKind::TraitType(tref, path.type_id).into_ty();
                             let path = path.on_tref(&clause_path);
                             set.insert_path(&path, ty);
                         }
@@ -1020,32 +1026,49 @@ impl UpdateItemBody<'_> {
             let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, base_tref) {
                 ty.clone()
             } else {
-                let path = path.fmt_with_krate(&self.ctx.translated);
+                let fmt_ctx = &self.ctx.into_fmt();
+                let path_fmt = path.fmt_with_krate(&self.ctx.translated);
                 if self.is_type_alias {
                     register_error!(
                         self.ctx,
                         self.span,
-                        "Could not compute the value of {path}: type aliases are allowed to \
+                        "Could not compute the value of {path_fmt}: type aliases are allowed to \
                         make use of unproved trait facts. To fix this, add the necessary \
                         trait bound to the type alias, ignoring the `type_alias_bounds` warning."
                     );
                 } else {
-                    let fmt_ctx = &self.ctx.into_fmt();
-                    let item_name = target.item_name(&self.ctx.translated, fmt_ctx);
-                    let base_tref = base_tref.with_ctx(fmt_ctx);
-                    let args = args.with_ctx(fmt_ctx);
-                    register_error!(
-                        self.ctx,
-                        self.span,
-                        "Could not compute the value of {path} (on {base_tref}) needed to update \
+                    let path_fmt = path
+                        .on_real_tref(&self.ctx.translated, base_tref.clone())
+                        .map(|ty| ty.to_string_with_ctx(fmt_ctx))
+                        .unwrap_or_else(|| path_fmt.to_string());
+                    if self_path
+                        .as_ref()
+                        .is_some_and(|tref| tref.kind.is_item_clause())
+                    {
+                        register_error!(
+                            self.ctx,
+                            self.span,
+                            "Could not compute the value of {path_fmt} on a GAT: \
+                        lifting associated types can fail in the presence of GATs. \
+                        To fix this, `--exclude` this trait."
+                        );
+                    } else {
+                        let item_name = target.item_name(&self.ctx.translated, fmt_ctx);
+                        let base_tref = base_tref.with_ctx(fmt_ctx);
+                        let args = args.with_ctx(fmt_ctx);
+                        register_error!(
+                            self.ctx,
+                            self.span,
+                            "Could not compute the value of {path_fmt} (on {base_tref}) needed to update \
                         item reference {item_name}{args}.\
                         \nConstraints in scope:\n{}",
-                        self.type_replacements
-                            .iter()
-                            .flat_map(|x| x.iter())
-                            .map(|(path, ty)| format!("  - {path} = {}", ty.with_ctx(fmt_ctx)))
-                            .join("\n"),
-                    );
+                            self.type_replacements
+                                .iter()
+                                .flat_map(|x| x.iter())
+                                .map(|(path, ty)| format!("  - {path} = {}", ty.with_ctx(fmt_ctx)))
+                                .join("\n"),
+                        );
+                    }
                 }
                 TyKind::Error(format!("Can't compute {path}")).into_ty()
             };
