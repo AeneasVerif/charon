@@ -1020,8 +1020,8 @@ impl UpdateItemBody<'_> {
             let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, base_tref) {
                 ty.clone()
             } else {
+                let path = path.fmt_with_krate(&self.ctx.translated);
                 if self.is_type_alias {
-                    let path = path.fmt_with_krate(&self.ctx.translated);
                     register_error!(
                         self.ctx,
                         self.span,
@@ -1201,6 +1201,20 @@ impl VisitAstMut for UpdateItemBody<'_> {
         for (clause_id, clause) in tdecl.implied_clauses.iter_mut_enumerated() {
             let self_path = TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id);
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
+        }
+        for (type_id, assoc_ty) in tdecl.types.iter_mut_enumerated() {
+            if !assoc_ty.binds_anything() {
+                continue;
+            }
+            self.under_binder(Default::default(), |this| {
+                for (clause_id, clause) in
+                    assoc_ty.skip_binder.implied_clauses.iter_mut_enumerated()
+                {
+                    let self_path =
+                        TraitRefKind::ItemClause(Box::new(self_tref.clone()), type_id, clause_id);
+                    this.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
+                }
+            });
         }
     }
     fn enter_generic_params(&mut self, params: &mut GenericParams) {

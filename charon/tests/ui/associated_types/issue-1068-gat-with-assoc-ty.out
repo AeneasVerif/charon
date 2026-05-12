@@ -1,24 +1,11 @@
-error: Type error after transformations:
-       Mismatched type generics:
-       target: Foo
-       expected: [Self, Self_Size]
-            got: [Self::Item]
-       Visitor stack:
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitParam
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitParam>
-         charon_lib::ast::gast::TraitAssocTy
-         charon_lib::ast::types::Binder<charon_lib::ast::gast::TraitAssocTy>
-         charon_lib::ids::index_map::IndexMap<charon_lib::ast::gast::AssocTypeId, charon_lib::ast::types::Binder<charon_lib::ast::gast::TraitAssocTy>>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: <T, [@TraitClause0]: @TraitDecl3<missing(@TypeBound(1, 0))>>
-         2: <Self>
- --> tests/ui/associated_types/issue-1068-gat-with-assoc-ty.rs:8:19
+error: Could not compute the value of Self::Size (on (Self::Item::[@TraitClause1])) needed to update item reference test_crate::Foo<Self::Item>.
+       Constraints in scope:
+       
+ --> tests/ui/associated_types/issue-1068-gat-with-assoc-ty.rs:7:1
   |
-8 |     type Item<T>: Foo;
-  |                   ^^^
+7 | / pub trait Bar {
+8 | |     type Item<T>: Foo;
+9 | | }
+  | |_^
 
 ERROR Charon failed to translate this code (1 errors)
