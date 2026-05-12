@@ -45,6 +45,7 @@ and 'a trait_decl_id_map = 'a TraitDeclId.Map.t
 and 'a trait_impl_id_map = 'a TraitImplId.Map.t
 and 'a trait_method_id_map = 'a TraitMethodId.Map.t
 and 'a assoc_type_id_map = 'a AssocTypeId.Map.t [@@deriving show, eq, ord]
+and 'a assoc_const_id_map = 'a AssocConstId.Map.t [@@deriving show, eq, ord]
 
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
@@ -151,6 +152,10 @@ class ['self] iter_ty_base =
     method visit_assoc_type_id_map :
         'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_type_id_map -> unit =
       AssocTypeId.Map.visit_iter
+
+    method visit_assoc_const_id_map :
+        'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_const_id_map -> unit =
+      AssocConstId.Map.visit_iter
   end
 
 class ['self] map_ty_base =
@@ -165,9 +170,18 @@ class ['self] map_ty_base =
         'a assoc_type_id_map ->
         'b assoc_type_id_map =
       AssocTypeId.Map.visit_map
+
+    method visit_assoc_const_id_map :
+        'a 'b.
+        ('env -> 'a -> 'b) ->
+        'env ->
+        'a assoc_const_id_map ->
+        'b assoc_const_id_map =
+      AssocConstId.Map.visit_map
   end
 
-type assoc_type_id = (AssocTypeId.id[@visitors.opaque])
+type assoc_const_id = (AssocConstId.id[@visitors.opaque])
+and assoc_type_id = (AssocTypeId.id[@visitors.opaque])
 
 (** A value of type [T] bound by generic parameters. Used in any context where
     we're adding generic parameters that aren't on the top-level item, e.g.
@@ -361,7 +375,7 @@ and constant_expr_kind =
               let l = V::<N, T>::LEN; // We need to provided a substitution here
             }
           ]} *)
-  | CTraitConst of trait_ref * trait_item_name
+  | CTraitConst of trait_ref * assoc_const_id
       (** A trait associated constant.
 
           Ex.:
@@ -553,7 +567,6 @@ and trait_decl_ref = { id : trait_decl_id; generics : generic_args }
 (** A reference to a tait impl, using the provided arguments. *)
 and trait_impl_ref = { id : trait_impl_id; generics : generic_args }
 
-and trait_item_name = string
 and trait_method_id = (TraitMethodId.id[@visitors.opaque])
 
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
@@ -1124,6 +1137,8 @@ and tag_encoding =
 
           Fields:
           - [untagged_variant] *)
+
+and trait_item_name = string
 
 (** A type declaration.
 

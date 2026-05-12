@@ -353,7 +353,7 @@ pub struct TraitDecl {
     /// trait declarations are parent clauses.
     pub implied_clauses: IndexVec<TraitClauseId, TraitParam>,
     /// The associated constants declared in the trait.
-    pub consts: Vec<TraitAssocConst>,
+    pub consts: IndexMap<AssocConstId, TraitAssocConst>,
     /// The associated types declared in the trait. The binder binds the generic parameters of the
     /// type if it is a GAT (Generic Associated Type). For a plain associated type the binder binds
     /// nothing.
@@ -431,7 +431,7 @@ pub struct TraitImpl {
     /// The trait references for the parent clauses (see [TraitDecl]).
     pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
     /// The implemented associated constants.
-    pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
+    pub consts: IndexMap<AssocConstId, GlobalDeclRef>,
     /// The implemented associated types.
     pub types: IndexMap<AssocTypeId, Binder<TraitAssocTyImpl>>,
     /// The implemented methods

@@ -322,9 +322,13 @@ and constant_expr_to_string (env : fmt_env) (cv : constant_expr) : string =
   match cv.kind with
   | CLiteral lit -> literal_to_string lit
   | CVar var -> const_generic_db_var_to_string env var
-  | CTraitConst (trait_ref, const_name) ->
+  | CTraitConst (trait_ref, const_id) ->
+      let name =
+        GAstUtils.format_assoc_const_name env.crate
+          trait_ref.trait_decl_ref.binder_value.id const_id
+      in
       let trait_ref = trait_ref_to_string env trait_ref in
-      trait_ref ^ const_name
+      trait_ref ^ name
   | CVTableRef trait_ref ->
       let trait_ref = trait_ref_to_string env trait_ref in
       "&vtable_of(" ^ trait_ref ^ ")"
@@ -1069,7 +1073,7 @@ let trait_decl_to_string (env : fmt_env) (indent : string)
         (fun c ->
           let ty = ty_to_string c.ty in
           indent1 ^ "const " ^ c.name ^ " : " ^ ty ^ "\n")
-        def.consts
+        (AssocConstId.Map.values def.consts)
     in
     let types =
       List.map
@@ -1120,6 +1124,7 @@ let trait_impl_to_string (env : fmt_env) (indent : string)
   let indent1 = indent ^ indent_incr in
 
   let items =
+    let trait_id = def.impl_trait.id in
     (* The parent clauses are given by the trait refs of the implemented trait *)
     let parent_clauses =
       Collections.List.mapi
@@ -1131,13 +1136,15 @@ let trait_impl_to_string (env : fmt_env) (indent : string)
     in
     let consts =
       List.map
-        (fun (name, gref) ->
+        (fun (const_id, gref) ->
+          let name =
+            GAstUtils.format_assoc_const_name env.crate trait_id const_id
+          in
           let gref = global_decl_ref_to_string env gref in
           indent1 ^ "const " ^ name ^ " = " ^ gref ^ "\n")
-        def.consts
+        (AssocConstId.Map.to_list def.consts)
     in
     let types =
-      let trait_id = def.impl_trait.id in
       List.map
         (fun (type_id, bound_ty) ->
           let name =

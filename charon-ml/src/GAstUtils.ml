@@ -113,6 +113,18 @@ let format_assoc_type_name (crate : crate) (trait_id : trait_decl_id)
   | Some name -> name
   | None -> AssocTypeId.to_string type_id
 
+(** Resolve a [assoc_const_id] to a type name. *)
+let format_assoc_const_name (crate : crate) (trait_id : trait_decl_id)
+    (const_id : assoc_const_id) : trait_item_name =
+  let name =
+    match TraitDeclId.Map.find_opt trait_id crate.assoc_item_names with
+    | Some names -> AssocConstId.nth_opt names.consts const_id
+    | None -> None
+  in
+  match name with
+  | Some name -> name
+  | None -> AssocConstId.to_string const_id
+
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
   match g with
   | RecGroup ids -> ids

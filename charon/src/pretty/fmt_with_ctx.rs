@@ -1340,8 +1340,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             ConstantExprKind::Global(global_ref) => {
                 write!(f, "{}", global_ref.with_ctx(ctx))
             }
-            ConstantExprKind::TraitConst(trait_ref, name) => {
-                write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
+            ConstantExprKind::TraitConst(trait_ref, const_id) => {
+                write!(f, "{}::", trait_ref.with_ctx(ctx),)?;
+                ctx.format_assoc_const_name(f, trait_ref.trait_id(), *const_id)?;
+                Ok(())
             }
             ConstantExprKind::VTableRef(trait_ref) => {
                 write!(f, "&vtable_of({})", trait_ref.with_ctx(ctx),)
@@ -2028,8 +2030,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                 let i = TraitClauseId::new(i);
                 writeln!(f, "{TAB_INCR}parent_clause{i} = {}", c.with_ctx(ctx))?;
             }
-            for (name, global) in &self.consts {
-                writeln!(f, "{TAB_INCR}const {name} = {}", global.with_ctx(ctx))?;
+            for (const_id, global) in self.consts.iter_enumerated() {
+                write!(f, "{TAB_INCR}const ")?;
+                ctx.format_assoc_const_name(f, trait_id, const_id)?;
+                writeln!(f, " = {}", global.with_ctx(ctx))?;
             }
             for (type_id, assoc_ty) in self.types.iter_enumerated() {
                 // TODO: implied trait refs

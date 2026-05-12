@@ -459,6 +459,16 @@ impl<'tcx> TranslateCtx<'tcx> {
         Ok(*item_id.as_type().unwrap())
     }
 
+    /// Register a trait associated const and return its `AssocTypeId`. This id is unique per trait.
+    pub fn register_assoc_const_id(
+        &mut self,
+        trait_id: TraitDeclId,
+        def_id: &hax::DefId,
+    ) -> Result<AssocConstId, Error> {
+        let item_id = self.translate_assoc_item_id(trait_id, def_id)?;
+        Ok(*item_id.as_const().unwrap())
+    }
+
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
         let triple = self.get_target_triple();

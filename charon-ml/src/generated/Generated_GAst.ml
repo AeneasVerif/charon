@@ -297,7 +297,7 @@ and trait_decl = {
           ]}
           TODO: actually, as of today, we consider that all trait clauses of
           trait declarations are parent clauses. *)
-  consts : trait_assoc_const list;
+  consts : trait_assoc_const assoc_const_id_map;
       (** The associated constants declared in the trait. *)
   types : trait_assoc_ty binder assoc_type_id_map;
       (** The associated types declared in the trait. The binder binds the
@@ -382,7 +382,7 @@ and trait_impl = {
   generics : generic_params;
   implied_trait_refs : trait_ref list;
       (** The trait references for the parent clauses (see [TraitDecl]). *)
-  consts : (trait_item_name * global_decl_ref) list;
+  consts : global_decl_ref assoc_const_id_map;
       (** The implemented associated constants. *)
   types : trait_assoc_ty_impl binder assoc_type_id_map;
       (** The implemented associated types. *)

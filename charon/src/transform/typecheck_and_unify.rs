@@ -550,12 +550,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
                 "The associated types supplied by the trait impl don't match the trait decl.",
             )
         }
-        let consts_match = timpl.consts.len() == tdecl.consts.len()
-            && tdecl
-                .consts
-                .iter()
-                .zip(timpl.consts.iter())
-                .all(|(dconst, (iname, _))| &dconst.name == iname);
+        let consts_match = timpl.consts.elem_count() == tdecl.consts.elem_count();
         if !consts_match {
             self.error(
                 "The associated consts supplied by the trait impl don't match the trait decl.",

@@ -692,7 +692,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Translate the associated items
         self.register_assoc_items(def.def_id(), trait_decl_id)?;
-        let mut consts = Vec::new();
+        let mut consts: IndexMap<AssocConstId, _> = IndexMap::new();
         let mut types: IndexMap<AssocTypeId, _> = IndexMap::new();
         let mut methods: IndexMap<TraitMethodId, _> = IndexMap::new();
 
@@ -714,8 +714,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         for hax_item in items {
             let item_def_id = &hax_item.def_id;
-            let item_name = self.translate_trait_item_name(item_def_id)?;
             let item_span = self.def_span(item_def_id);
+            let assoc_item_id = self.translate_assoc_item_id(trait_decl_id, item_def_id)?;
+            let item_name = self
+                .translated
+                .assoc_item_name(trait_decl_id, assoc_item_id);
 
             // In --mono mode, we keep only non-polymorphic items; in not-mono mode, we use the
             // polymorphic item as usual.
@@ -731,9 +734,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { sig, .. } => {
+                    let trait_method_id = *assoc_item_id.as_method().unwrap();
                     let fun_id = self.register_no_enqueue(item_span, &item_src);
-                    let trait_method_id =
-                        self.register_trait_method_id_no_enqueue(trait_decl_id, item_def_id)?;
                     // Register this method.
                     self.register_method_impl(trait_decl_id, trait_method_id, fun_id);
                     // By default we only enqueue required methods (those that don't have a default
@@ -815,6 +817,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     methods.set_slot_extend(trait_method_id, method);
                 }
                 hax::FullDefKind::AssocConst { ty, .. } => {
+                    let assoc_const_id = *assoc_item_id.as_const().unwrap();
                     // The const is defined in a context that has an extra `Self: Trait` clause, so
                     // we translate it bound first.
                     let bound_assoc_const = self.translate_binder_for_def(
@@ -856,14 +859,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         generics.trait_refs.push(self_trait_ref.clone());
                         generics
                     });
-                    consts.push(assoc_const);
+                    consts.set_slot_extend(assoc_const_id, assoc_const);
                 }
                 hax::FullDefKind::AssocTy {
                     implied_predicates,
                     value: default,
                     ..
                 } => {
-                    let assoc_type_id = self.register_assoc_type_id(trait_decl_id, item_def_id)?;
+                    let assoc_type_id = *assoc_item_id.as_type().unwrap();
                     let binder_kind = BinderKind::TraitType(trait_decl_id, assoc_type_id);
                     let assoc_ty =
                         self.translate_binder_for_def(item_span, binder_kind, &item_def, |ctx| {
@@ -999,7 +1002,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
 
         // Explore the associated items
-        let mut consts = Vec::new();
+        let mut consts: IndexMap<AssocConstId, _> = IndexMap::new();
         let mut types: IndexMap<AssocTypeId, _> = IndexMap::new();
         let mut methods: IndexMap<TraitMethodId, _> = IndexMap::new();
 
@@ -1020,11 +1023,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         for impl_item in impl_items {
             use crate::hax::ImplAssocItemValue::*;
-            let name = self
-                .t_ctx
-                .translate_trait_item_name(&impl_item.decl_def_id)?;
             let item_def_id = impl_item.def_id();
             let item_span = self.def_span(item_def_id);
+            let assoc_item_id = self.translate_assoc_item_id(trait_id, item_def_id)?;
+            let item_name = self.translated.assoc_item_name(trait_id, assoc_item_id);
             //
             // In not-mono mode, we use the polymorphic item as usual.
             let item_def = self.poly_hax_def(item_def_id)?;
@@ -1038,9 +1040,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let trait_method_id =
-                        self.register_trait_method_id_no_enqueue(trait_id, &impl_item.decl_def_id)?;
-
+                    let trait_method_id = *assoc_item_id.as_method().unwrap();
                     let fun_id: FunDeclId = {
                         let method_src = match &impl_item.value {
                             Provided { .. } => item_src,
@@ -1048,7 +1048,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             // item for `DefaultedMethod` is the trait impl.
                             DefaultedFn { .. } => TransItemSource::from_item(
                                 def.this(),
-                                TransItemSourceKind::DefaultedMethod(TraitImplSource::Normal, name),
+                                TransItemSourceKind::DefaultedMethod(
+                                    TraitImplSource::Normal,
+                                    item_name,
+                                ),
                                 self.monomorphize(),
                             ),
                             _ => unreachable!(),
@@ -1119,6 +1122,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     methods.set_slot_extend(trait_method_id, bound_fn_ref);
                 }
                 hax::FullDefKind::AssocConst { .. } => {
+                    let assoc_const_id = *assoc_item_id.as_const().unwrap();
                     let id = self.register_and_enqueue(item_span, item_src);
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
@@ -1135,7 +1139,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         id,
                         generics: Box::new(generics),
                     };
-                    consts.push((name, gref));
+                    consts.set_slot_extend(assoc_const_id, gref);
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {
                     let assoc_type_id =
@@ -1356,7 +1360,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             impl_trait: implemented_trait,
             generics,
             implied_trait_refs,
-            consts: vec![],
+            consts: IndexMap::new(),
             types,
             methods: IndexMap::new(),
             // TODO(dyn): generate vtable instances for builtin traits

@@ -640,7 +640,7 @@ pub enum ConstantExprKind {
     ///   const C : usize = 32; // <-
     /// }
     /// ```
-    TraitConst(TraitRef, TraitItemName),
+    TraitConst(TraitRef, AssocConstId),
     /// A reference to the vtable `static` item for this trait ref. This can be normalized for
     /// cases where we do emit a vtable item. That's not always the case for builtin traits, e.g.
     /// for `MetaSized`.

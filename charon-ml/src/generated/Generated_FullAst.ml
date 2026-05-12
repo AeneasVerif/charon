@@ -16,9 +16,7 @@ open Generated_Expressions
 open Generated_Meta
 open Identifiers
 
-type assoc_const_id = (AssocConstId.id[@visitors.opaque])
-
-and assoc_item_names = {
+type assoc_item_names = {
   types : trait_item_name list;
   methods : trait_item_name list;
   consts : trait_item_name list;

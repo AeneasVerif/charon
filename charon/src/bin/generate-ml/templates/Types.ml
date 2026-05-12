@@ -47,6 +47,7 @@ and 'a trait_decl_id_map = 'a TraitDeclId.Map.t
 and 'a trait_impl_id_map = 'a TraitImplId.Map.t
 and 'a trait_method_id_map = 'a TraitMethodId.Map.t
 and 'a assoc_type_id_map = 'a AssocTypeId.Map.t [@@deriving show, eq, ord]
+and 'a assoc_const_id_map = 'a AssocConstId.Map.t [@@deriving show, eq, ord]
 
 
 (* __REPLACE0__ *)
@@ -58,6 +59,9 @@ class ['self] iter_ty_base =
     method visit_assoc_type_id_map
         : 'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_type_id_map -> unit =
       AssocTypeId.Map.visit_iter
+    method visit_assoc_const_id_map
+        : 'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_const_id_map -> unit =
+      AssocConstId.Map.visit_iter
   end
 
 class ['self] map_ty_base =
@@ -67,6 +71,9 @@ class ['self] map_ty_base =
     method visit_assoc_type_id_map
         : 'a 'b. ('env -> 'a -> 'b) -> 'env -> 'a assoc_type_id_map -> 'b assoc_type_id_map =
       AssocTypeId.Map.visit_map
+    method visit_assoc_const_id_map
+        : 'a 'b. ('env -> 'a -> 'b) -> 'env -> 'a assoc_const_id_map -> 'b assoc_const_id_map =
+      AssocConstId.Map.visit_map
   end
 
 (* __REPLACE1__ *)
