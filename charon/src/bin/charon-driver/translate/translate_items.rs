@@ -162,12 +162,12 @@ impl<'tcx> TranslateCtx<'tcx> {
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            &TransItemSourceKind::DefaultedMethod(impl_kind, name) => {
+            &TransItemSourceKind::DefaultedMethod(impl_kind, _, method_id) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
                 let fun_decl =
-                    bt_ctx.translate_defaulted_method(id, item_meta, &def, impl_kind, name)?;
+                    bt_ctx.translate_defaulted_method(id, item_meta, &def, impl_kind, method_id)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             &TransItemSourceKind::ClosureMethod(kind) => {
@@ -382,23 +382,23 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::AssocItemContainer::TraitImplContainer {
                 impl_,
                 implemented_trait_ref,
-                implemented_trait_item,
                 overrides_default,
+                ..
             } => {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, impl_, TraitImplSource::Normal)?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
-                let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
+                let item_id = self.translate_assoc_item_id(trait_ref.id, def.def_id())?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
                     // If the implementation is getting translated, that means the method is
                     // getting used.
-                    let _ = self
-                        .register_trait_method_id(trait_ref.id, &implemented_trait_item.def_id)?;
+                    let method_id = *item_id.as_method().unwrap();
+                    self.mark_method_as_used(trait_ref.id, method_id);
                 }
                 ItemSource::TraitImpl {
                     impl_ref,
                     trait_ref,
-                    item_name,
+                    item_id,
                     reuses_default: !overrides_default,
                 }
             }
@@ -413,10 +413,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // The trait id should be Some(...): trait markers (that we may eliminate)
                 // don't have associated items.
                 let trait_ref = self.translate_trait_ref(span, trait_ref)?;
-                let item_name = self.t_ctx.translate_trait_item_name(def.def_id())?;
+                let item_id = self.translate_assoc_item_id(trait_ref.id, def.def_id())?;
                 ItemSource::TraitDecl {
                     trait_ref,
-                    item_name,
+                    item_id,
                     has_default: assoc.has_value,
                 }
             }
@@ -904,8 +904,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         if def.lang_item == Some(sym::destruct) {
             // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
-            let (method_id, method_name, method_binder) =
+            let (method_id, method_binder) =
                 self.prepare_drop_in_place_method(def, span, def.def_id(), trait_decl_id, None)?;
+            let method_name = self.translated.assoc_item_name(trait_decl_id, method_id);
             self.mark_method_as_used(trait_decl_id, method_id);
             let method = method_binder.map(|fn_ref| {
                 let self_ty = if self.monomorphize() {
@@ -1026,8 +1027,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let item_def_id = impl_item.def_id();
             let item_span = self.def_span(item_def_id);
             let assoc_item_id = self.translate_assoc_item_id(trait_id, item_def_id)?;
-            let item_name = self.translated.assoc_item_name(trait_id, assoc_item_id);
-            //
+
             // In not-mono mode, we use the polymorphic item as usual.
             let item_def = self.poly_hax_def(item_def_id)?;
             let trans_kind = match item_def.kind() {
@@ -1050,7 +1050,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 def.this(),
                                 TransItemSourceKind::DefaultedMethod(
                                     TraitImplSource::Normal,
-                                    item_name,
+                                    trait_id,
+                                    trait_method_id,
                                 ),
                                 self.monomorphize(),
                             ),
@@ -1142,8 +1143,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     consts.set_slot_extend(assoc_const_id, gref);
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {
-                    let assoc_type_id =
-                        self.register_assoc_type_id(trait_id, &impl_item.decl_def_id)?;
+                    let assoc_type_id = *assoc_item_id.as_type().unwrap();
                     let binder_kind = BinderKind::TraitType(trait_id, assoc_type_id);
                     let assoc_ty = match &impl_item.value {
                         Provided { .. } => self.translate_binder_for_def(
@@ -1343,7 +1343,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .filter(|assoc| matches!(assoc.kind, hax::AssocKind::Type { .. }));
             for ((ty, impl_exprs), assoc) in vimpl.types.iter().zip(type_items) {
                 let assoc_type_id =
-                    self.register_assoc_type_id(implemented_trait.id, &assoc.def_id)?;
+                    self.translate_assoc_type_id(implemented_trait.id, &assoc.def_id)?;
                 let assoc_ty = TraitAssocTyImpl {
                     value: self.translate_ty(span, ty)?,
                     implied_trait_refs: self.translate_trait_impl_exprs(span, impl_exprs)?,
@@ -1377,7 +1377,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef<'tcx>,
         impl_kind: TraitImplSource,
-        method_name: TraitItemName,
+        method_id: TraitMethodId,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
@@ -1395,7 +1395,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let ItemRef::TraitDecl(tdecl) = self.get_or_translate(implemented_trait.id.into())? else {
             panic!()
         };
-        let Some(bound_method) = tdecl.methods.iter().find(|m| m.name() == method_name) else {
+        let Some(bound_method) = tdecl.methods.get(method_id) else {
+            let method_name = self
+                .translated
+                .assoc_item_name(implemented_trait.id, method_id);
             raise_error!(
                 self,
                 span,
@@ -1442,15 +1445,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             lang_item: fun_decl.item_meta.lang_item,
         };
         fun_decl.src = if let ItemSource::TraitDecl {
-            trait_ref,
-            item_name,
-            ..
+            trait_ref, item_id, ..
         } = fun_decl.src
         {
             ItemSource::TraitImpl {
                 impl_ref: self_impl_ref.clone(),
                 trait_ref,
-                item_name,
+                item_id,
                 reuses_default: true,
             }
         } else {

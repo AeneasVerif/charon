@@ -1606,6 +1606,22 @@ and alignment_modifier_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (Pack x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and assoc_item_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (assoc_item_id, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = assoc_type_id_of_postcard ctx st in
+         Ok (AssocIdType x_0)
+     | 1 ->
+         let* x_0 = trait_method_id_of_postcard ctx st in
+         Ok (AssocIdMethod x_0)
+     | 2 ->
+         let* x_0 = assoc_const_id_of_postcard ctx st in
+         Ok (AssocIdConst x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and assoc_item_names_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (assoc_item_names, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2096,15 +2112,15 @@ and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (ClosureItem info)
      | 2 ->
          let* trait_ref = trait_decl_ref_of_postcard ctx st in
-         let* item_name = trait_item_name_of_postcard ctx st in
+         let* item_id = assoc_item_id_of_postcard ctx st in
          let* has_default = bool_of_postcard ctx st in
-         Ok (TraitDeclItem (trait_ref, item_name, has_default))
+         Ok (TraitDeclItem (trait_ref, item_id, has_default))
      | 3 ->
          let* impl_ref = trait_impl_ref_of_postcard ctx st in
          let* trait_ref = trait_decl_ref_of_postcard ctx st in
-         let* item_name = trait_item_name_of_postcard ctx st in
+         let* item_id = assoc_item_id_of_postcard ctx st in
          let* reuses_default = bool_of_postcard ctx st in
-         Ok (TraitImplItem (impl_ref, trait_ref, item_name, reuses_default))
+         Ok (TraitImplItem (impl_ref, trait_ref, item_id, reuses_default))
      | 4 ->
          let* dyn_predicate = dyn_predicate_of_postcard ctx st in
          let* field_map =

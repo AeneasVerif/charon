@@ -850,6 +850,11 @@ class ['self] map_type_decl_base =
     Represents [repr(align(n))] and [repr(packed(n))]. *)
 type alignment_modifier = Align of int | Pack of int
 
+and assoc_item_id =
+  | AssocIdType of assoc_type_id
+  | AssocIdMethod of trait_method_id
+  | AssocIdConst of assoc_const_id
+
 (** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
@@ -974,22 +979,22 @@ and item_source =
 
           Fields:
           - [info] *)
-  | TraitDeclItem of trait_decl_ref * trait_item_name * bool
+  | TraitDeclItem of trait_decl_ref * assoc_item_id * bool
       (** This is an associated item in a trait declaration. It has a body if
           and only if the trait provided a default implementation.
 
           Fields:
           - [trait_ref]: The trait declaration this item belongs to.
-          - [item_name]: The name of the item.
+          - [item_id]: The associated item this corresponds to.
           - [has_default]: Whether the trait declaration provides a default
             implementation. *)
-  | TraitImplItem of trait_impl_ref * trait_decl_ref * trait_item_name * bool
+  | TraitImplItem of trait_impl_ref * trait_decl_ref * assoc_item_id * bool
       (** This is an associated item in a trait implementation.
 
           Fields:
           - [impl_ref]: The trait implementation the method belongs to.
           - [trait_ref]: The trait declaration that the impl block implements.
-          - [item_name]: The name of the item
+          - [item_id]: The associated item this corresponds to.
           - [reuses_default]: True if the trait decl had a default
             implementation for this function/const and this item is a copy of
             the default item. *)
@@ -1137,8 +1142,6 @@ and tag_encoding =
 
           Fields:
           - [untagged_variant] *)
-
-and trait_item_name = string
 
 (** A type declaration.
 

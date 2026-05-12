@@ -66,7 +66,7 @@ pub enum TransItemSourceKind {
     Module,
     /// A trait impl method that uses the default method body from the trait declaration. The
     /// `DefId` is that of the trait impl.
-    DefaultedMethod(TraitImplSource, TraitItemName),
+    DefaultedMethod(TraitImplSource, TraitDeclId, TraitMethodId),
     /// The `call_*` method of the appropriate `TraitImplSource::Closure` impl.
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
@@ -166,7 +166,7 @@ impl TransItemSource {
             TransItemSourceKind::ClosureMethod(kind) => {
                 TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
             }
-            TransItemSourceKind::DefaultedMethod(impl_kind, _)
+            TransItemSourceKind::DefaultedMethod(impl_kind, ..)
             | TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
             | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
@@ -428,7 +428,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     /// Register a trait method and return its `TraitMethodId`. This id is unique per trait.
     /// This does not make the method be considered "used"; use `mark_method_as_used` for that.
-    pub fn register_trait_method_id_no_enqueue(
+    pub fn translate_trait_method_id_no_enqueue(
         &mut self,
         trait_id: TraitDeclId,
         def_id: &hax::DefId,
@@ -436,21 +436,19 @@ impl<'tcx> TranslateCtx<'tcx> {
         let item_id = self.translate_assoc_item_id(trait_id, def_id)?;
         Ok(*item_id.as_method().unwrap())
     }
-
     /// Register a trait method and return its `TraitMethodId`. This id is unique per trait.
     /// This makes the method be considered "used".
-    pub fn register_trait_method_id(
+    pub fn translate_trait_method_id(
         &mut self,
         trait_id: TraitDeclId,
         def_id: &hax::DefId,
     ) -> Result<TraitMethodId, Error> {
-        let method_id = self.register_trait_method_id_no_enqueue(trait_id, def_id)?;
+        let method_id = self.translate_trait_method_id_no_enqueue(trait_id, def_id)?;
         self.mark_method_as_used(trait_id, method_id);
         Ok(method_id)
     }
-
     /// Register a trait associated type and return its `AssocTypeId`. This id is unique per trait.
-    pub fn register_assoc_type_id(
+    pub fn translate_assoc_type_id(
         &mut self,
         trait_id: TraitDeclId,
         def_id: &hax::DefId,
@@ -458,9 +456,8 @@ impl<'tcx> TranslateCtx<'tcx> {
         let item_id = self.translate_assoc_item_id(trait_id, def_id)?;
         Ok(*item_id.as_type().unwrap())
     }
-
     /// Register a trait associated const and return its `AssocTypeId`. This id is unique per trait.
-    pub fn register_assoc_const_id(
+    pub fn translate_assoc_const_id(
         &mut self,
         trait_id: TraitDeclId,
         def_id: &hax::DefId,
@@ -751,7 +748,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .as_regular()
                     .expect("methods are not builtin functions");
                 let trait_decl_id = trait_ref.trait_id();
-                let method_id = self.register_trait_method_id(trait_decl_id, &item.def_id)?;
+                let method_id = self.translate_trait_method_id(trait_decl_id, &item.def_id)?;
                 FnPtrKind::Trait(trait_ref.move_under_binder(), method_id, method_decl_id)
             }
         };

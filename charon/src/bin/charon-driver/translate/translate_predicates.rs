@@ -188,7 +188,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let trait_ref = ctx.translate_trait_impl_expr(span, &p.impl_expr)?;
                     let ty = ctx.translate_ty(span, &p.ty)?;
                     let type_id =
-                        ctx.register_assoc_type_id(trait_ref.trait_id(), &p.assoc_item.def_id)?;
+                        ctx.translate_assoc_type_id(trait_ref.trait_id(), &p.assoc_item.def_id)?;
                     Ok(TraitTypeConstraint {
                         trait_ref,
                         type_id,
@@ -306,7 +306,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             ..
                         } => {
                             let assoc_type_id =
-                                self.register_assoc_type_id(current_trait_id, &item.def_id)?;
+                                self.translate_assoc_type_id(current_trait_id, &item.def_id)?;
                             tref_kind = TraitRefKind::ItemClause(
                                 trait_ref,
                                 assoc_type_id,
@@ -405,7 +405,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             let mut type_map = IndexMap::new();
                             for (def_id, ty, impl_exprs) in types {
                                 let assoc_type_id =
-                                    self.register_assoc_type_id(tdecl_id, def_id)?;
+                                    self.translate_assoc_type_id(tdecl_id, def_id)?;
                                 let assoc_ty = TraitAssocTyImpl {
                                     value: self.translate_ty(span, ty)?,
                                     implied_trait_refs: self

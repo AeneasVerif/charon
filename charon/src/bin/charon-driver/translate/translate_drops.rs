@@ -7,6 +7,16 @@ use crate::translate::translate_crate::TransItemSourceKind;
 use charon_lib::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
+    pub fn translate_drop_in_place_method_id(
+        &mut self,
+        destruct_trait_def_id: &hax::DefId,
+        destruct_trait_id: TraitDeclId,
+    ) -> Result<TraitMethodId, Error> {
+        self.register_assoc_items(destruct_trait_def_id, destruct_trait_id)?;
+        let method_id = TraitMethodId::ZERO; // It's the only method
+        Ok(method_id)
+    }
+
     pub fn translate_drop_in_place_method_ref(
         &mut self,
         span: Span,
@@ -14,18 +24,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         destruct_trait_def_id: &hax::DefId,
         destruct_trait_id: TraitDeclId,
         impl_kind: Option<TraitImplSource>,
-    ) -> Result<(FunDeclId, TraitMethodId, TraitItemName), Error> {
-        self.register_assoc_items(destruct_trait_def_id, destruct_trait_id)?;
-        let method_id = TraitMethodId::ZERO; // It's the only method
+    ) -> Result<(FunDeclId, TraitMethodId), Error> {
+        let method_id =
+            self.translate_drop_in_place_method_id(destruct_trait_def_id, destruct_trait_id)?;
         let fun_id = self.register_item(
             span,
             item_ref,
             TransItemSourceKind::DropInPlaceMethod(impl_kind),
         );
-        let method_name = self
-            .translated
-            .assoc_item_name(destruct_trait_id, method_id);
-        Ok((fun_id, method_id, method_name))
+        Ok((fun_id, method_id))
     }
 
     /// Translate a call to `drop_in_place` for that type.
@@ -36,7 +43,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<FnPtr, Error> {
         let impl_expr = hax::solve_destruct(self.hax_state_with_id(), ty);
         let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
-        let (fun_id, method_id, _) = self.translate_drop_in_place_method_ref(
+        let (fun_id, method_id) = self.translate_drop_in_place_method_ref(
             span,
             impl_expr.r#trait.hax_skip_binder_ref(),
             &impl_expr.r#trait.hax_skip_binder_ref().def_id,
@@ -132,7 +139,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         let implemented_trait = self.translate_trait_predicate(span, trait_pred)?;
-        let item_name = TraitItemName("drop_in_place".into());
+        let item_id: AssocItemId = self
+            .translate_drop_in_place_method_id(&trait_pred.trait_ref.def_id, implemented_trait.id)?
+            .into();
         let self_ty = implemented_trait
             .self_ty(&self.t_ctx.translated)
             .unwrap()
@@ -150,13 +159,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 ItemSource::TraitImpl {
                     impl_ref,
                     trait_ref: implemented_trait,
-                    item_name,
+                    item_id,
                     reuses_default: false,
                 }
             }
             None => ItemSource::TraitDecl {
                 trait_ref: implemented_trait,
-                item_name,
+                item_id,
                 has_default: false,
             },
         };
@@ -196,8 +205,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         destruct_trait_def_id: &hax::DefId,
         destruct_trait_id: TraitDeclId,
         impl_kind: Option<TraitImplSource>,
-    ) -> Result<(TraitMethodId, TraitItemName, Binder<FunDeclRef>), Error> {
-        let (fun_id, method_id, method_name) = self.translate_drop_in_place_method_ref(
+    ) -> Result<(TraitMethodId, Binder<FunDeclRef>), Error> {
+        let (fun_id, method_id) = self.translate_drop_in_place_method_ref(
             span,
             def.this(),
             destruct_trait_def_id,
@@ -218,7 +227,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 },
             )
         };
-        Ok((method_id, method_name, method_binder))
+        Ok((method_id, method_binder))
     }
 
     #[tracing::instrument(skip(self, item_meta, def))]
@@ -239,7 +248,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Add the `drop_in_place(*mut self)` method.
         let destruct_trait_id = timpl.impl_trait.id;
-        let (method_id, _, method_binder) = self.prepare_drop_in_place_method(
+        let (method_id, method_binder) = self.prepare_drop_in_place_method(
             def,
             span,
             &destruct_impl.trait_pred.trait_ref.def_id,

@@ -319,6 +319,8 @@ and trait_decl = {
           guaranteed that the trait has a vtable iff it is dyn-compatible. *)
 }
 
+and trait_item_name = string
+
 (** A trait method. *)
 and trait_method = {
   name : trait_item_name;

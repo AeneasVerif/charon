@@ -159,10 +159,9 @@ pub enum ItemSource {
     TraitDecl {
         /// The trait declaration this item belongs to.
         trait_ref: TraitDeclRef,
-        /// The name of the item.
+        /// The associated item this corresponds to.
         // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
-        #[drive(skip)]
-        item_name: TraitItemName,
+        item_id: AssocItemId,
         /// Whether the trait declaration provides a default implementation.
         #[drive(skip)]
         has_default: bool,
@@ -173,10 +172,9 @@ pub enum ItemSource {
         impl_ref: TraitImplRef,
         /// The trait declaration that the impl block implements.
         trait_ref: TraitDeclRef,
-        /// The name of the item
+        /// The associated item this corresponds to.
         // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
-        #[drive(skip)]
-        item_name: TraitItemName,
+        item_id: AssocItemId,
         /// True if the trait decl had a default implementation for this function/const and this
         /// item is a copy of the default item.
         #[drive(skip)]

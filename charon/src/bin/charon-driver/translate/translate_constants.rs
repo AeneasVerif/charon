@@ -108,7 +108,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     // Trait consts can't have their own generics.
                     assert!(item.generic_args.is_empty());
                     let const_id =
-                        self.register_assoc_const_id(trait_ref.trait_id(), &item.def_id)?;
+                        self.translate_assoc_const_id(trait_ref.trait_id(), &item.def_id)?;
                     ConstantExprKind::TraitConst(trait_ref, const_id)
                 }
                 None => {

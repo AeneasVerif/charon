@@ -89,41 +89,32 @@ let lookup_trait_impl_method (timpl : trait_impl) (id : trait_method_id) :
       { item_binder_params = timpl.generics; item_binder_value = bound_fn })
     (TraitMethodId.Map.find_opt id timpl.methods)
 
-(** Resolve a [trait_method_id] to a method name. *)
-let format_method_name (crate : crate) (trait_id : trait_decl_id)
-    (method_id : trait_method_id) : trait_item_name =
-  let name =
-    match TraitDeclId.Map.find_opt trait_id crate.assoc_item_names with
-    | Some names -> TraitMethodId.nth_opt names.methods method_id
-    | None -> None
-  in
-  match name with
-  | Some name -> name
-  | None -> TraitMethodId.to_string method_id
+(** Resolve a [assoc_item_id] to a name. *)
+let get_assoc_item_name (crate : crate) (trait_id : trait_decl_id)
+    (id : assoc_item_id) : trait_item_name =
+  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
+  match id with
+  | AssocIdMethod id -> TraitMethodId.nth names.methods id
+  | AssocIdConst id -> AssocConstId.nth names.consts id
+  | AssocIdType id -> AssocTypeId.nth names.types id
 
-(** Resolve a [assoc_type_id] to a type name. *)
-let format_assoc_type_name (crate : crate) (trait_id : trait_decl_id)
-    (type_id : assoc_type_id) : trait_item_name =
-  let name =
-    match TraitDeclId.Map.find_opt trait_id crate.assoc_item_names with
-    | Some names -> AssocTypeId.nth_opt names.types type_id
-    | None -> None
-  in
-  match name with
-  | Some name -> name
-  | None -> AssocTypeId.to_string type_id
+(** Resolve a [trait_method_id] to a name. *)
+let get_method_name (crate : crate) (trait_id : trait_decl_id)
+    (id : trait_method_id) : trait_item_name =
+  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
+  TraitMethodId.nth names.methods id
 
-(** Resolve a [assoc_const_id] to a type name. *)
-let format_assoc_const_name (crate : crate) (trait_id : trait_decl_id)
-    (const_id : assoc_const_id) : trait_item_name =
-  let name =
-    match TraitDeclId.Map.find_opt trait_id crate.assoc_item_names with
-    | Some names -> AssocConstId.nth_opt names.consts const_id
-    | None -> None
-  in
-  match name with
-  | Some name -> name
-  | None -> AssocConstId.to_string const_id
+(** Resolve a [assoc_type_id] to a name. *)
+let get_assoc_type_name (crate : crate) (trait_id : trait_decl_id)
+    (id : assoc_type_id) : trait_item_name =
+  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
+  AssocTypeId.nth names.types id
+
+(** Resolve a [assoc_const_id] to a name. *)
+let get_assoc_const_name (crate : crate) (trait_id : trait_decl_id)
+    (id : assoc_const_id) : trait_item_name =
+  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
+  AssocConstId.nth names.consts id
 
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
   match g with

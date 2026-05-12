@@ -72,7 +72,7 @@ use derive_generic_visitor::*;
     // type but can be overridden.
     override(
         DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
-        TypeDeclRef, FunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef, ImplElem,
+        TypeDeclRef, FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef, ImplElem,
         GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue, Body,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,

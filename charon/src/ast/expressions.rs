@@ -480,17 +480,6 @@ pub struct MaybeBuiltinFunDeclRef {
     pub trait_ref: Option<TraitRef>,
 }
 
-/// Reference to a trait method.
-#[derive(Debug, Clone, SerializeState, DeserializeState, PartialEq, Eq, Hash, Drive, DriveMut)]
-pub struct TraitMethodRef {
-    pub trait_ref: TraitRef,
-    pub name: TraitItemName,
-    pub generics: BoxedArgs,
-    /// Reference to the method declaration; can be derived from the trait_ref, provided here for
-    /// convenience. The generic args are for the method, not for this function.
-    pub method_decl_id: FunDeclId,
-}
-
 #[derive(
     Debug,
     Clone,

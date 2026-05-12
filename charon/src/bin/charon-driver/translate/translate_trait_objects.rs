@@ -20,10 +20,9 @@ fn usize_ty() -> Ty {
 // Vtable method values that are used to vtable initilization functions.
 // In poly mode, they are const values of shim function pointers direcly filled in vtable fields.
 // In mono mode, they are used for construction of casting statements (see `mk_cast` in `gen_vtable_instance_init_body` for details).
-// Specifically, the tuple `(String, Ty, FnPtr)` represent method names,
-// the type of the shim function pointers and the shim function pointers, respectively.
 enum VtableMethodValue {
     Const(ConstantExprKind),
+    /// The method name, type of the shim function pointer, and shim function pointer.
     Cast((String, Ty, FnPtr)),
 }
 
@@ -179,7 +178,7 @@ pub enum TrVTableField {
     Size,
     Align,
     Drop,
-    Method(TraitMethodId, TraitItemName, hax::Binder<hax::TyFnSig>),
+    Method(TraitMethodId, hax::Binder<hax::TyFnSig>),
     SuperTrait(TraitClauseId, hax::Clause),
 }
 
@@ -318,9 +317,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     ..
                 } = item_def.kind()
                 {
-                    let id = self.register_trait_method_id_no_enqueue(trait_id, item_def_id)?;
-                    let name = self.translate_trait_item_name(item_def_id)?;
-                    fields.push(TrVTableField::Method(id, name, sig.clone()));
+                    let id = self.translate_trait_method_id_no_enqueue(trait_id, item_def_id)?;
+                    fields.push(TrVTableField::Method(id, sig.clone()));
                 }
             }
         }
@@ -391,7 +389,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         ("drop".into(), drop_ty)
                     }
                 }
-                TrVTableField::Method(_, item_name, sig) => {
+                TrVTableField::Method(item_id, sig) => {
+                    let item_name = self
+                        .translated
+                        .assoc_item_name(self_trait_ref.trait_id(), *item_id);
                     let field_name = format!("method_{}", item_name.0);
                     // In Mono mode, method shims are opaque function pointers.
                     if self.monomorphize() {
@@ -781,6 +782,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         impl_def: &hax::FullDef<'tcx>,
+        trait_id: TraitDeclId,
         item: &hax::ImplAssocItem,
     ) -> Result<Option<VtableMethodValue>, Error> {
         // Exit if the item isn't a vtable safe method.
@@ -815,8 +817,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let def = self.poly_hax_def(&item_ref.def_id)?;
                     self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
 
-                    let name = self.translate_trait_item_name(item.def_id())?;
-
                     let assoc_fun_def = self.hax_def(&item_ref)?;
                     let vtable_sig = match assoc_fun_def.kind() {
                         hax::FullDefKind::AssocFn {
@@ -839,7 +839,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         self.binding_levels.push(binding_level);
                     }
 
-                    VtableMethodValue::Cast((name.to_string(), method_ty, shim_ref))
+                    let method_id = self.translate_trait_method_id(trait_id, item.def_id())?;
+                    let method_name = self.translated.assoc_item_name(trait_id, method_id);
+
+                    VtableMethodValue::Cast((method_name.to_string(), method_ty, shim_ref))
                 } else {
                     VtableMethodValue::Const(ConstantExprKind::FnDef(shim_ref))
                 }
@@ -1028,7 +1031,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     // Bit of a hack: we know the methods are in the right order. This is easier
                     // than trying to index into the items list by name.
                     for item in items_iter.by_ref() {
-                        if let Some(kind) = self.add_method_to_vtable_value(span, impl_def, item)? {
+                        if let Some(kind) =
+                            self.add_method_to_vtable_value(span, impl_def, trait_id, item)?
+                        {
                             match kind {
                                 VtableMethodValue::Const(const_kind) => {
                                     break 'a mk_const(const_kind);

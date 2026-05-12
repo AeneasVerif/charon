@@ -1826,6 +1826,21 @@ and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Pack pack)
     | _ -> Error "")
 
+and assoc_item_id_of_json (ctx : of_json_ctx) (js : json) :
+    (assoc_item_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Type", type_) ] ->
+        let* type_ = assoc_type_id_of_json ctx type_ in
+        Ok (AssocIdType type_)
+    | `Assoc [ ("Method", method_) ] ->
+        let* method_ = trait_method_id_of_json ctx method_ in
+        Ok (AssocIdMethod method_)
+    | `Assoc [ ("Const", const) ] ->
+        let* const = assoc_const_id_of_json ctx const in
+        Ok (AssocIdConst const)
+    | _ -> Error "")
+
 and assoc_item_names_of_json (ctx : of_json_ctx) (js : json) :
     (assoc_item_names, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2455,14 +2470,14 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
             `Assoc
               [
                 ("trait_ref", trait_ref);
-                ("item_name", item_name);
+                ("item_id", item_id);
                 ("has_default", has_default);
               ] );
         ] ->
         let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
-        let* item_name = trait_item_name_of_json ctx item_name in
+        let* item_id = assoc_item_id_of_json ctx item_id in
         let* has_default = bool_of_json ctx has_default in
-        Ok (TraitDeclItem (trait_ref, item_name, has_default))
+        Ok (TraitDeclItem (trait_ref, item_id, has_default))
     | `Assoc
         [
           ( "TraitImpl",
@@ -2470,15 +2485,15 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
               [
                 ("impl_ref", impl_ref);
                 ("trait_ref", trait_ref);
-                ("item_name", item_name);
+                ("item_id", item_id);
                 ("reuses_default", reuses_default);
               ] );
         ] ->
         let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
         let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
-        let* item_name = trait_item_name_of_json ctx item_name in
+        let* item_id = assoc_item_id_of_json ctx item_id in
         let* reuses_default = bool_of_json ctx reuses_default in
-        Ok (TraitImplItem (impl_ref, trait_ref, item_name, reuses_default))
+        Ok (TraitImplItem (impl_ref, trait_ref, item_id, reuses_default))
     | `Assoc
         [
           ( "VTableTy",
