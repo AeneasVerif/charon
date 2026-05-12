@@ -100,7 +100,7 @@ pub enum TraitRefKind {
     ///                         clause 1 from item W (from local clause 0)
     /// }
     /// ```
-    ItemClause(Box<TraitRef>, TraitItemName, TraitClauseId),
+    ItemClause(Box<TraitRef>, AssocTypeId, TraitClauseId),
 
     /// The implicit `Self: Trait` clause. Present inside trait declarations, including trait
     /// method declarations. Not present in trait implementations as we can use `TraitImpl` intead.
@@ -123,7 +123,7 @@ pub enum TraitRefKind {
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
         parent_trait_refs: IndexVec<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
-        types: Vec<(TraitItemName, TraitAssocTyImpl)>,
+        types: IndexMap<AssocTypeId, TraitAssocTyImpl>,
     },
 
     /// The automatically-generated implementation for `dyn Trait`.
@@ -221,7 +221,7 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
-    pub type_name: TraitItemName,
+    pub type_id: AssocTypeId,
     pub ty: Ty,
 }
 
@@ -253,7 +253,7 @@ pub struct RegionBinder<T> {
 #[charon::variants_prefix("BK")]
 pub enum BinderKind {
     /// The parameters of a generic associated type.
-    TraitType(TraitDeclId, TraitItemName),
+    TraitType(TraitDeclId, AssocTypeId),
     /// The parameters of a trait method. Used in the `methods` lists in trait decls and trait
     /// impls.
     TraitMethod(TraitDeclId, TraitMethodId),
@@ -343,7 +343,7 @@ pub enum PredicateOrigin {
     //     type AssocType: Clone;
     // }
     // ```
-    TraitItem(TraitItemName),
+    TraitItem(AssocTypeId),
     /// Clauses that are part of a `dyn Trait` type.
     #[charon::rename("OriginDyn")]
     Dyn,
@@ -881,7 +881,7 @@ pub enum TyKind {
     ///   type Bar; // type associated to the trait Foo
     /// }
     /// ```
-    TraitType(TraitRef, TraitItemName),
+    TraitType(TraitRef, AssocTypeId),
     /// `dyn Trait`
     DynTrait(DynPredicate),
     /// Function pointer type. This is a literal pointer to a region of memory that

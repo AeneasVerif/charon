@@ -439,13 +439,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
                         _ => unreachable!(),
                     }
                 }
-                let ty = cstr.ty.to_string_with_ctx(ctx);
-                let path = path
-                    .into_iter()
-                    .map(Either::Left)
-                    .chain([Either::Right(cstr.type_name)])
-                    .format("::");
-                format!("{path} = {ty}")
+                let ty = cstr.ty.with_ctx(ctx);
+                let path_fmt = path.iter().format("::");
+                std::fmt::from_fn(|f| {
+                    write!(f, "{path_fmt}")?;
+                    if !path.is_empty() {
+                        write!(f, "::")?;
+                    }
+                    ctx.format_assoc_type_name(f, cstr.trait_ref.trait_id(), cstr.type_id)?;
+                    write!(f, " = {ty}")?;
+                    Ok(())
+                })
+                .to_string()
             });
             if let Some(cstrs) = cstrs_per_clause.get_mut(tgt_clause.unwrap()) {
                 cstrs.push(cstr);
@@ -1335,8 +1340,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             ConstantExprKind::Global(global_ref) => {
                 write!(f, "{}", global_ref.with_ctx(ctx))
             }
-            ConstantExprKind::TraitConst(trait_ref, name) => {
-                write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
+            ConstantExprKind::TraitConst(trait_ref, const_id) => {
+                write!(f, "{}::", trait_ref.with_ctx(ctx),)?;
+                ctx.format_assoc_const_name(f, trait_ref.trait_id(), *const_id)?;
+                Ok(())
             }
             ConstantExprKind::VTableRef(trait_ref) => {
                 write!(f, "&vtable_of({})", trait_ref.with_ctx(ctx),)
@@ -2023,14 +2030,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                 let i = TraitClauseId::new(i);
                 writeln!(f, "{TAB_INCR}parent_clause{i} = {}", c.with_ctx(ctx))?;
             }
-            for (name, global) in &self.consts {
-                writeln!(f, "{TAB_INCR}const {name} = {}", global.with_ctx(ctx))?;
+            for (const_id, global) in self.consts.iter_enumerated() {
+                write!(f, "{TAB_INCR}const ")?;
+                ctx.format_assoc_const_name(f, trait_id, const_id)?;
+                writeln!(f, " = {}", global.with_ctx(ctx))?;
             }
-            for (name, assoc_ty) in &self.types {
+            for (type_id, assoc_ty) in self.types.iter_enumerated() {
                 // TODO: implied trait refs
                 let (params, ty) = assoc_ty
                     .fmt_split_with(ctx, |ctx, assoc_ty| assoc_ty.value.to_string_with_ctx(ctx));
-                writeln!(f, "{TAB_INCR}type {name}{params} = {ty}",)?;
+                write!(f, "{TAB_INCR}type ")?;
+                ctx.format_assoc_type_name(f, trait_id, type_id)?;
+                writeln!(f, "{params} = {ty}",)?;
             }
             for (method_id, bound_fn) in self.methods.iter_enumerated() {
                 let (params, fn_ref) = bound_fn.fmt_split(ctx);
@@ -2077,12 +2088,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
                 let sub = sub.with_ctx(ctx);
                 write!(f, "{sub}::parent_clause{clause_id}")
             }
-            TraitRefKind::ItemClause(sub, type_name, clause_id) => {
-                let sub = sub.with_ctx(ctx);
+            TraitRefKind::ItemClause(sub, type_id, clause_id) => {
+                write!(f, "({}::", sub.with_ctx(ctx))?;
+                ctx.format_assoc_type_name(f, sub.trait_id(), *type_id)?;
                 // Using on purpose `to_pretty_string` instead of `with_ctx`: the clause is local
                 // to the associated type, so it should not be referenced in the current context.
-                let clause = clause_id.to_pretty_string();
-                write!(f, "({sub}::{type_name}::[{clause}])")
+                write!(f, "::[{}])", clause_id.to_pretty_string())
             }
             TraitRefKind::TraitImpl(impl_ref) => {
                 write!(f, "{}", impl_ref.with_ctx(ctx))
@@ -2095,11 +2106,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
                     .skip_binder
                     .format_as_impl(bound_ctx, f)?;
                 if !types.is_empty() {
+                    let trait_id = self.trait_decl_ref.skip_binder.id;
                     let types = types
-                        .iter()
-                        .map(|(name, assoc_ty)| {
-                            let ty = assoc_ty.value.with_ctx(ctx);
-                            format!("{name}  = {ty}")
+                        .iter_indexed()
+                        .map(|(type_id, assoc_ty)| {
+                            std::fmt::from_fn(move |f| {
+                                ctx.format_assoc_type_name(f, trait_id, type_id)?;
+                                let ty = assoc_ty.value.with_ctx(ctx);
+                                write!(f, "  = {ty}")
+                            })
                         })
                         .join(", ");
                     write!(f, " where {types}")?;
@@ -2117,7 +2132,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let trait_ref = self.trait_ref.with_ctx(ctx);
         let ty = self.ty.with_ctx(ctx);
-        write!(f, "{}::{} = {}", trait_ref, self.type_name, ty)
+        write!(f, "{trait_ref}::")?;
+        ctx.format_assoc_type_name(f, self.trait_ref.trait_id(), self.type_id)?;
+        write!(f, " = {ty}")
     }
 }
 
@@ -2160,8 +2177,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::Slice(ty) => {
                 write!(f, "[{}]", ty.with_ctx(ctx))
             }
-            TyKind::TraitType(trait_ref, name) => {
-                write!(f, "{}::{name}", trait_ref.with_ctx(ctx),)
+            TyKind::TraitType(trait_ref, type_id) => {
+                write!(f, "{}::", trait_ref.with_ctx(ctx))?;
+                ctx.format_assoc_type_name(f, trait_ref.trait_id(), *type_id)
             }
             TyKind::DynTrait(pred) => {
                 write!(f, "(dyn {})", pred.with_ctx(ctx))

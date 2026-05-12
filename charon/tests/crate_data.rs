@@ -194,8 +194,8 @@ fn predicate_origins() -> anyhow::Result<()> {
                 (WhereClauseOnTrait, "Sized"),
                 (WhereClauseOnTrait, "Copy"),
                 (WhereClauseOnTrait, "Default"),
-                (TraitItem(TraitItemName("AssocType".into())), "Sized"),
-                (TraitItem(TraitItemName("AssocType".into())), "Default"),
+                (TraitItem(AssocTypeId::ZERO), "Sized"),
+                (TraitItem(AssocTypeId::ZERO), "Default"),
             ],
         ),
         // Interesting note: the method definition does not mention the clauses on the trait.

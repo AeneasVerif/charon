@@ -146,6 +146,7 @@ impl CrateMerger {
             options: _, // We discard the per-target options we made
             target_information,
             item_names,
+            assoc_item_names,
             short_names: _, // TODO
             files: _,       // Done above
             type_decls,
@@ -163,6 +164,10 @@ impl CrateMerger {
             .target_information
             .extend(target_information);
         self.merged.translated.item_names.extend(item_names);
+        self.merged
+            .translated
+            .assoc_item_names
+            .extend_from_other(assoc_item_names);
         self.merged
             .translated
             .type_decls
@@ -642,9 +647,6 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
             FnPtrKind::Trait(_, _, id) => self.map(id),
             _ => {}
         }
-    }
-    fn enter_trait_method_ref(&mut self, x: &mut TraitMethodRef) {
-        self.map(&mut x.method_decl_id);
     }
     fn enter_global_decl(&mut self, x: &mut GlobalDecl) {
         self.map(&mut x.init);

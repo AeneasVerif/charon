@@ -1,8 +1,11 @@
 name: Benchmark
 
 on:
-  schedule:
-    - cron: '0 6 * * *' # Nightly at 06:00 UTC
+  # schedule:
+  #   - cron: '0 6 * * *' # Nightly at 06:00 UTC
+  push:
+    branches:
+      - main # Run the checks on the latest commit from `main`
   workflow_dispatch:
 
 # Only one benchmark at a time (avoids races on the branch writes).

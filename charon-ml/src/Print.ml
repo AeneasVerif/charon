@@ -322,9 +322,13 @@ and constant_expr_to_string (env : fmt_env) (cv : constant_expr) : string =
   match cv.kind with
   | CLiteral lit -> literal_to_string lit
   | CVar var -> const_generic_db_var_to_string env var
-  | CTraitConst (trait_ref, const_name) ->
+  | CTraitConst (trait_ref, const_id) ->
+      let name =
+        GAstUtils.get_assoc_const_name env.crate
+          trait_ref.trait_decl_ref.binder_value.id const_id
+      in
       let trait_ref = trait_ref_to_string env trait_ref in
-      trait_ref ^ const_name
+      trait_ref ^ name
   | CVTableRef trait_ref ->
       let trait_ref = trait_ref_to_string env trait_ref in
       "&vtable_of(" ^ trait_ref ^ ")"
@@ -378,7 +382,7 @@ and fn_ptr_kind_to_string (env : fmt_env) (r : fn_ptr_kind) : string =
   match r with
   | TraitMethod (trait_ref, method_id, _) ->
       let method_name =
-        GAstUtils.format_method_name env.crate
+        GAstUtils.get_method_name env.crate
           trait_ref.trait_decl_ref.binder_value.id method_id
       in
       trait_ref_to_string env trait_ref ^ "::" ^ method_name
@@ -394,9 +398,12 @@ and ty_to_string (env : fmt_env) (ty : ty) : string =
   | TVar tv -> type_db_var_to_string env tv
   | TNever -> "!"
   | TLiteral lit_ty -> literal_type_to_string lit_ty
-  | TTraitType (trait_ref, type_name) ->
-      let trait_ref = trait_ref_to_string env trait_ref in
-      trait_ref ^ "::" ^ type_name
+  | TTraitType (trait_ref, type_id) ->
+      let type_name =
+        GAstUtils.get_assoc_type_name env.crate
+          trait_ref.trait_decl_ref.binder_value.id type_id
+      in
+      trait_ref_to_string env trait_ref ^ "::" ^ type_name
   | TRef (r, rty, ref_kind) -> (
       match ref_kind with
       | RMut ->
@@ -471,10 +478,14 @@ and trait_ref_kind_to_string (env : fmt_env)
       let inst_id = trait_ref_to_string env tref in
       let clause_id = trait_clause_id_to_string env clause_id in
       "parent(" ^ inst_id ^ ")::" ^ clause_id
-  | ItemClause (tref, name, clause_id) ->
+  | ItemClause (tref, type_id, clause_id) ->
       let inst_id = trait_ref_to_string env tref in
+      let type_name =
+        GAstUtils.get_assoc_type_name env.crate
+          tref.trait_decl_ref.binder_value.id type_id
+      in
       let clause_id = trait_clause_id_to_string env clause_id in
-      "item(" ^ inst_id ^ ")::" ^ name ^ "::" ^ clause_id
+      "item(" ^ inst_id ^ ")::" ^ type_name ^ "::" ^ clause_id
   | Dyn ->
       let trait =
         region_binder_to_string trait_decl_ref_to_string env
@@ -608,7 +619,11 @@ let variant_to_string env (v : variant) : string =
 
 let trait_type_constraint_to_string (env : fmt_env)
     (ttc : trait_type_constraint) : string =
-  let { trait_ref; type_name; ty } = ttc in
+  let { trait_ref; type_id; ty } = ttc in
+  let type_name =
+    GAstUtils.get_assoc_type_name env.crate
+      trait_ref.trait_decl_ref.binder_value.id type_id
+  in
   let trait_ref = trait_ref_to_string env trait_ref in
   let ty = ty_to_string env ty in
   trait_ref ^ "::" ^ type_name ^ " = " ^ ty
@@ -1058,7 +1073,7 @@ let trait_decl_to_string (env : fmt_env) (indent : string)
         (fun c ->
           let ty = ty_to_string c.ty in
           indent1 ^ "const " ^ c.name ^ " : " ^ ty ^ "\n")
-        def.consts
+        (AssocConstId.Map.values def.consts)
     in
     let types =
       List.map
@@ -1074,7 +1089,7 @@ let trait_decl_to_string (env : fmt_env) (indent : string)
             if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
           in
           indent1 ^ "type " ^ bound_ty.binder_value.name ^ params ^ "\n")
-        def.types
+        (AssocTypeId.Map.values def.types)
     in
     let methods =
       List.map
@@ -1109,6 +1124,7 @@ let trait_impl_to_string (env : fmt_env) (indent : string)
   let indent1 = indent ^ indent_incr in
 
   let items =
+    let trait_id = def.impl_trait.id in
     (* The parent clauses are given by the trait refs of the implemented trait *)
     let parent_clauses =
       Collections.List.mapi
@@ -1120,14 +1136,18 @@ let trait_impl_to_string (env : fmt_env) (indent : string)
     in
     let consts =
       List.map
-        (fun (name, gref) ->
+        (fun (const_id, gref) ->
+          let name =
+            GAstUtils.get_assoc_const_name env.crate trait_id const_id
+          in
           let gref = global_decl_ref_to_string env gref in
           indent1 ^ "const " ^ name ^ " = " ^ gref ^ "\n")
-        def.consts
+        (AssocConstId.Map.to_list def.consts)
     in
     let types =
       List.map
-        (fun (name, bound_ty) ->
+        (fun (type_id, bound_ty) ->
+          let name = GAstUtils.get_assoc_type_name env.crate trait_id type_id in
           let env =
             fmt_env_push_generics_and_preds env bound_ty.binder_params
           in
@@ -1140,15 +1160,13 @@ let trait_impl_to_string (env : fmt_env) (indent : string)
           indent1 ^ "type " ^ name ^ params ^ " = "
           ^ ty_to_string env bound_ty.binder_value.value
           ^ "\n")
-        def.types
+        (AssocTypeId.Map.to_list def.types)
     in
     let methods =
       let trait_id = def.impl_trait.id in
       List.map
         (fun (method_id, (f : fun_decl_ref binder)) ->
-          let name =
-            GAstUtils.format_method_name env.crate trait_id method_id
-          in
+          let name = GAstUtils.get_method_name env.crate trait_id method_id in
           indent1 ^ "fn " ^ name ^ " : "
           ^ fun_decl_id_to_string env f.binder_value.id
           ^ "\n")

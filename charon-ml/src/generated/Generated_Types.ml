@@ -19,6 +19,8 @@ module ConstGenericVarId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module TraitMethodId = IdGen ()
+module AssocTypeId = IdGen ()
+module AssocConstId = IdGen ()
 module TraitClauseId = IdGen ()
 module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
@@ -41,7 +43,9 @@ and 'a global_decl_id_map = 'a GlobalDeclId.Map.t
 and 'a type_decl_id_map = 'a TypeDeclId.Map.t
 and 'a trait_decl_id_map = 'a TraitDeclId.Map.t
 and 'a trait_impl_id_map = 'a TraitImplId.Map.t
-and 'a trait_method_id_map = 'a TraitMethodId.Map.t [@@deriving show, eq, ord]
+and 'a trait_method_id_map = 'a TraitMethodId.Map.t
+and 'a assoc_type_id_map = 'a AssocTypeId.Map.t [@@deriving show, eq, ord]
+and 'a assoc_const_id_map = 'a AssocConstId.Map.t [@@deriving show, eq, ord]
 
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
@@ -140,24 +144,50 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
-(* Ancestors for the ty visitors *)
 class ['self] iter_ty_base =
   object (self : 'self)
     inherit [_] iter_type_vars
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
+
+    method visit_assoc_type_id_map :
+        'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_type_id_map -> unit =
+      AssocTypeId.Map.visit_iter
+
+    method visit_assoc_const_id_map :
+        'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_const_id_map -> unit =
+      AssocConstId.Map.visit_iter
   end
 
 class ['self] map_ty_base =
   object (self : 'self)
     inherit [_] map_type_vars
     method visit_span : 'env -> span -> span = fun _ x -> x
+
+    method visit_assoc_type_id_map :
+        'a 'b.
+        ('env -> 'a -> 'b) ->
+        'env ->
+        'a assoc_type_id_map ->
+        'b assoc_type_id_map =
+      AssocTypeId.Map.visit_map
+
+    method visit_assoc_const_id_map :
+        'a 'b.
+        ('env -> 'a -> 'b) ->
+        'env ->
+        'a assoc_const_id_map ->
+        'b assoc_const_id_map =
+      AssocConstId.Map.visit_map
   end
+
+type assoc_const_id = (AssocConstId.id[@visitors.opaque])
+and assoc_type_id = (AssocTypeId.id[@visitors.opaque])
 
 (** A value of type [T] bound by generic parameters. Used in any context where
     we're adding generic parameters that aren't on the top-level item, e.g.
     [for<'a>] clauses (uses [RegionBinder] for now), trait methods, GATs (TODO).
 *)
-type 'a0 binder = {
+and 'a0 binder = {
   binder_params : generic_params;
   binder_value : 'a0;
       (** Named this way to highlight accesses to the inner value that might be
@@ -165,7 +195,7 @@ type 'a0 binder = {
 }
 
 and binder_kind =
-  | BKTraitType of trait_decl_id * trait_item_name
+  | BKTraitType of trait_decl_id * assoc_type_id
       (** The parameters of a generic associated type. *)
   | BKTraitMethod of trait_decl_id * trait_method_id
       (** The parameters of a trait method. Used in the [methods] lists in trait
@@ -345,7 +375,7 @@ and constant_expr_kind =
               let l = V::<N, T>::LEN; // We need to provided a substitution here
             }
           ]} *)
-  | CTraitConst of trait_ref * trait_item_name
+  | CTraitConst of trait_ref * assoc_const_id
       (** A trait associated constant.
 
           Ex.:
@@ -478,7 +508,7 @@ and predicate_origin =
   | WhereClauseOnImpl
   | TraitSelf
   | WhereClauseOnTrait
-  | TraitItem of trait_item_name
+  | TraitItem of assoc_type_id
   | OriginDyn  (** Clauses that are part of a [dyn Trait] type. *)
 
 and provenance =
@@ -537,7 +567,6 @@ and trait_decl_ref = { id : trait_decl_id; generics : generic_args }
 (** A reference to a tait impl, using the provided arguments. *)
 and trait_impl_ref = { id : trait_impl_id; generics : generic_args }
 
-and trait_item_name = string
 and trait_method_id = (TraitMethodId.id[@visitors.opaque])
 
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
@@ -604,7 +633,7 @@ and trait_ref_kind =
                                 parent clause 1 of clause 0
             }
           ]} *)
-  | ItemClause of trait_ref * trait_item_name * trait_clause_id
+  | ItemClause of trait_ref * assoc_type_id * trait_clause_id
       (** A clause defined on an associated type. This variant is only used
           during translation; after the [lift_associated_item_clauses] pass,
           clauses on items become [ParentClause]s.
@@ -630,9 +659,7 @@ and trait_ref_kind =
           including trait method declarations. Not present in trait
           implementations as we can use [TraitImpl] intead. *)
   | BuiltinOrAuto of
-      builtin_impl_data
-      * trait_ref list
-      * (trait_item_name * trait_assoc_ty_impl) list
+      builtin_impl_data * trait_ref list * trait_assoc_ty_impl assoc_type_id_map
       (** A trait implementation that is computed by the compiler, such as for
           built-in trait [Sized]. This morally points to an invisible [impl]
           block; as such it contains the information we may need from one.
@@ -662,7 +689,7 @@ and trait_ref_kind =
     ]} *)
 and trait_type_constraint = {
   trait_ref : trait_ref;
-  type_name : trait_item_name;
+  type_id : assoc_type_id;
   ty : ty;
 }
 
@@ -707,7 +734,7 @@ and ty_kind =
           eventually disappears from the AST. *)
   | TRef of region * ty * ref_kind  (** A borrow *)
   | TRawPtr of ty * ref_kind  (** A raw pointer. *)
-  | TTraitType of trait_ref * trait_item_name
+  | TTraitType of trait_ref * assoc_type_id
       (** A trait associated type
 
           Ex.:
@@ -822,6 +849,11 @@ class ['self] map_type_decl_base =
 (** Describes modifiers to the alignment and packing of the corresponding type.
     Represents [repr(align(n))] and [repr(packed(n))]. *)
 type alignment_modifier = Align of int | Pack of int
+
+and assoc_item_id =
+  | AssocIdType of assoc_type_id
+  | AssocIdMethod of trait_method_id
+  | AssocIdConst of assoc_const_id
 
 (** Additional information for closures. *)
 and closure_info = {
@@ -947,22 +979,22 @@ and item_source =
 
           Fields:
           - [info] *)
-  | TraitDeclItem of trait_decl_ref * trait_item_name * bool
+  | TraitDeclItem of trait_decl_ref * assoc_item_id * bool
       (** This is an associated item in a trait declaration. It has a body if
           and only if the trait provided a default implementation.
 
           Fields:
           - [trait_ref]: The trait declaration this item belongs to.
-          - [item_name]: The name of the item.
+          - [item_id]: The associated item this corresponds to.
           - [has_default]: Whether the trait declaration provides a default
             implementation. *)
-  | TraitImplItem of trait_impl_ref * trait_decl_ref * trait_item_name * bool
+  | TraitImplItem of trait_impl_ref * trait_decl_ref * assoc_item_id * bool
       (** This is an associated item in a trait implementation.
 
           Fields:
           - [impl_ref]: The trait implementation the method belongs to.
           - [trait_ref]: The trait declaration that the impl block implements.
-          - [item_name]: The name of the item
+          - [item_id]: The associated item this corresponds to.
           - [reuses_default]: True if the trait decl had a default
             implementation for this function/const and this item is a copy of
             the default item. *)

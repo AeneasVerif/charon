@@ -492,12 +492,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             ClosureKind::Fn => fn_impl.as_ref().unwrap(),
         };
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
+        let method_id = self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0])?;
 
         let impl_ref = self.translate_closure_impl_ref(span, args, target_kind)?;
         let src = ItemSource::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
-            item_name: TraitItemName(target_kind.method_name().into()),
+            item_id: method_id.into(),
             reuses_default: false,
         };
 
@@ -563,7 +564,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Construct the `call_*` method reference.
         let trait_decl_id = timpl.impl_trait.id;
-        let trait_method_id = self.register_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
+        let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
         let call_fn_binder = {
             let kind = TransItemSourceKind::ClosureMethod(target_kind);
             let bound_method_ref: RegionBinder<DeclRef<ItemId>> =

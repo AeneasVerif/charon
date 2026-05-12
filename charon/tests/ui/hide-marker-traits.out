@@ -27,7 +27,7 @@ fn foo<T>(_x_1: T)
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::@TraitMethod0] _x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_in_place] _x_1
     return
 }
 

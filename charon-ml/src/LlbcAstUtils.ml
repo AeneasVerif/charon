@@ -176,6 +176,7 @@ class ['self] map_crate =
         global_decls;
         trait_decls;
         trait_impls;
+        assoc_item_names;
       } =
         crate
       in
@@ -212,6 +213,7 @@ class ['self] map_crate =
         global_decls;
         trait_decls;
         trait_impls;
+        assoc_item_names;
       }
   end
 
@@ -312,6 +314,7 @@ class ['self] iter_crate =
         global_decls;
         trait_decls;
         trait_impls;
+        assoc_item_names = _;
       } =
         crate
       in

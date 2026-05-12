@@ -290,10 +290,10 @@ fn generate_ml(
                 // Can't merge into above because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    ancestors: &["type_vars"],
+                    ancestors: &["ty_base"],
                     name: "ty",
                     reduce: false,
-                    extra_types: &["span"],
+                    extra_types: &[],
                 })), &[
                     "ConstantExpr",
                     "TyKind",

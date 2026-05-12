@@ -388,7 +388,8 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
-            TransItemSourceKind::DefaultedMethod(_, method_name) => {
+            TransItemSourceKind::DefaultedMethod(_, trait_id, method_id) => {
+                let method_name = self.translated.assoc_item_name(*trait_id, *method_id);
                 name.name.push(PathElem::Ident(
                     method_name.to_string(),
                     Disambiguator::ZERO,
@@ -451,33 +452,6 @@ impl<'tcx> TranslateCtx<'tcx> {
             }
         }
         Ok(name)
-    }
-
-    /// Remark: this **doesn't** register the def id (on purpose)
-    pub(crate) fn translate_trait_item_name(
-        &mut self,
-        def_id: &hax::DefId,
-    ) -> Result<TraitItemName, Error> {
-        let def = self.poly_hax_def(def_id)?;
-        let assoc = match def.kind() {
-            hax::FullDefKind::AssocTy {
-                associated_item, ..
-            }
-            | hax::FullDefKind::AssocConst {
-                associated_item, ..
-            }
-            | hax::FullDefKind::AssocFn {
-                associated_item, ..
-            } => associated_item,
-            _ => panic!("Unexpected def for associated item: {def:?}"),
-        };
-        Ok(TraitItemName(
-            assoc
-                .name
-                .as_ref()
-                .map(|n| n.to_string().into())
-                .unwrap_or_default(),
-        ))
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {

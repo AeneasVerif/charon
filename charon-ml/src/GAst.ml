@@ -34,6 +34,7 @@ type crate = {
   name : string;
   options : cli_options;
   target_information : (string * target_info) list;
+  assoc_item_names : assoc_item_names TraitDeclId.Map.t;
   declarations : declaration_group list;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : fun_decl FunDeclId.Map.t;

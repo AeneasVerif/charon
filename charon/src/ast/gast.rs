@@ -159,10 +159,9 @@ pub enum ItemSource {
     TraitDecl {
         /// The trait declaration this item belongs to.
         trait_ref: TraitDeclRef,
-        /// The name of the item.
+        /// The associated item this corresponds to.
         // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
-        #[drive(skip)]
-        item_name: TraitItemName,
+        item_id: AssocItemId,
         /// Whether the trait declaration provides a default implementation.
         #[drive(skip)]
         has_default: bool,
@@ -173,10 +172,9 @@ pub enum ItemSource {
         impl_ref: TraitImplRef,
         /// The trait declaration that the impl block implements.
         trait_ref: TraitDeclRef,
-        /// The name of the item
+        /// The associated item this corresponds to.
         // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
-        #[drive(skip)]
-        item_name: TraitItemName,
+        item_id: AssocItemId,
         /// True if the trait decl had a default implementation for this function/const and this
         /// item is a copy of the default item.
         #[drive(skip)]
@@ -297,6 +295,8 @@ pub struct GlobalDeclRef {
 pub struct TraitItemName(pub ustr::Ustr);
 
 generate_index_type!(TraitMethodId, "TraitMethod");
+generate_index_type!(AssocTypeId, "AssocType");
+generate_index_type!(AssocConstId, "AssocConst");
 
 /// A trait **declaration**.
 ///
@@ -351,11 +351,11 @@ pub struct TraitDecl {
     /// trait declarations are parent clauses.
     pub implied_clauses: IndexVec<TraitClauseId, TraitParam>,
     /// The associated constants declared in the trait.
-    pub consts: Vec<TraitAssocConst>,
+    pub consts: IndexMap<AssocConstId, TraitAssocConst>,
     /// The associated types declared in the trait. The binder binds the generic parameters of the
     /// type if it is a GAT (Generic Associated Type). For a plain associated type the binder binds
     /// nothing.
-    pub types: Vec<Binder<TraitAssocTy>>,
+    pub types: IndexMap<AssocTypeId, Binder<TraitAssocTy>>,
     /// The methods declared by the trait. The binder binds the generic parameters of the method.
     ///
     /// ```rust
@@ -365,10 +365,6 @@ pub struct TraitDecl {
     /// }
     /// ```
     pub methods: IndexMap<TraitMethodId, Binder<TraitMethod>>,
-    /// In mono mode we can't translate `TraitMethod`s because they'd include the polymorphic
-    /// signature. In order to keep access to the method names, we store them here too; this is
-    /// empty in poly mode.
-    pub method_names: IndexVec<TraitMethodId, TraitItemName>,
     /// The virtual table struct for this trait, if it has one.
     /// It is guaranteed that the trait has a vtable iff it is dyn-compatible.
     pub vtable: Option<TypeDeclRef>,
@@ -433,9 +429,9 @@ pub struct TraitImpl {
     /// The trait references for the parent clauses (see [TraitDecl]).
     pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
     /// The implemented associated constants.
-    pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
+    pub consts: IndexMap<AssocConstId, GlobalDeclRef>,
     /// The implemented associated types.
-    pub types: Vec<(TraitItemName, Binder<TraitAssocTyImpl>)>,
+    pub types: IndexMap<AssocTypeId, Binder<TraitAssocTyImpl>>,
     /// The implemented methods
     pub methods: IndexMap<TraitMethodId, Binder<FunDeclRef>>,
     /// The virtual table instance for this trait implementation. This is `Some` iff the trait is

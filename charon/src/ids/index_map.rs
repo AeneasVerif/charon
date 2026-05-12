@@ -86,10 +86,20 @@ where
         self.vector[id] = Some(x);
         self.elem_count += 1;
     }
-    /// Fill the given slot even if it hadn't been reserved before.
+    /// Fill the given slot even if it hadn't been reserved before. Panics if the slot already has
+    /// a value.
     pub fn set_slot_extend(&mut self, id: I, x: T) {
         self.ensure_slot_for(id);
         self.set_slot(id, x);
+    }
+    /// Fill the given slot even if it hadn't been reserved before. Returns the old value.
+    pub fn insert(&mut self, id: I, x: T) -> Option<T> {
+        self.ensure_slot_for(id);
+        let old = self.vector[id].replace(x);
+        if old.is_none() {
+            self.elem_count += 1;
+        }
+        old
     }
 
     /// Remove the value from this slot, leaving other ids unchanged.
