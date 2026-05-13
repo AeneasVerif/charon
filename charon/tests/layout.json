@@ -165,22 +165,6 @@
       }
     ]
   },
-  "test_crate::UnsizedStruct2": {
-    "size": null,
-    "align": null,
-    "discriminant_layout": null,
-    "uninhabited": false,
-    "variant_layouts": [
-      {
-        "field_offsets": [
-          0,
-          8
-        ],
-        "uninhabited": false,
-        "tag": null
-      }
-    ]
-  },
   "test_crate::GenericWithKnownLayout": {
     "size": 16,
     "align": 8,

@@ -12,7 +12,6 @@ fn type_layout() -> anyhow::Result<()> {
         r#"
         #![feature(never_type)]
         use std::num::NonZero;
-        use std::fmt::Debug;
 
         struct SimpleStruct {
             x: u32,
@@ -29,6 +28,12 @@ fn type_layout() -> anyhow::Result<()> {
             x: usize,
             y: [usize]
         }
+
+        // Unsupported for now
+        // struct UnsizedStruct2 {
+        //     x: usize,
+        //     y: dyn std::fmt::Debug
+        // }
 
         enum SimpleEnum {
             Var1,
@@ -47,11 +52,6 @@ fn type_layout() -> anyhow::Result<()> {
         }
 
         struct IsAZST;
-
-        struct UnsizedStruct2 {
-            x: usize,
-            y: dyn Debug
-        }
 
         struct GenericWithKnownLayout<T> {
             x: usize,

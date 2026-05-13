@@ -83,6 +83,7 @@ pub fn translate_rust_text(
     let output_path = tmp_dir.path().join("test_crate.llbc");
     Command::cargo_bin("charon")?
         .arg("rustc")
+        .arg("--abort-on-error")
         .arg("--dest-file")
         .arg(&output_path)
         .args(options)

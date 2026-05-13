@@ -1,0 +1,10 @@
+error: Unexpected error: could not find the type variable _dyn
+ --> tests/ui/simple/dyn-field.rs:3:1
+  |
+3 | / struct UnsizedStruct {
+4 | |     x: usize,
+5 | |     y: dyn Debug,
+6 | | }
+  | |_^
+
+ERROR Charon failed to translate this code (1 errors)
