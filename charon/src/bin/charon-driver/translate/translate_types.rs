@@ -772,17 +772,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let variant_name = var_def.name.to_string();
             let variant_full_def =
                 self.hax_def(&def.this().with_def_id(self.hax_state(), &var_def.def_id))?;
-            let variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);
 
-            let mut variant = Variant {
-                span: variant_span,
-                attr_info: variant_attrs,
-                name: variant_name,
-                fields,
-                discriminant,
-            };
+            let mut variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);
             // Propagate a `#[charon::variants_prefix(..)]` or `#[charon::variants_suffix(..)]` attribute to the variants.
-            if variant.attr_info.rename.is_none() {
+            if variant_attrs.rename.is_none() {
                 let prefix = item_meta
                     .attr_info
                     .attributes
@@ -800,11 +793,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 if prefix.is_some() || suffix.is_some() {
                     let prefix = prefix.unwrap_or_default();
                     let suffix = suffix.unwrap_or_default();
-                    let name = &variant.name;
-                    variant.attr_info.rename = Some(format!("{prefix}{name}{suffix}"));
+                    variant_attrs.rename = Some(format!("{prefix}{variant_name}{suffix}"));
                 }
             }
-            translated_variants.push(variant);
+
+            translated_variants.push_with(|id| Variant {
+                id,
+                span: variant_span,
+                attr_info: variant_attrs,
+                name: variant_name,
+                fields,
+                discriminant,
+            });
         }
 
         // Register the type

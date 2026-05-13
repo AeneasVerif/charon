@@ -1216,6 +1216,7 @@ and v_table_field =
   | VTableSuperTrait of trait_clause_id
 
 and variant = {
+  id : variant_id;
   span : span;
   attr_info : attr_info;
   variant_name : string;

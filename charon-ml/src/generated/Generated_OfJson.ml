@@ -3071,12 +3071,14 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
     (match js with
     | `Assoc
         [
+          ("id", id);
           ("span", span);
           ("attr_info", attr_info);
           ("name", name);
           ("fields", fields);
           ("discriminant", discriminant);
         ] ->
+        let* id = variant_id_of_json ctx id in
         let* span = span_of_json ctx span in
         let* attr_info = attr_info_of_json ctx attr_info in
         let* variant_name = string_of_json ctx name in
@@ -3084,7 +3086,9 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
           index_vec_of_json field_id_of_json field_of_json ctx fields
         in
         let* discriminant = literal_of_json ctx discriminant in
-        Ok ({ span; attr_info; variant_name; fields; discriminant } : variant)
+        Ok
+          ({ id; span; attr_info; variant_name; fields; discriminant }
+            : variant)
     | _ -> Error "")
 
 and variant_layout_of_json (ctx : of_json_ctx) (js : json) :

@@ -563,6 +563,7 @@ pub enum TypeDeclKind {
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(stateless)]
 pub struct Variant {
+    pub id: VariantId,
     pub span: Span,
     #[drive(skip)]
     pub attr_info: AttrInfo,

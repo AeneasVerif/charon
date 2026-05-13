@@ -2566,14 +2566,15 @@ and v_table_field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and variant_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (variant, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* span = span_of_postcard ctx st in
+    (let* id = variant_id_of_postcard ctx st in
+     let* span = span_of_postcard ctx st in
      let* attr_info = attr_info_of_postcard ctx st in
      let* variant_name = string_of_postcard ctx st in
      let* fields =
        index_vec_of_postcard field_id_of_postcard field_of_postcard ctx st
      in
      let* discriminant = literal_of_postcard ctx st in
-     Ok ({ span; attr_info; variant_name; fields; discriminant } : variant))
+     Ok ({ id; span; attr_info; variant_name; fields; discriminant } : variant))
 
 and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (variant_layout, string) result =
