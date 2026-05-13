@@ -2,7 +2,9 @@
   "test_crate::SimpleStruct": {
     "size": 12,
     "align": 4,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -12,7 +14,7 @@
           8
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
@@ -20,7 +22,9 @@
   "test_crate::UnsizedStruct": {
     "size": null,
     "align": null,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -29,65 +33,183 @@
           8
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::SimpleEnum": {
     "size": 1,
     "align": 1,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Unsigned": "U8"
-      },
-      "encoding": "Direct"
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U8"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "0"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U8",
+                  "1"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "1"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U8",
+                  "2"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
     },
     "uninhabited": false,
     "variant_layouts": [
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U8",
-            "0"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U8",
+                "0"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U8",
-            "1"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U8",
+                "1"
+              ]
+            }
           ]
-        }
+        ]
       }
     ]
   },
   "test_crate::SimpleAdt": {
     "size": 24,
     "align": 8,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Unsigned": "U32"
-      },
-      "encoding": "Direct"
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "2"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "2"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "3"
+                ]
+              }
+            },
+            {
+              "Known": 2
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
     },
     "uninhabited": false,
     "variant_layouts": [
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U32",
-            "0"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [
@@ -95,12 +217,17 @@
           16
         ],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U32",
-            "1"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [
@@ -108,26 +235,52 @@
           8
         ],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U32",
-            "2"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "2"
+              ]
+            }
           ]
-        }
+        ]
       }
     ]
   },
   "test_crate::NicheAdt": {
     "size": 4,
     "align": 4,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Unsigned": "U32"
-      },
-      "encoding": {
-        "Niche": {
-          "untagged_variant": 1
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ]
+        ],
+        "fallback": {
+          "Known": 1
         }
       }
     },
@@ -136,39 +289,48 @@
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U32",
-            "0"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::IsAZST": {
     "size": 0,
     "align": 1,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::GenericWithKnownLayout": {
     "size": 16,
     "align": 8,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -177,14 +339,16 @@
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::Reordered": {
     "size": 8,
     "align": 4,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -194,14 +358,16 @@
           5
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::NotReordered": {
     "size": 12,
     "align": 4,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -211,14 +377,16 @@
           8
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::Packed": {
     "size": 6,
     "align": 1,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -228,39 +396,64 @@
           5
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::UninhabitedVariant": {
     "size": 4,
     "align": 4,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 1
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
         "field_offsets": [],
         "uninhabited": true,
-        "tag": null
+        "tagger": []
       },
       {
         "field_offsets": [
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::UninhabitedVariant2": {
     "size": 8,
     "align": 4,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Unsigned": "U32"
-      },
-      "encoding": "Direct"
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "2"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
     },
     "uninhabited": false,
     "variant_layouts": [
@@ -270,26 +463,33 @@
           4
         ],
         "uninhabited": true,
-        "tag": null
+        "tagger": []
       },
       {
         "field_offsets": [
           4
         ],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U32",
-            "1"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1"
+              ]
+            }
           ]
-        }
+        ]
       }
     ]
   },
   "test_crate::Uninhabited": {
     "size": 0,
     "align": 1,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": true,
     "variant_layouts": [
       {
@@ -297,21 +497,42 @@
           0
         ],
         "uninhabited": true,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::DiscriminantInNicheOfField": {
     "size": 16,
     "align": 8,
-    "discriminant_layout": {
-      "offset": 8,
-      "tag_ty": {
-        "Signed": "Isize"
-      },
-      "encoding": {
-        "Niche": {
-          "untagged_variant": 1
+    "discriminator": {
+      "Branch": {
+        "offset": 8,
+        "int_ty": {
+          "Signed": "Isize"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "Isize",
+                  "0"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "Isize",
+                  "1"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ]
+        ],
+        "fallback": {
+          "Known": 1
         }
       }
     },
@@ -320,40 +541,87 @@
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Signed": [
-            "Isize",
-            "0"
+        "tagger": [
+          [
+            8,
+            {
+              "Signed": [
+                "Isize",
+                "0"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::PackIntsUnion": {
     "size": 8,
     "align": 8,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": []
   },
   "test_crate::NonZeroNiche": {
     "size": 4,
     "align": 4,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Unsigned": "U32"
-      },
-      "encoding": {
-        "Niche": {
-          "untagged_variant": 0
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114112"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "1114113"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114113"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "1114114"
+                ]
+              }
+            },
+            {
+              "Known": 2
+            }
+          ]
+        ],
+        "fallback": {
+          "Known": 0
         }
       }
     },
@@ -364,39 +632,110 @@
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       },
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U32",
-            "1114112"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1114112"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U32",
-            "1114113"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1114113"
+              ]
+            }
           ]
-        }
+        ]
       }
     ]
   },
   "test_crate::ArbitraryDiscriminants": {
     "size": 32,
     "align": 8,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Signed": "I32"
-      },
-      "encoding": "Direct"
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Signed": "I32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I32",
+                  "12"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I32",
+                  "13"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I32",
+                  "43"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I32",
+                  "44"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I32",
+                  "123456"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I32",
+                  "123457"
+                ]
+              }
+            },
+            {
+              "Known": 2
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
     },
     "uninhabited": false,
     "variant_layouts": [
@@ -405,92 +744,204 @@
           8
         ],
         "uninhabited": false,
-        "tag": {
-          "Signed": [
-            "I32",
-            "12"
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I32",
+                "12"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [
           4
         ],
         "uninhabited": false,
-        "tag": {
-          "Signed": [
-            "I32",
-            "43"
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I32",
+                "43"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Signed": [
-            "I32",
-            "123456"
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I32",
+                "123456"
+              ]
+            }
           ]
-        }
+        ]
       }
     ]
   },
   "test_crate::MyOrder": {
     "size": 1,
     "align": 1,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Signed": "I8"
-      },
-      "encoding": "Direct"
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Signed": "I8"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "-1"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I8",
+                  "0"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "0"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I8",
+                  "1"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "1"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I8",
+                  "2"
+                ]
+              }
+            },
+            {
+              "Known": 2
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
     },
     "uninhabited": false,
     "variant_layouts": [
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Signed": [
-            "I8",
-            "-1"
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "-1"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Signed": [
-            "I8",
-            "0"
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "0"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Signed": [
-            "I8",
-            "1"
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "1"
+              ]
+            }
           ]
-        }
+        ]
       }
     ]
   },
   "test_crate::WithNicheAndUninhabited": {
     "size": 4,
     "align": 4,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Unsigned": "U32"
-      },
-      "encoding": {
-        "Niche": {
-          "untagged_variant": 2
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ]
+        ],
+        "fallback": {
+          "Known": 2
         }
       }
     },
@@ -499,26 +950,31 @@
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U32",
-            "0"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [
           0
         ],
         "uninhabited": true,
-        "tag": null
+        "tagger": []
       },
       {
         "field_offsets": [
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
@@ -526,14 +982,35 @@
   "test_crate::GenericButFixedSize": {
     "size": 8,
     "align": 8,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Signed": "Isize"
-      },
-      "encoding": {
-        "Niche": {
-          "untagged_variant": 1
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Signed": "Isize"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "Isize",
+                  "0"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "Isize",
+                  "1"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ]
+        ],
+        "fallback": {
+          "Known": 1
         }
       }
     },
@@ -542,73 +1019,132 @@
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Signed": [
-            "Isize",
-            "0"
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "Isize",
+                "0"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::MaxBitsDiscr": {
     "size": 16,
     "align": 16,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Unsigned": "U128"
-      },
-      "encoding": "Direct"
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U128"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U128",
+                  "42"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U128",
+                  "43"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U128",
+                  "18446744073709551615"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U128",
+                  "18446744073709551616"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
     },
     "uninhabited": false,
     "variant_layouts": [
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U128",
-            "42"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U128",
+                "42"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U128",
-            "18446744073709551615"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U128",
+                "18446744073709551615"
+              ]
+            }
           ]
-        }
+        ]
       }
     ]
   },
   "test_crate::SingleVariantButNonZero": {
     "size": 0,
     "align": 1,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 1
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
         "field_offsets": [],
         "uninhabited": true,
-        "tag": null
+        "tagger": []
       },
       {
         "field_offsets": [
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
@@ -616,7 +1152,9 @@
   "test_crate::Tuple": {
     "size": 8,
     "align": 4,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -625,35 +1163,79 @@
           4
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       }
     ]
   },
   "test_crate::Usize": {
     "size": 8,
     "align": 8,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": []
   },
   "test_crate::Ref": {
     "size": 8,
     "align": 8,
-    "discriminant_layout": null,
+    "discriminator": {
+      "Known": 0
+    },
     "uninhabited": false,
     "variant_layouts": []
   },
   "test_crate::HasInvalidDiscr": {
     "size": 1,
     "align": 1,
-    "discriminant_layout": {
-      "offset": 0,
-      "tag_ty": {
-        "Unsigned": "U8"
-      },
-      "encoding": {
-        "Niche": {
-          "untagged_variant": 1
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U8"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "2"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U8",
+                  "3"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "4"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U8",
+                  "5"
+                ]
+              }
+            },
+            {
+              "Known": 2
+            }
+          ]
+        ],
+        "fallback": {
+          "Known": 1
         }
       }
     },
@@ -662,29 +1244,39 @@
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U8",
-            "2"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U8",
+                "2"
+              ]
+            }
           ]
-        }
+        ]
       },
       {
         "field_offsets": [
           0
         ],
         "uninhabited": false,
-        "tag": null
+        "tagger": []
       },
       {
         "field_offsets": [],
         "uninhabited": false,
-        "tag": {
-          "Unsigned": [
-            "U8",
-            "4"
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U8",
+                "4"
+              ]
+            }
           ]
-        }
+        ]
       }
     ]
   }

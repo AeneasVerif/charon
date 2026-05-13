@@ -91,7 +91,7 @@ impl ScalarValue {
         }
     }
 
-    pub fn get_integer_ty(&self) -> IntegerTy {
+    pub fn ty(&self) -> IntegerTy {
         match self {
             ScalarValue::Signed(ty, _) => IntegerTy::Signed(*ty),
             ScalarValue::Unsigned(ty, _) => IntegerTy::Unsigned(*ty),
@@ -219,6 +219,16 @@ impl ScalarValue {
         } else {
             Ok(ScalarValue::from_unchecked_int(ty, v))
         }
+    }
+
+    /// Increment the value, staying within the same integer type. Returns `None` on overflow.
+    pub fn add(self, n: u128) -> Option<Self> {
+        Some(match self {
+            ScalarValue::Unsigned(ty, v) => ScalarValue::Unsigned(ty, v.checked_add(n)?),
+            ScalarValue::Signed(ty, v) => {
+                ScalarValue::Signed(ty, v.checked_add(n.try_into().unwrap())?)
+            }
+        })
     }
 
     pub fn to_constant(self) -> ConstantExpr {

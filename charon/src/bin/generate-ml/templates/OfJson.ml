@@ -75,9 +75,6 @@ let big_int_of_json _ (js : json) : (big_int, string) result =
       | `String is -> Ok (Z.of_string is)
       | _ -> Error "")
 
-let char_value_of_json : of_json_ctx -> json -> (char_value, string) result =
-  char_of_json
-
 let opt_indexed_map_of_json :
     'a0 'a1.
     (of_json_ctx -> json -> ('a0, string) result) ->

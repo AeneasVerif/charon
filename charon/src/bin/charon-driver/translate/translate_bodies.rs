@@ -112,26 +112,27 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> DerefMut for BlockTransCtx<'tcx, 'tctx, 'ictx, '
     }
 }
 
-pub fn translate_variant_id(id: hax::VariantIdx) -> VariantId {
-    VariantId::new(id.as_usize())
-}
+impl<'tcx> TranslateCtx<'tcx> {
+    pub fn translate_variant_id(&self, id: hax::VariantIdx) -> VariantId {
+        VariantId::new(id.as_usize())
+    }
 
-pub fn translate_field_id(id: hax::FieldIdx) -> FieldId {
-    FieldId::new(id.index())
-}
+    pub fn translate_field_id(&self, id: hax::FieldIdx) -> FieldId {
+        FieldId::new(id.index())
+    }
 
-/// Translate a `BorrowKind`
-fn translate_borrow_kind(borrow_kind: mir::BorrowKind) -> BorrowKind {
-    match borrow_kind {
-        mir::BorrowKind::Shared => BorrowKind::Shared,
-        mir::BorrowKind::Mut { kind } => match kind {
-            mir::MutBorrowKind::Default => BorrowKind::Mut,
-            mir::MutBorrowKind::TwoPhaseBorrow => BorrowKind::TwoPhaseMut,
-            mir::MutBorrowKind::ClosureCapture => BorrowKind::UniqueImmutable,
-        },
-        mir::BorrowKind::Fake(mir::FakeBorrowKind::Shallow) => BorrowKind::Shallow,
-        // This one is used only in deref patterns.
-        mir::BorrowKind::Fake(mir::FakeBorrowKind::Deep) => unimplemented!(),
+    fn translate_borrow_kind(&self, borrow_kind: mir::BorrowKind) -> BorrowKind {
+        match borrow_kind {
+            mir::BorrowKind::Shared => BorrowKind::Shared,
+            mir::BorrowKind::Mut { kind } => match kind {
+                mir::MutBorrowKind::Default => BorrowKind::Mut,
+                mir::MutBorrowKind::TwoPhaseBorrow => BorrowKind::TwoPhaseMut,
+                mir::MutBorrowKind::ClosureCapture => BorrowKind::UniqueImmutable,
+            },
+            mir::BorrowKind::Fake(mir::FakeBorrowKind::Shallow) => BorrowKind::Shallow,
+            // This one is used only in deref patterns.
+            mir::BorrowKind::Fake(mir::FakeBorrowKind::Deep) => unimplemented!(),
+        }
     }
 }
 
@@ -431,11 +432,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             next_place_ty.with_ctx(&self.into_fmt())
                         )
                     };
-                    let field_id = translate_field_id(*index);
+                    let field_id = self.translate_field_id(*index);
                     match place_ty.ty.kind() {
                         ty::Adt(adt_def, _) => {
                             let variant = place_ty.variant_index;
-                            let variant_id = variant.map(translate_variant_id);
+                            let variant_id = variant.map(|id| self.translate_variant_id(id));
                             let generics = &tref.generics;
                             match tref.id {
                                 TypeId::Adt(type_id) => {
@@ -615,7 +616,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
             mir::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
-                let borrow_kind = translate_borrow_kind(*borrow_kind);
+                let borrow_kind = self.translate_borrow_kind(*borrow_kind);
                 Ok(Rvalue::Ref {
                     place,
                     kind: borrow_kind,
@@ -864,11 +865,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         let tref = self.translate_type_decl_ref(span, &item)?;
                         let variant_id = match adt_kind {
                             AdtKind::Struct | AdtKind::Union => None,
-                            AdtKind::Enum => Some(translate_variant_id(*variant_idx)),
+                            AdtKind::Enum => Some(self.translate_variant_id(*variant_idx)),
                         };
                         let field_id = match adt_kind {
                             AdtKind::Struct | AdtKind::Enum => None,
-                            AdtKind::Union => Some(translate_field_id(field_index.unwrap())),
+                            AdtKind::Union => Some(self.translate_field_id(field_index.unwrap())),
                         };
 
                         let akind = AggregateKind::Adt(tref, variant_id, field_id);
@@ -943,7 +944,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 variant_index,
             } => {
                 let t_place = self.translate_place(span, place)?;
-                let variant_id = translate_variant_id(*variant_index);
+                let variant_id = self.translate_variant_id(*variant_index);
                 Some(StatementKind::SetDiscriminant(t_place, variant_id))
             }
             mir::StatementKind::StorageLive(local) => {

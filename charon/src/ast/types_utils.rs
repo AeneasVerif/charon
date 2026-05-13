@@ -1428,43 +1428,6 @@ impl<'a, T> Substituted<'a, T> {
 }
 
 impl TypeDecl {
-    /// Looks up the variant corresponding to the tag (i.e. the in-memory bytes that represent the discriminant).
-    /// Returns `None` for types that don't have a relevant discriminant (e.g. uninhabited types).
-    ///
-    /// If the `tag` does not correspond to any valid discriminant but there is a niche,
-    /// the resulting `VariantId` will be for the untagged variant [`TagEncoding::Niche::untagged_variant`].
-    pub fn get_variant_from_tag(
-        &self,
-        target: &TargetTriple,
-        tag: ScalarValue,
-    ) -> Option<VariantId> {
-        let layout = self.layout.get(target)?;
-        if layout.uninhabited {
-            return None;
-        };
-        let discr_layout = layout.discriminant_layout.as_ref()?;
-
-        let variant_for_tag =
-            layout
-                .variant_layouts
-                .iter_enumerated()
-                .find_map(|(id, variant_layout)| {
-                    if variant_layout.tag == Some(tag) {
-                        Some(id)
-                    } else {
-                        None
-                    }
-                });
-
-        match &discr_layout.encoding {
-            TagEncoding::Direct => {
-                assert_eq!(tag.get_integer_ty(), discr_layout.tag_ty);
-                variant_for_tag
-            }
-            TagEncoding::Niche { untagged_variant } => variant_for_tag.or(Some(*untagged_variant)),
-        }
-    }
-
     pub fn is_c_repr(&self) -> bool {
         self.repr
             .as_ref()
@@ -1493,6 +1456,48 @@ impl TypeDecl {
         fields
             .iter_enumerated()
             .find(|(_, field)| field.name.as_deref() == Some(field_name))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum DiscriminantReadError {
+    /// We read an uninitialized byte.
+    UninitByte,
+    /// We reached an invalid discriminant state.
+    InvalidDiscriminant,
+}
+
+impl Discriminator {
+    /// Make a trivial discriminator that always returns the given variant id.
+    pub fn trivial(variant_id: VariantId) -> Self {
+        Self::Known(variant_id)
+    }
+
+    /// Read a discriminant from memory. The `read` function simulates reading an integer of the
+    /// given type at the given byte offset from memory and can return `UninitByte` if the byte
+    /// could not be read.
+    pub fn read_discriminant(
+        &self,
+        read: impl Fn(ByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
+    ) -> Result<VariantId, DiscriminantReadError> {
+        match self {
+            Discriminator::Known(id) => Ok(*id),
+            Discriminator::Invalid => Err(DiscriminantReadError::InvalidDiscriminant),
+            Discriminator::Branch {
+                offset,
+                int_ty,
+                fallback,
+                children,
+            } => {
+                let val = read(*offset, *int_ty)?;
+                for (range, child) in children {
+                    if range.contains(&val) {
+                        return child.read_discriminant(read);
+                    }
+                }
+                fallback.read_discriminant(read)
+            }
+        }
     }
 }
 

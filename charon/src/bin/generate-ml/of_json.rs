@@ -121,7 +121,7 @@ impl<'a> GenerateCtx<'a> {
     fn type_to_ocaml_call(&self, ty: &Ty) -> String {
         match ty.kind() {
             TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
-            TyKind::Literal(LiteralTy::Char) => "char_value_of_json".to_string(),
+            TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
             TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
                 // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
                 IntTy::I128 => "big_int_of_json".to_string(),

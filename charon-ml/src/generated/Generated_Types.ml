@@ -32,6 +32,9 @@ type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
 type literal_type = Values.literal_type [@@deriving show, ord, eq]
 
+(* A half-open range. *)
+type 'a range = 'a * 'a [@@deriving show, ord, eq]
+
 (* Manually implemented because no type uses it (we use plain lists instead of
    vectors in generic_params), which causes visitor inference problems if we
    declare it within a visitor group. *)
@@ -149,6 +152,11 @@ class ['self] iter_ty_base =
     inherit [_] iter_type_vars
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
 
+    method visit_range : 'a. ('env -> 'a -> unit) -> 'env -> 'a range -> unit =
+      fun visit_elem env (x, y) ->
+        visit_elem env x;
+        visit_elem env y
+
     method visit_assoc_type_id_map :
         'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_type_id_map -> unit =
       AssocTypeId.Map.visit_iter
@@ -162,6 +170,10 @@ class ['self] map_ty_base =
   object (self : 'self)
     inherit [_] map_type_vars
     method visit_span : 'env -> span -> span = fun _ x -> x
+
+    method visit_range :
+        'a 'b. ('env -> 'a -> 'b) -> 'env -> 'a range -> 'b range =
+      fun visit_elem env (x, y) -> (visit_elem env x, visit_elem env y)
 
     method visit_assoc_type_id_map :
         'a 'b.
@@ -871,13 +883,24 @@ and closure_info = {
 and closure_kind = Fn | FnMut | FnOnce
 and disambiguator = (Disambiguator.id[@visitors.opaque])
 
-(** Layout of the discriminant. Describes the offset of the discriminant field
-    as well as its encoding as [tag] in memory. *)
-and discriminant_layout = {
-  offset : int;  (** The offset of the discriminant in bytes. *)
-  tag_ty : integer_type;  (** The representation type of the discriminant. *)
-  encoding : tag_encoding;  (** How the tag is encoding in memory. *)
-}
+(** Decision tree used to determine the active variant by reading memory.
+    Mirrors MiniRust's [Discriminator]. *)
+and discriminator =
+  | Known of variant_id  (** The variant is known. *)
+  | Invalid  (** No valid variant (e.g., invalid tag value). *)
+  | Branch of
+      int
+      * integer_type
+      * (scalar_value range * discriminator) list
+      * discriminator
+      (** Branch on an integer value read from memory at [offset].
+
+          Fields:
+          - [offset]: Byte offset to read from.
+          - [int_ty]: Integer type to read.
+          - [children]: If the integer is in one of these ranges, continue with
+            the given [Discriminator]. The ranges are sorted.
+          - [fallback]: Fallback if no range in [children] matches. *)
 
 and field = {
   span : span;
@@ -1033,9 +1056,9 @@ and item_source =
 and layout = {
   size : int option;  (** The size of the type in bytes. *)
   align : int option;  (** The alignment, in bytes. *)
-  discriminant_layout : discriminant_layout option;
-      (** The discriminant's layout, if any. Only relevant for types with
-          multiple variants. *)
+  discriminator : discriminator option;
+      (** Decision tree that determines the active variant by reading memory.
+          Only [Some] for enums. *)
   uninhabited : bool;
       (** Whether the type is uninhabited, i.e. has any valid value at all. Note
           that uninhabited types can have arbitrary layouts: [(u32, !)] has
@@ -1129,26 +1152,14 @@ and repr_algorithm =
     NOTE: This does not include less common/unstable representations such as
     [#[repr(simd)]] or the compiler internal [#[repr(linear)]]. Similarly, enum
     discriminant representations are encoded in [[Variant::discriminant]] and
-    [[DiscriminantLayout]] instead. This only stores whether the discriminant
-    type was derived from an explicit annotation. *)
+    [[Discriminator]] instead. This only stores whether the discriminant type
+    was derived from an explicit annotation. *)
 and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;
   transparent : bool;
   explicit_discr_type : bool;
 }
-
-(** Describes how we represent the active enum variant in memory. *)
-and tag_encoding =
-  | Direct
-      (** Represents the direct encoding of the discriminant as the tag via
-          integer casts. *)
-  | Niche of variant_id
-      (** Represents the encoding of the discriminant in the niche of variant
-          [untagged_variant].
-
-          Fields:
-          - [untagged_variant] *)
 
 (** A type declaration.
 
@@ -1212,8 +1223,8 @@ and variant = {
   discriminant : literal;
       (** The discriminant value outputted by [std::mem::discriminant] for this
           variant. This can be different than the value stored in memory (called
-          [tag]). That one is described by [[DiscriminantLayout]] and
-          [[TagEncoding]]. *)
+          [tag]); that one is described by [[Discriminator]] and
+          [[VariantLayout::tagger]]. *)
 }
 
 (** Simplified layout of a single variant.
@@ -1224,16 +1235,10 @@ and variant_layout = {
   uninhabited : bool;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)
-  tag : scalar_value option;
-      (** The memory representation of the discriminant corresponding to this
-          variant. It must be of the same type as the corresponding
-          [[DiscriminantLayout::tag_ty]].
-
-          If it's [None], then this variant is either:
-          - the untagged variant (cf. [[TagEncoding::Niche::untagged_variant]])
-            of a niched enum;
-          - the single variant of a struct;
-          - uninhabited. *)
+  tagger : (int * scalar_value) list;
+      (** How to write the tag when constructing this variant. Each entry means:
+          write [value] at byte [offset]. Mirrors MiniRust's [Variant::tagger].
+      *)
 }
 [@@deriving
   show,

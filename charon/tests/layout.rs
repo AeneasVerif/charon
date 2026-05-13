@@ -1,4 +1,5 @@
 #![feature(box_patterns)]
+use itertools::Itertools;
 use std::path::PathBuf;
 
 use charon_lib::ast::*;
@@ -164,35 +165,53 @@ fn type_layout() -> anyhow::Result<()> {
         &[],
     )?;
 
-    // Check whether niche discriminant computations are correct, i.e. reversible.
+    // Check whether discriminator/tagger roundtrips are correct: use each variant's tagger
+    // to answer the discriminator's read queries, and verify we get back the same variant.
     let the_target = crate_data.target_information.keys().next().unwrap().clone();
     for tdecl in crate_data.type_decls.iter() {
         if let Some(layout) = tdecl.layout.get(&the_target)
-            && layout.discriminant_layout.is_some()
+            && let Some(discriminator) = &layout.discriminator
         {
             let name = repr_name(&crate_data, &tdecl.item_meta.name);
             for (var_id, variant) in layout.variant_layouts.iter_enumerated() {
-                let tag = variant.tag;
                 if layout.is_variant_uninhabited(var_id) {
-                    assert_eq!(
-                        None, tag,
-                        "For type {} with uninhabited variant {} something went wrong!",
-                        name, var_id
+                    assert!(
+                        variant.tagger.is_empty(),
+                        "For type {name} with uninhabited variant {var_id} expected empty tagger",
                     );
                 } else {
-                    match tag {
-                        None => (), // Must be the untagged variant
-                        Some(tag) => {
-                            let roundtrip_var_id = tdecl.get_variant_from_tag(&the_target, tag);
-                            assert_eq!(
-                                Some(var_id),
-                                roundtrip_var_id,
-                                "For type {} something went wrong, tag = {:?}",
-                                name,
-                                tag
-                            )
-                        }
-                    }
+                    let tagger = &variant.tagger;
+                    // Use the tagger entries to answer discriminator read queries. For bytes
+                    // not covered by the tagger (e.g. the untagged variant in niche encoding),
+                    // we need a value that doesn't match any tagged variant's range.
+                    let all_taggers = layout
+                        .variant_layouts
+                        .iter()
+                        .flat_map(|v| v.tagger.iter())
+                        .collect_vec();
+                    let result = discriminator.read_discriminant(|offset, int_ty| {
+                        Ok(tagger
+                            .iter()
+                            .find(|(off, val)| *off == offset && val.ty() == int_ty)
+                            .map(|(_, val)| *val)
+                            .unwrap_or_else(|| {
+                                // Pick a value not used by any tagger at this offset.
+                                let used_vals: Vec<_> = all_taggers
+                                    .iter()
+                                    .filter(|(off, _)| *off == offset)
+                                    .map(|(_, val)| val.to_bits())
+                                    .collect();
+                                // Find a value not in the used set (try incrementing from the
+                                // first used value).
+                                let candidate = used_vals.iter().copied().max().unwrap_or(0) + 1;
+                                ScalarValue::from_bits(int_ty, candidate)
+                            }))
+                    });
+                    assert_eq!(
+                        Ok(var_id),
+                        result,
+                        "For type {name} variant {var_id}, tagger = {tagger:?}",
+                    );
                 }
             }
         }
