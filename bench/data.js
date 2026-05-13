@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1778624110261,
+  "lastUpdate": 1778667911455,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -1554,6 +1554,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 370.7,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.9,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b2220a21b0176f1bf7353166932cec2683321bb1",
+          "message": "Merge pull request #1153 from Nadrieril/reverse-target-dispatch\n\nIdentify which functions are a per-target specialization",
+          "timestamp": "2026-05-13T10:20:49Z",
+          "tree_id": "b610d58ac3673e571d235227213c294bdbcedeb0",
+          "url": "https://github.com/AeneasVerif/charon/commit/b2220a21b0176f1bf7353166932cec2683321bb1"
+        },
+        "date": 1778667910617,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 113804409308,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 14.17,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 388,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.4,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 450676501300,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 46.74,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 370.8,
             "unit": "max-rss(MB)"
           },
           {
