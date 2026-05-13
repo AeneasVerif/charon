@@ -1206,31 +1206,58 @@
               "end": {
                 "Unsigned": [
                   "U8",
-                  "2"
-                ]
-              }
-            },
-            {
-              "Known": 0
-            }
-          ],
-          [
-            {
-              "start": {
-                "Unsigned": [
-                  "U8",
-                  "4"
-                ]
-              },
-              "end": {
-                "Unsigned": [
-                  "U8",
                   "4"
                 ]
               }
             },
             {
-              "Known": 2
+              "Branch": {
+                "offset": 0,
+                "int_ty": {
+                  "Unsigned": "U8"
+                },
+                "children": [
+                  [
+                    {
+                      "start": {
+                        "Unsigned": [
+                          "U8",
+                          "2"
+                        ]
+                      },
+                      "end": {
+                        "Unsigned": [
+                          "U8",
+                          "2"
+                        ]
+                      }
+                    },
+                    {
+                      "Known": 0
+                    }
+                  ],
+                  [
+                    {
+                      "start": {
+                        "Unsigned": [
+                          "U8",
+                          "4"
+                        ]
+                      },
+                      "end": {
+                        "Unsigned": [
+                          "U8",
+                          "4"
+                        ]
+                      }
+                    },
+                    {
+                      "Known": 2
+                    }
+                  ]
+                ],
+                "fallback": "Invalid"
+              }
             }
           ]
         ],

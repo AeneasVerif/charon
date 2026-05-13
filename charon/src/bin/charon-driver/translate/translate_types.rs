@@ -583,8 +583,29 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let fallback = match tag_encoding {
                     r_abi::TagEncoding::Direct => Discriminator::Invalid,
                     r_abi::TagEncoding::Niche {
-                        untagged_variant, ..
-                    } => Discriminator::Known(self.translate_variant_id(*untagged_variant)),
+                        untagged_variant,
+                        niche_variants,
+                        ..
+                    } => {
+                        if niche_variants.contains(untagged_variant)
+                            && let Some(start) = tag_for_variant(*niche_variants.start())
+                            && let Some(end) = tag_for_variant(*niche_variants.end())
+                        {
+                            // Add an inner discriminator; the outer one filters the whole range of
+                            // values considered to be discriminants, the inner one selects known
+                            // variants from within that range. This is to detect the UB that
+                            // happens if we encounter a discriminant that would have been the
+                            // niched variant.
+                            let discriminator = Discriminator::Branch {
+                                offset: tag_offset,
+                                int_ty: tag_ty,
+                                fallback: Box::new(Discriminator::Invalid),
+                                children,
+                            };
+                            children = vec![(start..=end, discriminator)];
+                        }
+                        Discriminator::Known(self.translate_variant_id(*untagged_variant))
+                    }
                 };
 
                 let discriminator = Discriminator::Branch {
