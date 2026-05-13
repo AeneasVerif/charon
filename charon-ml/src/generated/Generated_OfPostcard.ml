@@ -1895,7 +1895,7 @@ and discriminator_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* children =
            list_of_postcard
              (pair_of_postcard
-                (range_of_postcard scalar_value_of_postcard)
+                (range_inclusive_of_postcard scalar_value_of_postcard)
                 discriminator_of_postcard)
              ctx st
          in

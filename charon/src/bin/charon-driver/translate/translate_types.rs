@@ -552,7 +552,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 // Compute per-variant tag values and build tagger + discriminator children.
                 let mut variant_layouts: IndexVec<VariantId, VariantLayout> = IndexVec::new();
-                let mut children: Vec<(std::ops::Range<ScalarValue>, Discriminator)> = Vec::new();
+                let mut children = Vec::new();
 
                 for (id, variant_layout) in variants.iter_enumerated() {
                     let variant_id = self.translate_variant_id(id);
@@ -568,13 +568,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                     .unwrap()
                             }
                         };
-                        // Rustc never uses a full `u128` for tags so this won't overflow. It may
-                        // however no longer fit in the target type but that's fine for a range
-                        // excluded bound.
-                        let val_plus_1 = val
-                            .add(1)
-                            .expect("Overflow when computing discriminant ranges");
-                        children.push((val..val_plus_1, Discriminator::Known(variant_id)));
+                        children.push((val..=val, Discriminator::Known(variant_id)));
 
                         vec![(tag_offset, val)]
                     } else {
