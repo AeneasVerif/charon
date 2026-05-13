@@ -2494,6 +2494,9 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
         let* item_id = assoc_item_id_of_json ctx item_id in
         let* reuses_default = bool_of_json ctx reuses_default in
         Ok (TraitImplItem (impl_ref, trait_ref, item_id, reuses_default))
+    | `Assoc [ ("TargetDependent", `Assoc [ ("dispatcher", dispatcher) ]) ] ->
+        let* dispatcher = fun_decl_ref_of_json ctx dispatcher in
+        Ok (TargetDependentItem dispatcher)
     | `Assoc
         [
           ( "VTableTy",

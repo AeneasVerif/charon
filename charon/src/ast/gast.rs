@@ -180,6 +180,11 @@ pub enum ItemSource {
         #[drive(skip)]
         reuses_default: bool,
     },
+    /// This function is a target-specific variant behind a `TargetDispatch` façade. The dispatcher
+    /// is the function with the `Body::TargetDispatch` body that dispatches to this function.
+    TargetDependent {
+        dispatcher: FunDeclRef,
+    },
     /// This is a vtable struct for a trait.
     VTableTy {
         /// The `dyn Trait` predicate implemented by this vtable.

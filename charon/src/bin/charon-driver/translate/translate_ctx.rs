@@ -6,6 +6,7 @@ use crate::hax;
 use crate::hax::SInto;
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
+use charon_lib::ids::IndexVec;
 use charon_lib::options::TranslateOptions;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
@@ -44,7 +45,7 @@ pub struct TranslateCtx<'tcx> {
     /// When we find a use of a method, we mark it "used" using `mark_method_as_used`. This
     /// enqueues all known and future impls of this method. We also mark a method as used if we
     /// find an implementation of it in a non-opaque impl, and if the method is a required method.
-    pub method_status: IndexMap<TraitDeclId, IndexMap<TraitMethodId, MethodStatus>>,
+    pub method_status: IndexMap<TraitDeclId, IndexVec<TraitMethodId, MethodStatus>>,
 
     /// The map from rustc id to translated id.
     pub id_map: HashMap<TransItemSource, ItemId>,
