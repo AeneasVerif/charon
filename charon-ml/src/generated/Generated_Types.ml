@@ -1131,9 +1131,8 @@ and ptr_metadata =
           for [[T]] denotes the number of elements in the slice. While for [str]
           it denotes the number of bytes in the string. *)
   | VTable of type_decl_ref
-      (** Metadata for [dyn Trait], referring to the vtable struct, also for
-          user-defined types that directly or indirectly contain a [dyn Trait].
-          Of type [&'static vtable] *)
+      (** Metadata for [dyn Trait], referring to the vtable struct. Has type
+          [&'static vtable] *)
   | InheritFrom of ty
       (** Unknown due to generics, but will inherit from the given type. This is
           consistent with [<Ty as Pointee>::Metadata]. Of type
