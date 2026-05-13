@@ -2,8 +2,6 @@
 use crate::hax;
 use rustc_middle::ty;
 
-use crate::translate::translate_bodies::translate_variant_id;
-
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 
@@ -80,7 +78,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .try_collect()?;
                 use crate::hax::VariantKind;
                 let vid = if let VariantKind::Enum { index, .. } = *kind {
-                    Some(translate_variant_id(index))
+                    Some(self.translate_variant_id(index))
                 } else {
                     None
                 };

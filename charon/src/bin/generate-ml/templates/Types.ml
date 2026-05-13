@@ -35,6 +35,9 @@ type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
 type literal_type = Values.literal_type [@@deriving show, ord, eq]
 
+(* A half-open range. *)
+type 'a range = 'a * 'a [@@deriving show, ord, eq]
+
 (* Manually implemented because no type uses it (we use plain lists instead of
    vectors in generic_params), which causes visitor inference problems if we
    declare it within a visitor group. *)
@@ -56,6 +59,11 @@ class ['self] iter_ty_base =
   object (self : 'self)
     inherit [_] iter_type_vars
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
+    method visit_range : 'a. ('env -> 'a -> unit) -> 'env -> 'a range -> unit =
+      fun visit_elem env (x, y) ->
+        visit_elem env x;
+        visit_elem env y
+
     method visit_assoc_type_id_map
         : 'a. ('env -> 'a -> unit) -> 'env -> 'a assoc_type_id_map -> unit =
       AssocTypeId.Map.visit_iter
@@ -68,6 +76,10 @@ class ['self] map_ty_base =
   object (self : 'self)
     inherit [_] map_type_vars
     method visit_span : 'env -> span -> span = fun _ x -> x
+    method visit_range :
+        'a 'b. ('env -> 'a -> 'b) -> 'env -> 'a range -> 'b range =
+      fun visit_elem env (x, y) -> (visit_elem env x, visit_elem env y)
+
     method visit_assoc_type_id_map
         : 'a 'b. ('env -> 'a -> 'b) -> 'env -> 'a assoc_type_id_map -> 'b assoc_type_id_map =
       AssocTypeId.Map.visit_map

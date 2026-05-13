@@ -717,7 +717,7 @@ pub enum Rvalue {
     /// Discriminant read. Reads the discriminant value of an enum. The place must have the type of
     /// an enum. The discriminant in question is the one in the `discriminant` field of the
     /// corresponding `Variant`. This can be different than the value stored in memory (called
-    /// `tag`). That one is described by [`DiscriminantLayout`] and [`TagEncoding`].
+    /// `tag`); that one is described by [`Discriminator`] and [`VariantLayout::tagger`].
     Discriminant(Place),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text

@@ -284,6 +284,13 @@ let triple_of_postcard
   let* c = c_of_postcard ctx st in
   Ok (a, b, c)
 
+let range_of_postcard
+    (a_of_postcard : 'ctx -> postcard_state -> ('a, string) result) (ctx : 'ctx)
+    (st : postcard_state) : ('a * 'a, string) result =
+  let* a = a_of_postcard ctx st in
+  let* b = a_of_postcard ctx st in
+  Ok (a, b)
+
 let key_value_pair_of_postcard
     (a_of_postcard : 'ctx -> postcard_state -> ('a, string) result)
     (b_of_postcard : 'ctx -> postcard_state -> ('b, string) result) (ctx : 'ctx)

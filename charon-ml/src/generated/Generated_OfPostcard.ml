@@ -1880,13 +1880,28 @@ and declaration_group_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (MixedGroup x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and discriminant_layout_of_postcard (ctx : of_postcard_ctx)
-    (st : postcard_state) : (discriminant_layout, string) result =
+and discriminator_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (discriminator, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* offset = u64_of_postcard ctx st in
-     let* tag_ty = integer_type_of_postcard ctx st in
-     let* encoding = tag_encoding_of_postcard ctx st in
-     Ok ({ offset; tag_ty; encoding } : discriminant_layout))
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = variant_id_of_postcard ctx st in
+         Ok (Known x_0)
+     | 1 -> Ok Invalid
+     | 2 ->
+         let* offset = u64_of_postcard ctx st in
+         let* int_ty = integer_type_of_postcard ctx st in
+         let* children =
+           list_of_postcard
+             (pair_of_postcard
+                (range_of_postcard scalar_value_of_postcard)
+                discriminator_of_postcard)
+             ctx st
+         in
+         let* fallback = box_of_postcard discriminator_of_postcard ctx st in
+         Ok (Branch (offset, int_ty, children, fallback))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and error_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (error, string) result =
@@ -2148,17 +2163,13 @@ and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* size = option_of_postcard u64_of_postcard ctx st in
      let* align = option_of_postcard u64_of_postcard ctx st in
-     let* discriminant_layout =
-       option_of_postcard discriminant_layout_of_postcard ctx st
-     in
+     let* discriminator = option_of_postcard discriminator_of_postcard ctx st in
      let* uninhabited = bool_of_postcard ctx st in
      let* variant_layouts =
        index_vec_of_postcard variant_id_of_postcard variant_layout_of_postcard
          ctx st
      in
-     Ok
-       ({ size; align; discriminant_layout; uninhabited; variant_layouts }
-         : layout))
+     Ok ({ size; align; discriminator; uninhabited; variant_layouts } : layout))
 
 and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (local, string) result =
@@ -2264,17 +2275,6 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      | 0 -> Ok Json
      | 1 -> Ok Postcard
      | 2 -> Ok AllFormats
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and tag_encoding_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (tag_encoding, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok Direct
-     | 1 ->
-         let* untagged_variant = variant_id_of_postcard ctx st in
-         Ok (Niche untagged_variant)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2566,14 +2566,15 @@ and v_table_field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and variant_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (variant, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* span = span_of_postcard ctx st in
+    (let* id = variant_id_of_postcard ctx st in
+     let* span = span_of_postcard ctx st in
      let* attr_info = attr_info_of_postcard ctx st in
      let* variant_name = string_of_postcard ctx st in
      let* fields =
        index_vec_of_postcard field_id_of_postcard field_of_postcard ctx st
      in
      let* discriminant = literal_of_postcard ctx st in
-     Ok ({ span; attr_info; variant_name; fields; discriminant } : variant))
+     Ok ({ id; span; attr_info; variant_name; fields; discriminant } : variant))
 
 and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (variant_layout, string) result =
@@ -2582,5 +2583,9 @@ and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        index_vec_of_postcard field_id_of_postcard u64_of_postcard ctx st
      in
      let* uninhabited = bool_of_postcard ctx st in
-     let* tag = option_of_postcard scalar_value_of_postcard ctx st in
-     Ok ({ field_offsets; uninhabited; tag } : variant_layout))
+     let* tagger =
+       list_of_postcard
+         (pair_of_postcard u64_of_postcard scalar_value_of_postcard)
+         ctx st
+     in
+     Ok ({ field_offsets; uninhabited; tagger } : variant_layout))

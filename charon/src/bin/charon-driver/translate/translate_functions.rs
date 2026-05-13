@@ -7,7 +7,6 @@ use crate::hax;
 use itertools::Itertools;
 use rustc_span::sym;
 
-use super::translate_bodies::translate_variant_id;
 use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
@@ -46,7 +45,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .try_collect()?;
         let variant = match ctor_of {
             hax::CtorOf::Struct => None,
-            hax::CtorOf::Variant => Some(translate_variant_id(*variant_id)),
+            hax::CtorOf::Variant => Some(self.translate_variant_id(*variant_id)),
         };
         builder.push_statement(StatementKind::Assign(
             return_place,

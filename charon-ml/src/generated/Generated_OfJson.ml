@@ -74,9 +74,6 @@ let big_int_of_json _ (js : json) : (big_int, string) result =
     | `String is -> Ok (Z.of_string is)
     | _ -> Error "")
 
-let char_value_of_json : of_json_ctx -> json -> (char_value, string) result =
-  char_of_json
-
 let opt_indexed_map_of_json :
     'a0 'a1.
     (of_json_ctx -> json -> ('a0, string) result) ->
@@ -821,7 +818,7 @@ and literal_of_json (ctx : of_json_ctx) (js : json) : (literal, string) result =
         let* bool_ = bool_of_json ctx bool_ in
         Ok (VBool bool_)
     | `Assoc [ ("Char", char_) ] ->
-        let* char_ = char_value_of_json ctx char_ in
+        let* char_ = char_of_json ctx char_ in
         Ok (VChar char_)
     | `Assoc [ ("ByteStr", byte_str) ] ->
         let* byte_str = list_of_json int_of_json ctx byte_str in
@@ -2181,16 +2178,36 @@ and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
         Ok (MixedGroup mixed)
     | _ -> Error "")
 
-and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
-    (discriminant_layout, string) result =
+and discriminator_of_json (ctx : of_json_ctx) (js : json) :
+    (discriminator, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("offset", offset); ("tag_ty", tag_ty); ("encoding", encoding) ]
-      ->
+    | `Assoc [ ("Known", known) ] ->
+        let* known = variant_id_of_json ctx known in
+        Ok (Known known)
+    | `String "Invalid" -> Ok Invalid
+    | `Assoc
+        [
+          ( "Branch",
+            `Assoc
+              [
+                ("offset", offset);
+                ("int_ty", int_ty);
+                ("children", children);
+                ("fallback", fallback);
+              ] );
+        ] ->
         let* offset = int_of_json ctx offset in
-        let* tag_ty = integer_type_of_json ctx tag_ty in
-        let* encoding = tag_encoding_of_json ctx encoding in
-        Ok ({ offset; tag_ty; encoding } : discriminant_layout)
+        let* int_ty = integer_type_of_json ctx int_ty in
+        let* children =
+          list_of_json
+            (pair_of_json
+               (range_of_json scalar_value_of_json)
+               discriminator_of_json)
+            ctx children
+        in
+        let* fallback = box_of_json discriminator_of_json ctx fallback in
+        Ok (Branch (offset, int_ty, children, fallback))
     | _ -> Error "")
 
 and error_of_json (ctx : of_json_ctx) (js : json) : (error, string) result =
@@ -2531,14 +2548,14 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
         [
           ("size", size);
           ("align", align);
-          ("discriminant_layout", discriminant_layout);
+          ("discriminator", discriminator);
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
         ] ->
         let* size = option_of_json int_of_json ctx size in
         let* align = option_of_json int_of_json ctx align in
-        let* discriminant_layout =
-          option_of_json discriminant_layout_of_json ctx discriminant_layout
+        let* discriminator =
+          option_of_json discriminator_of_json ctx discriminator
         in
         let* uninhabited = bool_of_json ctx uninhabited in
         let* variant_layouts =
@@ -2546,7 +2563,7 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             variant_layouts
         in
         Ok
-          ({ size; align; discriminant_layout; uninhabited; variant_layouts }
+          ({ size; align; discriminator; uninhabited; variant_layouts }
             : layout)
     | _ -> Error "")
 
@@ -2663,16 +2680,6 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Json" -> Ok Json
     | `String "Postcard" -> Ok Postcard
     | `String "All" -> Ok AllFormats
-    | _ -> Error "")
-
-and tag_encoding_of_json (ctx : of_json_ctx) (js : json) :
-    (tag_encoding, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Direct" -> Ok Direct
-    | `Assoc [ ("Niche", `Assoc [ ("untagged_variant", untagged_variant) ]) ] ->
-        let* untagged_variant = variant_id_of_json ctx untagged_variant in
-        Ok (Niche untagged_variant)
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -3064,12 +3071,14 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
     (match js with
     | `Assoc
         [
+          ("id", id);
           ("span", span);
           ("attr_info", attr_info);
           ("name", name);
           ("fields", fields);
           ("discriminant", discriminant);
         ] ->
+        let* id = variant_id_of_json ctx id in
         let* span = span_of_json ctx span in
         let* attr_info = attr_info_of_json ctx attr_info in
         let* variant_name = string_of_json ctx name in
@@ -3077,7 +3086,9 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
           index_vec_of_json field_id_of_json field_of_json ctx fields
         in
         let* discriminant = literal_of_json ctx discriminant in
-        Ok ({ span; attr_info; variant_name; fields; discriminant } : variant)
+        Ok
+          ({ id; span; attr_info; variant_name; fields; discriminant }
+            : variant)
     | _ -> Error "")
 
 and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
@@ -3088,12 +3099,16 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("field_offsets", field_offsets);
           ("uninhabited", uninhabited);
-          ("tag", tag);
+          ("tagger", tagger);
         ] ->
         let* field_offsets =
           index_vec_of_json field_id_of_json int_of_json ctx field_offsets
         in
         let* uninhabited = bool_of_json ctx uninhabited in
-        let* tag = option_of_json scalar_value_of_json ctx tag in
-        Ok ({ field_offsets; uninhabited; tag } : variant_layout)
+        let* tagger =
+          list_of_json
+            (pair_of_json int_of_json scalar_value_of_json)
+            ctx tagger
+        in
+        Ok ({ field_offsets; uninhabited; tagger } : variant_layout)
     | _ -> Error "")

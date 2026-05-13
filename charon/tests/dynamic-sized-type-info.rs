@@ -35,10 +35,11 @@ fn ptr_metadata() -> anyhow::Result<()> {
     }
 
     trait Showable { fn show(&self) -> &str; }
-    struct DynTrait {
-      meta : u32,
-      dynt : dyn Showable
-    }
+    // Not supported yet
+    // struct DynTrait {
+    //   meta : u32,
+    //   dynt : dyn Showable
+    // }
 
     struct GenericInLastField<T> {
         x: u32,

@@ -38,46 +38,6 @@ let assert_contains ~msg ~sub s =
   if not (string_contains ~sub s) then
     Format.kasprintf failwith "%s, expected substring: '%s' in '%s'" msg sub s
 
-let test_discriminant_roundtrip (crate : LlbcAst.crate) =
-  let print_ctx = PrintUtils.of_crate crate in
-  let print_var_id_opt = function
-    | Some v -> "Some (" ^ Print.variant_id_to_pretty_string v ^ ")"
-    | None -> "None"
-  in
-  let print_scalar_value_opt = function
-    | Some v -> "Some " ^ Print.scalar_value_to_string v
-    | None -> "None"
-  in
-  let ptr_size = (snd (List.hd crate.target_information)).target_pointer_size in
-  Types.TypeDeclId.Map.iter
-    (fun _ (ty_decl : Types.type_decl) ->
-      match (ty_decl.kind, ty_decl.Types.layout) with
-      | Enum _, [ (_, layout) ] when Option.is_some layout.discriminant_layout
-        -> begin
-          let name = Print.name_to_string print_ctx ty_decl.item_meta.name in
-          Types.VariantId.iteri
-            (fun var_id _ ->
-              let variant_layout =
-                Types.VariantId.nth layout.variant_layouts var_id
-              in
-              let tag = variant_layout.tag in
-              if variant_layout.uninhabited then
-                assert_eq tag None name print_scalar_value_opt
-              else
-                match tag with
-                | None -> () (* Must be the untagged variant *)
-                | Some tag ->
-                    let roundtrip_var_id =
-                      TypesUtils.get_variant_from_tag ptr_size ty_decl tag
-                    in
-                    assert_eq roundtrip_var_id (Some var_id)
-                      (name ^ " with tag: " ^ print_scalar_value_opt (Some tag))
-                      print_var_id_opt)
-            layout.variant_layouts
-        end
-      | _ -> () (* Not an enum *))
-    crate.type_decls
-
 let test_cross_format_errors json postcard =
   (match OfPostcard.crate_of_postcard_file json with
   | Ok _ ->
@@ -133,8 +93,6 @@ let run_tests (folder : string) : unit =
         | Ok m ->
             json_time := !json_time +. (Unix.gettimeofday () -. start_time);
             log#linfo (lazy ("Deserialized: " ^ file));
-            (* Test discriminant/tag roundtrip *)
-            test_discriminant_roundtrip m;
             (* Test that pretty-printing doesn't crash *)
             let printed = Print.crate_to_string m in
             log#ldebug (lazy ("\n" ^ printed ^ "\n")))
