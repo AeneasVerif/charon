@@ -388,7 +388,7 @@ pub enum Discriminator {
         int_ty: IntegerTy,
         /// If the integer is in one of these ranges, continue with the given `Discriminator`. The
         /// ranges are sorted.
-        children: Vec<(std::ops::Range<ScalarValue>, Discriminator)>,
+        children: Vec<(std::ops::RangeInclusive<ScalarValue>, Discriminator)>,
         /// Fallback if no range in `children` matches.
         fallback: Box<Discriminator>,
     },

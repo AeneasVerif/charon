@@ -2202,7 +2202,7 @@ and discriminator_of_json (ctx : of_json_ctx) (js : json) :
         let* children =
           list_of_json
             (pair_of_json
-               (range_of_json scalar_value_of_json)
+               (range_inclusive_of_json scalar_value_of_json)
                discriminator_of_json)
             ctx children
         in

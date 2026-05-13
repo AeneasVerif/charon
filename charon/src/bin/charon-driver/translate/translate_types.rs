@@ -549,17 +549,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     r_abi::Primitive::Float(_) => unreachable!(),
                 };
                 let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
-
-                // Compute per-variant tag values and build tagger + discriminator children.
-                let mut variant_layouts: IndexVec<VariantId, VariantLayout> = IndexVec::new();
-                let mut children: Vec<(std::ops::Range<ScalarValue>, Discriminator)> = Vec::new();
-
-                for (id, variant_layout) in variants.iter_enumerated() {
-                    let variant_id = self.translate_variant_id(id);
-                    let tagger = if variant_layout.is_uninhabited() {
-                        vec![]
-                    } else if let Some(s) = tcx.tag_for_variant(ty_env.as_query_input((ty, id))) {
-                        let val = match tag_ty {
+                let tag_for_variant = |id: rustc_abi::VariantIdx| {
+                    tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
+                        .map(|s| match tag_ty {
                             IntegerTy::Signed(int_ty) => {
                                 ScalarValue::from_int(ptr_size, int_ty, s.to_int(tag_size)).unwrap()
                             }
@@ -567,29 +559,53 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                 ScalarValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
                                     .unwrap()
                             }
-                        };
-                        // Rustc never uses a full `u128` for tags so this won't overflow. It may
-                        // however no longer fit in the target type but that's fine for a range
-                        // excluded bound.
-                        let val_plus_1 = val
-                            .add(1)
-                            .expect("Overflow when computing discriminant ranges");
-                        children.push((val..val_plus_1, Discriminator::Known(variant_id)));
+                        })
+                };
 
+                // Compute per-variant tag values and build tagger + discriminator children.
+                let mut variant_layouts: IndexVec<VariantId, VariantLayout> = IndexVec::new();
+                let mut children = Vec::new();
+
+                for (id, variant_layout) in variants.iter_enumerated() {
+                    let variant_id = self.translate_variant_id(id);
+                    let tagger = if variant_layout.is_uninhabited() {
+                        vec![]
+                    } else if let Some(val) = tag_for_variant(id) {
+                        children.push((val..=val, Discriminator::Known(variant_id)));
                         vec![(tag_offset, val)]
                     } else {
                         // Niched variant
                         vec![]
                     };
-
                     variant_layouts.push(translate_variant_layout(variant_layout, tagger));
                 }
 
                 let fallback = match tag_encoding {
                     r_abi::TagEncoding::Direct => Discriminator::Invalid,
                     r_abi::TagEncoding::Niche {
-                        untagged_variant, ..
-                    } => Discriminator::Known(self.translate_variant_id(*untagged_variant)),
+                        untagged_variant,
+                        niche_variants,
+                        ..
+                    } => {
+                        if niche_variants.contains(untagged_variant)
+                            && let Some(start) = tag_for_variant(*niche_variants.start())
+                            && let Some(end) = tag_for_variant(*niche_variants.end())
+                        {
+                            // Add an inner discriminator; the outer one filters the whole range of
+                            // values considered to be discriminants, the inner one selects known
+                            // variants from within that range. This is to detect the UB that
+                            // happens if we encounter a discriminant that would have been the
+                            // niched variant.
+                            let discriminator = Discriminator::Branch {
+                                offset: tag_offset,
+                                int_ty: tag_ty,
+                                fallback: Box::new(Discriminator::Invalid),
+                                children,
+                            };
+                            children = vec![(start..=end, discriminator)];
+                        }
+                        Discriminator::Known(self.translate_variant_id(*untagged_variant))
+                    }
                 };
 
                 let discriminator = Discriminator::Branch {
