@@ -1,0 +1,100 @@
+name: Roll pinned toolchain versions
+on:
+  schedule:
+    - cron: '29 09 * * 1' # Weekly on Monday at 9:29 AM
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/roll-toolchain.yml'
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  roll_rust:
+    name: Roll pinned toolchain version
+    runs-on: [self-hosted, linux, nix]
+    permissions:
+      contents: write # Required to push branch and create PR
+      pull-requests: write # Required to create PR
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Calculate target version
+        id: target
+        run: |
+          # We use yesterday's date to ensure that the nightly toolchain
+          # for that date has actually been published, regardless of
+          # what time of day this job runs.
+          TARGET_DATE=$(date -d '-1 day' +%Y-%m-%d)
+          echo "TARGET_VERSION=nightly-$TARGET_DATE" >> $GITHUB_ENV
+          echo "target_version=nightly-$TARGET_DATE" >> $GITHUB_OUTPUT
+
+      - name: Update rust-toolchain
+        run: |
+          sed -i -e "s/^channel = \".*\"$/channel = \"$TARGET_VERSION\"/" rust-toolchain
+          cat rust-toolchain
+
+      - name: Update flake.nix (Option 1)
+        run: |
+          # We need to update the hardcoded commit hash in flake.nix.
+          # To do this without manually searching for commits, we
+          # temporarily remove the commit hash from the URL, let Nix
+          # resolve the latest version via `nix flake update`, and
+          # then read the resolved commit from the generated
+          # `flake.lock` and write it back to `flake.nix`.
+          
+          # 1. Remove the commit hash from the URL in flake.nix.
+          sed -i -E -e 's|(url = "github:oxalica/rust-overlay)/[0-9a-f]{40}(";)|\1\2|' flake.nix
+          grep "rust-overlay" flake.nix
+          
+          # 2. Update the rust-overlay input to resolve the latest commit.
+          nix flake update rust-overlay
+          
+          # 3. Read the resolved commit hash from flake.lock using jq in the CI
+          # environment.
+          nix develop '.#ci' --command bash -c '
+            COMMIT=$(jq -r ".nodes.\"rust-overlay\".locked.rev" flake.lock)
+            echo "RESOLVED_COMMIT=$COMMIT" >> $GITHUB_ENV
+            
+            # 4. Rewrite flake.nix to include the hardcoded commit hash again.
+            sed -i -E -e "s|(url = \"github:oxalica/rust-overlay)|\1/$COMMIT|" flake.nix
+          '
+          grep "rust-overlay" flake.nix
+
+      - name: Verification
+        id: verify
+        run: |
+          nix build -L .#charon || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+          nix build -L .#charon-ml || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+          nix flake check -L || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+          
+          if [ "$BUILD_FAILED" == "true" ]; then
+            echo "verified=false" >> $GITHUB_OUTPUT
+          else
+            echo "verified=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Submit PR
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          commit-message: "[ci] Roll pinned rustc toolchain to ${{ env.TARGET_VERSION }}"
+          author: Google PR Creation Bot <github-pull-request-creation-bot@google.com>
+          committer: Google PR Creation Bot <github-pull-request-creation-bot@google.com>
+          title: "[ci] Roll pinned rustc toolchain to ${{ env.TARGET_VERSION }}"
+          body: |
+            Automated roll of pinned rustc toolchain.
+            
+            Verification status: ${{ steps.verify.outputs.verified == 'true' && 'Passed' || 'Failed' }}
+            
+            If verification failed, developers should use this branch to fix compilation errors caused by `rustc` internal changes.
+          branch: roll-toolchain-${{ env.TARGET_VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}
