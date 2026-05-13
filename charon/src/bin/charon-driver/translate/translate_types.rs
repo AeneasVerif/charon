@@ -422,16 +422,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ty::Str | ty::Slice(..) => PtrMetadata::Length,
             ty::Dynamic(..) => match hax_ty.kind() {
                 hax::TyKind::Dynamic(dyn_binder, _) => {
-                    let vtable = self.translate_region_binder(
-                        span,
-                        &dyn_binder.predicates.predicates[0].clause.kind,
-                        |ctx, kind: &hax::ClauseKind| {
-                            let hax::ClauseKind::Trait(trait_predicate) = kind else {
-                                unreachable!()
-                            };
-                            ctx.translate_vtable_struct_ref(span, &trait_predicate.trait_ref)
-                        },
-                    )?;
+                    let vtable = self.translate_dyn_binder(span, dyn_binder, |ctx, _, _| {
+                        ctx.translate_region_binder(
+                            span,
+                            &dyn_binder.predicates.predicates[0].clause.kind,
+                            |ctx, kind: &hax::ClauseKind| {
+                                let hax::ClauseKind::Trait(trait_predicate) = kind else {
+                                    unreachable!()
+                                };
+                                ctx.translate_vtable_struct_ref(span, &trait_predicate.trait_ref)
+                            },
+                        )
+                    })?;
+                    let vtable = vtable
+                        .skip_binder
+                        .try_substitute(&GenericArgs::empty())
+                        .expect("vtable struct should not depend on self type");
                     let vtable = self.erase_region_binder(vtable);
                     PtrMetadata::VTable(vtable)
                 }

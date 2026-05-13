@@ -1,10 +1,52 @@
-error: Unexpected error: could not find the type variable _dyn
- --> tests/ui/simple/dyn-field.rs:3:1
-  |
-3 | / struct UnsizedStruct {
-4 | |     x: usize,
-5 | |     y: dyn Debug,
-6 | | }
-  | |_^
+# Final LLBC before serialization:
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::fmt::Error
+pub struct Error {}
+
+opaque type core::fmt::Debug::{vtable}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::fmt::Debug
+#[lang_item("Debug")]
+pub trait Debug<Self>
+{
+    fn fmt<'_0_1, '_1_1, '_2_1> = fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
+    vtable: core::fmt::Debug::{vtable}
+}
+
+// Full name: core::fmt::Debug::fmt
+pub fn fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+where
+    [@TraitClause0]: Debug<Self>,
+= <opaque>
+
+// Full name: test_crate::UnsizedStruct
+struct UnsizedStruct {
+  x: usize,
+  y: (dyn Debug + 'static),
+}
+
+
+
