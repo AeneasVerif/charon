@@ -480,6 +480,18 @@ impl<'a> ItemDeduplicator<'a> {
                     // Insert facade decls later because the id remapping would mess up the
                     // dispatch maps.
                     facade_decls.push(group.build_facade_decl(facade_id, self.krate));
+                    // Mark per-target functions as target-dependent.
+                    for &id in group.ids.values() {
+                        let fun_id = *id.as_fun().unwrap();
+                        if let Some(fun_decl) = self.krate.fun_decls.get_mut(fun_id) {
+                            fun_decl.src = ItemSource::TargetDependent {
+                                dispatcher: FunDeclRef {
+                                    id: facade_id,
+                                    generics: Box::new(fun_decl.generics.identity_args()),
+                                },
+                            };
+                        }
+                    }
                     ItemId::Fun(facade_id)
                 }
             };

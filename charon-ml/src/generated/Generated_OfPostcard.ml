@@ -2122,6 +2122,9 @@ and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* reuses_default = bool_of_postcard ctx st in
          Ok (TraitImplItem (impl_ref, trait_ref, item_id, reuses_default))
      | 4 ->
+         let* dispatcher = fun_decl_ref_of_postcard ctx st in
+         Ok (TargetDependentItem dispatcher)
+     | 5 ->
          let* dyn_predicate = dyn_predicate_of_postcard ctx st in
          let* field_map =
            index_vec_of_postcard field_id_of_postcard v_table_field_of_postcard
@@ -2133,11 +2136,11 @@ and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
              ctx st
          in
          Ok (VTableTyItem (dyn_predicate, field_map, supertrait_map))
-     | 5 ->
+     | 6 ->
          let* impl_ref = trait_impl_ref_of_postcard ctx st in
          Ok (VTableInstanceItem impl_ref)
-     | 6 -> Ok VTableMethodShimItem
-     | 7 -> Ok VTableInstanceMonoItem
+     | 7 -> Ok VTableMethodShimItem
+     | 8 -> Ok VTableInstanceMonoItem
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

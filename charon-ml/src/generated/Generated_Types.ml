@@ -998,6 +998,13 @@ and item_source =
           - [reuses_default]: True if the trait decl had a default
             implementation for this function/const and this item is a copy of
             the default item. *)
+  | TargetDependentItem of fun_decl_ref
+      (** This function is a target-specific variant behind a [TargetDispatch]
+          façade. The dispatcher is the function with the [Body::TargetDispatch]
+          body that dispatches to this function.
+
+          Fields:
+          - [dispatcher] *)
   | VTableTyItem of dyn_predicate * v_table_field list * field_id option list
       (** This is a vtable struct for a trait.
 
