@@ -153,6 +153,13 @@ fn type_layout() -> anyhow::Result<()> {
         type Usize = usize;
 
         type Ref<'a> = &'a mut u32;
+
+        // See https://github.com/AeneasVerif/charon/issues/1046 : reading 3 is UB
+        enum HasInvalidDiscr {
+            Var1,       // variant 0, tag 2
+            Var2(bool), // variant 1, untagged (valid values are 0=false and 1=true)
+            Var3,       // variant 2, tag 4
+        }
         "#,
         &[],
     )?;
