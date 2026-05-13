@@ -549,6 +549,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     r_abi::Primitive::Float(_) => unreachable!(),
                 };
                 let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
+                let tag_for_variant = |id: rustc_abi::VariantIdx| {
+                    tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
+                        .map(|s| match tag_ty {
+                            IntegerTy::Signed(int_ty) => {
+                                ScalarValue::from_int(ptr_size, int_ty, s.to_int(tag_size)).unwrap()
+                            }
+                            IntegerTy::Unsigned(uint_ty) => {
+                                ScalarValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
+                                    .unwrap()
+                            }
+                        })
+                };
 
                 // Compute per-variant tag values and build tagger + discriminator children.
                 let mut variant_layouts: IndexVec<VariantId, VariantLayout> = IndexVec::new();
@@ -558,24 +570,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let variant_id = self.translate_variant_id(id);
                     let tagger = if variant_layout.is_uninhabited() {
                         vec![]
-                    } else if let Some(s) = tcx.tag_for_variant(ty_env.as_query_input((ty, id))) {
-                        let val = match tag_ty {
-                            IntegerTy::Signed(int_ty) => {
-                                ScalarValue::from_int(ptr_size, int_ty, s.to_int(tag_size)).unwrap()
-                            }
-                            IntegerTy::Unsigned(uint_ty) => {
-                                ScalarValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
-                                    .unwrap()
-                            }
-                        };
+                    } else if let Some(val) = tag_for_variant(id) {
                         children.push((val..=val, Discriminator::Known(variant_id)));
-
                         vec![(tag_offset, val)]
                     } else {
                         // Niched variant
                         vec![]
                     };
-
                     variant_layouts.push(translate_variant_layout(variant_layout, tagger));
                 }
 
