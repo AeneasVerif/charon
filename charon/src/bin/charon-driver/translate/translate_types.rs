@@ -471,7 +471,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
                     offsets.iter().map(|o| o.bytes()).collect()
                 }
-                r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Union(_) => IndexVec::default(),
+                r_abi::FieldsShape::Union(n) => vec![0; n.get()].into(),
+                r_abi::FieldsShape::Primitive => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
             VariantLayout {
@@ -619,25 +620,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             r_abi::Variants::Single { index } => {
                 let variant_id = self.translate_variant_id(*index);
-                let variant_layouts = if let r_abi::FieldsShape::Arbitrary { .. } = layout.fields()
-                {
-                    let n_variants = if let Some(range) = ty.variant_range(tcx) {
-                        range.end.index()
-                    } else {
-                        1
-                    };
-                    // All the variants not initialized below are uninhabited.
-                    let mut variant_layouts: IndexVec<VariantId, VariantLayout> = (0..n_variants)
-                        .map(|_| VariantLayout {
-                            field_offsets: IndexVec::default(),
-                            uninhabited: true,
-                            tagger: vec![],
-                        })
-                        .collect();
-                    variant_layouts[variant_id] = translate_variant_layout(&layout, vec![]);
-                    variant_layouts
-                } else {
-                    IndexVec::new()
+                let variant_layouts = match layout.fields() {
+                    r_abi::FieldsShape::Arbitrary { .. } => {
+                        let n_variants = if let Some(range) = ty.variant_range(self.t_ctx.tcx) {
+                            range.end.index()
+                        } else {
+                            1
+                        };
+                        // All the variants not initialized below are uninhabited.
+                        let mut variant_layouts: IndexVec<VariantId, VariantLayout> = (0
+                            ..n_variants)
+                            .map(|_| VariantLayout {
+                                field_offsets: IndexVec::default(),
+                                uninhabited: true,
+                                tagger: vec![],
+                            })
+                            .collect();
+                        variant_layouts[variant_id] = translate_variant_layout(&layout, vec![]);
+                        variant_layouts
+                    }
+                    r_abi::FieldsShape::Union(_) => {
+                        vec![translate_variant_layout(&layout, vec![])].into()
+                    }
+                    r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => {
+                        vec![].into()
+                    }
                 };
                 (Some(Discriminator::trivial(variant_id)), variant_layouts)
             }

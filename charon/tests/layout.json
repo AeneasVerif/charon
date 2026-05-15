@@ -562,6 +562,24 @@
       }
     ]
   },
+  "test_crate::MaybeUninitInt": {
+    "size": 4,
+    "align": 4,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ]
+  },
   "test_crate::PackIntsUnion": {
     "size": 8,
     "align": 8,
@@ -569,7 +587,16 @@
       "Known": 0
     },
     "uninhabited": false,
-    "variant_layouts": []
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ]
   },
   "test_crate::NonZeroNiche": {
     "size": 4,
