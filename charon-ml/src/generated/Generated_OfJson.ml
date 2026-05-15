@@ -272,6 +272,8 @@ and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "BoxNew" -> Ok BoxNew
+    | `String "BoxWrite" -> Ok BoxWrite
+    | `String "SliceIntoVec" -> Ok SliceIntoVec
     | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
     | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
     | `String "ArrayRepeat" -> Ok ArrayRepeat
@@ -1137,10 +1139,6 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* x_1 = ty_of_json ctx x_1 in
         let* x_2 = box_of_json constant_expr_of_json ctx x_2 in
         Ok (Repeat (x_0, x_1, x_2))
-    | `Assoc [ ("ShallowInitBox", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = operand_of_json ctx x_0 in
-        let* x_1 = ty_of_json ctx x_1 in
-        Ok (ShallowInitBox (x_0, x_1))
     | _ -> Error "")
 
 and scalar_value_of_json (ctx : of_json_ctx) (js : json) :

@@ -279,6 +279,8 @@ impl Display for BuiltinFunId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         let name = match *self {
             BuiltinFunId::BoxNew => "BoxNew",
+            BuiltinFunId::BoxWrite => "BoxWrite",
+            BuiltinFunId::SliceIntoVec => "SliceIntoVec",
             BuiltinFunId::ArrayToSliceShared => "ArrayToSliceShared",
             BuiltinFunId::ArrayToSliceMut => "ArrayToSliceMut",
             BuiltinFunId::ArrayRepeat => "ArrayRepeat",
@@ -1607,14 +1609,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::Len(place, ..) => write!(f, "len({})", place.with_ctx(ctx)),
             Rvalue::Repeat(op, _ty, cg) => {
                 write!(f, "[{}; {}]", op.with_ctx(ctx), cg.with_ctx(ctx))
-            }
-            Rvalue::ShallowInitBox(op, ty) => {
-                write!(
-                    f,
-                    "shallow_init_box::<{}>({})",
-                    ty.with_ctx(ctx),
-                    op.with_ctx(ctx)
-                )
             }
         }
     }

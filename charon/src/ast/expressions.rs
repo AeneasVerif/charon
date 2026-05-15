@@ -428,6 +428,12 @@ impl From<BuiltinFunId> for FunId {
 pub enum BuiltinFunId {
     /// Used instead of `alloc::boxed::Box::new` when `--treat-box-as-builtin` is set.
     BoxNew,
+    /// Used instead of `alloc::boxed::Box::write` when rewriting `vec!` lowering.
+    /// Writes into a `Box<MaybeUninit<T>>` and returns a `Box<T>`.
+    BoxWrite,
+    /// Used instead of `alloc::slice::into_vec` when rewriting `vec!` lowering.
+    /// Takes a `Box<[T]>` and returns a `Vec<T>`.
+    SliceIntoVec,
     /// Cast `&[T; N]` to `&[T]`.
     ///
     /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.
@@ -753,10 +759,6 @@ pub enum Rvalue {
     ///
     /// We translate this to a function call for LLBC.
     Repeat(Operand, Ty, Box<ConstantExpr>),
-    /// Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. This
-    /// only appears as part of lowering `Box::new()` in some cases. We reconstruct the original
-    /// `Box::new()` call, but sometimes may fail to do so, leaking the expression.
-    ShallowInitBox(Operand, Ty),
 }
 
 /// An aggregated ADT.

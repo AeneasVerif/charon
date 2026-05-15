@@ -76,7 +76,6 @@ mod intern_table {
         U: indexmap::Equivalent<Arc<T>>,
     {
         // Fast read-only check.
-        #[expect(irrefutable_let_patterns)] // https://github.com/rust-lang/rust/issues/139369
         let arc = if let read_guard = INTERNED.read().unwrap()
             && let Some(map) = read_guard.get::<T>()
             && let Some((arc, _id)) = map.get_key_value(&inner)

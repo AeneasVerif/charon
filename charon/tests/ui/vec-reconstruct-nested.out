@@ -1,0 +1,161 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item("maybe_uninit")]
+pub opaque type MaybeUninit<T>
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new_uninit
+pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, {built_in impl Sized for Global}]
+where
+    [@TraitClause0]: Sized<T>,
+= <opaque>
+
+// Full name: alloc::vec::Vec
+#[lang_item("Vec")]
+pub opaque type Vec<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+= <opaque>
+
+// Full name: test_crate::nested_vecs
+fn nested_vecs()
+{
+    let _0: (); // return
+    let _nested_1: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
+    let _2: alloc::boxed::Box<MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _3: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
+    let _4: alloc::boxed::Box<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _5: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
+    let _6: alloc::boxed::Box<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _7: [u8; 1 : usize]; // anonymous local
+    let _8: alloc::boxed::Box<[u8; 1 : usize]>; // anonymous local
+    let _9: alloc::boxed::Box<[u8]>; // anonymous local
+    let _10: [u8; 1 : usize]; // anonymous local
+    let _11: alloc::boxed::Box<[u8; 1 : usize]>; // anonymous local
+    let _12: alloc::boxed::Box<[u8]>; // anonymous local
+    let _13: [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]; // anonymous local
+    let _14: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>; // anonymous local
+    let _15: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>; // anonymous local
+
+    _0 = ()
+    storage_live(_nested_1)
+    storage_live(_2)
+    _2 = new_uninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]}]()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = new_uninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]()
+    storage_live(_7)
+    _7 = [const 1 : u8]
+    storage_live(_8)
+    _8 = @BoxWrite<[u8; 1 : usize]>(move _4, move _7)
+    storage_dead(_7)
+    storage_live(_9)
+    _9 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>, alloc::boxed::Box<[u8]>, 1 : usize>(move _8)
+    storage_dead(_4)
+    _3 = @SliceIntoVec<u8>(move _9)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = new_uninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]()
+    storage_live(_10)
+    _10 = [const 2 : u8]
+    storage_live(_11)
+    _11 = @BoxWrite<[u8; 1 : usize]>(move _6, move _10)
+    storage_dead(_10)
+    storage_live(_12)
+    _12 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>, alloc::boxed::Box<[u8]>, 1 : usize>(move _11)
+    storage_dead(_6)
+    _5 = @SliceIntoVec<u8>(move _12)
+    storage_live(_13)
+    _13 = [move _3, move _5]
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _5
+    storage_dead(_5)
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _3
+    storage_dead(_3)
+    storage_live(_14)
+    _14 = @BoxWrite<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>(move _2, move _13)
+    storage_dead(_13)
+    storage_live(_15)
+    _15 = unsize_cast<alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>, alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>, 2 : usize>(move _14)
+    storage_dead(_2)
+    _nested_1 = @SliceIntoVec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>(move _15)
+    _0 = ()
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]] _nested_1
+    storage_dead(_nested_1)
+    return
+}
+
+// Full name: test_crate::nested_single
+fn nested_single()
+{
+    let _0: (); // return
+    let _nested_1: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
+    let _2: alloc::boxed::Box<MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _3: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
+    let _4: alloc::boxed::Box<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _5: [u8; 1 : usize]; // anonymous local
+    let _6: alloc::boxed::Box<[u8; 1 : usize]>; // anonymous local
+    let _7: alloc::boxed::Box<[u8]>; // anonymous local
+    let _8: [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]; // anonymous local
+    let _9: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>; // anonymous local
+    let _10: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>; // anonymous local
+
+    _0 = ()
+    storage_live(_nested_1)
+    storage_live(_2)
+    _2 = new_uninit<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>[{built_in impl Sized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]}]()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = new_uninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]()
+    storage_live(_5)
+    _5 = [const 1 : u8]
+    storage_live(_6)
+    _6 = @BoxWrite<[u8; 1 : usize]>(move _4, move _5)
+    storage_dead(_5)
+    storage_live(_7)
+    _7 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>, alloc::boxed::Box<[u8]>, 1 : usize>(move _6)
+    storage_dead(_4)
+    _3 = @SliceIntoVec<u8>(move _7)
+    storage_live(_8)
+    _8 = [move _3]
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _3
+    storage_dead(_3)
+    storage_live(_9)
+    _9 = @BoxWrite<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>(move _2, move _8)
+    storage_dead(_8)
+    storage_live(_10)
+    _10 = unsize_cast<alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>, alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>, 1 : usize>(move _9)
+    storage_dead(_2)
+    _nested_1 = @SliceIntoVec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>(move _10)
+    _0 = ()
+    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]] _nested_1
+    storage_dead(_nested_1)
+    return
+}
+
+
+
