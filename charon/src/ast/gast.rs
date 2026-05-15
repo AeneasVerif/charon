@@ -494,6 +494,9 @@ pub enum BuiltinAssertKind {
     MisalignedPointerDereference { required: Operand, found: Operand },
     NullPointerDereference,
     InvalidEnumConstruction(Operand),
+    ResumedAfterReturn,
+    ResumedAfterPanic,
+    ResumedAfterDrop,
 }
 
 /// (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by
