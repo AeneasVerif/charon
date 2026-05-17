@@ -98,6 +98,11 @@ fn type_layout() -> anyhow::Result<()> {
             Some((usize, &'a T))
         }
 
+        union MaybeUninitInt {
+            x: u32,
+            y: (),
+        }
+
         union PackIntsUnion {
             x: (u32, u32),
             y: u64,
