@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1778681858483,
+  "lastUpdate": 1779016876279,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -1810,6 +1810,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 370.5,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.9,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ec6fbd52872787dc7cfaa807d86778aa8ba8a382",
+          "message": "Merge pull request #1160 from soteria-tools/union-layout\n\nFix union layout variants and field offsets",
+          "timestamp": "2026-05-17T11:16:48Z",
+          "tree_id": "4103a6ee9eea8cfbdd07f11df2a67f74c30a858b",
+          "url": "https://github.com/AeneasVerif/charon/commit/ec6fbd52872787dc7cfaa807d86778aa8ba8a382"
+        },
+        "date": 1779016875179,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 113658804329,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 14.04,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 388,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.4,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 450694391103,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 46.41,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 370.3,
             "unit": "max-rss(MB)"
           },
           {
