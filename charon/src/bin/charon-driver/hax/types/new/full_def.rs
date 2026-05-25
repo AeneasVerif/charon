@@ -928,14 +928,17 @@ where
                 param_env: get_param_env(s, args),
                 ty: self_ty.sinto(s),
                 kind,
-                value: const_value(s, def_id, args_or_default()),
+                // Evaluated lazily by the caller via `const_value()` because const-eval is
+                // expensive and the field is only consumed in the rare MIR-missing fallback path.
+                value: None,
             }
         }
         RDefKind::AssocConst { .. } => FullDefKind::AssocConst {
             param_env: get_param_env(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             ty: type_of_self().sinto(s),
-            value: const_value(s, def_id, args_or_default()),
+            // Same as for `Const`: evaluated lazily.
+            value: None,
         },
         RDefKind::Static {
             safety,
@@ -1343,7 +1346,10 @@ fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     implied_predicates.sinto(s)
 }
 
-fn const_value<'tcx, S: UnderOwnerState<'tcx>>(
+/// Evaluate the value of a `Const` or `AssocConst` item. Used lazily by translation code that
+/// needs the constant value as a fallback when no MIR is available; we avoid running this during
+/// `FullDef` construction because const-eval is one of the largest single costs in translation.
+pub(crate) fn const_value<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
     args: ty::GenericArgsRef<'tcx>,

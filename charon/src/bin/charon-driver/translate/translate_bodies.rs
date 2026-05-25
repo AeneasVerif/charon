@@ -154,16 +154,20 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Retrieve the body
         if let Some(body) = self.get_mir(def.this(), span)? {
             Ok(self.translate_body(span, body, &def.source_text))
-        } else {
-            if let hax::FullDefKind::Const { value, .. }
-            | hax::FullDefKind::AssocConst { value, .. } = def.kind()
-                && let Some(value) = value
+        } else if matches!(
+            def.kind(),
+            hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. }
+        ) {
+            // For globals without MIR we generate a body by evaluating the constant.
+            // Const-eval is expensive, so we run it here only when MIR is actually missing
+            // (instead of eagerly in `translate_full_def_kind`, where the result was rarely used).
+            let s = self.hax_state_with_id();
+            let item = def.this();
+            let rust_def_id = item.def_id.as_def_id_even_synthetic();
+            let args = item.rustc_args(s);
+            if let Some(value) = crate::hax::const_value(s, rust_def_id, args)
             {
-                // For globals we can generate a body by evaluating the global.
-                // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
-                // default value no longer has a cross-crate MIR so it's unclear how to retreive
-                // the value. See the `trait-default-const-cross-crate` test.
-                let c = self.translate_constant_expr(span, value)?;
+                let c = self.translate_constant_expr(span, &value)?;
                 let mut bb = BodyBuilder::new(span, 0);
                 let ret = bb.new_var(None, c.ty.clone());
                 bb.push_statement(StatementKind::Assign(
@@ -174,6 +178,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             } else {
                 Ok(Body::Missing)
             }
+        } else {
+            Ok(Body::Missing)
         }
     }
 
