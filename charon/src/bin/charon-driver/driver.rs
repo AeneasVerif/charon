@@ -40,6 +40,20 @@ fn set_mir_options(config: &mut Config) {
     }
 }
 
+/// Enable rustc's parallel front-end. The heaviest part of charon's runtime on real crates is
+/// rustc's `check_crate` (typeck + const-eval, ~60% of wall time on const-heavy crates), and
+/// that work is parallelised across body owners. We use at most half the available cores to
+/// leave headroom for the rest of the toolchain (cargo, other charon invocations in a build),
+/// and cap at 8 because returns plateau there in our measurements.
+fn set_parallel_frontend(config: &mut Config) {
+    if config.opts.unstable_opts.threads <= 1 {
+        let available = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(1);
+        config.opts.unstable_opts.threads = (available / 2).clamp(1, 8);
+    }
+}
+
 /// Don't even try to codegen. This avoids errors due to checking if the output filename is
 /// available (despite the fact that we won't emit it because we stop compilation early).
 fn set_no_codegen(config: &mut Config) {
@@ -82,6 +96,7 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
         });
 
         set_no_codegen(config);
+        set_parallel_frontend(config);
     }
     set_mir_options(config);
 }
