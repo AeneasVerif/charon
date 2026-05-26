@@ -1,4 +1,4 @@
-fn test_crate::aarch64_only::aarch64-apple-darwin() -> u32
+fn test_crate::aarch64_only() -> u32
 {
     let _0: u32; // return
 
@@ -6,7 +6,7 @@ fn test_crate::aarch64_only::aarch64-apple-darwin() -> u32
     return
 }
 
-fn test_crate::x86_64_only::x86_64-pc-windows-msvc() -> u32
+fn test_crate::x86_64_only() -> u32
 {
     let _0: u32; // return
 

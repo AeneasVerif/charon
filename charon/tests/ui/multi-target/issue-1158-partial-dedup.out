@@ -1,12 +1,4 @@
-fn test_crate::x86_common::x86_64-pc-windows-msvc() -> u32
-{
-    let _0: u32; // return
-
-    _0 = const 42 : u32
-    return
-}
-
-fn test_crate::x86_common::i686-unknown-linux-gnu() -> u32
+fn test_crate::x86_common() -> u32
 {
     let _0: u32; // return
 
@@ -28,6 +20,12 @@ fn test_crate::x86_different::i686-unknown-linux-gnu() -> u32
 
     _0 = const 32 : u32
     return
+}
+
+fn test_crate::x86_different() -> u32
+= target_dispatch {
+    x86_64-pc-windows-msvc => test_crate::x86_different::x86_64-pc-windows-msvc,
+    i686-unknown-linux-gnu => test_crate::x86_different::i686-unknown-linux-gnu,
 }
 
 

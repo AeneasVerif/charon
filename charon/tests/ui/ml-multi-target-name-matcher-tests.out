@@ -1,4 +1,4 @@
-fn test_crate::x86_only::x86_64-apple-darwin() -> u64
+fn test_crate::x86_only() -> u64
 {
     let _0: u64; // return
 
@@ -6,7 +6,7 @@ fn test_crate::x86_only::x86_64-apple-darwin() -> u64
     return
 }
 
-fn test_crate::arm_only::aarch64-apple-darwin() -> u64
+fn test_crate::arm_only() -> u64
 {
     let _0: u64; // return
 
