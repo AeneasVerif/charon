@@ -4,20 +4,17 @@
 //! target-specific items get a `PeTarget` path element appended to their name. The name
 //! matcher should handle these correctly.
 
-// Target-specific functions get a PeTarget path element after multi-target merging.
 #[cfg(target_arch = "x86_64")]
-#[pattern::pass("test_crate::x86_only::x86_64-apple-darwin")]
-#[pattern::pass("test_crate::x86_only::_")]
-#[pattern::fail("test_crate::x86_only")]
+#[pattern::pass("test_crate::x86_only")]
 #[pattern::fail("test_crate::x86_only::aarch64-apple-darwin")]
+#[pattern::fail("test_crate::x86_only::x86_64-apple-darwin")]
 fn x86_only() -> u64 {
     42
 }
 
 #[cfg(target_arch = "aarch64")]
-#[pattern::pass("test_crate::arm_only::aarch64-apple-darwin")]
-#[pattern::pass("test_crate::arm_only::_")]
-#[pattern::fail("test_crate::arm_only")]
+#[pattern::pass("test_crate::arm_only")]
+#[pattern::fail("test_crate::arm_only::aarch64-apple-darwin")]
 #[pattern::fail("test_crate::arm_only::x86_64-apple-darwin")]
 fn arm_only() -> u64 {
     99

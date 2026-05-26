@@ -360,12 +360,12 @@ impl<'a> ItemDeduplicator<'a> {
         this.apply_merge_decisions(decisions);
     }
 
-    /// Group items by (base_name, item_kind), keeping only groups that have items in all targets.
+    /// Group items by (base_name, item_kind). Each group contains the versions of that item
+    /// across all targets where it exists.
     fn discover_groups(
         krate: &TranslatedCrate,
         _errors: &mut ErrorCtx,
     ) -> IndexVec<TargetGroupId, TargetGroup> {
-        let num_targets = krate.target_information.len();
         let mut groups_map: SeqHashMap<
             (Name, std::mem::Discriminant<ItemId>),
             SeqHashMap<TargetTriple, ItemId>,
@@ -388,7 +388,7 @@ impl<'a> ItemDeduplicator<'a> {
             let prev_len = groups_map.len();
             let remap: HashMap<ItemId, ItemId> = groups_map
                 .values()
-                .filter(|ids| ids.len() == num_targets)
+                .filter(|ids| !ids.is_empty())
                 .cloned()
                 .map(|ids| TargetGroup { ids })
                 .flat_map(|g| g.into_remap_entries())
@@ -408,14 +408,14 @@ impl<'a> ItemDeduplicator<'a> {
                     }
                 }
             }
-            groups_map.retain(|_, v| v.len() == num_targets);
+            // Remove empty groups (from collisions) and check for convergence.
+            groups_map.retain(|_, v| !v.is_empty());
             if prev_len == groups_map.len() {
                 break;
             }
         }
         let groups: IndexVec<TargetGroupId, TargetGroup> = groups_map
             .into_values()
-            .filter(|per_target| per_target.len() == num_targets)
             .map(|ids| TargetGroup { ids })
             .collect();
         groups

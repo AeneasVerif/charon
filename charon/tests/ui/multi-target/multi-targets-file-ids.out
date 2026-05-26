@@ -1,12 +1,12 @@
-pub opaque type core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
+pub opaque type core::core_arch::arm_shared::neon::uint16x8_t
 
-pub unsafe fn core::core_arch::aarch64::neon::generated::vld1q_u16::aarch64-apple-darwin(_1: *const u16) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
+pub unsafe fn core::core_arch::aarch64::neon::generated::vld1q_u16(_1: *const u16) -> core::core_arch::arm_shared::neon::uint16x8_t
 = <opaque>
 
-pub unsafe fn core::core_arch::aarch64::neon::generated::vst1q_u16::aarch64-apple-darwin(_1: *mut u16, _2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin)
+pub unsafe fn core::core_arch::aarch64::neon::generated::vst1q_u16(_1: *mut u16, _2: core::core_arch::arm_shared::neon::uint16x8_t)
 = <opaque>
 
-pub unsafe fn core::core_arch::arm_shared::neon::generated::vaddq_u16::aarch64-apple-darwin(_1: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin, _2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
+pub unsafe fn core::core_arch::arm_shared::neon::generated::vaddq_u16(_1: core::core_arch::arm_shared::neon::uint16x8_t, _2: core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
 = <opaque>
 
 #[lang_item("meta_sized")]
@@ -35,49 +35,49 @@ pub trait core::marker::Copy<Self>
     non-dyn-compatible
 }
 
-pub opaque type core::core_arch::x86::__m128i::x86_64-apple-darwin
+pub opaque type core::core_arch::x86::__m128i
 
-pub fn core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i::x86_64-apple-darwin}::clone::x86_64-apple-darwin<'_0>(_1: &'_0 core::core_arch::x86::__m128i::x86_64-apple-darwin) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
+pub fn core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}::clone<'_0>(_1: &'_0 core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
 = <opaque>
 
-// Full name: core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i::x86_64-apple-darwin}::x86_64-apple-darwin
-impl core::clone::Clone for core::core_arch::x86::__m128i::x86_64-apple-darwin {
-    parent_clause0 = {built_in impl core::marker::Sized for core::core_arch::x86::__m128i::x86_64-apple-darwin}
-    fn clone<'_0_1> = core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i::x86_64-apple-darwin}::clone::x86_64-apple-darwin<'_0_1>
+// Full name: core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}
+impl core::clone::Clone for core::core_arch::x86::__m128i {
+    parent_clause0 = {built_in impl core::marker::Sized for core::core_arch::x86::__m128i}
+    fn clone<'_0_1> = core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}::clone<'_0_1>
     non-dyn-compatible
 }
 
-// Full name: core::core_arch::x86::{impl core::marker::Copy for core::core_arch::x86::__m128i::x86_64-apple-darwin}::x86_64-apple-darwin
-impl core::marker::Copy for core::core_arch::x86::__m128i::x86_64-apple-darwin {
-    parent_clause0 = {built_in impl core::marker::MetaSized for core::core_arch::x86::__m128i::x86_64-apple-darwin}
-    parent_clause1 = core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i::x86_64-apple-darwin}::x86_64-apple-darwin
+// Full name: core::core_arch::x86::{impl core::marker::Copy for core::core_arch::x86::__m128i}
+impl core::marker::Copy for core::core_arch::x86::__m128i {
+    parent_clause0 = {built_in impl core::marker::MetaSized for core::core_arch::x86::__m128i}
+    parent_clause1 = core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}
     non-dyn-compatible
 }
 
-pub fn core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}::clone::aarch64-apple-darwin<'_0>(_1: &'_0 core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
+pub fn core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}::clone<'_0>(_1: &'_0 core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
 = <opaque>
 
-// Full name: core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}::aarch64-apple-darwin
-impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin {
-    parent_clause0 = {built_in impl core::marker::Sized for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}
-    fn clone<'_0_1> = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}::clone::aarch64-apple-darwin<'_0_1>
+// Full name: core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}
+impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t {
+    parent_clause0 = {built_in impl core::marker::Sized for core::core_arch::arm_shared::neon::uint16x8_t}
+    fn clone<'_0_1> = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}::clone<'_0_1>
     non-dyn-compatible
 }
 
-// Full name: core::core_arch::arm_shared::neon::{impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}::aarch64-apple-darwin
-impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin {
-    parent_clause0 = {built_in impl core::marker::MetaSized for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}
-    parent_clause1 = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}::aarch64-apple-darwin
+// Full name: core::core_arch::arm_shared::neon::{impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t}
+impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t {
+    parent_clause0 = {built_in impl core::marker::MetaSized for core::core_arch::arm_shared::neon::uint16x8_t}
+    parent_clause1 = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}
     non-dyn-compatible
 }
 
-pub unsafe fn core::core_arch::x86::sse2::_mm_add_epi16::x86_64-apple-darwin(_1: core::core_arch::x86::__m128i::x86_64-apple-darwin, _2: core::core_arch::x86::__m128i::x86_64-apple-darwin) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
+pub unsafe fn core::core_arch::x86::sse2::_mm_add_epi16(_1: core::core_arch::x86::__m128i, _2: core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
 = <opaque>
 
-pub unsafe fn core::core_arch::x86::sse2::_mm_loadu_si128::x86_64-apple-darwin(_1: *const core::core_arch::x86::__m128i::x86_64-apple-darwin) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
+pub unsafe fn core::core_arch::x86::sse2::_mm_loadu_si128(_1: *const core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
 = <opaque>
 
-pub unsafe fn core::core_arch::x86::sse2::_mm_storeu_si128::x86_64-apple-darwin(_1: *mut core::core_arch::x86::__m128i::x86_64-apple-darwin, _2: core::core_arch::x86::__m128i::x86_64-apple-darwin)
+pub unsafe fn core::core_arch::x86::sse2::_mm_storeu_si128(_1: *mut core::core_arch::x86::__m128i, _2: core::core_arch::x86::__m128i)
 = <opaque>
 
 #[lang_item("clone_fn")]
@@ -295,36 +295,36 @@ where
     [@TraitClause0]: test_crate::SimdOps<Self>,
 = <method_without_default_body>
 
-pub struct test_crate::x86::Sse2::x86_64-apple-darwin {}
+pub struct test_crate::x86::Sse2 {}
 
-fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin}::add::x86_64-apple-darwin(a_1: core::core_arch::x86::__m128i::x86_64-apple-darwin, b_2: core::core_arch::x86::__m128i::x86_64-apple-darwin) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
+fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::add(a_1: core::core_arch::x86::__m128i, b_2: core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
 {
-    let _0: core::core_arch::x86::__m128i::x86_64-apple-darwin; // return
-    let a_1: core::core_arch::x86::__m128i::x86_64-apple-darwin; // arg #1
-    let b_2: core::core_arch::x86::__m128i::x86_64-apple-darwin; // arg #2
-    let _3: core::core_arch::x86::__m128i::x86_64-apple-darwin; // anonymous local
-    let _4: core::core_arch::x86::__m128i::x86_64-apple-darwin; // anonymous local
+    let _0: core::core_arch::x86::__m128i; // return
+    let a_1: core::core_arch::x86::__m128i; // arg #1
+    let b_2: core::core_arch::x86::__m128i; // arg #2
+    let _3: core::core_arch::x86::__m128i; // anonymous local
+    let _4: core::core_arch::x86::__m128i; // anonymous local
 
     storage_live(_3)
     _3 = copy a_1
     storage_live(_4)
     _4 = copy b_2
-    _0 = core::core_arch::x86::sse2::_mm_add_epi16::x86_64-apple-darwin(move _3, move _4)
+    _0 = core::core_arch::x86::sse2::_mm_add_epi16(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return
 }
 
-fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin}::store::x86_64-apple-darwin<'_0>(dst_1: &'_0 mut [u16; 8 : usize], val_2: core::core_arch::x86::__m128i::x86_64-apple-darwin)
+fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<'_0>(dst_1: &'_0 mut [u16; 8 : usize], val_2: core::core_arch::x86::__m128i)
 {
     let _0: (); // return
     let dst_1: &'1 mut [u16; 8 : usize]; // arg #1
-    let val_2: core::core_arch::x86::__m128i::x86_64-apple-darwin; // arg #2
-    let _3: *mut core::core_arch::x86::__m128i::x86_64-apple-darwin; // anonymous local
+    let val_2: core::core_arch::x86::__m128i; // arg #2
+    let _3: *mut core::core_arch::x86::__m128i; // anonymous local
     let _4: *mut u16; // anonymous local
     let _5: &'3 mut [u16]; // anonymous local
     let _6: &'4 mut [u16; 8 : usize]; // anonymous local
-    let _7: core::core_arch::x86::__m128i::x86_64-apple-darwin; // anonymous local
+    let _7: core::core_arch::x86::__m128i; // anonymous local
 
     _0 = ()
     storage_live(_3)
@@ -336,21 +336,21 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-
     storage_dead(_6)
     _4 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _5)
     storage_dead(_5)
-    _3 = cast<*mut u16, *mut core::core_arch::x86::__m128i::x86_64-apple-darwin>(move _4)
+    _3 = cast<*mut u16, *mut core::core_arch::x86::__m128i>(move _4)
     storage_dead(_4)
     storage_live(_7)
     _7 = copy val_2
-    _0 = core::core_arch::x86::sse2::_mm_storeu_si128::x86_64-apple-darwin(move _3, move _7)
+    _0 = core::core_arch::x86::sse2::_mm_storeu_si128(move _3, move _7)
     storage_dead(_7)
     storage_dead(_3)
     return
 }
 
-fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin}::load::x86_64-apple-darwin<'_0>(src_1: &'_0 [u16; 8 : usize]) -> core::core_arch::x86::__m128i::x86_64-apple-darwin
+fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'_0>(src_1: &'_0 [u16; 8 : usize]) -> core::core_arch::x86::__m128i
 {
-    let _0: core::core_arch::x86::__m128i::x86_64-apple-darwin; // return
+    let _0: core::core_arch::x86::__m128i; // return
     let src_1: &'1 [u16; 8 : usize]; // arg #1
-    let _2: *const core::core_arch::x86::__m128i::x86_64-apple-darwin; // anonymous local
+    let _2: *const core::core_arch::x86::__m128i; // anonymous local
     let _3: *const u16; // anonymous local
     let _4: &'3 [u16]; // anonymous local
     let _5: &'4 [u16; 8 : usize]; // anonymous local
@@ -364,54 +364,54 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
     storage_dead(_4)
-    _2 = cast<*const u16, *const core::core_arch::x86::__m128i::x86_64-apple-darwin>(move _3)
+    _2 = cast<*const u16, *const core::core_arch::x86::__m128i>(move _3)
     storage_dead(_3)
-    _0 = core::core_arch::x86::sse2::_mm_loadu_si128::x86_64-apple-darwin(move _2)
+    _0 = core::core_arch::x86::sse2::_mm_loadu_si128(move _2)
     storage_dead(_2)
     return
 }
 
-// Full name: test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin}::x86_64-apple-darwin
-impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin {
-    parent_clause0 = {built_in impl core::marker::MetaSized for test_crate::x86::Sse2::x86_64-apple-darwin}
-    parent_clause1 = {built_in impl core::marker::Sized for core::core_arch::x86::__m128i::x86_64-apple-darwin}
-    parent_clause2 = core::core_arch::x86::{impl core::marker::Copy for core::core_arch::x86::__m128i::x86_64-apple-darwin}::x86_64-apple-darwin
-    type V128 = core::core_arch::x86::__m128i::x86_64-apple-darwin
-    fn load<'_0_1> = test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin}::load::x86_64-apple-darwin<'_0_1>
-    fn store<'_0_1> = test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin}::store::x86_64-apple-darwin<'_0_1>
-    fn add = test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin}::add::x86_64-apple-darwin
+// Full name: test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}
+impl test_crate::SimdOps for test_crate::x86::Sse2 {
+    parent_clause0 = {built_in impl core::marker::MetaSized for test_crate::x86::Sse2}
+    parent_clause1 = {built_in impl core::marker::Sized for core::core_arch::x86::__m128i}
+    parent_clause2 = core::core_arch::x86::{impl core::marker::Copy for core::core_arch::x86::__m128i}
+    type V128 = core::core_arch::x86::__m128i
+    fn load<'_0_1> = test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'_0_1>
+    fn store<'_0_1> = test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<'_0_1>
+    fn add = test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::add
     non-dyn-compatible
 }
 
-pub struct test_crate::arm::Neon::aarch64-apple-darwin {}
+pub struct test_crate::arm::Neon {}
 
-fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin}::add::aarch64-apple-darwin(a_1: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin, b_2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
+fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::add(a_1: core::core_arch::arm_shared::neon::uint16x8_t, b_2: core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
 {
-    let _0: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // return
-    let a_1: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // arg #1
-    let b_2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // arg #2
-    let _3: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // anonymous local
-    let _4: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // anonymous local
+    let _0: core::core_arch::arm_shared::neon::uint16x8_t; // return
+    let a_1: core::core_arch::arm_shared::neon::uint16x8_t; // arg #1
+    let b_2: core::core_arch::arm_shared::neon::uint16x8_t; // arg #2
+    let _3: core::core_arch::arm_shared::neon::uint16x8_t; // anonymous local
+    let _4: core::core_arch::arm_shared::neon::uint16x8_t; // anonymous local
 
     storage_live(_3)
     _3 = copy a_1
     storage_live(_4)
     _4 = copy b_2
-    _0 = core::core_arch::arm_shared::neon::generated::vaddq_u16::aarch64-apple-darwin(move _3, move _4)
+    _0 = core::core_arch::arm_shared::neon::generated::vaddq_u16(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return
 }
 
-fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin}::store::aarch64-apple-darwin<'_0>(dst_1: &'_0 mut [u16; 8 : usize], val_2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin)
+fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<'_0>(dst_1: &'_0 mut [u16; 8 : usize], val_2: core::core_arch::arm_shared::neon::uint16x8_t)
 {
     let _0: (); // return
     let dst_1: &'1 mut [u16; 8 : usize]; // arg #1
-    let val_2: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // arg #2
+    let val_2: core::core_arch::arm_shared::neon::uint16x8_t; // arg #2
     let _3: *mut u16; // anonymous local
     let _4: &'3 mut [u16]; // anonymous local
     let _5: &'4 mut [u16; 8 : usize]; // anonymous local
-    let _6: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // anonymous local
+    let _6: core::core_arch::arm_shared::neon::uint16x8_t; // anonymous local
 
     _0 = ()
     storage_live(_3)
@@ -424,15 +424,15 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64
     storage_dead(_4)
     storage_live(_6)
     _6 = copy val_2
-    _0 = core::core_arch::aarch64::neon::generated::vst1q_u16::aarch64-apple-darwin(move _3, move _6)
+    _0 = core::core_arch::aarch64::neon::generated::vst1q_u16(move _3, move _6)
     storage_dead(_6)
     storage_dead(_3)
     return
 }
 
-fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin}::load::aarch64-apple-darwin<'_0>(src_1: &'_0 [u16; 8 : usize]) -> core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
+fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'_0>(src_1: &'_0 [u16; 8 : usize]) -> core::core_arch::arm_shared::neon::uint16x8_t
 {
-    let _0: core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin; // return
+    let _0: core::core_arch::arm_shared::neon::uint16x8_t; // return
     let src_1: &'1 [u16; 8 : usize]; // arg #1
     let _2: *const u16; // anonymous local
     let _3: &'3 [u16]; // anonymous local
@@ -446,20 +446,20 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64
     storage_dead(_4)
     _2 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _3)
     storage_dead(_3)
-    _0 = core::core_arch::aarch64::neon::generated::vld1q_u16::aarch64-apple-darwin(move _2)
+    _0 = core::core_arch::aarch64::neon::generated::vld1q_u16(move _2)
     storage_dead(_2)
     return
 }
 
-// Full name: test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin}::aarch64-apple-darwin
-impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin {
-    parent_clause0 = {built_in impl core::marker::MetaSized for test_crate::arm::Neon::aarch64-apple-darwin}
-    parent_clause1 = {built_in impl core::marker::Sized for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}
-    parent_clause2 = core::core_arch::arm_shared::neon::{impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin}::aarch64-apple-darwin
-    type V128 = core::core_arch::arm_shared::neon::uint16x8_t::aarch64-apple-darwin
-    fn load<'_0_1> = test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin}::load::aarch64-apple-darwin<'_0_1>
-    fn store<'_0_1> = test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin}::store::aarch64-apple-darwin<'_0_1>
-    fn add = test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin}::add::aarch64-apple-darwin
+// Full name: test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}
+impl test_crate::SimdOps for test_crate::arm::Neon {
+    parent_clause0 = {built_in impl core::marker::MetaSized for test_crate::arm::Neon}
+    parent_clause1 = {built_in impl core::marker::Sized for core::core_arch::arm_shared::neon::uint16x8_t}
+    parent_clause2 = core::core_arch::arm_shared::neon::{impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t}
+    type V128 = core::core_arch::arm_shared::neon::uint16x8_t
+    fn load<'_0_1> = test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'_0_1>
+    fn store<'_0_1> = test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<'_0_1>
+    fn add = test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::add
     non-dyn-compatible
 }
 
@@ -638,7 +638,7 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8
         _5 = &two-phase-mut (*a_1)
         storage_live(_6)
         _6 = &(*b_2)
-        _4 = test_crate::add_generic<'10, '11, test_crate::x86::Sse2::x86_64-apple-darwin>[{built_in impl core::marker::Sized for test_crate::x86::Sse2::x86_64-apple-darwin}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2::x86_64-apple-darwin}::x86_64-apple-darwin](move _5, move _6)
+        _4 = test_crate::add_generic<'10, '11, test_crate::x86::Sse2>[{built_in impl core::marker::Sized for test_crate::x86::Sse2}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}](move _5, move _6)
         storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
@@ -681,7 +681,7 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 
         _5 = &two-phase-mut (*a_1)
         storage_live(_6)
         _6 = &(*b_2)
-        _4 = test_crate::add_generic<'10, '11, test_crate::arm::Neon::aarch64-apple-darwin>[{built_in impl core::marker::Sized for test_crate::arm::Neon::aarch64-apple-darwin}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon::aarch64-apple-darwin}::aarch64-apple-darwin](move _5, move _6)
+        _4 = test_crate::add_generic<'10, '11, test_crate::arm::Neon>[{built_in impl core::marker::Sized for test_crate::arm::Neon}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}](move _5, move _6)
         storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
