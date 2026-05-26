@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779801851178,
+  "lastUpdate": 1779805881006,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -1938,6 +1938,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 375.5,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.9,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8bbf7feb83da9be9a4785df8b6eac918fb0a75ef",
+          "message": "Merge pull request #1175 from Nadrieril/fix-1158\n\nmulti-target: handle items that aren't defined on all targets",
+          "timestamp": "2026-05-26T14:25:49Z",
+          "tree_id": "72113363d25dd9081071ebcd96a1a6bb04d2442e",
+          "url": "https://github.com/AeneasVerif/charon/commit/8bbf7feb83da9be9a4785df8b6eac918fb0a75ef"
+        },
+        "date": 1779805879750,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 113619685324,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 18.44,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 389.7,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.4,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 450897978583,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 47.34,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 372.8,
             "unit": "max-rss(MB)"
           },
           {
