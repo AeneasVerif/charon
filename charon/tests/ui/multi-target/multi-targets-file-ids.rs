@@ -1,14 +1,5 @@
 //@ charon-args=--targets=x86_64-apple-darwin,aarch64-apple-darwin
 //! Regression test for multi-target file-id remapping.
-//!
-//! When merging per-target crates, files unique to some targets get pushed into the
-//! merged file table at new positions: the corresponding file ids need to be properly
-//! updated.
-//!
-//! This test uses enough architecture-specific intrinsics to pull in different header
-//! files for each target.
-#![allow(unused, non_camel_case_types)]
-
 trait SimdOps {
     type V128: Copy;
     fn load(src: &[u16; 8]) -> Self::V128;
@@ -18,8 +9,8 @@ trait SimdOps {
 
 #[cfg(target_arch = "x86_64")]
 mod x86 {
-    use core::arch::x86_64::*;
     use super::SimdOps;
+    use core::arch::x86_64::*;
 
     pub struct Sse2;
     impl SimdOps for Sse2 {
@@ -38,8 +29,8 @@ mod x86 {
 
 #[cfg(target_arch = "aarch64")]
 mod arm {
-    use core::arch::aarch64::*;
     use super::SimdOps;
+    use core::arch::aarch64::*;
 
     pub struct Neon;
     impl SimdOps for Neon {
@@ -68,7 +59,9 @@ fn add_scalar(a: &mut [u16; 8], b: &[u16; 8]) {
     }
 }
 
-fn cpu_features_present(_mask: u32) -> bool { true }
+fn cpu_features_present(_mask: u32) -> bool {
+    true
+}
 
 fn add_dispatch(a: &mut [u16; 8], b: &[u16; 8]) {
     #[cfg(target_arch = "x86_64")]
