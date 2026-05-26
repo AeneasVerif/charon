@@ -1,0 +1,55 @@
+#[lang_item("CStr")]
+pub struct core::ffi::c_str::CStr::x86_64-unknown-linux-gnu {
+  inner: [i8],
+}
+
+#[lang_item("CStr")]
+pub struct core::ffi::c_str::CStr::powerpc64-unknown-linux-gnu {
+  inner: [u8],
+}
+
+fn test_crate::main::x86_64-unknown-linux-gnu()
+{
+    let _0: (); // return
+    let _1: &'1 core::ffi::c_str::CStr::x86_64-unknown-linux-gnu; // anonymous local
+    let _2: core::ffi::c_str::CStr::x86_64-unknown-linux-gnu; // anonymous local
+    let _3: &'2 core::ffi::c_str::CStr::x86_64-unknown-linux-gnu; // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 = core::ffi::c_str::CStr::x86_64-unknown-linux-gnu { inner: const [49 : i8, 50 : i8, 51 : i8, 0 : i8] }
+    storage_live(_3)
+    _3 = &_2
+    _1 = move _3
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+fn test_crate::main::powerpc64-unknown-linux-gnu()
+{
+    let _0: (); // return
+    let _1: &'1 core::ffi::c_str::CStr::powerpc64-unknown-linux-gnu; // anonymous local
+    let _2: core::ffi::c_str::CStr::powerpc64-unknown-linux-gnu; // anonymous local
+    let _3: &'2 core::ffi::c_str::CStr::powerpc64-unknown-linux-gnu; // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 = core::ffi::c_str::CStr::powerpc64-unknown-linux-gnu { inner: const [49 : u8, 50 : u8, 51 : u8, 0 : u8] }
+    storage_live(_3)
+    _3 = &_2
+    _1 = move _3
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+fn test_crate::main()
+= target_dispatch {
+    x86_64-unknown-linux-gnu => test_crate::main::x86_64-unknown-linux-gnu,
+    powerpc64-unknown-linux-gnu => test_crate::main::powerpc64-unknown-linux-gnu,
+}
+
+
