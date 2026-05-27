@@ -24,9 +24,9 @@
     clippy::useless_format
 )]
 #![feature(if_let_guard)]
-#![feature(register_tool)]
 // For when we use charon on itself :3
-#![register_tool(charon)]
+#![cfg_attr(feature = "charon_on_charon", feature(register_tool))]
+#![cfg_attr(feature = "charon_on_charon", register_tool(charon))]
 
 #[macro_use]
 pub mod ids;

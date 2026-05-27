@@ -92,7 +92,7 @@ pub struct Statement {
     pub span: Span,
     /// Integer uniquely identifying this statement among the statmeents in the current body. To
     /// simplify things we generate globally-fresh ids when creating a new `Statement`.
-    #[charon::rename("statement_id")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("statement_id"))]
     pub id: StatementId,
     pub kind: StatementKind,
     /// Comments that precede this statement.

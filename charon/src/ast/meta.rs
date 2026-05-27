@@ -35,11 +35,11 @@ pub struct Loc {
 /// Span information
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct SpanData {
-    #[charon::rename("file")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("file"))]
     pub file_id: FileId,
-    #[charon::rename("beg_loc")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("beg_loc"))]
     pub beg: Loc,
-    #[charon::rename("end_loc")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("end_loc"))]
     pub end: Loc,
 }
 
@@ -111,7 +111,7 @@ pub enum InlineAttr {
     Drive,
     DriveMut,
 )]
-#[charon::variants_prefix("Attr")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Attr"))]
 pub enum Attribute {
     /// Do not translate the body of this item.
     /// Written `#[charon::opaque]`
@@ -203,7 +203,7 @@ pub enum ItemOpacity {
     ///
     /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
     /// declared opaque via a command-line argument.
-    #[charon::rename("ItemOpaque")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("ItemOpaque"))]
     Opaque,
     /// Translate nothing of this item. The corresponding map will not have an entry for the
     /// `ItemId`. Useful when even the signature of the item causes errors.
@@ -260,7 +260,7 @@ pub enum FileName {
 )]
 pub struct File {
     /// The file identifier.
-    #[charon::opaque]
+    #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
     pub id: FileId,
     /// The path to the file.
     #[drive(skip)]

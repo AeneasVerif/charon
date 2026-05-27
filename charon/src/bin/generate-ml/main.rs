@@ -149,6 +149,8 @@ fn main() -> Result<()> {
         cmd.arg(&charon_llbc);
         cmd.arg("--");
         cmd.arg("--lib");
+        cmd.arg("--features");
+        cmd.arg("charon_on_charon");
         let output = cmd.output()?;
 
         if !output.status.success() {

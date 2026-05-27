@@ -41,7 +41,7 @@ generate_index_type!(TraitImplId, "TraitImpl");
     Drive,
     DriveMut,
 )]
-#[charon::variants_prefix("Id")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Id"))]
 #[serde_state(stateless)]
 pub enum ItemId {
     Type(TypeDeclId),
@@ -71,7 +71,7 @@ pub enum ItemId {
     Drive,
     DriveMut,
 )]
-#[charon::variants_prefix("AssocId")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("AssocId"))]
 #[serde_state(stateless)]
 pub enum AssocItemId {
     Type(AssocTypeId),
@@ -163,7 +163,7 @@ pub enum ItemRefMut<'ctx> {
 #[derive(
     Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
 )]
-#[charon::variants_suffix("Group")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Group"))]
 pub enum GDeclarationGroup<Id> {
     /// A non-recursive declaration
     NonRec(Id),
@@ -175,7 +175,7 @@ pub enum GDeclarationGroup<Id> {
 #[derive(
     Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
 )]
-#[charon::variants_suffix("Group")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Group"))]
 pub enum DeclarationGroup {
     /// A type declaration group
     Type(GDeclarationGroup<TypeDeclId>),

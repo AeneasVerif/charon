@@ -116,6 +116,8 @@ which = "7.0"
 
 [features]
 default = []
+# Enable the `charon` tool attribute when translating charon with itself.
+charon_on_charon = []
 # This feature enables the `popular-crates` test which runs Charon on the most downloaded crates from crates.io.
 popular-crates-test = [
     "dep:crates_io_api",
