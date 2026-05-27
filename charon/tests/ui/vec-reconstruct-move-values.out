@@ -80,7 +80,7 @@ fn move_values(flag_1: bool)
     storage_live(_15)
     _15 = [move _7]
     storage_live(_6)
-    _6 = @BoxNew<[NoCopy; 1 : usize]>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}](move _15)
+    _6 = @BoxNew<[NoCopy; 1 : usize], Global>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}](move _15)
     storage_live(_7)
     _7 = move x_2
     storage_dead(_7)
@@ -103,7 +103,7 @@ fn move_values(flag_1: bool)
         storage_live(_16)
         _16 = [move _14]
         storage_live(_13)
-        _13 = @BoxNew<[NoCopy; 1 : usize]>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}](move _16)
+        _13 = @BoxNew<[NoCopy; 1 : usize], Global>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}](move _16)
         storage_live(_14)
         _14 = move y_9
         storage_dead(_14)

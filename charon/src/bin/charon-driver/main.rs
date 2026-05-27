@@ -51,14 +51,7 @@ mod driver;
 pub mod hax;
 mod translate;
 
-use charon_lib::{
-    export, logger,
-    options::CliOpts,
-    transform::{
-        FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, Pass, PrintCtxPass,
-        SHARED_FINALIZING_PASSES, ULLBC_PASSES,
-    },
-};
+use charon_lib::{export, logger, transform::run_transformation_passes};
 use std::{fmt, panic};
 
 pub enum CharonFailure {
@@ -84,50 +77,6 @@ impl fmt::Display for CharonFailure {
     }
 }
 
-/// Calculate the list of passes we will run on the crate before outputting it.
-pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
-    let mut passes: Vec<Pass> = vec![];
-
-    passes.push(Pass::NonBody(PrintCtxPass::new(
-        options.print_original_ullbc,
-        "# ULLBC after translation from MIR".to_string(),
-    )));
-
-    passes.extend(INITIAL_CLEANUP_PASSES);
-    passes.extend(ULLBC_PASSES);
-
-    if !options.ullbc {
-        // If we're reconstructing control-flow, print the ullbc here.
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_ullbc,
-            "# Final ULLBC before control-flow reconstruction".to_string(),
-        )));
-    }
-
-    if !options.ullbc {
-        passes.extend(LLBC_PASSES);
-    }
-    passes.extend(SHARED_FINALIZING_PASSES);
-
-    if options.ullbc {
-        // If we're not reconstructing control-flow, print the ullbc after finalizing passes.
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_ullbc,
-            "# Final ULLBC before serialization".to_string(),
-        )));
-    } else {
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_llbc,
-            "# Final LLBC before serialization".to_string(),
-        )));
-    }
-
-    // Run the final passes after pretty-printing so that we get some output even if check_generics
-    // fails.
-    passes.extend(FINAL_CLEANUP_PASSES);
-    passes
-}
-
 /// Run charon. Returns the number of warnings generated.
 fn run_charon() -> Result<usize, CharonFailure> {
     // Run the driver machinery.
@@ -138,9 +87,7 @@ fn run_charon() -> Result<usize, CharonFailure> {
 
     // The bulk of the translation is done, we no longer need to interact with rustc internals. We
     // run several passes that simplify the items and cleanup the bodies.
-    for pass in transformation_passes(&options) {
-        pass.run(&mut ctx);
-    }
+    run_transformation_passes(&options, &mut ctx);
 
     let error_count = ctx.errors.borrow().error_count;
 

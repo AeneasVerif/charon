@@ -67,185 +67,228 @@ pub mod control_flow {
     pub mod ullbc_to_llbc;
 }
 
-use Pass::*;
 pub use ctx::TransformCtx;
 use ctx::{FusedUllbcPass, LlbcPass, TransformPass, UllbcPass};
 
-/// Item and type cleanup passes.
-pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
-    // Compute short names. We do it early to make pretty-printed output more legible in traces.
-    NonBody(&add_missing_info::compute_short_names::Transform),
-    // Check that translation emitted consistent types, and unify body lifetimes (best-effort).
-    NonBody(&typecheck_and_unify::Check::PostTranslation),
-    // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
-    // them out earlier.
-    NonBody(&finish_translation::filter_invisible_trait_impls::Transform),
-    // Compute the metadata & insert for Rvalue
-    UnstructuredBody(&finish_translation::insert_ptr_metadata::Transform),
-    // # Micro-pass: add the missing assignments to the return value.
-    // When the function return type is unit, the generated MIR doesn't
-    // set the return value to `()`. This can be a concern: in the case
-    // of Aeneas, it means the return variable contains ⊥ upon returning.
-    // For this reason, when the function has return type unit, we insert
-    // an extra assignment just before returning.
-    UnstructuredBody(&finish_translation::insert_assign_return_unit::Transform),
-    // Insert `StorageLive` for locals that don't have one (that's allowed in MIR).
-    NonBody(&finish_translation::insert_storage_lives::Transform),
-    // Move clauses on associated types to be implied clauses of the trait.
-    NonBody(&simplify_output::lift_associated_item_clauses::Transform),
-    // Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
-    NonBody(&simplify_output::hide_allocator_param::Transform),
-    // # Micro-pass: remove the explicit `Self: Trait` clause of methods/assoc const declaration
-    // items if they're not used. This simplifies the graph of dependencies between definitions.
-    NonBody(&simplify_output::remove_unused_self_clause::Transform),
-    // Transform Drops into Calls to drop_in_place.
-    UnstructuredBody(&normalize::desugar_drops::Transform),
-    // # Micro-pass: whenever we reference a trait method on a known type, refer to the method
-    // `FunDecl` directly instead of going via a `TraitRef`. This is done before `reorder_decls` to
-    // remove some sources of mutual recursion.
-    NonBody(&normalize::skip_trait_refs_when_known::Transform),
-    // Transform dyn trait method calls to vtable function pointer calls
-    // This should be early to handle the calls before other transformations
-    UnstructuredBody(&normalize::transform_dyn_trait_calls::Transform),
-    // Change trait associated types to be type parameters instead. See the module for details.
-    // This also normalizes any use of an associated type that we can resolve.
-    NonBody(&normalize::expand_associated_types::Transform),
-    // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
-    NonBody(&simplify_output::remove_adt_clauses::Transform),
-];
+use crate::options::CliOpts;
 
-/// Body cleanup passes on the ullbc.
-pub static ULLBC_PASSES: &[Pass] = &[
-    // Inline promoted and inline consts into their parent bodies.
-    UnstructuredBody(&simplify_output::inline_anon_consts::Transform),
-    // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
-    // those up.
-    UnstructuredBody(&resugar::inline_local_panic_functions::Transform),
-    FusedUnstructuredBody(&[
+/// Run transformation passes on the crate before outputting it.
+pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
+    let non_body = |x| Pass::NonBody(CowBox::Borrowed(x));
+    let unstructured_body = |x| Pass::UnstructuredBody(CowBox::Borrowed(x));
+    let structured_body = |x| Pass::StructuredBody(CowBox::Borrowed(x));
+
+    ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
+        options.print_original_ullbc,
+        "# ULLBC after translation from MIR".to_string(),
+    )));
+
+    // Item and type cleanup passes.
+    ctx.run_passes([
+        // Compute short names. We do it early to make pretty-printed output more legible in traces.
+        non_body(&add_missing_info::compute_short_names::Transform),
+        // Check that translation emitted consistent types, and unify body lifetimes (best-effort).
+        non_body(&typecheck_and_unify::Check::PostTranslation),
+        // Filter the trait impls that were marked invisible since we couldn't filter them out
+        // earlier.
+        non_body(&finish_translation::filter_invisible_trait_impls::Transform),
+        // Compute the metadata & insert for Rvalue
+        unstructured_body(&finish_translation::insert_ptr_metadata::Transform),
+        // Add the missing assignments to the return value.
+        // When the function return type is unit, the generated MIR doesn't set the return value to
+        // `()`. This can be a concern: in the case of Aeneas, it means the return variable
+        // contains ⊥ upon returning. For this reason, when the function has return type unit, we
+        // insert an extra assignment just before returning.
+        unstructured_body(&finish_translation::insert_assign_return_unit::Transform),
+        // Insert `StorageLive` for locals that don't have one (that's allowed in MIR).
+        non_body(&finish_translation::insert_storage_lives::Transform),
+        // Move clauses on associated types to be implied clauses of the trait.
+        non_body(&simplify_output::lift_associated_item_clauses::Transform),
+        // Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
+        non_body(&simplify_output::hide_allocator_param::Transform),
+        // Remove the explicit `Self: Trait` clause of methods/assoc const declaration items if
+        // they're not used. This simplifies the graph of dependencies between definitions.
+        non_body(&simplify_output::remove_unused_self_clause::Transform),
+        // Transform Drops into Calls to drop_in_place.
+        unstructured_body(&normalize::desugar_drops::Transform),
+        // Whenever we reference a trait method on a known type, refer to the method `FunDecl`
+        // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to
+        // remove some sources of mutual recursion.
+        non_body(&normalize::skip_trait_refs_when_known::Transform),
+        // Transform dyn trait method calls to vtable function pointer calls.
+        // This should be early to handle the calls before other transformations.
+        unstructured_body(&normalize::transform_dyn_trait_calls::Transform),
+        // Change trait associated types to be type parameters instead. See the module for details.
+        // This also normalizes any use of an associated type that we can resolve.
+        non_body(&normalize::expand_associated_types::Transform),
+        // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
+        non_body(&simplify_output::remove_adt_clauses::Transform),
+    ]);
+    // Body cleanup passes on the ullbc.
+    ctx.run_passes([
+        // Inline promoted and inline consts into their parent bodies.
+        unstructured_body(&simplify_output::inline_anon_consts::Transform),
+        // `panic!()` expands to a new function definition each time. This pass cleans those up.
+        unstructured_body(&resugar::inline_local_panic_functions::Transform),
+    ]);
+    ctx.run_pass(Pass::FusedUnstructuredBody(Box::new([
         // Remove drop statements that are noops.
-        &simplify_output::filter_trivial_drops::Transform,
+        CowBox::Borrowed(&simplify_output::filter_trivial_drops::Transform),
         // Inline all asserts that correspond to dynamic checks into statements.
         // The following pass will then merge the generated gotos as part of this substitution,
-        // and [reconstruct_fallible_operations] can then use the inlined asserts to reconstruct
-        // the fallible operations.
-        &resugar::move_asserts_to_statements::Transform,
-        // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
-        // graph size of the CFG.
+        // and [reconstruct_fallible_operations] can then use the inlined asserts to
+        // reconstruct the fallible operations.
+        CowBox::Borrowed(&resugar::move_asserts_to_statements::Transform),
+        // Merge single-origin gotos into their parent. This drastically reduces the graph size
+        // of the CFG.
         // This must be done early as some resugaring passes depend on it.
-        &control_flow::merge_goto_chains::Transform,
-        // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
+        CowBox::Borrowed(&control_flow::merge_goto_chains::Transform),
+        // Remove overflow/div-by-zero/bounds checks since they are already part of the
         // arithmetic/array operation in the semantics of (U)LLBC.
         // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
         // special "assert" construct. Because of this, it must happen *before* the
         // [reconstruct_asserts] pass. See the comments in [crate::remove_dynamic_checks].
         // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
         // it must happen before passes that insert statements like [simplify_constants].
-        &resugar::reconstruct_fallible_operations::Transform,
-        // Recognize calls to the `offset_of` intrinsics and replace them with the corresponding
-        // `NullOp`.
-        &resugar::reconstruct_intrinsics::Transform,
-        // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
-        // macro.
+        CowBox::Borrowed(&resugar::reconstruct_fallible_operations::Transform),
+        // Recognize calls to the `offset_of` intrinsics and replace them with the
+        // corresponding `NullOp`.
+        CowBox::Borrowed(&resugar::reconstruct_intrinsics::Transform),
+        // Reconstruct the special `Box::new` operations inserted e.g. in the `vec![]` macro.
         // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
         // it must happen before passes that insert statements like [simplify_constants].
         // **WARNING**: this pass works across calls, hence must happen after `merge_goto_chains`,
-        &resugar::reconstruct_boxes::Transform,
-        // # Micro-pass: reconstruct the asserts
-        &resugar::reconstruct_asserts::Transform,
-        // # Micro-pass: desugar the constants to other values/operands as much
-        // as possible.
-        &simplify_output::simplify_constants::Transform,
-        // # Micro-pass: introduce intermediate assignments in preparation of the
-        // [`index_to_function_calls`] pass.
-        &simplify_output::index_intermediate_assigns::Transform,
-        // # Micro-pass: remove locals of type `()` which show up a lot.
-        &simplify_output::remove_unit_locals::Transform,
-        // # Micro-pass: duplicate the return blocks
-        &control_flow::duplicate_return::Transform,
+        CowBox::Borrowed(&resugar::reconstruct_boxes::Transform),
+        // Reconstruct the asserts
+        CowBox::Borrowed(&resugar::reconstruct_asserts::Transform),
+        // Desugar the constants to other values/operands as much as possible.
+        CowBox::Borrowed(&simplify_output::simplify_constants::Transform),
+        // Introduce intermediate assignments in preparation of the [`index_to_function_calls`]
+        // pass.
+        CowBox::Borrowed(&simplify_output::index_intermediate_assigns::Transform),
+        // Remove locals of type `()` which show up a lot.
+        CowBox::Borrowed(&simplify_output::remove_unit_locals::Transform),
+        // Duplicate the return blocks
+        CowBox::Borrowed(&control_flow::duplicate_return::Transform),
         // Remove the locals which are never used.
-        &simplify_output::remove_unused_locals::Transform,
+        CowBox::Borrowed(&simplify_output::remove_unused_locals::Transform),
         // Another round.
-        &control_flow::merge_goto_chains::Transform,
-        // # Micro-pass: filter the "dangling" blocks. Those might have been introduced by,
-        // for instance, [`merge_goto_chains`].
-        &normalize::filter_unreachable_blocks::Transform,
-        // # Micro-pass: make sure the block ids used in the ULLBC are consecutive
-        &simplify_output::update_block_indices::Transform,
-    ]),
-];
+        CowBox::Borrowed(&control_flow::merge_goto_chains::Transform),
+        // Filter the "dangling" blocks. Those might have been introduced by, for instance,
+        // [`merge_goto_chains`].
+        CowBox::Borrowed(&normalize::filter_unreachable_blocks::Transform),
+        // Make sure the block ids used in the ULLBC are consecutive
+        CowBox::Borrowed(&simplify_output::update_block_indices::Transform),
+    ])));
 
-/// Body cleanup passes after control flow reconstruction.
-pub static LLBC_PASSES: &[Pass] = &[
-    // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
-    NonBody(&control_flow::ullbc_to_llbc::Transform),
-    // Reconstruct matches on enum variants.
-    StructuredBody(&resugar::reconstruct_matches::Transform),
-    // Cleanup the cfg.
-    StructuredBody(&control_flow::prettify_cfg::Transform),
-    // # Micro-pass: replace some unops/binops and the array aggregates with
-    // function calls (introduces: ArrayToSlice, etc.)
-    StructuredBody(&simplify_output::ops_to_function_calls::Transform),
-    // # Micro-pass: replace the arrays/slices index operations with function
-    // calls.
-    // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-    StructuredBody(&simplify_output::index_to_function_calls::Transform),
-];
+    if !options.ullbc {
+        // If we're reconstructing control-flow, print the ullbc here.
+        ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
+            options.print_ullbc,
+            "# Final ULLBC before control-flow reconstruction".to_string(),
+        )));
+    }
 
-/// Cleanup passes useful for both llbc and ullbc.
-pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
-    // # Micro-pass: remove the locals which are never used.
-    NonBody(&simplify_output::remove_unused_locals::Transform),
-    // # Micro-pass: remove the useless `StatementKind::Nop`s.
-    NonBody(&simplify_output::remove_nops::Transform),
-    // # Micro-pass: take all the comments found in the original body and assign them to
-    // statements. This must be last after all the statement-affecting passes to avoid losing
-    // comments.
-    NonBody(&add_missing_info::recover_body_comments::Transform),
-    // Partially monomorphize items so that no item is ever instanciated with a mutable reference
-    // or a type containing one.
-    NonBody(&normalize::partial_monomorphization::Transform),
-    // # Reorder the graph of dependencies and compute the strictly connex components to:
-    // - compute the order in which to extract the definitions
-    // - find the recursive definitions
-    // - group the mutually recursive definitions
-    // This is done last to account for the final item graph, not the initial one.
-    NonBody(&add_missing_info::reorder_decls::Transform),
-];
+    if !options.ullbc {
+        // Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
+        ctx.run_pass(non_body(&control_flow::ullbc_to_llbc::Transform));
+        // Body cleanup passes after control flow reconstruction.
+        ctx.run_passes([
+            // Reconstruct matches on enum variants.
+            structured_body(&resugar::reconstruct_matches::Transform),
+            // Cleanup the cfg.
+            structured_body(&control_flow::prettify_cfg::Transform),
+            // Replace some unops/binops and the array aggregates with
+            // function calls (introduces: ArrayToSlice, etc.)
+            structured_body(&simplify_output::ops_to_function_calls::Transform),
+            // Replace the arrays/slices index operations with function
+            // calls.
+            // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
+            structured_body(&simplify_output::index_to_function_calls::Transform),
+        ]);
+    }
+    // Cleanup passes useful for both llbc and ullbc.
+    ctx.run_passes([
+        // Remove the locals which are never used.
+        non_body(&simplify_output::remove_unused_locals::Transform),
+        // Remove the useless `StatementKind::Nop`s.
+        non_body(&simplify_output::remove_nops::Transform),
+        // Take all the comments found in the original body and assign them to statements. This must be
+        // last after all the statement-affecting passes to avoid losing comments.
+        non_body(&add_missing_info::recover_body_comments::Transform),
+        // Partially monomorphize items so that no item is ever instanciated with a mutable reference
+        // or a type containing one.
+        non_body(&normalize::partial_monomorphization::Transform),
+        // Reorder the graph of dependencies and compute the strictly connex components to:
+        // - compute the order in which to extract the definitions
+        // - find the recursive definitions
+        // - group the mutually recursive definitions
+        // This is done last to account for the final item graph, not the initial one.
+        non_body(&add_missing_info::reorder_decls::Transform),
+    ]);
 
-/// Final passes to run at the end, after pretty-printing the llbc if applicable. These are only
-/// split from the above list to get test outputs even when generics fail to match.
-pub static FINAL_CLEANUP_PASSES: &[Pass] = &[
-    // Check that types are still consistent after the transformation passes.
-    NonBody(&typecheck_and_unify::Check::PostTransformation),
-    // Use `DeBruijnVar::Free` for the variables bound in item signatures.
-    NonBody(&simplify_output::unbind_item_vars::Check),
-];
+    if options.ullbc {
+        // If we're not reconstructing control-flow, print the ullbc after finalizing passes.
+        ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
+            options.print_ullbc,
+            "# Final ULLBC before serialization".to_string(),
+        )));
+    } else {
+        ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
+            options.print_llbc,
+            "# Final LLBC before serialization".to_string(),
+        )));
+    }
 
-#[derive(Clone, Copy)]
-pub enum Pass {
-    NonBody(&'static dyn TransformPass),
-    UnstructuredBody(&'static dyn UllbcPass),
-    FusedUnstructuredBody(&'static [&'static dyn FusedUllbcPass]),
-    StructuredBody(&'static dyn LlbcPass),
+    // Run the final passes after pretty-printing so that we get some output even if check_generics
+    // fails.
+    ctx.run_passes([
+        // Check that types are still consistent after the transformation passes.
+        non_body(&typecheck_and_unify::Check::PostTransformation),
+        // Use `DeBruijnVar::Free` for the variables bound in item signatures.
+        non_body(&simplify_output::unbind_item_vars::Check),
+    ]);
 }
 
-impl Pass {
-    pub fn run(self, ctx: &mut TransformCtx) {
+pub enum CowBox<T: ?Sized + 'static> {
+    Borrowed(&'static T),
+    Owned(Box<T>),
+}
+
+impl<T: ?Sized + 'static> std::ops::Deref for CowBox<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
         match self {
-            NonBody(pass) => {
-                if pass.should_run(&ctx.options) {
+            CowBox::Borrowed(x) => x,
+            CowBox::Owned(x) => x.as_ref(),
+        }
+    }
+}
+
+pub enum Pass {
+    NonBody(CowBox<dyn TransformPass>),
+    UnstructuredBody(CowBox<dyn UllbcPass>),
+    FusedUnstructuredBody(Box<[CowBox<dyn FusedUllbcPass>]>),
+    StructuredBody(CowBox<dyn LlbcPass>),
+}
+
+impl TransformCtx {
+    fn run_pass(&mut self, pass: Pass) {
+        match &pass {
+            Pass::NonBody(pass) => {
+                if pass.should_run(&self.options) {
                     trace!("# Starting pass {}", pass.name());
-                    pass.transform_ctx(ctx)
+                    pass.transform_ctx(self)
                 }
             }
-            UnstructuredBody(pass) => {
-                if pass.should_run(&ctx.options) {
+            Pass::UnstructuredBody(pass) => {
+                if pass.should_run(&self.options) {
                     trace!("# Starting pass {}", pass.name());
-                    pass.transform_ctx(ctx)
+                    pass.transform_ctx(self)
                 }
             }
-            FusedUnstructuredBody(passes) => {
-                ctx.for_each_fun_decl(|ctx, decl| {
+            Pass::FusedUnstructuredBody(passes) => {
+                self.for_each_fun_decl(|ctx, decl| {
                     for pass in passes {
                         if pass.should_run(&ctx.options) {
                             trace!("# Starting pass {}", pass.name());
@@ -254,12 +297,17 @@ impl Pass {
                     }
                 });
             }
-            StructuredBody(pass) => {
-                if pass.should_run(&ctx.options) {
+            Pass::StructuredBody(pass) => {
+                if pass.should_run(&self.options) {
                     trace!("# Starting pass {}", pass.name());
-                    pass.transform_ctx(ctx)
+                    pass.transform_ctx(self)
                 }
             }
+        };
+    }
+    fn run_passes(&mut self, passes: impl IntoIterator<Item = Pass>) {
+        for pass in passes {
+            self.run_pass(pass);
         }
     }
 }
@@ -271,9 +319,9 @@ pub struct PrintCtxPass {
 }
 
 impl PrintCtxPass {
-    pub fn new(to_stdout: bool, message: String) -> &'static Self {
+    pub fn new(to_stdout: bool, message: String) -> CowBox<dyn TransformPass> {
         let ret = Self { message, to_stdout };
-        Box::leak(Box::new(ret))
+        CowBox::Owned(Box::new(ret))
     }
 }
 
