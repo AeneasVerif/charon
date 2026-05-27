@@ -125,6 +125,10 @@ impl CrateMerger {
                 fn enter_trait_impl_id(&mut self, id: &mut TraitImplId) {
                     *id += self.trait_impl_offset;
                 }
+                fn visit_abort_kind(&mut self, _x: &mut AbortKind) -> ControlFlow<Self::Break> {
+                    // Don't modify the name found there
+                    ControlFlow::Continue(())
+                }
                 fn enter_name(&mut self, name: &mut Name) {
                     name.name.push(PathElem::Target(self.target.clone()));
                 }

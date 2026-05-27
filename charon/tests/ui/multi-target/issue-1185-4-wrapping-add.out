@@ -1,7 +1,7 @@
 pub fn core::num::{u32}::wrapping_add(_1: u32, _2: u32) -> u32
 = <opaque>
 
-pub fn test_crate::mod_reduce::x86_64-unknown-linux-gnu(a_1: u32) -> u32
+pub fn test_crate::mod_reduce(a_1: u32) -> u32
 {
     let _0: u32; // return
     let a_1: u32; // arg #1
@@ -16,7 +16,7 @@ pub fn test_crate::mod_reduce::x86_64-unknown-linux-gnu(a_1: u32) -> u32
     if move _2 {
     } else {
         storage_dead(_3)
-        panic(core::panicking::panic::x86_64-unknown-linux-gnu)
+        panic(core::panicking::panic)
     }
     storage_dead(_3)
     storage_dead(_2)
@@ -25,38 +25,6 @@ pub fn test_crate::mod_reduce::x86_64-unknown-linux-gnu(a_1: u32) -> u32
     _0 = core::num::{u32}::wrapping_add(move _4, const 1 : u32)
     storage_dead(_4)
     return
-}
-
-pub fn test_crate::mod_reduce::i686-unknown-linux-gnu(a_1: u32) -> u32
-{
-    let _0: u32; // return
-    let a_1: u32; // arg #1
-    let _2: bool; // anonymous local
-    let _3: u32; // anonymous local
-    let _4: u32; // anonymous local
-
-    storage_live(_2)
-    storage_live(_3)
-    _3 = copy a_1
-    _2 = move _3 < const 100 : u32
-    if move _2 {
-    } else {
-        storage_dead(_3)
-        panic(core::panicking::panic::i686-unknown-linux-gnu)
-    }
-    storage_dead(_3)
-    storage_dead(_2)
-    storage_live(_4)
-    _4 = copy a_1
-    _0 = core::num::{u32}::wrapping_add(move _4, const 1 : u32)
-    storage_dead(_4)
-    return
-}
-
-pub fn test_crate::mod_reduce(_1: u32) -> u32
-= target_dispatch {
-    x86_64-unknown-linux-gnu => test_crate::mod_reduce::x86_64-unknown-linux-gnu,
-    i686-unknown-linux-gnu => test_crate::mod_reduce::i686-unknown-linux-gnu,
 }
 
 
