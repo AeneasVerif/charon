@@ -82,30 +82,10 @@ pub trait LlbcPass: Sync {
         }
     }
 
-    /// Transform the given context. This forwards to the other methods by default.
-    fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|ctx, decl| {
-            self.log_before_body(ctx, &decl.item_meta.name, &decl.body);
-            self.transform_function(ctx, decl);
-        });
-    }
-
     /// The name of the pass, used for debug logging. The default implementation uses the type
     /// name.
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
-    }
-
-    /// Log that the pass is about to be run on this body.
-    fn log_before_body(&self, ctx: &TransformCtx, name: &Name, body: &Body) {
-        let fmt_ctx = &ctx.into_fmt();
-        let body_str = body.to_string_with_ctx(fmt_ctx);
-        trace!(
-            "# About to run pass [{}] on `{}`:\n{}",
-            self.name(),
-            name.with_ctx(fmt_ctx),
-            body_str,
-        );
     }
 }
 

@@ -75,7 +75,6 @@ use crate::options::CliOpts;
 /// Run transformation passes on the crate before outputting it.
 pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     let non_body = |x| Pass::NonBody(CowBox::Borrowed(x));
-    let structured_body = |x| Pass::StructuredBody(CowBox::Borrowed(x));
 
     ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
         options.print_original_ullbc,
@@ -190,19 +189,20 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
         ctx.run_pass(non_body(&control_flow::ullbc_to_llbc::Transform));
         // Body cleanup passes after control flow reconstruction.
-        ctx.run_passes([
+        let pass = Pass::FusedStructuredBody(Box::new([
             // Reconstruct matches on enum variants.
-            structured_body(&resugar::reconstruct_matches::Transform),
+            resugar::reconstruct_matches::Transform::new(ctx),
             // Cleanup the cfg.
-            structured_body(&control_flow::prettify_cfg::Transform),
+            CowBox::Borrowed(&control_flow::prettify_cfg::Transform),
             // Replace some unops/binops and the array aggregates with
             // function calls (introduces: ArrayToSlice, etc.)
-            structured_body(&simplify_output::ops_to_function_calls::Transform),
+            CowBox::Borrowed(&simplify_output::ops_to_function_calls::Transform),
             // Replace the arrays/slices index operations with function
             // calls.
             // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-            structured_body(&simplify_output::index_to_function_calls::Transform),
-        ]);
+            CowBox::Borrowed(&simplify_output::index_to_function_calls::Transform),
+        ]));
+        ctx.run_pass(pass);
     }
     // Cleanup passes useful for both llbc and ullbc.
     ctx.run_passes([
@@ -267,7 +267,7 @@ impl<T: ?Sized + 'static> std::ops::Deref for CowBox<T> {
 pub enum Pass {
     NonBody(CowBox<dyn TransformPass>),
     FusedUnstructuredBody(Box<[CowBox<dyn FusedUllbcPass>]>),
-    StructuredBody(CowBox<dyn LlbcPass>),
+    FusedStructuredBody(Box<[CowBox<dyn LlbcPass>]>),
 }
 
 impl TransformCtx {
@@ -301,11 +301,15 @@ impl TransformCtx {
                     pass.finalize(self);
                 }
             }
-            Pass::StructuredBody(pass) => {
-                if pass.should_run(&self.options) {
-                    trace!("# Starting pass {}", pass.name());
-                    pass.transform_ctx(self)
-                }
+            Pass::FusedStructuredBody(passes) => {
+                self.for_each_fun_decl(|ctx, decl| {
+                    for pass in passes.iter() {
+                        if pass.should_run(&ctx.options) {
+                            trace!("# Starting pass {}", pass.name());
+                            pass.transform_function(ctx, decl);
+                        }
+                    }
+                });
             }
         };
     }
