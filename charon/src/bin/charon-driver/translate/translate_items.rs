@@ -243,11 +243,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             self.translate_item(&item_source);
             if self.translated.get_item(id).is_none() {
                 let span = self.def_span(item_source.def_id());
-                let name = self
-                    .translated
-                    .item_name(id)
-                    .map(|n| n.to_string_with_ctx(&self.into_fmt()))
-                    .unwrap_or_else(|| id.to_string());
+                let name = id.to_string_with_ctx(&self.into_fmt());
                 // Not a real error, its message won't be displayed.
                 return Err(Error {
                     span,

@@ -266,7 +266,7 @@ impl<'a> FmtCtx<'a> {
         };
         translated
             .get_item(id)
-            .ok_or_else(|| translated.item_short_name(id))
+            .ok_or_else(|| Some(translated.item_short_name(id)))
     }
 
     /// Print the whole definition.

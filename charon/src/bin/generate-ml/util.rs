@@ -99,8 +99,8 @@ impl<'a> GenerateCtx<'a> {
             .item_meta
             .attr_info
             .rename
-            .as_ref()
-            .unwrap_or(td.item_meta.name.short_str());
+            .as_deref()
+            .unwrap_or(td.item_meta.name.short_str().unwrap());
         let module = self.ambiguous_types.get(&td.def_id);
         (make_ocaml_ident(name), module.cloned())
     }
@@ -116,9 +116,9 @@ impl<'a> GenerateCtx<'a> {
     }
 
     /// For a type that refers to an ADT, return the name of that ADT.
-    pub fn type_to_rust_name(&self, ty: &Ty) -> Option<&String> {
+    pub fn type_to_rust_name(&self, ty: &Ty) -> Option<&str> {
         let index_ty: TypeDeclId = *ty.as_adt()?.id.as_adt()?;
-        Some(self.crate_data.item_name(index_ty)?.short_str())
+        Some(self.crate_data.item_name(index_ty).short_str()?)
     }
 
     /// Converts a type to the appropriate ocaml name. In case of generics, this provides appropriate
@@ -156,11 +156,10 @@ impl<'a> GenerateCtx<'a> {
                     TypeId::Adt(id) => {
                         let mut base_ty = if let Some(tdecl) = self.crate_data.type_decls.get(id) {
                             self.type_to_ocaml_ident(tdecl)
-                        } else if let Some(name) = self.crate_data.item_name(id) {
-                            eprintln!("Warning: type {} missing from llbc", repr_name(name));
-                            name.short_str().to_lowercase()
                         } else {
-                            format!("missing_type_{id}")
+                            let name = self.crate_data.item_name(id);
+                            eprintln!("Warning: type {} missing from llbc", repr_name(name));
+                            name.short_str().unwrap().to_lowercase()
                         };
                         if base_ty == "vec" {
                             base_ty = "list".to_string();

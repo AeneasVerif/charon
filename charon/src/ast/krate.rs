@@ -268,8 +268,10 @@ pub struct TranslatedCrate {
 }
 
 impl TranslatedCrate {
-    pub fn item_name(&self, id: impl Into<ItemId>) -> Option<&Name> {
-        self.item_names.get(&id.into())
+    pub fn item_name(&self, id: impl Into<ItemId>) -> &Name {
+        // `unwrap` is ok because we ensure to translate the item name as soon as we create a new
+        // item id.
+        self.item_names.get(&id.into()).unwrap()
     }
     pub fn assoc_item_name(
         &self,
@@ -284,9 +286,11 @@ impl TranslatedCrate {
         }
     }
 
-    pub fn item_short_name(&self, id: impl Into<ItemId>) -> Option<&Name> {
+    pub fn item_short_name(&self, id: impl Into<ItemId>) -> &Name {
         let id = id.into();
-        self.short_names.get(&id).or_else(|| self.item_name(id))
+        self.short_names
+            .get(&id)
+            .unwrap_or_else(|| self.item_name(id))
     }
 
     pub fn get_item(&self, trans_id: impl Into<ItemId>) -> Option<ItemRef<'_>> {

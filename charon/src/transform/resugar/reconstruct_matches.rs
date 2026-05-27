@@ -45,7 +45,7 @@ impl Transform {
                         match tkind {
                             // This can happen if the type was declared as invisible or opaque.
                             None | Some(TypeDeclKind::Opaque) => {
-                                let name = ctx.translated.item_name(adt_id).unwrap();
+                                let name = ctx.translated.item_name(adt_id);
                                 register_error!(
                                     ctx,
                                     block.span,

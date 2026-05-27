@@ -230,7 +230,7 @@ impl<'a> GenerateCtx<'a> {
                 if fields.len() == 1
                     && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
             {
-                let short_name = &decl.item_meta.name.short_str();
+                let short_name = &decl.item_meta.name.short_str().unwrap();
                 format!("{short_name}.id_of_postcard ctx st")
             }
             TypeDeclKind::Struct(fields)
