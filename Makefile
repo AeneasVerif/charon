@@ -32,7 +32,7 @@ build-charon-rust:
 
 .PHONY: build-dev-charon-rust
 build-dev-charon-rust:
-	cd charon && cargo build --profile test
+	cd charon && cargo test --no-run
 	mkdir -p bin
 	cp -f charon/target/debug/charon bin
 	cp -f charon/target/debug/charon-driver bin
