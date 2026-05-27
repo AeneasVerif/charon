@@ -1,0 +1,11 @@
+error: Could not reconstruct `Box` initialization; branching during `Box` initialization is not supported.
+  --> tests/ui/vec-reconstruct-multiple-adjacent.rs:12:1
+   |
+12 | / fn with_fn_calls() {
+13 | |     fn foo() -> u8 {
+14 | |         42
+...  |
+17 | | }
+   | |_^
+
+ERROR Charon failed to translate this code (1 errors)
