@@ -92,6 +92,16 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Filter the trait impls that were marked invisible since we couldn't filter them out
         // earlier.
         non_body(&finish_translation::filter_invisible_trait_impls::Transform),
+        // Move clauses on associated types to be implied clauses of the trait.
+        non_body(&simplify_output::lift_associated_item_clauses::Transform),
+        // Remove the explicit `Self: Trait` clause of methods/assoc const declaration items if
+        // they're not used. This simplifies the graph of dependencies between definitions.
+        non_body(&simplify_output::remove_unused_self_clause::Transform),
+        // Change trait associated types to be type parameters instead. See the module for details.
+        // This also normalizes any use of an associated type that we can resolve.
+        non_body(&normalize::expand_associated_types::Transform),
+        // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
+        non_body(&simplify_output::remove_adt_clauses::Transform),
         // Compute the metadata & insert for Rvalue
         unstructured_body(&finish_translation::insert_ptr_metadata::Transform),
         // Add the missing assignments to the return value.
@@ -102,13 +112,6 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         unstructured_body(&finish_translation::insert_assign_return_unit::Transform),
         // Insert `StorageLive` for locals that don't have one (that's allowed in MIR).
         non_body(&finish_translation::insert_storage_lives::Transform),
-        // Move clauses on associated types to be implied clauses of the trait.
-        non_body(&simplify_output::lift_associated_item_clauses::Transform),
-        // Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
-        non_body(&simplify_output::hide_allocator_param::Transform),
-        // Remove the explicit `Self: Trait` clause of methods/assoc const declaration items if
-        // they're not used. This simplifies the graph of dependencies between definitions.
-        non_body(&simplify_output::remove_unused_self_clause::Transform),
         // Transform Drops into Calls to drop_in_place.
         unstructured_body(&normalize::desugar_drops::Transform),
         // Whenever we reference a trait method on a known type, refer to the method `FunDecl`
@@ -118,11 +121,6 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Transform dyn trait method calls to vtable function pointer calls.
         // This should be early to handle the calls before other transformations.
         unstructured_body(&normalize::transform_dyn_trait_calls::Transform),
-        // Change trait associated types to be type parameters instead. See the module for details.
-        // This also normalizes any use of an associated type that we can resolve.
-        non_body(&normalize::expand_associated_types::Transform),
-        // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
-        non_body(&simplify_output::remove_adt_clauses::Transform),
     ]);
     // Body cleanup passes on the ullbc.
     ctx.run_passes([
@@ -216,6 +214,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Take all the comments found in the original body and assign them to statements. This must be
         // last after all the statement-affecting passes to avoid losing comments.
         non_body(&add_missing_info::recover_body_comments::Transform),
+        // Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
+        non_body(&simplify_output::hide_allocator_param::Transform),
         // Partially monomorphize items so that no item is ever instanciated with a mutable reference
         // or a type containing one.
         non_body(&normalize::partial_monomorphization::Transform),
