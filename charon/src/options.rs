@@ -170,7 +170,7 @@ pub struct CliOpts {
     #[serde(default)]
     pub hide_marker_traits: bool,
     /// Remove trait clauses from type declarations. Must be combined with
-    /// `--remove-associated-types` for type declarations that use trait associated types in their
+    /// `--lift-associated-types` for type declarations that use trait associated types in their
     /// fields, otherwise this will result in errors.
     #[clap(long)]
     #[serde(default)]
@@ -478,7 +478,7 @@ impl CliOpts {
 
         if self.remove_adt_clauses && self.lift_associated_types.is_empty() {
             anyhow::bail!(
-                "`--remove-adt-clauses` should be used with `--remove-associated-types='*'` \
+                "`--remove-adt-clauses` should be used with `--lift-associated-types='*'` \
                 to avoid missing clause errors",
             )
         }

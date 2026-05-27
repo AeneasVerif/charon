@@ -450,31 +450,53 @@ let match_literal (pl : literal) (l : Values.literal) : bool =
   | LChar pv, VChar v -> Uchar.of_char pv = v
   | _ -> false
 
+let generic_args_match_params (params : T.generic_params)
+    (args : T.generic_args) : bool =
+  let pr, pt, pc, ptr = TypesUtils.generic_params_lengths params in
+  let ar, at, ac, atr = TypesUtils.generic_args_lengths args in
+  pr = ar && pt = at && pc = ac && ptr = atr
+
+(* Instantiate the provided generics with the given binder, if any. *)
+let instantiate_name_generics (binder : T.generic_args T.binder)
+    (g : T.generic_args) : T.generic_args =
+  if binder.binder_params = TypesUtils.empty_generic_params then begin
+    (* HACK: Monomorphization doesn't handle late-bound regions properly, so we
+       append them here manually. *)
+    let regions_count, types_count, const_generics_count, trait_refs_count =
+      TypesUtils.generic_args_lengths g
+    in
+    (* We additionally append the regions from `g` to the monomorphized args, so that we can match against them. *)
+    assert (types_count = 0 && const_generics_count = 0 && trait_refs_count = 0);
+    {
+      binder.binder_value with
+      (* Late-bound regions are appended after the monomorphized ones. *)
+      regions = binder.binder_value.regions @ g.regions;
+    }
+  end
+  else if g = TypesUtils.empty_generic_args then
+    (* The caller did not provide generics for the instantiated item, we keep that so. *)
+    g
+  else begin
+    if not (generic_args_match_params binder.binder_params g) then
+      failwith
+        "(partially) monomorphized generic parameters do not match the \
+         supplied generic arguments";
+    Substitute.apply_args_to_binder g
+      Substitute.st_substitute_visitor#visit_generic_args binder
+  end
+
 let rec match_name_with_generics (ctx : ctx) (c : match_config)
     ?(m : maps = mk_empty_maps ()) (p : pattern) (n : T.name)
     (g : T.generic_args) : bool =
-  (* Handle monomorphized matching: if the name ends with a PeInstantiated
-     element, use the monomorphized args and continue matching without that
-     element *)
+  (* A [PeInstantiated] suffix is appended when the generics of an item are
+     modified; it records the map from the new generics to the old ones. Name
+     matching is expressed over the original item, so translate the generics of
+     the instantiated item back to the original generics before matching. *)
   let n, g =
     match List.rev n with
     | PeInstantiated binder :: rest_rev ->
-        let mono_args = binder.binder_value in
-        (* In this case, we may still have some late-bound generics in `g`, this could ONLY happen for regions *)
-        let regions_count, types_count, const_generics_count, trait_refs_count =
-          TypesUtils.generic_args_lengths g
-        in
-        assert (
-          types_count = 0 && const_generics_count = 0 && trait_refs_count = 0);
-        (* We additionally append the regions from `g` to the monomorphized args, so that we can match against them. *)
-        let merged_args =
-          if regions_count > 0 then begin
-            (* Late-bound regions are appended after the monomorphized ones. *)
-            { mono_args with regions = mono_args.regions @ g.regions }
-          end
-          else mono_args
-        in
-        (List.rev rest_rev, merged_args)
+        let g = instantiate_name_generics binder g in
+        (List.rev rest_rev, g)
     | _ -> (n, g)
   in
   match (p, n) with
@@ -1504,13 +1526,20 @@ module NameMatcherMap = struct
   let match_name_with_generics_prefix (ctx : ctx) (c : match_config)
       (p : pattern) (n : T.name) (g : T.generic_args) :
       (T.name * T.generic_args) option =
-    if List.length p = List.length n then
+    let logical_name, instantiation_suffix =
+      match List.rev n with
+      | (PeInstantiated _ as suffix) :: rest_rev ->
+          (List.rev rest_rev, [ suffix ])
+      | _ -> (n, [])
+    in
+    if List.length p = List.length logical_name then
       if match_name_with_generics ctx c p n g then
         Some ([], TypesUtils.empty_generic_args)
       else None
-    else if List.length p < List.length n then
-      let npre, nend = Collections.List.split_at n (List.length p) in
-      if match_name ctx c p npre then Some (nend, g) else None
+    else if List.length p < List.length logical_name then
+      let npre, nend = Collections.List.split_at logical_name (List.length p) in
+      if match_name ctx c p npre then Some (nend @ instantiation_suffix, g)
+      else None
     else None
 
   let rec find_with_generics_opt (ctx : ctx) (c : match_config)
