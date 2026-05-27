@@ -74,7 +74,10 @@ use crate::options::CliOpts;
 
 /// Run transformation passes on the crate before outputting it.
 pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
-    let non_body = |x| Pass::NonBody(CowBox::Borrowed(x));
+    // Passes that apply to the whole crate at once, typically those that change item signatures.
+    let global = |x| Pass::NonBody(CowBox::Borrowed(x));
+    // Passes that apply to bodies but work on either kind.
+    let mixed_body = |x| Pass::NonBody(CowBox::Borrowed(x));
 
     ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
         options.print_original_ullbc,
@@ -84,22 +87,22 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     // Item and type cleanup passes.
     ctx.run_passes([
         // Compute short names. We do it early to make pretty-printed output more legible in traces.
-        non_body(&add_missing_info::compute_short_names::Transform),
+        global(&add_missing_info::compute_short_names::Transform),
         // Check that translation emitted consistent types, and unify body lifetimes (best-effort).
-        non_body(&typecheck_and_unify::Check::PostTranslation),
+        global(&typecheck_and_unify::Check::PostTranslation),
         // Filter the trait impls that were marked invisible since we couldn't filter them out
         // earlier.
-        non_body(&finish_translation::filter_invisible_trait_impls::Transform),
+        global(&finish_translation::filter_invisible_trait_impls::Transform),
         // Move clauses on associated types to be implied clauses of the trait.
-        non_body(&simplify_output::lift_associated_item_clauses::Transform),
+        global(&simplify_output::lift_associated_item_clauses::Transform),
         // Remove the explicit `Self: Trait` clause of methods/assoc const declaration items if
         // they're not used. This simplifies the graph of dependencies between definitions.
-        non_body(&simplify_output::remove_unused_self_clause::Transform),
+        global(&simplify_output::remove_unused_self_clause::Transform),
         // Change trait associated types to be type parameters instead. See the module for details.
         // This also normalizes any use of an associated type that we can resolve.
-        non_body(&normalize::expand_associated_types::Transform),
+        global(&normalize::expand_associated_types::Transform),
         // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
-        non_body(&simplify_output::remove_adt_clauses::Transform),
+        global(&simplify_output::remove_adt_clauses::Transform),
     ]);
 
     // Body cleanup passes on the ullbc.
@@ -187,7 +190,7 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
 
     if !options.ullbc {
         // Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
-        ctx.run_pass(non_body(&control_flow::ullbc_to_llbc::Transform));
+        ctx.run_pass(mixed_body(&control_flow::ullbc_to_llbc::Transform));
         // Body cleanup passes after control flow reconstruction.
         let pass = Pass::FusedStructuredBody(Box::new([
             // Reconstruct matches on enum variants.
@@ -207,23 +210,23 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     // Cleanup passes useful for both llbc and ullbc.
     ctx.run_passes([
         // Remove the locals which are never used.
-        non_body(&simplify_output::remove_unused_locals::Transform),
+        mixed_body(&simplify_output::remove_unused_locals::Transform),
         // Remove the useless `StatementKind::Nop`s.
-        non_body(&simplify_output::remove_nops::Transform),
+        mixed_body(&simplify_output::remove_nops::Transform),
         // Take all the comments found in the original body and assign them to statements. This must be
         // last after all the statement-affecting passes to avoid losing comments.
-        non_body(&add_missing_info::recover_body_comments::Transform),
+        mixed_body(&add_missing_info::recover_body_comments::Transform),
         // Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
-        non_body(&simplify_output::hide_allocator_param::Transform),
+        global(&simplify_output::hide_allocator_param::Transform),
         // Partially monomorphize items so that no item is ever instanciated with a mutable reference
         // or a type containing one.
-        non_body(&normalize::partial_monomorphization::Transform),
+        global(&normalize::partial_monomorphization::Transform),
         // Reorder the graph of dependencies and compute the strictly connex components to:
         // - compute the order in which to extract the definitions
         // - find the recursive definitions
         // - group the mutually recursive definitions
         // This is done last to account for the final item graph, not the initial one.
-        non_body(&add_missing_info::reorder_decls::Transform),
+        global(&add_missing_info::reorder_decls::Transform),
     ]);
 
     if options.ullbc {
@@ -243,9 +246,9 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     // fails.
     ctx.run_passes([
         // Check that types are still consistent after the transformation passes.
-        non_body(&typecheck_and_unify::Check::PostTransformation),
+        global(&typecheck_and_unify::Check::PostTransformation),
         // Use `DeBruijnVar::Free` for the variables bound in item signatures.
-        non_body(&simplify_output::unbind_item_vars::Check),
+        mixed_body(&simplify_output::unbind_item_vars::Check),
     ]);
 }
 
