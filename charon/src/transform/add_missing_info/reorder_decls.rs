@@ -344,8 +344,15 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
                 let _ = generics.drive(&mut visitor);
                 let _ = signature.drive(&mut visitor);
                 let _ = body.drive(&mut visitor);
-                if let ItemSource::TraitDecl { trait_ref, .. } = src {
-                    visitor.insert_edge(trait_ref.id);
+                match src {
+                    ItemSource::TraitDecl { trait_ref, .. } => visitor.insert_edge(trait_ref.id),
+                    // Include the impl without adding a dependency edge to it.
+                    ItemSource::TraitImpl { impl_ref, .. }
+                        if ctx.options.include_method_impls_in_ordered_decls =>
+                    {
+                        visitor.insert_node(impl_ref.id)
+                    }
+                    _ => {}
                 }
             }
             ItemRef::TraitDecl(d) => {

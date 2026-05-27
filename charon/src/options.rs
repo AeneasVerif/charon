@@ -623,6 +623,10 @@ pub struct TranslateOptions {
     pub add_destruct_bounds: bool,
     /// Translate drop glue for poly types, knowing that this may cause ICEs.
     pub translate_poly_drop_glue: bool,
+    /// By default an impl is included in `ordered_decls` only if it's used directly (e.g. in a
+    /// `TraitRef`). A direct call to an impl method would not cause the impl to be included. This
+    /// includes them anyway.
+    pub include_method_impls_in_ordered_decls: bool,
 }
 
 impl TranslateOptions {
@@ -764,6 +768,7 @@ impl TranslateOptions {
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
             translate_poly_drop_glue: options.precise_drops,
+            include_method_impls_in_ordered_decls: matches!(options.preset, Some(Preset::Aeneas)),
         }
     }
 

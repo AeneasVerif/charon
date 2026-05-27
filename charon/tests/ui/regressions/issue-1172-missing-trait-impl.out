@@ -8,6 +8,21 @@ pub trait Default<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::{impl Default for [T; 29 : usize]}::default
+pub fn {impl Default for [T; 29 : usize]}::default<T>() -> [T; 29 : usize]
+where
+    [@TraitClause0]: Default<T>,
+= <opaque>
+
+// Full name: core::array::{impl Default for [T; 29 : usize]}
+impl<T> Default for [T; 29 : usize]
+where
+    [@TraitClause0]: Default<T>,
+{
+    fn default = {impl Default for [T; 29 : usize]}::default<T>[@TraitClause0]
+    non-dyn-compatible
+}
+
 // Full name: core::array::{impl Default for [T; 16 : usize]}::default
 pub fn {impl Default for [T; 16 : usize]}::default<T>() -> [T; 16 : usize]
 where
@@ -22,12 +37,6 @@ where
     fn default = {impl Default for [T; 16 : usize]}::default<T>[@TraitClause0]
     non-dyn-compatible
 }
-
-// Full name: core::array::{impl Default for [T; 29 : usize]}::default
-pub fn {impl Default for [T; 29 : usize]}::default<T>() -> [T; 29 : usize]
-where
-    [@TraitClause0]: Default<T>,
-= <opaque>
 
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
