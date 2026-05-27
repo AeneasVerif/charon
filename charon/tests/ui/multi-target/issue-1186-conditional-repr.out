@@ -1,0 +1,9 @@
+pub struct test_crate::Inner::x86_64-unknown-linux-gnu {
+  x: u32,
+}
+
+pub struct test_crate::Inner::i686-unknown-linux-gnu {
+  x: u32,
+}
+
+

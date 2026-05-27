@@ -1,0 +1,58 @@
+pub fn core::num::{u32}::MAX() -> u32
+= <opaque>
+
+pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
+
+pub fn test_crate::const_time_array_copy_mwe::x86_64-unknown-linux-gnu<'_0, const N : usize>(_a_1: &'_0 mut [u8; N])
+{
+    let _0: (); // return
+    let _a_1: &'1 mut [u8; N]; // arg #1
+    let _2: bool; // anonymous local
+    let _3: usize; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    _3 = cast<u32, usize>(copy core::num::{u32}::MAX)
+    _2 = const N <= move _3
+    if move _2 {
+    } else {
+        storage_dead(_3)
+        panic(core::panicking::panic::x86_64-unknown-linux-gnu)
+    }
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+pub fn test_crate::const_time_array_copy_mwe::i686-unknown-linux-gnu<'_0, const N : usize>(_a_1: &'_0 mut [u8; N])
+{
+    let _0: (); // return
+    let _a_1: &'1 mut [u8; N]; // arg #1
+    let _2: bool; // anonymous local
+    let _3: usize; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    _3 = cast<u32, usize>(copy core::num::{u32}::MAX)
+    _2 = const N <= move _3
+    if move _2 {
+    } else {
+        storage_dead(_3)
+        panic(core::panicking::panic::i686-unknown-linux-gnu)
+    }
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_1: &'_0 mut [u8; N])
+= target_dispatch {
+    x86_64-unknown-linux-gnu => test_crate::const_time_array_copy_mwe::x86_64-unknown-linux-gnu<'_0, N>,
+    i686-unknown-linux-gnu => test_crate::const_time_array_copy_mwe::i686-unknown-linux-gnu<'_0, N>,
+}
+
+
