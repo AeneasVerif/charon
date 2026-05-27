@@ -12,7 +12,7 @@ generate_index_type!(BlockId, "Block");
 // The entry block of a function is always the block with id 0
 pub static START_BLOCK_ID: BlockId = BlockId::ZERO;
 
-#[charon::rename("Blocks")]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("Blocks"))]
 pub type BodyContents = IndexVec<BlockId, BlockData>;
 pub type ExprBody = GExprBody<BodyContents>;
 
@@ -88,7 +88,7 @@ pub struct Statement {
     Drive,
     DriveMut,
 )]
-#[charon::rename("Switch")]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("Switch"))]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
     If(BlockId, BlockId),
@@ -140,7 +140,7 @@ pub enum TerminatorKind {
     },
     /// Assert that the given condition holds, and if not, unwind to the given block. This is used for
     /// bounds checks, overflow checks, etc.
-    #[charon::rename("TAssert")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("TAssert"))]
     Assert {
         assert: Assert,
         target: BlockId,
@@ -163,7 +163,7 @@ pub struct Terminator {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
-#[charon::rename("Block")]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("Block"))]
 pub struct BlockData {
     pub statements: Vec<Statement>,
     pub terminator: Terminator,

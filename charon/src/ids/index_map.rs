@@ -18,7 +18,7 @@ use derive_generic_visitor::*;
 /// To prevent accidental id reuse, the vector supports reserving a slot to be filled later. Use
 /// `IndexVec` if this is not needed.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[charon::rename("IndexedMap")]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("IndexedMap"))]
 pub struct IndexMap<I, T>
 where
     I: Idx,
@@ -419,7 +419,11 @@ where
     I: Idx,
 {
     type Item = &'a T;
-    type IntoIter = impl Iterator<Item = &'a T>;
+    type IntoIter = std::iter::FlatMap<
+        <&'a index_vec::IndexVec<I, Option<T>> as IntoIterator>::IntoIter,
+        Option<&'a T>,
+        fn(&'a Option<T>) -> Option<&'a T>,
+    >;
 
     fn into_iter(self) -> Self::IntoIter {
         self.vector.iter().flat_map(|opt| opt.as_ref())
@@ -431,7 +435,11 @@ where
     I: Idx,
 {
     type Item = &'a mut T;
-    type IntoIter = impl Iterator<Item = &'a mut T>;
+    type IntoIter = std::iter::FlatMap<
+        <&'a mut index_vec::IndexVec<I, Option<T>> as IntoIterator>::IntoIter,
+        Option<&'a mut T>,
+        fn(&'a mut Option<T>) -> Option<&'a mut T>,
+    >;
 
     fn into_iter(self) -> Self::IntoIter {
         self.vector.iter_mut().flat_map(|opt| opt.as_mut())
@@ -443,7 +451,8 @@ where
     I: Idx,
 {
     type Item = T;
-    type IntoIter = impl DoubleEndedIterator<Item = T>;
+    type IntoIter =
+        std::iter::Flatten<<index_vec::IndexVec<I, Option<T>> as IntoIterator>::IntoIter>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.vector.into_iter().flatten()

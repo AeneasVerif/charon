@@ -23,19 +23,10 @@
     clippy::should_implement_trait,
     clippy::useless_format
 )]
-#![expect(incomplete_features)]
-#![feature(assert_matches)]
-#![feature(box_patterns)]
-#![feature(deref_patterns)]
-#![feature(deref_pure_trait)]
 #![feature(if_let_guard)]
-#![feature(impl_trait_in_assoc_type)]
-#![feature(iterator_try_collect)]
-#![feature(register_tool)]
-#![feature(trait_alias)]
-#![feature(trivial_bounds)]
 // For when we use charon on itself :3
-#![register_tool(charon)]
+#![cfg_attr(feature = "charon_on_charon", feature(register_tool))]
+#![cfg_attr(feature = "charon_on_charon", register_tool(charon))]
 
 #[macro_use]
 pub mod ids;

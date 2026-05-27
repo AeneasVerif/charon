@@ -49,14 +49,14 @@ impl UllbcPass for Transform {
                             Call {
                                 func:
                                     FnOperand::Regular(FnPtr {
-                                        kind: box FnPtrKind::Fun(FunId::Regular(fun_id)),
-                                        ..
+                                        kind: fn_ptr_kind, ..
                                     }),
                                 ..
                             },
                         on_unwind: _, // TODO: shouldn't we use this?
                         ..
                     } = &block.terminator.kind
+                        && let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr_kind.as_ref()
                         && panic_fns.contains(fun_id)
                     {
                         block.terminator.kind = panic_terminator.clone();

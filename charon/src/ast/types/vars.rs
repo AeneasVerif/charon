@@ -150,7 +150,7 @@ pub struct TraitParam {
     #[drive(skip)]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
-    #[charon::rename("trait")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("trait"))]
     pub trait_: PolyTraitDeclRef,
 }
 

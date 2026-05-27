@@ -22,7 +22,7 @@ pub struct Local {
     /// Span of the variable declaration.
     pub span: Span,
     /// The variable type
-    #[charon::rename("local_ty")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("local_ty"))]
     pub ty: Ty,
 }
 #[deprecated(note = "use `Local` intead")]
@@ -50,7 +50,7 @@ pub struct Locals {
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
-#[charon::rename("GexprBody")]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("GexprBody"))]
 pub struct GExprBody<T> {
     pub span: Span,
     /// The number of regions existentially bound in this body. We introduce fresh such regions
@@ -63,7 +63,7 @@ pub struct GExprBody<T> {
     pub body: T,
     /// For each line inside the body, we record any whole-line `//` comments found before it. They
     /// are added to statements in the late `recover_body_comments` pass.
-    #[charon::opaque]
+    #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
     #[drive(skip)]
     pub comments: Vec<(usize, Vec<String>)>,
 }
@@ -83,7 +83,7 @@ pub struct GExprBody<T> {
     EnumToGetters,
 )]
 #[serde_state(state_implements = HashConsSerializerState)]
-#[charon::variants_suffix("Body")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Body"))]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
     Unstructured(ullbc_ast::ExprBody),
@@ -146,7 +146,7 @@ pub enum Body {
 /// }
 /// ```
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, PartialEq, Eq)]
-#[charon::variants_suffix("Item")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Item"))]
 pub enum ItemSource {
     /// This item stands on its own.
     TopLevel,
@@ -207,7 +207,7 @@ pub enum ItemSource {
 }
 
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, PartialEq, Eq)]
-#[charon::variants_prefix("VTable")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("VTable"))]
 pub enum VTableField {
     Size,
     Align,
@@ -450,7 +450,7 @@ pub struct TraitAssocTyImpl {
     pub value: Ty,
     /// This matches the corresponding vector in `TraitAssocTy`. In the same way, this is empty
     /// after the `lift_associated_item_clauses` pass.
-    #[charon::opaque]
+    #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
     pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
 }
 
@@ -458,7 +458,7 @@ pub struct TraitAssocTyImpl {
 /// It either designates a top-level function, or a place in case
 /// we are using function pointers stored in local variables.
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
-#[charon::variants_prefix("FnOp")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("FnOp"))]
 pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
     Regular(FnPtr),
@@ -548,7 +548,7 @@ pub enum DropKind {
 /// because they're implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
 /// [crate::transform::resugar::reconstruct_asserts].
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
-#[charon::rename("Assertion")]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("Assertion"))]
 pub struct Assert {
     pub cond: Operand,
     /// The value that the operand should evaluate to for the assert to succeed.

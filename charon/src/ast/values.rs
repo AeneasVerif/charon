@@ -36,7 +36,7 @@ generate_index_type!(LocalId, "");
     PartialOrd,
     Ord,
 )]
-#[charon::variants_prefix("V")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("V"))]
 #[serde_state(stateless)]
 pub enum Literal {
     Scalar(ScalarValue),
@@ -71,7 +71,7 @@ pub enum Literal {
     DriveMut,
 )]
 #[drive(skip)]
-#[charon::variants_suffix("Scalar")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Scalar"))]
 pub enum ScalarValue {
     Unsigned(
         UIntTy,
@@ -91,9 +91,9 @@ pub enum ScalarValue {
     Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Hash, PartialOrd, Ord, Drive, DriveMut,
 )]
 pub struct FloatValue {
-    #[charon::rename("float_value")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("float_value"))]
     #[drive(skip)]
     pub value: String,
-    #[charon::rename("float_ty")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("float_ty"))]
     pub ty: FloatTy,
 }

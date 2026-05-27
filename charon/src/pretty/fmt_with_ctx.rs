@@ -1646,14 +1646,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 place.with_ctx(ctx),
                 variant_id
             ),
-            StatementKind::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => {
+            StatementKind::CopyNonOverlapping(cno) => {
                 write!(
                     f,
                     "{}copy_nonoverlapping({}, {}, {})",
                     tab,
-                    src.with_ctx(ctx),
-                    dst.with_ctx(ctx),
-                    count.with_ctx(ctx),
+                    cno.src.with_ctx(ctx),
+                    cno.dst.with_ctx(ctx),
+                    cno.count.with_ctx(ctx),
                 )
             }
             StatementKind::StorageLive(var_id) => {
@@ -1693,13 +1693,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::SetDiscriminant(place, variant_id) => {
                 write!(f, "@discriminant({}) = {}", place.with_ctx(ctx), variant_id)
             }
-            StatementKind::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => {
+            StatementKind::CopyNonOverlapping(cno) => {
                 write!(
                     f,
                     "copy_nonoverlapping({}, {}, {})",
-                    src.with_ctx(ctx),
-                    dst.with_ctx(ctx),
-                    count.with_ctx(ctx),
+                    cno.src.with_ctx(ctx),
+                    cno.dst.with_ctx(ctx),
+                    cno.count.with_ctx(ctx),
                 )
             }
             StatementKind::StorageLive(var_id) => {

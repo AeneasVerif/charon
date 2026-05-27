@@ -47,6 +47,9 @@ impl<I: Idx, T> DerefMut for IndexVec<I, T> {
     }
 }
 
+/// Only used to make a function uncallable.
+pub trait Unimplemented {}
+
 impl<I, T> IndexVec<I, T>
 where
     I: Idx,
@@ -63,11 +66,12 @@ where
         }
     }
 
-    /// Shadow the `index_vec::IndexVec` method because it silently shifts ids.
+    /// Shadow the `index_vec::IndexVec` method because it silently shifts ids. Use
+    /// `remove_and_shift_ids` instead to be explicit.
     pub fn remove(&mut self, _: I) -> Option<T>
     where
         // Make it not callable.
-        String: Copy,
+        I: Unimplemented,
     {
         panic!("remove")
     }
@@ -187,7 +191,7 @@ where
     I: Idx,
 {
     type Item = &'a T;
-    type IntoIter = impl Iterator<Item = &'a T>;
+    type IntoIter = <&'a index_vec::IndexVec<I, T> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
         self.vector.iter()
@@ -199,7 +203,7 @@ where
     I: Idx,
 {
     type Item = &'a mut T;
-    type IntoIter = impl Iterator<Item = &'a mut T>;
+    type IntoIter = <&'a mut index_vec::IndexVec<I, T> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
         self.vector.iter_mut()
@@ -211,7 +215,7 @@ where
     I: Idx,
 {
     type Item = T;
-    type IntoIter = impl DoubleEndedIterator<Item = T>;
+    type IntoIter = <index_vec::IndexVec<I, T> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
         self.vector.into_iter()

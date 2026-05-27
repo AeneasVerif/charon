@@ -28,7 +28,7 @@ pub const CHARON_ARGS: &str = "CHARON_ARGS";
 // `Deserialize` options).
 #[derive(Debug, Default, Clone, clap::Args, PartialEq, Eq, Serialize, Deserialize)]
 #[clap(name = "Charon")]
-#[charon::rename("cli_options")]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("cli_options"))]
 pub struct CliOpts {
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
     #[clap(long)]
@@ -138,7 +138,7 @@ pub struct CliOpts {
             items in it transparent (we will translate them if we encounter them.)
     "))]
     #[serde(default)]
-    #[charon::rename("included")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("included"))]
     pub include: Vec<String>,
     /// Blacklist of items to keep opaque. Works just like `--include`, see the doc there.
     #[clap(long)]
@@ -344,7 +344,7 @@ pub enum MonomorphizeMut {
 pub enum SerializationFormatArg {
     Json,
     Postcard,
-    #[charon::rename("AllFormats")]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("AllFormats"))]
     All,
 }
 

@@ -20,7 +20,7 @@ generate_index_type!(Disambiguator);
     EnumIsA,
     EnumAsGetters,
 )]
-#[charon::variants_prefix("Pe")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Pe"))]
 pub enum PathElem {
     #[serde_state(stateless)]
     Ident(#[drive(skip)] String, Disambiguator),
@@ -45,7 +45,7 @@ pub enum PathElem {
 ///   ```
 /// We distinguish the two.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
-#[charon::variants_prefix("ImplElem")]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("ImplElem"))]
 pub enum ImplElem {
     Ty(Box<Binder<Ty>>),
     Trait(TraitImplId),
