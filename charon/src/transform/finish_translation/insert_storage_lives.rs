@@ -73,7 +73,7 @@ impl UllbcPass for Transform {
             return;
         };
 
-        let mut storage_visitor = StorageVisitor::new(&mut body.locals);
+        let mut storage_visitor = StorageVisitor::new(&body.locals);
         let _ = storage_visitor.visit(body);
 
         // Insert StorageLive instructions for the always initialised locals.

@@ -286,10 +286,10 @@ impl TransformCtx {
                 // Some passes carry function bodies, which must also be transformed. This applies
                 // all the passes before pass `p` to the bodies potentially carried by pass `p`.
                 for i in 0..passes.len() {
-                    if let (first_passes, [pass, ..]) = passes.split_at_mut(i) {
-                        if let CowBox::Owned(pass) = pass {
-                            pass.apply_preceding_passes(self, first_passes);
-                        }
+                    if let (first_passes, [pass, ..]) = passes.split_at_mut(i)
+                        && let CowBox::Owned(pass) = pass
+                    {
+                        pass.apply_preceding_passes(self, first_passes);
                     }
                 }
                 self.for_each_item_mut(|ctx, mut item| {

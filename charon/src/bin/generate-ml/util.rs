@@ -118,7 +118,7 @@ impl<'a> GenerateCtx<'a> {
     /// For a type that refers to an ADT, return the name of that ADT.
     pub fn type_to_rust_name(&self, ty: &Ty) -> Option<&str> {
         let index_ty: TypeDeclId = *ty.as_adt()?.id.as_adt()?;
-        Some(self.crate_data.item_name(index_ty).short_str()?)
+        self.crate_data.item_name(index_ty).short_str()
     }
 
     /// Converts a type to the appropriate ocaml name. In case of generics, this provides appropriate
