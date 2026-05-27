@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--hide-marker-traits
 #![feature(const_destruct)]
 

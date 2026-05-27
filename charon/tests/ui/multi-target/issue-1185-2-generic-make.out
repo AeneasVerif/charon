@@ -1,8 +1,27 @@
+#[lang_item("destruct")]
+pub trait core::marker::Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+= <opaque>
+
 pub struct test_crate::State<H> {
   _h: H,
 }
 
-pub fn test_crate::caller::x86_64-unknown-linux-gnu<H>(h_1: H)
+unsafe fn test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_in_place<H>(_1: *mut test_crate::State<H>)
+= <missing>
+
+// Full name: test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}
+impl<H> core::marker::Destruct for test_crate::State<H> {
+    fn drop_in_place = test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_in_place<H>
+    non-dyn-compatible
+}
+
+pub fn test_crate::caller<H>(h_1: H)
 {
     let _0: (); // return
     let h_1: H; // arg #1
@@ -16,38 +35,11 @@ pub fn test_crate::caller::x86_64-unknown-linux-gnu<H>(h_1: H)
     _2 = test_crate::State { _h: move _3 }
     conditional_drop[{built_in impl core::marker::Destruct for H}::drop_in_place] _3
     storage_dead(_3)
-    conditional_drop[test_crate::State::{impl#0}<H>::drop_in_place] _2
+    conditional_drop[test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_in_place<H>] _2
     storage_dead(_2)
     _0 = ()
     conditional_drop[{built_in impl core::marker::Destruct for H}::drop_in_place] h_1
     return
-}
-
-pub fn test_crate::caller::i686-unknown-linux-gnu<H>(h_1: H)
-{
-    let _0: (); // return
-    let h_1: H; // arg #1
-    let _2: test_crate::State<H>; // anonymous local
-    let _3: H; // anonymous local
-
-    _0 = ()
-    storage_live(_2)
-    storage_live(_3)
-    _3 = move h_1
-    _2 = test_crate::State { _h: move _3 }
-    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_in_place] _3
-    storage_dead(_3)
-    conditional_drop[test_crate::State::{impl#1}<H>::drop_in_place] _2
-    storage_dead(_2)
-    _0 = ()
-    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_in_place] h_1
-    return
-}
-
-pub fn test_crate::caller<H>(_1: H)
-= target_dispatch {
-    x86_64-unknown-linux-gnu => test_crate::caller::x86_64-unknown-linux-gnu<H>,
-    i686-unknown-linux-gnu => test_crate::caller::i686-unknown-linux-gnu<H>,
 }
 
 
