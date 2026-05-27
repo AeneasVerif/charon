@@ -17,10 +17,10 @@ fn transform_st(s: &mut Statement) {
                 op,
             ),
         ) => {
-            if let (
-                TyKind::Ref(_, deref!(TyKind::Array(arr_ty, len)), kind1),
-                TyKind::Ref(_, deref!(TyKind::Slice(_)), kind2),
-            ) = (src_ty.kind(), tgt_ty.kind())
+            if let (TyKind::Ref(_, ty1, kind1), TyKind::Ref(_, ty2, kind2)) =
+                (src_ty.kind(), tgt_ty.kind())
+                && let TyKind::Array(arr_ty, len) = ty1.kind()
+                && let TyKind::Slice(..) = ty2.kind()
             {
                 // In MIR terminology, we go from &[T; l] to &[T] which means we
                 // effectively "unsize" the type, as `l` no longer appears in the

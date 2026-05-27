@@ -27,7 +27,8 @@ impl<T> HashConsed<T> {
     }
 }
 
-pub trait HashConsable = Hash + PartialEq + Eq + Clone + Mappable;
+pub trait HashConsable: Hash + PartialEq + Eq + Clone + Mappable {}
+impl<T> HashConsable for T where T: Hash + PartialEq + Eq + Clone + Mappable {}
 
 /// Unique id identifying a hashconsed value amongst all hashconsed values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

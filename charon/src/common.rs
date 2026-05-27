@@ -103,7 +103,8 @@ pub mod type_map {
         marker::PhantomData,
     };
 
-    pub trait Mappable = Any + Send + Sync;
+    pub trait Mappable: Any + Send + Sync {}
+    impl<T> Mappable for T where T: Any + Send + Sync {}
 
     pub trait Mapper {
         type Value<T: Mappable>: Mappable;

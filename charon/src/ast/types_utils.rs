@@ -858,8 +858,6 @@ impl std::ops::Deref for Ty {
         self.kind()
     }
 }
-/// For deref patterns.
-unsafe impl std::ops::DerefPure for Ty {}
 
 impl TypeDeclRef {
     pub fn new(id: TypeId, generics: GenericArgs) -> Self {
