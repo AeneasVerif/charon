@@ -4,10 +4,10 @@ use std::collections::HashSet;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
-use crate::transform::ctx::FusedUllbcPass;
+use crate::transform::ctx::UllbcPass;
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
         // Replace any copy/move of a unit local to a plain const assignment. Note: we don't touch
         // other `Rvalue`s as they might have side-effects (e.g. reading through a pointer).

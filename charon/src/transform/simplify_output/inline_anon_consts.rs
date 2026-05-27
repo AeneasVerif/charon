@@ -1,7 +1,7 @@
 use std::{collections::HashMap, mem};
 
 use crate::transform::CowBox;
-use crate::transform::{TransformCtx, ctx::FusedUllbcPass};
+use crate::transform::{TransformCtx, ctx::UllbcPass};
 use crate::{ids::Generator, ullbc_ast::*};
 
 pub struct Transform {
@@ -9,7 +9,7 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn FusedUllbcPass> {
+    pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
         // Map each anon const id to its initializer, and remove both from `translated`.
         let anon_consts = ctx
             .translated
@@ -24,15 +24,11 @@ impl Transform {
         CowBox::Owned(Box::new(Transform { anon_consts }))
     }
 }
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
         !options.raw_consts && !self.anon_consts.is_empty()
     }
-    fn apply_preceding_passes(
-        &mut self,
-        ctx: &mut TransformCtx,
-        passes: &[CowBox<dyn FusedUllbcPass>],
-    ) {
+    fn apply_preceding_passes(&mut self, ctx: &mut TransformCtx, passes: &[CowBox<dyn UllbcPass>]) {
         for decl in self.anon_consts.values_mut() {
             for pass in passes {
                 pass.transform_item(ctx, ItemRefMut::Fun(decl));

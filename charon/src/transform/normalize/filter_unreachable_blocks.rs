@@ -6,10 +6,10 @@ use std::collections::{HashMap, HashSet};
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
-use crate::transform::ctx::FusedUllbcPass;
+use crate::transform::ctx::UllbcPass;
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Perform a depth-first search to identify all the blocks reachable
         // from the first block.

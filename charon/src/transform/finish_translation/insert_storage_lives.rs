@@ -7,7 +7,7 @@ use derive_generic_visitor::Visitor;
 use crate::ast::*;
 use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
-use crate::transform::ctx::FusedUllbcPass;
+use crate::transform::ctx::UllbcPass;
 use crate::ullbc_ast::BlockId;
 
 #[derive(Visitor)]
@@ -67,7 +67,7 @@ impl VisitBody for StorageVisitor {
 }
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_function(&self, _ctx: &mut TransformCtx, fun: &mut FunDecl) {
         let Body::Unstructured(body) = &mut fun.body else {
             return;

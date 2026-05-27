@@ -10,7 +10,7 @@
 use std::collections::HashSet;
 
 use crate::transform::CowBox;
-use crate::transform::{TransformCtx, ctx::FusedUllbcPass};
+use crate::transform::{TransformCtx, ctx::UllbcPass};
 use crate::{builtins, names::Name, ullbc_ast::*};
 
 pub struct Transform {
@@ -19,7 +19,7 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn FusedUllbcPass> {
+    pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
         let panic_name = Name::from_path(builtins::EXPLICIT_PANIC_NAME);
         let panic_terminator = TerminatorKind::Abort(AbortKind::Panic(Some(panic_name)));
 
@@ -47,7 +47,7 @@ impl Transform {
     }
 }
 
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ullbc_ast::ExprBody) {
         // Replace each call to one such function with an `Abort`.
         for block in &mut body.body {

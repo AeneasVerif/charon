@@ -3,11 +3,11 @@
 //! of AENEAS, it means the return variable contains ⊥ upon returning.
 //! For this reason, when the function has return type unit, we insert
 //! an extra assignment just before returning.
-use crate::transform::{TransformCtx, ctx::FusedUllbcPass};
+use crate::transform::{TransformCtx, ctx::UllbcPass};
 use crate::ullbc_ast::*;
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_function(&self, _ctx: &mut TransformCtx, decl: &mut FunDecl) {
         if decl.signature.output.is_unit()
             && let Some(body) = decl.body.as_unstructured_mut()

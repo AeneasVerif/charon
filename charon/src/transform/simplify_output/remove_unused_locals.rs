@@ -9,7 +9,7 @@ use std::ops::ControlFlow::Continue;
 use crate::ast::*;
 use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
-use crate::transform::ctx::{FusedUllbcPass, TransformPass};
+use crate::transform::ctx::{TransformPass, UllbcPass};
 
 #[derive(Visitor)]
 struct LocalsUsageVisitor {
@@ -107,7 +107,7 @@ fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
 }
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ullbc_ast::ExprBody) {
         remove_unused_locals(body)
     }

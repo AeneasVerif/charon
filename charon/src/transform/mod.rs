@@ -68,7 +68,7 @@ pub mod control_flow {
 }
 
 pub use ctx::TransformCtx;
-use ctx::{FusedUllbcPass, LlbcPass, TransformPass};
+use ctx::{LlbcPass, TransformPass, UllbcPass};
 
 use crate::options::CliOpts;
 
@@ -266,7 +266,7 @@ impl<T: ?Sized + 'static> std::ops::Deref for CowBox<T> {
 
 pub enum Pass {
     NonBody(CowBox<dyn TransformPass>),
-    FusedUnstructuredBody(Box<[CowBox<dyn FusedUllbcPass>]>),
+    FusedUnstructuredBody(Box<[CowBox<dyn UllbcPass>]>),
     FusedStructuredBody(Box<[CowBox<dyn LlbcPass>]>),
 }
 

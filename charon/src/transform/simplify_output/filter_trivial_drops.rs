@@ -1,5 +1,5 @@
 use crate::transform::TransformCtx;
-use crate::transform::ctx::FusedUllbcPass;
+use crate::transform::ctx::UllbcPass;
 use crate::ullbc_ast::*;
 
 fn is_noop_destruct(glue: &FnPtr) -> bool {
@@ -24,7 +24,7 @@ fn is_trivial_drop(stmt: &Terminator) -> bool {
 }
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ullbc_ast::ExprBody) {
         for block in &mut body.body {
             if is_trivial_drop(&block.terminator)

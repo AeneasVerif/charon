@@ -6,13 +6,13 @@
 /// metadata computation code because it involves non-hax things like emitting new statements.
 use crate::transform::{
     TransformCtx,
-    ctx::{BodyTransformCtx, FusedUllbcPass},
+    ctx::{BodyTransformCtx, UllbcPass},
 };
 use crate::ullbc_ast::*;
 
 pub struct Transform;
 
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         decl.transform_ullbc_statements(ctx, |ctx, st: &mut Statement| {
             st.dyn_visit_in_body_mut(|x: &mut Rvalue| {

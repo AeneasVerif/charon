@@ -22,7 +22,7 @@ pub struct TransformCtx {
 
 /// A pass that modifies ullbc bodies and can be fused with previous passes so that we run all of
 /// them on a given body.
-pub trait FusedUllbcPass: Sync {
+pub trait UllbcPass: Sync {
     /// Whether the pass should run.
     fn should_run(&self, _options: &TranslateOptions) -> bool {
         true
@@ -51,7 +51,7 @@ pub trait FusedUllbcPass: Sync {
     fn apply_preceding_passes(
         &mut self,
         _ctx: &mut TransformCtx,
-        _passes: &[CowBox<dyn FusedUllbcPass>],
+        _passes: &[CowBox<dyn UllbcPass>],
     ) {
     }
 

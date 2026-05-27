@@ -1,9 +1,9 @@
 use crate::transform::TransformCtx;
-use crate::transform::ctx::{BodyTransformCtx, FusedUllbcPass};
+use crate::transform::ctx::{BodyTransformCtx, UllbcPass};
 use crate::ullbc_ast::*;
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         decl.transform_ullbc_terminators(ctx, |ctx, term| {
             let TerminatorKind::Call { call, target, .. } = &term.kind else {

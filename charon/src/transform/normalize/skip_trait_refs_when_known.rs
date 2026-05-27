@@ -1,6 +1,6 @@
 use derive_generic_visitor::Visitor;
 
-use crate::transform::ctx::FusedUllbcPass;
+use crate::transform::ctx::UllbcPass;
 use crate::{register_error, transform::TransformCtx, ullbc_ast::*};
 
 #[derive(Visitor)]
@@ -67,7 +67,7 @@ fn transform_fn_ptr(ctx: &TransformCtx, span: Span, fn_ptr: &mut FnPtr) {
 }
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_item(&self, ctx: &mut TransformCtx, mut item: ItemRefMut<'_>) {
         let _ = item.drive_mut(&mut NormalizeFnPtr {
             ctx,
