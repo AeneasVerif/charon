@@ -33,7 +33,6 @@ pub mod normalize {
 pub mod resugar {
     pub mod move_asserts_to_statements;
     pub mod reconstruct_asserts;
-    pub mod reconstruct_boxes;
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
@@ -152,11 +151,6 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Recognize calls to the `offset_of` intrinsics and replace them with the
         // corresponding `NullOp`.
         CowBox::Borrowed(&resugar::reconstruct_intrinsics::Transform),
-        // Reconstruct the special `Box::new` operations inserted e.g. in the `vec![]` macro.
-        // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
-        // it must happen before passes that insert statements like [simplify_constants].
-        // **WARNING**: this pass works across calls, hence must happen after `merge_goto_chains`,
-        CowBox::Borrowed(&resugar::reconstruct_boxes::Transform),
         // Reconstruct the asserts
         CowBox::Borrowed(&resugar::reconstruct_asserts::Transform),
         // Desugar the constants to other values/operands as much as possible.

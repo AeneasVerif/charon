@@ -24,7 +24,6 @@
     clippy::should_implement_trait,
     clippy::useless_format
 )]
-#![feature(if_let_guard)]
 // For when we use charon on itself :3
 #![cfg_attr(feature = "charon_on_charon", feature(register_tool))]
 #![cfg_attr(feature = "charon_on_charon", register_tool(charon))]
