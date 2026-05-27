@@ -1,0 +1,73 @@
+# Final LLBC before serialization:
+
+// Full name: core::default::Default
+#[lang_item("Default")]
+pub trait Default<Self>
+{
+    fn default = core::default::Default::default<Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Default for [T; 16 : usize]}::default
+pub fn {impl Default for [T; 16 : usize]}::default<T>() -> [T; 16 : usize]
+where
+    [@TraitClause0]: Default<T>,
+= <opaque>
+
+// Full name: core::array::{impl Default for [T; 16 : usize]}
+impl<T> Default for [T; 16 : usize]
+where
+    [@TraitClause0]: Default<T>,
+{
+    fn default = {impl Default for [T; 16 : usize]}::default<T>[@TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: core::array::{impl Default for [T; 29 : usize]}::default
+pub fn {impl Default for [T; 29 : usize]}::default<T>() -> [T; 29 : usize]
+where
+    [@TraitClause0]: Default<T>,
+= <opaque>
+
+#[lang_item("default_fn")]
+pub fn core::default::Default::default<Self>() -> Self
+where
+    [@TraitClause0]: Default<Self>,
+= <opaque>
+
+// Full name: core::default::{impl Default for u8}::default
+pub fn {impl Default for u8}::default() -> u8
+= <opaque>
+
+// Full name: core::default::{impl Default for u8}
+impl Default for u8 {
+    fn default = {impl Default for u8}::default
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Key
+pub struct Key {
+  round_keys: [[u8; 16 : usize]; 29 : usize],
+}
+
+// Full name: test_crate::{impl Default for Key}::default
+pub fn {impl Default for Key}::default() -> Key
+{
+    let _0: Key; // return
+    let _1: [[u8; 16 : usize]; 29 : usize]; // anonymous local
+
+    storage_live(_1)
+    _1 = {impl Default for [T; 29 : usize]}::default<[u8; 16 : usize]>[{impl Default for [T; 16 : usize]}<u8>[{impl Default for u8}]]()
+    _0 = Key { round_keys: move _1 }
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl Default for Key}
+impl Default for Key {
+    fn default = {impl Default for Key}::default
+    non-dyn-compatible
+}
+
+
+
