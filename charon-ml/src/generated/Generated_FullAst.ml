@@ -138,7 +138,7 @@ and cli_options = {
           translation. *)
   remove_adt_clauses : bool;
       (** Remove trait clauses from type declarations. Must be combined with
-          [--remove-associated-types] for type declarations that use trait
+          [--lift-associated-types] for type declarations that use trait
           associated types in their fields, otherwise this will result in
           errors. *)
   hide_allocator : bool;
