@@ -4,9 +4,11 @@
 /// crate to figure out the metadata, which we can't do during translation as some items may not be
 /// translated yet. We could fetch some of that info via hax but this would then duplicate the
 /// metadata computation code because it involves non-hax things like emitting new statements.
-use crate::transform::TransformCtx;
-use crate::transform::ctx::BodyTransformCtx;
-use crate::{transform::ctx::UllbcPass, ullbc_ast::*};
+use crate::transform::{
+    TransformCtx,
+    ctx::{BodyTransformCtx, UllbcPass},
+};
+use crate::ullbc_ast::*;
 
 pub struct Transform;
 

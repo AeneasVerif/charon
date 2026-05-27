@@ -1,24 +1,23 @@
 //! The way to match on enums in MIR is in two steps: first read the discriminant, then switch on
 //! the resulting integer. This pass merges the two into a `SwitchKind::Match` that directly
 //! mentions enum variants.
-use crate::errors::register_error;
 use crate::formatter::IntoFormatter;
 use crate::llbc_ast::*;
 use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
+use crate::{errors::register_error, transform::CowBox};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
 use crate::transform::ctx::LlbcPass;
 
-pub struct Transform;
+pub struct Transform {
+    discriminant_intrinsics: HashSet<FunDeclId>,
+}
+
 impl Transform {
-    fn update_block(
-        ctx: &mut TransformCtx,
-        block: &mut Block,
-        discriminant_intrinsics: &HashSet<FunDeclId>,
-    ) {
+    fn update_block(&self, ctx: &mut TransformCtx, block: &mut Block) {
         // Iterate through the statements.
         for i in 0..block.statements.len() {
             let suffix = &mut block.statements[i..];
@@ -45,7 +44,7 @@ impl Transform {
                         match tkind {
                             // This can happen if the type was declared as invisible or opaque.
                             None | Some(TypeDeclKind::Opaque) => {
-                                let name = ctx.translated.item_name(adt_id).unwrap();
+                                let name = ctx.translated.item_name(adt_id);
                                 register_error!(
                                     ctx,
                                     block.span,
@@ -150,7 +149,7 @@ impl Transform {
                 ] if let FnOperand::Regular(fn_ptr) = &call.func
                         && let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.kind.as_ref()
                         // Detect a call to the intrinsic...
-                        && discriminant_intrinsics.contains(fun_id)
+                        && self.discriminant_intrinsics.contains(fun_id)
                         // passing it a reference.
                         && let Operand::Move(p) = &call.args[0]
                         && let TyKind::Ref(_, sub_ty, _) = p.ty().kind() =>
@@ -167,11 +166,11 @@ impl Transform {
 
 const DISCRIMINANT_INTRINSIC: &str = "core::intrinsics::discriminant_value";
 
-impl LlbcPass for Transform {
-    fn transform_ctx(&self, ctx: &mut TransformCtx) {
+impl Transform {
+    pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn LlbcPass> {
         let pat = NamePattern::parse(DISCRIMINANT_INTRINSIC).unwrap();
         // There can be many if we're in mono mode.
-        let discriminant_intrinsic: HashSet<FunDeclId> = ctx
+        let discriminant_intrinsics = ctx
             .translated
             .item_names
             .iter()
@@ -179,18 +178,16 @@ impl LlbcPass for Transform {
             .filter_map(|(id, _)| id.as_fun())
             .copied()
             .collect();
+        CowBox::Owned(Box::new(Transform {
+            discriminant_intrinsics,
+        }))
+    }
+}
 
-        ctx.for_each_fun_decl(|ctx, decl| {
-            if decl.body.has_contents() {
-                self.log_before_body(ctx, &decl.item_meta.name, &decl.body);
-                decl.body
-                    .as_structured_mut()
-                    .unwrap()
-                    .body
-                    .visit_blocks_bwd(|block: &mut Block| {
-                        Transform::update_block(ctx, block, &discriminant_intrinsic);
-                    });
-            }
-        });
+impl LlbcPass for Transform {
+    fn transform_body(&self, ctx: &mut TransformCtx, body: &mut llbc_ast::ExprBody) {
+        body.body.visit_blocks_bwd(|block: &mut Block| {
+            self.update_block(ctx, block);
+        })
     }
 }

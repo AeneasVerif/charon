@@ -1,8 +1,7 @@
-use super::super::ctx::UllbcPass;
 use crate::{
     transform::{
         TransformCtx,
-        ctx::{BodyTransformCtx, UllbcStatementTransformCtx},
+        ctx::{BodyTransformCtx, UllbcPass, UllbcStatementTransformCtx},
     },
     ullbc_ast::*,
 };

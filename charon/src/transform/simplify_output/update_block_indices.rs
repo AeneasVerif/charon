@@ -6,10 +6,10 @@ use crate::ids::*;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
-use crate::transform::ctx::FusedUllbcPass;
+use crate::transform::ctx::UllbcPass;
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Push each block into a new vector to make it consecutive and return the map from old to
         // new ids.

@@ -150,9 +150,7 @@ impl Pattern {
                 let args = &tref.generics;
                 match tref.id {
                     TypeId::Adt(type_id) => {
-                        let Some(type_name) = ctx.item_name(type_id) else {
-                            return false;
-                        };
+                        let type_name = ctx.item_name(type_id);
                         self.matches_with_generics(ctx, type_name, Some(args))
                     }
                     TypeId::Builtin(builtin_ty) => {
@@ -274,9 +272,7 @@ impl PatElem {
                 let Some(timpl) = ctx.trait_impls.get(*impl_id) else {
                     return false;
                 };
-                let Some(trait_name) = ctx.item_name(timpl.impl_trait.id) else {
-                    return false;
-                };
+                let trait_name = ctx.item_name(timpl.impl_trait.id);
                 pat.matches_with_generics(ctx, trait_name, Some(&timpl.impl_trait.generics))
             }
             _ => false,

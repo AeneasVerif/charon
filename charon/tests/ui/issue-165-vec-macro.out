@@ -97,7 +97,7 @@ fn foo()
     storage_live(_6)
     _6 = [const 1 : i32]
     storage_live(_4)
-    _4 = @BoxNew<[i32; 1 : usize]>[{built_in impl MetaSized for [i32; 1 : usize]}, {built_in impl Sized for Global}](move _6)
+    _4 = @BoxNew<[i32; 1 : usize], Global>[{built_in impl MetaSized for [i32; 1 : usize]}, {built_in impl Sized for Global}](move _6)
     _3 = move _4
     _2 = unsize_cast<alloc::boxed::Box<[i32; 1 : usize]>[{built_in impl MetaSized for [i32; 1 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 1 : usize>(move _3)
     conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<[i32; 1 : usize], Global>[{built_in impl MetaSized for [i32; 1 : usize]}, {built_in impl Sized for Global}]] _3
@@ -137,7 +137,7 @@ pub fn bar()
     storage_live(_6)
     _6 = [move _5]
     storage_live(_4)
-    _4 = @BoxNew<[Foo; 1 : usize]>[{built_in impl MetaSized for [Foo; 1 : usize]}, {built_in impl Sized for Global}](move _6)
+    _4 = @BoxNew<[Foo; 1 : usize], Global>[{built_in impl MetaSized for [Foo; 1 : usize]}, {built_in impl Sized for Global}](move _6)
     storage_live(_5)
     _5 = Foo {  }
     storage_dead(_5)

@@ -91,9 +91,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     id: TypeId::Adt(type_id),
                     ..
                 }) = self_ty.kind()
-                    && let Some(name) = self.translated.item_name(*type_id)
                 {
-                    name.to_string_with_ctx(&self.into_fmt())
+                    (*type_id).to_string_with_ctx(&self.into_fmt())
                 } else {
                     "crate::the::Type".to_string()
                 };

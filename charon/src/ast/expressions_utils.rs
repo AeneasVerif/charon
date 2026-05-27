@@ -267,7 +267,6 @@ impl FnPtr {
         match *self.kind {
             FnPtrKind::Fun(FunId::Regular(fun_id)) => krate
                 .item_name(fun_id)
-                .unwrap()
                 .mono_args()
                 .unwrap_or(&self.generics),
             //  We don't mono builtins.

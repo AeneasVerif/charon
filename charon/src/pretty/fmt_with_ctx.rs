@@ -104,12 +104,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for BuiltinAssertKind {
 
 impl<C: AstFormatter> FmtWithCtx<C> for ItemId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match ctx
-            .get_crate()
-            .and_then(|translated| translated.item_short_name(*self))
-        {
+        match ctx.get_crate() {
             None => write!(f, "{self}"),
-            Some(name) => name.fmt_with_ctx(ctx, f),
+            Some(translated) => translated.item_short_name(*self).fmt_with_ctx(ctx, f),
         }
     }
 }

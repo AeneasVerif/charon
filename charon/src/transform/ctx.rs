@@ -4,6 +4,7 @@ use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::llbc_ast;
 use crate::options::TranslateOptions;
 use crate::pretty::FmtWithCtx;
+use crate::transform::CowBox;
 use crate::ullbc_ast;
 use std::cell::RefCell;
 use std::{fmt, mem};
@@ -19,7 +20,8 @@ pub struct TransformCtx {
     pub errors: RefCell<ErrorCtx>,
 }
 
-/// A pass that modifies ullbc bodies.
+/// A pass that modifies ullbc bodies and can be fused with previous passes so that we run all of
+/// them on a given body.
 pub trait UllbcPass: Sync {
     /// Whether the pass should run.
     fn should_run(&self, _options: &TranslateOptions) -> bool {
@@ -36,49 +38,25 @@ pub trait UllbcPass: Sync {
         }
     }
 
-    /// Transform the given context. This forwards to the other methods by default.
-    fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|ctx, decl| {
-            self.log_before_body(ctx, &decl.item_meta.name, &decl.body);
+    /// Transform an item. This forwards to `transform_function` by default.
+    fn transform_item(&self, ctx: &mut TransformCtx, item: ItemRefMut<'_>) {
+        if let ItemRefMut::Fun(decl) = item {
             self.transform_function(ctx, decl);
-        });
-    }
-
-    /// The name of the pass, used for debug logging. The default implementation uses the type
-    /// name.
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
-    }
-
-    /// Log that the pass is about to be run on this body.
-    fn log_before_body(&self, ctx: &TransformCtx, name: &Name, body: &Body) {
-        let fmt_ctx = &ctx.into_fmt();
-        trace!(
-            "# About to run pass [{}] on `{}`:\n{}",
-            self.name(),
-            name.with_ctx(fmt_ctx),
-            body.with_ctx(fmt_ctx),
-        );
-    }
-}
-
-/// A pass that modifies ullbc bodies and can be fused with previous passes so that we run all of
-/// them on a given body.
-pub trait FusedUllbcPass: Sync {
-    /// Whether the pass should run.
-    fn should_run(&self, _options: &TranslateOptions) -> bool {
-        true
-    }
-
-    /// Transform a body.
-    fn transform_body(&self, _ctx: &mut TransformCtx, _body: &mut ullbc_ast::ExprBody) {}
-
-    /// Transform a function declaration. This forwards to `transform_body` by default.
-    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
-        if let Some(body) = decl.body.as_unstructured_mut() {
-            self.transform_body(ctx, body)
         }
     }
+
+    /// Some passes carry function bodies, which must also be transformed. This is called before
+    /// the batch of passes starts, with all the passes that come before this one. Rougly only
+    /// useful for passes that inline some functions into others.
+    fn apply_preceding_passes(
+        &mut self,
+        _ctx: &mut TransformCtx,
+        _passes: &[CowBox<dyn UllbcPass>],
+    ) {
+    }
+
+    /// Run after all the fused passes in the current block are done.
+    fn finalize(&self, _ctx: &mut TransformCtx) {}
 
     /// The name of the pass, used for debug logging. The default implementation uses the type
     /// name.
@@ -104,30 +82,10 @@ pub trait LlbcPass: Sync {
         }
     }
 
-    /// Transform the given context. This forwards to the other methods by default.
-    fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|ctx, decl| {
-            self.log_before_body(ctx, &decl.item_meta.name, &decl.body);
-            self.transform_function(ctx, decl);
-        });
-    }
-
     /// The name of the pass, used for debug logging. The default implementation uses the type
     /// name.
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
-    }
-
-    /// Log that the pass is about to be run on this body.
-    fn log_before_body(&self, ctx: &TransformCtx, name: &Name, body: &Body) {
-        let fmt_ctx = &ctx.into_fmt();
-        let body_str = body.to_string_with_ctx(fmt_ctx);
-        trace!(
-            "# About to run pass [{}] on `{}`:\n{}",
-            self.name(),
-            name.with_ctx(fmt_ctx),
-            body_str,
-        );
     }
 }
 

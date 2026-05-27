@@ -165,7 +165,7 @@ impl<'a> GenerateCtx<'a> {
                     && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
             {
                 // These are the special strongly-typed integers.
-                let short_name = decl.item_meta.name.short_str();
+                let short_name = decl.item_meta.name.short_str().unwrap();
                 format!("{short_name}.id [@visitors.opaque]")
             }
             TypeDeclKind::Struct(fields)

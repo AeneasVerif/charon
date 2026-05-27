@@ -1,0 +1,17 @@
+error: Could not reconstruct `Box` initialization; branching during `Box` initialization is not supported.
+ --> tests/ui/vec-reconstruct-nested.rs:2:1
+  |
+2 | / fn nested_vecs() {
+3 | |     let _nested = vec![vec![1u8], vec![2u8]];
+4 | | }
+  | |_^
+
+error: Could not reconstruct `Box` initialization; branching during `Box` initialization is not supported.
+ --> tests/ui/vec-reconstruct-nested.rs:6:1
+  |
+6 | / fn nested_single() {
+7 | |     let _nested = vec![vec![1u8]];
+8 | | }
+  | |_^
+
+ERROR Charon failed to translate this code (2 errors)

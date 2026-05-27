@@ -9,10 +9,10 @@ use crate::ast::*;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{ExprBody, Statement, StatementKind, TerminatorKind};
 
-use crate::transform::ctx::FusedUllbcPass;
+use crate::transform::ctx::UllbcPass;
 
 pub struct Transform;
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
         options.reconstruct_fallible_operations
     }

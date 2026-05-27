@@ -19,6 +19,7 @@
     clippy::field_reassign_with_default,
     clippy::manual_map,
     clippy::mem_replace_with_default,
+    clippy::new_ret_no_self,
     clippy::new_without_default,
     clippy::should_implement_trait,
     clippy::useless_format

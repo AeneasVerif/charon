@@ -4,7 +4,7 @@ use crate::register_error;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
-use crate::transform::ctx::FusedUllbcPass;
+use crate::transform::ctx::UllbcPass;
 
 pub struct Transform;
 
@@ -19,7 +19,7 @@ pub struct Transform;
 /// ```
 ///
 /// We reconstruct this into a call to `Box::new(x)`.
-impl FusedUllbcPass for Transform {
+impl UllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
         options.treat_box_as_builtin
     }

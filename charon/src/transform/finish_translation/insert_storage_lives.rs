@@ -7,7 +7,7 @@ use derive_generic_visitor::Visitor;
 use crate::ast::*;
 use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
-use crate::transform::ctx::TransformPass;
+use crate::transform::ctx::UllbcPass;
 use crate::ullbc_ast::BlockId;
 
 #[derive(Visitor)]
@@ -67,51 +67,30 @@ impl VisitBody for StorageVisitor {
 }
 
 pub struct Transform;
-impl TransformPass for Transform {
-    fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|_ctx, fun| {
-            let body = &mut fun.body;
-            if !body.has_contents() {
-                return;
-            }
+impl UllbcPass for Transform {
+    fn transform_function(&self, _ctx: &mut TransformCtx, fun: &mut FunDecl) {
+        let Body::Unstructured(body) = &mut fun.body else {
+            return;
+        };
 
-            let mut storage_visitor = StorageVisitor::new(body.locals());
-            let _ = storage_visitor.visit(body);
+        let mut storage_visitor = StorageVisitor::new(&body.locals);
+        let _ = storage_visitor.visit(body);
 
-            // Insert StorageLive instructions for the always initialised locals.
-            let locals_with_missing_storage = storage_visitor
-                .local_status
-                .iter_enumerated()
-                .filter(|(_, status)| matches!(status, LocalStatus::UsedAndNoExplicitStorage))
-                .map(|(local, _)| local);
-            match body {
-                Body::Structured(body) => {
-                    let first_span = body.body.statements.first().unwrap().span;
-                    let new_statements = locals_with_missing_storage.map(|local| {
-                        llbc_ast::Statement::new(
-                            first_span,
-                            llbc_ast::StatementKind::StorageLive(local),
-                        )
-                    });
-                    body.body.statements.splice(0..0, new_statements);
-                }
-                Body::Unstructured(body) => {
-                    let first_block = body.body.get_mut(BlockId::ZERO).unwrap();
-                    let first_span = if let Some(fst) = first_block.statements.first() {
-                        fst.span
-                    } else {
-                        first_block.terminator.span
-                    };
-                    let new_statements = locals_with_missing_storage.map(|local| {
-                        ullbc_ast::Statement::new(
-                            first_span,
-                            ullbc_ast::StatementKind::StorageLive(local),
-                        )
-                    });
-                    first_block.statements.splice(0..0, new_statements);
-                }
-                _ => unreachable!(),
-            }
+        // Insert StorageLive instructions for the always initialised locals.
+        let locals_with_missing_storage = storage_visitor
+            .local_status
+            .iter_enumerated()
+            .filter(|(_, status)| matches!(status, LocalStatus::UsedAndNoExplicitStorage))
+            .map(|(local, _)| local);
+        let first_block = body.body.get_mut(BlockId::ZERO).unwrap();
+        let first_span = if let Some(fst) = first_block.statements.first() {
+            fst.span
+        } else {
+            first_block.terminator.span
+        };
+        let new_statements = locals_with_missing_storage.map(|local| {
+            ullbc_ast::Statement::new(first_span, ullbc_ast::StatementKind::StorageLive(local))
         });
+        first_block.statements.splice(0..0, new_statements);
     }
 }

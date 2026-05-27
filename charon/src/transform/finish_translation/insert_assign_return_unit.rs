@@ -3,10 +3,8 @@
 //! of AENEAS, it means the return variable contains ⊥ upon returning.
 //! For this reason, when the function has return type unit, we insert
 //! an extra assignment just before returning.
-use crate::transform::TransformCtx;
+use crate::transform::{TransformCtx, ctx::UllbcPass};
 use crate::ullbc_ast::*;
-
-use crate::transform::ctx::UllbcPass;
 
 pub struct Transform;
 impl UllbcPass for Transform {

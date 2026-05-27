@@ -874,7 +874,7 @@ impl TraitDeclRef {
             Some(ty) => Some(ty),
             // TODO(mono): A monomorphized trait takes no arguments.
             None => {
-                let name = krate.item_name(self.id)?;
+                let name = krate.item_name(self.id);
                 let args = name.name.last()?.as_monomorphized()?;
                 args.types.iter().next()
             }
