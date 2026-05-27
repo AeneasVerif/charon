@@ -1,8 +1,7 @@
-use super::super::ctx::UllbcPass;
 use crate::{
     transform::{
         TransformCtx,
-        ctx::{BodyTransformCtx, UllbcStatementTransformCtx},
+        ctx::{BodyTransformCtx, FusedUllbcPass, UllbcStatementTransformCtx},
     },
     ullbc_ast::*,
 };
@@ -59,7 +58,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
 
 pub struct Transform;
 
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
         options.desugar_drops
     }

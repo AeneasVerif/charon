@@ -16,7 +16,7 @@
 //! ```text
 //! @0 := (move (*@receiver.ptr_metadata).method_check)(move (@receiver), move (@args)) // Call through function pointer
 //! ```
-use super::super::ctx::UllbcPass;
+use super::super::ctx::FusedUllbcPass;
 use crate::{
     errors::Error,
     formatter::IntoFormatter,
@@ -149,7 +149,7 @@ fn transform_dyn_trait_call(
 }
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl FusedUllbcPass for Transform {
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         decl.transform_ullbc_terminators(ctx, |ctx, term| {
             if let TerminatorKind::Call { call, .. } = &mut term.kind {

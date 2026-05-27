@@ -68,14 +68,13 @@ pub mod control_flow {
 }
 
 pub use ctx::TransformCtx;
-use ctx::{FusedUllbcPass, LlbcPass, TransformPass, UllbcPass};
+use ctx::{FusedUllbcPass, LlbcPass, TransformPass};
 
 use crate::options::CliOpts;
 
 /// Run transformation passes on the crate before outputting it.
 pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     let non_body = |x| Pass::NonBody(CowBox::Borrowed(x));
-    let unstructured_body = |x| Pass::UnstructuredBody(CowBox::Borrowed(x));
     let structured_body = |x| Pass::StructuredBody(CowBox::Borrowed(x));
 
     ctx.run_pass(Pass::NonBody(PrintCtxPass::new(
@@ -102,34 +101,33 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         non_body(&normalize::expand_associated_types::Transform),
         // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
         non_body(&simplify_output::remove_adt_clauses::Transform),
+    ]);
+
+    // Body cleanup passes on the ullbc.
+    let pass = Pass::FusedUnstructuredBody(Box::new([
         // Compute the metadata & insert for Rvalue
-        unstructured_body(&finish_translation::insert_ptr_metadata::Transform),
+        CowBox::Borrowed(&finish_translation::insert_ptr_metadata::Transform),
         // Add the missing assignments to the return value.
         // When the function return type is unit, the generated MIR doesn't set the return value to
         // `()`. This can be a concern: in the case of Aeneas, it means the return variable
         // contains ⊥ upon returning. For this reason, when the function has return type unit, we
         // insert an extra assignment just before returning.
-        unstructured_body(&finish_translation::insert_assign_return_unit::Transform),
+        CowBox::Borrowed(&finish_translation::insert_assign_return_unit::Transform),
         // Insert `StorageLive` for locals that don't have one (that's allowed in MIR).
-        non_body(&finish_translation::insert_storage_lives::Transform),
+        CowBox::Borrowed(&finish_translation::insert_storage_lives::Transform),
         // Transform Drops into Calls to drop_in_place.
-        unstructured_body(&normalize::desugar_drops::Transform),
+        CowBox::Borrowed(&normalize::desugar_drops::Transform),
         // Whenever we reference a trait method on a known type, refer to the method `FunDecl`
         // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to
         // remove some sources of mutual recursion.
-        non_body(&normalize::skip_trait_refs_when_known::Transform),
+        CowBox::Borrowed(&normalize::skip_trait_refs_when_known::Transform),
         // Transform dyn trait method calls to vtable function pointer calls.
         // This should be early to handle the calls before other transformations.
-        unstructured_body(&normalize::transform_dyn_trait_calls::Transform),
-    ]);
-    // Body cleanup passes on the ullbc.
-    ctx.run_passes([
+        CowBox::Borrowed(&normalize::transform_dyn_trait_calls::Transform),
         // Inline promoted and inline consts into their parent bodies.
-        unstructured_body(&simplify_output::inline_anon_consts::Transform),
+        simplify_output::inline_anon_consts::Transform::new(ctx),
         // `panic!()` expands to a new function definition each time. This pass cleans those up.
-        unstructured_body(&resugar::inline_local_panic_functions::Transform),
-    ]);
-    ctx.run_pass(Pass::FusedUnstructuredBody(Box::new([
+        resugar::inline_local_panic_functions::Transform::new(ctx),
         // Remove drop statements that are noops.
         CowBox::Borrowed(&simplify_output::filter_trivial_drops::Transform),
         // Inline all asserts that correspond to dynamic checks into statements.
@@ -177,7 +175,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&normalize::filter_unreachable_blocks::Transform),
         // Make sure the block ids used in the ULLBC are consecutive
         CowBox::Borrowed(&simplify_output::update_block_indices::Transform),
-    ])));
+    ]));
+    ctx.run_pass(pass);
 
     if !options.ullbc {
         // If we're reconstructing control-flow, print the ullbc here.
@@ -267,35 +266,40 @@ impl<T: ?Sized + 'static> std::ops::Deref for CowBox<T> {
 
 pub enum Pass {
     NonBody(CowBox<dyn TransformPass>),
-    UnstructuredBody(CowBox<dyn UllbcPass>),
     FusedUnstructuredBody(Box<[CowBox<dyn FusedUllbcPass>]>),
     StructuredBody(CowBox<dyn LlbcPass>),
 }
 
 impl TransformCtx {
-    fn run_pass(&mut self, pass: Pass) {
-        match &pass {
+    fn run_pass(&mut self, mut pass: Pass) {
+        match &mut pass {
             Pass::NonBody(pass) => {
                 if pass.should_run(&self.options) {
                     trace!("# Starting pass {}", pass.name());
                     pass.transform_ctx(self)
                 }
             }
-            Pass::UnstructuredBody(pass) => {
-                if pass.should_run(&self.options) {
-                    trace!("# Starting pass {}", pass.name());
-                    pass.transform_ctx(self)
-                }
-            }
             Pass::FusedUnstructuredBody(passes) => {
-                self.for_each_fun_decl(|ctx, decl| {
-                    for pass in passes {
+                // Some passes carry function bodies, which must also be transformed. This applies
+                // all the passes before pass `p` to the bodies potentially carried by pass `p`.
+                for i in 0..passes.len() {
+                    if let (first_passes, [pass, ..]) = passes.split_at_mut(i) {
+                        if let CowBox::Owned(pass) = pass {
+                            pass.apply_preceding_passes(self, first_passes);
+                        }
+                    }
+                }
+                self.for_each_item_mut(|ctx, mut item| {
+                    for pass in passes.iter() {
                         if pass.should_run(&ctx.options) {
                             trace!("# Starting pass {}", pass.name());
-                            pass.transform_function(ctx, decl);
+                            pass.transform_item(ctx, item.reborrow());
                         }
                     }
                 });
+                for pass in passes.iter() {
+                    pass.finalize(self);
+                }
             }
             Pass::StructuredBody(pass) => {
                 if pass.should_run(&self.options) {
