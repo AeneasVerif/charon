@@ -557,6 +557,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Body::Intrinsic { name, arg_names }
         } else if let Some(name) = self.t_ctx.extern_item_symbol_name(def) {
             Body::Extern(name)
+        } else if item_meta.lang_item.as_deref() == Some(builtins::BOX_ASSUME_INIT_INTO_VEC_UNSAFE)
+        {
+            // FIXME(#865): the MIR we get is unusably optimized. Instead we build our own body
+            // here.
+            self.build_box_assume_init_into_vec_unsafe(span, def)?
         } else if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else if is_trait_method_decl_without_default {

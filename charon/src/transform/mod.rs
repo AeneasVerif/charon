@@ -36,6 +36,7 @@ pub mod resugar {
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
+    pub mod reconstruct_vec_boxes;
 }
 
 /// Passes that make the output simpler/easier to consume.
@@ -148,6 +149,11 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
         // it must happen before passes that insert statements like [simplify_constants].
         CowBox::Borrowed(&resugar::reconstruct_fallible_operations::Transform),
+        // Reconstruct `vec![x]` lowering to avoid unsafe operations.
+        // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of
+        // this, it must happen before passes that insert statements like [simplify_constants].
+        // This must also happen after `inline_selected_functions`, and `merge_goto_chains`.
+        resugar::reconstruct_vec_boxes::Transform::new(ctx),
         // Recognize calls to the `offset_of` intrinsics and replace them with the
         // corresponding `NullOp`.
         CowBox::Borrowed(&resugar::reconstruct_intrinsics::Transform),

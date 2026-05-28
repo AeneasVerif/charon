@@ -12,33 +12,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::mem::manually_drop::ManuallyDrop
-#[lang_item("manually_drop")]
-pub opaque type ManuallyDrop<T>
-where
-    [@TraitClause0]: MetaSized<T>,
-
-// Full name: core::mem::maybe_dangling::MaybeDangling
-pub opaque type MaybeDangling<P>
-where
-    [@TraitClause0]: MetaSized<P>,
-
-// Full name: core::mem::maybe_uninit::MaybeUninit
-#[lang_item("maybe_uninit")]
-pub opaque type MaybeUninit<T>
-where
-    [@TraitClause0]: Sized<T>,
-
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
-
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
-where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-= <opaque>
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
@@ -47,17 +23,11 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
 
-// Full name: alloc::boxed::box_assume_init_into_vec_unsafe
-#[lang_item("box_assume_init_into_vec_unsafe")]
-pub fn box_assume_init_into_vec_unsafe<T, const N : usize>(_1: alloc::boxed::Box<MaybeUninit<[T; N]>[{built_in impl Sized for [T; N]}]>[{built_in impl MetaSized for MaybeUninit<[T; N]>[{built_in impl Sized for [T; N]}]}, {built_in impl Sized for Global}]) -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
+// Full name: alloc::slice::{[T]}::into_vec
+pub fn into_vec<T, A>(_1: alloc::boxed::Box<[T]>[{built_in impl MetaSized for [T]}, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: Sized<T>,
-= <opaque>
-
-// Full name: alloc::boxed::{alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new_uninit
-pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, {built_in impl Sized for Global}]
-where
-    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 = <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
@@ -79,58 +49,72 @@ fn move_values(flag_1: bool)
     let flag_1: bool; // arg #1
     let x_2: NoCopy; // local
     let _v_3: Vec<NoCopy>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]; // local
-    let _4: alloc::boxed::Box<MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _5: alloc::boxed::Box<MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _6: NoCopy; // anonymous local
-    let _7: bool; // anonymous local
-    let y_8: NoCopy; // local
-    let _w_9: Vec<NoCopy>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]; // local
-    let _10: alloc::boxed::Box<MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _11: alloc::boxed::Box<MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]>[{built_in impl MetaSized for MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]}, {built_in impl Sized for Global}]; // anonymous local
-    let _12: NoCopy; // anonymous local
+    let _4: NoCopy; // anonymous local
+    let _5: bool; // anonymous local
+    let y_6: NoCopy; // local
+    let _w_7: Vec<NoCopy>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]; // local
+    let _8: NoCopy; // anonymous local
+    let ret_9: Vec<NoCopy>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]; // local
+    let x_10: alloc::boxed::Box<[NoCopy; 1 : usize]>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}]; // local
+    let y_11: alloc::boxed::Box<[NoCopy]>[{built_in impl MetaSized for [NoCopy]}, {built_in impl Sized for Global}]; // local
+    let ret_12: Vec<NoCopy>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]; // local
+    let x_13: alloc::boxed::Box<[NoCopy; 1 : usize]>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}]; // local
+    let y_14: alloc::boxed::Box<[NoCopy]>[{built_in impl MetaSized for [NoCopy]}, {built_in impl Sized for Global}]; // local
+    let _15: [NoCopy; 1 : usize]; // anonymous local
+    let _16: alloc::boxed::Box<[NoCopy; 1 : usize]>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _17: [NoCopy; 1 : usize]; // anonymous local
+    let _18: alloc::boxed::Box<[NoCopy; 1 : usize]>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     _0 = ()
     storage_live(x_2)
     x_2 = NoCopy { 0: const 4 : u8 }
     storage_live(_v_3)
     storage_live(_4)
-    storage_live(_5)
-    _5 = new_uninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]()
-    storage_live(_6)
-    _6 = move x_2
-    ((((*_5)).1).0).0 = [move _6]
-    storage_dead(_6)
-    _4 = move _5
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]}, {built_in impl Sized for Global}]] _5
-    storage_dead(_5)
-    _v_3 = box_assume_init_into_vec_unsafe<NoCopy, 1 : usize>[{built_in impl Sized for NoCopy}](move _4)
+    _4 = move x_2
+    storage_live(_15)
+    _15 = [move _4]
     storage_dead(_4)
-    storage_live(_7)
-    _7 = copy flag_1
-    if move _7 {
-        storage_live(y_8)
-        y_8 = NoCopy { 0: const 5 : u8 }
-        storage_live(_w_9)
-        storage_live(_10)
-        storage_live(_11)
-        _11 = new_uninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]()
-        storage_live(_12)
-        _12 = move y_8
-        ((((*_11)).1).0).0 = [move _12]
-        storage_dead(_12)
-        _10 = move _11
-        conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[NoCopy; 1 : usize]>[{built_in impl Sized for [NoCopy; 1 : usize]}]}, {built_in impl Sized for Global}]] _11
-        storage_dead(_11)
-        _w_9 = box_assume_init_into_vec_unsafe<NoCopy, 1 : usize>[{built_in impl Sized for NoCopy}](move _10)
-        storage_dead(_10)
+    storage_live(_16)
+    _16 = @BoxNew<[NoCopy; 1 : usize], Global>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}](move _15)
+    storage_live(ret_9)
+    storage_live(x_10)
+    storage_live(y_11)
+    storage_dead(_15)
+    x_10 = move _16
+    storage_dead(_16)
+    y_11 = unsize_cast<alloc::boxed::Box<[NoCopy; 1 : usize]>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[NoCopy]>[{built_in impl MetaSized for [NoCopy]}, {built_in impl Sized for Global}], 1 : usize>(move x_10)
+    ret_9 = into_vec<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}](move y_11)
+    _v_3 = move ret_9
+    storage_live(_5)
+    _5 = copy flag_1
+    if move _5 {
+        storage_live(y_6)
+        y_6 = NoCopy { 0: const 5 : u8 }
+        storage_live(_w_7)
+        storage_live(_8)
+        _8 = move y_6
+        storage_live(_17)
+        _17 = [move _8]
+        storage_dead(_8)
+        storage_live(_18)
+        _18 = @BoxNew<[NoCopy; 1 : usize], Global>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}](move _17)
+        storage_live(ret_12)
+        storage_live(x_13)
+        storage_live(y_14)
+        storage_dead(_17)
+        x_13 = move _18
+        storage_dead(_18)
+        y_14 = unsize_cast<alloc::boxed::Box<[NoCopy; 1 : usize]>[{built_in impl MetaSized for [NoCopy; 1 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[NoCopy]>[{built_in impl MetaSized for [NoCopy]}, {built_in impl Sized for Global}], 1 : usize>(move x_13)
+        ret_12 = into_vec<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}](move y_14)
+        _w_7 = move ret_12
         _0 = ()
-        conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _w_9
-        storage_dead(_w_9)
-        storage_dead(y_8)
+        conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _w_7
+        storage_dead(_w_7)
+        storage_dead(y_6)
     } else {
         _0 = ()
     }
-    storage_dead(_7)
+    storage_dead(_5)
     conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v_3
     storage_dead(_v_3)
     storage_dead(x_2)
