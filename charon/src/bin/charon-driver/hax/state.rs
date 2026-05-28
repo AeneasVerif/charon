@@ -60,6 +60,7 @@ macro_rules! mk {
 mod types {
     use crate::hax::prelude::*;
     use rustc_middle::ty;
+    use rustc_trait_elaboration::ElaborationCtx;
     use std::{cell::RefCell, sync::Arc};
 
     pub struct LocalContextS {
@@ -120,6 +121,7 @@ mod types {
         pub local_ctx: Rc<RefCell<LocalContextS>>,
         pub opt_def_id: Option<rustc_hir::def_id::DefId>,
         pub cache: Rc<RefCell<GlobalCache<'tcx>>>,
+        pub elaboration_ctx: crate::hax::traits::ElaborationCtx<'tcx>,
         pub tcx: ty::TyCtxt<'tcx>,
     }
 
@@ -136,6 +138,7 @@ mod types {
                 // `opt_def_id` is used in `utils` for error reporting
                 opt_def_id: None,
                 local_ctx: Rc::new(RefCell::new(LocalContextS::new())),
+                elaboration_ctx: ElaborationCtx::new(),
             }
         }
     }
@@ -242,6 +245,7 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
             f(cache.predicate_searcher.get_or_insert_with(|| {
                 PredicateSearcher::new_for_owner(
                     self.base().tcx,
+                    self.base().elaboration_ctx.clone(),
                     self.owner_id(),
                     &self.base().options.bounds_options,
                 )

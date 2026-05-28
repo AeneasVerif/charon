@@ -82,6 +82,7 @@ impl<'tcx> Candidate<'tcx> {
 #[derive(Clone)]
 pub struct PredicateSearcher<'tcx> {
     pub(crate) tcx: TyCtxt<'tcx>,
+    pub(crate) elab_ctx: ElaborationCtx<'tcx>,
     pub(crate) typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
     candidates: HashMap<PolyTraitRef<'tcx>, Candidate<'tcx>>,
@@ -98,10 +99,16 @@ pub struct PredicateSearcher<'tcx> {
 
 impl<'tcx> PredicateSearcher<'tcx> {
     /// Initialize the elaborator with the predicates accessible within this item.
-    pub fn new_for_owner(tcx: TyCtxt<'tcx>, owner_id: DefId, options: &BoundsOptions) -> Self {
+    pub fn new_for_owner(
+        tcx: TyCtxt<'tcx>,
+        elab_ctx: ElaborationCtx<'tcx>,
+        owner_id: DefId,
+        options: &BoundsOptions,
+    ) -> Self {
         let initial_self_pred = initial_self_pred(tcx, owner_id);
         let mut out = Self {
             tcx,
+            elab_ctx,
             typing_env: TypingEnv {
                 param_env: tcx.param_env(owner_id),
                 typing_mode: TypingMode::PostAnalysis,
@@ -271,7 +278,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// Resolve the given trait reference in the local context.
     #[tracing::instrument(level = "trace", skip(self))]
     pub fn resolve(&mut self, tref: &PolyTraitRef<'tcx>) -> ImplExpr<'tcx> {
-        if let Some(impl_expr) = self.impl_exprs_cache.get(tref).cloned() {
+        if let Some(impl_expr) = self.impl_exprs_cache.get(tref).copied() {
             return impl_expr;
         }
         use rustc_trait_selection::traits::{
@@ -283,9 +290,12 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let erased_tref = normalize_bound_val(self.tcx, self.typing_env, *tref);
         let trait_def_id = erased_tref.skip_binder().def_id;
 
-        let error = |msg: String| ImplExpr {
-            r#impl: ImplExprAtom::Error(msg),
-            r#trait: *tref,
+        let elab_ctx = self.elab_ctx.clone();
+        let error = |msg: String| {
+            elab_ctx.intern_impl_expr(ImplExprContents {
+                r#trait: *tref,
+                r#impl: ImplExprAtom::Error(msg),
+            })
         };
 
         let impl_source = shallow_resolve_trait_ref(tcx, self.typing_env.param_env, erased_tref);
@@ -423,11 +433,11 @@ impl<'tcx> PredicateSearcher<'tcx> {
             }
         };
 
-        let impl_expr = ImplExpr {
+        let impl_expr = self.elab_ctx.intern_impl_expr(ImplExprContents {
             r#impl: atom,
             r#trait: *tref,
-        };
-        self.impl_exprs_cache.insert(*tref, impl_expr.clone());
+        });
+        self.impl_exprs_cache.insert(*tref, impl_expr);
         impl_expr
     }
 
