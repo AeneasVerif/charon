@@ -1,4 +1,5 @@
 use rustc_arena::TypedArena;
+use rustc_middle::ty;
 
 use crate::{ImplExpr, ImplExprContents};
 
@@ -66,8 +67,9 @@ mod intern {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct ElaborationCtx<'tcx> {
+    pub tcx: ty::TyCtxt<'tcx>,
     pub interner: &'tcx ImplExprInterner<'tcx>,
 }
 
@@ -88,12 +90,12 @@ impl<'tcx> ImplExprInterner<'tcx> {
 
 impl<'tcx> ElaborationCtx<'tcx> {
     /// Warning: only create a single one.
-    pub fn new() -> Self {
+    pub fn new(tcx: ty::TyCtxt<'tcx>) -> Self {
         // `ImplExpr` is a copyable `Interned<'tcx, _>` and may outlive the `PredicateSearcher`
         // that produced it. We therefore give each elaboration context session-long storage, like
         // rustc's own arenas. The interned values still contain rustc data bounded by `'tcx`.
         let interner = Box::leak(Box::new(ImplExprInterner::default()));
-        ElaborationCtx { interner }
+        ElaborationCtx { tcx, interner }
     }
 
     pub fn intern_impl_expr(&self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {

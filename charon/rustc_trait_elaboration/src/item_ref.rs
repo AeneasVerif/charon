@@ -62,7 +62,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
             return item_ref;
         }
         use rustc_infer::infer::canonical::ir::TypeVisitableExt;
-        let tcx = self.tcx;
+        let tcx = self.elab_ctx.tcx;
         let typing_env = self.typing_env;
         // Normalize the generics.
         let mut generics = normalize(tcx, typing_env, generics);

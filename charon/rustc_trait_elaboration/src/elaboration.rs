@@ -81,7 +81,6 @@ impl<'tcx> Candidate<'tcx> {
 /// Stores a set of predicates along with where they came from.
 #[derive(Clone)]
 pub struct PredicateSearcher<'tcx> {
-    pub(crate) tcx: TyCtxt<'tcx>,
     pub(crate) elab_ctx: ElaborationCtx<'tcx>,
     pub(crate) typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
@@ -100,14 +99,13 @@ pub struct PredicateSearcher<'tcx> {
 impl<'tcx> PredicateSearcher<'tcx> {
     /// Initialize the elaborator with the predicates accessible within this item.
     pub fn new_for_owner(
-        tcx: TyCtxt<'tcx>,
         elab_ctx: ElaborationCtx<'tcx>,
         owner_id: DefId,
         options: &BoundsOptions,
     ) -> Self {
+        let tcx = elab_ctx.tcx;
         let initial_self_pred = initial_self_pred(tcx, owner_id);
         let mut out = Self {
-            tcx,
             elab_ctx,
             typing_env: TypingEnv {
                 param_env: tcx.param_env(owner_id),
@@ -163,7 +161,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// Insert new candidates and all their parent predicates. This deduplicates predicates
     /// to avoid divergence.
     fn insert_candidates(&mut self, candidates: impl IntoIterator<Item = Candidate<'tcx>>) {
-        let tcx = self.tcx;
+        let tcx = self.elab_ctx.tcx;
         // Filter out duplicated candidates.
         let mut new_candidates = Vec::new();
         for mut candidate in candidates {
@@ -184,7 +182,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// polymorphic recursion due to the closures capturing the type parameters of this
     /// function.
     fn insert_candidate_parents(&mut self, new_candidates: Vec<Candidate<'tcx>>) {
-        let tcx = self.tcx;
+        let tcx = self.elab_ctx.tcx;
         // Then recursively add their parents. This way ensures a breadth-first order,
         // which means we select the shortest path when looking up predicates.
         let options = self.options.clone();
@@ -209,7 +207,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
 
     /// If the type is a trait associated type, we add any relevant bounds to our context.
     fn add_associated_type_refs(&mut self, ty: Binder<'tcx, Ty<'tcx>>) {
-        let tcx = self.tcx;
+        let tcx = self.elab_ctx.tcx;
         // Note: We skip a binder but rebind it just after.
         let TyKind::Alias(AliasTyKind::Projection, alias_ty) = ty.skip_binder().kind() else {
             return;
@@ -284,13 +282,13 @@ impl<'tcx> PredicateSearcher<'tcx> {
         use rustc_trait_selection::traits::{
             BuiltinImplSource, ImplSource, ImplSourceUserDefinedData,
         };
-        let tcx = self.tcx;
+        let tcx = self.elab_ctx.tcx;
         let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
 
-        let erased_tref = normalize_bound_val(self.tcx, self.typing_env, *tref);
+        let erased_tref = normalize_bound_val(tcx, self.typing_env, *tref);
         let trait_def_id = erased_tref.skip_binder().def_id;
 
-        let elab_ctx = self.elab_ctx.clone();
+        let elab_ctx = self.elab_ctx;
         let error = |msg: String| {
             elab_ctx.intern_impl_expr(ImplExprContents {
                 r#trait: *tref,
@@ -314,7 +312,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 args: generics,
                 ..
             }) => ImplExprAtom::Concrete(self.resolve_item_reference(impl_def_id, generics, true)),
-            ImplSource::Param(_) => match self.resolve_local(erased_tref.upcast(self.tcx)) {
+            ImplSource::Param(_) => match self.resolve_local(erased_tref.upcast(tcx)) {
                 Some(candidate) => candidate.into_impl_expr(tcx, self.implicit_self_clause),
                 None => {
                     let msg =
@@ -394,7 +392,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                             if self.options.add_destruct_bounds {
                                 // We've added `Destruct` impls on everything, we should be able to resolve
                                 // it.
-                                match self.resolve_local(erased_tref.upcast(self.tcx)) {
+                                match self.resolve_local(erased_tref.upcast(tcx)) {
                                     Some(candidate) => Either::Right(
                                         candidate.into_impl_expr(tcx, self.implicit_self_clause),
                                     ),
@@ -447,7 +445,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         def_id: DefId,
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<ImplExpr<'tcx>> {
-        let tcx = self.tcx;
+        let tcx = self.elab_ctx.tcx;
         self.resolve_predicates(
             ItemPredicates::required_recursively(tcx, def_id, &self.options),
             generics,
@@ -460,7 +458,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         def_id: DefId,
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<ImplExpr<'tcx>> {
-        let tcx = self.tcx;
+        let tcx = self.elab_ctx.tcx;
         self.resolve_predicates(
             ItemPredicates::implied(tcx, def_id, &self.options),
             generics,
@@ -474,7 +472,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         predicates: ItemPredicates<'tcx>,
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<ImplExpr<'tcx>> {
-        let tcx = self.tcx;
+        let tcx = self.elab_ctx.tcx;
         predicates
             .iter_trait_clauses()
             // Substitute the item generics
