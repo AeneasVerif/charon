@@ -401,7 +401,6 @@ pub enum Discriminator {
 /// some of the layout parts are not available.
 #[derive(
     Debug,
-    Default,
     Clone,
     PartialEq,
     Eq,
@@ -431,6 +430,10 @@ pub struct Layout {
     /// Map from `VariantId` to the corresponding field layouts. Structs are modeled as having
     /// exactly one variant, unions as having no variant.
     pub variant_layouts: IndexVec<VariantId, VariantLayout>,
+    /// The representation options of this type declaration as annotated by the user.
+    #[drive(skip)]
+    #[serde_state(stateless)]
+    pub repr: ReprOptions,
 }
 
 /// The metadata stored in a pointer. That's the information stored in pointers alongside
@@ -458,9 +461,10 @@ pub enum PtrMetadata {
 
 /// Describes which layout algorithm is used for representing the corresponding type.
 /// Depends on the `#[repr(...)]` used.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ReprAlgorithm {
     /// The default layout algorithm. Used without an explicit `ŗepr` or for `repr(Rust)`.
+    #[default]
     Rust,
     /// The C layout algorithm as enforced by `repr(C)`.
     C,
@@ -480,7 +484,7 @@ pub enum AlignmentModifier {
 /// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
 /// are encoded in [`Variant::discriminant`] and [`Discriminator`] instead.
 /// This only stores whether the discriminant type was derived from an explicit annotation.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReprOptions {
     pub repr_algo: ReprAlgorithm,
     pub align_modif: Option<AlignmentModifier>,
@@ -518,11 +522,6 @@ pub struct TypeDecl {
     pub layout: SeqHashMap<TargetTriple, Layout>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
-    /// The representation options of this type declaration as annotated by the user.
-    /// Is `None` for foreign type declarations.
-    #[drive(skip)]
-    #[serde_state(stateless)]
-    pub repr: Option<ReprOptions>,
 }
 
 generate_index_type!(VariantId, "Variant");

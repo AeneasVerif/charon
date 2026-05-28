@@ -43,7 +43,7 @@ use derive_generic_visitor::*;
     skip((), String, bool),
     // Types that we unconditionally explore.
     drive(
-        AbortKind, Assert, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
+        Assert, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
@@ -79,7 +79,7 @@ use derive_generic_visitor::*;
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
-        AggregateKind, FnPtr, ItemSource, ItemMeta, Name, Span, ConstantExpr, ProjectionElem,
+        AbortKind, AggregateKind, FnPtr, ItemSource, ItemMeta, Name, Span, ConstantExpr, ProjectionElem,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )

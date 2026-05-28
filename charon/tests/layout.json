@@ -16,7 +16,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::GenericStruct": null,
   "test_crate::UnsizedStruct": {
@@ -35,7 +41,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::SimpleEnum": {
     "size": 1,
@@ -121,7 +133,13 @@
           ]
         ]
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::SimpleAdt": {
     "size": 24,
@@ -247,7 +265,13 @@
           ]
         ]
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::NicheAdt": {
     "size": 4,
@@ -308,7 +332,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::IsAZST": {
     "size": 0,
@@ -323,7 +353,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::GenericWithKnownLayout": {
     "size": 16,
@@ -341,7 +377,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::Reordered": {
     "size": 8,
@@ -360,7 +402,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::NotReordered": {
     "size": 12,
@@ -379,7 +427,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "C",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::Packed": {
     "size": 6,
@@ -398,7 +452,15 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": {
+        "Pack": 1
+      },
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::UninhabitedVariant": {
     "size": 4,
@@ -420,7 +482,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::UninhabitedVariant2": {
     "size": 8,
@@ -482,7 +550,13 @@
           ]
         ]
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::Uninhabited": {
     "size": 0,
@@ -499,7 +573,13 @@
         "uninhabited": true,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::DiscriminantInNicheOfField": {
     "size": 16,
@@ -560,7 +640,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::MaybeUninitInt": {
     "size": 4,
@@ -578,7 +664,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::PackIntsUnion": {
     "size": 8,
@@ -596,7 +688,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::NonZeroNiche": {
     "size": 4,
@@ -691,7 +789,13 @@
           ]
         ]
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::ArbitraryDiscriminants": {
     "size": 32,
@@ -815,7 +919,13 @@
           ]
         ]
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": true
+    }
   },
   "test_crate::MyOrder": {
     "size": 1,
@@ -935,7 +1045,13 @@
           ]
         ]
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": true
+    }
   },
   "test_crate::WithNicheAndUninhabited": {
     "size": 4,
@@ -1003,7 +1119,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::GenericUnsized": null,
   "test_crate::GenericButFixedSize": {
@@ -1065,7 +1187,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::MaxBitsDiscr": {
     "size": 16,
@@ -1151,7 +1279,13 @@
           ]
         ]
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": true
+    }
   },
   "test_crate::SingleVariantButNonZero": {
     "size": 0,
@@ -1173,7 +1307,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::NonAdtAlias": null,
   "test_crate::Tuple": {
@@ -1192,7 +1332,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::Usize": {
     "size": 8,
@@ -1201,7 +1347,13 @@
       "Known": 0
     },
     "uninhabited": false,
-    "variant_layouts": []
+    "variant_layouts": [],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::Ref": {
     "size": 8,
@@ -1210,7 +1362,13 @@
       "Known": 0
     },
     "uninhabited": false,
-    "variant_layouts": []
+    "variant_layouts": [],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   },
   "test_crate::HasInvalidDiscr": {
     "size": 1,
@@ -1332,6 +1490,12 @@
           ]
         ]
       }
-    ]
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
   }
 }

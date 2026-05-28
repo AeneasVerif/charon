@@ -1,0 +1,33 @@
+#[lang_item("meta_sized")]
+pub trait core::marker::MetaSized<Self>
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
+}
+
+#[lang_item("phantom_data")]
+pub struct core::marker::PhantomData<T> {}
+
+pub struct test_crate::Foo<T>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+  core::marker::PhantomData<T>,
+}
+
+pub fn test_crate::{test_crate::Foo<T>[@TraitClause0]}::bar<T>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    let _0: (); // return
+
+    _0 = ()
+    loop {
+        continue 0
+    }
+}
+
+

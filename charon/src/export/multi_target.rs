@@ -125,6 +125,10 @@ impl CrateMerger {
                 fn enter_trait_impl_id(&mut self, id: &mut TraitImplId) {
                     *id += self.trait_impl_offset;
                 }
+                fn visit_abort_kind(&mut self, _x: &mut AbortKind) -> ControlFlow<Self::Break> {
+                    // Don't modify the name found there
+                    ControlFlow::Continue(())
+                }
                 fn enter_name(&mut self, name: &mut Name) {
                     name.name.push(PathElem::Target(self.target.clone()));
                 }
@@ -571,7 +575,10 @@ fn normalize_item(
         .retain(|elem| !matches!(elem, PathElem::Target(_)));
 
     strip_unstable_attributes(&mut item);
-    // Don't compare source text: span is enough, and it can have OS-specific line endings.
+    // Ignore source text and spans: if the items are otherwise identical, it's ok to just pick one
+    // of the identical instances wrt spans/source.
+    item.as_mut()
+        .dyn_visit_mut(|span: &mut Span| *span = Span::dummy());
     item.as_mut().item_meta().source_text = None;
     if let ItemByVal::Type(ty_decl) = &mut item {
         // Layouts are allowed to differ per-target.

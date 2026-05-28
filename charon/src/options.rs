@@ -164,7 +164,7 @@ pub struct CliOpts {
     #[clap(long, alias = "remove-associated-types")]
     #[serde(default)]
     pub lift_associated_types: Vec<String>,
-    /// Whether to hide various marker traits such as `Sized`, `Sync`, `Send` and `Destruct`
+    /// Whether to hide various marker traits such as `Sized`, `Sync`, and `Send`
     /// anywhere they show up. This can considerably speed up translation.
     #[clap(long)]
     #[serde(default)]
@@ -683,10 +683,6 @@ impl TranslateOptions {
             ])
             .into_iter()
             .flatten()
-            .chain(
-                (options.hide_marker_traits && !options.precise_drops)
-                    .then_some("core::marker::Destruct"),
-            )
             .chain(options.hide_allocator.then_some("core::alloc::Allocator"))
             .filter_map(|s| parse_pattern(s).ok())
             .collect_vec();
