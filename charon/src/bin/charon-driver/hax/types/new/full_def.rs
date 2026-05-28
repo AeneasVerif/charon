@@ -106,7 +106,6 @@ where
                 param_env,
                 ty,
                 kind: ConstKind::PromotedConst,
-                value: None,
             };
 
             lang_item = Default::default();
@@ -439,14 +438,12 @@ pub enum FullDefKind<'tcx> {
         param_env: ParamEnv,
         ty: Ty,
         kind: ConstKind,
-        value: Option<ConstantExpr>,
     },
     /// Associated constant: `trait MyTrait { const ASSOC: usize; }`
     AssocConst {
         param_env: ParamEnv,
         associated_item: AssocItem,
         ty: Ty,
-        value: Option<ConstantExpr>,
     },
     Static {
         param_env: ParamEnv,
@@ -928,14 +925,12 @@ where
                 param_env: get_param_env(s, args),
                 ty: self_ty.sinto(s),
                 kind,
-                value: const_value(s, def_id, args_or_default()),
             }
         }
         RDefKind::AssocConst { .. } => FullDefKind::AssocConst {
             param_env: get_param_env(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             ty: type_of_self().sinto(s),
-            value: const_value(s, def_id, args_or_default()),
         },
         RDefKind::Static {
             safety,
@@ -1075,6 +1070,26 @@ impl<'tcx> FullDef<'tcx> {
 
     pub fn kind(&self) -> &FullDefKind<'tcx> {
         &self.kind
+    }
+
+    /// Evaluate the value of a `Const` or `AssocConst` item.
+    pub fn const_value<S>(&self, s: &S) -> Option<ConstantExpr>
+    where
+        S: BaseState<'tcx>,
+    {
+        match self.kind() {
+            FullDefKind::Const { .. } | FullDefKind::AssocConst { .. } => {}
+            _ => panic!("expected a Const or AssocConst definition"),
+        }
+        let s = &s.with_hax_owner(self.def_id());
+        let def_id = self.def_id().as_rust_def_id()?;
+        let args = self.this().rustc_args(s);
+        let uneval = ty::UnevaluatedConst::new(def_id, args);
+        let c = eval_ty_constant(s, uneval)?;
+        match c.kind() {
+            ty::ConstKind::Error(..) => None,
+            _ => Some(c.sinto(s)),
+        }
     }
 
     /// Returns the generics and predicates for definitions that have those.
@@ -1341,17 +1356,4 @@ fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
         }
     }
     implied_predicates.sinto(s)
-}
-
-fn const_value<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    def_id: RDefId,
-    args: ty::GenericArgsRef<'tcx>,
-) -> Option<ConstantExpr> {
-    let uneval = ty::UnevaluatedConst::new(def_id, args);
-    let c = eval_ty_constant(s, uneval)?;
-    match c.kind() {
-        ty::ConstKind::Error(..) => None,
-        _ => Some(c.sinto(s)),
-    }
 }
