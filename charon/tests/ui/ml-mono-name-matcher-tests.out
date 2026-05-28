@@ -46,15 +46,19 @@ fn foo()
     let _9: RangeFrom::<usize>; // anonymous local
     let _10: &'10 [bool; 1 : usize]; // anonymous local
     let _11: &'11 Option::<i32>; // anonymous local
-    let _12: &'19 Option::<i32>; // anonymous local
-    let _13: Option::<i32>; // anonymous local
-    let _14: &'20 [bool; 1 : usize]; // anonymous local
-    let _15: [bool; 1 : usize]; // anonymous local
+    let _12: &'12 Option::<i32>; // anonymous local
+    let _13: &'15 [bool; 1 : usize]; // anonymous local
+    let _14: &'19 Option::<i32>; // anonymous local
+    let _15: Option::<i32>; // anonymous local
+    let _16: &'20 [bool; 1 : usize]; // anonymous local
+    let _17: [bool; 1 : usize]; // anonymous local
 
     storage_live(_12)
-    storage_live(_13)
-    _13 = Option::<i32>::Some { 0: const 0 : i32 }
-    _12 = &_13
+    storage_live(_14)
+    storage_live(_15)
+    _15 = Option::<i32>::Some { 0: const 0 : i32 }
+    _14 = &_15
+    _12 = move _14
     storage_live(_10)
     storage_live(_11)
     _0 = ()
@@ -63,16 +67,18 @@ fn foo()
     _11 = move _12
     _2 = &(*_11)
     _1 = is_some::<i32><'14>(move _2)
-    storage_live(_14)
-    storage_live(_15)
-    _15 = [const false]
-    _14 = &_15
+    storage_live(_13)
+    storage_live(_16)
+    storage_live(_17)
+    _17 = [const false]
+    _16 = &_17
+    _13 = move _16
     storage_dead(_2)
     storage_dead(_1)
     storage_live(slice_3)
     storage_live(_4)
     storage_live(_5)
-    _10 = move _14
+    _10 = move _13
     _5 = &(*_10)
     _4 = &(*_5)
     slice_3 = @ArrayToSliceShared<'_, bool, 1 : usize>(move _4)

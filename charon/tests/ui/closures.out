@@ -2044,13 +2044,16 @@ fn test_fnmut_with_ref()
     let _7: &'11 usize; // anonymous local
     let _8: &'12 usize; // anonymous local
     let _9: &'13 usize; // anonymous local
-    let _10: &'25 usize; // anonymous local
-    let _11: usize; // anonymous local
+    let _10: &'15 usize; // anonymous local
+    let _11: &'25 usize; // anonymous local
+    let _12: usize; // anonymous local
 
     storage_live(_10)
     storage_live(_11)
-    _11 = const 15 : usize
-    _10 = &_11
+    storage_live(_12)
+    _12 = const 15 : usize
+    _11 = &_12
+    _10 = move _11
     storage_live(_9)
     _0 = ()
     storage_live(sum_1)

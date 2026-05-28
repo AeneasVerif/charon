@@ -151,8 +151,9 @@ fn main()
     let _18: &'15 u32; // anonymous local
     let _19: Option<Arguments<'22>>[{built_in impl Sized for Arguments<'22>}]; // anonymous local
     let _20: &'25 u32; // anonymous local
-    let _21: &'36 u32; // anonymous local
-    let _22: u32; // anonymous local
+    let _21: &'28 u32; // anonymous local
+    let _22: &'36 u32; // anonymous local
+    let _23: u32; // anonymous local
 
     storage_live(_20)
     _0 = ()
@@ -166,8 +167,10 @@ fn main()
     _2 = silly_incr<'27>(move _3)
     storage_live(_21)
     storage_live(_22)
-    _22 = const 1 : u32
-    _21 = &_22
+    storage_live(_23)
+    _23 = const 1 : u32
+    _22 = &_23
+    _21 = move _22
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)

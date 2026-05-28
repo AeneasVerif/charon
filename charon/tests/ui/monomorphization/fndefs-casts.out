@@ -107,13 +107,16 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c_1: for<'a> foo::<u32><'a>)
     let _4: &'5 u32; // anonymous local
     let _5: &'6 u32; // anonymous local
     let _6: &'7 u32; // anonymous local
-    let _7: &'64 u32; // anonymous local
-    let _8: u32; // anonymous local
+    let _7: &'8 u32; // anonymous local
+    let _8: &'64 u32; // anonymous local
+    let _9: u32; // anonymous local
 
     storage_live(_7)
     storage_live(_8)
-    _8 = const 13 : u32
-    _7 = &_8
+    storage_live(_9)
+    _9 = const 13 : u32
+    _8 = &_9
+    _7 = move _8
     storage_live(_6)
     _0 = ()
     storage_live(_2)
@@ -164,8 +167,9 @@ fn main()
     let _25: &'11 char; // anonymous local
     let _26: (); // anonymous local
     let _27: &'12 char; // anonymous local
-    let _28: &'25 char; // anonymous local
-    let _29: char; // anonymous local
+    let _28: &'21 char; // anonymous local
+    let _29: &'25 char; // anonymous local
+    let _30: char; // anonymous local
 
     storage_live(_27)
     _0 = ()
@@ -225,8 +229,10 @@ fn main()
     _18 = (move _19)(move _20)
     storage_live(_28)
     storage_live(_29)
-    _29 = const x
-    _28 = &_29
+    storage_live(_30)
+    _30 = const x
+    _29 = &_30
+    _28 = move _29
     storage_dead(_20)
     storage_dead(_19)
     storage_dead(_21)

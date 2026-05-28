@@ -31,7 +31,6 @@ pub mod normalize {
 /// Passes that undo some lowering done by rustc to recover an operation closer to what the user
 /// wrote.
 pub mod resugar {
-    pub mod inline_local_panic_functions;
     pub mod move_asserts_to_statements;
     pub mod reconstruct_asserts;
     pub mod reconstruct_boxes;
@@ -42,11 +41,12 @@ pub mod resugar {
 
 /// Passes that make the output simpler/easier to consume.
 pub mod simplify_output {
+    pub mod anon_const_to_call;
     pub mod filter_trivial_drops;
     pub mod hide_allocator_param;
     pub mod index_intermediate_assigns;
     pub mod index_to_function_calls;
-    pub mod inline_anon_consts;
+    pub mod inline_selected_functions;
     pub mod lift_associated_item_clauses;
     pub mod ops_to_function_calls;
     pub mod remove_adt_clauses;
@@ -126,10 +126,10 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Transform dyn trait method calls to vtable function pointer calls.
         // This should be early to handle the calls before other transformations.
         CowBox::Borrowed(&normalize::transform_dyn_trait_calls::Transform),
-        // Inline promoted and inline consts into their parent bodies.
-        simplify_output::inline_anon_consts::Transform::new(ctx),
-        // `panic!()` expands to a new function definition each time. This pass cleans those up.
-        resugar::inline_local_panic_functions::Transform::new(ctx),
+        // Replace promoted and inline consts with calls to their initializers.
+        simplify_output::anon_const_to_call::Transform::new(ctx),
+        // Inline promoted and inline consts, as well as dummy auto-generated panic functions.
+        simplify_output::inline_selected_functions::Transform::new(ctx),
         // Remove drop statements that are noops.
         CowBox::Borrowed(&simplify_output::filter_trivial_drops::Transform),
         // Inline all asserts that correspond to dynamic checks into statements.

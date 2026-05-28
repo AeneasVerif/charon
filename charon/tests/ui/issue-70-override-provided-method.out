@@ -97,19 +97,25 @@ fn main()
     let _3: &'2 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _4: &'3 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _5: &'4 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _6: &'11 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _8: &'12 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _6: &'5 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _7: &'6 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _8: &'11 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _9: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _10: &'12 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _11: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
 
-    storage_live(_6)
     storage_live(_7)
-    _7 = Option::Some { 0: const 1 : i32 }
-    _6 = &_7
+    storage_live(_10)
+    storage_live(_11)
+    _11 = Option::Some { 0: const 1 : i32 }
+    _10 = &_11
+    _7 = move _10
+    storage_live(_6)
     storage_live(_8)
     storage_live(_9)
     _9 = Option::Some { 0: const 1 : i32 }
     _8 = &_9
+    _6 = move _8
     storage_live(_4)
     storage_live(_5)
     _0 = ()
@@ -118,7 +124,7 @@ fn main()
     _5 = move _6
     _2 = &(*_5)
     storage_live(_3)
-    _4 = move _8
+    _4 = move _7
     _3 = &(*_4)
     _1 = {impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}::eq<'9, '10, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move _2, move _3)
     storage_dead(_3)

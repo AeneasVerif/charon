@@ -327,10 +327,11 @@ fn foo()
     let _30: &'12 u32; // anonymous local
     let _31: Option<Arguments<'19>>[{built_in impl Sized for Arguments<'19>}]; // anonymous local
     let _32: &'22 u32; // anonymous local
-    let _33: &'31 u32; // anonymous local
-    let _34: u32; // anonymous local
-    let _35: &'_ [u32; 10 : usize]; // anonymous local
-    let _36: &'_ u32; // anonymous local
+    let _33: &'23 u32; // anonymous local
+    let _34: &'31 u32; // anonymous local
+    let _35: u32; // anonymous local
+    let _36: &'_ [u32; 10 : usize]; // anonymous local
+    let _37: &'_ u32; // anonymous local
 
     storage_live(_32)
     _0 = ()
@@ -388,13 +389,15 @@ fn foo()
     _18 = const 9 : usize
     storage_live(_33)
     storage_live(_34)
-    _34 = const 9 : u32
-    _33 = &_34
     storage_live(_35)
-    _35 = &a_15
+    _35 = const 9 : u32
+    _34 = &_35
+    _33 = move _34
     storage_live(_36)
-    _36 = @ArrayIndexShared<'_, u32, 10 : usize>(move _35, copy _18)
-    _17 = &(*_36)
+    _36 = &a_15
+    storage_live(_37)
+    _37 = @ArrayIndexShared<'_, u32, 10 : usize>(move _36, copy _18)
+    _17 = &(*_37)
     storage_live(_19)
     _32 = move _33
     _19 = &(*_32)

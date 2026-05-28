@@ -144,8 +144,9 @@ fn main()
     let _15: &'6 i32; // anonymous local
     let _16: &'7 i32; // anonymous local
     let _17: &'8 i32; // anonymous local
-    let _18: &'13 i32; // anonymous local
-    let _19: i32; // anonymous local
+    let _18: &'11 i32; // anonymous local
+    let _19: &'13 i32; // anonymous local
+    let _20: i32; // anonymous local
 
     storage_live(_17)
     _0 = ()
@@ -181,8 +182,10 @@ fn main()
     conditional_drop[{impl Destruct for Foo}::drop_in_place] _9
     storage_live(_18)
     storage_live(_19)
-    _19 = const 42 : i32
-    _18 = &_19
+    storage_live(_20)
+    _20 = const 42 : i32
+    _19 = &_20
+    _18 = move _19
     storage_dead(_9)
     storage_live(f_12)
     f_12 = const Variant<'10, i32>[{built_in impl Sized for i32}]

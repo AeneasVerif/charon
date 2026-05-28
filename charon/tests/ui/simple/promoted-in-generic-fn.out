@@ -27,14 +27,17 @@ where
     let _0: (); // return
     let _1: &'1 usize; // anonymous local
     let _2: &'2 usize; // anonymous local
-    let _3: &'4 usize; // anonymous local
-    let _4: usize; // anonymous local
+    let _3: &'3 usize; // anonymous local
+    let _4: &'4 usize; // anonymous local
+    let _5: usize; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
+    storage_live(_5)
     // This can't be evaluated generically.
-    _4 = size_of<T>[@TraitClause0]()
-    _3 = &_4
+    _5 = size_of<T>[@TraitClause0]()
+    _4 = &_5
+    _3 = move _4
     storage_live(_2)
     _0 = ()
     storage_live(_1)

@@ -57,13 +57,16 @@ fn main()
     let _3: &'6 (); // anonymous local
     let _4: &'7 (); // anonymous local
     let _5: &'8 (); // anonymous local
-    let _6: &'14 (); // anonymous local
-    let _7: (); // anonymous local
+    let _6: &'9 (); // anonymous local
+    let _7: &'14 (); // anonymous local
+    let _8: (); // anonymous local
 
     storage_live(_6)
     storage_live(_7)
-    _7 = ()
-    _6 = &_7
+    storage_live(_8)
+    _8 = ()
+    _7 = &_8
+    _6 = move _7
     storage_live(_5)
     _0 = ()
     storage_live(_1)

@@ -71,15 +71,19 @@ fn main()
     let _4: &'3 B; // anonymous local
     let _5: &'4 B; // anonymous local
     let _6: &'5 A; // anonymous local
-    let _7: &'12 A; // anonymous local
-    let _8: A; // anonymous local
-    let _9: &'13 B; // anonymous local
-    let _10: B; // anonymous local
+    let _7: &'6 A; // anonymous local
+    let _8: &'9 B; // anonymous local
+    let _9: &'12 A; // anonymous local
+    let _10: A; // anonymous local
+    let _11: &'13 B; // anonymous local
+    let _12: B; // anonymous local
 
     storage_live(_7)
-    storage_live(_8)
-    _8 = A {  }
-    _7 = &_8
+    storage_live(_9)
+    storage_live(_10)
+    _10 = A {  }
+    _9 = &_10
+    _7 = move _9
     storage_live(_5)
     storage_live(_6)
     _0 = ()
@@ -88,15 +92,17 @@ fn main()
     _6 = move _7
     _2 = &(*_6)
     _1 = {impl MyIterator for A}::method<'8>(move _2)
-    storage_live(_9)
-    storage_live(_10)
-    _10 = B {  }
-    _9 = &_10
+    storage_live(_8)
+    storage_live(_11)
+    storage_live(_12)
+    _12 = B {  }
+    _11 = &_12
+    _8 = move _11
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_3)
     storage_live(_4)
-    _5 = move _9
+    _5 = move _8
     _4 = &(*_5)
     _3 = {impl MyIterator for B}::method<'11>(move _4)
     storage_dead(_4)

@@ -137,13 +137,16 @@ fn foo::<()>(x_1: ())
     let _3: fn(()); // anonymous local
     let _4: (); // anonymous local
     let _5: fn(()); // anonymous local
-    let _6: closure::<()>; // anonymous local
+    let _6: fn(()); // anonymous local
+    let _7: closure::<()>; // anonymous local
 
     storage_live(_5)
     storage_live(_6)
-    _6 = closure::<()> {  }
-    _5 = cast<as_fn::<()>, fn(())>(const as_fn::<()>)
-    storage_dead(_6)
+    storage_live(_7)
+    _7 = closure::<()> {  }
+    _6 = cast<as_fn::<()>, fn(())>(const as_fn::<()>)
+    storage_dead(_7)
+    _5 = move _6
     _0 = ()
     storage_live(f_2)
     f_2 = move _5

@@ -201,13 +201,16 @@ fn ptr_casts()
     let _15: *const u8; // anonymous local
     let _16: fn(); // anonymous local
     let _17: &'4 [u32; 64 : usize]; // anonymous local
-    let _18: &'6 [u32; 64 : usize]; // anonymous local
-    let _19: [u32; 64 : usize]; // anonymous local
+    let _18: &'5 [u32; 64 : usize]; // anonymous local
+    let _19: &'6 [u32; 64 : usize]; // anonymous local
+    let _20: [u32; 64 : usize]; // anonymous local
 
     storage_live(_18)
     storage_live(_19)
-    _19 = @ArrayRepeat<u32, 64 : usize>(const 0 : u32)
-    _18 = &_19
+    storage_live(_20)
+    _20 = @ArrayRepeat<u32, 64 : usize>(const 0 : u32)
+    _19 = &_20
+    _18 = move _19
     storage_live(_17)
     _0 = ()
     storage_live(array_ptr_1)
@@ -505,6 +508,7 @@ where
     let _14: usize; // anonymous local
     let _15: bool; // anonymous local
     let _16: usize; // anonymous local
+    let _17: usize; // anonymous local
 
     storage_live(_9)
     storage_live(_12)
@@ -514,8 +518,10 @@ where
     storage_live(align_2)
     align_2 = align_of<T>[@TraitClause0]()
     storage_live(_16)
+    storage_live(_17)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
-    _16 = offset_of(Struct<T>[@TraitClause0].b)<usize>
+    _17 = offset_of(Struct<T>[@TraitClause0].b)<usize>
+    _16 = move _17
     storage_live(ub_3)
     storage_live(_15)
     _15 = ub_checks<bool>

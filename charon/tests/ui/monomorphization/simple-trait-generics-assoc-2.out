@@ -204,15 +204,19 @@ fn main()
     let _12: &'21 i32; // anonymous local
     let _13: unsafe fn(&'8 (dyn Trait<usize, Item = bool> + '9)); // anonymous local
     let _14: unsafe fn(&'18 (dyn Trait<bool, Item = usize> + '19)); // anonymous local
-    let _15: &'38 i32; // anonymous local
-    let _16: i32; // anonymous local
-    let _17: &'39 bool; // anonymous local
-    let _18: bool; // anonymous local
+    let _15: &'22 i32; // anonymous local
+    let _16: &'30 bool; // anonymous local
+    let _17: &'38 i32; // anonymous local
+    let _18: i32; // anonymous local
+    let _19: &'39 bool; // anonymous local
+    let _20: bool; // anonymous local
 
     storage_live(_15)
-    storage_live(_16)
-    _16 = const 42 : i32
-    _15 = &_16
+    storage_live(_17)
+    storage_live(_18)
+    _18 = const 42 : i32
+    _17 = &_18
+    _15 = move _17
     storage_live(_11)
     storage_live(_12)
     _0 = ()
@@ -231,16 +235,18 @@ fn main()
     storage_live(_13)
     _13 = cast<*const (), unsafe fn(&'8 (dyn Trait<usize, Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
     _4 = (copy _13)(move _5)
-    storage_live(_17)
-    storage_live(_18)
-    _18 = const true
-    _17 = &_18
+    storage_live(_16)
+    storage_live(_19)
+    storage_live(_20)
+    _20 = const true
+    _19 = &_20
+    _16 = move _19
     storage_dead(_5)
     storage_dead(_4)
     storage_live(b_6)
     storage_live(_7)
     storage_live(_8)
-    _11 = move _17
+    _11 = move _16
     _8 = &(*_11)
     _7 = &(*_8)
     b_6 = unsize_cast<&'16 bool, &'31 (dyn Trait<bool, Item = usize> + '32), &{impl Trait<bool> for bool}::{vtable}>(move _7)

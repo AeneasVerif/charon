@@ -77,8 +77,9 @@ fn main()
     let _20: &'12 u32; // anonymous local
     let _21: Option<Arguments<'19>>[{built_in impl Sized for Arguments<'19>}]; // anonymous local
     let _22: &'22 u32; // anonymous local
-    let _23: &'31 u32; // anonymous local
-    let _24: u32; // anonymous local
+    let _23: &'23 u32; // anonymous local
+    let _24: &'31 u32; // anonymous local
+    let _25: u32; // anonymous local
 
     storage_live(_8)
     storage_live(_22)
@@ -98,8 +99,10 @@ fn main()
     assert(move _8.1 == false) (overflow) else panic
     storage_live(_23)
     storage_live(_24)
-    _24 = const 3 : u32
-    _23 = &_24
+    storage_live(_25)
+    _25 = const 3 : u32
+    _24 = &_25
+    _23 = move _24
     _5 = move _8.0
     storage_dead(_7)
     storage_dead(_6)

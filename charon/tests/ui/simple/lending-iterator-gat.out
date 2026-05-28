@@ -338,15 +338,19 @@ pub fn main()
     let _23: Option<Arguments<'35>>[{built_in impl Sized for Arguments<'35>}]; // anonymous local
     let _24: &'38 i32; // anonymous local
     let _25: &'39 i32; // anonymous local
-    let _26: &'96 i32; // anonymous local
-    let _27: i32; // anonymous local
-    let _28: &'97 i32; // anonymous local
+    let _26: &'40 i32; // anonymous local
+    let _27: &'88 i32; // anonymous local
+    let _28: &'96 i32; // anonymous local
     let _29: i32; // anonymous local
+    let _30: &'97 i32; // anonymous local
+    let _31: i32; // anonymous local
 
     storage_live(_26)
-    storage_live(_27)
-    _27 = const 42 : i32
-    _26 = &_27
+    storage_live(_28)
+    storage_live(_29)
+    _29 = const 42 : i32
+    _28 = &_29
+    _26 = move _28
     storage_live(_24)
     storage_live(_25)
     _0 = ()
@@ -369,10 +373,12 @@ pub fn main()
     _7 = closure { 0: move _8 }
     storage_dead(_8)
     _5 = for_each<Option<&'49 i32>[{built_in impl Sized for &'49 i32}], closure<'50>>[{built_in impl Sized for Option<&'49 i32>[{built_in impl Sized for &'49 i32}]}, {built_in impl Sized for closure<'50>}, {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}<'49, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ i32,)> for closure<'_0>}<'50, '86>](move _6, move _7)
-    storage_live(_28)
-    storage_live(_29)
-    _29 = const 42 : i32
-    _28 = &_29
+    storage_live(_27)
+    storage_live(_30)
+    storage_live(_31)
+    _31 = const 42 : i32
+    _30 = &_31
+    _27 = move _30
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -380,7 +386,7 @@ pub fn main()
     storage_live(_10)
     _10 = &sum_4
     storage_live(_11)
-    _24 = move _28
+    _24 = move _27
     _11 = &(*_24)
     _9 = (move _10, move _11)
     storage_dead(_11)
