@@ -31,7 +31,11 @@ impl Transform {
                         .is_global_initializer
                         .and_then(|gid| ctx.translated.global_decls.get(gid))
                         .is_some_and(|gdecl| matches!(gdecl.global_kind, GlobalKind::AnonConst));
-                    is_local_panic_fn || is_anon_const_initializer
+                    let is_vec_construction_fn = decl.item_meta.lang_item.as_deref()
+                        == Some(builtins::BOX_ASSUME_INIT_INTO_VEC_UNSAFE);
+                    is_local_panic_fn
+                        || (is_anon_const_initializer && !ctx.options.raw_consts)
+                        || (is_vec_construction_fn && ctx.options.treat_box_as_builtin)
                 })
             })
             .collect();
@@ -56,7 +60,7 @@ impl UllbcPass for Transform {
                 continue;
             };
             let TerminatorKind::Call {
-                call,
+                call: Call { func, args, dest },
                 target,
                 on_unwind,
             } = &mut block.terminator.kind
@@ -65,8 +69,9 @@ impl UllbcPass for Transform {
             };
             let target = *target;
             let on_unwind = *on_unwind;
-            let dest_place = call.dest.clone();
-            let FnOperand::Regular(fn_ptr) = &call.func else {
+            let dest_place = dest.clone();
+            let args = args.clone();
+            let FnOperand::Regular(fn_ptr) = &func else {
                 continue;
             };
             let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.kind.as_ref() else {
@@ -102,13 +107,6 @@ impl UllbcPass for Transform {
                 inner_body.substitute(&fn_ptr.generics)
             };
 
-            // The inner body assumes the return place is live; this is not the case once we inline
-            // it.
-            inner_body.body[0].statements.insert(
-                0,
-                Statement::new(Span::dummy(), StatementKind::StorageLive(LocalId::ZERO)),
-            );
-
             let return_local = outer_body.locals.locals.next_idx();
             inner_body.dyn_visit_in_body_mut(|l: &mut LocalId| {
                 *l += return_local;
@@ -117,6 +115,23 @@ impl UllbcPass for Transform {
                 .locals
                 .locals
                 .extend(mem::take(&mut inner_body.locals.locals));
+
+            // The inner body assumes the return and arg places are live; allocate them, and
+            // initialize the args.
+            inner_body.body[0].statements.splice(
+                0..0,
+                [StatementKind::StorageLive(return_local)]
+                    .into_iter()
+                    .chain(args.into_iter().enumerate().flat_map(|(i, arg)| {
+                        let arg_local = return_local + i + 1;
+                        let arg_place = outer_body.locals.place_for_var(arg_local);
+                        [
+                            StatementKind::StorageLive(arg_local),
+                            StatementKind::Assign(arg_place, Rvalue::Use(arg)),
+                        ]
+                    }))
+                    .map(|kind| Statement::new(span, kind)),
+            );
 
             let mut final_block = BlockData::new_goto(span, target);
 

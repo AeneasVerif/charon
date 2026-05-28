@@ -693,6 +693,14 @@ impl TranslateOptions {
                 opacities.push(("_".to_string(), Foreign));
             }
 
+            if options.treat_box_as_builtin {
+                // Include this item's body, we inline it in a pass.
+                opacities.push((
+                    "alloc::boxed::box_assume_init_into_vec_unsafe".to_string(),
+                    Transparent,
+                ));
+            }
+
             // We always include the items from the crate.
             opacities.push(("crate".to_owned(), Transparent));
 

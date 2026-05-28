@@ -25,6 +25,7 @@ use super::translate_ctx::*;
 use crate::hax;
 use crate::hax::SInto;
 use charon_lib::ast::*;
+use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::{CliOpts, StartFrom, TranslateOptions};
 use charon_lib::transform::TransformCtx;
 use macros::VariantIndexArity;
@@ -206,6 +207,18 @@ impl RustcItem {
 }
 
 impl<'tcx> TranslateCtx<'tcx> {
+    /// Resolve a path to a list of matching `DefId`s.
+    pub fn resolve_path(
+        &self,
+        span: Span,
+        pat: &NamePattern,
+        strict: bool,
+    ) -> Result<Vec<rustc_span::def_id::DefId>, Error> {
+        super::resolve_path::def_path_def_ids(&self.hax_state, pat, strict).map_err(|err| {
+            register_error!(self, span, "failed to resolve item path `{pat}`: {err}")
+        })
+    }
+
     /// Returns the default translation kind for the given `DefId`. Returns `None` for items that
     /// we don't translate. Errors on unexpected items.
     pub fn base_kind_for_item(&mut self, def_id: &hax::DefId) -> Option<TransItemSourceKind> {
@@ -868,19 +881,10 @@ pub fn translate<'tcx>(
     for start_from in ctx.options.start_from.clone() {
         match start_from {
             StartFrom::Pattern { pattern, strict } => {
-                match super::resolve_path::def_path_def_ids(&ctx.hax_state, &pattern, strict) {
-                    Ok(resolved) => {
-                        for def_id in resolved {
-                            let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
-                            ctx.enqueue_module_item(&def_id);
-                        }
-                    }
-                    Err(err) => {
-                        register_error!(
-                            ctx,
-                            Span::dummy(),
-                            "when processing starting pattern `{pattern}`: {err}"
-                        );
+                if let Ok(def_ids) = ctx.resolve_path(Span::dummy(), &pattern, strict) {
+                    for def_id in def_ids {
+                        let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
+                        ctx.enqueue_module_item(&def_id);
                     }
                 }
             }

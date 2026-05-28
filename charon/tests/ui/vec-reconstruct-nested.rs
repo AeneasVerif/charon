@@ -1,4 +1,3 @@
-//@ known-failure
 fn nested_vecs() {
     let _nested = vec![vec![1u8], vec![2u8]];
 }

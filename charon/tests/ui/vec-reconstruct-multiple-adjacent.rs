@@ -1,4 +1,3 @@
-//@ known-failure
 fn multiple_adjacent() {
     let _a = vec![1u8];
     let _b = vec![2u8];
