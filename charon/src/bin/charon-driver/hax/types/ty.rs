@@ -600,8 +600,7 @@ impl TyGenerics {
 }
 
 /// This type merges the information from
-/// `rustc_type_ir::AliasKind` and `ty::AliasTy`
-
+/// [`ty::AliasTyKind`] and [`ty::AliasTy`].
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Alias {
     pub kind: AliasKind,
@@ -609,8 +608,7 @@ pub struct Alias {
     pub def_id: DefId,
 }
 
-/// Reflects [`ty::AliasKind`]
-
+/// Reflects [`rustc_middle::ty::AliasTyKind`].
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum AliasKind {
     /// The projection of a trait type: `<Ty as Trait<...>>::Type<...>`
@@ -976,7 +974,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, AdtKind> for ty::AdtKind {
 
 sinto_todo!(rustc_middle::ty, AdtFlags);
 
-/// Reflects [`ty::ReprOptions`]
+/// Reflects [`rustc_abi::ReprOptions`].
 
 #[derive(AdtInto, Clone, Debug)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_abi::ReprOptions, state: S as s)]
@@ -1005,7 +1003,7 @@ pub struct ReprFlags {
     pub is_simd: bool,
 }
 
-/// Reflects [`ty::Align`], but directly stores the number of bytes as a u64.
+/// Reflects [`rustc_abi::Align`], but directly stores the number of bytes as a u64.
 
 #[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_abi::Align, state: S as _s)]

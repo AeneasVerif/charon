@@ -17,7 +17,7 @@
 //! ..
 //! ```
 //!
-//! See also: https://github.com/rust-lang/rust/pull/148190
+//! See also: <https://github.com/rust-lang/rust/pull/148190>
 
 use itertools::Itertools;
 use std::collections::HashSet;

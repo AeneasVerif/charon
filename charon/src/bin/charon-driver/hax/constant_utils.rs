@@ -27,7 +27,7 @@ pub enum VariantKind {
     Enum { index: VariantIdx },
 }
 
-/// The subset of [Expr] that corresponds to constants.
+/// The subset of expressions that corresponds to constants.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ConstantExprKind {
     Literal(ConstantLiteral),

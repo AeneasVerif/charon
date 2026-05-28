@@ -5,7 +5,7 @@
 //! FnOnce, along with 3 matching method implementations for call, call_mut and call_once).
 //!
 //! For example, given the following Rust code:
-//! ```rust
+//! ```ignore
 //! pub fn test_closure_capture<T: Clone>() {
 //!     let mut v = vec![];
 //!     let mut add = |x: &u32| v.push(*x);
@@ -15,7 +15,7 @@
 //! ```
 //!
 //! We generate the equivalent desugared code:
-//! ```rust
+//! ```text
 //! struct {test_closure_capture::closure#0}<'a, T: Clone> (&'a mut Vec<u32>);
 //!
 //! // The 'a comes from captured variables, the 'b comes from the closure higher-kinded signature.
