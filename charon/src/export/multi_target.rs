@@ -24,13 +24,16 @@ pub fn merge(options: CliOpts, krates: Vec<CrateData>) -> CrateData {
 
     ItemDeduplicator::dedup(&mut merged.translated, &mut error_ctx);
 
-    // Recompute declaration order on the merged crate.
+    // Recompute declaration order and run final whole-crate cleanup on the merged crate.
     let mut ctx = TransformCtx {
         options: tr_options,
         translated: merged.translated,
         errors: RefCell::new(error_ctx),
     };
     crate::transform::add_missing_info::reorder_decls::Transform.transform_ctx(&mut ctx);
+    if ctx.options.unbind_item_vars {
+        crate::transform::simplify_output::unbind_item_vars::Check.transform_ctx(&mut ctx);
+    }
     merged.translated = ctx.translated;
 
     merged

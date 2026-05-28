@@ -770,6 +770,56 @@ fn target_dispatch_source() -> anyhow::Result<()> {
 }
 
 #[test]
+fn issue_1184_target_dispatch_unbound_item_generics() -> anyhow::Result<()> {
+    let crate_data = translate_with_options(
+        "
+        pub struct Foo<T>(core::marker::PhantomData<T>);
+
+        impl<T> Foo<T> {
+            pub fn bar() -> usize {
+                #[cfg(target_pointer_width = \"64\")]
+                { 64 }
+                #[cfg(target_pointer_width = \"32\")]
+                { 32 }
+            }
+        }
+        ",
+        &[
+            "--preset=aeneas",
+            "--targets=x86_64-unknown-linux-gnu,i686-unknown-linux-gnu",
+        ],
+    )?;
+
+    let real_dispatcher = crate_data
+        .fun_decls
+        .iter()
+        .find(|f| matches!(f.body, Body::TargetDispatch(_)))
+        .expect("should have a TargetDispatch facade");
+    let Body::TargetDispatch(dispatch_map) = &real_dispatcher.body else {
+        unreachable!()
+    };
+
+    fn assert_single_free_type_arg(generics: &GenericArgs) {
+        let ty = generics
+            .types
+            .iter()
+            .exactly_one()
+            .expect("expected one type argument");
+        assert!(matches!(ty.kind(), TyKind::TypeVar(DeBruijnVar::Free(_))));
+    }
+
+    for (_target, fun_ref) in dispatch_map {
+        assert_single_free_type_arg(fun_ref.generics.as_ref());
+        let target_fun = &crate_data.fun_decls[fun_ref.id];
+        let ItemSource::TargetDependent { dispatcher } = &target_fun.src else {
+            panic!("expected TargetDependent source, got {:?}", target_fun.src)
+        };
+        assert_single_free_type_arg(dispatcher.generics.as_ref());
+    }
+    Ok(())
+}
+
+#[test]
 fn multiple_deserialize() -> anyhow::Result<()> {
     // Test that deserializing deduplicated values from two different invocations of Charon works
     // correctly. This is non-obvious because `HashConsId`s will overlap between two invocations,
