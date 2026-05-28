@@ -97,9 +97,9 @@ impl<T> Default for CycleDetector<T> {
 }
 
 pub mod type_map {
+    use rustc_hash::FxHashMap;
     use std::{
         any::{Any, TypeId},
-        collections::HashMap,
         marker::PhantomData,
     };
 
@@ -113,7 +113,7 @@ pub mod type_map {
     /// A map that maps types to values in a generic manner: we store for each type `T` a value of
     /// type `M::Value<T>`.
     pub struct TypeMap<M> {
-        data: HashMap<TypeId, Box<dyn Mappable>>,
+        data: FxHashMap<TypeId, Box<dyn Mappable>>,
         phantom: PhantomData<M>,
     }
 
