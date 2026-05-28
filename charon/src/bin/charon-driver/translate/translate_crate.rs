@@ -353,7 +353,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         trait_def_id: &hax::DefId,
         trait_id: TraitDeclId,
     ) -> Result<(), Error> {
-        if self.translated.assoc_item_names.get(trait_id).is_some() {
+        if self.method_status.get(trait_id).is_some() {
             return Ok(());
         }
         let trait_def = self.poly_hax_def(trait_def_id)?;
@@ -396,7 +396,12 @@ impl<'tcx> TranslateCtx<'tcx> {
         trait_id: TraitDeclId,
         item_def_id: &hax::DefId,
     ) -> Result<AssocItemId, Error> {
-        if let Some(&item_id) = self.assoc_item_id_map.get(item_def_id) {
+        // The same assoc item `DefId` could belong to several `TraitDeclId`s because of
+        // monomorphization, so we only return the item id if we know this trait's data is
+        // initialized.
+        if let Some(&item_id) = self.assoc_item_id_map.get(item_def_id)
+            && self.method_status.get(trait_id).is_some()
+        {
             return Ok(item_id);
         }
 
@@ -417,6 +422,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 
         if decl_def_id != item_def_id
             && let Some(&item_id) = self.assoc_item_id_map.get(decl_def_id)
+            && self.method_status.get(trait_id).is_some()
         {
             self.assoc_item_id_map.insert(item_def_id.clone(), item_id);
             return Ok(item_id);
