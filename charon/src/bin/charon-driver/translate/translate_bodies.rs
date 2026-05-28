@@ -209,6 +209,63 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
     }
 
+    fn translate_unsizing_metadata(
+        &mut self,
+        span: Span,
+        meta: hax::UnsizingMetadata,
+    ) -> Result<UnsizingMetadata, Error> {
+        Ok(match &meta {
+            hax::UnsizingMetadata::Length(len) => {
+                let len = self.translate_constant_expr(span, len)?;
+                UnsizingMetadata::Length(Box::new(len))
+            }
+            hax::UnsizingMetadata::DirectVTable(impl_expr) => {
+                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
+                let vtable = self.translate_vtable_instance_const(span, impl_expr)?;
+                UnsizingMetadata::VTable(tref, vtable)
+            }
+            hax::UnsizingMetadata::NestedVTable(dyn_impl_expr) => {
+                // This binds a fake `T: SrcTrait` variable.
+                let binder =
+                    self.translate_dyn_binder(span, dyn_impl_expr, |ctx, _, impl_expr| {
+                        ctx.translate_trait_impl_expr(span, impl_expr)
+                    })?;
+
+                // Compute the supertrait path from the source tref to the target
+                // tref.
+                let mut target_tref = &binder.skip_binder;
+                let mut clause_path: Vec<(TraitDeclId, TraitClauseId)> = vec![];
+                while let TraitRefKind::ParentClause(tref, id) = &target_tref.kind {
+                    clause_path.push((tref.trait_decl_ref.skip_binder.id, *id));
+                    target_tref = tref;
+                }
+
+                let mut field_path = vec![];
+                for &(trait_id, clause_id) in &clause_path {
+                    if let Ok(ItemRef::TraitDecl(tdecl)) = self.get_or_translate(trait_id.into())
+                        && let &vtable_decl_id = tdecl.vtable.as_ref().unwrap().id.as_adt().unwrap()
+                        && let Ok(ItemRef::Type(vtable_decl)) =
+                            self.get_or_translate(vtable_decl_id.into())
+                    {
+                        let ItemSource::VTableTy { supertrait_map, .. } = &vtable_decl.src else {
+                            unreachable!()
+                        };
+                        field_path.push(supertrait_map[clause_id].unwrap());
+                    } else {
+                        break;
+                    }
+                }
+
+                if field_path.len() == clause_path.len() {
+                    UnsizingMetadata::VTableUpcast(field_path)
+                } else {
+                    UnsizingMetadata::Unknown
+                }
+            }
+            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
+        })
+    }
+
     /// Generate a fake function body for ADT constructors.
     pub(crate) fn build_ctor_body(
         &mut self,
@@ -748,64 +805,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     mir::CastKind::PointerCoercion(ty::adjustment::PointerCoercion::Unsize, ..) => {
                         let meta =
                             hax::compute_unsizing_metadata(&self.hax_state, op_ty, *rust_tgt_ty);
-                        let meta = match &meta {
-                            hax::UnsizingMetadata::Length(len) => {
-                                let len = self.translate_constant_expr(span, len)?;
-                                UnsizingMetadata::Length(Box::new(len))
-                            }
-                            hax::UnsizingMetadata::DirectVTable(impl_expr) => {
-                                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                                let vtable =
-                                    self.translate_vtable_instance_const(span, impl_expr)?;
-                                UnsizingMetadata::VTable(tref, vtable)
-                            }
-                            hax::UnsizingMetadata::NestedVTable(dyn_impl_expr) => {
-                                // This binds a fake `T: SrcTrait` variable.
-                                let binder = self.translate_dyn_binder(
-                                    span,
-                                    dyn_impl_expr,
-                                    |ctx, _, impl_expr| {
-                                        ctx.translate_trait_impl_expr(span, impl_expr)
-                                    },
-                                )?;
-
-                                // Compute the supertrait path from the source tref to the target
-                                // tref.
-                                let mut target_tref = &binder.skip_binder;
-                                let mut clause_path: Vec<(TraitDeclId, TraitClauseId)> = vec![];
-                                while let TraitRefKind::ParentClause(tref, id) = &target_tref.kind {
-                                    clause_path.push((tref.trait_decl_ref.skip_binder.id, *id));
-                                    target_tref = tref;
-                                }
-
-                                let mut field_path = vec![];
-                                for &(trait_id, clause_id) in &clause_path {
-                                    if let Ok(ItemRef::TraitDecl(tdecl)) =
-                                        self.get_or_translate(trait_id.into())
-                                        && let &vtable_decl_id =
-                                            tdecl.vtable.as_ref().unwrap().id.as_adt().unwrap()
-                                        && let Ok(ItemRef::Type(vtable_decl)) =
-                                            self.get_or_translate(vtable_decl_id.into())
-                                    {
-                                        let ItemSource::VTableTy { supertrait_map, .. } =
-                                            &vtable_decl.src
-                                        else {
-                                            unreachable!()
-                                        };
-                                        field_path.push(supertrait_map[clause_id].unwrap());
-                                    } else {
-                                        break;
-                                    }
-                                }
-
-                                if field_path.len() == clause_path.len() {
-                                    UnsizingMetadata::VTableUpcast(field_path)
-                                } else {
-                                    UnsizingMetadata::Unknown
-                                }
-                            }
-                            hax::UnsizingMetadata::Unknown => UnsizingMetadata::Unknown,
-                        };
+                        let meta = self.translate_unsizing_metadata(span, meta)?;
                         CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
                     }
                 };
