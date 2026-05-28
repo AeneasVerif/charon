@@ -1036,19 +1036,25 @@ fn use_alias<'_0>(x_1: &'_0 (dyn Both32And64 + '_0))
     let _7: &'12 i64; // anonymous local
     let _8: &'13 i64; // anonymous local
     let _9: &'14 i32; // anonymous local
-    let _10: &'26 i32; // anonymous local
-    let _11: i32; // anonymous local
-    let _12: &'27 i64; // anonymous local
-    let _13: i64; // anonymous local
+    let _10: &'16 i32; // anonymous local
+    let _11: &'17 i64; // anonymous local
+    let _12: &'26 i32; // anonymous local
+    let _13: i32; // anonymous local
+    let _14: &'27 i64; // anonymous local
+    let _15: i64; // anonymous local
 
-    storage_live(_10)
     storage_live(_11)
-    _11 = const 100 : i32
-    _10 = &_11
+    storage_live(_14)
+    storage_live(_15)
+    _15 = const 200 : i64
+    _14 = &_15
+    _11 = move _14
+    storage_live(_10)
     storage_live(_12)
     storage_live(_13)
-    _13 = const 200 : i64
+    _13 = const 100 : i32
     _12 = &_13
+    _10 = move _12
     storage_live(_8)
     storage_live(_9)
     _0 = ()
@@ -1062,7 +1068,7 @@ fn use_alias<'_0>(x_1: &'_0 (dyn Both32And64 + '_0))
     _4 = &(*_5)
     storage_live(_6)
     storage_live(_7)
-    _8 = move _12
+    _8 = move _11
     _7 = &(*_8)
     _6 = &(*_7)
     _2 = (copy ((*_3.metadata)).method_both_operate)(move _3, move _4, move _6)
@@ -1165,29 +1171,40 @@ fn main()
     let _83: &'110 i32; // anonymous local
     let _84: &'111 i32; // anonymous local
     let _85: &'112 i32; // anonymous local
-    let _86: &'189 i32; // anonymous local
-    let _87: i32; // anonymous local
-    let _88: &'190 i32; // anonymous local
-    let _89: i32; // anonymous local
-    let _90: &'191 i32; // anonymous local
-    let _91: i32; // anonymous local
-    let _92: &'192 i32; // anonymous local
-    let _93: i32; // anonymous local
-    let _94: &'193 i32; // anonymous local
-    let _95: i32; // anonymous local
-    let _96: &'194 i64; // anonymous local
-    let _97: i64; // anonymous local
-    let _98: &'195 i32; // anonymous local
-    let _99: i32; // anonymous local
-    let _100: &'196 i32; // anonymous local
-    let _101: i32; // anonymous local
-    let _102: &'197 i32; // anonymous local
-    let _103: i32; // anonymous local
+    let _86: &'113 i32; // anonymous local
+    let _87: &'137 i32; // anonymous local
+    let _88: &'140 i32; // anonymous local
+    let _89: &'156 i32; // anonymous local
+    let _90: &'160 i32; // anonymous local
+    let _91: &'161 i64; // anonymous local
+    let _92: &'170 i32; // anonymous local
+    let _93: &'176 i32; // anonymous local
+    let _94: &'181 i32; // anonymous local
+    let _95: &'189 i32; // anonymous local
+    let _96: i32; // anonymous local
+    let _97: &'190 i32; // anonymous local
+    let _98: i32; // anonymous local
+    let _99: &'191 i32; // anonymous local
+    let _100: i32; // anonymous local
+    let _101: &'192 i32; // anonymous local
+    let _102: i32; // anonymous local
+    let _103: &'193 i32; // anonymous local
+    let _104: i32; // anonymous local
+    let _105: &'194 i64; // anonymous local
+    let _106: i64; // anonymous local
+    let _107: &'195 i32; // anonymous local
+    let _108: i32; // anonymous local
+    let _109: &'196 i32; // anonymous local
+    let _110: i32; // anonymous local
+    let _111: &'197 i32; // anonymous local
+    let _112: i32; // anonymous local
 
     storage_live(_86)
-    storage_live(_87)
-    _87 = const 42 : i32
-    _86 = &_87
+    storage_live(_95)
+    storage_live(_96)
+    _96 = const 42 : i32
+    _95 = &_96
+    _86 = move _95
     storage_live(_77)
     storage_live(_78)
     storage_live(_79)
@@ -1268,15 +1285,17 @@ fn main()
         _23 = &mut _24
         _22 = &(*_23)
         _20 = (copy ((*_21.metadata)).method_modify)(move _21, move _22)
-        storage_live(_88)
-        storage_live(_89)
-        _89 = const 100 : i32
-        _88 = &_89
+        storage_live(_87)
+        storage_live(_97)
+        storage_live(_98)
+        _98 = const 100 : i32
+        _97 = &_98
+        _87 = move _97
         storage_dead(_22)
         storage_dead(_21)
         _19 = &_20
         storage_live(_25)
-        _84 = move _88
+        _84 = move _87
         _25 = &(*_84)
         _18 = (move _19, move _25)
         storage_dead(_25)
@@ -1311,10 +1330,12 @@ fn main()
             _37 = Option::None {  }
             panic(core::panicking::assert_failed)
         }
-        storage_live(_90)
-        storage_live(_91)
-        _91 = const 42 : i32
-        _90 = &_91
+        storage_live(_88)
+        storage_live(_99)
+        storage_live(_100)
+        _100 = const 42 : i32
+        _99 = &_100
+        _88 = move _99
         storage_dead(_30)
         storage_dead(_29)
         storage_dead(_28)
@@ -1329,7 +1350,7 @@ fn main()
         storage_live(_40)
         storage_live(_41)
         storage_live(_42)
-        _83 = move _90
+        _83 = move _88
         _42 = &(*_83)
         _41 = &(*_42)
         _40 = to_dyn_obj<'142, i32>[{built_in impl Sized for i32}, {impl NoParam for i32}](move _41)
@@ -1343,24 +1364,30 @@ fn main()
         storage_live(_44)
         _44 = &(*z_38) with_metadata(copy z_38.metadata)
         _43 = (copy ((*_44.metadata)).method_dummy)(move _44)
-        storage_live(_92)
-        storage_live(_93)
-        _93 = const 42 : i32
-        _92 = &_93
-        storage_live(_94)
-        storage_live(_95)
-        _95 = const 100 : i32
-        _94 = &_95
-        storage_live(_96)
-        storage_live(_97)
-        _97 = const 200 : i64
-        _96 = &_97
+        storage_live(_91)
+        storage_live(_105)
+        storage_live(_106)
+        _106 = const 200 : i64
+        _105 = &_106
+        _91 = move _105
+        storage_live(_90)
+        storage_live(_103)
+        storage_live(_104)
+        _104 = const 100 : i32
+        _103 = &_104
+        _90 = move _103
+        storage_live(_89)
+        storage_live(_101)
+        storage_live(_102)
+        _102 = const 42 : i32
+        _101 = &_102
+        _89 = move _101
         storage_dead(_44)
         storage_dead(_43)
         storage_live(a_45)
         storage_live(_46)
         storage_live(_47)
-        _82 = move _92
+        _82 = move _89
         _47 = &(*_82)
         _46 = &(*_47)
         a_45 = unsize_cast<&'68 i32, &'157 (dyn Both32And64 + '158), &{impl Both32And64 for i32}::{vtable}>(move _46)
@@ -1371,23 +1398,27 @@ fn main()
         _49 = &(*a_45) with_metadata(copy a_45.metadata)
         storage_live(_50)
         storage_live(_51)
-        _81 = move _94
+        _81 = move _90
         _51 = &(*_81)
         _50 = &(*_51)
         storage_live(_52)
         storage_live(_53)
-        _80 = move _96
+        _80 = move _91
         _53 = &(*_80)
         _52 = &(*_53)
         _48 = (copy ((*_49.metadata)).method_both_operate)(move _49, move _50, move _52)
-        storage_live(_98)
-        storage_live(_99)
-        _99 = const 42 : i32
-        _98 = &_99
-        storage_live(_100)
-        storage_live(_101)
-        _101 = const 10 : i32
-        _100 = &_101
+        storage_live(_93)
+        storage_live(_109)
+        storage_live(_110)
+        _110 = const 10 : i32
+        _109 = &_110
+        _93 = move _109
+        storage_live(_92)
+        storage_live(_107)
+        storage_live(_108)
+        _108 = const 42 : i32
+        _107 = &_108
+        _92 = move _107
         storage_dead(_52)
         storage_dead(_50)
         storage_dead(_49)
@@ -1397,7 +1428,7 @@ fn main()
         storage_live(b_54)
         storage_live(_55)
         storage_live(_56)
-        _79 = move _98
+        _79 = move _92
         _56 = &(*_79)
         _55 = &(*_56)
         b_54 = unsize_cast<&'82 i32, &'171 (dyn LifetimeTrait<Ty = i32> + '172), &{impl LifetimeTrait for i32}::{vtable}>(move _55)
@@ -1413,19 +1444,21 @@ fn main()
         storage_dead(_61)
         storage_live(_62)
         storage_live(_63)
-        _78 = move _100
+        _78 = move _93
         _63 = &(*_78)
         _62 = &(*_63)
         _59 = use_lifetime_trait<'179, '180>(move _60, move _62)
-        storage_live(_102)
-        storage_live(_103)
-        _103 = const 10 : i32
-        _102 = &_103
+        storage_live(_94)
+        storage_live(_111)
+        storage_live(_112)
+        _112 = const 10 : i32
+        _111 = &_112
+        _94 = move _111
         storage_dead(_62)
         storage_dead(_60)
         _58 = &(*_59)
         storage_live(_64)
-        _77 = move _102
+        _77 = move _94
         _64 = &(*_77)
         _57 = (move _58, move _64)
         storage_dead(_64)

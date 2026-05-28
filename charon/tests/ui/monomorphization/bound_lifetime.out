@@ -29,13 +29,16 @@ fn main()
     let _2: &'1 u32; // anonymous local
     let _3: &'2 u32; // anonymous local
     let _4: &'3 u32; // anonymous local
-    let _5: &'7 u32; // anonymous local
-    let _6: u32; // anonymous local
+    let _5: &'4 u32; // anonymous local
+    let _6: &'7 u32; // anonymous local
+    let _7: u32; // anonymous local
 
     storage_live(_5)
     storage_live(_6)
-    _6 = const 42 : u32
-    _5 = &_6
+    storage_live(_7)
+    _7 = const 42 : u32
+    _6 = &_7
+    _5 = move _6
     storage_live(_4)
     _0 = ()
     storage_live(_1)

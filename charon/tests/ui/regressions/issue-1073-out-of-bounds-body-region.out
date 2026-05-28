@@ -260,11 +260,12 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
     let _72: *const Str; // anonymous local
     let _73: &'124 [u8]; // anonymous local
     let _74: bool; // anonymous local
-    let _75: &'226 mut [std::io::IoSlice<'178>; 0 : usize]; // anonymous local
-    let _76: [std::io::IoSlice<'178>; 0 : usize]; // anonymous local
-    let _77: PhantomData<&'134 std::io::IoSlice<'135>>; // anonymous local
-    let _78: &'_ mut [std::io::IoSlice<'209>]; // anonymous local
-    let _79: &'_ mut std::io::IoSlice<'209>; // anonymous local
+    let _75: &'186 mut [std::io::IoSlice<'187>; 0 : usize]; // anonymous local
+    let _76: &'226 mut [std::io::IoSlice<'178>; 0 : usize]; // anonymous local
+    let _77: [std::io::IoSlice<'178>; 0 : usize]; // anonymous local
+    let _78: PhantomData<&'134 std::io::IoSlice<'135>>; // anonymous local
+    let _79: &'_ mut [std::io::IoSlice<'209>]; // anonymous local
+    let _80: &'_ mut std::io::IoSlice<'209>; // anonymous local
 
     storage_live(remove_3)
     storage_live(iter_4)
@@ -300,9 +301,9 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
     storage_dead(self_21)
     end_or_len_19 = cast<*mut std::io::IoSlice<'75>, *const std::io::IoSlice<'131>>(copy _20)
     storage_dead(_20)
-    storage_live(_77)
-    _77 = PhantomData {  }
-    iter_4 = Iter { 0: copy ptr_18, 1: copy end_or_len_19, 2: move _77 }
+    storage_live(_78)
+    _78 = PhantomData {  }
+    iter_4 = Iter { 0: copy ptr_18, 1: copy end_or_len_19, 2: move _78 }
     storage_dead(end_or_len_19)
     storage_dead(ptr_18)
     storage_dead(len_17)
@@ -390,8 +391,10 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
     }
     storage_live(_75)
     storage_live(_76)
-    _76 = []
-    _75 = &mut _76
+    storage_live(_77)
+    _77 = []
+    _76 = &mut _77
+    _75 = move _76
     storage_dead(_5)
     storage_live(src_41)
     src_41 = @ArrayToSliceMut<'_, std::io::IoSlice<'187>, 0 : usize>(move _75)
@@ -433,11 +436,11 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
                 storage_dead(_50)
                 _15 = copy (*bufs_1)
                 _16 = copy (*bufs_1)
-                storage_live(_78)
-                _78 = &mut (*_16) with_metadata(copy _16.metadata)
                 storage_live(_79)
-                _79 = @SliceIndexMut<'_, std::io::IoSlice<'209>>(move _78, const 0 : usize)
-                self_12 = &two-phase-mut (*_79)
+                _79 = &mut (*_16) with_metadata(copy _16.metadata)
+                storage_live(_80)
+                _80 = @SliceIndexMut<'_, std::io::IoSlice<'209>>(move _79, const 0 : usize)
+                self_12 = &two-phase-mut (*_80)
                 storage_live(_60)
                 storage_live(_61)
                 _61 = copy ((((*self_12)).0).0).iov_len

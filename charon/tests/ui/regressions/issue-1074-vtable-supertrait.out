@@ -145,13 +145,16 @@ fn main()
     let _4: (); // anonymous local
     let _5: &'8 (dyn MyTrait + '9); // anonymous local
     let _6: &'10 MyStruct; // anonymous local
-    let _7: &'19 MyStruct; // anonymous local
-    let _8: MyStruct; // anonymous local
+    let _7: &'11 MyStruct; // anonymous local
+    let _8: &'19 MyStruct; // anonymous local
+    let _9: MyStruct; // anonymous local
 
     storage_live(_7)
     storage_live(_8)
-    _8 = MyStruct {  }
-    _7 = &_8
+    storage_live(_9)
+    _9 = MyStruct {  }
+    _8 = &_9
+    _7 = move _8
     storage_live(_6)
     _0 = ()
     storage_live(x_1)

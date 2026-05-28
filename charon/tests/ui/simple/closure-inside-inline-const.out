@@ -103,13 +103,16 @@ where
 {
     let _0: usize; // return
     let _1: usize; // anonymous local
-    let _f_2: closure<T>[@TraitClause0]; // local
+    let _2: usize; // anonymous local
+    let _f_3: closure<T>[@TraitClause0]; // local
 
     storage_live(_1)
-    storage_live(_f_2)
-    _f_2 = closure {  }
-    _1 = size_of<T>[@TraitClause0]()
-    storage_dead(_f_2)
+    storage_live(_2)
+    storage_live(_f_3)
+    _f_3 = closure {  }
+    _2 = size_of<T>[@TraitClause0]()
+    storage_dead(_f_3)
+    _1 = move _2
     _0 = move _1
     return
 }

@@ -148,13 +148,16 @@ where
     let _3: (@TraitClause0::Item,); // anonymous local
     let _4: @TraitClause0::Item; // anonymous local
     let _5: &'2 closure<Self>[@TraitClause0]; // anonymous local
-    let _6: &'6 closure<Self>[@TraitClause0]; // anonymous local
-    let _7: closure<Self>[@TraitClause0]; // anonymous local
+    let _6: &'3 closure<Self>[@TraitClause0]; // anonymous local
+    let _7: &'6 closure<Self>[@TraitClause0]; // anonymous local
+    let _8: closure<Self>[@TraitClause0]; // anonymous local
 
     storage_live(_6)
     storage_live(_7)
-    _7 = closure {  }
-    _6 = &_7
+    storage_live(_8)
+    _8 = closure {  }
+    _7 = &_8
+    _6 = move _7
     storage_live(_5)
     _0 = ()
     storage_live(_2)

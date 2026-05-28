@@ -93,13 +93,16 @@ pub fn foo() -> &'static closure
     let _1: &'2 closure; // anonymous local
     let _2: &'3 closure; // anonymous local
     let _3: &'4 closure; // anonymous local
-    let _4: &'6 closure; // anonymous local
-    let _5: closure; // anonymous local
+    let _4: &'5 closure; // anonymous local
+    let _5: &'6 closure; // anonymous local
+    let _6: closure; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
-    _5 = closure {  }
-    _4 = &_5
+    storage_live(_6)
+    _6 = closure {  }
+    _5 = &_6
+    _4 = move _5
     storage_live(_3)
     storage_live(_1)
     storage_live(_2)

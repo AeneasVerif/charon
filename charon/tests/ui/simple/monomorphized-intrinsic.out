@@ -24,17 +24,21 @@ fn main()
     let _6: &'5 E2; // anonymous local
     let _7: &'6 E2; // anonymous local
     let _8: &'7 E1; // anonymous local
-    let _9: &'14 E1; // anonymous local
-    let _10: E1; // anonymous local
-    let _11: &'15 E2; // anonymous local
-    let _12: E2; // anonymous local
+    let _9: &'8 E1; // anonymous local
+    let _10: &'11 E2; // anonymous local
+    let _11: &'14 E1; // anonymous local
+    let _12: E1; // anonymous local
+    let _13: &'15 E2; // anonymous local
+    let _14: E2; // anonymous local
 
     storage_live(_9)
-    storage_live(_10)
+    storage_live(_11)
+    storage_live(_12)
     // We detect these in a pass; this test makes sure we don't mess up the generics in `--mono`
     // mode.
-    _10 = E1::A {  }
-    _9 = &_10
+    _12 = E1::A {  }
+    _11 = &_12
+    _9 = move _11
     storage_live(_7)
     storage_live(_8)
     _0 = ()
@@ -45,17 +49,19 @@ fn main()
     _3 = &(*_8)
     _2 = &(*_3)
     _1 = @discriminant((*_2))
-    storage_live(_11)
-    storage_live(_12)
-    _12 = E2::A {  }
-    _11 = &_12
+    storage_live(_10)
+    storage_live(_13)
+    storage_live(_14)
+    _14 = E2::A {  }
+    _13 = &_14
+    _10 = move _13
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _7 = move _11
+    _7 = move _10
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = @discriminant((*_5))

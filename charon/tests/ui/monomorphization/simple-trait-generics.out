@@ -117,13 +117,16 @@ fn main()
     let _5: &'8 (dyn Trait<bool> + '9); // anonymous local
     let _6: &'10 i32; // anonymous local
     let _7: unsafe fn(&'8 (dyn Trait<bool> + '9)) -> bool; // anonymous local
-    let _8: &'19 i32; // anonymous local
-    let _9: i32; // anonymous local
+    let _8: &'11 i32; // anonymous local
+    let _9: &'19 i32; // anonymous local
+    let _10: i32; // anonymous local
 
     storage_live(_8)
     storage_live(_9)
-    _9 = const 42 : i32
-    _8 = &_9
+    storage_live(_10)
+    _10 = const 42 : i32
+    _9 = &_10
+    _8 = move _9
     storage_live(_6)
     _0 = ()
     storage_live(a_1)

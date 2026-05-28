@@ -44,13 +44,16 @@ pub fn run()
     let _1: bool; // anonymous local
     let _2: &'1 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
     let _3: &'2 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
-    let _4: &'6 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
-    let _5: Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let _4: &'3 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let _5: &'6 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+    let _6: Option<bool>[{built_in impl Sized for bool}]; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
-    _5 = Option::Some { 0: const false }
-    _4 = &_5
+    storage_live(_6)
+    _6 = Option::Some { 0: const false }
+    _5 = &_6
+    _4 = move _5
     storage_live(_3)
     _0 = ()
     storage_live(_1)

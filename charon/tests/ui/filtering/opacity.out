@@ -97,15 +97,19 @@ fn foo()
     let _6: &'6 i32; // anonymous local
     let _7: &'7 i32; // anonymous local
     let _8: &'8 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _9: &'15 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _10: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _11: &'16 i32; // anonymous local
-    let _12: i32; // anonymous local
+    let _9: &'9 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _10: &'12 i32; // anonymous local
+    let _11: &'15 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _12: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _13: &'16 i32; // anonymous local
+    let _14: i32; // anonymous local
 
     storage_live(_9)
-    storage_live(_10)
-    _10 = Option::Some { 0: const 0 : i32 }
-    _9 = &_10
+    storage_live(_11)
+    storage_live(_12)
+    _12 = Option::Some { 0: const 0 : i32 }
+    _11 = &_12
+    _9 = move _11
     storage_live(_7)
     storage_live(_8)
     _0 = ()
@@ -118,15 +122,17 @@ fn foo()
     storage_dead(_1)
     storage_live(_3)
     _3 = {impl Into<U> for T}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const 42 : u32)
-    storage_live(_11)
-    storage_live(_12)
-    _12 = const 0 : i32
-    _11 = &_12
+    storage_live(_10)
+    storage_live(_13)
+    storage_live(_14)
+    _14 = const 0 : i32
+    _13 = &_14
+    _10 = move _13
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _7 = move _11
+    _7 = move _10
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = from_ref<'14, i32>[{built_in impl Sized for i32}](move _5)

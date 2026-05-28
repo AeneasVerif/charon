@@ -40,17 +40,20 @@ where
     let _3: usize; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
+    let _6: usize; // anonymous local
 
     storage_live(_2)
-    storage_live(_5)
     storage_live(_3)
-    _3 = offset_of(A<T>[@TraitClause0].x)<usize>
+    storage_live(_6)
     storage_live(_4)
-    _4 = offset_of(B<T>[@TraitClause0].y)<usize>
-    _5 = copy _3 panic.+ copy _4
-    _2 = move _5
+    _4 = offset_of(A<T>[@TraitClause0].x)<usize>
+    storage_live(_5)
+    _5 = offset_of(B<T>[@TraitClause0].y)<usize>
+    _6 = copy _4 panic.+ copy _5
+    _3 = move _6
+    storage_dead(_5)
     storage_dead(_4)
-    storage_dead(_3)
+    _2 = move _3
     _0 = ()
     storage_live(_1)
     _1 = move _2

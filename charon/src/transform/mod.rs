@@ -42,6 +42,7 @@ pub mod resugar {
 
 /// Passes that make the output simpler/easier to consume.
 pub mod simplify_output {
+    pub mod anon_const_to_call;
     pub mod filter_trivial_drops;
     pub mod hide_allocator_param;
     pub mod index_intermediate_assigns;
@@ -126,7 +127,9 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Transform dyn trait method calls to vtable function pointer calls.
         // This should be early to handle the calls before other transformations.
         CowBox::Borrowed(&normalize::transform_dyn_trait_calls::Transform),
-        // Inline promoted and inline consts into their parent bodies.
+        // Replace promoted and inline consts with calls to their initializers.
+        simplify_output::anon_const_to_call::Transform::new(ctx),
+        // Inline promoted and inline consts calls into their parent bodies.
         simplify_output::inline_anon_consts::Transform::new(ctx),
         // `panic!()` expands to a new function definition each time. This pass cleans those up.
         resugar::inline_local_panic_functions::Transform::new(ctx),

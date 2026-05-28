@@ -27,22 +27,25 @@ fn main()
     let _0: (); // return
     let _1: &'3 Ref<'4, ()>[{built_in impl Sized for ()}]; // anonymous local
     let _2: &'9 Ref<'10, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _3: &'14 Ref<'15, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _4: Ref<'16, ()>[{built_in impl Sized for ()}]; // anonymous local
-    let _5: &'18 (); // anonymous local
-    let _6: &'19 (); // anonymous local
-    let _7: (); // anonymous local
+    let _3: &'11 Ref<'12, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let _4: &'14 Ref<'15, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let _5: Ref<'16, ()>[{built_in impl Sized for ()}]; // anonymous local
+    let _6: &'18 (); // anonymous local
+    let _7: &'19 (); // anonymous local
+    let _8: (); // anonymous local
 
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = ()
-    _6 = &_7
-    _5 = &(*_6)
-    _4 = Ref { 0: move _5 }
-    _3 = &_4
+    storage_live(_8)
+    _8 = ()
+    _7 = &_8
+    _6 = &(*_7)
+    _5 = Ref { 0: move _6 }
+    _4 = &_5
+    _3 = move _4
     storage_live(_2)
     _0 = ()
     storage_live(_1)

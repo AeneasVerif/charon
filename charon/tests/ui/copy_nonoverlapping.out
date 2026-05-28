@@ -624,17 +624,20 @@ where
 {
     let _0: Alignment; // return
     let _1: Alignment; // anonymous local
-    let _2: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
-    let _3: usize; // anonymous local
+    let _2: Alignment; // anonymous local
+    let _3: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
+    let _4: usize; // anonymous local
 
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
-    _3 = core::mem::align_of<T>[@TraitClause0]()
-    _2 = new(move _3)
+    storage_live(_4)
+    _4 = core::mem::align_of<T>[@TraitClause0]()
+    _3 = new(move _4)
+    storage_dead(_4)
+    _2 = unwrap<Alignment>[{built_in impl Sized for Alignment}](move _3)
     storage_dead(_3)
-    _1 = unwrap<Alignment>[{built_in impl Sized for Alignment}](move _2)
-    storage_dead(_2)
+    _1 = move _2
     _0 = move _1
     return
 }
