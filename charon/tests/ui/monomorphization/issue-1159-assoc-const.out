@@ -1,0 +1,11 @@
+
+thread 'rustc' panicked at /home/nadrieril/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/index_vec-0.1.4/src/indexing.rs:42:14:
+index out of bounds: the len is 2 but the index is 3
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::{impl#0}`.
+  --> tests/ui/monomorphization/issue-1159-assoc-const.rs:10:1
+   |
+10 | impl MyConfig for Concrete {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
