@@ -28,6 +28,7 @@
 //! required vs implied are subtle. We may change our choice if this proves to be a problem.
 use itertools::Itertools;
 use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
 
 use rustc_hir::LangItem;
 use rustc_hir::def::DefKind;
@@ -35,15 +36,28 @@ use rustc_middle::ty::*;
 use rustc_span::def_id::DefId;
 use rustc_span::{DUMMY_SP, Span};
 
-use crate::ToPolyTraitRef;
+use crate::{ElaborationCtx, ToPolyTraitRef};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct BoundsOptions {
     /// Add `T: Destruct` bounds to every type generic, so that we can build `ImplExpr`s to know
     /// what code is run on drop.
     pub add_destruct_bounds: bool,
     /// Traits to filter out from the predicate lists.
     pub remove_traits: HashSet<DefId>,
+}
+
+impl Hash for BoundsOptions {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.add_destruct_bounds.hash(state);
+        for def_id in self
+            .remove_traits
+            .iter()
+            .sorted_by_key(|def_id| (def_id.krate.as_u32(), def_id.index.as_u32()))
+        {
+            def_id.hash(state);
+        }
+    }
 }
 
 /// Uniquely identifies a predicate.
@@ -180,7 +194,7 @@ impl<'tcx> ItemPredicates<'tcx> {
     /// Returns a list of type predicates for the definition with id `def_id`, including inferred
     /// lifetime constraints. This is the basic list of predicates we use for essentially all
     /// items.
-    pub fn defined_on(tcx: TyCtxt<'_>, def_id: DefId, required: bool) -> ItemPredicates<'_> {
+    fn defined_on(tcx: TyCtxt<'_>, def_id: DefId, required: bool) -> ItemPredicates<'_> {
         let predicates = tcx
             .explicit_predicates_of(def_id)
             .predicates
@@ -206,53 +220,56 @@ impl<'tcx> ItemPredicates<'tcx> {
     ///
     /// If `add_drop` is true, we add a `T: Drop` bound for every type generic.
     pub fn required(
-        tcx: TyCtxt<'tcx>,
+        elab_ctx: ElaborationCtx<'tcx>,
         def_id: DefId,
         options: &BoundsOptions,
     ) -> ItemPredicates<'tcx> {
-        use DefKind::*;
-        let def_kind = tcx.def_kind(def_id);
-        let mut predicates = match def_kind {
-            AssocConst
-            | AssocFn
-            | AssocTy
-            | Const
-            | Enum
-            | Fn
-            | ForeignTy
-            | Impl { .. }
-            | OpaqueTy
-            | Static { .. }
-            | Struct
-            | TyAlias
-            | Union => Self::defined_on(tcx, def_id, true),
-            // We consider all predicates on traits to be outputs
-            Trait | TraitAlias => Default::default(),
-            // `predicates_defined_on` ICEs on other def kinds.
-            _ => Default::default(),
-        };
-        // For methods and assoc consts in trait definitions, we add an explicit `Self: Trait` clause.
-        // Associated types get to use the implicit `Self: Trait` clause instead.
-        if !matches!(def_kind, AssocTy)
-            && let Some(trait_def_id) = tcx.trait_of_assoc(def_id)
-        {
-            let self_clause = self_predicate(tcx, trait_def_id).upcast(tcx);
-            predicates.predicates.insert(
-                0,
-                ItemPredicate {
-                    id: ItemPredicateId::TraitSelf,
-                    clause: self_clause,
-                    span: DUMMY_SP,
-                },
-            );
-        }
-        if options.add_destruct_bounds && !matches!(def_kind, Trait | TraitAlias) {
-            // Add a `T: Destruct` bound for every generic. For traits we consider these predicates
-            // implied instead of required.
-            predicates.add_destruct_bounds(tcx, def_id);
-        }
-        predicates.filter_traits(options);
-        predicates
+        elab_ctx.cached_required_predicates(def_id, options, || {
+            use DefKind::*;
+            let tcx = elab_ctx.tcx;
+            let def_kind = tcx.def_kind(def_id);
+            let mut predicates = match def_kind {
+                AssocConst
+                | AssocFn
+                | AssocTy
+                | Const
+                | Enum
+                | Fn
+                | ForeignTy
+                | Impl { .. }
+                | OpaqueTy
+                | Static { .. }
+                | Struct
+                | TyAlias
+                | Union => Self::defined_on(tcx, def_id, true),
+                // We consider all predicates on traits to be outputs
+                Trait | TraitAlias => Default::default(),
+                // `predicates_defined_on` ICEs on other def kinds.
+                _ => Default::default(),
+            };
+            // For methods and assoc consts in trait definitions, we add an explicit `Self: Trait` clause.
+            // Associated types get to use the implicit `Self: Trait` clause instead.
+            if !matches!(def_kind, AssocTy)
+                && let Some(trait_def_id) = tcx.trait_of_assoc(def_id)
+            {
+                let self_clause = self_predicate(tcx, trait_def_id).upcast(tcx);
+                predicates.predicates.insert(
+                    0,
+                    ItemPredicate {
+                        id: ItemPredicateId::TraitSelf,
+                        clause: self_clause,
+                        span: DUMMY_SP,
+                    },
+                );
+            }
+            if options.add_destruct_bounds && !matches!(def_kind, Trait | TraitAlias) {
+                // Add a `T: Destruct` bound for every generic. For traits we consider these predicates
+                // implied instead of required.
+                predicates.add_destruct_bounds(tcx, def_id);
+            }
+            predicates.filter_traits(options);
+            predicates
+        })
     }
     /// The predicates that must hold to mention this item, including its parents. E.g.
     ///
@@ -264,36 +281,39 @@ impl<'tcx> ItemPredicates<'tcx> {
     /// }
     /// ```
     pub fn required_recursively(
-        tcx: TyCtxt<'tcx>,
+        elab_ctx: ElaborationCtx<'tcx>,
         def_id: rustc_span::def_id::DefId,
         options: &BoundsOptions,
     ) -> ItemPredicates<'tcx> {
-        fn acc_predicates<'tcx>(
-            tcx: TyCtxt<'tcx>,
-            def_id: rustc_span::def_id::DefId,
-            options: &BoundsOptions,
-            predicates: &mut ItemPredicates<'tcx>,
-            is_parent: bool,
-        ) {
-            if inherits_parent_clauses(tcx, def_id) {
-                let parent = tcx.parent(def_id);
-                acc_predicates(tcx, parent, options, predicates, true);
+        elab_ctx.cached_required_recursively_predicates(def_id, options, || {
+            fn acc_predicates<'tcx>(
+                elab_ctx: ElaborationCtx<'tcx>,
+                def_id: rustc_span::def_id::DefId,
+                options: &BoundsOptions,
+                predicates: &mut ItemPredicates<'tcx>,
+                is_parent: bool,
+            ) {
+                let tcx = elab_ctx.tcx;
+                if inherits_parent_clauses(tcx, def_id) {
+                    let parent = tcx.parent(def_id);
+                    acc_predicates(elab_ctx, parent, options, predicates, true);
+                }
+                let required = ItemPredicates::required(elab_ctx, def_id, options);
+                predicates.predicates.extend(required.iter());
+                if !is_parent {
+                    // Use the next_id that corresponds to the current item.
+                    predicates.next_id = required.next_id;
+                }
             }
-            let required = ItemPredicates::required(tcx, def_id, options);
-            predicates.predicates.extend(required.iter());
-            if !is_parent {
-                // Use the next_id that corresponds to the current item.
-                predicates.next_id = required.next_id;
-            }
-        }
 
-        let mut predicates = Self {
-            required: true,
-            next_id: 0,
-            predicates: vec![],
-        };
-        acc_predicates(tcx, def_id, options, &mut predicates, false);
-        predicates
+            let mut predicates = Self {
+                required: true,
+                next_id: 0,
+                predicates: vec![],
+            };
+            acc_predicates(elab_ctx, def_id, options, &mut predicates, false);
+            predicates
+        })
     }
     /// The predicates that can be deduced from the presence of this item in a signature. We only
     /// consider predicates implied by traits here, not implied bounds such as `&'a T` implying `T:
@@ -309,63 +329,66 @@ impl<'tcx> ItemPredicates<'tcx> {
     ///
     /// If `add_drop` is true, we add a `T: Drop` bound for every type generic and associated type.
     pub fn implied(
-        tcx: TyCtxt<'tcx>,
+        elab_ctx: ElaborationCtx<'tcx>,
         def_id: DefId,
         options: &BoundsOptions,
     ) -> ItemPredicates<'tcx> {
-        use DefKind::*;
-        let parent = tcx.opt_parent(def_id);
-        let mut predicates = match tcx.def_kind(def_id) {
-            // We consider all predicates on traits to be outputs
-            Trait | TraitAlias => {
-                let mut predicates = Self::defined_on(tcx, def_id, false);
-                if options.add_destruct_bounds {
-                    // Add a `T: Drop` bound for every generic, unless the current trait is `Drop` itself, or a
-                    // built-in marker trait that we know doesn't need the bound.
-                    if !matches!(
-                        tcx.as_lang_item(def_id),
-                        Some(
-                            LangItem::Destruct
-                                | LangItem::Sized
-                                | LangItem::MetaSized
-                                | LangItem::PointeeSized
-                                | LangItem::DiscriminantKind
-                                | LangItem::PointeeTrait
-                                | LangItem::Tuple
-                        )
-                    ) {
-                        predicates.add_destruct_bounds(tcx, def_id);
+        elab_ctx.cached_implied_predicates(def_id, options, || {
+            use DefKind::*;
+            let tcx = elab_ctx.tcx;
+            let parent = tcx.opt_parent(def_id);
+            let mut predicates = match tcx.def_kind(def_id) {
+                // We consider all predicates on traits to be outputs
+                Trait | TraitAlias => {
+                    let mut predicates = Self::defined_on(tcx, def_id, false);
+                    if options.add_destruct_bounds {
+                        // Add a `T: Drop` bound for every generic, unless the current trait is `Drop` itself, or a
+                        // built-in marker trait that we know doesn't need the bound.
+                        if !matches!(
+                            tcx.as_lang_item(def_id),
+                            Some(
+                                LangItem::Destruct
+                                    | LangItem::Sized
+                                    | LangItem::MetaSized
+                                    | LangItem::PointeeSized
+                                    | LangItem::DiscriminantKind
+                                    | LangItem::PointeeTrait
+                                    | LangItem::Tuple
+                            )
+                        ) {
+                            predicates.add_destruct_bounds(tcx, def_id);
+                        }
                     }
+                    predicates
                 }
-                predicates
-            }
-            AssocTy if matches!(tcx.def_kind(parent.unwrap()), Trait) => {
-                // `skip_binder` is for the GAT `EarlyBinder`
-                let mut predicates = ItemPredicates::new(
-                    def_id,
-                    false,
-                    tcx.explicit_item_bounds(def_id)
-                        .skip_binder()
-                        .iter()
-                        .copied(),
-                );
-                if options.add_destruct_bounds {
-                    // Add a `Drop` bound to the assoc item.
-                    let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
-                    let ty = Ty::new_projection(
-                        tcx,
+                AssocTy if matches!(tcx.def_kind(parent.unwrap()), Trait) => {
+                    // `skip_binder` is for the GAT `EarlyBinder`
+                    let mut predicates = ItemPredicates::new(
                         def_id,
-                        GenericArgs::identity_for_item(tcx, def_id),
+                        false,
+                        tcx.explicit_item_bounds(def_id)
+                            .skip_binder()
+                            .iter()
+                            .copied(),
                     );
-                    let tref = Binder::dummy(TraitRef::new(tcx, destruct_trait, [ty]));
-                    predicates.add_synthetic_predicates(def_id, [tref.upcast(tcx)]);
+                    if options.add_destruct_bounds {
+                        // Add a `Drop` bound to the assoc item.
+                        let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
+                        let ty = Ty::new_projection(
+                            tcx,
+                            def_id,
+                            GenericArgs::identity_for_item(tcx, def_id),
+                        );
+                        let tref = Binder::dummy(TraitRef::new(tcx, destruct_trait, [ty]));
+                        predicates.add_synthetic_predicates(def_id, [tref.upcast(tcx)]);
+                    }
+                    predicates
                 }
-                predicates
-            }
-            _ => ItemPredicates::default(),
-        };
-        predicates.filter_traits(options);
-        predicates
+                _ => ItemPredicates::default(),
+            };
+            predicates.filter_traits(options);
+            predicates
+        })
     }
 
     pub fn len(&self) -> usize {

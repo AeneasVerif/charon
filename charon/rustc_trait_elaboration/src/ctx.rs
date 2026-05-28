@@ -1,7 +1,9 @@
 use rustc_arena::TypedArena;
+use rustc_data_structures::sharded::ShardedHashMap;
+use rustc_hir::def_id::DefId;
 use rustc_middle::ty;
 
-use crate::{ImplExpr, ImplExprContents};
+use crate::{BoundsOptions, ImplExpr, ImplExprContents, ItemPredicates};
 
 mod intern {
     use rustc_data_structures::intern::Interned;
@@ -70,17 +72,51 @@ mod intern {
 #[derive(Clone, Copy)]
 pub struct ElaborationCtx<'tcx> {
     pub tcx: ty::TyCtxt<'tcx>,
-    pub interner: &'tcx ImplExprInterner<'tcx>,
+    data: &'tcx ElaborationData<'tcx>,
 }
 
 #[derive(Default)]
-pub struct ImplExprInterner<'tcx> {
+struct ElaborationData<'tcx> {
     impl_exprs: intern::ImplExprInterner<'tcx>,
     impl_exprs_arena: TypedArena<ImplExprContents<'tcx>>,
+    required_predicates: PredicateCache<'tcx>,
+    required_recursively_predicates: PredicateCache<'tcx>,
+    implied_predicates: PredicateCache<'tcx>,
 }
 
-impl<'tcx> ImplExprInterner<'tcx> {
-    pub fn intern_impl_expr(&'tcx self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
+#[derive(Clone, PartialEq, Eq, Hash)]
+struct PredicateCacheKey {
+    def_id: DefId,
+    options: BoundsOptions,
+}
+
+#[derive(Default)]
+struct PredicateCache<'tcx> {
+    values: ShardedHashMap<PredicateCacheKey, ItemPredicates<'tcx>>,
+}
+
+impl<'tcx> PredicateCache<'tcx> {
+    fn get_or_insert_with(
+        &'tcx self,
+        def_id: DefId,
+        options: &BoundsOptions,
+        compute: impl FnOnce() -> ItemPredicates<'tcx>,
+    ) -> ItemPredicates<'tcx> {
+        let key = PredicateCacheKey {
+            def_id,
+            options: options.clone(),
+        };
+        if let Some(predicates) = self.values.get(&key) {
+            return predicates;
+        }
+        let predicates = compute();
+        let _ = self.values.insert(key, predicates.clone());
+        predicates
+    }
+}
+
+impl<'tcx> ElaborationData<'tcx> {
+    fn intern_impl_expr(&'tcx self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
         let interned = self
             .impl_exprs
             .intern(contents, |contents| self.impl_exprs_arena.alloc(contents));
@@ -94,11 +130,44 @@ impl<'tcx> ElaborationCtx<'tcx> {
         // `ImplExpr` is a copyable `Interned<'tcx, _>` and may outlive the `PredicateSearcher`
         // that produced it. We therefore give each elaboration context session-long storage, like
         // rustc's own arenas. The interned values still contain rustc data bounded by `'tcx`.
-        let interner = Box::leak(Box::new(ImplExprInterner::default()));
-        ElaborationCtx { tcx, interner }
+        let data = Box::leak(Box::new(ElaborationData::default()));
+        ElaborationCtx { tcx, data }
     }
 
     pub fn intern_impl_expr(&self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
-        self.interner.intern_impl_expr(contents)
+        self.data.intern_impl_expr(contents)
+    }
+
+    pub(crate) fn cached_required_predicates(
+        &self,
+        def_id: DefId,
+        options: &BoundsOptions,
+        compute: impl FnOnce() -> ItemPredicates<'tcx>,
+    ) -> ItemPredicates<'tcx> {
+        self.data
+            .required_predicates
+            .get_or_insert_with(def_id, options, compute)
+    }
+
+    pub(crate) fn cached_required_recursively_predicates(
+        &self,
+        def_id: DefId,
+        options: &BoundsOptions,
+        compute: impl FnOnce() -> ItemPredicates<'tcx>,
+    ) -> ItemPredicates<'tcx> {
+        self.data
+            .required_recursively_predicates
+            .get_or_insert_with(def_id, options, compute)
+    }
+
+    pub(crate) fn cached_implied_predicates(
+        &self,
+        def_id: DefId,
+        options: &BoundsOptions,
+        compute: impl FnOnce() -> ItemPredicates<'tcx>,
+    ) -> ItemPredicates<'tcx> {
+        self.data
+            .implied_predicates
+            .get_or_insert_with(def_id, options, compute)
     }
 }

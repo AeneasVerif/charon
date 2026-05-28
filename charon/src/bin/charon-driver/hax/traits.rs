@@ -217,7 +217,7 @@ pub fn solve_item_required_traits<'tcx, S: UnderOwnerState<'tcx>>(
     generics: ty::GenericArgsRef<'tcx>,
 ) -> Vec<ImplExpr> {
     let predicates = ItemPredicates::required_recursively(
-        s.base().tcx,
+        s.base().elab_ctx,
         def_id,
         &s.base().options.bounds_options,
     );
@@ -233,7 +233,7 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
     generics: ty::GenericArgsRef<'tcx>,
 ) -> Vec<ImplExpr> {
     let predicates =
-        ItemPredicates::implied(s.base().tcx, def_id, &s.base().options.bounds_options);
+        ItemPredicates::implied(s.base().elab_ctx, def_id, &s.base().options.bounds_options);
     solve_item_traits_inner(s, generics, predicates)
 }
 

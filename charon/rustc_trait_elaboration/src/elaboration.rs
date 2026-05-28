@@ -35,13 +35,14 @@ fn initial_self_pred<'tcx>(
     Some(self_pred)
 }
 
-#[tracing::instrument(level = "trace", skip(tcx))]
+#[tracing::instrument(level = "trace", skip(elab_ctx))]
 fn parents_trait_predicates<'tcx>(
-    tcx: TyCtxt<'tcx>,
+    elab_ctx: ElaborationCtx<'tcx>,
     self_trait_ref: PolyTraitRef<'tcx>,
     options: &BoundsOptions,
 ) -> Vec<PolyTraitRef<'tcx>> {
-    ItemPredicates::implied(tcx, self_trait_ref.def_id(), options)
+    let tcx = elab_ctx.tcx;
+    ItemPredicates::implied(elab_ctx, self_trait_ref.def_id(), options)
         .iter()
         // Substitute with the `self` args so that the clause makes sense in the
         // outside context.
@@ -122,7 +123,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
             clause,
         }));
         out.insert_bound_predicates(
-            ItemPredicates::required_recursively(tcx, owner_id, options).predicates,
+            ItemPredicates::required_recursively(elab_ctx, owner_id, options).predicates,
         );
         out
     }
@@ -182,12 +183,12 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// polymorphic recursion due to the closures capturing the type parameters of this
     /// function.
     fn insert_candidate_parents(&mut self, new_candidates: Vec<Candidate<'tcx>>) {
-        let tcx = self.elab_ctx.tcx;
+        let elab_ctx = self.elab_ctx;
         // Then recursively add their parents. This way ensures a breadth-first order,
         // which means we select the shortest path when looking up predicates.
         let options = self.options.clone();
         self.insert_candidates(new_candidates.into_iter().flat_map(|candidate| {
-            parents_trait_predicates(tcx, candidate.pred, &options)
+            parents_trait_predicates(elab_ctx, candidate.pred, &options)
                 .into_iter()
                 .enumerate()
                 .map(move |(index, parent_pred)| {
@@ -223,7 +224,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let item_ref = self.resolve_item_reference(alias_ty.def_id, alias_ty.args, true);
 
         // The bounds that hold on the associated type.
-        let item_bounds = ItemPredicates::implied(tcx, alias_ty.def_id, &self.options);
+        let item_bounds = ItemPredicates::implied(self.elab_ctx, alias_ty.def_id, &self.options);
         let item_bounds = item_bounds
             .iter_trait_clauses()
             // Substitute the item generics
@@ -445,9 +446,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
         def_id: DefId,
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<ImplExpr<'tcx>> {
-        let tcx = self.elab_ctx.tcx;
         self.resolve_predicates(
-            ItemPredicates::required_recursively(tcx, def_id, &self.options),
+            ItemPredicates::required_recursively(self.elab_ctx, def_id, &self.options),
             generics,
         )
     }
@@ -458,9 +458,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
         def_id: DefId,
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<ImplExpr<'tcx>> {
-        let tcx = self.elab_ctx.tcx;
         self.resolve_predicates(
-            ItemPredicates::implied(tcx, def_id, &self.options),
+            ItemPredicates::implied(self.elab_ctx, def_id, &self.options),
             generics,
         )
     }
