@@ -43,24 +43,51 @@ let big_int_to_string (bi : big_int) : string = Z.to_string bi
 
 let scalar_value_to_string (sv : scalar_value) : string =
   big_int_to_string (Scalars.get_val sv)
+  ^ " : "
   ^ integer_type_to_string (Scalars.get_ty sv)
 
 let float_value_to_string (fv : float_value) : string =
-  fv.float_value ^ float_type_to_string fv.float_ty
+  fv.float_value ^ " : " ^ float_type_to_string fv.float_ty
+
+let escape_string (s : string) : string =
+  let buf = Buffer.create (String.length s) in
+  String.iter
+    (function
+      | '\\' -> Buffer.add_string buf "\\\\"
+      | '\n' -> Buffer.add_string buf "\\n"
+      | c -> Buffer.add_char buf c)
+    s;
+  Buffer.contents buf
+
+let uchar_to_utf8 (c : Uchar.t) : string =
+  let i = Uchar.to_int c in
+  let byte n = Char.chr (n land 0xff) in
+  let cont n = byte (0x80 lor (n land 0x3f)) in
+  if i <= 0x7f then String.make 1 (byte i)
+  else if i <= 0x7ff then
+    String.init 2 (function
+      | 0 -> byte (0xc0 lor ((i lsr 6) land 0x1f))
+      | _ -> cont i)
+  else if i <= 0xffff then
+    String.init 3 (function
+      | 0 -> byte (0xe0 lor ((i lsr 12) land 0x0f))
+      | 1 -> cont (i lsr 6)
+      | _ -> cont i)
+  else
+    String.init 4 (function
+      | 0 -> byte (0xf0 lor ((i lsr 18) land 0x07))
+      | 1 -> cont (i lsr 12)
+      | 2 -> cont (i lsr 6)
+      | _ -> cont i)
 
 let literal_to_string (lit : literal) : string =
   match lit with
   | VScalar sv -> scalar_value_to_string sv
   | VFloat fv -> float_value_to_string fv
   | VBool b -> Bool.to_string b
-  | VChar c -> Uchar.to_string c
-  | VStr s -> "\"" ^ s ^ "\""
+  | VChar c -> uchar_to_utf8 c
+  | VStr s -> "\"" ^ escape_string s ^ "\""
   | VByteStr bs -> "[" ^ String.concat ", " (List.map string_of_int bs) ^ "]"
-
-let region_param_to_string (rv : region_param) : string =
-  match rv.name with
-  | Some name -> name
-  | None -> RegionId.to_string rv.index
 
 let g_region_group_to_string (rid_to_string : 'rid -> string)
     (id_to_string : 'id -> string) (gr : ('rid, 'id) g_region_group) : string =
@@ -93,29 +120,30 @@ let region_db_var_to_pretty_string (var : region_db_var) : string =
   "'" ^ de_bruijn_var_to_pretty_string RegionId.to_string var
 
 let type_db_var_to_pretty_string (var : type_db_var) : string =
-  "T@" ^ de_bruijn_var_to_pretty_string TypeVarId.to_string var
+  "@Type" ^ de_bruijn_var_to_pretty_string TypeVarId.to_string var
 
 let type_var_id_to_pretty_string (id : type_var_id) : string =
-  "T@" ^ TypeVarId.to_string id
+  "@Type" ^ TypeVarId.to_string id
 
 let type_param_to_string (tv : type_param) : string = tv.name
 
 let const_generic_var_id_to_pretty_string (id : const_generic_var_id) : string =
-  "C@" ^ ConstGenericVarId.to_string id
+  "@ConstGeneric" ^ ConstGenericVarId.to_string id
 
 let const_generic_db_var_to_pretty_string (var : const_generic_db_var) : string
     =
-  "C@" ^ de_bruijn_var_to_pretty_string ConstGenericVarId.to_string var
+  "@ConstGeneric"
+  ^ de_bruijn_var_to_pretty_string ConstGenericVarId.to_string var
 
-let const_generic_param_to_string (v : const_generic_param) : string = v.name
+let const_generic_param_to_string (ty_to_string : ty -> string)
+    (v : const_generic_param) : string =
+  "const " ^ v.name ^ " : " ^ ty_to_string v.ty
 
 let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
-  "TraitClause@" ^ TraitClauseId.to_string id
+  "@TraitClause" ^ TraitClauseId.to_string id
 
 let trait_db_var_to_pretty_string (var : trait_db_var) : string =
-  "TraitClause@" ^ de_bruijn_var_to_pretty_string TraitClauseId.to_string var
-
-let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
+  "@TraitClause" ^ de_bruijn_var_to_pretty_string TraitClauseId.to_string var
 
 let type_decl_id_to_pretty_string (id : type_decl_id) : string =
   "TypeDecl@" ^ TypeDeclId.to_string id
@@ -138,35 +166,121 @@ let variant_id_to_pretty_string (id : variant_id) : string =
 let field_id_to_pretty_string (id : field_id) : string =
   "Field@" ^ FieldId.to_string id
 
-let lookup_var_in_env (env : fmt_env)
-    (find_in : generic_params -> 'id -> 'b option) (var : 'id de_bruijn_var) :
-    'b option =
-  if List.length env.generics == 0 then None
+let tab_incr = "    "
+
+type 'id de_bruijn_var_location = { dbid : int; varid : 'id }
+
+let binding_level_suffix (level : int) : string =
+  if level <= 0 then "" else "_" ^ string_of_int level
+
+let current_binding_level_suffix (env : fmt_env) : string =
+  binding_level_suffix (List.length env.generics - 1)
+
+let de_bruijn_var_location (env : fmt_env) (var : 'id de_bruijn_var) :
+    'id de_bruijn_var_location option =
+  if List.length env.generics = 0 then None
   else
     let dbid, varid =
       match var with
       | Bound (dbid, varid) -> (dbid, varid)
-      | Free varid ->
-          let len = List.length env.generics in
-          let dbid = len - 1 in
-          (dbid, varid)
+      | Free varid -> (List.length env.generics - 1, varid)
     in
-    match List.nth_opt env.generics dbid with
-    | None -> None
-    | Some generics -> begin
-        match find_in generics varid with
-        | None -> None
-        | Some r -> Some r
-      end
+    Some { dbid; varid }
 
-let region_db_var_to_string (env : fmt_env) (var : region_db_var) : string =
+let de_bruijn_var_binding_level_suffix (env : fmt_env) (var : 'id de_bruijn_var)
+    : string =
+  match de_bruijn_var_location env var with
+  | None -> ""
+  | Some { dbid; _ } ->
+      binding_level_suffix (List.length env.generics - 1 - dbid)
+
+let generic_params_at_dbid (env : fmt_env) (dbid : int) : generic_params option
+    =
+  match List.nth_opt env.generics dbid with
+  | Some generics -> Some generics
+  | None ->
+      let index = List.length env.generics - dbid in
+      if dbid > 0 && index >= 0 then List.nth_opt env.generics index else None
+
+let find_short_name (env : fmt_env) (id : item_id) : name option =
+  match List.assoc_opt id env.crate.short_names with
+  | Some name -> Some name
+  | None -> List.assoc_opt id env.crate.item_names
+
+let has_short_name (env : fmt_env) (id : item_id) : name option =
+  List.assoc_opt id env.crate.short_names
+
+let item_id_to_pretty_string (id : item_id) : string =
+  match id with
+  | IdType id -> type_decl_id_to_pretty_string id
+  | IdFun id -> fun_decl_id_to_pretty_string id
+  | IdGlobal id -> global_decl_id_to_pretty_string id
+  | IdTraitDecl id -> trait_decl_id_to_pretty_string id
+  | IdTraitImpl id -> trait_impl_id_to_pretty_string id
+
+let lookup_var_in_env (env : fmt_env)
+    (find_in : generic_params -> 'id -> 'b option) (var : 'id de_bruijn_var) :
+    'b option =
+  match de_bruijn_var_location env var with
+  | None -> None
+  | Some { dbid; varid } -> (
+      match generic_params_at_dbid env dbid with
+      | None -> None
+      | Some generics -> (
+          match find_in generics varid with
+          | None -> None
+          | Some r -> Some r))
+
+let region_param_to_string_at_depth (binder_depth : int) (rv : region_param) :
+    string =
+  let mutability =
+    match rv.mutability with
+    | LtMutable -> "mut "
+    | LtShared | LtUnknown -> ""
+  in
+  match rv.name with
+  | Some name -> mutability ^ name
+  | None ->
+      let depth = binding_level_suffix (binder_depth - 1) in
+      mutability ^ "'_" ^ RegionId.to_string rv.index ^ depth
+
+let region_param_to_string (env : fmt_env) (rv : region_param) : string =
+  region_param_to_string_at_depth (List.length env.generics) rv
+
+let lookup_region_param (env : fmt_env) (var : region_db_var) :
+    region_param option =
   (* Note that the regions are not necessarily ordered following their indices *)
   let find (generics : generic_params) varid =
     List.find_opt (fun (v : region_param) -> v.index = varid) generics.regions
   in
-  match lookup_var_in_env env find var with
+  lookup_var_in_env env find var
+
+let anonymous_region_param_to_string (env : fmt_env) (var : region_db_var)
+    (r : region_param) : string =
+  "'_" ^ RegionId.to_string r.index ^ de_bruijn_var_binding_level_suffix env var
+
+let trait_clause_id_to_string_with_suffix (level_suffix : string)
+    (id : trait_clause_id) : string =
+  trait_clause_id_to_pretty_string id ^ level_suffix
+
+let trait_clause_id_to_string_for_env (env : fmt_env) (id : trait_clause_id) :
+    string =
+  trait_clause_id_to_string_with_suffix (current_binding_level_suffix env) id
+
+let trait_clause_var_to_string (env : fmt_env) (var : trait_db_var) : string =
+  trait_clause_id_to_string_with_suffix
+    (de_bruijn_var_binding_level_suffix env var)
+    (match var with
+    | Bound (_, varid) | Free varid -> varid)
+
+let region_db_var_to_string (env : fmt_env) (var : region_db_var) : string =
+  match lookup_region_param env var with
   | None -> region_db_var_to_pretty_string var
-  | Some r -> region_param_to_string r
+  | Some r -> begin
+      match r.name with
+      | Some name -> name
+      | None -> anonymous_region_param_to_string env var r
+    end
 
 let type_db_var_to_string (env : fmt_env) (var : type_db_var) : string =
   let find (generics : generic_params) varid =
@@ -185,23 +299,18 @@ let const_generic_db_var_to_string (env : fmt_env) (var : const_generic_db_var)
   in
   match lookup_var_in_env env find var with
   | None -> const_generic_db_var_to_pretty_string var
-  | Some r -> const_generic_param_to_string r
+  | Some r -> r.name
 
 let trait_db_var_to_string (env : fmt_env) (var : trait_db_var) : string =
-  let find (generics : generic_params) varid =
-    List.find_opt
-      (fun (v : trait_param) -> v.clause_id = varid)
-      generics.trait_clauses
-  in
-  match lookup_var_in_env env find var with
+  match de_bruijn_var_location env var with
   | None -> trait_db_var_to_pretty_string var
-  | Some r -> trait_clause_id_to_pretty_string r.clause_id
+  | Some _ -> trait_clause_var_to_string env var
 
 let region_to_string (env : fmt_env) (r : region) : string =
   match r with
   | RStatic -> "'static"
   | RErased -> "'_"
-  | RBody id -> "°" ^ RegionId.to_string id
+  | RBody id -> "'" ^ RegionId.to_string id
   | RVar var -> region_db_var_to_string env var
 
 let region_binder_to_string (value_to_string : fmt_env -> 'c -> string)
@@ -211,8 +320,9 @@ let region_binder_to_string (value_to_string : fmt_env -> 'c -> string)
   match rb.binder_regions with
   | [] -> value
   | _ ->
-      "for <"
-      ^ String.concat "," (List.map region_param_to_string rb.binder_regions)
+      "for<"
+      ^ String.concat ", "
+          (List.map (region_param_to_string env) rb.binder_regions)
       ^ "> " ^ value
 
 let rec type_id_to_string (env : fmt_env) (id : type_id) : string =
@@ -222,38 +332,38 @@ let rec type_id_to_string (env : fmt_env) (id : type_id) : string =
   | TBuiltin aty -> (
       match aty with
       | TBox -> "alloc::boxed::Box"
-      | TStr -> "str")
+      | TStr -> "Str")
 
 and type_decl_id_to_string env def_id =
-  (* We don't want the printing functions to crash if the crate is partial *)
-  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
+  match find_short_name env (IdType def_id) with
+  | Some name -> name_to_string env name
   | None -> type_decl_id_to_pretty_string def_id
-  | Some def -> name_to_string env def.item_meta.name
 
 and type_decl_ref_to_string (env : fmt_env) (tref : type_decl_ref) : string =
   match tref.id with
   | TTuple ->
-      let params, trait_refs = generic_args_to_strings env tref.generics in
-      "(" ^ String.concat ", " params ^ ")"
+      let params, _trait_refs = generic_args_to_strings env tref.generics in
+      let trailing_comma = if List.length params = 1 then "," else "" in
+      "(" ^ String.concat ", " params ^ trailing_comma ^ ")"
   | id ->
       let id = type_id_to_string env id in
       let generics = generic_args_to_string env tref.generics in
       id ^ generics
 
 and fun_decl_id_to_string (env : fmt_env) (id : FunDeclId.id) : string =
-  match FunDeclId.Map.find_opt id env.crate.fun_decls with
+  match find_short_name env (IdFun id) with
+  | Some name -> name_to_string env name
   | None -> fun_decl_id_to_pretty_string id
-  | Some def -> name_to_string env def.item_meta.name
 
 and fun_decl_ref_to_string (env : fmt_env) (fn : fun_decl_ref) : string =
   let fun_id = fun_decl_id_to_string env fn.id in
-  let generics = generic_args_to_string env fn.generics in
+  let generics = generic_args_to_string_for_fn env fn.generics in
   fun_id ^ generics
 
 and global_decl_id_to_string env def_id =
-  match GlobalDeclId.Map.find_opt def_id env.crate.global_decls with
+  match find_short_name env (IdGlobal def_id) with
+  | Some name -> name_to_string env name
   | None -> global_decl_id_to_pretty_string def_id
-  | Some def -> name_to_string env def.item_meta.name
 
 and global_decl_ref_to_string (env : fmt_env) (gr : global_decl_ref) : string =
   let global_id = global_decl_id_to_string env gr.id in
@@ -261,14 +371,14 @@ and global_decl_ref_to_string (env : fmt_env) (gr : global_decl_ref) : string =
   global_id ^ generics
 
 and trait_decl_id_to_string env id =
-  match TraitDeclId.Map.find_opt id env.crate.trait_decls with
+  match find_short_name env (IdTraitDecl id) with
+  | Some name -> name_to_string env name
   | None -> trait_decl_id_to_pretty_string id
-  | Some def -> name_to_string env def.item_meta.name
 
 and trait_impl_id_to_string env id =
-  match TraitImplId.Map.find_opt id env.crate.trait_impls with
+  match find_short_name env (IdTraitImpl id) with
+  | Some name -> name_to_string env name
   | None -> trait_impl_id_to_pretty_string id
-  | Some def -> name_to_string env def.item_meta.name
 
 and trait_impl_ref_to_string (env : fmt_env) (iref : trait_impl_ref) : string =
   let impl = trait_impl_id_to_string env iref.id in
@@ -283,39 +393,48 @@ and provenance_to_string (env : fmt_env) (pv : provenance) : string =
 
 and byte_to_string (env : fmt_env) (cv : byte) : string =
   match cv with
-  | Uninit -> "uninit"
-  | Value b -> string_of_int b
+  | Uninit -> "--"
+  | Value b -> Printf.sprintf "%#4x" b
   | Provenance (p, i) ->
       provenance_to_string env p ^ "[" ^ string_of_int i ^ "]"
+
+and unsizing_metadata_to_string (env : fmt_env) (meta : unsizing_metadata) :
+    string =
+  match meta with
+  | MetaLength len -> constant_expr_to_string env len
+  | MetaVTable (_, vtable) -> constant_expr_to_string env vtable
+  | MetaVTableUpcast fields ->
+      " at [" ^ String.concat ", " (List.map FieldId.to_string fields) ^ "]"
+  | MetaUnknown -> "?"
 
 and const_aggregate_to_string (env : fmt_env) (tref : type_decl_ref)
     opt_variant_id (fields : constant_expr list) : string =
   let fields = List.map (constant_expr_to_string env) fields in
 
   match tref.id with
-  | TTuple -> "(" ^ String.concat ", " fields ^ ")"
+  | TTuple ->
+      let trailing_comma = if List.length fields = 1 then "," else "" in
+      "(" ^ String.concat ", " fields ^ trailing_comma ^ ")"
   | TAdtId def_id ->
-      let adt_name = type_decl_id_to_string env def_id in
       let variant_name =
         match opt_variant_id with
-        | None -> adt_name
-        | Some variant_id ->
-            adt_name ^ "::" ^ adt_variant_to_string env def_id variant_id
+        | None -> type_decl_id_to_string env def_id
+        | Some variant_id -> adt_variant_to_string env def_id variant_id
       in
       let fields =
         match adt_field_names env def_id opt_variant_id with
-        | None -> "(" ^ String.concat ", " fields ^ ")"
+        | None ->
+            fields
+            |> List.mapi (fun i value ->
+                   FieldId.to_string (FieldId.of_int i) ^ ": " ^ value)
         | Some field_names ->
             let fields = List.combine field_names fields in
             let fields =
-              List.map
-                (fun (field, value) -> field ^ " = " ^ value ^ ";")
-                fields
+              List.map (fun (field, value) -> field ^ ": " ^ value) fields
             in
-            let fields = String.concat " " fields in
-            "{ " ^ fields ^ " }"
+            fields
       in
-      variant_name ^ " " ^ fields
+      variant_name ^ " { " ^ String.concat ", " fields ^ " }"
   | TBuiltin _ -> raise (Failure "Unreachable")
 
 and constant_expr_to_string (env : fmt_env) (cv : constant_expr) : string =
@@ -328,15 +447,16 @@ and constant_expr_to_string (env : fmt_env) (cv : constant_expr) : string =
           trait_ref.trait_decl_ref.binder_value.id const_id
       in
       let trait_ref = trait_ref_to_string env trait_ref in
-      trait_ref ^ name
+      trait_ref ^ "::" ^ name
   | CVTableRef trait_ref ->
       let trait_ref = trait_ref_to_string env trait_ref in
       "&vtable_of(" ^ trait_ref ^ ")"
-  | CFnDef fn_ptr | CFnPtr fn_ptr -> fn_ptr_to_string env fn_ptr
+  | CFnDef fn_ptr -> fn_ptr_to_string env fn_ptr
+  | CFnPtr fn_ptr -> "fnptr(" ^ fn_ptr_to_string env fn_ptr ^ ")"
   | CRawMemory bytes ->
-      "RawMemory(["
+      "RawMemory("
       ^ String.concat ", " (List.map (byte_to_string env) bytes)
-      ^ "])"
+      ^ ")"
   | COpaque reason -> "Opaque(" ^ reason ^ ")"
   | CAdt (variant_id, fields) -> begin
       match cv.ty with
@@ -348,35 +468,52 @@ and constant_expr_to_string (env : fmt_env) (cv : constant_expr) : string =
       ^ String.concat ", " (List.map (constant_expr_to_string env) fields)
       ^ "]"
   | CGlobal gref -> global_decl_ref_to_string env gref
-  | CPtrNoProvenance n -> "(" ^ Z.to_string n ^ " as *const _)"
-  | CRef (c, _) -> "&" ^ constant_expr_to_string env c
-  | CPtr (ref_kind, c, _) ->
+  | CPtrNoProvenance n -> "no-provenance " ^ Z.to_string n
+  | CRef (c, meta) ->
+      let c = constant_expr_to_string env c in
+      begin
+        match meta with
+        | None -> "&" ^ c
+        | Some meta ->
+            "&" ^ c ^ " with_metadata("
+            ^ unsizing_metadata_to_string env meta
+            ^ ")"
+      end
+  | CPtr (ref_kind, c, meta) ->
       let ref_kind =
         match ref_kind with
         | RShared -> "&raw const"
         | RMut -> "&raw mut"
       in
-      ref_kind ^ constant_expr_to_string env c
+      let c = constant_expr_to_string env c in
+      begin
+        match meta with
+        | None -> ref_kind ^ " " ^ c
+        | Some meta ->
+            ref_kind ^ " " ^ c ^ " with_metadata("
+            ^ unsizing_metadata_to_string env meta
+            ^ ")"
+      end
 
 and builtin_fun_id_to_string (aid : builtin_fun_id) : string =
   match aid with
-  | BoxNew -> "alloc::boxed::Box::new"
-  | ArrayToSliceShared -> "@ArrayToSliceShared"
-  | ArrayToSliceMut -> "@ArrayToSliceMut"
-  | ArrayRepeat -> "@ArrayRepeat"
+  | BoxNew -> "BoxNew"
+  | ArrayToSliceShared -> "ArrayToSliceShared"
+  | ArrayToSliceMut -> "ArrayToSliceMut"
+  | ArrayRepeat -> "ArrayRepeat"
   | Index { is_array; mutability; is_range } ->
       let ty = if is_array then "Array" else "Slice" in
       let op = if is_range then "SubSlice" else "Index" in
       let mutability = ref_kind_to_string mutability in
-      "@" ^ ty ^ op ^ mutability
+      ty ^ op ^ mutability
   | PtrFromParts mut ->
-      let mut = if mut = RMut then "Mut" else "" in
-      "@PtrFromParts" ^ mut
+      let mut = ref_kind_to_string mut in
+      "PtrFromParts" ^ mut
 
 and fun_id_to_string (env : fmt_env) (fid : fun_id) : string =
   match fid with
   | FRegular fid -> fun_decl_id_to_string env fid
-  | FBuiltin aid -> builtin_fun_id_to_string aid
+  | FBuiltin aid -> "@" ^ builtin_fun_id_to_string aid
 
 and fn_ptr_kind_to_string (env : fmt_env) (r : fn_ptr_kind) : string =
   match r with
@@ -389,7 +526,7 @@ and fn_ptr_kind_to_string (env : fmt_env) (r : fn_ptr_kind) : string =
   | FunId fid -> fun_id_to_string env fid
 
 and fn_ptr_to_string (env : fmt_env) (ptr : fn_ptr) : string =
-  let generics = generic_args_to_string env ptr.generics in
+  let generics = generic_args_to_string_for_fn env ptr.generics in
   fn_ptr_kind_to_string env ptr.kind ^ generics
 
 and ty_to_string (env : fmt_env) (ty : ty) : string =
@@ -406,40 +543,135 @@ and ty_to_string (env : fmt_env) (ty : ty) : string =
       trait_ref_to_string env trait_ref ^ "::" ^ type_name
   | TRef (r, rty, ref_kind) -> (
       match ref_kind with
-      | RMut ->
-          "&" ^ region_to_string env r ^ " mut (" ^ ty_to_string env rty ^ ")"
-      | RShared ->
-          "&" ^ region_to_string env r ^ " (" ^ ty_to_string env rty ^ ")")
+      | RMut -> "&" ^ region_to_string env r ^ " mut " ^ ty_to_string env rty
+      | RShared -> "&" ^ region_to_string env r ^ " " ^ ty_to_string env rty)
   | TRawPtr (rty, ref_kind) -> (
       match ref_kind with
       | RMut -> "*mut " ^ ty_to_string env rty
       | RShared -> "*const " ^ ty_to_string env rty)
   | TFnPtr binder ->
       let env = fmt_env_push_regions env binder.binder_regions in
-      let { inputs; output; _ } = binder.binder_value in
-      let inputs =
-        "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ") -> "
+      let { inputs; output; is_unsafe } = binder.binder_value in
+      let unsafe = if is_unsafe then "unsafe " else "" in
+      let regions =
+        match binder.binder_regions with
+        | [] -> ""
+        | regions ->
+            "<"
+            ^ String.concat ", " (List.map (region_param_to_string env) regions)
+            ^ ">"
       in
-      inputs ^ ty_to_string env output
+      let inputs =
+        "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ")"
+      in
+      let output =
+        if ty_is_unit output then "" else " -> " ^ ty_to_string env output
+      in
+      unsafe ^ "fn" ^ regions ^ inputs ^ output
   | TFnDef f ->
       let env = fmt_env_push_regions env f.binder_regions in
-      let fn = fn_ptr_to_string env f.binder_value in
-      fn
-  | TDynTrait pred ->
-      let regions, clauses =
-        generic_params_to_strings env pred.binder.binder_params
-      in
-      let reg_str =
-        match regions with
+      let regions =
+        match f.binder_regions with
         | [] -> ""
-        | r :: _ -> " + " ^ r
+        | regions ->
+            "for<"
+            ^ String.concat ", " (List.map (region_param_to_string env) regions)
+            ^ "> "
       in
-      "dyn (" ^ String.concat " + " clauses ^ reg_str ^ ")"
+      let fn = fn_ptr_to_string env f.binder_value in
+      regions ^ fn
+  | TDynTrait pred -> "(dyn " ^ dyn_predicate_to_string env pred ^ ")"
   | TArray (ty, len) ->
       "[" ^ ty_to_string env ty ^ "; " ^ constant_expr_to_string env len ^ "]"
   | TSlice ty -> "[" ^ ty_to_string env ty ^ "]"
-  | TPtrMetadata ty -> "PtrMetadata(" ^ ty_to_string env ty ^ ")"
-  | TError msg -> "type_error (\"" ^ msg ^ "\")"
+  | TPtrMetadata ty -> "PtrMetadata<" ^ ty_to_string env ty ^ ">"
+  | TError msg -> "type_error(\"" ^ msg ^ "\")"
+
+and dyn_trait_type_constraint_to_string (env : fmt_env)
+    (ttc : trait_type_constraint) : (trait_clause_id * string) option =
+  let rec target_clause_and_path path (tref : trait_ref) =
+    match tref.kind with
+    | ParentClause (parent, clause_id) ->
+        target_clause_and_path
+          (("parent_clause" ^ TraitClauseId.to_string clause_id) :: path)
+          parent
+    | Clause (Bound (_, clause_id)) | Clause (Free clause_id) ->
+        Some (clause_id, List.rev path)
+    | _ -> None
+  in
+  match target_clause_and_path [] ttc.trait_ref with
+  | None -> None
+  | Some (clause_id, path) ->
+      let type_name =
+        GAstUtils.get_assoc_type_name env.crate
+          ttc.trait_ref.trait_decl_ref.binder_value.id ttc.type_id
+      in
+      let path =
+        match path with
+        | [] -> ""
+        | _ -> String.concat "::" path ^ "::"
+      in
+      let ty = ty_to_string env ttc.ty in
+      Some (clause_id, path ^ type_name ^ " = " ^ ty)
+
+and dyn_trait_clause_to_string (env : fmt_env)
+    (constraints : (trait_clause_id * string list) list) (clause : trait_param)
+    : string =
+  let clause_constraints =
+    match List.assoc_opt clause.clause_id constraints with
+    | None -> []
+    | Some constraints -> constraints
+  in
+  let fmt_trait env (tr : trait_decl_ref) =
+    let trait_id = trait_decl_id_to_string env tr.id in
+    let generics =
+      match tr.generics.types with
+      | _self_ty :: types -> { tr.generics with types }
+      | [] -> tr.generics
+    in
+    let params, _trait_refs = generic_args_to_strings env generics in
+    let params = params @ clause_constraints in
+    let params =
+      if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
+    in
+    trait_id ^ params
+  in
+  region_binder_to_string fmt_trait env clause.trait
+
+and dyn_types_outlive_to_string (env : fmt_env)
+    (rb : (ty, region) outlives_pred region_binder) : string option =
+  match rb.binder_value with
+  | _, RErased -> None
+  | _, region ->
+      Some
+        (region_binder_to_string
+           (fun env (_, region) -> region_to_string env region)
+           env rb)
+
+and dyn_predicate_to_string (env : fmt_env) (pred : dyn_predicate) : string =
+  let params = pred.binder.binder_params in
+  let env = fmt_env_push_generics_and_preds env params in
+  let constraints =
+    List.fold_left
+      (fun constraints rb ->
+        let env = fmt_env_push_regions env rb.binder_regions in
+        match dyn_trait_type_constraint_to_string env rb.binder_value with
+        | None -> constraints
+        | Some (clause_id, constraint_) -> (
+            match List.assoc_opt clause_id constraints with
+            | None -> (clause_id, [ constraint_ ]) :: constraints
+            | Some old ->
+                (clause_id, old @ [ constraint_ ])
+                :: List.remove_assoc clause_id constraints))
+      [] params.trait_type_constraints
+  in
+  let trait_clauses =
+    List.map (dyn_trait_clause_to_string env constraints) params.trait_clauses
+  in
+  let types_outlive =
+    List.filter_map (dyn_types_outlive_to_string env) params.types_outlive
+  in
+  String.concat " + " (trait_clauses @ types_outlive)
 
 (** Return two lists:
     - one for the regions, types, const generics
@@ -464,34 +696,52 @@ and generic_args_to_string (env : fmt_env) (generics : generic_args) : string =
   in
   params ^ trait_refs
 
+and generic_args_to_string_for_fn (env : fmt_env) (generics : generic_args) :
+    string =
+  generic_args_to_string env generics
+
 and trait_ref_kind_to_string (env : fmt_env)
     (implements : trait_decl_ref region_binder option) (kind : trait_ref_kind) :
     string =
   match kind with
   | Self -> "Self"
   | TraitImpl impl_ref -> trait_impl_ref_to_string env impl_ref
-  | BuiltinOrAuto _ ->
-      region_binder_to_string trait_decl_ref_to_string env
-        (Option.get implements)
+  | BuiltinOrAuto (_, _, types) ->
+      let implements = Option.get implements in
+      let impl =
+        region_binder_to_string trait_decl_ref_as_impl_to_string env implements
+      in
+      let types =
+        AssocTypeId.Map.to_list types
+        |> List.map (fun (type_id, (assoc_ty : trait_assoc_ty_impl)) ->
+               let name =
+                 GAstUtils.get_assoc_type_name env.crate
+                   implements.binder_value.id type_id
+               in
+               name ^ "  = " ^ ty_to_string env assoc_ty.value)
+      in
+      let types =
+        if types = [] then "" else " where " ^ String.concat ", " types
+      in
+      "{built_in impl " ^ impl ^ types ^ "}"
   | Clause id -> trait_db_var_to_string env id
   | ParentClause (tref, clause_id) ->
       let inst_id = trait_ref_to_string env tref in
-      let clause_id = trait_clause_id_to_string env clause_id in
-      "parent(" ^ inst_id ^ ")::" ^ clause_id
+      inst_id ^ "::parent_clause" ^ TraitClauseId.to_string clause_id
   | ItemClause (tref, type_id, clause_id) ->
       let inst_id = trait_ref_to_string env tref in
       let type_name =
         GAstUtils.get_assoc_type_name env.crate
           tref.trait_decl_ref.binder_value.id type_id
       in
-      let clause_id = trait_clause_id_to_string env clause_id in
-      "item(" ^ inst_id ^ ")::" ^ type_name ^ "::" ^ clause_id
+      let clause_id = trait_clause_id_to_pretty_string clause_id in
+      "(" ^ inst_id ^ "::" ^ type_name ^ "::[" ^ clause_id ^ "])"
   | Dyn ->
       let trait =
         region_binder_to_string trait_decl_ref_to_string env
           (Option.get implements)
       in
-      "dyn(" ^ trait ^ ")"
+      trait
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 and trait_ref_to_string (env : fmt_env) (tr : trait_ref) : string =
@@ -502,6 +752,15 @@ and trait_decl_ref_to_string (env : fmt_env) (tr : trait_decl_ref) : string =
   let generics = generic_args_to_string env tr.generics in
   trait_id ^ generics
 
+and trait_decl_ref_as_impl_to_string (env : fmt_env) (tr : trait_decl_ref) :
+    string =
+  match tr.generics.types with
+  | self_ty :: types ->
+      let generics = { tr.generics with types } in
+      let pred = trait_decl_ref_to_string env { tr with generics } in
+      pred ^ " for " ^ ty_to_string env self_ty
+  | [] -> trait_decl_ref_to_string env tr
+
 and impl_elem_to_string (env : fmt_env) (elem : impl_elem) : string =
   match elem with
   | ImplElemTy bound_ty ->
@@ -510,24 +769,11 @@ and impl_elem_to_string (env : fmt_env) (elem : impl_elem) : string =
       ty_to_string env bound_ty.binder_value
   | ImplElemTrait impl_id -> begin
       match TraitImplId.Map.find_opt impl_id env.crate.trait_impls with
-      | None -> trait_impl_id_to_string env impl_id
-      | Some impl -> (
+      | None -> "impl#" ^ TraitImplId.to_string impl_id
+      | Some impl ->
           (* Locally replace the generics and the predicates *)
           let env = fmt_env_push_generics_and_preds env impl.generics in
-          (* Put the first type argument aside (it gives the type for which we
-             implement the trait) *)
-          let { id; generics } : trait_decl_ref = impl.impl_trait in
-          match generics.types with
-          | ty :: types -> begin
-              let ty, types = Collections.List.pop generics.types in
-              let generics = { generics with types } in
-              let tr : trait_decl_ref = { id; generics } in
-              let ty = ty_to_string env ty in
-              let tr = trait_decl_ref_to_string env tr in
-              tr ^ " for " ^ ty
-            end
-          (* When monomorphizing, traits no longer take a `Self` argument, it's stored in the name *)
-          | [] -> trait_decl_ref_to_string env impl.impl_trait)
+          "impl " ^ trait_decl_ref_as_impl_to_string env impl.impl_trait
     end
 
 and path_elem_to_string (env : fmt_env) (e : path_elem) : string =
@@ -539,12 +785,33 @@ and path_elem_to_string (env : fmt_env) (e : path_elem) : string =
       s ^ d
   | PeImpl impl -> "{" ^ impl_elem_to_string env impl ^ "}"
   | PeInstantiated binder ->
-      let env = fmt_env_push_generics_and_preds env binder.binder_params in
+      let anon_params =
+        {
+          binder.binder_params with
+          regions =
+            List.map
+              (fun (r : region_param) -> { r with name = Some "_" })
+              binder.binder_params.regions;
+          types =
+            List.map
+              (fun (t : type_param) -> { t with name = "_" })
+              binder.binder_params.types;
+          const_generics =
+            List.map
+              (fun (c : const_generic_param) -> { c with name = "_" })
+              binder.binder_params.const_generics;
+          regions_outlive = [];
+          types_outlive = [];
+          trait_type_constraints = [];
+        }
+      in
+      let env = fmt_env_push_generics_and_preds env anon_params in
       let explicits, _ = generic_args_to_strings env binder.binder_value in
       "<" ^ String.concat ", " explicits ^ ">"
   | PeTarget target -> target
 
 and name_to_string (env : fmt_env) (n : name) : string =
+  let env = { env with generics = [] } in
   let name = List.map (path_elem_to_string env) n in
   String.concat "::" name
 
@@ -557,7 +824,7 @@ and raw_attribute_to_string (attr : raw_attribute) : string =
   attr.path ^ args
 
 and trait_param_to_string (env : fmt_env) (clause : trait_param) : string =
-  let clause_id = trait_clause_id_to_string env clause.clause_id in
+  let clause_id = trait_clause_id_to_string_for_env env clause.clause_id in
   let trait =
     region_binder_to_string trait_decl_ref_to_string env clause.trait
   in
@@ -568,9 +835,11 @@ and generic_params_to_strings (env : fmt_env) (generics : generic_params) :
   let ({ regions; types; const_generics; trait_clauses; _ } : generic_params) =
     generics
   in
-  let regions = List.map region_param_to_string regions in
+  let regions = List.map (region_param_to_string env) regions in
   let types = List.map type_param_to_string types in
-  let cgs = List.map const_generic_param_to_string const_generics in
+  let cgs =
+    List.map (const_generic_param_to_string (ty_to_string env)) const_generics
+  in
   let params = List.flatten [ regions; types; cgs ] in
   let trait_clauses = List.map (trait_param_to_string env) trait_clauses in
   (params, trait_clauses)
@@ -586,7 +855,7 @@ and adt_variant_to_string (env : fmt_env) (def_id : TypeDeclId.id)
       match def.kind with
       | Enum variants ->
           let variant = VariantId.nth variants variant_id in
-          name_to_string env def.item_meta.name ^ "::" ^ variant.variant_name
+          type_decl_id_to_string env def_id ^ "::" ^ variant.variant_name
       | _ -> raise (Failure "Unreachable")
     end
 
@@ -609,13 +878,15 @@ and adt_field_names (env : fmt_env) (def_id : TypeDeclId.id)
 
 let field_to_string env (f : field) : string =
   match f.field_name with
-  | Some field_name -> field_name ^ " : " ^ ty_to_string env f.field_ty
+  | Some field_name -> field_name ^ ": " ^ ty_to_string env f.field_ty
   | None -> ty_to_string env f.field_ty
 
 let variant_to_string env (v : variant) : string =
-  v.variant_name ^ "("
-  ^ String.concat ", " (List.map (field_to_string env) v.fields)
-  ^ ")"
+  if v.fields = [] then v.variant_name
+  else
+    v.variant_name ^ "("
+    ^ String.concat ", " (List.map (field_to_string env) v.fields)
+    ^ ")"
 
 let trait_type_constraint_to_string (env : fmt_env)
     (ttc : trait_type_constraint) : string =
@@ -641,18 +912,17 @@ let clauses_to_string (indent : string) (indent_incr : string)
 let predicates_and_trait_clauses_to_string (env : fmt_env) (indent : string)
     (indent_incr : string) (generics : generic_params) : string list * string =
   let params, trait_clauses = generic_params_to_strings env generics in
-  let region_to_string = region_to_string env in
   let regions_outlive =
-    let outlive_to_string _ (x, y) =
-      region_to_string x ^ " : " ^ region_to_string y
+    let outlive_to_string env (x, y) =
+      region_to_string env x ^ " : " ^ region_to_string env y
     in
     List.map
       (region_binder_to_string outlive_to_string env)
       generics.regions_outlive
   in
   let types_outlive =
-    let outlive_to_string _ (x, y) =
-      ty_to_string env x ^ " : " ^ region_to_string y
+    let outlive_to_string env (x, y) =
+      ty_to_string env x ^ " : " ^ region_to_string env y
     in
     List.map
       (region_binder_to_string outlive_to_string env)
@@ -668,48 +938,114 @@ let predicates_and_trait_clauses_to_string (env : fmt_env) (indent : string)
     clauses_to_string indent indent_incr
       (List.concat
          [
-           trait_clauses; regions_outlive; types_outlive; trait_type_constraints;
+           trait_clauses; types_outlive; regions_outlive; trait_type_constraints;
          ])
   in
   (params, clauses)
 
+let generic_params_to_string_single_line (env : fmt_env)
+    (generics : generic_params) : string =
+  let params, trait_clauses = generic_params_to_strings env generics in
+  let regions_outlive =
+    List.map
+      (region_binder_to_string
+         (fun env (x, y) ->
+           region_to_string env x ^ " : " ^ region_to_string env y)
+         env)
+      generics.regions_outlive
+  in
+  let types_outlive =
+    List.map
+      (region_binder_to_string
+         (fun env (x, y) -> ty_to_string env x ^ " : " ^ region_to_string env y)
+         env)
+      generics.types_outlive
+  in
+  let trait_type_constraints =
+    List.map
+      (region_binder_to_string trait_type_constraint_to_string env)
+      generics.trait_type_constraints
+  in
+  let all =
+    List.concat
+      [
+        params;
+        trait_clauses;
+        types_outlive;
+        regions_outlive;
+        trait_type_constraints;
+      ]
+  in
+  if all = [] then "" else "<" ^ String.concat ", " all ^ ">"
+
+let item_intro_to_string (env : fmt_env) (indent : string) (keyword : string)
+    (id : item_id) (meta : item_meta) : string =
+  let full_name = name_to_string env meta.name in
+  let name, full_name_comment =
+    match has_short_name env id with
+    | Some short_name ->
+        (name_to_string env short_name, "// Full name: " ^ full_name ^ "\n")
+    | None -> (full_name, "")
+  in
+  let lang_item =
+    match meta.lang_item with
+    | None -> ""
+    | Some id -> indent ^ "#[lang_item(\"" ^ id ^ "\")]\n"
+  in
+  let public = if meta.attr_info.public then "pub " else "" in
+  full_name_comment ^ lang_item ^ indent ^ public ^ keyword ^ " " ^ name
+
 let type_decl_to_string (env : fmt_env) (def : type_decl) : string =
+  let keyword =
+    match def.kind with
+    | Struct _ -> "struct"
+    | Union _ -> "union"
+    | Enum _ -> "enum"
+    | Alias _ -> "type"
+    | Opaque | TDeclError _ -> "opaque type"
+  in
+  let intro =
+    item_intro_to_string env "" keyword (IdType def.def_id) def.item_meta
+  in
   (* Locally update the generics and the predicates *)
-  let env = fmt_env_push_generics_and_preds env def.generics in
+  let env = fmt_env_replace_generics_and_preds env def.generics in
   let params, clauses =
-    predicates_and_trait_clauses_to_string env "" "  " def.generics
+    predicates_and_trait_clauses_to_string env "" tab_incr def.generics
   in
 
-  let name = name_to_string env def.item_meta.name in
   let params =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
+  let nl_or_space = if clauses = "" then " " else "\n" in
   match def.kind with
   | Struct fields ->
-      if fields <> [] then
-        let fields =
-          String.concat ""
-            (List.map (fun f -> "\n  " ^ field_to_string env f ^ ",") fields)
-        in
-        "struct " ^ name ^ params ^ clauses ^ "\n{" ^ fields ^ "\n}"
-      else "struct " ^ name ^ params ^ clauses ^ "{}"
+      let fields =
+        if fields = [] then ""
+        else
+          "\n"
+          ^ String.concat ""
+              (List.map (fun f -> "  " ^ field_to_string env f ^ ",\n") fields)
+      in
+      intro ^ params ^ clauses ^ nl_or_space ^ "{" ^ fields ^ "}"
   | Enum variants ->
       let variants =
-        List.map (fun v -> "|  " ^ variant_to_string env v) variants
+        "\n"
+        ^ String.concat ""
+            (List.map
+               (fun v -> "  " ^ variant_to_string env v ^ ",\n")
+               variants)
       in
-      let variants = String.concat "\n" variants in
-      "enum " ^ name ^ params ^ clauses ^ "\n  =\n" ^ variants
+      intro ^ params ^ clauses ^ nl_or_space ^ "{" ^ variants ^ "}"
   | Union fields ->
-      if fields <> [] then
-        let fields =
-          String.concat ""
-            (List.map (fun f -> "\n  " ^ field_to_string env f ^ ",") fields)
-        in
-        "union " ^ name ^ params ^ clauses ^ "\n{" ^ fields ^ "\n}"
-      else "union " ^ name ^ params ^ clauses ^ "{}"
-  | Alias ty -> "type " ^ name ^ params ^ clauses ^ " = " ^ ty_to_string env ty
-  | Opaque -> "opaque type " ^ name ^ params ^ clauses
-  | TDeclError err -> "error(\"" ^ err ^ "\")"
+      let fields =
+        "\n"
+        ^ String.concat ""
+            (List.map (fun f -> "  " ^ field_to_string env f ^ ",\n") fields)
+      in
+      intro ^ params ^ clauses ^ nl_or_space ^ "{" ^ fields ^ "}"
+  | Alias ty -> intro ^ params ^ clauses ^ " = " ^ ty_to_string env ty
+  | Opaque -> intro ^ params ^ clauses
+  | TDeclError err -> intro ^ params ^ clauses ^ " = ERROR(" ^ err ^ ")"
 
 let adt_field_to_string (env : fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) (field_id : FieldId.id) :
@@ -723,12 +1059,12 @@ let adt_field_to_string (env : fmt_env) (def_id : TypeDeclId.id)
       field.field_name
 
 let local_id_to_pretty_string (id : local_id) : string =
-  "v@" ^ LocalId.to_string id
+  "_" ^ LocalId.to_string id
 
 let local_to_string (v : local) : string =
   match v.name with
-  | None -> local_id_to_pretty_string v.index
-  | Some name -> name ^ "^" ^ LocalId.to_string v.index
+  | None -> "_" ^ LocalId.to_string v.index
+  | Some name -> name ^ "_" ^ LocalId.to_string v.index
 
 let local_id_to_string (env : fmt_env) (id : LocalId.id) : string =
   match List.find_opt (fun (i, _) -> i = id) env.locals with
@@ -736,7 +1072,7 @@ let local_id_to_string (env : fmt_env) (id : LocalId.id) : string =
   | Some (_, name) -> (
       match name with
       | None -> local_id_to_pretty_string id
-      | Some name -> name ^ "^" ^ LocalId.to_string id)
+      | Some name -> name ^ "_" ^ LocalId.to_string id)
 
 let (var_id_to_pretty_string
      [@ocaml.alert deprecated "use [local_id_to_pretty_string] instead"]) =
@@ -752,15 +1088,17 @@ let (var_to_string [@ocaml.alert deprecated "use [local_to_string] instead"]) =
 let rec projection_elem_to_string (env : fmt_env) (sub : string)
     (pe : projection_elem) : string =
   match pe with
-  | Deref -> "*(" ^ sub ^ ")"
+  | Deref -> "(*" ^ sub ^ ")"
   | ProjIndex (off, from_end) ->
       let idx_pre = if from_end then "-" else "" in
-      "(" ^ sub ^ ")[" ^ idx_pre ^ operand_to_string env off ^ "]"
+      sub ^ "[" ^ idx_pre ^ operand_to_string env off ^ "]"
   | Subslice (from, to_, from_end) ->
-      let idx_pre = if from_end then "-" else "" in
-      "(" ^ sub ^ ")[" ^ idx_pre ^ operand_to_string env from ^ ".."
-      ^ operand_to_string env to_ ^ "]"
-  | Field (ProjTuple _, fid) -> "(" ^ sub ^ ")." ^ FieldId.to_string fid
+      let to_ =
+        if from_end then "-" ^ operand_to_string env to_
+        else operand_to_string env to_
+      in
+      sub ^ "[" ^ operand_to_string env from ^ ".." ^ to_ ^ "]"
+  | Field (ProjTuple _, fid) -> sub ^ "." ^ FieldId.to_string fid
   | Field (ProjAdt (adt_id, opt_variant_id), fid) -> (
       let field_name =
         match adt_field_to_string env adt_id opt_variant_id fid with
@@ -771,7 +1109,7 @@ let rec projection_elem_to_string (env : fmt_env) (sub : string)
       | None -> "(" ^ sub ^ ")." ^ field_name
       | Some variant_id ->
           let variant_name = adt_variant_to_string env adt_id variant_id in
-          "(" ^ sub ^ " as " ^ variant_name ^ ")." ^ field_name)
+          "(" ^ sub ^ " as variant " ^ variant_name ^ ")." ^ field_name)
   | PtrMetadata -> sub ^ ".metadata"
 
 and place_to_string (env : fmt_env) (p : place) : string =
@@ -787,27 +1125,55 @@ and place_to_string (env : fmt_env) (p : place) : string =
 and cast_kind_to_string (env : fmt_env) (cast : cast_kind) : string =
   match cast with
   | CastScalar (src, tgt) ->
-      "cast<" ^ literal_type_to_string src ^ "," ^ literal_type_to_string tgt
+      "cast<" ^ literal_type_to_string src ^ ", " ^ literal_type_to_string tgt
       ^ ">"
-  | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) | CastTransmute (src, tgt) ->
-      "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
-  | CastUnsize (src, tgt, _) ->
-      "unsize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
+  | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) ->
+      "cast<" ^ ty_to_string env src ^ ", " ^ ty_to_string env tgt ^ ">"
+  | CastTransmute (src, tgt) ->
+      "transmute<" ^ ty_to_string env src ^ ", " ^ ty_to_string env tgt ^ ">"
+  | CastUnsize (src, tgt, meta) ->
+      "unsize_cast<" ^ ty_to_string env src ^ ", " ^ ty_to_string env tgt ^ ", "
+      ^ unsizing_metadata_to_string env meta
+      ^ ">"
   | CastConcretize (src, tgt) ->
-      "concretize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
+      "concretize<" ^ ty_to_string env src ^ ", " ^ ty_to_string env tgt ^ ">"
 
 and nullop_to_string (env : fmt_env) (op : nullop) : string =
   match op with
   | SizeOf -> "size_of"
   | AlignOf -> "align_of"
-  | OffsetOf _ -> "offset_of(?)"
+  | OffsetOf (ty, opt_variant_id, field_id) ->
+      let type_name = type_decl_ref_to_string env ty in
+      let def_id =
+        match ty.id with
+        | TAdtId def_id -> Some def_id
+        | _ -> None
+      in
+      let variant_name =
+        match (def_id, opt_variant_id) with
+        | Some def_id, Some variant_id -> (
+            match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
+            | Some { kind = Enum variants; _ } ->
+                (VariantId.nth variants variant_id).variant_name ^ "."
+            | _ -> VariantId.to_string variant_id ^ ".")
+        | _ -> ""
+      in
+      let field_name =
+        match def_id with
+        | Some def_id -> (
+            match adt_field_to_string env def_id opt_variant_id field_id with
+            | Some name -> name
+            | None -> FieldId.to_string field_id)
+        | None -> FieldId.to_string field_id
+      in
+      "offset_of(" ^ type_name ^ "." ^ variant_name ^ field_name ^ ")"
   | UbChecks -> "ub_checks"
   | ContractChecks -> "contract_checks"
   | OverflowChecks -> "overflow_checks"
 
 and unop_to_string (env : fmt_env) (unop : unop) : string =
   match unop with
-  | Not -> "¬"
+  | Not -> "~"
   | Neg om -> overflow_mode_to_string om ^ ".-"
   | Cast cast_kind -> cast_kind_to_string env cast_kind
 
@@ -845,7 +1211,12 @@ and operand_to_string (env : fmt_env) (op : operand) : string =
   match op with
   | Copy p -> "copy " ^ place_to_string env p
   | Move p -> "move " ^ place_to_string env p
-  | Constant cv -> constant_expr_to_string env cv
+  | Constant cv -> "const " ^ constant_expr_to_string env cv
+
+and operand_ty (op : operand) : ty =
+  match op with
+  | Copy p | Move p -> p.ty
+  | Constant cv -> cv.ty
 
 and aggregate_to_string (env : fmt_env) (agg : aggregate_kind)
     (fields : operand list) : string =
@@ -853,18 +1224,23 @@ and aggregate_to_string (env : fmt_env) (agg : aggregate_kind)
   match agg with
   | AggregatedAdt (tref, opt_variant_id, opt_field_id) -> (
       match tref.id with
-      | TTuple -> "(" ^ String.concat ", " fields ^ ")"
+      | TTuple ->
+          let trailing_comma = if List.length fields = 1 then "," else "" in
+          "(" ^ String.concat ", " fields ^ trailing_comma ^ ")"
+      | TBuiltin TBox -> "Box(" ^ String.concat ", " fields ^ ")"
+      | TBuiltin TStr -> "[" ^ String.concat ", " fields ^ "]"
       | TAdtId def_id ->
-          let adt_name = type_decl_id_to_string env def_id in
           let variant_name =
             match opt_variant_id with
-            | None -> adt_name
-            | Some variant_id ->
-                adt_name ^ "::" ^ adt_variant_to_string env def_id variant_id
+            | None -> type_decl_id_to_string env def_id
+            | Some variant_id -> adt_variant_to_string env def_id variant_id
           in
           let fields =
             match adt_field_names env def_id opt_variant_id with
-            | None -> "(" ^ String.concat ", " fields ^ ")"
+            | None ->
+                fields
+                |> List.mapi (fun i value ->
+                       FieldId.to_string (FieldId.of_int i) ^ ": " ^ value)
             | Some field_names ->
                 let field_names =
                   match opt_field_id with
@@ -874,66 +1250,55 @@ and aggregate_to_string (env : fmt_env) (agg : aggregate_kind)
                       [ List.nth field_names (FieldId.to_int field_id) ]
                 in
                 let fields = List.combine field_names fields in
-                let fields =
-                  List.map
-                    (fun (field, value) -> field ^ " = " ^ value ^ ";")
-                    fields
-                in
-                let fields = String.concat " " fields in
-                "{ " ^ fields ^ " }"
+                List.map (fun (field, value) -> field ^ ": " ^ value) fields
           in
-          variant_name ^ " " ^ fields
-      | TBuiltin _ -> raise (Failure "Unreachable"))
+          variant_name ^ " { " ^ String.concat ", " fields ^ " }")
   | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " fields ^ "]"
   | AggregatedRawPtr (_, refk) ->
       let refk =
         match refk with
-        | RShared -> "&raw const"
-        | RMut -> "&raw mut"
+        | RShared -> "const"
+        | RMut -> "mut "
       in
-      refk ^ " (" ^ String.concat ", " fields ^ ")"
+      "*" ^ refk ^ " (" ^ String.concat ", " fields ^ ")"
 
 and rvalue_to_string (env : fmt_env) (rv : rvalue) : string =
   match rv with
   | Use op -> operand_to_string env op
   | RvRef (p, bk, op) -> begin
-      let op = operand_to_string env op in
       let p = place_to_string env p in
-      match bk with
-      | BShared -> "&(" ^ p ^ ", " ^ op ^ ")"
-      | BMut -> "&mut (" ^ p ^ ", " ^ op ^ ")"
-      | BTwoPhaseMut -> "&two-phase (" ^ p ^ ", " ^ op ^ ")"
-      | BUniqueImmutable -> "&uniq (" ^ p ^ ", " ^ op ^ ")"
-      | BShallow -> "&shallow (" ^ p ^ ", " ^ op ^ ")"
+      let borrow_kind =
+        match bk with
+        | BShared -> "&"
+        | BMut -> "&mut "
+        | BTwoPhaseMut -> "&two-phase-mut "
+        | BUniqueImmutable -> "&uniq "
+        | BShallow -> "&shallow "
+      in
+      if ty_is_unit (operand_ty op) then borrow_kind ^ p
+      else borrow_kind ^ p ^ " with_metadata(" ^ operand_to_string env op ^ ")"
     end
   | RawPtr (p, pk, op) -> begin
-      let op = operand_to_string env op in
       let p = place_to_string env p in
-      match pk with
-      | RShared -> "&raw const (" ^ p ^ ", " ^ op ^ ")"
-      | RMut -> "&raw mut (" ^ p ^ ", " ^ op ^ ")"
+      let ptr_kind =
+        match pk with
+        | RShared -> "&raw const "
+        | RMut -> "&raw mut "
+      in
+      if ty_is_unit (operand_ty op) then ptr_kind ^ p
+      else ptr_kind ^ p ^ " with_metadata(" ^ operand_to_string env op ^ ")"
     end
   | NullaryOp (op, ty) ->
       nullop_to_string env op ^ "<" ^ ty_to_string env ty ^ ">"
   | UnaryOp (unop, op) ->
-      unop_to_string env unop ^ " " ^ operand_to_string env op
+      unop_to_string env unop ^ "(" ^ operand_to_string env op ^ ")"
   | BinaryOp (binop, op1, op2) ->
       operand_to_string env op1 ^ " " ^ binop_to_string binop ^ " "
       ^ operand_to_string env op2
-  | Discriminant p -> "discriminant(" ^ place_to_string env p ^ ")"
-  | Len (place, ty, const_generics) ->
-      let const_generics =
-        match const_generics with
-        | None -> []
-        | Some cg -> [ cg ]
-      in
-      "len<"
-      ^ String.concat ", "
-          (ty_to_string env ty
-          :: List.map (constant_expr_to_string env) const_generics)
-      ^ ">(" ^ place_to_string env place ^ ")"
+  | Discriminant p -> "@discriminant(" ^ place_to_string env p ^ ")"
+  | Len (place, _, _) -> "len(" ^ place_to_string env place ^ ")"
   | Repeat (v, _, len) ->
-      "[" ^ operand_to_string env v ^ ";"
+      "[" ^ operand_to_string env v ^ "; "
       ^ constant_expr_to_string env len
       ^ "]"
   | Aggregate (akind, ops) -> aggregate_to_string env akind ops
@@ -956,11 +1321,24 @@ let call_to_string (env : fmt_env) (indent : string) (call : call) : string =
   let args = List.map (operand_to_string env) call.args in
   let args = "(" ^ String.concat ", " args ^ ")" in
   let dest = place_to_string env call.dest in
-  indent ^ dest ^ " := move " ^ func ^ args
+  indent ^ dest ^ " = " ^ func ^ args
 
 let assertion_to_string (env : fmt_env) (a : assertion) : string =
   let cond = operand_to_string env a.cond in
-  if a.expected then "assert(" ^ cond ^ ")" else "assert(¬" ^ cond ^ ")"
+  let check_kind =
+    match a.check_kind with
+    | None -> ""
+    | Some (BoundsCheck _) -> " (bounds_check)"
+    | Some (Overflow _) -> " (overflow)"
+    | Some (OverflowNeg _) -> " (overflow_neg)"
+    | Some (DivisionByZero _) -> " (division_by_zero)"
+    | Some (RemainderByZero _) -> " (remainder_by_zero)"
+    | Some (MisalignedPointerDereference _) ->
+        " (misaligned_pointer_dereference)"
+    | Some NullPointerDereference -> " (null_pointer_dereference)"
+    | Some (InvalidEnumConstruction _) -> " (invalid_enum_construction)"
+  in
+  "assert(" ^ cond ^ " == " ^ Bool.to_string a.expected ^ ")" ^ check_kind
 
 let abort_kind_to_string (env : fmt_env) (a : abort_kind) : string =
   match a with
@@ -1030,22 +1408,27 @@ let locals_to_string (env : fmt_env) (indent : string) (locals : locals) :
     string =
   locals.locals
   |> List.map (fun var ->
-         indent ^ local_to_string var ^ " : "
+         let kind =
+           if var.index = LocalId.zero then "return"
+           else if LocalId.to_int var.index <= locals.arg_count then
+             "arg #" ^ LocalId.to_string var.index
+           else
+             match var.name with
+             | Some _ -> "local"
+             | None -> "anonymous local"
+         in
+         indent ^ "let " ^ local_to_string var ^ ": "
          ^ ty_to_string env var.local_ty
-         ^ ";")
+         ^ "; // " ^ kind)
   |> String.concat "\n"
 
 let trait_decl_to_string (env : fmt_env) (indent : string)
     (indent_incr : string) (def : trait_decl) : string =
-  (* Locally update the environment *)
+  let intro =
+    item_intro_to_string env indent "trait" (IdTraitDecl def.def_id)
+      def.item_meta
+  in
   let env = fmt_env_replace_generics_and_preds env def.generics in
-
-  let ty_to_string = ty_to_string env in
-
-  (* Name *)
-  let name = name_to_string env def.item_meta.name in
-
-  (* Generics and predicates *)
   let params, clauses =
     predicates_and_trait_clauses_to_string env indent indent_incr def.generics
   in
@@ -1059,7 +1442,7 @@ let trait_decl_to_string (env : fmt_env) (indent : string)
     let parent_clauses =
       List.map
         (fun clause ->
-          indent1 ^ "parent_clause_"
+          indent1 ^ "parent_clause"
           ^ TraitClauseId.to_string clause.clause_id
           ^ " : "
           ^ trait_param_to_string env clause
@@ -1069,7 +1452,7 @@ let trait_decl_to_string (env : fmt_env) (indent : string)
     let consts =
       List.map
         (fun c ->
-          let ty = ty_to_string c.ty in
+          let ty = ty_to_string env c.ty in
           indent1 ^ "const " ^ c.name ^ " : " ^ ty ^ "\n")
         (AssocConstId.Map.values def.consts)
     in
@@ -1079,39 +1462,56 @@ let trait_decl_to_string (env : fmt_env) (indent : string)
           let env =
             fmt_env_push_generics_and_preds env bound_ty.binder_params
           in
-          (* TODO: print clauses too *)
-          let params, _clauses =
-            predicates_and_trait_clauses_to_string env "" "  " def.generics
-          in
           let params =
-            if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
+            generic_params_to_string_single_line env bound_ty.binder_params
           in
-          indent1 ^ "type " ^ bound_ty.binder_value.name ^ params ^ "\n")
+          let implied_clauses =
+            if bound_ty.binder_value.implied_clauses = [] then ""
+            else
+              "\n" ^ indent1 ^ "where\n"
+              ^ String.concat ""
+                  (List.map
+                     (fun c ->
+                       indent1 ^ indent_incr ^ "implied_clause_"
+                       ^ TraitClauseId.to_string c.clause_id
+                       ^ " : "
+                       ^ trait_param_to_string env c
+                       ^ "\n")
+                     bound_ty.binder_value.implied_clauses)
+          in
+          indent1 ^ "type " ^ bound_ty.binder_value.name ^ params
+          ^ implied_clauses ^ "\n")
         (AssocTypeId.Map.values def.types)
     in
     let methods =
       List.map
         (fun (m : trait_method binder) ->
-          indent1 ^ "fn " ^ m.binder_value.name ^ " : "
-          ^ fun_decl_id_to_string env m.binder_value.item.id
+          let env = fmt_env_push_generics_and_preds env m.binder_params in
+          let params =
+            generic_params_to_string_single_line env m.binder_params
+          in
+          indent1 ^ "fn " ^ m.binder_value.name ^ params ^ " = "
+          ^ fun_decl_ref_to_string env m.binder_value.item
           ^ "\n")
         (TraitMethodId.Map.values def.methods)
     in
+    let vtable =
+      match def.vtable with
+      | Some vtb_ref ->
+          [ indent1 ^ "vtable: " ^ type_decl_ref_to_string env vtb_ref ^ "\n" ]
+      | None -> [ indent1 ^ "non-dyn-compatible\n" ]
+    in
     let items = List.concat [ parent_clauses; consts; types; methods ] in
-    if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
+    if items = [] then "" else "\n{\n" ^ String.concat "" (items @ vtable) ^ "}"
   in
 
-  "trait " ^ name ^ params ^ clauses ^ items
+  intro ^ params ^ clauses ^ items
 
 let trait_impl_to_string (env : fmt_env) (indent : string)
     (indent_incr : string) (def : trait_impl) : string =
-  (* Locally update the environment *)
+  let full_name = name_to_string env def.item_meta.name in
+  let intro = indent ^ "// Full name: " ^ full_name ^ "\n" in
   let env = fmt_env_replace_generics_and_preds env def.generics in
-
-  (* Name *)
-  let name = name_to_string env def.item_meta.name in
-
-  (* Generics and predicates *)
   let params, clauses =
     predicates_and_trait_clauses_to_string env indent indent_incr def.generics
   in
@@ -1149,11 +1549,8 @@ let trait_impl_to_string (env : fmt_env) (indent : string)
           let env =
             fmt_env_push_generics_and_preds env bound_ty.binder_params
           in
-          let params, _clauses =
-            predicates_and_trait_clauses_to_string env "" "  " def.generics
-          in
           let params =
-            if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
+            generic_params_to_string_single_line env bound_ty.binder_params
           in
           indent1 ^ "type " ^ name ^ params ^ " = "
           ^ ty_to_string env bound_ty.binder_value.value
@@ -1165,37 +1562,60 @@ let trait_impl_to_string (env : fmt_env) (indent : string)
       List.map
         (fun (method_id, (f : fun_decl_ref binder)) ->
           let name = GAstUtils.get_method_name env.crate trait_id method_id in
-          indent1 ^ "fn " ^ name ^ " : "
-          ^ fun_decl_id_to_string env f.binder_value.id
+          let env = fmt_env_push_generics_and_preds env f.binder_params in
+          let params =
+            generic_params_to_string_single_line env f.binder_params
+          in
+          indent1 ^ "fn " ^ name ^ params ^ " = "
+          ^ fun_decl_ref_to_string env f.binder_value
           ^ "\n")
         (TraitMethodId.Map.to_list def.methods)
     in
     let items = List.concat [ parent_clauses; consts; types; methods ] in
-    if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
+    let vtable =
+      match def.vtable with
+      | Some vtb_ref ->
+          [
+            indent1 ^ "vtable: " ^ global_decl_ref_to_string env vtb_ref ^ "\n";
+          ]
+      | None -> [ indent1 ^ "non-dyn-compatible\n" ]
+    in
+    let all_items = items @ vtable in
+    if all_items = [] then " {}"
+    else
+      let open_brace = if clauses = "" then " {" else "\n{" in
+      open_brace ^ "\n" ^ String.concat "" all_items ^ "}"
   in
 
-  let impl_trait = trait_decl_ref_to_string env def.impl_trait in
-  "impl" ^ params ^ " " ^ name ^ params ^ " : " ^ impl_trait ^ clauses ^ items
+  let impl_trait = trait_decl_ref_as_impl_to_string env def.impl_trait in
+  intro ^ indent ^ "impl" ^ params ^ " " ^ impl_trait ^ clauses ^ items
 
 let global_decl_to_string (env : fmt_env) (indent : string)
     (_indent_incr : string) (def : global_decl) : string =
+  let keyword =
+    match def.global_kind with
+    | Static -> "static"
+    | NamedConst | AnonConst -> "const"
+  in
+  let intro =
+    item_intro_to_string env indent keyword (IdGlobal def.def_id) def.item_meta
+  in
   (* Locally update the generics and the predicates *)
   let env = fmt_env_replace_generics_and_preds env def.generics in
   let params, clauses =
-    predicates_and_trait_clauses_to_string env "" "  " def.generics
+    predicates_and_trait_clauses_to_string env indent tab_incr def.generics
   in
   let params =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
 
-  (* Global name *)
-  let name = name_to_string env def.item_meta.name in
-
   (* Type *)
   let ty = ty_to_string env def.ty in
 
   let body_id = fun_decl_id_to_string env def.init in
-  indent ^ "global " ^ name ^ params ^ clauses ^ " : " ^ ty ^ " = " ^ body_id
+  intro ^ params ^ ": " ^ ty ^ clauses
+  ^ (if clauses = "" then " " else "\n ")
+  ^ "= " ^ body_id ^ "()"
 
 module Llbc = struct
   (** Pretty-printing for LLBC AST (generic functions) *)
@@ -1204,38 +1624,47 @@ module Llbc = struct
 
   let rec statement_to_string (env : fmt_env) (indent : string)
       (indent_incr : string) (st : statement) : string =
-    statement_kind_to_string env indent indent_incr st.kind
+    let comments =
+      st.comments_before
+      |> List.map (fun line -> indent ^ "// " ^ line ^ "\n")
+      |> String.concat ""
+    in
+    comments ^ statement_kind_to_string env indent indent_incr st.kind
 
   and statement_kind_to_string (env : fmt_env) (indent : string)
       (indent_incr : string) (st : statement_kind) : string =
     match st with
     | Assign (p, rv) ->
-        indent ^ place_to_string env p ^ " := " ^ rvalue_to_string env rv
+        indent ^ place_to_string env p ^ " = " ^ rvalue_to_string env rv
     | SetDiscriminant (p, variant_id) ->
-        (* TODO: improve this to lookup the variant name by using the def id *)
-        indent ^ "set_discriminant(" ^ place_to_string env p ^ ", "
+        indent ^ "@discriminant(" ^ place_to_string env p ^ ") = "
         ^ VariantId.to_string variant_id
-        ^ ")"
     | CopyNonOverlapping { src; dst; count } ->
-        indent ^ "copy_non_overlapping(" ^ operand_to_string env src ^ ", "
+        indent ^ "copy_nonoverlapping(" ^ operand_to_string env src ^ ", "
         ^ operand_to_string env dst ^ ", "
         ^ operand_to_string env count
         ^ ")"
     | StorageLive var_id ->
-        indent ^ "storage_live " ^ local_id_to_string env var_id
+        indent ^ "storage_live(" ^ local_id_to_string env var_id ^ ")"
     | StorageDead var_id ->
-        indent ^ "storage_dead " ^ local_id_to_string env var_id
-    | PlaceMention place -> indent ^ "_ := " ^ place_to_string env place
-    | Drop (p, _, _) -> indent ^ "drop " ^ place_to_string env p
+        indent ^ "storage_dead(" ^ local_id_to_string env var_id ^ ")"
+    | PlaceMention place -> indent ^ "_ = " ^ place_to_string env place
+    | Drop (p, fn_ptr, kind) ->
+        let kind =
+          match kind with
+          | Precise -> "drop"
+          | Conditional -> "conditional_drop"
+        in
+        indent ^ kind ^ "["
+        ^ fn_ptr_to_string env fn_ptr
+        ^ "] " ^ place_to_string env p
     | Assert (asrt, abort_kind) ->
         indent
         ^ assertion_to_string env asrt
         ^ " else "
         ^ abort_kind_to_string env abort_kind
     | Call call -> call_to_string env indent call
-    | Abort (Panic _) -> indent ^ "panic"
-    | Abort UndefinedBehavior -> indent ^ "undefined_behavior"
-    | Abort UnwindTerminate -> indent ^ "unwind_terminate"
+    | Abort kind -> indent ^ abort_kind_to_string env kind
     | Return -> indent ^ "return"
     | Break i -> indent ^ "break " ^ string_of_int i
     | Continue i -> indent ^ "continue " ^ string_of_int i
@@ -1250,8 +1679,8 @@ module Llbc = struct
             in
             let true_st = inner_to_string true_st in
             let false_st = inner_to_string false_st in
-            indent ^ "if (" ^ op ^ ") {\n" ^ true_st ^ "\n" ^ indent ^ "}\n"
-            ^ indent ^ "else {\n" ^ false_st ^ "\n" ^ indent ^ "}"
+            indent ^ "if " ^ op ^ " {\n" ^ true_st ^ indent ^ "} else {\n"
+            ^ false_st ^ indent ^ "}"
         | SwitchInt (op, _ty, branches, otherwise) ->
             let op = operand_to_string env op in
             let indent1 = indent ^ indent_incr in
@@ -1261,21 +1690,26 @@ module Llbc = struct
               List.map
                 (fun (svl, be) ->
                   let svl =
-                    List.map (fun sv -> "| " ^ literal_to_string sv) svl
+                    svl |> List.map literal_to_string |> String.concat " | "
                   in
-                  let svl = String.concat " " svl in
-                  indent ^ svl ^ " => {\n" ^ inner_to_string2 be ^ "\n"
-                  ^ indent1 ^ "}")
+                  indent1 ^ svl ^ " => {\n" ^ inner_to_string2 be ^ indent1
+                  ^ "},")
                 branches
             in
             let branches = String.concat "\n" branches in
             let branches =
-              branches ^ "\n" ^ indent1 ^ "_ => {\n"
-              ^ inner_to_string2 otherwise ^ "\n" ^ indent1 ^ "}"
+              let sep = if branches = "" then "" else "\n" in
+              branches ^ sep ^ indent1 ^ "_ => {\n" ^ inner_to_string2 otherwise
+              ^ indent1 ^ "},"
             in
-            indent ^ "switch (" ^ op ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}"
-        | Match (p, branches, otherwise) ->
-            let p = place_to_string env p in
+            indent ^ "switch " ^ op ^ " {\n" ^ branches ^ "\n" ^ indent ^ "}"
+        | Match (place, branches, otherwise) ->
+            let p = place_to_string env place in
+            let discr_type =
+              match place.ty with
+              | TAdt { id = TAdtId type_id; _ } -> Some type_id
+              | _ -> None
+            in
             let indent1 = indent ^ indent_incr in
             let indent2 = indent1 ^ indent_incr in
             let inner_to_string2 = block_to_string env indent2 indent_incr in
@@ -1283,11 +1717,17 @@ module Llbc = struct
               List.map
                 (fun (svl, be) ->
                   let svl =
-                    List.map (fun sv -> "| " ^ VariantId.to_string sv) svl
+                    List.map
+                      (fun variant_id ->
+                        match discr_type with
+                        | Some type_id ->
+                            adt_variant_to_string env type_id variant_id
+                        | None -> variant_id_to_pretty_string variant_id)
+                      svl
                   in
-                  let svl = String.concat " " svl in
-                  indent ^ svl ^ " => {\n" ^ inner_to_string2 be ^ "\n"
-                  ^ indent1 ^ "}")
+                  let svl = String.concat " | " svl in
+                  indent1 ^ svl ^ " => {\n" ^ inner_to_string2 be ^ indent1
+                  ^ "},")
                 branches
             in
             let branches = String.concat "\n" branches in
@@ -1295,21 +1735,24 @@ module Llbc = struct
               match otherwise with
               | None -> ""
               | Some otherwise ->
-                  "\n" ^ indent1 ^ "_ => {\n" ^ inner_to_string2 otherwise
-                  ^ "\n" ^ indent1 ^ "}"
+                  let sep = if branches = "" then "" else "\n" in
+                  sep ^ indent1 ^ "_ => {\n" ^ inner_to_string2 otherwise
+                  ^ indent1 ^ "},"
             in
             let branches = branches ^ otherwise in
-            indent ^ "match (" ^ p ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}")
+            indent ^ "match " ^ p ^ " {\n" ^ branches ^ "\n" ^ indent ^ "}")
     | Loop loop_blk ->
         indent ^ "loop {\n"
         ^ block_to_string env (indent ^ indent_incr) indent_incr loop_blk
-        ^ "\n" ^ indent ^ "}"
+        ^ indent ^ "}"
     | Error s -> indent ^ "ERROR(' " ^ s ^ "')"
 
   and block_to_string (env : fmt_env) (indent : string) (indent_incr : string)
       (b : block) : string =
-    String.concat ";\n"
-      (List.map (statement_to_string env indent indent_incr) b.statements)
+    let statements =
+      List.map (statement_to_string env indent indent_incr) b.statements
+    in
+    if statements = [] then "" else String.concat "\n" statements ^ "\n"
 end
 
 module Ullbc = struct
@@ -1412,114 +1855,165 @@ end
 
 let fun_decl_to_string (env : fmt_env) (indent : string) (indent_incr : string)
     (def : fun_decl) : string =
-  (* Locally update the environment *)
+  let keyword = if def.signature.is_unsafe then "unsafe fn" else "fn" in
+  let intro =
+    item_intro_to_string env indent keyword (IdFun def.def_id) def.item_meta
+  in
   let env = fmt_env_replace_generics_and_preds env def.generics in
-
-  let sg = def.signature in
-
-  (* Function name *)
-  let name = name_to_string env def.item_meta.name in
-
-  (* We print the declaration differently if it is opaque (no body) or transparent
-   * (we have access to a body) *)
-  let sg = bound_fun_sig_of_decl def in
-  match def.body with
-  | OpaqueBody
-  | ErrorBody _
-  | MissingBody
-  | TraitMethodWithoutDefaultBody
-  | ExternBody _
-  | IntrinsicBody _
-  | TargetDispatchBody _ ->
-      let attrib =
-        match def.body with
-        | OpaqueBody -> "opaque"
-        | ErrorBody _ -> "error"
-        | TraitMethodWithoutDefaultBody -> "trait_method_without_default"
-        | MissingBody -> "missing"
-        | ExternBody name -> "extern(" ^ name ^ ")"
-        | IntrinsicBody (name, _) -> "intrinsic(" ^ name ^ ")"
-        | TargetDispatchBody targets ->
-            "target_dispatch("
-            ^ String.concat ", "
-                (targets
-                |> List.map (fun (target, fdecl) ->
-                       target ^ " => " ^ fun_decl_ref_to_string env fdecl))
-            ^ ")"
-        | _ -> failwith "Impossible"
-      in
-      fun_sig_with_name_to_string env indent indent_incr (Some attrib)
-        (Some name) None sg
-  | StructuredBody { locals; _ } | UnstructuredBody { locals; _ } ->
-      (* Locally update the environment *)
-      let env_locals = List.map (fun v -> (v.index, v.name)) locals.locals in
-      let env = { env with locals = env_locals } in
-
-      (* Arguments *)
-      let inputs = GAstUtils.locals_get_input_vars locals in
-
-      (* All the locals (with erased regions) *)
-      let locals = locals_to_string env (indent ^ indent_incr) locals in
-
-      (* Body *)
-      let body =
-        match def.body with
-        | StructuredBody { body; _ } ->
-            Llbc.block_to_string env (indent ^ indent_incr) indent_incr body
-        | UnstructuredBody { body; _ } ->
-            Ullbc.blocks_to_string env (indent ^ indent_incr) indent_incr body
-        | _ -> failwith "Impossible"
-      in
-
-      (* Put everything together *)
-      fun_sig_with_name_to_string env indent indent_incr None (Some name)
-        (Some inputs) sg
-      ^ indent ^ "\n{\n" ^ locals ^ "\n\n" ^ body ^ "\n" ^ indent ^ "}"
+  let params, clauses =
+    predicates_and_trait_clauses_to_string env indent indent_incr def.generics
+  in
+  let params =
+    if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
+  in
+  let n_args = List.length def.signature.inputs in
+  let args_of_locals (locals : locals) =
+    locals.locals |> List.tl
+    |> Collections.List.prefix n_args
+    |> List.map local_to_string
+  in
+  let arg_names =
+    match def.body with
+    | StructuredBody { locals; _ } | UnstructuredBody { locals; _ } ->
+        args_of_locals locals
+    | IntrinsicBody (_, arg_names) ->
+        arg_names
+        |> Collections.List.mapi (fun i name ->
+               let id = LocalId.of_int (i + 1) in
+               match name with
+               | Some name -> name ^ "_" ^ LocalId.to_string id
+               | None -> "_" ^ LocalId.to_string id)
+    | ErrorBody _
+    | ExternBody _
+    | MissingBody
+    | OpaqueBody
+    | TraitMethodWithoutDefaultBody
+    | TargetDispatchBody _ ->
+        List.init n_args (fun i -> "_" ^ string_of_int (i + 1))
+  in
+  let args =
+    List.combine def.signature.inputs arg_names
+    |> List.map (fun (ty, name) -> name ^ ": " ^ ty_to_string env ty)
+    |> String.concat ", "
+  in
+  let ret_ty =
+    if ty_is_unit def.signature.output then ""
+    else " -> " ^ ty_to_string env def.signature.output
+  in
+  let header = intro ^ params ^ "(" ^ args ^ ")" ^ ret_ty ^ clauses in
+  let body =
+    match def.body with
+    | StructuredBody { locals; body; _ } ->
+        let env_locals = List.map (fun v -> (v.index, v.name)) locals.locals in
+        let env = { env with locals = env_locals } in
+        let body_indent = indent ^ indent_incr in
+        "\n" ^ indent ^ "{\n"
+        ^ locals_to_string env body_indent locals
+        ^ "\n\n"
+        ^ Llbc.block_to_string env body_indent indent_incr body
+        ^ indent ^ "}"
+    | UnstructuredBody { locals; body; _ } ->
+        let env_locals = List.map (fun v -> (v.index, v.name)) locals.locals in
+        let env = { env with locals = env_locals } in
+        let body_indent = indent ^ indent_incr in
+        "\n" ^ indent ^ "{\n"
+        ^ locals_to_string env body_indent locals
+        ^ "\n\n"
+        ^ Ullbc.blocks_to_string env body_indent indent_incr body
+        ^ "\n" ^ indent ^ "}"
+    | TraitMethodWithoutDefaultBody ->
+        "\n" ^ indent ^ "= <method_without_default_body>"
+    | ExternBody name -> "\n" ^ indent ^ "= <extern:" ^ name ^ ">"
+    | IntrinsicBody (name, _) -> "\n" ^ indent ^ "= <intrinsic:" ^ name ^ ">"
+    | OpaqueBody -> "\n" ^ indent ^ "= <opaque>"
+    | MissingBody -> "\n" ^ indent ^ "= <missing>"
+    | ErrorBody error -> "\n" ^ indent ^ "= error(\"" ^ error.msg ^ "\")"
+    | TargetDispatchBody targets ->
+        let body_indent = indent ^ indent_incr in
+        "\n" ^ indent ^ "= target_dispatch {\n"
+        ^ String.concat ""
+            (List.map
+               (fun (target, fdecl) ->
+                 body_indent ^ target ^ " => "
+                 ^ fun_decl_ref_to_string env fdecl
+                 ^ ",\n")
+               targets)
+        ^ indent ^ "}"
+  in
+  header ^ body
 
 let crate_to_fmt_env (crate : crate) : fmt_env =
   { crate; generics = []; locals = [] }
 
 let crate_to_string (m : crate) : string =
   let env : fmt_env = crate_to_fmt_env m in
-
-  (* The types *)
-  let type_decls =
-    List.map
-      (fun (_, d) -> type_decl_to_string env d)
-      (TypeDeclId.Map.bindings m.type_decls)
+  let format_item (id : item_id) : string =
+    match id with
+    | IdType id -> (
+        match TypeDeclId.Map.find_opt id m.type_decls with
+        | Some d -> type_decl_to_string env d
+        | None -> "Missing decl: " ^ item_id_to_pretty_string (IdType id))
+    | IdGlobal id -> (
+        match GlobalDeclId.Map.find_opt id m.global_decls with
+        | Some d -> global_decl_to_string env "" tab_incr d
+        | None -> "Missing decl: " ^ item_id_to_pretty_string (IdGlobal id))
+    | IdTraitDecl id -> (
+        match TraitDeclId.Map.find_opt id m.trait_decls with
+        | Some d -> trait_decl_to_string env "" tab_incr d
+        | None -> "Missing decl: " ^ item_id_to_pretty_string (IdTraitDecl id))
+    | IdTraitImpl id -> (
+        match TraitImplId.Map.find_opt id m.trait_impls with
+        | Some d -> trait_impl_to_string env "" tab_incr d
+        | None -> "Missing decl: " ^ item_id_to_pretty_string (IdTraitImpl id))
+    | IdFun id -> (
+        match FunDeclId.Map.find_opt id m.fun_decls with
+        | Some d -> fun_decl_to_string env "" tab_incr d
+        | None -> "Missing decl: " ^ item_id_to_pretty_string (IdFun id))
   in
-
-  (* The globals *)
-  let global_decls =
-    List.map
-      (fun (_, d) -> global_decl_to_string env "" "  " d)
-      (GlobalDeclId.Map.bindings m.global_decls)
+  let ids_of_group = function
+    | NonRecGroup id -> [ id ]
+    | RecGroup ids -> ids
   in
-
-  (* The functions *)
-  let fun_decls =
-    List.map
-      (fun (_, d) -> fun_decl_to_string env "" "  " d)
-      (FunDeclId.Map.bindings m.fun_decls)
-  in
-
-  (* The trait declarations *)
-  let trait_decls =
-    List.map
-      (fun (_, d) -> trait_decl_to_string env "" "  " d)
-      (TraitDeclId.Map.bindings m.trait_decls)
-  in
-
-  (* The trait implementations *)
-  let trait_impls =
-    List.map
-      (fun (_, d) -> trait_impl_to_string env "" "  " d)
-      (TraitImplId.Map.bindings m.trait_impls)
-  in
-
-  (* Put everything together *)
   let all_defs =
-    List.concat
-      [ type_decls; global_decls; trait_decls; trait_impls; fun_decls ]
+    if m.declarations = [] then
+      let type_decls =
+        List.map
+          (fun (_, d) -> type_decl_to_string env d)
+          (TypeDeclId.Map.bindings m.type_decls)
+      in
+      let global_decls =
+        List.map
+          (fun (_, d) -> global_decl_to_string env "" tab_incr d)
+          (GlobalDeclId.Map.bindings m.global_decls)
+      in
+      let trait_decls =
+        List.map
+          (fun (_, d) -> trait_decl_to_string env "" tab_incr d)
+          (TraitDeclId.Map.bindings m.trait_decls)
+      in
+      let trait_impls =
+        List.map
+          (fun (_, d) -> trait_impl_to_string env "" tab_incr d)
+          (TraitImplId.Map.bindings m.trait_impls)
+      in
+      let fun_decls =
+        List.map
+          (fun (_, d) -> fun_decl_to_string env "" tab_incr d)
+          (FunDeclId.Map.bindings m.fun_decls)
+      in
+      List.concat
+        [ type_decls; global_decls; trait_decls; trait_impls; fun_decls ]
+    else
+      m.declarations
+      |> List.concat_map (function
+           | TypeGroup g -> List.map (fun id -> IdType id) (ids_of_group g)
+           | FunGroup g -> List.map (fun id -> IdFun id) (ids_of_group g)
+           | GlobalGroup g -> List.map (fun id -> IdGlobal id) (ids_of_group g)
+           | TraitDeclGroup g ->
+               List.map (fun id -> IdTraitDecl id) (ids_of_group g)
+           | TraitImplGroup g ->
+               List.map (fun id -> IdTraitImpl id) (ids_of_group g)
+           | MixedGroup g -> ids_of_group g)
+      |> List.map format_item
   in
-  String.concat "\n\n" all_defs
+  if all_defs = [] then "" else String.concat "\n\n" all_defs ^ "\n\n"
