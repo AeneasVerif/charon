@@ -1,9 +1,10 @@
 //! # Micro-pass: if we want to reconstruct fallible operations, the first step
 //! is to move all assert terminators that correspond do dynamic checks into
 //! statements, to make them easier to recognize and transform in the next pass.
-//! It's important this pass runs before [merge_goto_chains], to ensure the gotos
-//! we substitute the asserts with get merged, but before [reconstruct_fallible_operations],
-//! since it will expect the asserts to be in statements.
+//! It's important this pass runs before [`crate::transform::control_flow::merge_goto_chains`], to
+//! ensure the gotos we substitute the asserts with get merged, but before
+//! [`crate::transform::resugar::reconstruct_fallible_operations`], since it will expect the
+//! asserts to be in statements.
 
 use crate::ast::*;
 use crate::transform::TransformCtx;

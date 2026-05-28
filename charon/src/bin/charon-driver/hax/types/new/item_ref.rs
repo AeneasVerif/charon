@@ -8,7 +8,7 @@ use rustc_span::def_id::DefId as RDefId;
 /// uses this.
 ///
 /// This can refer to a top-level item or to a trait associated item. Example:
-/// ```ignore
+/// ```text
 /// trait MyTrait<TraitType, const TraitConst: usize> {
 ///   fn meth<MethType>(...) {...}
 /// }
@@ -17,7 +17,7 @@ use rustc_span::def_id::DefId as RDefId;
 /// }
 /// ```
 /// Here, in the call `x.meth::<String>(...)` we will build an `ItemRef` that looks like:
-/// ```ignore
+/// ```text
 /// ItemRef {
 ///     def_id = MyTrait::meth,
 ///     generic_args = [String],
@@ -27,7 +27,7 @@ use rustc_span::def_id::DefId as RDefId;
 /// ```
 /// The `in_trait` `ImplExpr` will have in its `trait` field a representation of the `SelfType:
 /// MyTrait<TraitType, 12>` predicate, which looks like:
-/// ```ignore
+/// ```text
 /// ItemRef {
 ///     def_id = MyTrait,
 ///     generic_args = [SelfType, TraitType, 12],
@@ -107,7 +107,7 @@ impl ItemRef {
     /// `translate` rewrites `def_id` to the concrete associated item from that `impl` and re-bases
     /// the generics.
     ///
-    /// For instance, [`<u32 as From<u8>>::from`] produces a [`ItemRef`] with a [`DefId`] looking
+    /// For instance, `<u32 as From<u8>>::from` produces a [`ItemRef`] with a [`DefId`] looking
     /// like `core::convert::num::Impl#42::from` when `resolve_impl` is `true`,
     /// `core::convert::From::from` otherwise.
     pub fn translate_from_hax_def_id<'tcx, S: UnderOwnerState<'tcx>>(

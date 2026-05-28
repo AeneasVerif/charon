@@ -47,7 +47,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// associated item that can be resolved to a specific `impl`, `translate` rewrites `def_id` to
     /// the concrete associated item from that `impl` and rebases the generics.
     ///
-    /// For instance, [`<u32 as From<u8>>::from`] produces a [`ItemRef`] with a [`DefId`] looking
+    /// For instance, `<u32 as From<u8>>::from` produces a [`ItemRef`] with a [`DefId`] looking
     /// like `core::convert::num::Impl#42::from` when `resolve_impl` is `true`, otherwise keeps the
     /// `DefId` of the trait item definition: `core::convert::From::from`.
     pub fn resolve_item_reference(
