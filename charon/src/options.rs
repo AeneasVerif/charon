@@ -425,11 +425,6 @@ impl CliOpts {
                     self.remove_adt_clauses = true;
                     self.monomorphize_mut = Some(MonomorphizeMut::ExceptTypes);
                     self.unbind_item_vars = true;
-                    // Hide drop impls because they often involve nested borrows. which aeneas
-                    // doesn't handle yet.
-                    self.exclude.push("core::ops::drop::Drop".to_owned());
-                    self.exclude
-                        .push("{impl core::ops::drop::Drop for _}".to_owned());
                 }
                 Preset::Eurydice => {
                     self.hide_allocator = true;
