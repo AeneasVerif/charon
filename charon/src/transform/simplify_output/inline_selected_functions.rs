@@ -5,34 +5,46 @@ use crate::transform::{TransformCtx, ctx::UllbcPass};
 use crate::ullbc_ast::*;
 
 pub struct Transform {
-    initializers: HashMap<FunDeclId, FunDecl>,
+    to_inline: HashMap<FunDeclId, FunDecl>,
 }
 
 impl Transform {
     pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
-        // Extract the anon const initializer bodies.
-        let anon_consts = ctx
+        let panic_name = Name::from_path(builtins::EXPLICIT_PANIC_NAME);
+        let panic_terminator = TerminatorKind::Abort(AbortKind::Panic(Some(panic_name)));
+
+        // Collect and remove the functions that we want to inline.
+        let to_inline = ctx
             .translated
-            .global_decls
-            .iter()
-            .filter(|gdecl| matches!(gdecl.global_kind, GlobalKind::AnonConst))
-            .filter_map(|gdecl| {
-                let fdecl = ctx.translated.fun_decls.remove(gdecl.init)?;
-                let _ = fdecl.body.as_unstructured()?;
-                Some((fdecl.def_id, fdecl))
+            .fun_decls
+            .extract(|_, decl| {
+                decl.body.as_unstructured().is_some_and(|body| {
+                    // If the whole body is only a call to this specific panic function.
+                    // FIXME: also check that the name of the function is `panic_cold_explicit`?
+                    let is_local_panic_fn = body.body.len() == 1 && {
+                        let block = &body.body[0];
+                        block.statements.is_empty() && block.terminator.kind == panic_terminator
+                    };
+                    // The `anon_consts_to_call` pass already transformed references to anon consts
+                    // into calls to their initializers so we only have to inline these.
+                    let is_anon_const_initializer = decl
+                        .is_global_initializer
+                        .and_then(|gid| ctx.translated.global_decls.get(gid))
+                        .is_some_and(|gdecl| matches!(gdecl.global_kind, GlobalKind::AnonConst));
+                    is_local_panic_fn || is_anon_const_initializer
+                })
             })
             .collect();
-        CowBox::Owned(Box::new(Transform {
-            initializers: anon_consts,
-        }))
+
+        CowBox::Owned(Box::new(Transform { to_inline }))
     }
 }
 impl UllbcPass for Transform {
-    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
-        !options.raw_consts && !self.initializers.is_empty()
+    fn should_run(&self, _options: &crate::options::TranslateOptions) -> bool {
+        !self.to_inline.is_empty()
     }
     fn apply_preceding_passes(&mut self, ctx: &mut TransformCtx, passes: &[CowBox<dyn UllbcPass>]) {
-        for decl in self.initializers.values_mut() {
+        for decl in self.to_inline.values_mut() {
             for pass in passes {
                 pass.transform_item(ctx, ItemRefMut::Fun(decl));
             }
@@ -43,8 +55,6 @@ impl UllbcPass for Transform {
             let Some(block) = outer_body.body.get_mut(block_id) else {
                 continue;
             };
-            // The `anon_consts_to_call` pass already transformed references to anon consts into
-            // calls to their initializers.
             let TerminatorKind::Call {
                 call,
                 target,
@@ -62,7 +72,7 @@ impl UllbcPass for Transform {
             let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.kind.as_ref() else {
                 continue;
             };
-            let Some(initializer) = self.initializers.get(&fun_id) else {
+            let Some(initializer) = self.to_inline.get(fun_id) else {
                 continue;
             };
             let span = initializer.item_meta.span;
