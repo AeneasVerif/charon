@@ -106,9 +106,10 @@ pub fn main() -> Result<()> {
 /// Run translation once per target (in parallel), then merge the results.
 fn translate_multi_target(
     targets: Vec<String>,
-    options: CliOpts,
+    mut options: CliOpts,
     translate_one: impl Fn(CliOpts, &str) -> anyhow::Result<ExitStatus> + Sync,
 ) -> anyhow::Result<ExitStatus> {
+    options.apply_preset();
     let temp_dir = tempfile::tempdir().context("failed to create temp dir")?;
 
     // Translate each target in its own thread.
@@ -133,12 +134,17 @@ fn translate_multi_target(
                     opts.dest_file = Some(temp_file.clone());
                     // Don't recurse into multi-target.
                     opts.targets.clear();
+                    // Don't re-apply preset
+                    opts.preset = None;
                     // Suppress per-target printing; we'll print the merged result.
                     opts.print_ullbc = false;
                     opts.print_llbc = false;
                     // Ensure serialization so we can load the result.
                     opts.no_serialize = false;
                     opts.format = Some(format.into());
+                    // Keep variables bound so that we can manipulate them when merging. We'll
+                    // apply the pass at the end if needed.
+                    opts.unbind_item_vars = false;
 
                     let status = translate_one(opts, target)?;
                     if !status.success() {
