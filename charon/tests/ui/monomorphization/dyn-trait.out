@@ -18,7 +18,8 @@ unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {    non-dyn-compatible
+impl Destruct for String {
+    non-dyn-compatible
 }
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
@@ -29,7 +30,8 @@ fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
 static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl Display for String}::{vtable}()
 
 // Full name: alloc::string::{impl Display for String}
-impl Display for String {    vtable: {impl Display for String}::{vtable}
+impl Display for String {
+    vtable: {impl Display for String}::{vtable}
 }
 
 // Full name: alloc::string::{impl ToString for Str}::to_string::<Str>

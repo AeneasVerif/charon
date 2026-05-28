@@ -101,7 +101,8 @@ pub fn call_once(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
 = <opaque>
 
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}
-impl<'_0> Destruct for test_crate::main::closure<'_0> {    non-dyn-compatible
+impl<'_0> Destruct for test_crate::main::closure<'_0> {
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for test_crate::main::closure<'_0>}
@@ -150,7 +151,8 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(f_1: test_crate::main::closure
 }
 
 // Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}
-impl<'_0> Destruct for test_crate::main::closure#1<'_0> {    non-dyn-compatible
+impl<'_0> Destruct for test_crate::main::closure#1<'_0> {
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for test_crate::main::closure#1<'_0>}
@@ -190,7 +192,8 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(f_1: test_crate::main::c
 }
 
 // Full name: test_crate::main::closure#2::{impl Destruct for test_crate::main::closure#2}
-impl Destruct for test_crate::main::closure#2 {    non-dyn-compatible
+impl Destruct for test_crate::main::closure#2 {
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for test_crate::main::closure#2}

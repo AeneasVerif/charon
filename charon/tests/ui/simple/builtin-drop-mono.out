@@ -27,7 +27,8 @@ unsafe fn core::marker::Destruct::drop_in_place::<[String; 4 : usize]>(_1: *mut 
 = <missing>
 
 // Full name: test_crate::<slice>::{impl Destruct for [String]}
-impl Destruct for [String] {    non-dyn-compatible
+impl Destruct for [String] {
+    non-dyn-compatible
 }
 
 // Full name: alloc::alloc::Global
@@ -35,7 +36,8 @@ impl Destruct for [String] {    non-dyn-compatible
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl Destruct for Global {    non-dyn-compatible
+impl Destruct for Global {
+    non-dyn-compatible
 }
 
 unsafe fn core::marker::Destruct::drop_in_place::<alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]>(_1: *mut alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}])
@@ -48,19 +50,23 @@ unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
 = <missing>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}]}
-impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}] {    non-dyn-compatible
+impl Destruct for alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [String]}, {impl Destruct for Global}] {
+    non-dyn-compatible
 }
 
 // Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {    non-dyn-compatible
+impl Destruct for String {
+    non-dyn-compatible
 }
 
 // Full name: test_crate::<array>::{impl Destruct for [String; 4 : usize]}
-impl Destruct for [String; 4 : usize] {    non-dyn-compatible
+impl Destruct for [String; 4 : usize] {
+    non-dyn-compatible
 }
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (String, String)}
-impl Destruct for (String, String) {    non-dyn-compatible
+impl Destruct for (String, String) {
+    non-dyn-compatible
 }
 
 // Full name: test_crate::<array>::{impl Destruct for [String; 4 : usize]}::drop_in_place::<String, 4 : usize>

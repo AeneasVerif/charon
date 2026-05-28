@@ -12,7 +12,8 @@ unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {    non-dyn-compatible
+impl Destruct for String {
+    non-dyn-compatible
 }
 
 // Full name: alloc::string::{impl ToString for Str}::to_string::<Str>
