@@ -208,6 +208,47 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
         }
     }
+
+    /// Generate a fake function body for ADT constructors.
+    pub(crate) fn build_ctor_body(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef<'tcx>,
+    ) -> Result<Body, Error> {
+        let hax::FullDefKind::Ctor {
+            adt_def_id,
+            ctor_of,
+            variant_id,
+            fields,
+            output_ty,
+        } = def.kind()
+        else {
+            unreachable!()
+        };
+        let tref = self
+            .translate_type_decl_ref(span, &def.this().with_def_id(self.hax_state(), adt_def_id))?;
+        let output_ty = self.translate_ty(span, output_ty)?;
+
+        let mut builder = BodyBuilder::new(span, fields.len());
+        let return_place = builder.new_var(None, output_ty);
+        let args: Vec<_> = fields
+            .iter()
+            .map(|field| -> Result<Operand, Error> {
+                let ty = self.translate_ty(span, &field.ty)?;
+                let place = builder.new_var(None, ty);
+                Ok(Operand::Move(place))
+            })
+            .try_collect()?;
+        let variant = match ctor_of {
+            hax::CtorOf::Struct => None,
+            hax::CtorOf::Variant => Some(self.translate_variant_id(*variant_id)),
+        };
+        builder.push_statement(StatementKind::Assign(
+            return_place,
+            Rvalue::Aggregate(AggregateKind::Adt(tref, variant, None), args),
+        ));
+        Ok(Body::Unstructured(builder.build()))
+    }
 }
 
 impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
