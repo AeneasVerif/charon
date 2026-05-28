@@ -1,7 +1,14 @@
 //! Trait elaboration: given a trait reference, we track which impl and/or local clauses caused it to be true.
 #![feature(rustc_private)]
-#![allow(clippy::len_without_is_empty)]
+#![allow(
+    clippy::derivable_impls,
+    clippy::len_without_is_empty,
+    clippy::new_without_default,
+    clippy::should_implement_trait
+)]
 
+extern crate rustc_arena;
+extern crate rustc_data_structures;
 extern crate rustc_hir;
 extern crate rustc_infer;
 extern crate rustc_middle;
@@ -9,18 +16,23 @@ extern crate rustc_span;
 extern crate rustc_trait_selection;
 extern crate rustc_type_ir;
 
+mod ctx;
 mod elaboration;
 mod item_ref;
 mod predicates;
 mod utils;
 
+pub use ctx::*;
 pub use elaboration::*;
 pub use item_ref::*;
 pub use predicates::*;
 pub use utils::*;
 
+use rustc_data_structures::intern::Interned;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty;
+use std::hash::Hash;
+use std::ops::Deref;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum DestructData<'tcx> {
@@ -108,9 +120,27 @@ pub enum ImplExprAtom<'tcx> {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct ImplExpr<'tcx> {
+pub struct ImplExprContents<'tcx> {
     /// The trait this is an impl for.
     pub r#trait: ty::PolyTraitRef<'tcx>,
     /// The kind of implemention of the root of the tree.
     pub r#impl: ImplExprAtom<'tcx>,
+}
+
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+pub struct ImplExpr<'tcx> {
+    contents: Interned<'tcx, ImplExprContents<'tcx>>,
+}
+
+impl<'tcx> ImplExpr<'tcx> {
+    pub fn contents(&self) -> &ImplExprContents<'tcx> {
+        &self.contents
+    }
+}
+
+impl<'tcx> Deref for ImplExpr<'tcx> {
+    type Target = ImplExprContents<'tcx>;
+    fn deref(&self) -> &Self::Target {
+        &self.contents
+    }
 }

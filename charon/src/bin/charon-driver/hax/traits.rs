@@ -3,8 +3,8 @@ use rustc_span::def_id::DefId as RDefId;
 
 pub use rustc_trait_elaboration as elaboration;
 pub use rustc_trait_elaboration::{
-    ItemPredicate, ItemPredicateId, ItemPredicates, PredicateSearcher, ToPolyTraitRef,
-    erase_and_norm, erase_free_regions, normalize, self_predicate,
+    ElaborationCtx, ItemPredicate, ItemPredicateId, ItemPredicates, PredicateSearcher,
+    ToPolyTraitRef, erase_and_norm, erase_free_regions, normalize, self_predicate,
 };
 
 use crate::hax::prelude::*;
@@ -139,7 +139,7 @@ pub enum DestructData {
 pub type ImplExpr = HashConsed<ImplExprContents>;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImplExpr<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImplExprContents<'tcx>, state: S as s)]
 pub struct ImplExprContents {
     /// The trait this is an impl for.
     pub r#trait: Binder<TraitRef>,
@@ -149,7 +149,7 @@ pub struct ImplExprContents {
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExpr> for elaboration::ImplExpr<'tcx> {
     fn sinto(&self, s: &S) -> ImplExpr {
-        HashConsed::new(self.sinto(s))
+        HashConsed::new(self.contents().sinto(s))
     }
 }
 
