@@ -151,7 +151,7 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     let count_2: isize; // arg #2
     let size_3: usize; // arg #3
     let _4: bool; // anonymous local
-    let msg_5: &'1 Str; // local
+    let msg_5: &'1 str; // local
     let _6: !; // anonymous local
     let _7: Arguments<'3>; // anonymous local
     let rhs_8: isize; // local
@@ -176,7 +176,7 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     let _27: usize; // anonymous local
     let _28: usize; // anonymous local
     let _29: usize; // anonymous local
-    let _30: *const Str; // anonymous local
+    let _30: *const str; // anonymous local
     let _31: &'8 [u8]; // anonymous local
 
     storage_live(msg_5)
@@ -247,7 +247,7 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     storage_live(_25)
     storage_live(_30)
     _30 = &raw const (*msg_5) with_metadata(copy msg_5.metadata)
-    _25 = cast<*const Str, *const u8>(copy _30)
+    _25 = cast<*const str, *const u8>(copy _30)
     storage_dead(_30)
     _24 = transmute<*const u8, NonNull<u8>>(copy _25)
     storage_dead(_25)
@@ -256,7 +256,7 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     storage_live(_28)
     storage_live(_29)
     storage_live(_31)
-    _31 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _31 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _29 = copy _31.metadata
     storage_dead(_31)
     _28 = move _29 wrap.<< const 1 : i32

@@ -39,14 +39,14 @@ where
     [@TraitClause0]: Display<Self>,
 = <opaque>
 
-// Full name: core::fmt::{impl Display for Str}::fmt
-pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(_1: &'_0 Str, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+// Full name: core::fmt::{impl Display for str}::fmt
+pub fn {impl Display for str}::fmt<'_0, '_1, '_2>(_1: &'_0 str, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
-// Full name: core::fmt::{impl Display for Str}
-impl Display for Str {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Display for Str}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl Display for Str}::{vtable}
+// Full name: core::fmt::{impl Display for str}
+impl Display for str {
+    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Display for str}::fmt<'_0_1, '_1_1, '_2_1>
+    vtable: {impl Display for str}::{vtable}
 }
 
 // Full name: alloc::string::String
@@ -65,16 +65,16 @@ where
 = <opaque>
 
 // Full name: test_crate::FOO
-fn FOO() -> &'static Str
+fn FOO() -> &'static str
 {
-    let _0: &'1 Str; // return
+    let _0: &'1 str; // return
 
     _0 = const "hello"
     return
 }
 
 // Full name: test_crate::FOO
-static FOO: &'static Str = FOO()
+static FOO: &'static str = FOO()
 
 // Full name: test_crate::BAR
 fn BAR() -> &'static [u8]
@@ -107,8 +107,8 @@ fn main()
 {
     let _0: (); // return
     let _s_1: String; // local
-    let _2: &'1 Str; // anonymous local
-    let _3: &'2 Str; // anonymous local
+    let _2: &'1 str; // anonymous local
+    let _3: &'2 str; // anonymous local
 
     _0 = ()
     storage_live(_s_1)
@@ -116,7 +116,7 @@ fn main()
     storage_live(_3)
     _3 = const "Hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    _s_1 = {impl ToString for T}::to_string<'5, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _2)
+    _s_1 = {impl ToString for T}::to_string<'5, str>[{built_in impl MetaSized for str}, {impl Display for str}](move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

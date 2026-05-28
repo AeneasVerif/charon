@@ -141,7 +141,7 @@ impl Debug for u32 {
 }
 
 // Full name: core::result::unwrap_failed
-fn unwrap_failed<'_0, '_1>(_1: &'_0 Str, _2: &'_1 (dyn Debug + '_1)) -> !
+fn unwrap_failed<'_0, '_1>(_1: &'_0 str, _2: &'_1 (dyn Debug + '_1)) -> !
 = <missing>
 
 pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(self_1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T

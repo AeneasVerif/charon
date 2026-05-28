@@ -75,7 +75,8 @@ pub fn call_mut<'_0>(_1: &'_0 mut closure::<()>, _2: ((),))
 = <opaque>
 
 // Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}
-impl Destruct for closure::<()> {    non-dyn-compatible
+impl Destruct for closure::<()> {
+    non-dyn-compatible
 }
 
 // Full name: test_crate::foo::{const}::{impl FnOnce<((),)> for closure::<()>}

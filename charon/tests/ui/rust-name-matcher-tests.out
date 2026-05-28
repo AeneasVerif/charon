@@ -182,7 +182,7 @@ fn use_generic()
 {
     let _0: (); // return
     let _int_generic_1: Generic<i32>[{built_in impl Sized for i32}]; // local
-    let _str_generic_2: Generic<&'6 Str>[{built_in impl Sized for &'6 Str}]; // local
+    let _str_generic_2: Generic<&'6 str>[{built_in impl Sized for &'6 str}]; // local
     let _3: &'10 i32; // anonymous local
     let _4: &'12 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
 
@@ -190,7 +190,7 @@ fn use_generic()
     storage_live(_int_generic_1)
     _int_generic_1 = new<i32>[{built_in impl Sized for i32}](const 42 : i32)
     storage_live(_str_generic_2)
-    _str_generic_2 = new<&'13 Str>[{built_in impl Sized for &'13 Str}](const "hello")
+    _str_generic_2 = new<&'13 str>[{built_in impl Sized for &'13 str}](const "hello")
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic_1

@@ -65,7 +65,7 @@ let
   };
 
   mk-charon-ml = doCheck:
-    ocamlPackages.buildDunePackage {
+    ocamlPackages.buildDunePackage ({
       pname = "charon";
       version = "0.1.0";
       duneVersion = "3";
@@ -85,7 +85,6 @@ let
       ];
 
       OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
-      CHARON_TESTS_DIR = lib.optionalString doCheck "${charon}/tests-llbc"; # Tell the tests where to find the llbc files.
 
       inherit doCheck;
       preBuild = ''
@@ -96,7 +95,10 @@ let
       '';
 
       passthru = { inherit charon-ml-tests charon-ml-check-fmt; };
-    };
+    } // lib.optionalAttrs doCheck {
+      CHARON_TESTS_DIR = "${charon}/tests-llbc"; # Tell the tests where to find the llbc files.
+      CHARON_BIN = "${charon}/bin/charon";
+    });
 
   charon-ml = mk-charon-ml false;
   charon-ml-tests = mk-charon-ml true;

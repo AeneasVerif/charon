@@ -878,7 +878,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     let len_3: usize; // arg #3
     let _4: bool; // anonymous local
     let _5: bool; // anonymous local
-    let msg_6: &'1 Str; // local
+    let msg_6: &'1 str; // local
     let _7: !; // anonymous local
     let _8: Arguments<'3>; // anonymous local
     let _9: NonNull<u8>; // anonymous local
@@ -887,7 +887,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     let _12: usize; // anonymous local
     let _13: usize; // anonymous local
     let _14: usize; // anonymous local
-    let _15: *const Str; // anonymous local
+    let _15: *const str; // anonymous local
     let _16: &'8 [u8]; // anonymous local
 
     storage_live(msg_6)
@@ -912,7 +912,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     storage_live(_10)
     storage_live(_15)
     _15 = &raw const (*msg_6) with_metadata(copy msg_6.metadata)
-    _10 = cast<*const Str, *const u8>(copy _15)
+    _10 = cast<*const str, *const u8>(copy _15)
     storage_dead(_15)
     _9 = transmute<*const u8, NonNull<u8>>(copy _10)
     storage_dead(_10)
@@ -921,7 +921,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     storage_live(_13)
     storage_live(_14)
     storage_live(_16)
-    _16 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _16 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _14 = copy _16.metadata
     storage_dead(_16)
     _13 = move _14 wrap.<< const 1 : i32
@@ -997,7 +997,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     let len_3: usize; // arg #3
     let _4: bool; // anonymous local
     let _5: bool; // anonymous local
-    let msg_6: &'1 Str; // local
+    let msg_6: &'1 str; // local
     let _7: !; // anonymous local
     let _8: Arguments<'3>; // anonymous local
     let _9: NonNull<u8>; // anonymous local
@@ -1006,7 +1006,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     let _12: usize; // anonymous local
     let _13: usize; // anonymous local
     let _14: usize; // anonymous local
-    let _15: *const Str; // anonymous local
+    let _15: *const str; // anonymous local
     let _16: &'8 [u8]; // anonymous local
 
     storage_live(msg_6)
@@ -1031,7 +1031,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     storage_live(_10)
     storage_live(_15)
     _15 = &raw const (*msg_6) with_metadata(copy msg_6.metadata)
-    _10 = cast<*const Str, *const u8>(copy _15)
+    _10 = cast<*const str, *const u8>(copy _15)
     storage_dead(_15)
     _9 = transmute<*const u8, NonNull<u8>>(copy _10)
     storage_dead(_10)
@@ -1040,7 +1040,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
     storage_live(_13)
     storage_live(_14)
     storage_live(_16)
-    _16 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _16 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _14 = copy _16.metadata
     storage_dead(_16)
     _13 = move _14 wrap.<< const 1 : i32

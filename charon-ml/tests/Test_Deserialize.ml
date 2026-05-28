@@ -38,6 +38,79 @@ let assert_contains ~msg ~sub s =
   if not (string_contains ~sub s) then
     Format.kasprintf failwith "%s, expected substring: '%s' in '%s'" msg sub s
 
+let read_all (ic : in_channel) : string =
+  let buf = Buffer.create 4096 in
+  (try
+     while true do
+       Buffer.add_string buf (input_line ic);
+       Buffer.add_char buf '\n'
+     done
+   with End_of_file -> ());
+  Buffer.contents buf
+
+let command_output ?(allow_failure = false) (cmd : string) (args : string list)
+    : string =
+  let cmdline = String.concat " " (List.map Filename.quote (cmd :: args)) in
+  let stdout, stdin, stderr =
+    Unix.open_process_full cmdline (Unix.environment ())
+  in
+  close_out stdin;
+  let out = read_all stdout in
+  let err = read_all stderr in
+  match Unix.close_process_full (stdout, stdin, stderr) with
+  | Unix.WEXITED 0 -> out
+  | Unix.WEXITED _ when allow_failure -> out ^ err
+  | Unix.WEXITED code ->
+      Format.kasprintf failwith "Command failed (%d): %s\n%s" code cmdline err
+  | Unix.WSIGNALED signal ->
+      Format.kasprintf failwith "Command signaled (%d): %s\n%s" signal cmdline
+        err
+  | Unix.WSTOPPED signal ->
+      Format.kasprintf failwith "Command stopped (%d): %s\n%s" signal cmdline
+        err
+
+let charon_bin =
+  try Unix.getenv "CHARON_BIN"
+  with Not_found ->
+    (* Dune runs this test from [_build/default/charon-ml/tests]. *)
+    "../../../../bin/charon"
+
+let normalize_trailing_newlines (s : string) : string =
+  let rec last_non_newline i =
+    if i < 0 then -1 else if s.[i] = '\n' then last_non_newline (i - 1) else i
+  in
+  String.sub s 0 (last_non_newline (String.length s - 1) + 1) ^ "\n"
+
+let unified_diff ~(expected : string) ~(ocaml : string) : string =
+  let expected_file = Filename.temp_file "charon-expected-pretty" ".out" in
+  let ocaml_file = Filename.temp_file "charon-ocaml-pretty" ".out" in
+  let write file contents =
+    let oc = open_out file in
+    output_string oc contents;
+    close_out oc
+  in
+  write expected_file expected;
+  write ocaml_file ocaml;
+  let diff =
+    command_output ~allow_failure:true "diff"
+      [ "-u"; "--label"; "rust"; "--label"; "ocaml"; expected_file; ocaml_file ]
+  in
+  Sys.remove expected_file;
+  Sys.remove ocaml_file;
+  diff
+
+let assert_pretty_matches_rust (file : string) (printed : string) : unit =
+  let expected =
+    command_output charon_bin [ "pretty-print"; "--format"; "postcard"; file ]
+    |> normalize_trailing_newlines
+  in
+  let ocaml = normalize_trailing_newlines printed in
+  if expected <> ocaml then
+    let diff = unified_diff ~expected ~ocaml in
+    Format.kasprintf failwith
+      "OCaml pretty-printer output differs from %s pretty-print for %s:\n%s"
+      charon_bin file diff
+
 let test_cross_format_errors json postcard =
   (match OfPostcard.crate_of_postcard_file json with
   | Ok _ ->
@@ -90,12 +163,9 @@ let run_tests (folder : string) : unit =
         | Error s ->
             log#error "Error when deserializing file %s: %s\n" file s;
             exit 1
-        | Ok m ->
+        | Ok _ ->
             json_time := !json_time +. (Unix.gettimeofday () -. start_time);
-            log#linfo (lazy ("Deserialized: " ^ file));
-            (* Test that pretty-printing doesn't crash *)
-            let printed = Print.crate_to_string m in
-            log#ldebug (lazy ("\n" ^ printed ^ "\n")))
+            log#linfo (lazy ("Deserialized: " ^ file)))
       json_files
   in
   let () =
@@ -108,10 +178,12 @@ let run_tests (folder : string) : unit =
         | Error s ->
             log#error "Error when deserializing postcard file %s: %s\n" file s;
             exit 1
-        | Ok _ ->
+        | Ok m ->
             postcard_time :=
               !postcard_time +. (Unix.gettimeofday () -. start_time);
-            log#linfo (lazy ("Deserialized postcard: " ^ file)))
+            log#linfo (lazy ("Deserialized postcard: " ^ file));
+            let printed = Print.crate_to_string m in
+            assert_pretty_matches_rust file printed)
       postcard_files
   in
 

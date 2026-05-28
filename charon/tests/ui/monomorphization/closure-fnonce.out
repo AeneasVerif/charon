@@ -54,7 +54,8 @@ pub fn call_once(_1: closure, _2: (u8,)) -> u8
 = <opaque>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}
-impl Destruct for closure {    non-dyn-compatible
+impl Destruct for closure {
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}

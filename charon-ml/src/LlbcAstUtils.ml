@@ -170,6 +170,7 @@ class ['self] map_crate =
         name;
         options;
         target_information;
+        item_names;
         declarations;
         type_decls;
         fun_decls;
@@ -177,6 +178,7 @@ class ['self] map_crate =
         trait_decls;
         trait_impls;
         assoc_item_names;
+        short_names;
       } =
         crate
       in
@@ -207,6 +209,7 @@ class ['self] map_crate =
         name;
         options;
         target_information;
+        item_names;
         declarations;
         type_decls;
         fun_decls;
@@ -214,6 +217,7 @@ class ['self] map_crate =
         trait_decls;
         trait_impls;
         assoc_item_names;
+        short_names;
       }
   end
 
@@ -308,6 +312,7 @@ class ['self] iter_crate =
         name;
         options;
         target_information;
+        item_names = _;
         declarations;
         type_decls;
         fun_decls;
@@ -315,6 +320,7 @@ class ['self] iter_crate =
         trait_decls;
         trait_impls;
         assoc_item_names = _;
+        short_names = _;
       } =
         crate
       in

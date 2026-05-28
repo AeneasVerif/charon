@@ -236,28 +236,28 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
     let _48: *mut std::io::IoSlice<'108>; // anonymous local
     let _49: *mut std::io::IoSlice<'109>; // anonymous local
     let _50: usize; // anonymous local
-    let s_51: &'111 Str; // local
+    let s_51: &'111 str; // local
     let _52: NonNull<u8>; // anonymous local
     let _53: *const u8; // anonymous local
     let _54: NonNull<Argument<'114>>; // anonymous local
     let _55: usize; // anonymous local
     let _56: usize; // anonymous local
     let _57: usize; // anonymous local
-    let _58: *const Str; // anonymous local
+    let _58: *const str; // anonymous local
     let _59: &'116 [u8]; // anonymous local
     let _60: bool; // anonymous local
     let _61: usize; // anonymous local
     let _62: Arguments<'121>; // anonymous local
     let _63: *mut c_void; // anonymous local
     let self_64: *mut c_void; // local
-    let s_65: &'122 Str; // local
+    let s_65: &'122 str; // local
     let _66: NonNull<u8>; // anonymous local
     let _67: *const u8; // anonymous local
     let _68: NonNull<Argument<'123>>; // anonymous local
     let _69: usize; // anonymous local
     let _70: usize; // anonymous local
     let _71: usize; // anonymous local
-    let _72: *const Str; // anonymous local
+    let _72: *const str; // anonymous local
     let _73: &'124 [u8]; // anonymous local
     let _74: bool; // anonymous local
     let _75: &'186 mut [std::io::IoSlice<'187>; 0 : usize]; // anonymous local
@@ -467,7 +467,7 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
                 storage_live(_67)
                 storage_live(_72)
                 _72 = &raw const (*s_65) with_metadata(copy s_65.metadata)
-                _67 = cast<*const Str, *const u8>(copy _72)
+                _67 = cast<*const str, *const u8>(copy _72)
                 storage_dead(_72)
                 _66 = transmute<*const u8, NonNull<u8>>(copy _67)
                 storage_dead(_67)
@@ -476,7 +476,7 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
                 storage_live(_70)
                 storage_live(_71)
                 storage_live(_73)
-                _73 = transmute<&'215 Str, &'214 [u8]>(const "advancing IoSlice beyond its length")
+                _73 = transmute<&'215 str, &'214 [u8]>(const "advancing IoSlice beyond its length")
                 _71 = copy _73.metadata
                 storage_dead(_73)
                 _70 = move _71 wrap.<< const 1 : i32
@@ -504,7 +504,7 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
                 storage_live(_53)
                 storage_live(_58)
                 _58 = &raw const (*s_51) with_metadata(copy s_51.metadata)
-                _53 = cast<*const Str, *const u8>(copy _58)
+                _53 = cast<*const str, *const u8>(copy _58)
                 storage_dead(_58)
                 _52 = transmute<*const u8, NonNull<u8>>(copy _53)
                 storage_dead(_53)
@@ -513,7 +513,7 @@ pub fn advance_slices<'a, '_1, '_2>(bufs_1: &'_1 mut &'_2 mut [std::io::IoSlice<
                 storage_live(_56)
                 storage_live(_57)
                 storage_live(_59)
-                _59 = transmute<&'204 Str, &'203 [u8]>(const "advancing io slices beyond their length")
+                _59 = transmute<&'204 str, &'203 [u8]>(const "advancing io slices beyond their length")
                 _57 = copy _59.metadata
                 storage_dead(_59)
                 _56 = move _57 wrap.<< const 1 : i32

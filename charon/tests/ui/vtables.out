@@ -71,14 +71,14 @@ where
     [@TraitClause0]: Display<Self>,
 = <opaque>
 
-// Full name: core::fmt::{impl Display for Str}::fmt
-pub fn {impl Display for Str}::fmt<'_0, '_1, '_2>(_1: &'_0 Str, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+// Full name: core::fmt::{impl Display for str}::fmt
+pub fn {impl Display for str}::fmt<'_0, '_1, '_2>(_1: &'_0 str, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
-// Full name: core::fmt::{impl Display for Str}
-impl Display for Str {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Display for Str}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl Display for Str}::{vtable}
+// Full name: core::fmt::{impl Display for str}
+impl Display for str {
+    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Display for str}::fmt<'_0_1, '_1_1, '_2_1>
+    vtable: {impl Display for str}::{vtable}
 }
 
 // Full name: core::option::Option
@@ -1101,8 +1101,8 @@ fn main()
     let _13: &'20 String; // anonymous local
     let _14: &'21 String; // anonymous local
     let _15: String; // anonymous local
-    let _16: &'23 Str; // anonymous local
-    let _17: &'24 Str; // anonymous local
+    let _16: &'23 str; // anonymous local
+    let _17: &'24 str; // anonymous local
     let _18: (&'27 i32, &'28 i32); // anonymous local
     let _19: &'29 i32; // anonymous local
     let _20: i32; // anonymous local
@@ -1255,7 +1255,7 @@ fn main()
     storage_live(_17)
     _17 = const "Hello"
     _16 = &(*_17) with_metadata(copy _17.metadata)
-    _15 = {impl ToString for T}::to_string<'125, Str>[{built_in impl MetaSized for Str}, {impl Display for Str}](move _16)
+    _15 = {impl ToString for T}::to_string<'125, str>[{built_in impl MetaSized for str}, {impl Display for str}](move _16)
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)

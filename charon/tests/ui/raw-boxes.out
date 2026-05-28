@@ -251,7 +251,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
 {
     let _0: (); // return
     let align_1: usize; // arg #1
-    let msg_2: &'1 Str; // local
+    let msg_2: &'1 str; // local
     let _3: !; // anonymous local
     let _4: Arguments<'3>; // anonymous local
     let _5: u32; // anonymous local
@@ -261,7 +261,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
-    let _12: *const Str; // anonymous local
+    let _12: *const str; // anonymous local
     let _13: &'8 [u8]; // anonymous local
 
     storage_live(msg_2)
@@ -280,7 +280,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
             storage_live(_7)
             storage_live(_12)
             _12 = &raw const (*msg_2) with_metadata(copy msg_2.metadata)
-            _7 = cast<*const Str, *const u8>(copy _12)
+            _7 = cast<*const str, *const u8>(copy _12)
             storage_dead(_12)
             _6 = transmute<*const u8, NonNull<u8>>(copy _7)
             storage_dead(_7)
@@ -289,7 +289,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
             storage_live(_10)
             storage_live(_11)
             storage_live(_13)
-            _13 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+            _13 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
             _11 = copy _13.metadata
             storage_dead(_13)
             _10 = move _11 wrap.<< const 1 : i32
@@ -314,7 +314,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     let size_1: usize; // arg #1
     let align_2: usize; // arg #2
     let _3: bool; // anonymous local
-    let msg_4: &'1 Str; // local
+    let msg_4: &'1 str; // local
     let _5: !; // anonymous local
     let _6: Arguments<'3>; // anonymous local
     let alignment_7: Alignment; // local
@@ -328,7 +328,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     let _15: usize; // anonymous local
     let _16: usize; // anonymous local
     let _17: usize; // anonymous local
-    let _18: *const Str; // anonymous local
+    let _18: *const str; // anonymous local
     let _19: &'8 [u8]; // anonymous local
     let _20: bool; // anonymous local
 
@@ -373,7 +373,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     storage_live(_13)
     storage_live(_18)
     _18 = &raw const (*msg_4) with_metadata(copy msg_4.metadata)
-    _13 = cast<*const Str, *const u8>(copy _18)
+    _13 = cast<*const str, *const u8>(copy _18)
     storage_dead(_18)
     _12 = transmute<*const u8, NonNull<u8>>(copy _13)
     storage_dead(_13)
@@ -382,7 +382,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     storage_live(_16)
     storage_live(_17)
     storage_live(_19)
-    _19 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _19 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _17 = copy _19.metadata
     storage_dead(_19)
     _16 = move _17 wrap.<< const 1 : i32
@@ -455,14 +455,14 @@ pub fn is_aligned_to<T>(self_1: *const T, align_2: usize) -> bool
     let _6: usize; // anonymous local
     let _7: u32; // anonymous local
     let _8: *const (); // anonymous local
-    let s_9: &'3 Str; // local
+    let s_9: &'3 str; // local
     let _10: NonNull<u8>; // anonymous local
     let _11: *const u8; // anonymous local
     let _12: NonNull<Argument<'6>>; // anonymous local
     let _13: usize; // anonymous local
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
-    let _16: *const Str; // anonymous local
+    let _16: *const str; // anonymous local
     let _17: &'8 [u8]; // anonymous local
 
     storage_live(_7)
@@ -479,7 +479,7 @@ pub fn is_aligned_to<T>(self_1: *const T, align_2: usize) -> bool
             storage_live(_11)
             storage_live(_16)
             _16 = &raw const (*s_9) with_metadata(copy s_9.metadata)
-            _11 = cast<*const Str, *const u8>(copy _16)
+            _11 = cast<*const str, *const u8>(copy _16)
             storage_dead(_16)
             _10 = transmute<*const u8, NonNull<u8>>(copy _11)
             storage_dead(_11)
@@ -488,7 +488,7 @@ pub fn is_aligned_to<T>(self_1: *const T, align_2: usize) -> bool
             storage_live(_14)
             storage_live(_15)
             storage_live(_17)
-            _17 = transmute<&'11 Str, &'10 [u8]>(const "is_aligned_to: align is not a power-of-two")
+            _17 = transmute<&'11 str, &'10 [u8]>(const "is_aligned_to: align is not a power-of-two")
             _15 = copy _17.metadata
             storage_dead(_17)
             _14 = move _15 wrap.<< const 1 : i32
@@ -528,7 +528,7 @@ fn core::ptr::write_bytes::precondition_check(addr_1: *const (), align_2: usize,
     let align_2: usize; // arg #2
     let zero_size_3: bool; // arg #3
     let _4: bool; // anonymous local
-    let msg_5: &'1 Str; // local
+    let msg_5: &'1 str; // local
     let _6: !; // anonymous local
     let _7: Arguments<'3>; // anonymous local
     let _8: bool; // anonymous local
@@ -540,7 +540,7 @@ fn core::ptr::write_bytes::precondition_check(addr_1: *const (), align_2: usize,
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
     let _16: usize; // anonymous local
-    let _17: *const Str; // anonymous local
+    let _17: *const str; // anonymous local
     let _18: &'8 [u8]; // anonymous local
 
     storage_live(msg_5)
@@ -578,7 +578,7 @@ fn core::ptr::write_bytes::precondition_check(addr_1: *const (), align_2: usize,
     storage_live(_12)
     storage_live(_17)
     _17 = &raw const (*msg_5) with_metadata(copy msg_5.metadata)
-    _12 = cast<*const Str, *const u8>(copy _17)
+    _12 = cast<*const str, *const u8>(copy _17)
     storage_dead(_17)
     _11 = transmute<*const u8, NonNull<u8>>(copy _12)
     storage_dead(_12)
@@ -587,7 +587,7 @@ fn core::ptr::write_bytes::precondition_check(addr_1: *const (), align_2: usize,
     storage_live(_15)
     storage_live(_16)
     storage_live(_18)
-    _18 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _18 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _16 = copy _18.metadata
     storage_dead(_18)
     _15 = move _16 wrap.<< const 1 : i32
@@ -1009,24 +1009,24 @@ where
 = <method_without_default_body>
 
 // Full name: core::fmt::{Arguments<'a>}::from_str
-pub fn from_str<'a>(s_1: &'static Str) -> Arguments<'a>
+pub fn from_str<'a>(s_1: &'static str) -> Arguments<'a>
 {
     let _0: Arguments<'1>; // return
-    let s_1: &'3 Str; // arg #1
+    let s_1: &'3 str; // arg #1
     let _2: NonNull<u8>; // anonymous local
     let _3: *const u8; // anonymous local
     let _4: NonNull<Argument<'6>>; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
-    let _8: *const Str; // anonymous local
+    let _8: *const str; // anonymous local
     let _9: &'8 [u8]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     storage_live(_8)
     _8 = &raw const (*s_1) with_metadata(copy s_1.metadata)
-    _3 = cast<*const Str, *const u8>(copy _8)
+    _3 = cast<*const str, *const u8>(copy _8)
     storage_dead(_8)
     _2 = transmute<*const u8, NonNull<u8>>(copy _3)
     storage_dead(_3)
@@ -1035,7 +1035,7 @@ pub fn from_str<'a>(s_1: &'static Str) -> Arguments<'a>
     storage_live(_6)
     storage_live(_7)
     storage_live(_9)
-    _9 = transmute<&'3 Str, &'9 [u8]>(copy s_1)
+    _9 = transmute<&'3 str, &'9 [u8]>(copy s_1)
     _7 = copy _9.metadata
     storage_dead(_9)
     _6 = move _7 wrap.<< const 1 : i32
@@ -1052,13 +1052,13 @@ pub fn from_str<'a>(s_1: &'static Str) -> Arguments<'a>
 
 // Full name: core::panicking::panic_nounwind
 #[lang_item("panic_nounwind")]
-pub fn panic_nounwind(expr_1: &'static Str) -> !
+pub fn panic_nounwind(expr_1: &'static str) -> !
 {
     let _0: !; // return
-    let expr_1: &'1 Str; // arg #1
+    let expr_1: &'1 str; // arg #1
     let _2: !; // anonymous local
     let _3: Arguments<'3>; // anonymous local
-    let _4: &'4 Str; // anonymous local
+    let _4: &'4 str; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
@@ -1160,7 +1160,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
     let is_zst_9: bool; // local
     let _10: bool; // anonymous local
     let ptr_11: *const (); // local
-    let msg_12: &'1 Str; // local
+    let msg_12: &'1 str; // local
     let _13: !; // anonymous local
     let _14: Arguments<'3>; // anonymous local
     let _15: bool; // anonymous local
@@ -1175,7 +1175,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
     let _24: usize; // anonymous local
     let _25: usize; // anonymous local
     let _26: usize; // anonymous local
-    let _27: *const Str; // anonymous local
+    let _27: *const str; // anonymous local
     let _28: &'8 [u8]; // anonymous local
 
     storage_live(zero_size_7)
@@ -1316,7 +1316,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
     storage_live(_22)
     storage_live(_27)
     _27 = &raw const (*msg_12) with_metadata(copy msg_12.metadata)
-    _22 = cast<*const Str, *const u8>(copy _27)
+    _22 = cast<*const str, *const u8>(copy _27)
     storage_dead(_27)
     _21 = transmute<*const u8, NonNull<u8>>(copy _22)
     storage_dead(_22)
@@ -1325,7 +1325,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
     storage_live(_25)
     storage_live(_26)
     storage_live(_28)
-    _28 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _28 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _26 = copy _28.metadata
     storage_dead(_28)
     _25 = move _26 wrap.<< const 1 : i32
@@ -1666,7 +1666,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr_1: *
 {
     let _0: (); // return
     let ptr_1: *mut (); // arg #1
-    let msg_2: &'1 Str; // local
+    let msg_2: &'1 str; // local
     let _3: !; // anonymous local
     let _4: Arguments<'3>; // anonymous local
     let _5: usize; // anonymous local
@@ -1676,7 +1676,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr_1: *
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
-    let _12: *const Str; // anonymous local
+    let _12: *const str; // anonymous local
     let _13: &'8 [u8]; // anonymous local
 
     storage_live(msg_2)
@@ -1699,7 +1699,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr_1: *
     storage_live(_7)
     storage_live(_12)
     _12 = &raw const (*msg_2) with_metadata(copy msg_2.metadata)
-    _7 = cast<*const Str, *const u8>(copy _12)
+    _7 = cast<*const str, *const u8>(copy _12)
     storage_dead(_12)
     _6 = transmute<*const u8, NonNull<u8>>(copy _7)
     storage_dead(_7)
@@ -1708,7 +1708,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr_1: *
     storage_live(_10)
     storage_live(_11)
     storage_live(_13)
-    _13 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+    _13 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _11 = copy _13.metadata
     storage_dead(_13)
     _10 = move _11 wrap.<< const 1 : i32
@@ -1727,7 +1727,7 @@ fn core::hint::assert_unchecked::precondition_check(cond_1: bool)
 {
     let _0: (); // return
     let cond_1: bool; // arg #1
-    let msg_2: &'1 Str; // local
+    let msg_2: &'1 str; // local
     let _3: !; // anonymous local
     let _4: Arguments<'3>; // anonymous local
     let _5: NonNull<u8>; // anonymous local
@@ -1736,7 +1736,7 @@ fn core::hint::assert_unchecked::precondition_check(cond_1: bool)
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
-    let _11: *const Str; // anonymous local
+    let _11: *const str; // anonymous local
     let _12: &'8 [u8]; // anonymous local
 
     storage_live(msg_2)
@@ -1750,7 +1750,7 @@ fn core::hint::assert_unchecked::precondition_check(cond_1: bool)
         storage_live(_6)
         storage_live(_11)
         _11 = &raw const (*msg_2) with_metadata(copy msg_2.metadata)
-        _6 = cast<*const Str, *const u8>(copy _11)
+        _6 = cast<*const str, *const u8>(copy _11)
         storage_dead(_11)
         _5 = transmute<*const u8, NonNull<u8>>(copy _6)
         storage_dead(_6)
@@ -1759,7 +1759,7 @@ fn core::hint::assert_unchecked::precondition_check(cond_1: bool)
         storage_live(_9)
         storage_live(_10)
         storage_live(_12)
-        _12 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: hint::assert_unchecked must never be called when the condition is false\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+        _12 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: hint::assert_unchecked must never be called when the condition is false\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
         _10 = copy _12.metadata
         storage_dead(_12)
         _9 = move _10 wrap.<< const 1 : i32

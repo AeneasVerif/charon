@@ -140,9 +140,9 @@ struct MonoContainer::<i32> {
   item: i32,
 }
 
-// Full name: test_crate::MonoContainer::<&'_ Str>
-struct MonoContainer::<&'_ Str> {
-  item: &'_ Str,
+// Full name: test_crate::MonoContainer::<&'_ str>
+struct MonoContainer::<&'_ str> {
+  item: &'_ str,
 }
 
 fn test_crate::{MonoContainer::<i32>}::create::<i32>(item_1: i32) -> MonoContainer::<i32>
@@ -158,15 +158,15 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(item_1: i32) -> MonoContain
     return
 }
 
-fn test_crate::{MonoContainer::<&'_ Str>}::create::<&'_ Str>(item_1: &'_ Str) -> MonoContainer::<&'_ Str>
+fn test_crate::{MonoContainer::<&'_ str>}::create::<&'_ str>(item_1: &'_ str) -> MonoContainer::<&'_ str>
 {
-    let _0: MonoContainer::<&'_ Str>; // return
-    let item_1: &'0 Str; // arg #1
-    let _2: &'1 Str; // anonymous local
+    let _0: MonoContainer::<&'_ str>; // return
+    let item_1: &'0 str; // arg #1
+    let _2: &'1 str; // anonymous local
 
     storage_live(_2)
     _2 = move item_1
-    _0 = MonoContainer::<&'_ Str> { item: move _2 }
+    _0 = MonoContainer::<&'_ str> { item: move _2 }
     storage_dead(_2)
     return
 }
@@ -176,13 +176,13 @@ fn mono_usage()
 {
     let _0: (); // return
     let _container1_1: MonoContainer::<i32>; // local
-    let _container2_2: MonoContainer::<&'_ Str>; // local
+    let _container2_2: MonoContainer::<&'_ str>; // local
 
     _0 = ()
     storage_live(_container1_1)
     _container1_1 = test_crate::{MonoContainer::<i32>}::create::<i32>(const 42 : i32)
     storage_live(_container2_2)
-    _container2_2 = test_crate::{MonoContainer::<&'_ Str>}::create::<&'_ Str>(const "test")
+    _container2_2 = test_crate::{MonoContainer::<&'_ str>}::create::<&'_ str>(const "test")
     _0 = ()
     storage_dead(_container2_2)
     storage_dead(_container1_1)
