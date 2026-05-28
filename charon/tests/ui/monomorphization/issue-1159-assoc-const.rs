@@ -1,5 +1,4 @@
 //@ charon-args=--monomorphize --start-from-pub
-//@ known-failure
 pub trait MyConfig {
     const SLICE_HOLDER: Option<&'static [u64]>;
     fn op(x: u64) -> u64;

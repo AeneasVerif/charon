@@ -1,11 +1,219 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at /home/nadrieril/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/index_vec-0.1.4/src/indexing.rs:42:14:
-index out of bounds: the len is 2 but the index is 3
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::{impl#0}`.
-  --> tests/ui/monomorphization/issue-1159-assoc-const.rs:10:1
-   |
-10 | impl MyConfig for Concrete {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized::{vtable}
+opaque type {vtable}
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option::<&'_ [u64]>
+#[lang_item("Option")]
+pub enum Option::<&'_ [u64]> {
+  None,
+  Some(&'_ [u64]),
+}
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: test_crate::MyConfig
+pub trait MyConfig<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::MyConfig
+pub trait MyConfig<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    const SLICE_HOLDER : Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}]
+    fn op = test_crate::MyConfig::op<Self>[Self]
+    non-dyn-compatible
+}
+
+pub fn test_crate::MyConfig::op<Self>(_1: u64) -> u64
+where
+    [@TraitClause0]: MyConfig<Self>,
+= <method_without_default_body>
+
+// Full name: test_crate::Concrete
+pub struct Concrete {}
+
+// Full name: test_crate::Concrete
+pub struct Concrete {}
+
+// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
+fn ARR() -> [u64; 1 : usize]
+{
+    let _0: [u64; 1 : usize]; // return
+
+    _0 = [const 7 : u64]
+    return
+}
+
+// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
+const ARR: [u64; 1 : usize] = ARR()
+
+// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
+pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
+{
+    let _0: Option::<&'_ [u64]>; // return
+    let _1: &'1 [u64]; // anonymous local
+    let _2: &'3 [u64; 1 : usize]; // anonymous local
+    let _3: &'4 [u64; 1 : usize]; // anonymous local
+    let _4: &'5 [u64; 1 : usize]; // anonymous local
+    let _5: &'6 [u64; 1 : usize]; // anonymous local
+    let _6: &'8 [u64; 1 : usize]; // anonymous local
+    let _7: [u64; 1 : usize]; // anonymous local
+
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = copy ARR
+    _6 = &_7
+    _5 = move _6
+    storage_live(_4)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &(*_3)
+    _1 = @ArrayToSliceShared<'_, u64, 1 : usize>(move _2)
+    storage_dead(_2)
+    _0 = Option::<&'_ [u64]>::Some { 0: move _1 }
+    storage_dead(_1)
+    storage_dead(_3)
+    return
+}
+
+// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
+fn ARR() -> [u64; 1 : usize]
+{
+    let _0: [u64; 1 : usize]; // return
+
+    _0 = [const 7 : u64]
+    return
+}
+
+// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
+const ARR: [u64; 1 : usize] = ARR()
+
+// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
+pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}]
+{
+    let _0: Option<&'6 [u64]>[{built_in impl Sized for &'6 [u64]}]; // return
+    let _1: &'9 [u64]; // anonymous local
+    let _2: &'11 [u64; 1 : usize]; // anonymous local
+    let _3: &'12 [u64; 1 : usize]; // anonymous local
+    let _4: &'13 [u64; 1 : usize]; // anonymous local
+    let _5: &'14 [u64; 1 : usize]; // anonymous local
+    let _6: &'21 [u64; 1 : usize]; // anonymous local
+    let _7: [u64; 1 : usize]; // anonymous local
+
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = copy ARR
+    _6 = &_7
+    _5 = move _6
+    storage_live(_4)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &(*_3)
+    _1 = @ArrayToSliceShared<'_, u64, 1 : usize>(move _2)
+    storage_dead(_2)
+    _0 = Option::Some { 0: move _1 }
+    storage_dead(_1)
+    storage_dead(_3)
+    return
+}
+
+// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
+pub const {impl MyConfig for Concrete}::SLICE_HOLDER: Option::<&'_ [u64]> = {impl MyConfig for Concrete}::SLICE_HOLDER()
+
+// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
+pub const {impl MyConfig for Concrete}::SLICE_HOLDER: Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}] = {impl MyConfig for Concrete}::SLICE_HOLDER()
+
+// Full name: test_crate::{impl MyConfig for Concrete}::op
+pub fn {impl MyConfig for Concrete}::op(x_1: u64) -> u64
+{
+    let _0: u64; // return
+    let x_1: u64; // arg #1
+    let _2: u64; // anonymous local
+    let _3: u64; // anonymous local
+
+    storage_live(_3)
+    storage_live(_2)
+    _2 = copy x_1
+    _3 = copy _2 panic.+ const 1 : u64
+    _0 = move _3
+    storage_dead(_2)
+    return
+}
+
+// Full name: test_crate::{impl MyConfig for Concrete}::op
+pub fn {impl MyConfig for Concrete}::op(x_1: u64) -> u64
+{
+    let _0: u64; // return
+    let x_1: u64; // arg #1
+    let _2: u64; // anonymous local
+    let _3: u64; // anonymous local
+
+    storage_live(_3)
+    storage_live(_2)
+    _2 = copy x_1
+    _3 = copy _2 panic.+ const 1 : u64
+    _0 = move _3
+    storage_dead(_2)
+    return
+}
+
+// Full name: test_crate::entry
+pub fn entry(x_1: u64) -> u64
+{
+    let _0: u64; // return
+    let x_1: u64; // arg #1
+    let _2: u64; // anonymous local
+
+    storage_live(_2)
+    _2 = copy x_1
+    _0 = {impl MyConfig for Concrete}::op(move _2)
+    storage_dead(_2)
+    return
+}
+
+
+
