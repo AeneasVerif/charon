@@ -364,7 +364,7 @@ let rec pp_type_id (env : fmt_env) (fmt : Format.formatter) (id : type_id) :
   | TBuiltin aty -> (
       match aty with
       | TBox -> pp_string fmt "alloc::boxed::Box"
-      | TStr -> pp_string fmt "Str")
+      | TStr -> pp_string fmt "str")
 
 and pp_type_decl_id env fmt def_id =
   match find_short_name env (IdType def_id) with

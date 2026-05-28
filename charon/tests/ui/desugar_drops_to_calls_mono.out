@@ -5,7 +5,7 @@
 pub opaque type Arguments::<'_>
 
 // Full name: core::fmt::{Arguments::<'_>}::from_str::<'_>
-pub fn from_str::<'_>(_1: &'static Str) -> Arguments::<'_>
+pub fn from_str::<'_>(_1: &'static str) -> Arguments::<'_>
 = <opaque>
 
 opaque type core::marker::MetaSized::{vtable}

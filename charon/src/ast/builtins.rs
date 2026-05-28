@@ -25,7 +25,7 @@ impl BuiltinTy {
     pub fn get_name(self) -> Name {
         let name: &[_] = match self {
             BuiltinTy::Box => &["alloc", "boxed", "Box"],
-            BuiltinTy::Str => &["Str"],
+            BuiltinTy::Str => &["str"],
         };
         Name::from_path(name)
     }

@@ -341,7 +341,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
 {
     let _0: (); // return
     let align_1: usize; // arg #1
-    let msg_2: &'1 Str; // local
+    let msg_2: &'1 str; // local
     let _3: !; // anonymous local
     let _4: Arguments<'3>; // anonymous local
     let _5: u32; // anonymous local
@@ -351,7 +351,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
     let _9: usize; // anonymous local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
-    let _12: *const Str; // anonymous local
+    let _12: *const str; // anonymous local
     let _13: &'8 [u8]; // anonymous local
 
     storage_live(msg_2)
@@ -370,7 +370,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
             storage_live(_7)
             storage_live(_12)
             _12 = &raw const (*msg_2) with_metadata(copy msg_2.metadata)
-            _7 = cast<*const Str, *const u8>(copy _12)
+            _7 = cast<*const str, *const u8>(copy _12)
             storage_dead(_12)
             _6 = transmute<*const u8, NonNull<u8>>(copy _7)
             storage_dead(_7)
@@ -379,7 +379,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
             storage_live(_10)
             storage_live(_11)
             storage_live(_13)
-            _13 = transmute<&'11 Str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+            _13 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
             _11 = copy _13.metadata
             storage_dead(_13)
             _10 = move _11 wrap.<< const 1 : i32

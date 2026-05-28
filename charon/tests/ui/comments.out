@@ -508,7 +508,7 @@ pub fn fake_read(x_1: u32)
 fn fool()
 {
     let _0: (); // return
-    let _1: &'1 Str; // anonymous local
+    let _1: &'1 str; // anonymous local
 
     _0 = ()
     storage_live(_1)

@@ -67,7 +67,7 @@ where
     [@TraitClause0]: Debug<Self>,
 = <opaque>
 
-pub fn core::fmt::{Formatter<'a>}::write_str<'a, '_1, '_2>(_1: &'_1 mut Formatter<'a>, _2: &'_2 Str) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn core::fmt::{Formatter<'a>}::write_str<'a, '_1, '_2>(_1: &'_1 mut Formatter<'a>, _2: &'_2 str) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: core::marker::StructuralPartialEq
@@ -174,9 +174,9 @@ pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(self_1: &'_0 Foo, f_2: &'_1 mut 
     let self_1: &'1 Foo; // arg #1
     let f_2: &'5 mut Formatter<'6>; // arg #2
     let _3: &'7 mut Formatter<'8>; // anonymous local
-    let _4: &'10 Str; // anonymous local
-    let _5: &'11 Str; // anonymous local
-    let _6: &'12 Str; // anonymous local
+    let _4: &'10 str; // anonymous local
+    let _5: &'11 str; // anonymous local
+    let _6: &'12 str; // anonymous local
 
     storage_live(_3)
     _3 = &two-phase-mut (*f_2) with_metadata(copy f_2.metadata)
