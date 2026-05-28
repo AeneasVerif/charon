@@ -40,6 +40,17 @@ fn set_mir_options(config: &mut Config) {
     }
 }
 
+/// Enable rustc's parallel front-end.
+fn set_parallel_frontend(config: &mut Config) {
+    if config.opts.unstable_opts.threads <= 1 {
+        // Match rustc's `-Zthreads=0` behavior.
+        const RUSTC_MAX_THREADS_CAP: usize = 256;
+        config.opts.unstable_opts.threads = std::thread::available_parallelism()
+            .map_or(1, |n| n.get())
+            .min(RUSTC_MAX_THREADS_CAP);
+    }
+}
+
 /// Don't even try to codegen. This avoids errors due to checking if the output filename is
 /// available (despite the fact that we won't emit it because we stop compilation early).
 fn set_no_codegen(config: &mut Config) {
@@ -82,6 +93,7 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
         });
 
         set_no_codegen(config);
+        set_parallel_frontend(config);
     }
     set_mir_options(config);
 }
