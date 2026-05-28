@@ -2169,7 +2169,10 @@ and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        index_vec_of_postcard variant_id_of_postcard variant_layout_of_postcard
          ctx st
      in
-     Ok ({ size; align; discriminator; uninhabited; variant_layouts } : layout))
+     let* repr = repr_options_of_postcard ctx st in
+     Ok
+       ({ size; align; discriminator; uninhabited; variant_layouts; repr }
+         : layout))
 
 and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (local, string) result =
@@ -2512,9 +2515,8 @@ and type_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          int_of_postcard ctx st
      in
      let* ptr_metadata = ptr_metadata_of_postcard ctx st in
-     let* repr = option_of_postcard repr_options_of_postcard ctx st in
      Ok
-       ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata; repr }
+       ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
          : type_decl))
 
 and type_decl_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

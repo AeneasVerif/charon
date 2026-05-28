@@ -460,7 +460,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translates the layout as queried from rustc into
     /// the more restricted [`Layout`].
     #[tracing::instrument(skip(self))]
-    pub fn translate_layout(&self, item: &hax::ItemRef) -> Option<Layout> {
+    pub fn translate_layout(&mut self, def: &hax::FullDef<'tcx>) -> Option<Layout> {
+        let item = def.this();
         use rustc_abi as r_abi;
 
         fn translate_variant_layout(
@@ -651,12 +652,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Empty => (None, IndexVec::new()),
         };
 
+        let repr = match &def.kind {
+            hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
+            _ => ReprOptions::default(),
+        };
+
         Some(Layout {
             size,
             align,
             discriminator,
             uninhabited: layout.is_uninhabited(),
             variant_layouts,
+            repr,
         })
     }
 
@@ -691,6 +698,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         tagger: vec![],
                         uninhabited: false,
                     }]),
+                    repr: ReprOptions::default(),
                 })
             }
             _ => raise_error!(

@@ -2551,6 +2551,7 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
           ("discriminator", discriminator);
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
+          ("repr", repr);
         ] ->
         let* size = option_of_json int_of_json ctx size in
         let* align = option_of_json int_of_json ctx align in
@@ -2562,8 +2563,9 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
           index_vec_of_json variant_id_of_json variant_layout_of_json ctx
             variant_layouts
         in
+        let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ size; align; discriminator; uninhabited; variant_layouts }
+          ({ size; align; discriminator; uninhabited; variant_layouts; repr }
             : layout)
     | _ -> Error "")
 
@@ -2997,7 +2999,6 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("kind", kind);
           ("layout", layout);
           ("ptr_metadata", ptr_metadata);
-          ("repr", repr);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -3008,18 +3009,8 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           index_map_of_json string_of_json layout_of_json int_of_json ctx layout
         in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
-        let* repr = option_of_json repr_options_of_json ctx repr in
         Ok
-          ({
-             def_id;
-             item_meta;
-             generics;
-             src;
-             kind;
-             layout;
-             ptr_metadata;
-             repr;
-           }
+          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
             : type_decl)
     | _ -> Error "")
 

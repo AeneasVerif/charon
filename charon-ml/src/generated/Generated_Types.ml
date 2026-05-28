@@ -1069,6 +1069,9 @@ and layout = {
   variant_layouts : variant_layout list;
       (** Map from [VariantId] to the corresponding field layouts. Structs are
           modeled as having exactly one variant, unions as having no variant. *)
+  repr : repr_options;
+      (** The representation options of this type declaration as annotated by
+          the user. *)
 }
 
 (** An item name/path
@@ -1189,9 +1192,6 @@ and type_decl = {
           layout, the target has no entry. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
-  repr : repr_options option;
-      (** The representation options of this type declaration as annotated by
-          the user. Is [None] for foreign type declarations. *)
 }
 
 and type_decl_kind =

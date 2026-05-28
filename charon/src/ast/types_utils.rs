@@ -1426,12 +1426,6 @@ impl<'a, T> Substituted<'a, T> {
 }
 
 impl TypeDecl {
-    pub fn is_c_repr(&self) -> bool {
-        self.repr
-            .as_ref()
-            .is_some_and(|repr| repr.repr_algo == ReprAlgorithm::C)
-    }
-
     pub fn get_field(&self, variant: Option<VariantId>, field: FieldId) -> Option<&Field> {
         let fields = match &self.kind {
             TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields) => fields,
@@ -1506,6 +1500,10 @@ impl Layout {
         } else {
             false
         }
+    }
+
+    pub fn is_c_repr(&self) -> bool {
+        self.repr.repr_algo == ReprAlgorithm::C
     }
 }
 

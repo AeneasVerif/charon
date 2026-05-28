@@ -436,8 +436,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Get the kind of the type decl -- is it a closure?
         let src = self.get_item_source(span, def)?;
 
-        let mut repr: Option<ReprOptions> = None;
-
         // Translate type body
         let kind = match &def.kind {
             _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
@@ -447,10 +445,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 self.error_on_impl_expr_error = false;
                 self.translate_ty(span, ty).map(TypeDeclKind::Alias)
             }
-            hax::FullDefKind::Adt { repr: hax_repr, .. } => {
-                repr = Some(self.translate_repr_options(hax_repr));
-                self.translate_adt_def(trans_id, span, &item_meta, def)
-            }
+            hax::FullDefKind::Adt { .. } => self.translate_adt_def(trans_id, span, &item_meta, def),
             hax::FullDefKind::Closure { args, .. } => self.translate_closure_adt(span, args),
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
@@ -460,7 +455,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Err(err) => TypeDeclKind::Error(err.msg),
         };
         let layout = self
-            .translate_layout(def.this())
+            .translate_layout(def)
             .into_iter()
             .map(|l| (self.get_target_triple(), l))
             .collect();
@@ -473,7 +468,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             src,
             layout,
             ptr_metadata,
-            repr,
         };
 
         Ok(type_def)
