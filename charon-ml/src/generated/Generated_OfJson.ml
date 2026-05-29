@@ -2376,6 +2376,7 @@ and global_kind_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Static" -> Ok Static
+    | `String "ThreadLocal" -> Ok ThreadLocal
     | `String "NamedConst" -> Ok NamedConst
     | `String "AnonConst" -> Ok AnonConst
     | _ -> Error "")

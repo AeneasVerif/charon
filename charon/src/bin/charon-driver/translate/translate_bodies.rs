@@ -618,6 +618,61 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
 }
 
 impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
+    fn missing_ptr_metadata() -> Operand {
+        Operand::Const(Box::new(ConstantExpr {
+            kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
+            ty: Ty::mk_unit(),
+        }))
+    }
+
+    fn translate_thread_local_ref(
+        &mut self,
+        span: Span,
+        def_id: rustc_hir::def_id::DefId,
+    ) -> Result<Rvalue, Error> {
+        let args = ty::GenericArgs::empty();
+        let item = hax::translate_item_ref(&self.hax_state, def_id, args);
+        let global_ref = self.translate_global_decl_ref(span, &item)?;
+
+        let ptr_ty = self.tcx.thread_local_ptr_ty(def_id);
+        let ty = ptr_ty.builtin_deref(true).unwrap();
+        let ty = self.translate_rustc_ty(span, &ty)?;
+        let place = Place::new_global(global_ref, ty);
+        match ptr_ty.kind() {
+            ty::TyKind::Ref(_, _, mutability) => {
+                let kind = if mutability.is_mut() {
+                    BorrowKind::Mut
+                } else {
+                    BorrowKind::Shared
+                };
+                Ok(Rvalue::Ref {
+                    place,
+                    kind,
+                    // Will be fixed by the cleanup pass `insert_ptr_metadata`.
+                    ptr_metadata: Self::missing_ptr_metadata(),
+                })
+            }
+            ty::TyKind::RawPtr(_, mutability) => {
+                let kind = if mutability.is_mut() {
+                    RefKind::Mut
+                } else {
+                    RefKind::Shared
+                };
+                Ok(Rvalue::RawPtr {
+                    place,
+                    kind,
+                    // Will be fixed by the cleanup pass `insert_ptr_metadata`.
+                    ptr_metadata: Self::missing_ptr_metadata(),
+                })
+            }
+            _ => raise_error!(
+                self,
+                span,
+                "unexpected type for thread-local reference: {ptr_ty:?}"
+            ),
+        }
+    }
+
     fn translate_binaryop_kind(&mut self, _span: Span, binop: mir::BinOp) -> Result<BinOp, Error> {
         Ok(match binop {
             mir::BinOp::BitXor => BinOp::BitXor,
@@ -875,10 +930,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     place,
                     kind: borrow_kind,
                     // Will be fixed by the cleanup pass `insert_ptr_metadata`.
-                    ptr_metadata: Operand::Const(Box::new(ConstantExpr {
-                        kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
-                        ty: Ty::mk_unit(),
-                    })),
+                    ptr_metadata: Self::missing_ptr_metadata(),
                 })
             }
             mir::Rvalue::RawPtr(mtbl, place) => {
@@ -892,10 +944,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     place,
                     kind: mtbl,
                     // Will be fixed by the cleanup pass `insert_ptr_metadata`.
-                    ptr_metadata: Operand::Const(Box::new(ConstantExpr {
-                        kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
-                        ty: Ty::mk_unit(),
-                    })),
+                    ptr_metadata: Self::missing_ptr_metadata(),
                 })
             }
             mir::Rvalue::Cast(cast_kind, mir_operand, rust_tgt_ty) => {
@@ -1097,13 +1146,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     }
                 }
             }
-            mir::Rvalue::ThreadLocalRef(_) => {
-                raise_error!(
-                    self,
-                    span,
-                    "charon does not support thread local references"
-                );
-            }
+            mir::Rvalue::ThreadLocalRef(def_id) => self.translate_thread_local_ref(span, *def_id),
             mir::Rvalue::WrapUnsafeBinder { .. } => {
                 raise_error!(
                     self,

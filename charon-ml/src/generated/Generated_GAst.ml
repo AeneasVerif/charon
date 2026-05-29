@@ -183,6 +183,7 @@ type global_decl = {
 
 and global_kind =
   | Static  (** A static. *)
+  | ThreadLocal  (** A thread-local static. *)
   | NamedConst
       (** A const with a name (either top-level or an associated const in a
           trait). *)
