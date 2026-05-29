@@ -1,0 +1,13 @@
+error: found a built-in trait impl we did not recognize: core::marker::FnPtr (lang_item=Some("fn_ptr_trait"))
+ --> tests/ui/simple/fn_ptr_trait.rs:6:5
+  |
+6 |     requires_fn_ptr::<fn()>();
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Error during trait resolution: found a built-in trait impl we did not recognize: core::marker::FnPtr (lang_item=Some("fn_ptr_trait"))
+ --> tests/ui/simple/fn_ptr_trait.rs:6:5
+  |
+6 |     requires_fn_ptr::<fn()>();
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)
