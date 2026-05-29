@@ -146,6 +146,12 @@ pub enum TerminatorKind {
         target: BlockId,
         on_unwind: BlockId,
     },
+    /// An inline assembly block. For now we only preserve the template string.
+    InlineAsm {
+        asm: String,
+        targets: Vec<BlockId>,
+        on_unwind: BlockId,
+    },
     /// Handles panics and impossible cases.
     Abort(AbortKind),
     Return,

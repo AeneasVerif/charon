@@ -277,6 +277,7 @@ impl LlbcPass for Transform {
                 }
                 Nop
                 | Error(..)
+                | InlineAsm { .. }
                 | Assert { .. }
                 | Abort(..)
                 | StorageDead(..)

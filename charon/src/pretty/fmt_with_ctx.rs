@@ -1719,6 +1719,30 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                     on_failure.with_ctx(ctx)
                 )
             }
+            StatementKind::InlineAsm { asm, targets } => {
+                write!(f, "asm!({asm:?})")?;
+                if let [target] = targets.as_slice() {
+                    for statement in &target.statements {
+                        write!(f, "\n{}", statement.with_ctx(ctx))?;
+                    }
+                    return Ok(());
+                }
+                if !targets.is_empty() {
+                    write!(f, " {{")?;
+                    let ctx1 = &ctx.increase_indent();
+                    let tab1 = ctx1.indent();
+                    let ctx2 = &ctx1.increase_indent();
+                    for (i, target) in targets.iter().enumerate() {
+                        write!(
+                            f,
+                            "\n{tab1}target {i} => {{\n{}{tab1}}}",
+                            target.with_ctx(ctx2)
+                        )?;
+                    }
+                    write!(f, "\n{tab}}}")?;
+                }
+                Ok(())
+            }
             StatementKind::Call(call) => {
                 write!(f, "{}", call.with_ctx(ctx))
             }
@@ -1866,6 +1890,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     "assert {} -> bb{target} (unwind: bb{on_unwind})",
                     assert.with_ctx(ctx),
                 )
+            }
+            TerminatorKind::InlineAsm {
+                asm,
+                targets,
+                on_unwind,
+            } => {
+                let targets = targets
+                    .iter()
+                    .enumerate()
+                    .map(|(i, target)| format!("target {i}: bb{target}"))
+                    .chain([format!("unwind: bb{on_unwind}")])
+                    .format(", ");
+                write!(f, "asm!({asm:?}) -> {targets}")
             }
             TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
             TerminatorKind::Return => write!(f, "return"),

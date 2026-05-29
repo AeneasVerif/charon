@@ -1028,6 +1028,22 @@ impl<'a> ReconstructCtx<'a> {
                 let target = self.translate_jump(terminator.span, *target);
                 tgt::Statement::new(src_span, st).into_block().merge(target)
             }
+            src::TerminatorKind::InlineAsm {
+                asm,
+                targets,
+                on_unwind: _,
+            } => {
+                // TODO: Have unwinds in the LLBC.
+                let targets = targets
+                    .iter()
+                    .map(|target| self.translate_jump(terminator.span, *target))
+                    .collect();
+                let st = tgt::StatementKind::InlineAsm {
+                    asm: asm.clone(),
+                    targets,
+                };
+                tgt::Statement::new(src_span, st).into_block()
+            }
             src::TerminatorKind::Goto { target } => self.translate_jump(terminator.span, *target),
             src::TerminatorKind::Switch { discr, targets } => {
                 // Translate the target expressions
