@@ -91,6 +91,11 @@ fn type_layout() -> anyhow::Result<()> {
             B(u32),
         }
 
+        enum UninhabitedVariantWithFields {
+            Bar,
+            Baz { x: u32, y: !, z: u32 },
+        }
+
         struct Uninhabited(!);
 
         enum DiscriminantInNicheOfField<'a,T> {
@@ -157,6 +162,8 @@ fn type_layout() -> anyhow::Result<()> {
         type Tuple = (u32, u32);
 
         type Usize = usize;
+
+        type Str = str;
 
         type Ref<'a> = &'a mut u32;
 
