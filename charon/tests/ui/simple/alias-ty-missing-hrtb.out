@@ -12,19 +12,20 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::HasAssoc
-pub trait HasAssoc<Self, Self_Assoc>
+// Full name: test_crate::HasLifetimeAssoc
+pub trait HasLifetimeAssoc<'a, Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
-    vtable: test_crate::HasAssoc::{vtable}<Self_Assoc>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Assoc>
+    type Assoc
+    vtable: test_crate::HasLifetimeAssoc::{vtable}<'a, Self::Assoc>
 }
 
-// Full name: test_crate::Alias
-pub type Alias<B, Clause1_Assoc>
+// Full name: test_crate::FnAlias
+pub type FnAlias<B>
 where
     [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: HasAssoc<B, Clause1_Assoc>, = Clause1_Assoc
+    [@TraitClause1]: HasLifetimeAssoc<'_, B>, = fn<'a>(@TraitClause1::Assoc)
 
 
 

@@ -52,7 +52,10 @@ pub trait Trait<Self>
 // Full name: test_crate::Alias
 pub type Alias<T>
 where
-    [@TraitClause0]: Sized<T>, = Option<UNKNOWN(Could not find a clause for `Binder { value: <T as Trait>, bound_vars: [] }` in the current context: `Unimplemented`)::AssocType>[UNKNOWN(Could not find a clause for `Binder { value: <<T as Trait>::AssocType as std::marker::Sized>, bound_vars: [] }` in the current context: `Ambiguity`)]
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Trait<T>,
+    [@TraitClause2]: Trait<T>,
+    [@TraitClause3]: Sized<@TraitClause2::AssocType>, = Option<@TraitClause1::AssocType>[@TraitClause3]
 
 // Full name: test_crate::C
 pub trait C<Self, T>
@@ -78,7 +81,10 @@ where
 pub type S2<I, F>
 where
     [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>, = S<I, F>[@TraitClause0, @TraitClause1, UNKNOWN(Could not find a clause for `Binder { value: <I as std::iter::Iterator>, bound_vars: [] }` in the current context: `Unimplemented`), UNKNOWN(Could not find a clause for `Binder { value: <F as C<<I as std::iter::Iterator>::Item>>, bound_vars: [] }` in the current context: `Unimplemented`)]
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Iterator<I>,
+    [@TraitClause3]: Iterator<I>,
+    [@TraitClause4]: C<F, @TraitClause3::Item>, = S<I, F>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause4]
 
 
 
