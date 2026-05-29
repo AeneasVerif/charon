@@ -8,6 +8,8 @@ use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 
+sinto_reexport!(rustc_abi::ExternAbi);
+
 /// Generic container for decorating items with a type, a span,
 /// attributes and other meta-data.
 
@@ -1072,18 +1074,6 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
         }
         _ => UnsizingMetadata::Unknown,
     }
-}
-
-/// Reflects [`rustc_abi::ExternAbi`]
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
-#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_abi::ExternAbi, state: S as s)]
-pub enum ExternAbi {
-    Rust,
-    C {
-        unwind: bool,
-    },
-    #[todo]
-    Other(String),
 }
 
 /// Reflects [`ty::FnSig`]

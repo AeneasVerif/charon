@@ -1,0 +1,42 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::rust_id
+pub fn rust_id(x_1: u32) -> u32
+{
+    let _0: u32; // return
+    let x_1: u32; // arg #1
+
+    _0 = copy x_1
+    return
+}
+
+// Full name: test_crate::c_id
+pub extern "C" fn c_id(x_1: u32) -> u32
+{
+    let _0: u32; // return
+    let x_1: u32; // arg #1
+
+    _0 = copy x_1
+    return
+}
+
+// Full name: test_crate::get_rust_fn
+pub fn get_rust_fn() -> fn(u32) -> u32
+{
+    let _0: fn(u32) -> u32; // return
+
+    _0 = cast<rust_id, fn(u32) -> u32>(const rust_id)
+    return
+}
+
+// Full name: test_crate::get_c_fn
+pub fn get_c_fn() -> extern "C" fn(u32) -> u32
+{
+    let _0: extern "C" fn(u32) -> u32; // return
+
+    _0 = cast<c_id, extern "C" fn(u32) -> u32>(const c_id)
+    return
+}
+
+
+

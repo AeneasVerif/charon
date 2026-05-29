@@ -142,7 +142,8 @@ where
 // Full name: test_crate::GenericWithoutBound
 pub type GenericWithoutBound<'a, T>
 where
-    [@TraitClause0]: Sized<T>, = Cow<'a, [T]>[{built_in impl MetaSized for [T]}, UNKNOWN(Could not find a clause for `Binder { value: <[T] as std::borrow::ToOwned>, bound_vars: [] }` in the current context: `Unimplemented`)]
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: ToOwned<[T]>, = Cow<'a, [T]>[{built_in impl MetaSized for [T]}, @TraitClause1]
 
 
 

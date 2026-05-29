@@ -124,6 +124,7 @@ fn transform_dyn_trait_call(
         // This casts back to the expected signature.
         let real_sig_ty = TyKind::FnPtr(RegionBinder::empty(FunSig {
             is_unsafe: true,
+            abi: Abi::rust(),
             inputs: call.args.iter().map(|op| op.ty().clone()).collect(),
             output: call.dest.ty.clone(),
         }))

@@ -83,6 +83,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for Abi {
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.rust_name())
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for BuiltinAssertKind {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -558,13 +564,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
 
 impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let keyword = if self.signature.is_unsafe {
-            "unsafe fn"
-        } else {
-            "fn"
-        };
+        let mut keyword = String::new();
+        if self.signature.is_unsafe {
+            keyword.push_str("unsafe ");
+        }
+        if !self.signature.abi.is_rust() {
+            keyword.push_str(&format!("extern \"{}\" ", self.signature.abi.with_ctx(ctx)));
+        }
+        keyword.push_str("fn");
         self.item_meta
-            .fmt_item_intro(f, ctx, keyword, self.def_id)?;
+            .fmt_item_intro(f, ctx, &keyword, self.def_id)?;
 
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
@@ -645,12 +654,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<FunSig> {
         let ctx = &ctx.push_bound_regions(&self.regions);
         let FunSig {
             is_unsafe,
+            abi,
             inputs,
             output,
         } = &self.skip_binder;
 
         if *is_unsafe {
             write!(f, "unsafe ")?;
+        }
+
+        if !abi.is_rust() {
+            write!(f, "extern \"{}\" ", abi.with_ctx(ctx))?;
         }
 
         write!(f, "fn")?;

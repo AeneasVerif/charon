@@ -1,0 +1,31 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::HasLifetimeAssoc
+pub trait HasLifetimeAssoc<'a, Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Assoc>
+    type Assoc
+    vtable: test_crate::HasLifetimeAssoc::{vtable}<'a, Self::Assoc>
+}
+
+// Full name: test_crate::FnAlias
+pub type FnAlias<B>
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: HasLifetimeAssoc<'_, B>, = fn<'a>(@TraitClause1::Assoc)
+
+
+

@@ -194,7 +194,13 @@ class ['self] map_ty_base =
       AssocConstId.Map.visit_map
   end
 
-type assoc_const_id = (AssocConstId.id[@visitors.opaque])
+type abi =
+  | AbiRust
+  | AbiC
+  | AbiOther of string
+      (** Rust's spelling for the ABI, e.g. "C-unwind" or "system". *)
+
+and assoc_const_id = (AssocConstId.id[@visitors.opaque])
 and assoc_type_id = (AssocTypeId.id[@visitors.opaque])
 
 (** A value of type [T] bound by generic parameters. Used in any context where
@@ -469,6 +475,7 @@ and fun_id =
 (** A function signature. *)
 and fun_sig = {
   is_unsafe : bool;  (** Is the function unsafe or not *)
+  abi : abi;  (** The calling convention of this function. *)
   inputs : ty list;
   output : ty;
 }

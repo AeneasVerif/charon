@@ -1,0 +1,52 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::ToU64
+pub trait ToU64<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    fn to_u64 = to_u64<Self>[Self]
+    vtable: test_crate::ToU64::{vtable}
+}
+
+// Full name: test_crate::ToU64::to_u64
+pub fn to_u64<Self>(_1: Self) -> u64
+where
+    [@TraitClause0]: ToU64<Self>,
+= <method_without_default_body>
+
+// Full name: test_crate::WithConstTy
+pub trait WithConstTy<Self, Self_W, const LEN : usize>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self_W>
+    parent_clause2 : [@TraitClause2]: ToU64<Self_W>
+    const LEN2 : usize
+    non-dyn-compatible
+}
+
+// Full name: test_crate::WithConstTy::LEN2
+pub fn LEN2<Self, Clause0_W, const LEN : usize>() -> usize
+{
+    let _0: usize; // return
+
+    _0 = const 32 : usize
+    return
+}
+
+// Full name: test_crate::WithConstTy::LEN2
+pub const LEN2<Self, Clause0_W, const LEN : usize>: usize = LEN2()
+
+
+
