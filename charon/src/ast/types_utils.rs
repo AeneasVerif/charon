@@ -1499,11 +1499,9 @@ impl Discriminator {
 
 impl Layout {
     pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> bool {
-        if let Some(v) = self.variant_layouts.get(variant_id) {
-            v.uninhabited
-        } else {
-            false
-        }
+        self.variant_layouts[variant_id]
+            .as_ref()
+            .is_none_or(|v| v.uninhabited)
     }
 
     pub fn is_c_repr(&self) -> bool {

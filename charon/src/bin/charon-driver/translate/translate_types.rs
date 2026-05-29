@@ -467,7 +467,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         fn translate_variant_layout(
             variant_layout: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
             tagger: Vec<(ByteCount, ScalarValue)>,
-        ) -> VariantLayout {
+        ) -> Option<VariantLayout> {
             let field_offsets = match &variant_layout.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
                     offsets.iter().map(|o| o.bytes()).collect()
@@ -476,11 +476,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 r_abi::FieldsShape::Primitive => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
-            VariantLayout {
+            Some(VariantLayout {
                 field_offsets,
                 uninhabited: variant_layout.is_uninhabited(),
                 tagger,
-            }
+            })
         }
 
         fn translate_primitive_int(int_ty: r_abi::Integer, signed: bool) -> IntegerTy {
@@ -565,7 +565,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
 
                 // Compute per-variant tag values and build tagger + discriminator children.
-                let mut variant_layouts: IndexVec<VariantId, VariantLayout> = IndexVec::new();
+                let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
+                    IndexVec::new();
                 let mut children = Vec::new();
 
                 for (id, variant_layout) in variants.iter_enumerated() {
@@ -628,15 +629,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         } else {
                             1
                         };
-                        // All the variants not initialized below are uninhabited.
-                        let mut variant_layouts: IndexVec<VariantId, VariantLayout> = (0
-                            ..n_variants)
-                            .map(|_| VariantLayout {
-                                field_offsets: IndexVec::default(),
-                                uninhabited: true,
-                                tagger: vec![],
-                            })
-                            .collect();
+                        let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
+                            (0..n_variants).map(|_| None).collect();
                         variant_layouts[variant_id] = translate_variant_layout(&layout, vec![]);
                         variant_layouts
                     }
@@ -693,11 +687,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     align: Some(align),
                     discriminator: None,
                     uninhabited: false,
-                    variant_layouts: IndexVec::from([VariantLayout {
+                    variant_layouts: IndexVec::from([Some(VariantLayout {
                         field_offsets,
                         tagger: vec![],
                         uninhabited: false,
-                    }]),
+                    })]),
                     repr: ReprOptions::default(),
                 })
             }
