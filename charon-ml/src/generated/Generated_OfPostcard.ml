@@ -1973,7 +1973,7 @@ and fun_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* def_id = fun_decl_id_of_postcard ctx st in
      let* item_meta = item_meta_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
-     let* signature = fun_sig_of_postcard ctx st in
+     let* signature = box_of_postcard fun_sig_of_postcard ctx st in
      let* src = item_source_of_postcard ctx st in
      let* is_global_initializer =
        option_of_postcard global_decl_id_of_postcard ctx st

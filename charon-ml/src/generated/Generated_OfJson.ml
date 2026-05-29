@@ -2317,7 +2317,7 @@ and fun_decl_of_json (ctx : of_json_ctx) (js : json) : (fun_decl, string) result
         let* def_id = fun_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
-        let* signature = fun_sig_of_json ctx signature in
+        let* signature = box_of_json fun_sig_of_json ctx signature in
         let* src = item_source_of_json ctx src in
         let* is_global_initializer =
           option_of_json global_decl_id_of_json ctx is_global_initializer

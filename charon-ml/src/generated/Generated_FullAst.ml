@@ -231,8 +231,7 @@ and fun_decl = {
   item_meta : item_meta;  (** The meta data associated with the declaration. *)
   generics : generic_params;
   signature : fun_sig;
-      (** The signature contains the inputs/output types *with* non-erased
-          regions. It also contains the list of region and type parameters. *)
+      (** The signature contains the inputs/output types and ABI details. *)
   src : item_source;
       (** The function kind: "regular" function, trait method declaration, etc.
       *)

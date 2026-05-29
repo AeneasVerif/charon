@@ -179,7 +179,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             def_id,
             item_meta,
             generics: self.into_generics(),
-            signature,
+            signature: Box::new(signature),
             src,
             is_global_initializer: None,
             body,
