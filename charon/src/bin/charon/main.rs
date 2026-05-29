@@ -145,6 +145,9 @@ fn translate_multi_target(
                     // Keep variables bound so that we can manipulate them when merging. We'll
                     // apply the pass at the end if needed.
                     opts.unbind_item_vars = false;
+                    // Make sure that traits have the same methods translated in each target. We
+                    // filter unused methods after merge.
+                    opts.translate_all_methods = true;
 
                     let status = translate_one(opts, target)?;
                     if !status.success() {

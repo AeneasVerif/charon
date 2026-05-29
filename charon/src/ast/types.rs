@@ -280,7 +280,6 @@ pub struct Binder<T> {
     pub skip_binder: T,
     /// The kind of binder this is.
     #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
-    #[drive(skip)]
     pub kind: BinderKind,
 }
 
