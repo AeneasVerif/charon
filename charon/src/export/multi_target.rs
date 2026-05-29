@@ -615,33 +615,49 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
             let fun_node = Fun(fun_id);
             graph.add_node(fun_node);
 
-            match &fun.src {
+            // Trait-declaration / trait-implementation functions are only subject
+            // to method-reachability tracking when the associated item is actually
+            // a method. Associated constants (and any other non-method assoc items
+            // that may be represented as `FunDecl`s) are kept unconditionally:
+            // they are never elided as "unused default methods" because they are
+            // not methods at all.
+            let method_key = match &fun.src {
                 ItemSource::TraitDecl {
                     trait_ref, item_id, ..
                 }
                 | ItemSource::TraitImpl {
                     trait_ref, item_id, ..
-                } => {
-                    let method_id = *item_id.as_method().unwrap();
-                    let method_key = (trait_ref.id, method_id);
-                    // The method node is reachable iff any of the corresponding function nodes is.
-                    graph.add_edge(Method(method_key), fun_node, ());
-                    graph.add_edge(fun_node, Method(method_key), ());
-                }
-                _ => {}
+                } => item_id.as_method().map(|m| (trait_ref.id, *m)),
+                _ => None,
+            };
+
+            if let Some(method_key) = method_key {
+                // The method node is reachable iff any of the corresponding function nodes is.
+                graph.add_edge(Method(method_key), fun_node, ());
+                graph.add_edge(fun_node, Method(method_key), ());
             }
 
-            match &fun.src {
+            // A function is reachable from the root unless it is a method we want
+            // to selectively keep based on use sites, or a target-dependent variant
+            // (which is reachable iff its dispatcher is).
+            let is_default_trait_method = matches!(
+                &fun.src,
                 ItemSource::TraitDecl {
-                    has_default: true, ..
+                    has_default: true,
+                    item_id: AssocItemId::Method(_),
+                    ..
                 }
-                | ItemSource::TraitImpl { .. }
-                | ItemSource::TargetDependent { .. } => {}
-                // Functions that aren't any of the above are reachable. target-dependent functions
-                // will be reachable if their dispatcher is.
-                _ => {
-                    graph.add_edge(Root, fun_node, ());
+            );
+            let is_impl_method = matches!(
+                &fun.src,
+                ItemSource::TraitImpl {
+                    item_id: AssocItemId::Method(_),
+                    ..
                 }
+            );
+            let is_target_dependent = matches!(&fun.src, ItemSource::TargetDependent { .. });
+            if !(is_default_trait_method || is_impl_method || is_target_dependent) {
+                graph.add_edge(Root, fun_node, ());
             }
 
             let _ = fun.body.drive(&mut MentionedFunVisitor(|n| {

@@ -1,0 +1,52 @@
+#[lang_item("meta_sized")]
+pub trait core::marker::MetaSized<Self>
+
+pub trait test_crate::WithAssocConstDefault<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    const N : usize
+    non-dyn-compatible
+}
+
+pub fn test_crate::WithAssocConstDefault::N<Self>() -> usize
+where
+    [@TraitClause0]: test_crate::WithAssocConstDefault<Self>,
+{
+    let _0: usize; // return
+
+    _0 = const 4 : usize
+    return
+}
+
+pub const test_crate::WithAssocConstDefault::N<Self>: usize
+where
+    [@TraitClause0]: test_crate::WithAssocConstDefault<Self>,
+ = test_crate::WithAssocConstDefault::N()
+
+pub trait test_crate::WithAssocConstNoDefault<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    const N : usize
+    non-dyn-compatible
+}
+
+pub struct test_crate::S {}
+
+pub fn test_crate::{impl test_crate::WithAssocConstNoDefault for test_crate::S}::N() -> usize
+{
+    let _0: usize; // return
+
+    _0 = const 7 : usize
+    return
+}
+
+pub const test_crate::{impl test_crate::WithAssocConstNoDefault for test_crate::S}::N: usize = test_crate::{impl test_crate::WithAssocConstNoDefault for test_crate::S}::N()
+
+// Full name: test_crate::{impl test_crate::WithAssocConstNoDefault for test_crate::S}
+impl test_crate::WithAssocConstNoDefault for test_crate::S {
+    parent_clause0 = {built_in impl core::marker::MetaSized for test_crate::S}
+    const N = test_crate::{impl test_crate::WithAssocConstNoDefault for test_crate::S}::N
+    non-dyn-compatible
+}
+
+
