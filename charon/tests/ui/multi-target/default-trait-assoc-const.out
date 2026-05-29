@@ -1,4 +1,33 @@
+#[lang_item("meta_sized")]
+pub trait core::marker::MetaSized<Self>
 
-thread 'main' panicked at src/export/multi_target.rs:625:58:
-called `Option::unwrap()` on a `None` value
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+trait test_crate::Trait<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    const VALUE : usize
+    non-dyn-compatible
+}
+
+fn test_crate::Trait::VALUE<Self>() -> usize
+where
+    [@TraitClause0]: test_crate::Trait<Self>,
+{
+    let _0: usize; // return
+
+    _0 = const 1 : usize
+    return
+}
+
+const test_crate::Trait::VALUE<Self>: usize
+where
+    [@TraitClause0]: test_crate::Trait<Self>,
+ = test_crate::Trait::VALUE()
+
+// Full name: test_crate::{impl test_crate::Trait for ()}
+impl test_crate::Trait for () {
+    parent_clause0 = {built_in impl core::marker::MetaSized for ()}
+    const VALUE = test_crate::Trait::VALUE<()>[test_crate::{impl test_crate::Trait for ()}]
+    non-dyn-compatible
+}
+
+

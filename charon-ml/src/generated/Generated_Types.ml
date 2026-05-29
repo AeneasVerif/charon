@@ -1026,7 +1026,9 @@ and item_source =
 
           Fields:
           - [trait_ref]: The trait declaration this item belongs to.
-          - [item_id]: The associated item this corresponds to.
+          - [item_id]: The associated item this corresponds to. Note that a
+            function could have [AssocItemId::Const] if it's the initializer of
+            a trait const.
           - [has_default]: Whether the trait declaration provides a default
             implementation. *)
   | TraitImplItem of trait_impl_ref * trait_decl_ref * assoc_item_id * bool
@@ -1035,7 +1037,9 @@ and item_source =
           Fields:
           - [impl_ref]: The trait implementation the method belongs to.
           - [trait_ref]: The trait declaration that the impl block implements.
-          - [item_id]: The associated item this corresponds to.
+          - [item_id]: The associated item this corresponds to. Note that a
+            function could have [AssocItemId::Const] if it's the initializer of
+            a trait const.
           - [reuses_default]: True if the trait decl had a default
             implementation for this function/const and this item is a copy of
             the default item. *)
