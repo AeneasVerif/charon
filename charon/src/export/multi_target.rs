@@ -683,4 +683,12 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
             self.map(id);
         }
     }
+    fn enter_binder<T: AstVisitable>(&mut self, x: &mut Binder<T>) {
+        match &mut x.kind {
+            BinderKind::TraitType(trait_id, _) | BinderKind::TraitMethod(trait_id, _) => {
+                self.map(trait_id);
+            }
+            BinderKind::InherentImplBlock | BinderKind::Dyn | BinderKind::Other => {}
+        }
+    }
 }
