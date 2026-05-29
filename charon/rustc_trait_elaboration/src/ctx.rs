@@ -1,9 +1,11 @@
 use rustc_arena::TypedArena;
 use rustc_data_structures::sharded::ShardedHashMap;
+use rustc_hash::FxHashMap;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty;
+use std::cell::{RefCell, RefMut};
 
-use crate::{BoundsOptions, ImplExpr, ImplExprContents, ItemPredicates};
+use crate::{BoundsOptions, ImplExpr, ImplExprContents, ItemPredicates, PredicateSearcher};
 
 mod intern {
     use rustc_data_structures::intern::Interned;
@@ -80,6 +82,7 @@ struct ElaborationData<'tcx> {
     bounds_options: BoundsOptions,
     impl_exprs: intern::ImplExprInterner<'tcx>,
     impl_exprs_arena: TypedArena<ImplExprContents<'tcx>>,
+    predicate_searchers: RefCell<FxHashMap<DefId, PredicateSearcher<'tcx>>>,
     required_predicates: PredicateCache<'tcx>,
     required_recursively_predicates: PredicateCache<'tcx>,
     implied_predicates: PredicateCache<'tcx>,
@@ -133,6 +136,16 @@ impl<'tcx> ElaborationCtx<'tcx> {
 
     pub fn intern_impl_expr(&self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
         self.data.intern_impl_expr(contents)
+    }
+
+    pub fn predicate_searcher_for(&self, def_id: DefId) -> RefMut<'_, PredicateSearcher<'tcx>> {
+        let mut predicate_searchers = self.data.predicate_searchers.borrow_mut();
+        predicate_searchers
+            .entry(def_id)
+            .or_insert_with(|| PredicateSearcher::new_for_owner(*self, def_id));
+        RefMut::map(predicate_searchers, |predicate_searchers| {
+            predicate_searchers.get_mut(&def_id).unwrap()
+        })
     }
 
     pub(crate) fn cached_required_predicates(

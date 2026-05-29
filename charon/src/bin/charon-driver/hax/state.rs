@@ -109,8 +109,6 @@ mod types {
         pub tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
         pub item_refs: HashMap<(DefId, ty::GenericArgsRef<'tcx>, bool), ItemRef>,
-        /// Cache the trait resolution engine for each item.
-        pub predicate_searcher: Option<crate::hax::traits::PredicateSearcher<'tcx>>,
         /// Cache of trait refs to resolved impl expressions.
         pub impl_exprs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::ImplExpr>,
     }
@@ -246,11 +244,9 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
         self.with_item_cache(self.owner_id(), f)
     }
     fn with_predicate_searcher<T>(&self, f: impl FnOnce(&mut PredicateSearcher<'tcx>) -> T) -> T {
-        self.with_cache(|cache| {
-            f(cache.predicate_searcher.get_or_insert_with(|| {
-                PredicateSearcher::new_for_owner(self.base().elab_ctx, self.owner_id())
-            }))
-        })
+        let base = self.base();
+        let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(self.owner_id());
+        f(&mut predicate_searcher)
     }
 }
 impl<'tcx, S: UnderOwnerState<'tcx>> WithItemCacheExt<'tcx> for S {}

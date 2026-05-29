@@ -96,7 +96,7 @@ pub struct PredicateSearcher<'tcx> {
 
 impl<'tcx> PredicateSearcher<'tcx> {
     /// Initialize the elaborator with the predicates accessible within this item.
-    pub fn new_for_owner(elab_ctx: ElaborationCtx<'tcx>, owner_id: DefId) -> Self {
+    pub(crate) fn new_for_owner(elab_ctx: ElaborationCtx<'tcx>, owner_id: DefId) -> Self {
         let tcx = elab_ctx.tcx;
         let initial_self_pred = initial_self_pred(tcx, owner_id);
         let mut out = Self {
