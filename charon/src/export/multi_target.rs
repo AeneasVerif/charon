@@ -615,27 +615,30 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
             let fun_node = Fun(fun_id);
             graph.add_node(fun_node);
 
-            match &fun.src {
-                ItemSource::TraitDecl {
-                    trait_ref, item_id, ..
-                }
-                | ItemSource::TraitImpl {
-                    trait_ref, item_id, ..
-                } => {
-                    let method_id = *item_id.as_method().unwrap();
-                    let method_key = (trait_ref.id, method_id);
-                    // The method node is reachable iff any of the corresponding function nodes is.
-                    graph.add_edge(Method(method_key), fun_node, ());
-                    graph.add_edge(fun_node, Method(method_key), ());
-                }
-                _ => {}
+            if let ItemSource::TraitDecl {
+                trait_ref, item_id, ..
+            }
+            | ItemSource::TraitImpl {
+                trait_ref, item_id, ..
+            } = &fun.src
+                && let Some(&method_id) = item_id.as_method()
+            {
+                let method_key = (trait_ref.id, method_id);
+                // The method node is reachable iff any of the corresponding function nodes is.
+                graph.add_edge(Method(method_key), fun_node, ());
+                graph.add_edge(fun_node, Method(method_key), ());
             }
 
             match &fun.src {
                 ItemSource::TraitDecl {
-                    has_default: true, ..
+                    has_default: true,
+                    item_id: AssocItemId::Method(_),
+                    ..
                 }
-                | ItemSource::TraitImpl { .. }
+                | ItemSource::TraitImpl {
+                    item_id: AssocItemId::Method(_),
+                    ..
+                }
                 | ItemSource::TargetDependent { .. } => {}
                 // Functions that aren't any of the above are reachable. target-dependent functions
                 // will be reachable if their dispatcher is.
