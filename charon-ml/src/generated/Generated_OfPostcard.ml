@@ -1461,10 +1461,15 @@ module Ullbc = struct
            let* on_unwind = block_id_of_postcard ctx st in
            Ok (TAssert (assert_, target, on_unwind))
        | 5 ->
+           let* asm = string_of_postcard ctx st in
+           let* targets = list_of_postcard block_id_of_postcard ctx st in
+           let* on_unwind = block_id_of_postcard ctx st in
+           Ok (InlineAsm (asm, targets, on_unwind))
+       | 6 ->
            let* x_0 = abort_kind_of_postcard ctx st in
            Ok (Abort x_0)
-       | 6 -> Ok Return
-       | 7 -> Ok UnwindResume
+       | 7 -> Ok Return
+       | 8 -> Ok UnwindResume
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 end
 
@@ -1530,26 +1535,30 @@ module Llbc = struct
            let* on_failure = abort_kind_of_postcard ctx st in
            Ok (Assert (assert_, on_failure))
        | 8 ->
+           let* asm = string_of_postcard ctx st in
+           let* targets = list_of_postcard block_of_postcard ctx st in
+           Ok (InlineAsm (asm, targets))
+       | 9 ->
            let* x_0 = call_of_postcard ctx st in
            Ok (Call x_0)
-       | 9 ->
+       | 10 ->
            let* x_0 = abort_kind_of_postcard ctx st in
            Ok (Abort x_0)
-       | 10 -> Ok Return
-       | 11 ->
-           let* x_0 = usize_of_postcard ctx st in
-           Ok (Break x_0)
+       | 11 -> Ok Return
        | 12 ->
            let* x_0 = usize_of_postcard ctx st in
+           Ok (Break x_0)
+       | 13 ->
+           let* x_0 = usize_of_postcard ctx st in
            Ok (Continue x_0)
-       | 13 -> Ok Nop
-       | 14 ->
+       | 14 -> Ok Nop
+       | 15 ->
            let* x_0 = switch_of_postcard ctx st in
            Ok (Switch x_0)
-       | 15 ->
+       | 16 ->
            let* x_0 = block_of_postcard ctx st in
            Ok (Loop x_0)
-       | 16 ->
+       | 17 ->
            let* x_0 = string_of_postcard ctx st in
            Ok (Error x_0)
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

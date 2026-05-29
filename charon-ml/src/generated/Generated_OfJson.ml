@@ -1661,6 +1661,17 @@ module Ullbc = struct
           let* target = block_id_of_json ctx target in
           let* on_unwind = block_id_of_json ctx on_unwind in
           Ok (TAssert (assert_, target, on_unwind))
+      | `Assoc
+          [
+            ( "InlineAsm",
+              `Assoc
+                [ ("asm", asm); ("targets", targets); ("on_unwind", on_unwind) ]
+            );
+          ] ->
+          let* asm = string_of_json ctx asm in
+          let* targets = list_of_json block_id_of_json ctx targets in
+          let* on_unwind = block_id_of_json ctx on_unwind in
+          Ok (InlineAsm (asm, targets, on_unwind))
       | `Assoc [ ("Abort", abort) ] ->
           let* abort = abort_kind_of_json ctx abort in
           Ok (Abort abort)
@@ -1752,6 +1763,11 @@ module Llbc = struct
           let* assert_ = assertion_of_json ctx assert_ in
           let* on_failure = abort_kind_of_json ctx on_failure in
           Ok (Assert (assert_, on_failure))
+      | `Assoc [ ("InlineAsm", `Assoc [ ("asm", asm); ("targets", targets) ]) ]
+        ->
+          let* asm = string_of_json ctx asm in
+          let* targets = list_of_json block_of_json ctx targets in
+          Ok (InlineAsm (asm, targets))
       | `Assoc [ ("Call", call) ] ->
           let* call = call_of_json ctx call in
           Ok (Call call)

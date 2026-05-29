@@ -60,6 +60,11 @@ pub enum StatementKind {
         assert: Assert,
         on_failure: AbortKind,
     },
+    /// An inline assembly block. For now we only preserve the template string.
+    InlineAsm {
+        asm: String,
+        targets: Vec<Block>,
+    },
     Call(Call),
     /// Panic also handles "unreachable". We keep the name of the panicking function that was
     /// called.

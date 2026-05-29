@@ -90,6 +90,7 @@ impl Terminator {
             Abort(..) => true,
             Goto { .. }
             | Switch { .. }
+            | InlineAsm { .. }
             | Return
             | Call { .. }
             | Drop { .. }
@@ -111,6 +112,9 @@ impl Terminator {
                 smallvec![*target]
             }
             TerminatorKind::Switch { targets, .. } => targets.targets(),
+            TerminatorKind::InlineAsm {
+                targets, on_unwind, ..
+            } => targets.iter().copied().chain([*on_unwind]).collect(),
             TerminatorKind::Call {
                 target, on_unwind, ..
             }
@@ -131,6 +135,9 @@ impl Terminator {
                 smallvec![target]
             }
             TerminatorKind::Switch { targets, .. } => targets.targets_mut(),
+            TerminatorKind::InlineAsm {
+                targets, on_unwind, ..
+            } => targets.iter_mut().chain([on_unwind]).collect(),
             TerminatorKind::Call {
                 target, on_unwind, ..
             }
@@ -152,6 +159,7 @@ impl Terminator {
                 smallvec![*target]
             }
             TerminatorKind::Switch { targets, .. } => targets.targets(),
+            TerminatorKind::InlineAsm { targets, .. } => targets.iter().copied().collect(),
             TerminatorKind::Call { target, .. }
             | TerminatorKind::Drop { target, .. }
             | TerminatorKind::Assert { target, .. } => {

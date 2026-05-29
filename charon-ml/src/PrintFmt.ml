@@ -1683,6 +1683,25 @@ module Llbc = struct
     | Assert (asrt, abort_kind) ->
         Format.fprintf fmt "%s%a else %a" indent (pp_print_assertion env) asrt
           (pp_print_abort_kind env) abort_kind
+    | InlineAsm (asm, [ target ]) ->
+        Format.fprintf fmt "%sasm!(%S)" indent asm;
+        List.iter
+          (fun st ->
+            Format.fprintf fmt "\n%a" (pp_statement env indent indent_incr) st)
+          target.statements
+    | InlineAsm (asm, targets) ->
+        Format.fprintf fmt "%sasm!(%S)" indent asm;
+        if targets <> [] then (
+          let indent1 = indent ^ indent_incr in
+          let indent2 = indent1 ^ indent_incr in
+          Format.fprintf fmt " {";
+          List.iteri
+            (fun i target ->
+              Format.fprintf fmt "\n%starget %d => {\n%a%s}" indent1 i
+                (pp_block env indent2 indent_incr)
+                target indent1)
+            targets;
+          Format.fprintf fmt "\n%s}" indent)
     | Call call -> pp_print_call env indent fmt call
     | Abort kind ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env) kind
@@ -1855,6 +1874,16 @@ module Ullbc = struct
         Format.fprintf fmt "%s%a -> %s(unwind:%s)" indent
           (pp_print_assertion env) asrt (block_id_to_string tgt)
           (block_id_to_string unwind)
+    | InlineAsm (asm, targets, on_unwind) ->
+        let targets =
+          List.mapi
+            (fun i target ->
+              "target " ^ string_of_int i ^ ": " ^ block_id_to_string target)
+            targets
+        in
+        let targets = targets @ [ "unwind: " ^ block_id_to_string on_unwind ] in
+        Format.fprintf fmt "%sasm!(%S) -> %s" indent asm
+          (String.concat ", " targets)
     | Abort _ -> Format.fprintf fmt "%spanic" indent
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent

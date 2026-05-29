@@ -58,6 +58,13 @@ and statement_kind =
       (** Fields:
           - [assert]
           - [on_failure] *)
+  | InlineAsm of string * block list
+      (** An inline assembly block. For now we only preserve the template
+          string.
+
+          Fields:
+          - [asm]
+          - [targets] *)
   | Call of call
   | Abort of abort_kind
       (** Panic also handles "unreachable". We keep the name of the panicking

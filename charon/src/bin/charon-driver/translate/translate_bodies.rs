@@ -1336,8 +1336,23 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let target = self.translate_basic_block_id(*real_target);
                 ullbc_ast::TerminatorKind::Goto { target }
             }
-            TerminatorKind::InlineAsm { .. } => {
-                raise_error!(self, span, "Inline assembly is not supported");
+            TerminatorKind::InlineAsm {
+                template,
+                targets,
+                unwind,
+                ..
+            } => {
+                let asm = rustc_ast::ast::InlineAsmTemplatePiece::to_string(template);
+                let targets = targets
+                    .iter()
+                    .map(|target| self.translate_basic_block_id(*target))
+                    .collect();
+                let on_unwind = self.translate_unwind_action(span, unwind);
+                ullbc_ast::TerminatorKind::InlineAsm {
+                    asm,
+                    targets,
+                    on_unwind,
+                }
             }
             TerminatorKind::CoroutineDrop
             | TerminatorKind::TailCall { .. }
