@@ -12,6 +12,7 @@ pub mod finish_translation {
 
 /// Passes that compute extra info to be stored in the crate.
 pub mod add_missing_info {
+    pub mod add_missing_alias_clauses;
     pub mod compute_short_names;
     pub mod recover_body_comments;
     pub mod reorder_decls;
@@ -95,6 +96,9 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         global(&finish_translation::filter_invisible_trait_impls::Transform),
         // Move clauses on associated types to be implied clauses of the trait.
         global(&simplify_output::lift_associated_item_clauses::Transform),
+        // Type aliases may use associated types without declaring the corresponding trait
+        // such missing trait clauses.
+        global(&add_missing_info::add_missing_alias_clauses::Transform),
         // Change trait associated types to be type parameters instead. See the module for details.
         // This also normalizes any use of an associated type that we can resolve.
         global(&normalize::expand_associated_types::Transform),
