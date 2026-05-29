@@ -267,22 +267,32 @@ and builtin_fun_id =
 (** Describes a built-in impl. Mostly lists the implemented trait, sometimes
     with more details about the contents of the implementation. *)
 and builtin_impl_data =
+  | BuiltinAuto
+      (** Auto traits (defined with [auto trait ...], also [Unpin]). *)
   | BuiltinSized
   | BuiltinMetaSized
+  | BuiltinPointeeSized
+  | BuiltinCopy
+  | BuiltinClone
   | BuiltinTuple
+  | BuiltinTransmute
+  | BuiltinUnsize
   | BuiltinPointee
   | BuiltinDiscriminantKind
-  | BuiltinAuto
+  | BuiltinFn
+  | BuiltinFnMut
+  | BuiltinFnOnce
+  | BuiltinFnPtr
+  | BuiltinAsyncFn
+  | BuiltinAsyncFnMut
+  | BuiltinAsyncFnOnce
+  | BuiltinCoroutine
+  | BuiltinFuture
   | BuiltinNoopDestruct
       (** An impl of [Destruct] for a type with no drop glue. *)
   | BuiltinUntrackedDestruct
       (** An impl of [Destruct] for a type parameter, which we could not resolve
           because [--add-drop-bounds] was not set. *)
-  | BuiltinFn
-  | BuiltinFnMut
-  | BuiltinFnOnce
-  | BuiltinCopy
-  | BuiltinClone
   | BuiltinRemovedAdtClause
       (** Placeholder used by the [--remove-adt-clauses] pass when it strips a
           trait clause from a type declaration. References to the removed clause

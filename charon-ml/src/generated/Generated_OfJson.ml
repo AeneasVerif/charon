@@ -300,19 +300,28 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_impl_data, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
+    | `String "Auto" -> Ok BuiltinAuto
     | `String "Sized" -> Ok BuiltinSized
     | `String "MetaSized" -> Ok BuiltinMetaSized
+    | `String "PointeeSized" -> Ok BuiltinPointeeSized
+    | `String "Copy" -> Ok BuiltinCopy
+    | `String "Clone" -> Ok BuiltinClone
     | `String "Tuple" -> Ok BuiltinTuple
+    | `String "Transmute" -> Ok BuiltinTransmute
+    | `String "Unsize" -> Ok BuiltinUnsize
     | `String "Pointee" -> Ok BuiltinPointee
     | `String "DiscriminantKind" -> Ok BuiltinDiscriminantKind
-    | `String "Auto" -> Ok BuiltinAuto
-    | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
-    | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
     | `String "Fn" -> Ok BuiltinFn
     | `String "FnMut" -> Ok BuiltinFnMut
     | `String "FnOnce" -> Ok BuiltinFnOnce
-    | `String "Copy" -> Ok BuiltinCopy
-    | `String "Clone" -> Ok BuiltinClone
+    | `String "FnPtr" -> Ok BuiltinFnPtr
+    | `String "AsyncFn" -> Ok BuiltinAsyncFn
+    | `String "AsyncFnMut" -> Ok BuiltinAsyncFnMut
+    | `String "AsyncFnOnce" -> Ok BuiltinAsyncFnOnce
+    | `String "Coroutine" -> Ok BuiltinCoroutine
+    | `String "Future" -> Ok BuiltinFuture
+    | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
+    | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
     | `String "RemovedAdtClause" -> Ok BuiltinRemovedAdtClause
     | _ -> Error "")
 

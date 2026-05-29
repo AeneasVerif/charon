@@ -282,20 +282,29 @@ and builtin_impl_data_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
-     | 0 -> Ok BuiltinSized
-     | 1 -> Ok BuiltinMetaSized
-     | 2 -> Ok BuiltinTuple
-     | 3 -> Ok BuiltinPointee
-     | 4 -> Ok BuiltinDiscriminantKind
-     | 5 -> Ok BuiltinAuto
-     | 6 -> Ok BuiltinNoopDestruct
-     | 7 -> Ok BuiltinUntrackedDestruct
-     | 8 -> Ok BuiltinFn
-     | 9 -> Ok BuiltinFnMut
-     | 10 -> Ok BuiltinFnOnce
-     | 11 -> Ok BuiltinCopy
-     | 12 -> Ok BuiltinClone
-     | 13 -> Ok BuiltinRemovedAdtClause
+     | 0 -> Ok BuiltinAuto
+     | 1 -> Ok BuiltinSized
+     | 2 -> Ok BuiltinMetaSized
+     | 3 -> Ok BuiltinPointeeSized
+     | 4 -> Ok BuiltinCopy
+     | 5 -> Ok BuiltinClone
+     | 6 -> Ok BuiltinTuple
+     | 7 -> Ok BuiltinTransmute
+     | 8 -> Ok BuiltinUnsize
+     | 9 -> Ok BuiltinPointee
+     | 10 -> Ok BuiltinDiscriminantKind
+     | 11 -> Ok BuiltinFn
+     | 12 -> Ok BuiltinFnMut
+     | 13 -> Ok BuiltinFnOnce
+     | 14 -> Ok BuiltinFnPtr
+     | 15 -> Ok BuiltinAsyncFn
+     | 16 -> Ok BuiltinAsyncFnMut
+     | 17 -> Ok BuiltinAsyncFnOnce
+     | 18 -> Ok BuiltinCoroutine
+     | 19 -> Ok BuiltinFuture
+     | 20 -> Ok BuiltinNoopDestruct
+     | 21 -> Ok BuiltinUntrackedDestruct
+     | 22 -> Ok BuiltinRemovedAdtClause
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and builtin_index_op_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

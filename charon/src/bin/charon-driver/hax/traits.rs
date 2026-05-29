@@ -110,6 +110,8 @@ pub enum BuiltinTraitData {
     /// the information about `drop_in_place` to that trait. This data tells us what kind of
     /// `drop_in_place` the target type has.
     Destruct(DestructData),
+    /// An auto-trait.
+    Auto,
     /// Some other builtin trait.
     Other,
 }
