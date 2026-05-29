@@ -224,12 +224,12 @@ impl<'tcx> PredicateSearcher<'tcx> {
         };
         let trait_ref = ty.rebind(alias_ty.trait_ref(tcx)).upcast(tcx);
 
-        // The predicate we're looking for is is `<T as Trait>::Type: OtherTrait`. We look up `T as
-        // Trait` in the current context and add all the bounds on `Trait::Type` to our context.
-        let Some(trait_candidate) = self.resolve_local(trait_ref) else {
+        // The predicate we're looking for is is `<T as Trait>::Type: OtherTrait`. We try to solve
+        // `T as Trait` and add all the bounds on `Trait::Type` to our context.
+        let proof = self.resolve(&trait_ref);
+        if matches!(proof.kind, TraitProofKind::Error(_)) {
             return;
-        };
-
+        }
         let item_ref = self.resolve_item_reference(alias_ty.def_id, alias_ty.args, true);
 
         // The bounds that hold on the associated type.
@@ -242,14 +242,14 @@ impl<'tcx> PredicateSearcher<'tcx> {
 
         // Add all the bounds on the corresponding associated item.
         self.insert_candidates(item_bounds.map(|(index, pred)| {
-            trait_candidate.push(
+            Candidate::from_trait_proof(proof.push(
                 elab_ctx,
                 pred,
                 ImpliedPredicate::AssocItem {
                     item: item_ref.clone(),
                     index,
                 },
-            )
+            ))
         }));
     }
 
