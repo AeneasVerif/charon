@@ -64,7 +64,7 @@ harness = false
 [dependencies]
 hax-adt-into = { path = "./adt-into" }
 macros = { path = "./macros" }
-rustc_trait_elaboration = { path = "./rustc_trait_elaboration" }
+rustc_trait_elaboration = { path = "./rustc_trait_elaboration", optional = true }
 
 serde_state = { git = "https://github.com/Nadrieril/serde_state", branch = "main" }
 # serde_state = { path = "../../../forks/serde_state/serde_state" }
@@ -117,7 +117,11 @@ wait-timeout = { version = "0.2.0", optional = true }
 which = "7.0"
 
 [features]
-default = []
+default = ["rustc"]
+# Hook into rustc-internal APIs. Needed for the `charon-driver` binary but not
+# the main crate. Pass `--no-default-features` to compile `charon-lib` on a
+# stable toolchain.
+rustc = ["dep:rustc_trait_elaboration"]
 # Enable the `charon` tool attribute when translating charon with itself.
 charon_on_charon = []
 # This feature enables the `popular-crates` test which runs Charon on the most downloaded crates from crates.io.
