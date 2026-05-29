@@ -280,26 +280,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use crate::hax::DestructData;
         use crate::hax::ImplExprAtom;
 
-        let trait_ref = match &impl_source.r#impl {
+        let kind = match &impl_source.r#impl {
             ImplExprAtom::Concrete(item) => {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, item, TraitImplSource::Normal)?;
-                TraitRef::new(TraitRefKind::TraitImpl(impl_ref), trait_decl_ref)
+                TraitRefKind::TraitImpl(impl_ref)
             }
-            ImplExprAtom::SelfImpl | ImplExprAtom::LocalBound { .. } => {
-                trace!("impl source (self or clause): {:?}", impl_source.r#impl);
-                // If we are referring to a trait clause, we need to find the relevant one.
-                let tref_kind = match &impl_source.r#impl {
-                    ImplExprAtom::SelfImpl => TraitRefKind::SelfId,
-                    ImplExprAtom::LocalBound(id) => match self.lookup_clause_var(span, id) {
-                        Ok(var) => TraitRefKind::Clause(var),
-                        Err(err) => TraitRefKind::Unknown(err.msg),
-                    },
-                    _ => unreachable!(),
-                };
-
-                TraitRef::new(tref_kind, trait_decl_ref)
-            }
+            ImplExprAtom::SelfImpl => TraitRefKind::SelfId,
+            ImplExprAtom::LocalBound(id) => match self.lookup_clause_var(span, id) {
+                Ok(var) => TraitRefKind::Clause(var),
+                Err(err) => TraitRefKind::Unknown(err.msg),
+            },
             ImplExprAtom::Derived { base, path } => {
                 let base_ref = self.translate_trait_impl_expr(span, base)?;
                 let mut tref_kind = base_ref.kind.clone();
@@ -336,9 +327,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     }
                 }
 
-                TraitRef::new(tref_kind, trait_decl_ref)
+                tref_kind
             }
-            ImplExprAtom::Dyn => TraitRef::new(TraitRefKind::Dyn, trait_decl_ref),
+            ImplExprAtom::Dyn => TraitRefKind::Dyn,
             ImplExprAtom::Builtin {
                 trait_data,
                 impl_exprs,
@@ -347,7 +338,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             } => {
                 let tref = &impl_source.r#trait;
                 let trait_def = self.poly_hax_def(&tref.hax_skip_binder_ref().def_id)?;
-                let kind = if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
+                if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
                     let mut impl_ref: TraitImplRef = self.translate_item(
                         span,
@@ -433,17 +424,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             types,
                         }
                     }
-                };
-                TraitRef::new(kind, trait_decl_ref)
+                }
             }
             ImplExprAtom::Error(msg) => {
-                let trait_ref = TraitRef::new(TraitRefKind::Unknown(msg.clone()), trait_decl_ref);
                 if self.error_on_impl_expr_error {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }
-                trait_ref
+                TraitRefKind::Unknown(msg.clone())
             }
         };
-        Ok(trait_ref)
+        Ok(TraitRef::new(kind, trait_decl_ref))
     }
 }
