@@ -1991,6 +1991,7 @@ name = "rustc_trait_elaboration"
 version = "0.1.0"
 dependencies = [
  "itertools",
+ "rustc-hash",
  "tracing",
 ]
 

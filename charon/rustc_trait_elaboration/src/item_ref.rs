@@ -62,7 +62,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
             return item_ref;
         }
         use rustc_infer::infer::canonical::ir::TypeVisitableExt;
-        let tcx = self.tcx;
+        let elab_ctx = self.elab_ctx;
+        let tcx = self.elab_ctx.tcx;
         let typing_env = self.typing_env;
         // Normalize the generics.
         let mut generics = normalize(tcx, typing_env, generics);
@@ -81,7 +82,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 let generics = generics.truncate_to(tcx, tcx.generics_of(tr_def_id));
                 let self_pred = ty::EarlyBinder::bind(self_pred).instantiate(tcx, generics);
                 let num_trait_req_clauses =
-                    ItemPredicates::required_recursively(tcx, tr_def_id, &self.options).len();
+                    ItemPredicates::required_recursively(elab_ctx, tr_def_id).len();
                 Some((self.resolve(&self_pred), num_trait_req_clauses))
             } else {
                 None

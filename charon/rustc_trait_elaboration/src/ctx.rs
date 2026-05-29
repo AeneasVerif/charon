@@ -1,6 +1,11 @@
 use rustc_arena::TypedArena;
+use rustc_data_structures::sharded::ShardedHashMap;
+use rustc_hash::FxHashMap;
+use rustc_hir::def_id::DefId;
+use rustc_middle::ty;
+use std::cell::{RefCell, RefMut};
 
-use crate::{ImplExpr, ImplExprContents};
+use crate::{BoundsOptions, ImplExpr, ImplExprContents, ItemPredicates, PredicateSearcher};
 
 mod intern {
     use rustc_data_structures::intern::Interned;
@@ -66,19 +71,45 @@ mod intern {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct ElaborationCtx<'tcx> {
-    pub interner: &'tcx ImplExprInterner<'tcx>,
+    pub tcx: ty::TyCtxt<'tcx>,
+    data: &'tcx ElaborationData<'tcx>,
 }
 
 #[derive(Default)]
-pub struct ImplExprInterner<'tcx> {
+struct ElaborationData<'tcx> {
+    bounds_options: BoundsOptions,
     impl_exprs: intern::ImplExprInterner<'tcx>,
     impl_exprs_arena: TypedArena<ImplExprContents<'tcx>>,
+    predicate_searchers: RefCell<FxHashMap<DefId, PredicateSearcher<'tcx>>>,
+    required_predicates: PredicateCache<'tcx>,
+    required_recursively_predicates: PredicateCache<'tcx>,
+    implied_predicates: PredicateCache<'tcx>,
 }
 
-impl<'tcx> ImplExprInterner<'tcx> {
-    pub fn intern_impl_expr(&'tcx self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
+#[derive(Default)]
+struct PredicateCache<'tcx> {
+    values: ShardedHashMap<DefId, ItemPredicates<'tcx>>,
+}
+
+impl<'tcx> PredicateCache<'tcx> {
+    fn get_or_insert_with(
+        &'tcx self,
+        def_id: DefId,
+        compute: impl FnOnce() -> ItemPredicates<'tcx>,
+    ) -> ItemPredicates<'tcx> {
+        if let Some(predicates) = self.values.get(&def_id) {
+            return predicates;
+        }
+        let predicates = compute();
+        let _ = self.values.insert(def_id, predicates.clone());
+        predicates
+    }
+}
+
+impl<'tcx> ElaborationData<'tcx> {
+    fn intern_impl_expr(&'tcx self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
         let interned = self
             .impl_exprs
             .intern(contents, |contents| self.impl_exprs_arena.alloc(contents));
@@ -88,15 +119,62 @@ impl<'tcx> ImplExprInterner<'tcx> {
 
 impl<'tcx> ElaborationCtx<'tcx> {
     /// Warning: only create a single one.
-    pub fn new() -> Self {
+    pub fn new(tcx: ty::TyCtxt<'tcx>, bounds_options: BoundsOptions) -> Self {
         // `ImplExpr` is a copyable `Interned<'tcx, _>` and may outlive the `PredicateSearcher`
         // that produced it. We therefore give each elaboration context session-long storage, like
         // rustc's own arenas. The interned values still contain rustc data bounded by `'tcx`.
-        let interner = Box::leak(Box::new(ImplExprInterner::default()));
-        ElaborationCtx { interner }
+        let data = Box::leak(Box::new(ElaborationData {
+            bounds_options,
+            ..ElaborationData::default()
+        }));
+        ElaborationCtx { tcx, data }
+    }
+
+    pub fn bounds_options(&self) -> &BoundsOptions {
+        &self.data.bounds_options
     }
 
     pub fn intern_impl_expr(&self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
-        self.interner.intern_impl_expr(contents)
+        self.data.intern_impl_expr(contents)
+    }
+
+    pub fn predicate_searcher_for(&self, def_id: DefId) -> RefMut<'_, PredicateSearcher<'tcx>> {
+        let mut predicate_searchers = self.data.predicate_searchers.borrow_mut();
+        predicate_searchers
+            .entry(def_id)
+            .or_insert_with(|| PredicateSearcher::new_for_owner(*self, def_id));
+        RefMut::map(predicate_searchers, |predicate_searchers| {
+            predicate_searchers.get_mut(&def_id).unwrap()
+        })
+    }
+
+    pub(crate) fn cached_required_predicates(
+        &self,
+        def_id: DefId,
+        compute: impl FnOnce() -> ItemPredicates<'tcx>,
+    ) -> ItemPredicates<'tcx> {
+        self.data
+            .required_predicates
+            .get_or_insert_with(def_id, compute)
+    }
+
+    pub(crate) fn cached_required_recursively_predicates(
+        &self,
+        def_id: DefId,
+        compute: impl FnOnce() -> ItemPredicates<'tcx>,
+    ) -> ItemPredicates<'tcx> {
+        self.data
+            .required_recursively_predicates
+            .get_or_insert_with(def_id, compute)
+    }
+
+    pub(crate) fn cached_implied_predicates(
+        &self,
+        def_id: DefId,
+        compute: impl FnOnce() -> ItemPredicates<'tcx>,
+    ) -> ItemPredicates<'tcx> {
+        self.data
+            .implied_predicates
+            .get_or_insert_with(def_id, compute)
     }
 }
