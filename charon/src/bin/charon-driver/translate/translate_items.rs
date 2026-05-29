@@ -496,6 +496,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     .try_collect()?,
                 output: self.translate_ty(span, output_ty)?,
                 is_unsafe: false,
+                abi: Abi::rust(),
             };
 
             let body = if item_meta.opacity.with_private_contents().is_opaque() {
@@ -507,7 +508,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 def_id,
                 item_meta,
                 generics: self.into_generics(),
-                signature,
+                signature: Box::new(signature),
                 src,
                 is_global_initializer: None,
                 body,
@@ -526,6 +527,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 inputs: vec![],
                 output: self.translate_ty(span, ty)?,
                 is_unsafe: false,
+                abi: Abi::rust(),
             },
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
@@ -575,7 +577,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             def_id,
             item_meta,
             generics: self.into_generics(),
-            signature,
+            signature: Box::new(signature),
             src,
             is_global_initializer,
             body,

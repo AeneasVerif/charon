@@ -1016,6 +1016,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 .into_ty();
                         let signature = FunSig {
                             is_unsafe: true,
+                            abi: Abi::rust(),
                             inputs: vec![ref_dyn_self.clone()],
                             output: Ty::mk_unit(),
                         };
@@ -1090,6 +1091,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Signature: `() -> VTable`.
         let sig = FunSig {
             is_unsafe: false,
+            abi: Abi::rust(),
             inputs: vec![],
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
@@ -1112,7 +1114,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             def_id: init_func_id,
             item_meta,
             generics: self.into_generics(),
-            signature: sig,
+            signature: Box::new(sig),
             src,
             is_global_initializer: Some(init_for),
             body,
@@ -1266,7 +1268,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             def_id: fun_id,
             item_meta,
             generics: self.into_generics(),
-            signature,
+            signature: Box::new(signature),
             src: ItemSource::VTableMethodShim,
             is_global_initializer: None,
             body,
@@ -1314,7 +1316,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             def_id: fun_id,
             item_meta,
             generics: self.into_generics(),
-            signature,
+            signature: Box::new(signature),
             src: ItemSource::VTableMethodShim,
             is_global_initializer: None,
             body,

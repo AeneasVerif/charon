@@ -332,9 +332,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let output = self.translate_ty(span, &sig.output)?;
         Ok(FunSig {
             is_unsafe: sig.safety == hax::Safety::Unsafe,
+            abi: Self::translate_abi(&sig.abi),
             inputs,
             output,
         })
+    }
+
+    pub fn translate_abi(abi: &hax::ExternAbi) -> Abi {
+        match abi {
+            hax::ExternAbi::Rust => Abi::Rust,
+            hax::ExternAbi::C { unwind: false } => Abi::C,
+            _ => Abi::Other(abi.as_str().into()),
+        }
     }
 
     /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.

@@ -223,9 +223,8 @@ pub struct FunDecl {
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
-    /// The signature contains the inputs/output types *with* non-erased regions.
-    /// It also contains the list of region and type parameters.
-    pub signature: FunSig,
+    /// The signature contains the inputs/output types and ABI details.
+    pub signature: Box<FunSig>,
     /// The function kind: "regular" function, trait method declaration, etc.
     pub src: ItemSource,
     /// Whether this function is in fact the body of a constant/static that we turned into an

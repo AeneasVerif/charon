@@ -44,7 +44,7 @@ pub trait FnOnce<Self, Args, Self_Output>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
 }
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args, Clause0_Output>(_1: Self, _2: Args) -> Clause0_Output
+pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args, Clause0_Output>(_1: Self, _2: Args) -> Clause0_Output
 where
     [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
 = <opaque>

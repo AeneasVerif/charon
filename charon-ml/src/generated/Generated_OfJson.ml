@@ -86,6 +86,16 @@ let opt_indexed_map_of_json :
 
 let rec ___ = ()
 
+and abi_of_json (ctx : of_json_ctx) (js : json) : (abi, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Rust" -> Ok AbiRust
+    | `String "C" -> Ok AbiC
+    | `Assoc [ ("Other", other) ] ->
+        let* other = string_of_json ctx other in
+        Ok (AbiOther other)
+    | _ -> Error "")
+
 and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
     (abort_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -641,11 +651,17 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [ ("is_unsafe", is_unsafe); ("inputs", inputs); ("output", output) ] ->
+        [
+          ("is_unsafe", is_unsafe);
+          ("abi", abi);
+          ("inputs", inputs);
+          ("output", output);
+        ] ->
         let* is_unsafe = bool_of_json ctx is_unsafe in
+        let* abi = abi_of_json ctx abi in
         let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in
-        Ok ({ is_unsafe; inputs; output } : fun_sig)
+        Ok ({ is_unsafe; abi; inputs; output } : fun_sig)
     | _ -> Error "")
 
 and generic_args_of_json (ctx : of_json_ctx) (js : json) :
@@ -2301,7 +2317,7 @@ and fun_decl_of_json (ctx : of_json_ctx) (js : json) : (fun_decl, string) result
         let* def_id = fun_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
-        let* signature = fun_sig_of_json ctx signature in
+        let* signature = box_of_json fun_sig_of_json ctx signature in
         let* src = item_source_of_json ctx src in
         let* is_global_initializer =
           option_of_json global_decl_id_of_json ctx is_global_initializer

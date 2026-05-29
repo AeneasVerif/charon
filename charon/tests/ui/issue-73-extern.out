@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::foo
-unsafe fn foo(_1: i32)
+unsafe extern "C" fn foo(_1: i32)
 = <extern:foo>
 
 // Full name: test_crate::CONST
