@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780092722910,
+  "lastUpdate": 1780094498150,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -3858,6 +3858,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 442,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 5,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cfcdc5d277748e37c01c556eb14c080b80d49bc4",
+          "message": "Merge pull request #1219 from Nadrieril/rework-impl-expr2\n\nRework `hax::ImplExpr` and rename it to `hax::TraitProof`",
+          "timestamp": "2026-05-29T22:35:10Z",
+          "tree_id": "7b79814c2423c779eb771299510e7bf7e8e7d28f",
+          "url": "https://github.com/AeneasVerif/charon/commit/cfcdc5d277748e37c01c556eb14c080b80d49bc4"
+        },
+        "date": 1780094497254,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 98436336174,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 13.83,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 446.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24.6,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 327614376976,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 47.37,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 440.8,
             "unit": "max-rss(MB)"
           },
           {
