@@ -1,0 +1,58 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = drop_in_place<Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct::drop_in_place
+unsafe fn drop_in_place<Self>(_1: *mut Self)
+= <opaque>
+
+// Full name: test_crate::id
+fn id<T>(x_1: T) -> T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let _0: T; // return
+    let x_1: T; // arg #1
+
+    _0 = move x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    return
+}
+
+// Full name: test_crate::call_id_pair_mut
+fn call_id_pair_mut<'a, T, U>(x_1: (&'a mut T, &'a mut U)) -> (&'a mut T, &'a mut U)
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+{
+    let _0: (&'4 mut T, &'5 mut U); // return
+    let x_1: (&'6 mut T, &'7 mut U); // arg #1
+    let _2: (&'8 mut T, &'9 mut U); // anonymous local
+
+    storage_live(_2)
+    _2 = move x_1
+    _0 = id<(&'10 mut T, &'11 mut U)>[{built_in impl Sized for (&'10 mut T, &'11 mut U)}](move _2)
+    storage_dead(_2)
+    return
+}
+
+
+
