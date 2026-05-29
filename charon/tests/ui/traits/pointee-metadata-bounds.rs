@@ -1,4 +1,3 @@
-//@ known-failure
 #![feature(ptr_metadata)]
 use std::ptr::Pointee;
 
