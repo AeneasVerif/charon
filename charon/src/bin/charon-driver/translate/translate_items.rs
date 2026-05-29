@@ -496,6 +496,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     .try_collect()?,
                 output: self.translate_ty(span, output_ty)?,
                 is_unsafe: false,
+                abi: Abi::rust(),
             };
 
             let body = if item_meta.opacity.with_private_contents().is_opaque() {
@@ -526,6 +527,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 inputs: vec![],
                 output: self.translate_ty(span, ty)?,
                 is_unsafe: false,
+                abi: Abi::rust(),
             },
             _ => panic!("Unexpected definition for function: {def:?}"),
         };

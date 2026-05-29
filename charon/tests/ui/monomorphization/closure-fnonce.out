@@ -50,7 +50,7 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::ops::function::FnOnce::call_once
-pub fn call_once(_1: closure, _2: (u8,)) -> u8
+pub extern "rust-call" fn call_once(_1: closure, _2: (u8,)) -> u8
 = <opaque>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}

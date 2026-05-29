@@ -72,7 +72,7 @@ fn foo::<u32><'a>(x_1: &'a u32)
 }
 
 // Full name: core::ops::function::Fn::call
-pub fn call<'_0>(_1: &'_0 for<'a> foo::<u32><'a>, _2: (&'_ u32,))
+pub extern "rust-call" fn call<'_0>(_1: &'_0 for<'a> foo::<u32><'a>, _2: (&'_ u32,))
 = <opaque>
 
 // Full name: test_crate::foo::<u8>

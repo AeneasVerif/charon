@@ -191,6 +191,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let self_ptr = TyKind::RawPtr(self_ty, RefKind::Mut).into_ty();
         FunSig {
             is_unsafe: true,
+            abi: Abi::rust(),
             inputs: [self_ptr].into(),
             output: Ty::mk_unit(),
         }

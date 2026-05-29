@@ -64,7 +64,7 @@ struct core::ops::function::Fn::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
   drop: unsafe fn(*mut (dyn Fn<Args, parent_clause1::parent_clause1::Output = Ty0>)),
-  method_call: fn<'_0_1>(&'_0_1 (dyn Fn<Args, parent_clause1::parent_clause1::Output = Ty0>), Args) -> Ty0,
+  method_call: extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<Args, parent_clause1::parent_clause1::Output = Ty0>), Args) -> Ty0,
   super_trait_0: &'static core::marker::MetaSized::{vtable},
   super_trait_1: &'static core::ops::function::FnMut::{vtable}<Args, Ty0>,
 }
@@ -81,17 +81,17 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::parent_clause1::parent_clause1::Output>
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args>(_1: &'_0 Self, _2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
+pub extern "rust-call" fn core::ops::function::Fn::call<'_0, Self, Args>(_1: &'_0 Self, _2: Args) -> @TraitClause0::parent_clause1::parent_clause1::Output
 where
     [@TraitClause0]: Fn<Self, Args>,
 = <method_without_default_body>
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> @TraitClause0::parent_clause1::Output
+pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> @TraitClause0::parent_clause1::Output
 where
     [@TraitClause0]: FnMut<Self, Args>,
 = <opaque>
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
+pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 = <opaque>

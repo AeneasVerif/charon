@@ -992,8 +992,47 @@ pub struct FunSig {
     /// Is the function unsafe or not
     #[drive(skip)]
     pub is_unsafe: bool,
+    /// The calling convention of this function.
+    #[drive(skip)]
+    pub abi: Abi,
     pub inputs: Vec<Ty>,
     pub output: Ty,
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    VariantName,
+    EnumIsA,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
+#[serde_state(stateless)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Abi"))]
+pub enum Abi {
+    Rust,
+    C,
+    /// Rust's spelling for the ABI, e.g. "C-unwind" or "system".
+    Other(#[drive(skip)] ustr::Ustr),
+}
+
+impl Abi {
+    pub fn rust() -> Self {
+        Self::Rust
+    }
+
+    pub fn rust_name(&self) -> &str {
+        match self {
+            Self::Rust => "Rust",
+            Self::C => "C",
+            Self::Other(name) => name.as_str(),
+        }
+    }
 }
 
 /// The contents of a `dyn Trait` type.
