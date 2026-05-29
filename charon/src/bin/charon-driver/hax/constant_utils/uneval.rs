@@ -42,6 +42,7 @@ pub(crate) fn scalar_int_to_constant_literal<'tcx, S: UnderOwnerState<'tcx>>(
             let v = x.to_bits_unchecked();
             bits_and_type_to_float_constant_literal(v, kind.sinto(s))
         }
+        ty::Pat(inner, _) => scalar_int_to_constant_literal(s, x, *inner),
         _ => {
             let ty_sinto: Ty = ty.sinto(s);
             supposely_unreachable_fatal!(
@@ -371,9 +372,12 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
                 ConstantExprKind::Literal(lit)
             }
         }
+        ty::Pat(..) => {
+            let op = ecx.project_field(&op, FieldIdx::from_u16(0))?;
+            *op_to_const(s, span, ecx, op)?.contents
+        }
         ty::Dynamic(..)
         | ty::Foreign(..)
-        | ty::Pat(..)
         | ty::UnsafeBinder(..)
         | ty::CoroutineClosure(..)
         | ty::Coroutine(..)
