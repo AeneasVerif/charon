@@ -1066,9 +1066,11 @@ and layout = {
           that uninhabited types can have arbitrary layouts: [(u32, !)] has
           space for the [u32] and [enum E2 { A, B(!), C(i32, !) }] may have
           space for a discriminant. *)
-  variant_layouts : variant_layout list;
-      (** Map from [VariantId] to the corresponding field layouts. Structs are
-          modeled as having exactly one variant, unions as having no variant. *)
+  variant_layouts : variant_layout option list;
+      (** Map from [VariantId] to the corresponding field layouts. Some variants
+          don't have a meaningful layout due to being uninhabited (though an
+          uninhabited variant may have a layout). Structs and unions are modeled
+          as having exactly one variant. *)
   repr : repr_options;
       (** The representation options of this type declaration as annotated by
           the user. *)

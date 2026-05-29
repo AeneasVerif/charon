@@ -2559,8 +2559,9 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
         in
         let* uninhabited = bool_of_json ctx uninhabited in
         let* variant_layouts =
-          index_vec_of_json variant_id_of_json variant_layout_of_json ctx
-            variant_layouts
+          index_vec_of_json variant_id_of_json
+            (option_of_json variant_layout_of_json)
+            ctx variant_layouts
         in
         let* repr = repr_options_of_json ctx repr in
         Ok

@@ -187,11 +187,16 @@ fn type_layout() -> anyhow::Result<()> {
             let name = repr_name(&crate_data, &tdecl.item_meta.name);
             for (var_id, variant) in layout.variant_layouts.iter_enumerated() {
                 if layout.is_variant_uninhabited(var_id) {
-                    assert!(
-                        variant.tagger.is_empty(),
-                        "For type {name} with uninhabited variant {var_id} expected empty tagger",
-                    );
+                    if let Some(variant) = variant {
+                        assert!(
+                            variant.tagger.is_empty(),
+                            "For type {name} with uninhabited variant {var_id} expected empty tagger",
+                        );
+                    }
                 } else {
+                    let Some(variant) = variant else {
+                        panic!("For type {name} with inhabited variant {var_id} expected a layout");
+                    };
                     let tagger = &variant.tagger;
                     // Use the tagger entries to answer discriminator read queries. For bytes
                     // not covered by the tagger (e.g. the untagged variant in niche encoding),
@@ -199,6 +204,7 @@ fn type_layout() -> anyhow::Result<()> {
                     let all_taggers = layout
                         .variant_layouts
                         .iter()
+                        .filter_map(|v| v.as_ref())
                         .flat_map(|v| v.tagger.iter())
                         .collect_vec();
                     let result = discriminator.read_discriminant(|offset, int_ty| {

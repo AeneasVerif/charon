@@ -2165,7 +2165,8 @@ and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* discriminator = option_of_postcard discriminator_of_postcard ctx st in
      let* uninhabited = bool_of_postcard ctx st in
      let* variant_layouts =
-       index_vec_of_postcard variant_id_of_postcard variant_layout_of_postcard
+       index_vec_of_postcard variant_id_of_postcard
+         (option_of_postcard variant_layout_of_postcard)
          ctx st
      in
      let* repr = repr_options_of_postcard ctx st in

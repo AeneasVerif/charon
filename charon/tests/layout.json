@@ -470,11 +470,7 @@
     },
     "uninhabited": false,
     "variant_layouts": [
-      {
-        "field_offsets": [],
-        "uninhabited": true,
-        "tagger": []
-      },
+      null,
       {
         "field_offsets": [
           0
@@ -1362,11 +1358,7 @@
     },
     "uninhabited": false,
     "variant_layouts": [
-      {
-        "field_offsets": [],
-        "uninhabited": true,
-        "tagger": []
-      },
+      null,
       {
         "field_offsets": [
           0

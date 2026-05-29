@@ -427,9 +427,10 @@ pub struct Layout {
     /// and `enum E2 { A, B(!), C(i32, !) }` may have space for a discriminant.
     #[drive(skip)]
     pub uninhabited: bool,
-    /// Map from `VariantId` to the corresponding field layouts. Structs are modeled as having
-    /// exactly one variant, unions as having no variant.
-    pub variant_layouts: IndexVec<VariantId, VariantLayout>,
+    /// Map from `VariantId` to the corresponding field layouts. Some variants don't have a
+    /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
+    /// layout). Structs and unions are modeled as having exactly one variant.
+    pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
     /// The representation options of this type declaration as annotated by the user.
     #[drive(skip)]
     #[serde_state(stateless)]
