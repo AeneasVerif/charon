@@ -331,7 +331,7 @@ pub enum FullDefKind<'tcx> {
         /// The value for this associated type, along with proofs of the required predicates. If
         /// we're in a trait decl, this has a value iff the type has a default; if we're in a trait
         /// impl, this has a value iff the impl provides its own value for it.
-        value: Option<(Ty, Vec<ImplExpr>)>,
+        value: Option<(Ty, Vec<TraitProof>)>,
     },
     /// Opaque type, aka `impl Trait`.
     OpaqueTy,
@@ -365,12 +365,12 @@ pub enum FullDefKind<'tcx> {
         /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for the implemented trait. This is
         /// `Some` iff the trait is dyn-compatible.
         dyn_self: Option<Ty>,
-        /// The `ImplExpr`s required to satisfy the predicates on the trait declaration. E.g.:
+        /// The trait proofs required to satisfy the predicates on the trait declaration. E.g.:
         /// ```ignore
         /// trait Foo: Bar {}
-        /// impl Foo for () {} // would supply an `ImplExpr` for `Self: Bar`.
+        /// impl Foo for () {} // would supply a proof for `Self: Bar`.
         /// ```
-        implied_impl_exprs: Vec<ImplExpr>,
+        implied_trait_proofs: Vec<TraitProof>,
         /// Associated items, in the order of the trait declaration. Includes defaulted items.
         items: Vec<ImplAssocItem>,
     },
@@ -678,8 +678,8 @@ where
             value: if tcx.defaultness(def_id).has_value() {
                 let ty = type_of_self();
                 let args = args_or_default();
-                let impl_exprs = solve_item_implied_traits(s, def_id, args);
-                Some((ty.sinto(s), impl_exprs))
+                let trait_proofs = solve_item_implied_traits(s, def_id, args);
+                Some((ty.sinto(s), trait_proofs))
             } else {
                 None
             },
@@ -743,8 +743,8 @@ where
                     is_positive: matches!(polarity, ty::ImplPolarity::Positive),
                 };
                 let dyn_self = dyn_self_ty(tcx, s.typing_env(), trait_ref).sinto(s);
-                // Impl exprs required by the trait.
-                let required_impl_exprs =
+                // Trait proofs required by the trait.
+                let required_trait_proofs =
                     solve_item_implied_traits(s, trait_ref.def_id, trait_ref.args);
 
                 let mut item_map: HashMap<RDefId, _> = tcx
@@ -757,11 +757,11 @@ where
                     .in_definition_order()
                     .map(|decl_assoc| {
                         let decl_def_id = decl_assoc.def_id;
-                        // Impl exprs required by the item.
-                        let required_impl_exprs;
+                        // Trait proofs required by the item.
+                        let required_trait_proofs;
                         let value = match item_map.remove(&decl_def_id) {
                             Some(impl_assoc) => {
-                                required_impl_exprs = {
+                                required_trait_proofs = {
                                     let item_args =
                                         ty::GenericArgs::identity_for_item(tcx, impl_assoc.def_id);
                                     // Subtlety: we have to add the GAT arguments (if any) to the trait ref arguments.
@@ -776,21 +776,22 @@ where
                                 }
                             }
                             None => {
-                                required_impl_exprs = if tcx.generics_of(decl_def_id).is_own_empty()
-                                {
-                                    // Non-GAT case.
-                                    let item_args =
-                                        ty::GenericArgs::identity_for_item(tcx, decl_def_id);
-                                    let args = item_args.rebase_onto(tcx, def_id, trait_ref.args);
-                                    // TODO: is it the right `def_id`?
-                                    let state_with_id = s.with_rustc_owner(def_id);
-                                    solve_item_implied_traits(&state_with_id, decl_def_id, args)
-                                } else {
-                                    // FIXME: For GATs, we need a param_env that has the arguments of
-                                    // the impl plus those of the associated type, but there's no
-                                    // def_id with that param_env.
-                                    vec![]
-                                };
+                                required_trait_proofs =
+                                    if tcx.generics_of(decl_def_id).is_own_empty() {
+                                        // Non-GAT case.
+                                        let item_args =
+                                            ty::GenericArgs::identity_for_item(tcx, decl_def_id);
+                                        let args =
+                                            item_args.rebase_onto(tcx, def_id, trait_ref.args);
+                                        // TODO: is it the right `def_id`?
+                                        let state_with_id = s.with_rustc_owner(def_id);
+                                        solve_item_implied_traits(&state_with_id, decl_def_id, args)
+                                    } else {
+                                        // FIXME: For GATs, we need a param_env that has the arguments of
+                                        // the impl plus those of the associated type, but there's no
+                                        // def_id with that param_env.
+                                        vec![]
+                                    };
                                 match decl_assoc.kind {
                                     ty::AssocKind::Type { .. } => {
                                         let ty = if tcx.generics_of(decl_def_id).is_own_empty() {
@@ -829,7 +830,7 @@ where
                         ImplAssocItem {
                             name: decl_assoc.opt_name().sinto(s),
                             value,
-                            required_impl_exprs,
+                            required_trait_proofs,
                             decl_def_id: decl_def_id.sinto(s),
                         }
                     })
@@ -839,7 +840,7 @@ where
                     param_env,
                     trait_pred,
                     dyn_self,
-                    implied_impl_exprs: required_impl_exprs,
+                    implied_trait_proofs: required_trait_proofs,
                     items,
                 }
             }
@@ -1002,17 +1003,17 @@ pub struct ImplAssocItem {
     /// The definition of the item from the trait declaration. This is an `AssocTy`, `AssocFn` or
     /// `AssocConst`.
     pub decl_def_id: DefId,
-    /// The `ImplExpr`s required to satisfy the predicates on the associated type. E.g.:
+    /// The trait proofs required to satisfy the predicates on the associated type. E.g.:
     /// ```ignore
     /// trait Foo {
     ///     type Type<T>: Clone,
     /// }
     /// impl Foo for () {
-    ///     type Type<T>: Arc<T>; // would supply an `ImplExpr` for `Arc<T>: Clone`.
+    ///     type Type<T>: Arc<T>; // would supply a proof for `Arc<T>: Clone`.
     /// }
     /// ```
     /// Empty if this item is an associated const or fn.
-    pub required_impl_exprs: Vec<ImplExpr>,
+    pub required_trait_proofs: Vec<TraitProof>,
     /// The value of the implemented item.
     pub value: ImplAssocItemValue,
 }
@@ -1053,10 +1054,10 @@ pub enum ImplAssocItemValue {
 pub struct VirtualTraitImpl {
     /// The trait that is implemented by this impl block.
     pub trait_pred: TraitPredicate,
-    /// The `ImplExpr`s required to satisfy the predicates on the trait declaration.
-    pub implied_impl_exprs: Vec<ImplExpr>,
+    /// The trait proofs required to satisfy the predicates on the trait declaration.
+    pub implied_trait_proofs: Vec<TraitProof>,
     /// The associated types and their predicates, in definition order.
-    pub types: Vec<(Ty, Vec<ImplExpr>)>,
+    pub types: Vec<(Ty, Vec<TraitProof>)>,
     /// The methods, in definition order.
     pub methods: Vec<DefId>,
 }
@@ -1273,8 +1274,8 @@ where
         trait_ref: trait_ref.sinto(s),
         is_positive: true,
     };
-    // Impl exprs required by the trait.
-    let required_impl_exprs = solve_item_implied_traits(s, trait_ref.def_id, trait_ref.args);
+    // Trait proofs required by the trait.
+    let required_trait_proofs = solve_item_implied_traits(s, trait_ref.def_id, trait_ref.args);
     let types = tcx
         .associated_items(trait_ref.def_id)
         .in_definition_order()
@@ -1283,9 +1284,9 @@ where
             // This assumes non-GAT because this is for builtin-trait (that don't
             // have GATs).
             let ty = ty::Ty::new_projection(tcx, assoc.def_id, trait_ref.args).sinto(s);
-            // Impl exprs required by the type.
-            let required_impl_exprs = solve_item_implied_traits(s, assoc.def_id, trait_ref.args);
-            (ty, required_impl_exprs)
+            // Trait proofs required by the type.
+            let required_trait_proofs = solve_item_implied_traits(s, assoc.def_id, trait_ref.args);
+            (ty, required_trait_proofs)
         })
         .collect();
     let methods = tcx
@@ -1296,7 +1297,7 @@ where
         .collect();
     Box::new(VirtualTraitImpl {
         trait_pred,
-        implied_impl_exprs: required_impl_exprs,
+        implied_trait_proofs: required_trait_proofs,
         types,
         methods,
     })

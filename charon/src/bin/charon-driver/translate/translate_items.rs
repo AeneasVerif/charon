@@ -442,7 +442,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::FullDefKind::OpaqueTy | hax::FullDefKind::ForeignTy => Ok(TypeDeclKind::Opaque),
             hax::FullDefKind::TyAlias { ty, .. } => {
                 // Don't error on missing trait refs.
-                self.error_on_impl_expr_error = false;
+                self.error_on_trait_proof_error = false;
                 self.translate_ty(span, ty).map(TypeDeclKind::Alias)
             }
             hax::FullDefKind::Adt { .. } => self.translate_adt_def(trans_id, span, &item_meta, def),
@@ -881,9 +881,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
                             let default = default
                                 .as_ref()
-                                .map(|(ty, impl_exprs)| -> Result<_, Error> {
+                                .map(|(ty, trait_proofs)| -> Result<_, Error> {
                                     let ty = ctx.translate_ty(item_span, ty)?;
-                                    let trefs = ctx.translate_trait_impl_exprs(span, impl_exprs)?;
+                                    let trefs = ctx.translate_trait_proofs(span, trait_proofs)?;
                                     Ok(TraitAssocTyImpl {
                                         value: ty,
                                         implied_trait_refs: trefs,
@@ -954,7 +954,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let hax::FullDefKind::TraitImpl {
             trait_pred,
-            implied_impl_exprs,
+            implied_trait_proofs,
             items: impl_items,
             ..
         } = &def.kind
@@ -978,7 +978,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
-        let implied_trait_refs = self.translate_trait_impl_exprs(span, implied_impl_exprs)?;
+        let implied_trait_refs = self.translate_trait_proofs(span, implied_trait_proofs)?;
 
         {
             // Debugging
@@ -1152,11 +1152,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             binder_kind,
                             &item_def,
                             |ctx| {
-                                let (ty, _impl_exprs) = value.as_ref().unwrap();
+                                let (ty, _trait_proofs) = value.as_ref().unwrap();
                                 let ty = ctx.translate_ty(item_span, ty)?;
-                                let implied_trait_refs = ctx.translate_trait_impl_exprs(
+                                let implied_trait_refs = ctx.translate_trait_proofs(
                                     item_span,
-                                    &impl_item.required_impl_exprs,
+                                    &impl_item.required_trait_proofs,
                                 )?;
                                 Ok(TraitAssocTyImpl {
                                     value: ty,
@@ -1333,8 +1333,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
-        let implied_trait_refs =
-            self.translate_trait_impl_exprs(span, &vimpl.implied_impl_exprs)?;
+        let implied_trait_refs = self.translate_trait_proofs(span, &vimpl.implied_trait_proofs)?;
 
         let mut types: IndexMap<AssocTypeId, _> = IndexMap::new();
         // Monomorphic traits have no associated types.
@@ -1342,12 +1341,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let type_items = trait_items
                 .iter()
                 .filter(|assoc| matches!(assoc.kind, hax::AssocKind::Type { .. }));
-            for ((ty, impl_exprs), assoc) in vimpl.types.iter().zip(type_items) {
+            for ((ty, trait_proofs), assoc) in vimpl.types.iter().zip(type_items) {
                 let assoc_type_id =
                     self.translate_assoc_type_id(implemented_trait.id, &assoc.def_id)?;
                 let assoc_ty = TraitAssocTyImpl {
                     value: self.translate_ty(span, ty)?,
-                    implied_trait_refs: self.translate_trait_impl_exprs(span, impl_exprs)?,
+                    implied_trait_refs: self.translate_trait_proofs(span, trait_proofs)?,
                 };
                 let binder_kind = BinderKind::TraitType(implemented_trait.id, assoc_type_id);
                 types.set_slot_extend(assoc_type_id, Binder::empty(binder_kind, assoc_ty));

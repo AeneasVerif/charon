@@ -39,7 +39,7 @@ use crate::{ElaborationCtx, ToPolyTraitRef};
 
 #[derive(Debug, Default, Clone)]
 pub struct BoundsOptions {
-    /// Add `T: Destruct` bounds to every type generic, so that we can build `ImplExpr`s to know
+    /// Add `T: Destruct` bounds to every type generic, so that we can build trait proofs to know
     /// what code is run on drop.
     pub add_destruct_bounds: bool,
     /// Traits to filter out from the predicate lists.

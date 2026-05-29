@@ -5,7 +5,7 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::ty;
 use std::cell::{RefCell, RefMut};
 
-use crate::{BoundsOptions, ImplExpr, ImplExprContents, ItemPredicates, PredicateSearcher};
+use crate::{BoundsOptions, ItemPredicates, PredicateSearcher, TraitProof, TraitProofContents};
 
 mod intern {
     use rustc_data_structures::intern::Interned;
@@ -13,20 +13,20 @@ mod intern {
     use std::borrow::Borrow;
     use std::hash::{Hash, Hasher};
 
-    use crate::ImplExprContents;
+    use crate::TraitProofContents;
 
     #[derive(Default)]
-    pub struct ImplExprInterner<'tcx>(ShardedHashMap<InternedImplExpr<'tcx>, ()>);
+    pub struct TraitProofInterner<'tcx>(ShardedHashMap<InternedTraitProof<'tcx>, ()>);
 
-    impl<'tcx> ImplExprInterner<'tcx> {
+    impl<'tcx> TraitProofInterner<'tcx> {
         pub(crate) fn intern(
             &self,
-            contents: ImplExprContents<'tcx>,
-            f: impl Fn(ImplExprContents<'tcx>) -> &'tcx ImplExprContents<'tcx>,
-        ) -> Interned<'tcx, ImplExprContents<'tcx>> {
+            contents: TraitProofContents<'tcx>,
+            f: impl Fn(TraitProofContents<'tcx>) -> &'tcx TraitProofContents<'tcx>,
+        ) -> Interned<'tcx, TraitProofContents<'tcx>> {
             let interned = self
                 .0
-                .intern(contents, |contents| InternedImplExpr(f(contents)));
+                .intern(contents, |contents| InternedTraitProof(f(contents)));
             Interned::new_unchecked(interned.0)
         }
     }
@@ -34,37 +34,37 @@ mod intern {
     // This mirrors rustc's `InternedInSet`: the value lives in the arena and the set stores this
     // copyable pointer wrapper. Equality and hashing still use the pointed-to contents, so
     // `ShardedHashMap::intern` can find an existing arena value before allocating a new one.
-    struct InternedImplExpr<'tcx>(&'tcx ImplExprContents<'tcx>);
+    struct InternedTraitProof<'tcx>(&'tcx TraitProofContents<'tcx>);
 
-    impl<'tcx> Clone for InternedImplExpr<'tcx> {
+    impl<'tcx> Clone for InternedTraitProof<'tcx> {
         fn clone(&self) -> Self {
             *self
         }
     }
 
-    impl<'tcx> Copy for InternedImplExpr<'tcx> {}
+    impl<'tcx> Copy for InternedTraitProof<'tcx> {}
 
-    impl<'tcx> IntoPointer for InternedImplExpr<'tcx> {
+    impl<'tcx> IntoPointer for InternedTraitProof<'tcx> {
         fn into_pointer(&self) -> *const () {
             self.0 as *const _ as *const ()
         }
     }
 
-    impl<'tcx> Borrow<ImplExprContents<'tcx>> for InternedImplExpr<'tcx> {
-        fn borrow(&self) -> &ImplExprContents<'tcx> {
+    impl<'tcx> Borrow<TraitProofContents<'tcx>> for InternedTraitProof<'tcx> {
+        fn borrow(&self) -> &TraitProofContents<'tcx> {
             self.0
         }
     }
 
-    impl<'tcx> PartialEq for InternedImplExpr<'tcx> {
+    impl<'tcx> PartialEq for InternedTraitProof<'tcx> {
         fn eq(&self, other: &Self) -> bool {
             self.0 == other.0
         }
     }
 
-    impl<'tcx> Eq for InternedImplExpr<'tcx> {}
+    impl<'tcx> Eq for InternedTraitProof<'tcx> {}
 
-    impl<'tcx> Hash for InternedImplExpr<'tcx> {
+    impl<'tcx> Hash for InternedTraitProof<'tcx> {
         fn hash<H: Hasher>(&self, state: &mut H) {
             self.0.hash(state);
         }
@@ -80,8 +80,8 @@ pub struct ElaborationCtx<'tcx> {
 #[derive(Default)]
 struct ElaborationData<'tcx> {
     bounds_options: BoundsOptions,
-    impl_exprs: intern::ImplExprInterner<'tcx>,
-    impl_exprs_arena: TypedArena<ImplExprContents<'tcx>>,
+    trait_proofs: intern::TraitProofInterner<'tcx>,
+    trait_proofs_arena: TypedArena<TraitProofContents<'tcx>>,
     predicate_searchers: RefCell<FxHashMap<DefId, PredicateSearcher<'tcx>>>,
     required_predicates: PredicateCache<'tcx>,
     required_recursively_predicates: PredicateCache<'tcx>,
@@ -109,18 +109,18 @@ impl<'tcx> PredicateCache<'tcx> {
 }
 
 impl<'tcx> ElaborationData<'tcx> {
-    fn intern_impl_expr(&'tcx self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
+    fn intern_trait_proof(&'tcx self, contents: TraitProofContents<'tcx>) -> TraitProof<'tcx> {
         let interned = self
-            .impl_exprs
-            .intern(contents, |contents| self.impl_exprs_arena.alloc(contents));
-        ImplExpr { contents: interned }
+            .trait_proofs
+            .intern(contents, |contents| self.trait_proofs_arena.alloc(contents));
+        TraitProof { contents: interned }
     }
 }
 
 impl<'tcx> ElaborationCtx<'tcx> {
     /// Warning: only create a single one.
     pub fn new(tcx: ty::TyCtxt<'tcx>, bounds_options: BoundsOptions) -> Self {
-        // `ImplExpr` is a copyable `Interned<'tcx, _>` and may outlive the `PredicateSearcher`
+        // `TraitProof` is a copyable `Interned<'tcx, _>` and may outlive the `PredicateSearcher`
         // that produced it. We therefore give each elaboration context session-long storage, like
         // rustc's own arenas. The interned values still contain rustc data bounded by `'tcx`.
         let data = Box::leak(Box::new(ElaborationData {
@@ -134,8 +134,8 @@ impl<'tcx> ElaborationCtx<'tcx> {
         &self.data.bounds_options
     }
 
-    pub fn intern_impl_expr(&self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
-        self.data.intern_impl_expr(contents)
+    pub fn intern_trait_proof(&self, contents: TraitProofContents<'tcx>) -> TraitProof<'tcx> {
+        self.data.intern_trait_proof(contents)
     }
 
     pub fn predicate_searcher_for(&self, def_id: DefId) -> RefMut<'_, PredicateSearcher<'tcx>> {

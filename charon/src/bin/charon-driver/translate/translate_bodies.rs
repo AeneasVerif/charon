@@ -221,16 +221,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let len = self.translate_constant_expr(span, len)?;
                 UnsizingMetadata::Length(Box::new(len))
             }
-            hax::UnsizingMetadata::DirectVTable(impl_expr) => {
-                let tref = self.translate_trait_impl_expr(span, impl_expr)?;
-                let vtable = self.translate_vtable_instance_const(span, impl_expr)?;
+            hax::UnsizingMetadata::DirectVTable(trait_proof) => {
+                let tref = self.translate_trait_proof(span, trait_proof)?;
+                let vtable = self.translate_vtable_instance_const(span, trait_proof)?;
                 UnsizingMetadata::VTable(tref, vtable)
             }
-            hax::UnsizingMetadata::NestedVTable(dyn_impl_expr) => {
+            hax::UnsizingMetadata::NestedVTable(dyn_trait_proof) => {
                 // This binds a fake `T: SrcTrait` variable.
                 let binder =
-                    self.translate_dyn_binder(span, dyn_impl_expr, |ctx, _, impl_expr| {
-                        ctx.translate_trait_impl_expr(span, impl_expr)
+                    self.translate_dyn_binder(span, dyn_trait_proof, |ctx, _, trait_proof| {
+                        ctx.translate_trait_proof(span, trait_proof)
                     })?;
 
                 // Compute the supertrait path from the source tref to the target

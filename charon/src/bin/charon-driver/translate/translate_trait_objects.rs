@@ -617,9 +617,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_vtable_instance_const(
         &mut self,
         span: Span,
-        impl_expr: &hax::ImplExpr,
+        trait_proof: &hax::TraitProof,
     ) -> Result<Box<ConstantExpr>, Error> {
-        let tref = impl_expr.r#trait.hax_skip_binder_ref();
+        let tref = trait_proof.pred.hax_skip_binder_ref();
         if !self.trait_is_dyn_compatible(&tref.def_id)? {
             raise_error!(
                 self,
@@ -630,7 +630,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
 
         let vtbl_ty = {
-            let vtbl_ty = self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+            let vtbl_ty = self.translate_region_binder(span, &trait_proof.pred, |ctx, tref| {
                 ctx.translate_vtable_struct_ref(span, tref)
             })?;
             let vtbl_ty = self.erase_region_binder(vtbl_ty);
@@ -639,11 +639,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let ty = TyKind::Ref(Region::Static, vtbl_ty.clone(), RefKind::Shared).into_ty();
 
         let kind = {
-            if let hax::ImplExprAtom::Concrete(impl_item) = &impl_expr.r#impl {
+            if let hax::TraitProofKind::Concrete(impl_item) = &trait_proof.kind {
                 // We could return `VTableRef` but we need to enqueue the translation of the static
                 // so may as well reuse that to normalize a bit.
                 let vtable_instance =
-                    self.translate_region_binder(span, &impl_expr.r#trait, |ctx, tref| {
+                    self.translate_region_binder(span, &trait_proof.pred, |ctx, tref| {
                         ctx.translate_vtable_instance_ref(span, tref, impl_item)
                     })?;
                 let vtable_instance = self.erase_region_binder(vtable_instance);
@@ -653,7 +653,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 });
                 ConstantExprKind::Ref(vtable_instance, None)
             } else {
-                ConstantExprKind::VTableRef(self.translate_trait_impl_expr(span, impl_expr)?)
+                ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?)
             }
         };
 
@@ -870,7 +870,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<Body, Error> {
         let hax::FullDefKind::TraitImpl {
             trait_pred,
-            implied_impl_exprs,
+            implied_trait_proofs,
             items,
             ..
         } = impl_def.kind()
@@ -1045,8 +1045,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     unreachable!()
                 }
                 TrVTableField::SuperTrait(clause_id, _) => {
-                    let impl_expr = &implied_impl_exprs[clause_id.index()];
-                    let vtable = self.translate_vtable_instance_const(span, impl_expr)?;
+                    let trait_proof = &implied_trait_proofs[clause_id.index()];
+                    let vtable = self.translate_vtable_instance_const(span, trait_proof)?;
                     Operand::Const(vtable)
                 }
             };

@@ -107,7 +107,7 @@ fn parse_impl_elem(i: &str) -> ParseResult<'_, PatElem> {
         parse_pat_ty.followed_by(multispace0),
     );
     let impl_contents = parse_pattern.followed_by(multispace0).and(for_ty.opt());
-    let impl_expr = tag("{").followed_by(multispace0).precedes(
+    let impl_pattern = tag("{").followed_by(multispace0).precedes(
         delimited(
             tag("impl").followed_by(multispace1.cut()).opt(),
             impl_contents,
@@ -115,7 +115,7 @@ fn parse_impl_elem(i: &str) -> ParseResult<'_, PatElem> {
         )
         .cut(),
     );
-    map_res(impl_expr, |(mut pat, for_ty)| {
+    map_res(impl_pattern, |(mut pat, for_ty)| {
         if let Some(for_ty) = for_ty {
             let last_elem = pat
                 .elems

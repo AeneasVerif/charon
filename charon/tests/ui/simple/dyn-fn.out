@@ -100,13 +100,13 @@ where
 fn takes_fn<'_0>(f_1: &'_0 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '_0))
 {
     let _0: (); // return
-    let f_1: &'10 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '11); // arg #1
+    let f_1: &'7 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '8); // arg #1
     let counter_2: u32; // local
     let _3: bool; // anonymous local
-    let _4: &'13 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '14); // anonymous local
-    let _5: (&'18 mut u32,); // anonymous local
-    let _6: &'19 mut u32; // anonymous local
-    let _7: &'20 mut u32; // anonymous local
+    let _4: &'10 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '11); // anonymous local
+    let _5: (&'15 mut u32,); // anonymous local
+    let _6: &'16 mut u32; // anonymous local
+    let _7: &'17 mut u32; // anonymous local
 
     _0 = ()
     storage_live(counter_2)
@@ -228,12 +228,12 @@ impl<'_0> Fn<(&'_ mut u32,)> for closure {
 fn gives_fn()
 {
     let _0: (); // return
-    let _1: &'10 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '11); // anonymous local
-    let _2: &'14 closure; // anonymous local
-    let _3: &'15 closure; // anonymous local
-    let _4: &'16 closure; // anonymous local
-    let _5: &'17 closure; // anonymous local
-    let _6: &'28 closure; // anonymous local
+    let _1: &'7 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '8); // anonymous local
+    let _2: &'11 closure; // anonymous local
+    let _3: &'12 closure; // anonymous local
+    let _4: &'13 closure; // anonymous local
+    let _5: &'14 closure; // anonymous local
+    let _6: &'25 closure; // anonymous local
     let _7: closure; // anonymous local
 
     storage_live(_5)
@@ -250,9 +250,9 @@ fn gives_fn()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = unsize_cast<&'14 closure, &'18 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '19), &vtable_of({impl Fn<(&'_ mut u32,)> for closure}<'24>)>(move _2)
+    _1 = unsize_cast<&'11 closure, &'15 (dyn for<'a> Fn<(&'a mut u32,), parent_clause1::parent_clause1::Output = bool> + '16), &vtable_of({impl Fn<(&'_ mut u32,)> for closure}<'21>)>(move _2)
     storage_dead(_2)
-    _0 = takes_fn<'27>(move _1)
+    _0 = takes_fn<'24>(move _1)
     storage_dead(_1)
     storage_dead(_3)
     return

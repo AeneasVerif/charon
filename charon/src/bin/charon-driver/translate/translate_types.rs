@@ -142,10 +142,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
             hax::TyKind::Alias(alias) => match &alias.kind {
                 hax::AliasKind::Projection {
-                    impl_expr,
+                    trait_proof,
                     assoc_item,
                 } => {
-                    let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
+                    let trait_ref = self.translate_trait_proof(span, trait_proof)?;
                     let assoc_type_id =
                         self.translate_assoc_type_id(trait_ref.trait_id(), &assoc_item.def_id)?;
                     TyKind::TraitType(trait_ref, assoc_type_id)
@@ -376,7 +376,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         substs: &[hax::GenericArg],
-        trait_refs: &[hax::ImplExpr],
+        trait_refs: &[hax::TraitProof],
     ) -> Result<GenericArgs, Error> {
         use crate::hax::GenericArg::*;
         trace!("{:?}", substs);
@@ -397,7 +397,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
         }
-        let trait_refs = self.translate_trait_impl_exprs(span, trait_refs)?;
+        let trait_refs = self.translate_trait_proofs(span, trait_refs)?;
 
         Ok(GenericArgs {
             regions,

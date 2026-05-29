@@ -587,7 +587,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         {
             GenericArgs::empty()
         } else {
-            self.translate_generic_args(span, &hax_item.generic_args, &hax_item.impl_exprs)?
+            self.translate_generic_args(span, &hax_item.generic_args, &hax_item.trait_proofs)?
         };
 
         // Add regions to make sure the item args match the params we set up in
@@ -661,7 +661,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let trait_ref = hax_item
             .in_trait
             .as_ref()
-            .map(|impl_expr| self.translate_trait_impl_expr(span, impl_expr))
+            .map(|trait_proof| self.translate_trait_proof(span, trait_proof))
             .transpose()?;
         let item = DeclRef {
             id,
@@ -705,7 +705,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         match self.recognize_builtin_type(item)? {
             Some(id) => {
                 let generics =
-                    self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
+                    self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
                 Ok(TypeDeclRef {
                     id: TypeId::Builtin(id),
                     generics: Box::new(generics),
@@ -725,7 +725,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         match self.recognize_builtin_fun(item)? {
             Some(id) => {
                 let generics =
-                    self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
+                    self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
                 Ok(MaybeBuiltinFunDeclRef {
                     id: FunId::Builtin(id),
                     generics: Box::new(generics),

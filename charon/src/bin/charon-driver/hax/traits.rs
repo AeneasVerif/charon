@@ -10,10 +10,12 @@ pub use rustc_trait_elaboration::{
 use crate::hax::prelude::*;
 use charon_lib::ast::HashConsed;
 
+#[derive(AdtInto)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImpliedPredicate<'tcx>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum ImplExprPathChunk {
+pub enum TraitProofImpliedPredicate {
     AssocItem {
-        /// Reference to the item, with generics (for GATs), e.g. the `T` and `T: Clone` `ImplExpr`
+        /// Reference to the item, with generics (for GATs), e.g. the `T` and proof for `T: Clone`
         /// in the following example:
         /// ```ignore
         /// trait Foo {
@@ -21,62 +23,28 @@ pub enum ImplExprPathChunk {
         /// }
         /// ```
         item: ItemRef,
-        /// The implemented predicate.
-        predicate: Binder<TraitRef>,
-        /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
+        /// The index of this predicate among the trait predicates returned by `ItemPredicates::Implied`.
         index: usize,
     },
     Parent {
-        /// The implemented predicate.
-        predicate: Binder<TraitRef>,
-        /// The index of this predicate in the list returned by `ItemPredicates::Implied`.
+        /// The index of this predicate among the trait predicates returned by `ItemPredicates::Implied`.
         index: usize,
     },
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExprPathChunk> for elaboration::PathChunk<'tcx> {
-    fn sinto(&self, s: &S) -> ImplExprPathChunk {
-        match self {
-            elaboration::PathChunk::AssocItem {
-                item,
-                predicate,
-                index,
-                ..
-            } => ImplExprPathChunk::AssocItem {
-                item: item.sinto(s),
-                predicate: predicate.sinto(s),
-                index: index.sinto(s),
-            },
-            elaboration::PathChunk::Parent {
-                predicate, index, ..
-            } => ImplExprPathChunk::Parent {
-                predicate: predicate.sinto(s),
-                index: index.sinto(s),
-            },
-        }
-    }
 }
 
 /// The source of a particular trait implementation. Most often this is either `Concrete` for a
 /// concrete `impl Trait for Type {}` item, or `LocalBound` for a context-bound `where T: Trait`.
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImplExprAtom<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofKind<'tcx>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum ImplExprAtom {
+pub enum TraitProofKind {
     /// A concrete `impl Trait for Type {}` item.
     Concrete(ItemRef),
     /// A context-bound clause like `where T: Trait`.
-    LocalBound {
-        id: GenericPredicateId,
-        r#trait: Binder<TraitRef>,
-        path: Vec<ImplExprPathChunk>,
-    },
+    LocalBound(GenericPredicateId),
     /// The implicit `Self: Trait` clause present inside a `trait Trait {}` item.
     // TODO: should we also get that clause for trait impls?
-    SelfImpl {
-        r#trait: Binder<TraitRef>,
-        path: Vec<ImplExprPathChunk>,
-    },
+    SelfProof,
     /// `dyn Trait` is a wrapped value with a virtual table for trait
     /// `Trait`.  In other words, a value `dyn Trait` is a dependent
     /// triple that gathers a type τ, a value of type τ and an
@@ -90,12 +58,17 @@ pub enum ImplExprAtom {
     Builtin {
         /// Extra data for the given trait.
         trait_data: BuiltinTraitData,
-        /// The `ImplExpr`s required to satisfy the implied predicates on the trait declaration.
-        /// E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have an `ImplExpr` for `T:
-        /// FnOnce`.
-        impl_exprs: Vec<ImplExpr>,
+        /// The trait proofs required to satisfy the implied predicates on the trait declaration.
+        /// E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have a proof for
+        /// `T: FnOnce`.
+        proofs: Vec<TraitProof>,
         /// The values of the associated types for this trait.
-        types: Vec<(DefId, Ty, Vec<ImplExpr>)>,
+        types: Vec<(DefId, Ty, Vec<TraitProof>)>,
+    },
+    /// A predicate implied by `base` by following `path`.
+    Derived {
+        base: TraitProof,
+        path: TraitProofImpliedPredicate,
     },
     /// An error happened while resolving traits.
     Error(String),
@@ -134,35 +107,35 @@ pub enum DestructData {
     },
 }
 
-/// An `ImplExpr` describes the full data of a trait implementation. Because of generics, this may
+/// A `TraitProof` describes the full data of a trait implementation. Because of generics, this may
 /// need to combine several concrete trait implementation items. For example, `((1u8, 2u8),
 /// "hello").clone()` combines the generic implementation of `Clone` for `(A, B)` with the
 /// concrete implementations for `u8` and `&str`, represented as a tree.
-pub type ImplExpr = HashConsed<ImplExprContents>;
+pub type TraitProof = HashConsed<TraitProofContents>;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImplExprContents<'tcx>, state: S as s)]
-pub struct ImplExprContents {
-    /// The trait this is an impl for.
-    pub r#trait: Binder<TraitRef>,
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofContents<'tcx>, state: S as s)]
+pub struct TraitProofContents {
+    /// The trait predicate this is an impl for.
+    pub pred: Binder<TraitRef>,
     /// The kind of implemention of the root of the tree.
-    pub r#impl: ImplExprAtom,
+    pub kind: TraitProofKind,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ImplExpr> for elaboration::ImplExpr<'tcx> {
-    fn sinto(&self, s: &S) -> ImplExpr {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitProof> for elaboration::TraitProof<'tcx> {
+    fn sinto(&self, s: &S) -> TraitProof {
         HashConsed::new(self.contents().sinto(s))
     }
 }
 
 /// Given a clause `clause` in the context of some impl block `impl_did`, susbts correctly `Self`
-/// from `clause` and (1) derive a `Clause` and (2) resolve an `ImplExpr`.
-pub fn super_clause_to_clause_and_impl_expr<'tcx, S: UnderOwnerState<'tcx>>(
+/// from `clause` and (1) derive a `Clause` and (2) resolve a `TraitProof`.
+pub fn super_clause_to_clause_and_trait_proof<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     impl_did: rustc_span::def_id::DefId,
     clause: rustc_middle::ty::Clause<'tcx>,
     span: rustc_span::Span,
-) -> Option<(Clause, ImplExpr, Span)> {
+) -> Option<(Clause, TraitProof, Span)> {
     let tcx = s.base().tcx;
     if !matches!(
         tcx.def_kind(impl_did),
@@ -173,7 +146,7 @@ pub fn super_clause_to_clause_and_impl_expr<'tcx, S: UnderOwnerState<'tcx>>(
     let impl_trait_ref =
         rustc_middle::ty::Binder::dummy(tcx.impl_trait_ref(impl_did).instantiate_identity());
     let new_clause = clause.instantiate_supertrait(tcx, impl_trait_ref);
-    let impl_expr = solve_trait(
+    let trait_proof = solve_trait(
         s,
         new_clause
             .as_predicate()
@@ -181,7 +154,7 @@ pub fn super_clause_to_clause_and_impl_expr<'tcx, S: UnderOwnerState<'tcx>>(
             .to_poly_trait_ref(),
     );
     let new_clause = new_clause.sinto(s);
-    Some((new_clause, impl_expr, span.sinto(s)))
+    Some((new_clause, trait_proof, span.sinto(s)))
 }
 
 /// This is the entrypoint of the solving.
@@ -189,14 +162,14 @@ pub fn super_clause_to_clause_and_impl_expr<'tcx, S: UnderOwnerState<'tcx>>(
 pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     trait_ref: rustc_middle::ty::PolyTraitRef<'tcx>,
-) -> ImplExpr {
-    if let Some(impl_expr) = s.with_cache(|cache| cache.impl_exprs.get(&trait_ref).cloned()) {
-        return impl_expr;
+) -> TraitProof {
+    if let Some(trait_proof) = s.with_cache(|cache| cache.trait_proofs.get(&trait_ref).cloned()) {
+        return trait_proof;
     }
-    let impl_expr = s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref));
-    let impl_expr: ImplExpr = impl_expr.sinto(s);
-    s.with_cache(|cache| cache.impl_exprs.insert(trait_ref, impl_expr.clone()));
-    impl_expr
+    let trait_proof = s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref));
+    let trait_proof: TraitProof = trait_proof.sinto(s);
+    s.with_cache(|cache| cache.trait_proofs.insert(trait_ref, trait_proof.clone()));
+    trait_proof
 }
 
 /// Translate a reference to an item, resolving the appropriate trait clauses as needed.
@@ -211,13 +184,13 @@ pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
 
 /// Solve the trait obligations for a specific item use (for example, a method call, an ADT, etc.)
 /// in the current context. Just like generic args include generics of parent items, this includes
-/// impl exprs for parent items.
+/// trait proofs for parent items.
 #[tracing::instrument(level = "trace", skip(s), ret)]
 pub fn solve_item_required_traits<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
     generics: ty::GenericArgsRef<'tcx>,
-) -> Vec<ImplExpr> {
+) -> Vec<TraitProof> {
     let predicates = ItemPredicates::required_recursively(s.base().elab_ctx, def_id);
     solve_item_traits_inner(s, generics, predicates)
 }
@@ -229,7 +202,7 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
     generics: ty::GenericArgsRef<'tcx>,
-) -> Vec<ImplExpr> {
+) -> Vec<TraitProof> {
     let predicates = ItemPredicates::implied(s.base().elab_ctx, def_id);
     solve_item_traits_inner(s, generics, predicates)
 }
@@ -240,7 +213,7 @@ fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     generics: ty::GenericArgsRef<'tcx>,
     predicates: ItemPredicates<'tcx>,
-) -> Vec<ImplExpr> {
+) -> Vec<TraitProof> {
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();
     predicates
@@ -262,7 +235,7 @@ pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
     generics: rustc_middle::ty::GenericArgsRef<'tcx>,
-) -> Option<ImplExpr> {
+) -> Option<TraitProof> {
     let tcx = s.base().tcx;
 
     let tr_def_id = tcx.trait_of_assoc(def_id)?;
@@ -277,7 +250,7 @@ pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
 }
 
 /// Solve the `T: Sized` predicate.
-pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> ImplExpr {
+pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> TraitProof {
     let tcx = s.base().tcx;
     let sized_trait = tcx.lang_items().sized_trait().unwrap();
     let ty = erase_free_regions(tcx, ty);
@@ -286,7 +259,7 @@ pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> I
 }
 
 /// Solve the `T: Destruct` predicate.
-pub fn solve_destruct<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> ImplExpr {
+pub fn solve_destruct<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> TraitProof {
     let tcx = s.base().tcx;
     let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
     let tref = ty::Binder::dummy(ty::TraitRef::new(tcx, destruct_trait, [ty]));
