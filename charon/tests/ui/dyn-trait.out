@@ -181,8 +181,8 @@ where
     [@TraitClause0]: Sized<T>,
 {
     let _0: (); // return
-    let _1: &'10 (dyn for<'a> Fn<(&'a T,), parent_clause1::parent_clause1::Output = T> + '11); // arg #1
-    let _2: &'16 (dyn PartialEq<Option<T>[@TraitClause0]> + '17); // arg #2
+    let _1: &'7 (dyn for<'a> Fn<(&'a T,), parent_clause1::parent_clause1::Output = T> + '8); // arg #1
+    let _2: &'13 (dyn PartialEq<Option<T>[@TraitClause0]> + '14); // arg #2
 
     _0 = ()
     _0 = ()
@@ -193,7 +193,7 @@ where
 fn bar<'_0>(_1: &'_0 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), parent_clause1::parent_clause1::Output = ()> + '_0))
 {
     let _0: (); // return
-    let _1: &'19 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), parent_clause1::parent_clause1::Output = ()> + '20); // arg #1
+    let _1: &'12 (dyn for<'_0_2> Fn<(&'_0_2 (dyn Display + '_0_2),), parent_clause1::parent_clause1::Output = ()> + '13); // arg #1
 
     _0 = ()
     _0 = ()

@@ -104,9 +104,9 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
     /// The Hax context with the current `DefId`.
     pub hax_state: hax::StateWithOwner<'tcx>,
-    /// Whether to consider a `ImplExprAtom::Error` as an error for us. True except inside type
+    /// Whether to consider a `TraitProofKind::Error` as an error for us. True except inside type
     /// aliases, because rust does not enforce correct trait bounds on type aliases.
-    pub error_on_impl_expr_error: bool,
+    pub error_on_trait_proof_error: bool,
 
     /// The stack of generic parameter binders for the current context. Each binder introduces an
     /// entry in this stack, with the entry as index `0` being the innermost binder. These
@@ -222,7 +222,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             item_id,
             t_ctx,
             hax_state: hax_state_with_id,
-            error_on_impl_expr_error: true,
+            error_on_trait_proof_error: true,
             binding_levels: Default::default(),
             lifetime_freshener: None,
         }

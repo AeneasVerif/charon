@@ -617,7 +617,7 @@ pub enum AliasKind {
     /// The projection of a trait type: `<Ty as Trait<...>>::Type<...>`
     Projection {
         /// The `impl Trait for Ty` in `Ty: Trait<..., Type = U>`.
-        impl_expr: ImplExpr,
+        trait_proof: TraitProof,
         /// The `Type` in `Ty: Trait<..., Type = U>`.
         assoc_item: AssocItem,
     },
@@ -670,7 +670,7 @@ impl Alias {
                 let item = tcx.associated_item(alias_ty.def_id);
                 AliasKind::Projection {
                     assoc_item: AssocItem::sfrom(s, &item),
-                    impl_expr: solve_trait(s, ty::Binder::dummy(trait_ref)),
+                    trait_proof: solve_trait(s, ty::Binder::dummy(trait_ref)),
                 }
             }
             RustAliasKind::Inherent => AliasKind::Inherent,
@@ -899,12 +899,12 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                 None => pred.sinto(s),
                 // Translate by hand using our predicate searcher. This does the same as
                 // `clause.sinto(s)` except that it uses our predicate searcher to resolve the
-                // projection `ImplExpr`.
+                // projection `TraitProof`.
                 Some(proj) => {
                     let bound_vars = proj.bound_vars().sinto(s);
                     let proj = {
                         let alias_ty = &proj.skip_binder().projection_term.expect_ty(tcx);
-                        let impl_expr = {
+                        let trait_proof = {
                             let poly_trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
                             predicate_searcher.resolve(&poly_trait_ref).sinto(s)
                         };
@@ -913,7 +913,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         };
                         let item = tcx.associated_item(alias_ty.def_id);
                         ProjectionPredicate {
-                            impl_expr,
+                            trait_proof,
                             assoc_item: AssocItem::sfrom(s, &item),
                             ty,
                         }
@@ -1041,9 +1041,9 @@ pub enum UnsizingMetadata {
     /// Unsize an array to a slice, storing the length as metadata.
     Length(ConstantExpr),
     /// Unsize a non-dyn type to a dyn type, adding a vtable pointer as metadata.
-    DirectVTable(ImplExpr),
+    DirectVTable(TraitProof),
     /// Unsize a dyn-type to another dyn-type, (optionally) indexing within the current vtable.
-    NestedVTable(DynBinder<ImplExpr>),
+    NestedVTable(DynBinder<TraitProof>),
     /// Couldn't compute
     Unknown,
 }
@@ -1074,11 +1074,11 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
             UnsizingMetadata::Length(len)
         }
         (ty::Dynamic(from_preds, _), ty::Dynamic(to_preds, ..)) => {
-            let impl_expr = resolve_for_dyn(s, from_preds, |searcher, fresh_ty| {
+            let trait_proof = resolve_for_dyn(s, from_preds, |searcher, fresh_ty| {
                 let to_pred = to_preds.principal().unwrap().with_self_ty(tcx, fresh_ty);
                 searcher.resolve(&to_pred).sinto(s)
             });
-            UnsizingMetadata::NestedVTable(impl_expr)
+            UnsizingMetadata::NestedVTable(trait_proof)
         }
         (_, ty::Dynamic(preds, ..)) => {
             let pred = preds[0].with_self_ty(tcx, src_ty);
@@ -1087,9 +1087,9 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
                                         should be a trait clause",
             );
             let tref = clause.rebind(clause.skip_binder().trait_ref);
-            let impl_expr = solve_trait(s, tref);
+            let trait_proof = solve_trait(s, tref);
 
-            UnsizingMetadata::DirectVTable(impl_expr)
+            UnsizingMetadata::DirectVTable(trait_proof)
         }
         _ => UnsizingMetadata::Unknown,
     }
@@ -1113,7 +1113,7 @@ pub type PolyFnSig = Binder<TyFnSig>;
 
 /// Reflects [`ty::TraitRef`]
 /// Contains the def_id and arguments passed to the trait. The first type argument is the `Self`
-/// type. The `ImplExprs` are the _required_ predicate for this trait; currently they are always
+/// type. The trait proofs are the _required_ predicate for this trait; currently they are always
 /// empty because we consider all trait predicates as implied.
 /// `self.in_trait` is always `None` because a trait can't be associated to another one.
 pub type TraitRef = ItemRef;
@@ -1194,7 +1194,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term> for ty::Term<'tcx> {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ProjectionPredicate {
     /// The `impl Trait for Ty` in `Ty: Trait<..., Type = U>`.
-    pub impl_expr: ImplExpr,
+    pub trait_proof: TraitProof,
     /// The `Type` in `Ty: Trait<..., Type = U>`.
     pub assoc_item: AssocItem,
     /// The type `U` in `Ty: Trait<..., Type = U>`.
@@ -1213,7 +1213,7 @@ impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate>
         };
         let item = tcx.associated_item(alias_ty.def_id);
         ProjectionPredicate {
-            impl_expr: solve_trait(s, poly_trait_ref),
+            trait_proof: solve_trait(s, poly_trait_ref),
             assoc_item: AssocItem::sfrom(s, &item),
             ty,
         }

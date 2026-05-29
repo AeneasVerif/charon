@@ -21,17 +21,17 @@ use rustc_span::def_id::DefId as RDefId;
 /// ItemRef {
 ///     def_id = MyTrait::meth,
 ///     generic_args = [String],
-///     impl_exprs = [<proof of `String: Sized`>],
+///     trait_proofs = [<proof of `String: Sized`>],
 ///     in_trait = Some(<proof of `SelfType: MyTrait<TraitType, 12>`>,
 /// }
 /// ```
-/// The `in_trait` `ImplExpr` will have in its `trait` field a representation of the `SelfType:
+/// The `in_trait` `TraitProof` will have in its `trait` field a representation of the `SelfType:
 /// MyTrait<TraitType, 12>` predicate, which looks like:
 /// ```text
 /// ItemRef {
 ///     def_id = MyTrait,
 ///     generic_args = [SelfType, TraitType, 12],
-///     impl_exprs = [],
+///     trait_proofs = [],
 ///     in_trait = None,
 /// }
 /// ```
@@ -56,12 +56,12 @@ pub struct ItemRefContents {
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>` or `B:
     /// ToOwned` for `Cow<'a, B>`. Same as above, for associated items this only includes clauses
     /// for the item itself.
-    #[value(self.assoc_impl_exprs().sinto(s))]
-    pub impl_exprs: Vec<ImplExpr>,
+    #[value(self.assoc_trait_proofs().sinto(s))]
+    pub trait_proofs: Vec<TraitProof>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to.
     #[value(self.in_trait.as_ref().map(|(x, _)| x).sinto(s))]
-    pub in_trait: Option<ImplExpr>,
+    pub in_trait: Option<TraitProof>,
     /// Whether this contains any reference to a type/lifetime/const parameter.
     #[value(self.has_param)]
     pub has_param: bool,
@@ -165,7 +165,7 @@ impl ItemRef {
         let content = ItemRefContents {
             def_id,
             generic_args: Default::default(),
-            impl_exprs: Default::default(),
+            trait_proofs: Default::default(),
             in_trait: Default::default(),
             has_param: false,
             has_non_lt_param: false,

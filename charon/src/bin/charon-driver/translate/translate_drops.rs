@@ -41,12 +41,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         ty: ty::Ty<'tcx>,
     ) -> Result<FnPtr, Error> {
-        let impl_expr = hax::solve_destruct(self.hax_state_with_id(), ty);
-        let tref = self.translate_trait_impl_expr(span, &impl_expr)?;
+        let trait_proof = hax::solve_destruct(self.hax_state_with_id(), ty);
+        let tref = self.translate_trait_proof(span, &trait_proof)?;
         let (fun_id, method_id) = self.translate_drop_in_place_method_ref(
             span,
-            impl_expr.r#trait.hax_skip_binder_ref(),
-            &impl_expr.r#trait.hax_skip_binder_ref().def_id,
+            trait_proof.pred.hax_skip_binder_ref(),
+            &trait_proof.pred.hax_skip_binder_ref().def_id,
             tref.trait_id(),
             None,
         )?;

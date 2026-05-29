@@ -109,8 +109,8 @@ mod types {
         pub tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
         pub item_refs: HashMap<(DefId, ty::GenericArgsRef<'tcx>, bool), ItemRef>,
-        /// Cache of trait refs to resolved impl expressions.
-        pub impl_exprs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::ImplExpr>,
+        /// Cache of trait refs to resolved trait proofs.
+        pub trait_proofs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::TraitProof>,
     }
 
     #[derive(Clone)]

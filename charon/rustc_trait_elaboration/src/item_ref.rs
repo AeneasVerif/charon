@@ -3,9 +3,11 @@ use std::{ops::Deref, sync::Arc};
 use rustc_hir::{def::DefKind, def_id::DefId};
 use rustc_middle::ty::{self, GenericArg, GenericArgsRef};
 
-use crate::{ImplExpr, ImplExprAtom, ItemPredicates, PredicateSearcher, normalize, self_predicate};
+use crate::{
+    ItemPredicates, PredicateSearcher, TraitProof, TraitProofKind, normalize, self_predicate,
+};
 
-/// Reference to an item, with generics as well as `ImplExpr`s for the required predicates.
+/// Reference to an item, with generics as well as trait proofs for the required predicates.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ItemRef<'tcx> {
     // TODO: intern?
@@ -19,11 +21,11 @@ pub struct ItemRefContents<'tcx> {
     /// The arguments provided to this item.
     pub generic_args: ty::GenericArgsRef<'tcx>,
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
-    pub impl_exprs: Vec<ImplExpr<'tcx>>,
+    pub trait_proofs: Vec<TraitProof<'tcx>>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to, as well as the number of clauses required to mention the trait (cached for
     /// easy access).
-    pub in_trait: Option<(ImplExpr<'tcx>, usize)>,
+    pub in_trait: Option<(TraitProof<'tcx>, usize)>,
     /// Whether this item is an associated type.
     pub is_assoc_ty: bool,
     /// Whether this contains any reference to a type/lifetime/const parameter.
@@ -91,7 +93,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         // If the reference is a known trait impl and the impl implements the target item, we can
         // point directly to the implemented item.
         if let Some((tinfo, _)) = &trait_info
-            && let ImplExprAtom::Concrete(impl_item_ref) = &tinfo.r#impl
+            && let TraitProofKind::Concrete(impl_item_ref) = &tinfo.kind
             && let Some(implemented_item) = tcx
                 .associated_items(impl_item_ref.def_id)
                 .in_definition_order()
@@ -103,12 +105,12 @@ impl<'tcx> PredicateSearcher<'tcx> {
             trait_info = None;
         }
 
-        let impl_exprs = self.resolve_item_required_predicates(def_id, generics);
+        let trait_proofs = self.resolve_item_required_predicates(def_id, generics);
 
         let content = ItemRefContents {
             def_id,
             generic_args: generics,
-            impl_exprs,
+            trait_proofs,
             in_trait: trait_info,
             is_assoc_ty: matches!(tcx.def_kind(def_id), DefKind::AssocTy),
             has_param: generics.has_param()
@@ -128,7 +130,7 @@ impl<'tcx> ItemRef<'tcx> {
         let content = ItemRefContents {
             def_id,
             generic_args: Default::default(),
-            impl_exprs: Default::default(),
+            trait_proofs: Default::default(),
             in_trait: Default::default(),
             is_assoc_ty: false,
             has_param: false,
@@ -142,15 +144,15 @@ impl<'tcx> ItemRef<'tcx> {
         self.generic_args
     }
     /// The trait proofs passed to the item.
-    pub fn impl_exprs(&self) -> &[ImplExpr<'tcx>] {
-        &self.impl_exprs
+    pub fn trait_proofs(&self) -> &[TraitProof<'tcx>] {
+        &self.trait_proofs
     }
     /// The generics passed to the item, except for trait associated items these are only the
     /// generics of the method/type/const itself; generics for the trait are available in
     /// `self.in_trait`.
     pub fn assoc_generics(&self) -> &'tcx [GenericArg<'tcx>] {
         let start = if let Some((tinfo, _)) = &self.in_trait {
-            tinfo.r#trait.skip_binder().args.len()
+            tinfo.pred.skip_binder().args.len()
         } else {
             0
         };
@@ -158,7 +160,7 @@ impl<'tcx> ItemRef<'tcx> {
     }
     /// The trait proofs passed to the item, except for trait associated items these are only the
     /// proofs of the method/type/const itself.
-    pub fn assoc_impl_exprs(&self) -> &[ImplExpr<'tcx>] {
+    pub fn assoc_trait_proofs(&self) -> &[TraitProof<'tcx>] {
         let start = if let Some((_, num_trait_req_clauses)) = self.in_trait {
             // Assoc consts and methods get an extra `Self: Trait` clause as the first clause, we
             // skip that one too. Note: that clause is the same as `self.in_trait`.
@@ -166,7 +168,7 @@ impl<'tcx> ItemRef<'tcx> {
         } else {
             0
         };
-        &self.impl_exprs[start..]
+        &self.trait_proofs[start..]
     }
 }
 

@@ -203,7 +203,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 //         ^^^^^^^^^^
                 // ```
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
-                    let trait_ref = ctx.translate_trait_impl_expr(span, &p.impl_expr)?;
+                    let trait_ref = ctx.translate_trait_proof(span, &p.trait_proof)?;
                     let ty = ctx.translate_ty(span, &p.ty)?;
                     let type_id =
                         ctx.translate_assoc_type_id(trait_ref.trait_id(), &p.assoc_item.def_id)?;
@@ -239,26 +239,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    pub(crate) fn translate_trait_impl_exprs(
+    pub(crate) fn translate_trait_proofs(
         &mut self,
         span: Span,
-        impl_sources: &[hax::ImplExpr],
+        impl_sources: &[hax::TraitProof],
     ) -> Result<IndexVec<TraitClauseId, TraitRef>, Error> {
         impl_sources
             .iter()
-            .map(|x| self.translate_trait_impl_expr(span, x))
+            .map(|x| self.translate_trait_proof(span, x))
             .try_collect()
     }
 
-    #[tracing::instrument(skip(self, span, impl_expr))]
-    pub(crate) fn translate_trait_impl_expr(
+    #[tracing::instrument(skip(self, span, trait_proof))]
+    pub(crate) fn translate_trait_proof(
         &mut self,
         span: Span,
-        impl_expr: &hax::ImplExpr,
+        trait_proof: &hax::TraitProof,
     ) -> Result<TraitRef, Error> {
-        let trait_decl_ref = self.translate_poly_trait_ref(span, &impl_expr.r#trait)?;
+        let trait_decl_ref = self.translate_poly_trait_ref(span, &trait_proof.pred)?;
 
-        match self.translate_trait_impl_expr_aux(span, impl_expr, trait_decl_ref.clone()) {
+        match self.translate_trait_proof_aux(span, trait_proof, trait_decl_ref.clone()) {
             Ok(res) => Ok(res),
             Err(err) => {
                 register_error!(self, span, "Error during trait resolution: {}", &err.msg);
@@ -270,73 +270,56 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_trait_impl_expr_aux(
+    pub(crate) fn translate_trait_proof_aux(
         &mut self,
         span: Span,
-        impl_source: &hax::ImplExpr,
+        impl_source: &hax::TraitProof,
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
-        trace!("impl_expr: {:#?}", impl_source);
+        trace!("trait_proof: {:#?}", impl_source);
         use crate::hax::DestructData;
-        use crate::hax::ImplExprAtom;
+        use crate::hax::TraitProofKind;
 
-        let kind = match &impl_source.r#impl {
-            ImplExprAtom::Concrete(item) => {
+        let kind = match &impl_source.kind {
+            TraitProofKind::Concrete(item) => {
                 let impl_ref =
                     self.translate_trait_impl_ref(span, item, TraitImplSource::Normal)?;
                 TraitRefKind::TraitImpl(impl_ref)
             }
-            ImplExprAtom::SelfImpl => TraitRefKind::SelfId,
-            ImplExprAtom::LocalBound(id) => match self.lookup_clause_var(span, id) {
+            TraitProofKind::SelfProof => TraitRefKind::SelfId,
+            TraitProofKind::LocalBound(id) => match self.lookup_clause_var(span, id) {
                 Ok(var) => TraitRefKind::Clause(var),
                 Err(err) => TraitRefKind::Unknown(err.msg),
             },
-            ImplExprAtom::Derived { base, path } => {
-                let base_ref = self.translate_trait_impl_expr(span, base)?;
-                let mut tref_kind = base_ref.kind.clone();
-                let mut current_pred = base_ref.trait_decl_ref.clone();
-
-                // Apply the path
-                for path_elem in path {
-                    use crate::hax::ImplExprPathChunk::*;
-                    let current_trait_id = current_pred.skip_binder.id;
-                    let trait_ref = Box::new(TraitRef::new(tref_kind, current_pred));
-                    match path_elem {
-                        AssocItem {
-                            item,
-                            predicate,
-                            index,
-                            ..
-                        } => {
-                            let assoc_type_id =
-                                self.translate_assoc_type_id(current_trait_id, &item.def_id)?;
-                            tref_kind = TraitRefKind::ItemClause(
-                                trait_ref,
-                                assoc_type_id,
-                                TraitClauseId::new(*index),
-                            );
-                            current_pred = self.translate_poly_trait_ref(span, predicate)?;
-                        }
-                        Parent {
-                            predicate, index, ..
-                        } => {
-                            tref_kind =
-                                TraitRefKind::ParentClause(trait_ref, TraitClauseId::new(*index));
-                            current_pred = self.translate_poly_trait_ref(span, predicate)?;
-                        }
+            TraitProofKind::Derived {
+                base,
+                path: path_elem,
+            } => {
+                let trait_ref = self.translate_trait_proof(span, base)?;
+                let trait_ref = Box::new(trait_ref);
+                match path_elem {
+                    hax::TraitProofImpliedPredicate::AssocItem { item, index, .. } => {
+                        let assoc_type_id =
+                            self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
+                        TraitRefKind::ItemClause(
+                            trait_ref,
+                            assoc_type_id,
+                            TraitClauseId::new(*index),
+                        )
+                    }
+                    hax::TraitProofImpliedPredicate::Parent { index, .. } => {
+                        TraitRefKind::ParentClause(trait_ref, TraitClauseId::new(*index))
                     }
                 }
-
-                tref_kind
             }
-            ImplExprAtom::Dyn => TraitRefKind::Dyn,
-            ImplExprAtom::Builtin {
+            TraitProofKind::Dyn => TraitRefKind::Dyn,
+            TraitProofKind::Builtin {
                 trait_data,
-                impl_exprs,
+                proofs: trait_proofs,
                 types,
                 ..
             } => {
-                let tref = &impl_source.r#trait;
+                let tref = &impl_source.pred;
                 let trait_def = self.poly_hax_def(&tref.hax_skip_binder_ref().def_id)?;
                 if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
                     // We reuse the same `def_id` to generate a blanket impl for the trait.
@@ -350,7 +333,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         "found trait alias with non-empty required predicates"
                     );
                     impl_ref.generics.trait_refs =
-                        self.translate_trait_impl_exprs(span, impl_exprs)?;
+                        self.translate_trait_proofs(span, trait_proofs)?;
                     TraitRefKind::TraitImpl(impl_ref)
                 } else if let hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) =
                     trait_data
@@ -383,36 +366,29 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     // TODO: here, if closure_ty is a FnDef, we need to generate the matching trait
                     // impls, with an empty state as the first argument.
                     if let Some(closure_kind) = builtin_data.as_closure_kind()
-                        && let Some(hax::GenericArg::Type(closure_ty)) = impl_source
-                            .r#trait
-                            .hax_skip_binder_ref()
-                            .generic_args
-                            .first()
+                        && let Some(hax::GenericArg::Type(closure_ty)) =
+                            impl_source.pred.hax_skip_binder_ref().generic_args.first()
                         && let hax::TyKind::Closure(closure_args) = closure_ty.kind()
                     {
-                        let binder = self.translate_region_binder(
-                            span,
-                            &impl_source.r#trait,
-                            |ctx, _tref| {
+                        let binder =
+                            self.translate_region_binder(span, &impl_source.pred, |ctx, _tref| {
                                 ctx.translate_closure_impl_ref(span, closure_args, closure_kind)
-                            },
-                        )?;
+                            })?;
                         TraitRefKind::TraitImpl(self.erase_region_binder(binder))
                     } else {
-                        let parent_trait_refs =
-                            self.translate_trait_impl_exprs(span, impl_exprs)?;
+                        let parent_trait_refs = self.translate_trait_proofs(span, trait_proofs)?;
                         let types: IndexMap<AssocTypeId, _> = if self.monomorphize() {
                             IndexMap::new()
                         } else {
                             let tdecl_id = trait_decl_ref.skip_binder.id;
                             let mut type_map = IndexMap::new();
-                            for (def_id, ty, impl_exprs) in types {
+                            for (def_id, ty, trait_proofs) in types {
                                 let assoc_type_id =
                                     self.translate_assoc_type_id(tdecl_id, def_id)?;
                                 let assoc_ty = TraitAssocTyImpl {
                                     value: self.translate_ty(span, ty)?,
                                     implied_trait_refs: self
-                                        .translate_trait_impl_exprs(span, impl_exprs)?,
+                                        .translate_trait_proofs(span, trait_proofs)?,
                                 };
                                 type_map.set_slot_extend(assoc_type_id, assoc_ty);
                             }
@@ -426,8 +402,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     }
                 }
             }
-            ImplExprAtom::Error(msg) => {
-                if self.error_on_impl_expr_error {
+            TraitProofKind::Error(msg) => {
+                if self.error_on_trait_proof_error {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }
                 TraitRefKind::Unknown(msg.clone())
