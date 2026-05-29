@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780074603647,
+  "lastUpdate": 1780080476030,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -3666,6 +3666,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 442.3,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 5,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "429a094298402f70d8995da92df1d413fb4fdb27",
+          "message": "Merge pull request #1216 from Nadrieril/fix-1213\n\nmulti-target: Move method filtering after target merging",
+          "timestamp": "2026-05-29T18:44:00Z",
+          "tree_id": "fc349b7cdaf1386611818fd61acedfdc16f5002f",
+          "url": "https://github.com/AeneasVerif/charon/commit/429a094298402f70d8995da92df1d413fb4fdb27"
+        },
+        "date": 1780080474870,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 98497886900,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 12.72,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 440.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24.6,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 327625189790,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 37.24,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 442.2,
             "unit": "max-rss(MB)"
           },
           {
