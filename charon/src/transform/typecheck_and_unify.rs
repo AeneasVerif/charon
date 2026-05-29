@@ -95,6 +95,9 @@ impl TypeCheckVisitor<'_> {
             (TyKind::Array(aty, _), TyKind::Array(bty, _)) => {
                 self.match_tys(aty, bty)?;
             }
+            (TyKind::Pattern(aty, apat), TyKind::Pattern(bty, bpat)) if apat == bpat => {
+                self.match_tys(aty, bty)?;
+            }
             (TyKind::Slice(aty), TyKind::Slice(bty)) => {
                 self.match_tys(aty, bty)?;
             }

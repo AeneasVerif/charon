@@ -1413,6 +1413,10 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
     | `Assoc [ ("Slice", slice) ] ->
         let* slice = ty_of_json ctx slice in
         Ok (TSlice slice)
+    | `Assoc [ ("Pattern", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = ty_of_json ctx x_0 in
+        let* x_1 = type_pattern_of_json ctx x_1 in
+        Ok (TPattern (x_0, x_1))
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (TError error)
@@ -1455,6 +1459,20 @@ and type_param_of_json (ctx : of_json_ctx) (js : json) :
         let* index = type_var_id_of_json ctx index in
         let* name = string_of_json ctx name in
         Ok ({ index; name } : type_param)
+    | _ -> Error "")
+
+and type_pattern_of_json (ctx : of_json_ctx) (js : json) :
+    (type_pattern, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Range", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = box_of_json constant_expr_of_json ctx x_0 in
+        let* x_1 = box_of_json constant_expr_of_json ctx x_1 in
+        Ok (Range (x_0, x_1))
+    | `Assoc [ ("OrPattern", or_pattern) ] ->
+        let* or_pattern = list_of_json type_pattern_of_json ctx or_pattern in
+        Ok (OrPattern or_pattern)
+    | `String "NotNull" -> Ok NotNull
     | _ -> Error "")
 
 and type_var_id_of_json (ctx : of_json_ctx) (js : json) :

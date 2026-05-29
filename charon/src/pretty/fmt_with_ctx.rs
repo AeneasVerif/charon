@@ -2199,6 +2199,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::TypeVar(id) => write!(f, "{}", id.with_ctx(ctx)),
             TyKind::Literal(kind) => write!(f, "{kind}"),
             TyKind::Never => write!(f, "!"),
+            TyKind::Pattern(ty, pat) => write!(f, "{} is {}", ty.with_ctx(ctx), pat.with_ctx(ctx)),
             TyKind::Ref(r, ty, kind) => {
                 write!(f, "&{} ", r.with_ctx(ctx))?;
                 if let RefKind::Mut = kind {
@@ -2241,6 +2242,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 write!(f, "PtrMetadata<{}>", ty.with_ctx(ctx))
             }
             TyKind::Error(msg) => write!(f, "type_error(\"{msg}\")"),
+        }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for TypePattern {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TypePattern::Range(start, end) => {
+                write!(f, "{}..={}", start.with_ctx(ctx), end.with_ctx(ctx))
+            }
+            TypePattern::OrPattern(patterns) => {
+                write!(
+                    f,
+                    "({})",
+                    patterns.iter().map(|pat| pat.with_ctx(ctx)).format(" | ")
+                )
+            }
+            TypePattern::NotNull => write!(f, "!null"),
         }
     }
 }

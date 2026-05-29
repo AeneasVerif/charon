@@ -107,7 +107,7 @@ pub struct PhantomData<T> {}
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
-  type_error("Unsupported type: "pattern_type!(usize is 0..=core::::num::niche_types::UsizeNoHighBit::0::{constant#1})""),
+  usize is 0 : usize..=9223372036854775807 : usize,
 }
 
 // Full name: core::num::{usize}::MAX
