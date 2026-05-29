@@ -1,0 +1,9 @@
+error: Mismatched method generics:
+       params:   <'_0>
+       supplied: <'4>[TraitClauseBound(0, 0)]
+  --> tests/ui/traits/issue-513-method-clause-mismatch-and-default-call.rs:11:9
+   |
+11 |         self.fold()
+   |         ^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)

@@ -1,0 +1,86 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Has
+trait Has<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    vtable: test_crate::Has::{vtable}<T>
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
+    type Item
+    fn provided<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Has<Self::Item>), TraitClause2_1: (Self: Exact)> = test_crate::Trait::provided<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Exact
+trait Exact<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Trait)
+    non-dyn-compatible
+}
+
+fn test_crate::Trait::provided<'_0, Self, P>(_1: &'_0 mut Self)
+where
+    TraitClause0: (Self: Trait),
+    TraitClause1: (P: Sized),
+    TraitClause2: (P: Has<TraitClause0::Item>),
+    TraitClause3: (Self: Exact),
+= <method_without_default_body>
+
+// Full name: test_crate::Empty
+struct Empty<T>
+where
+    TraitClause0: (T: Sized),
+{
+  T,
+}
+
+// Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}::provided
+fn {impl Trait for Empty<T>[TraitClause0]}::provided<'_0, T, P>(self_1: &'_0 mut Empty<T>[TraitClause0])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (P: Sized),
+    TraitClause2: (P: Has<TraitClause3::ImpliedClause1::Item>),
+    TraitClause3: (Empty<T>[TraitClause0]: Exact),
+{
+    let _0: (); // return
+    let self_1: &'1 mut Empty<T>[TraitClause0]; // arg #1
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}
+impl<T> Trait for Empty<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (Empty<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Empty<T>[TraitClause0]}
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    type Item = T
+    fn provided<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Has<TraitClause2_1::ImpliedClause1::Item>), TraitClause2_1: (Empty<T>[TraitClause0]: Exact)> = {impl Trait for Empty<T>[TraitClause0]}::provided<'_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    non-dyn-compatible
+}
+
+
+
