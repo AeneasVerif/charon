@@ -332,20 +332,26 @@ impl<'a> PartialMonomorphizer<'a> {
             | TyKind::RawPtr(ty, _)
             | TyKind::Array(ty, _)
             | TyKind::Slice(ty) => self.is_infected(ty),
-            TyKind::Adt(tref) if let TypeId::Adt(id) = tref.id => {
-                let ty_infected = self.infected_types.contains(&id);
-                let args_infected = if self.specialize_adts {
-                    // Since we make sure to only call the method on a processed type, any type
-                    // with infected arguments would have been replaced with a fresh instantiated
-                    // (and infected type). Hence we don't need to check the arguments here, only
-                    // the type id.
-                    false
-                } else {
+            TyKind::Adt(tref) => match tref.id {
+                TypeId::Adt(id) => {
+                    let ty_infected = self.infected_types.contains(&id);
+                    let args_infected = if self.specialize_adts {
+                        // Since we make sure to only call the method on a processed type, any type
+                        // with infected arguments would have been replaced with a fresh instantiated
+                        // (and infected type). Hence we don't need to check the arguments here, only
+                        // the type id.
+                        false
+                    } else {
+                        tref.generics.types.iter().any(|ty| self.is_infected(ty))
+                    };
+                    ty_infected || args_infected
+                }
+                TypeId::Tuple | TypeId::Builtin(_) => {
+                    // Builtin types have no declaration to specialize, so infected arguments stay
+                    // visible inside them.
                     tref.generics.types.iter().any(|ty| self.is_infected(ty))
-                };
-                ty_infected || args_infected
-            }
-            TyKind::Adt(..) => false,
+                }
+            },
             // A function pointer/item by itself doesn't carry any mutable reference, even if it
             // uses some in its signature. Compare with closures: a closure without captures
             // doesn't trigger partial mono regardless of its signature.
