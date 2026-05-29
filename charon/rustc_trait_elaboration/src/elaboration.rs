@@ -349,7 +349,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                     })
                     .collect();
 
-                let trait_data = if erased_tref.skip_binder().def_id == destruct_trait {
+                let trait_data = if trait_def_id == destruct_trait {
                     let ty = erased_tref.skip_binder().args[0].as_type().unwrap();
                     // Source of truth are `ty::needs_drop_components` and `tcx.needs_drop_raw`.
                     let destruct_data = match ty.kind() {
@@ -410,7 +410,11 @@ impl<'tcx> PredicateSearcher<'tcx> {
                     };
                     destruct_data.map_left(BuiltinTraitData::Destruct)
                 } else {
-                    Either::Left(BuiltinTraitData::Other)
+                    Either::Left(if tcx.trait_is_auto(trait_def_id) {
+                        BuiltinTraitData::Auto
+                    } else {
+                        BuiltinTraitData::Other
+                    })
                 };
                 match trait_data {
                     Either::Left(trait_data) => ImplExprAtom::Builtin {

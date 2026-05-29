@@ -1,7 +1,7 @@
 use super::translate_ctx::*;
 use crate::hax;
 use charon_lib::{ast::*, ids::IndexVec};
-use rustc_span::{kw, sym};
+use rustc_type_ir::Interner;
 
 impl<'tcx> TranslateCtx<'tcx> {
     pub fn recognize_builtin_impl(
@@ -18,28 +18,46 @@ impl<'tcx> TranslateCtx<'tcx> {
                     hax::DestructData::Glue { .. } => return None,
                 }
             }
-            hax::BuiltinTraitData::Other => match &trait_def.lang_item {
-                _ if self
+            hax::BuiltinTraitData::Auto => BuiltinImplData::Auto,
+            hax::BuiltinTraitData::Other => {
+                use rustc_type_ir::lang_items::SolverTraitLangItem;
+                // The ones for which we return `None` are those I don't think would show up in a
+                // builtin impl.
+                match self
                     .tcx
-                    .trait_is_auto(trait_def.def_id().real_rust_def_id()) =>
+                    .as_trait_lang_item(trait_def.def_id().real_rust_def_id())?
                 {
-                    BuiltinImplData::Auto
+                    SolverTraitLangItem::AsyncFn => BuiltinImplData::AsyncFn,
+                    SolverTraitLangItem::AsyncFnKindHelper => return None,
+                    SolverTraitLangItem::AsyncFnMut => BuiltinImplData::AsyncFnMut,
+                    SolverTraitLangItem::AsyncFnOnce => BuiltinImplData::AsyncFnOnce,
+                    SolverTraitLangItem::AsyncFnOnceOutput => return None,
+                    SolverTraitLangItem::AsyncIterator => return None,
+                    SolverTraitLangItem::BikeshedGuaranteedNoDrop => return None,
+                    SolverTraitLangItem::Clone => BuiltinImplData::Clone,
+                    SolverTraitLangItem::Copy => BuiltinImplData::Copy,
+                    SolverTraitLangItem::Coroutine => BuiltinImplData::Coroutine,
+                    SolverTraitLangItem::Destruct => BuiltinImplData::UntrackedDestruct,
+                    SolverTraitLangItem::DiscriminantKind => BuiltinImplData::DiscriminantKind,
+                    SolverTraitLangItem::Drop => return None,
+                    SolverTraitLangItem::Fn => BuiltinImplData::Fn,
+                    SolverTraitLangItem::FnMut => BuiltinImplData::FnMut,
+                    SolverTraitLangItem::FnOnce => BuiltinImplData::FnOnce,
+                    SolverTraitLangItem::FnPtrTrait => BuiltinImplData::FnPtr,
+                    SolverTraitLangItem::FusedIterator => return None,
+                    SolverTraitLangItem::Future => BuiltinImplData::Future,
+                    SolverTraitLangItem::Iterator => return None,
+                    SolverTraitLangItem::MetaSized => BuiltinImplData::MetaSized,
+                    SolverTraitLangItem::PointeeSized => BuiltinImplData::PointeeSized,
+                    SolverTraitLangItem::PointeeTrait => BuiltinImplData::Pointee,
+                    SolverTraitLangItem::Sized => BuiltinImplData::Sized,
+                    SolverTraitLangItem::TransmuteTrait => BuiltinImplData::Transmute,
+                    SolverTraitLangItem::TrivialClone => BuiltinImplData::Auto,
+                    SolverTraitLangItem::Tuple => BuiltinImplData::Tuple,
+                    SolverTraitLangItem::Unpin => BuiltinImplData::Auto,
+                    SolverTraitLangItem::Unsize => BuiltinImplData::Unsize,
                 }
-                None => return None,
-                Some(litem) => match *litem {
-                    sym::sized => BuiltinImplData::Sized,
-                    sym::meta_sized => BuiltinImplData::MetaSized,
-                    sym::tuple_trait => BuiltinImplData::Tuple,
-                    kw::Fn => BuiltinImplData::Fn,
-                    sym::fn_mut => BuiltinImplData::FnMut,
-                    sym::fn_once => BuiltinImplData::FnOnce,
-                    sym::pointee_trait => BuiltinImplData::Pointee,
-                    sym::clone => BuiltinImplData::Clone,
-                    sym::copy => BuiltinImplData::Copy,
-                    sym::discriminant_kind => BuiltinImplData::DiscriminantKind,
-                    _ => return None,
-                },
-            },
+            }
         })
     }
 }

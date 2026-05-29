@@ -57,7 +57,10 @@ pub enum BuiltinTraitData<'tcx> {
     /// the information about `drop_in_place` to that trait. This data tells us what kind of
     /// `drop_in_place` the target type has.
     Destruct(DestructData<'tcx>),
+    /// An auto-trait.
+    Auto,
     /// Some other builtin trait.
+    // FIXME: carry the SolverTraitLangItem here directly
     Other,
 }
 

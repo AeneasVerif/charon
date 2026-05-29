@@ -142,26 +142,39 @@ pub enum TraitRefKind {
 #[derive(Debug, Clone, SerializeState, DeserializeState, PartialEq, Eq, Hash, Drive, DriveMut)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Builtin"))]
 pub enum BuiltinImplData {
-    // Marker traits (without methods).
-    Sized,
-    MetaSized,
-    Tuple,
-    Pointee,
-    DiscriminantKind,
-    // Auto traits (defined with `auto trait ...`).
+    /// Auto traits (defined with `auto trait ...`, also `Unpin`).
     Auto,
 
-    // Traits with methods.
+    Sized,
+    MetaSized,
+    PointeeSized,
+
+    Copy,
+    Clone,
+
+    Tuple,
+    Transmute,
+    Unsize,
+
+    Pointee,
+    DiscriminantKind,
+
+    Fn,
+    FnMut,
+    FnOnce,
+    FnPtr,
+    AsyncFn,
+    AsyncFnMut,
+    AsyncFnOnce,
+    Coroutine,
+    Future,
+
     /// An impl of `Destruct` for a type with no drop glue.
     NoopDestruct,
     /// An impl of `Destruct` for a type parameter, which we could not resolve because
     /// `--add-drop-bounds` was not set.
     UntrackedDestruct,
-    Fn,
-    FnMut,
-    FnOnce,
-    Copy,
-    Clone,
+
     /// Placeholder used by the `--remove-adt-clauses` pass when it strips a trait clause from a
     /// type declaration. References to the removed clause are rewritten as
     /// `BuiltinOrAuto { builtin_data: RemovedAdtClause, .. }`.
