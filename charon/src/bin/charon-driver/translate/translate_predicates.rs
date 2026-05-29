@@ -286,30 +286,24 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     self.translate_trait_impl_ref(span, item, TraitImplSource::Normal)?;
                 TraitRef::new(TraitRefKind::TraitImpl(impl_ref), trait_decl_ref)
             }
-            ImplExprAtom::SelfImpl {
-                r#trait: trait_ref,
-                path,
-            }
-            | ImplExprAtom::LocalBound {
-                r#trait: trait_ref,
-                path,
-                ..
-            } => {
-                trace!(
-                    "impl source (self or clause): param:\n- trait_ref: {:?}\n- path: {:?}",
-                    trait_ref, path,
-                );
+            ImplExprAtom::SelfImpl | ImplExprAtom::LocalBound { .. } => {
+                trace!("impl source (self or clause): {:?}", impl_source.r#impl);
                 // If we are referring to a trait clause, we need to find the relevant one.
-                let mut tref_kind = match &impl_source.r#impl {
-                    ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
-                    ImplExprAtom::LocalBound { id, .. } => match self.lookup_clause_var(span, id) {
+                let tref_kind = match &impl_source.r#impl {
+                    ImplExprAtom::SelfImpl => TraitRefKind::SelfId,
+                    ImplExprAtom::LocalBound(id) => match self.lookup_clause_var(span, id) {
                         Ok(var) => TraitRefKind::Clause(var),
                         Err(err) => TraitRefKind::Unknown(err.msg),
                     },
                     _ => unreachable!(),
                 };
 
-                let mut current_pred = self.translate_poly_trait_ref(span, trait_ref)?;
+                TraitRef::new(tref_kind, trait_decl_ref)
+            }
+            ImplExprAtom::Derived { base, path } => {
+                let base_ref = self.translate_trait_impl_expr(span, base)?;
+                let mut tref_kind = base_ref.kind.clone();
+                let mut current_pred = base_ref.trait_decl_ref.clone();
 
                 // Apply the path
                 for path_elem in path {

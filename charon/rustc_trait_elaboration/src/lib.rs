@@ -87,17 +87,9 @@ pub enum ImplExprAtom<'tcx> {
     /// A concrete `impl Trait for Type {}` item.
     Concrete(ItemRef<'tcx>),
     /// A context-bound clause like `where T: Trait`.
-    LocalBound {
-        predicate: ty::Predicate<'tcx>,
-        id: ItemPredicateId,
-        r#trait: ty::PolyTraitRef<'tcx>,
-        path: Path<'tcx>,
-    },
+    LocalBound(ItemPredicateId),
     /// The automatic clause `Self: Trait` present inside a `impl Trait for Type {}` item.
-    SelfImpl {
-        r#trait: ty::PolyTraitRef<'tcx>,
-        path: Path<'tcx>,
-    },
+    SelfImpl,
     /// `dyn Trait` is a wrapped value with a virtual table for trait
     /// `Trait`.  In other words, a value `dyn Trait` is a dependent
     /// triple that gathers a type τ, a value of type τ and an
@@ -117,6 +109,11 @@ pub enum ImplExprAtom<'tcx> {
         impl_exprs: Vec<ImplExpr<'tcx>>,
         /// The values of the associated types for this trait.
         types: Vec<(DefId, ty::Ty<'tcx>, Vec<ImplExpr<'tcx>>)>,
+    },
+    /// A predicate implied by `base` by following `path`.
+    Derived {
+        base: ImplExpr<'tcx>,
+        path: Path<'tcx>,
     },
     /// An error happened while elaborating traits.
     Error(String),

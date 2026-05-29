@@ -57,23 +57,18 @@ fn parents_trait_predicates<'tcx>(
 struct Candidate<'tcx> {
     path: Path<'tcx>,
     pred: PolyTraitRef<'tcx>,
-    origin: ItemClause<'tcx>,
+    origin: ImplExpr<'tcx>,
 }
 
 impl<'tcx> Candidate<'tcx> {
-    fn into_impl_expr(self, tcx: TyCtxt<'tcx>, implicit_self_clause: bool) -> ImplExprAtom<'tcx> {
-        let path = self.path;
-        let r#trait = self.origin.clause;
-        match self.origin.id {
-            ItemPredicateId::TraitSelf if implicit_self_clause => {
-                ImplExprAtom::SelfImpl { r#trait, path }
-            }
-            _ => ImplExprAtom::LocalBound {
-                predicate: self.origin.clause.upcast(tcx),
-                id: self.origin.id,
-                r#trait,
-                path,
-            },
+    fn into_impl_expr_atom(self) -> ImplExprAtom<'tcx> {
+        let base = self.origin;
+        if self.path.is_empty() {
+            return base.r#impl.clone();
+        }
+        ImplExprAtom::Derived {
+            base,
+            path: self.path,
         }
     }
 }
@@ -144,10 +139,21 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// Insert annotated predicates in the search context. Prefer inserting them all at once as
     /// this will give priority to shorter resolution paths.
     fn insert_predicates(&mut self, preds: impl IntoIterator<Item = ItemClause<'tcx>>) {
-        self.insert_candidates(preds.into_iter().map(|clause| Candidate {
-            path: vec![],
-            pred: clause.clause,
-            origin: clause,
+        let elab_ctx = self.elab_ctx;
+        let implicit_self_clause = self.implicit_self_clause;
+        self.insert_candidates(preds.into_iter().map(|clause| {
+            let origin = elab_ctx.intern_impl_expr(ImplExprContents {
+                r#trait: clause.clause,
+                r#impl: match clause.id {
+                    ItemPredicateId::TraitSelf if implicit_self_clause => ImplExprAtom::SelfImpl,
+                    _ => ImplExprAtom::LocalBound(clause.id),
+                },
+            });
+            Candidate {
+                path: vec![],
+                pred: clause.clause,
+                origin,
+            }
         }))
     }
 
@@ -305,7 +311,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 ..
             }) => ImplExprAtom::Concrete(self.resolve_item_reference(impl_def_id, generics, true)),
             ImplSource::Param(_) => match self.resolve_local(erased_tref.upcast(tcx)) {
-                Some(candidate) => candidate.into_impl_expr(tcx, self.implicit_self_clause),
+                Some(candidate) => candidate.into_impl_expr_atom(),
                 None => {
                     let msg =
                         format!("Could not find a clause for `{tref:?}` in the item parameters");
@@ -385,9 +391,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
                                 // We've added `Destruct` impls on everything, we should be able to resolve
                                 // it.
                                 match self.resolve_local(erased_tref.upcast(tcx)) {
-                                    Some(candidate) => Either::Right(
-                                        candidate.into_impl_expr(tcx, self.implicit_self_clause),
-                                    ),
+                                    Some(candidate) => {
+                                        Either::Right(candidate.into_impl_expr_atom())
+                                    }
                                     None => {
                                         let msg = format!(
                                             "Cannot find virtual `Destruct` clause: `{tref:?}`"

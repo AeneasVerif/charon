@@ -66,17 +66,10 @@ pub enum ImplExprAtom {
     /// A concrete `impl Trait for Type {}` item.
     Concrete(ItemRef),
     /// A context-bound clause like `where T: Trait`.
-    LocalBound {
-        id: GenericPredicateId,
-        r#trait: Binder<TraitRef>,
-        path: Vec<ImplExprPathChunk>,
-    },
+    LocalBound(GenericPredicateId),
     /// The implicit `Self: Trait` clause present inside a `trait Trait {}` item.
     // TODO: should we also get that clause for trait impls?
-    SelfImpl {
-        r#trait: Binder<TraitRef>,
-        path: Vec<ImplExprPathChunk>,
-    },
+    SelfImpl,
     /// `dyn Trait` is a wrapped value with a virtual table for trait
     /// `Trait`.  In other words, a value `dyn Trait` is a dependent
     /// triple that gathers a type τ, a value of type τ and an
@@ -96,6 +89,11 @@ pub enum ImplExprAtom {
         impl_exprs: Vec<ImplExpr>,
         /// The values of the associated types for this trait.
         types: Vec<(DefId, Ty, Vec<ImplExpr>)>,
+    },
+    /// A predicate implied by `base` by following `path`.
+    Derived {
+        base: ImplExpr,
+        path: Vec<ImplExprPathChunk>,
     },
     /// An error happened while resolving traits.
     Error(String),
