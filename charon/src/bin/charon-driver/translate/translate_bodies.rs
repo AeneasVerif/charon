@@ -769,9 +769,17 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                     assert!(generics.regions.is_empty());
                                     assert!(generics.types.len() == 2);
                                     assert!(generics.const_generics.is_empty());
-                                    assert!(field_id == FieldId::ZERO);
-                                    // We pretend this is a deref.
-                                    ProjectionElem::Deref
+                                    if field_id == FieldId::ZERO {
+                                        // We pretend the pointee field is a deref.
+                                        ProjectionElem::Deref
+                                    } else {
+                                        raise_error!(
+                                            self,
+                                            span,
+                                            "trying to access the allocator field from Box, \
+                                            but it is being treated as a builtin (without allocator)"
+                                        )
+                                    }
                                 }
                                 _ => {
                                     raise_error!(self, span, "Unexpected field projection")
