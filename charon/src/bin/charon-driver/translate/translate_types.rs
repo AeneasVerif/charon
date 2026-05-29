@@ -174,6 +174,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     Box::new(args.const_generics.pop().unwrap()),
                 )
             }
+            hax::TyKind::Pat(ty, pat) => {
+                let ty = self.translate_ty(span, ty)?;
+                let pat = self.translate_pattern(span, pat)?;
+                TyKind::Pattern(ty, pat)
+            }
             hax::TyKind::Slice(item_ref) => {
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1);
@@ -305,6 +310,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         };
         Ok(kind.into_ty())
+    }
+
+    pub fn translate_pattern(
+        &mut self,
+        span: Span,
+        pat: &hax::Pattern,
+    ) -> Result<TypePattern, Error> {
+        Ok(match pat {
+            hax::Pattern::Range { start, end } => TypePattern::Range(
+                Box::new(self.translate_constant_expr(span, start)?),
+                Box::new(self.translate_constant_expr(span, end)?),
+            ),
+            hax::Pattern::Or(patterns) => TypePattern::OrPattern(
+                patterns
+                    .iter()
+                    .map(|pat| self.translate_pattern(span, pat))
+                    .try_collect()?,
+            ),
+            hax::Pattern::NotNull => TypePattern::NotNull,
+        })
     }
 
     pub(crate) fn translate_rustc_ty(

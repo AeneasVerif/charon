@@ -722,16 +722,25 @@ impl Ty {
     pub fn is_scalar(&self) -> bool {
         match self.kind() {
             TyKind::Literal(kind) => kind.is_int() || kind.is_uint(),
+            TyKind::Pattern(ty, _) => ty.is_scalar(),
             _ => false,
         }
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
-        matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(_)))
+        match self.kind() {
+            TyKind::Literal(LiteralTy::UInt(_)) => true,
+            TyKind::Pattern(ty, _) => ty.is_unsigned_scalar(),
+            _ => false,
+        }
     }
 
     pub fn is_signed_scalar(&self) -> bool {
-        matches!(self.kind(), TyKind::Literal(LiteralTy::Int(_)))
+        match self.kind() {
+            TyKind::Literal(LiteralTy::Int(_)) => true,
+            TyKind::Pattern(ty, _) => ty.is_signed_scalar(),
+            _ => false,
+        }
     }
 
     pub fn is_str(&self) -> bool {
@@ -765,6 +774,7 @@ impl Ty {
     pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
         let ty_decls = &translated.type_decls;
         match self.kind() {
+            TyKind::Pattern(ty, _) => ty.get_ptr_metadata(translated),
             TyKind::Adt(ty_ref) => {
                 // there are two cases:
                 // 1. if the declared type has a fixed metadata, just returns it

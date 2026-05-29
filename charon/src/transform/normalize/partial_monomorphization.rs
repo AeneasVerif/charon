@@ -331,6 +331,7 @@ impl<'a> PartialMonomorphizer<'a> {
             TyKind::Ref(_, ty, _)
             | TyKind::RawPtr(ty, _)
             | TyKind::Array(ty, _)
+            | TyKind::Pattern(ty, _)
             | TyKind::Slice(ty) => self.is_infected(ty),
             TyKind::Adt(tref) => match tref.id {
                 TypeId::Adt(id) => {

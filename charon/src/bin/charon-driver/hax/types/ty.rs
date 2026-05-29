@@ -7,6 +7,7 @@ use crate::hax::sinto_todo;
 use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
+use rustc_type_ir::inherent::IntoKind;
 
 sinto_reexport!(rustc_abi::ExternAbi);
 
@@ -785,6 +786,7 @@ pub enum TyKind {
         ItemRef::translate_synthetic(s, SyntheticItem::Array, args)
     }),)]
     Array(ItemRef),
+    Pat(Ty, Pattern),
     /// The `ItemRef` uses the fake `Slice` def_id.
     #[custom_arm(FROM_TYPE::Slice(ty) => TO_TYPE::Slice({
         let args = s.base().tcx.mk_args(&[(*ty).into()]);
@@ -939,6 +941,23 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
     }
 }
 
+#[derive(AdtInto)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::pattern::PatternKind<'tcx>, state: S as gstate)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum Pattern {
+    Range {
+        start: ConstantExpr,
+        end: ConstantExpr,
+    },
+    Or(Vec<Pattern>),
+    NotNull,
+}
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Pattern> for ty::Pattern<'tcx> {
+    fn sinto(&self, s: &S) -> Pattern {
+        self.kind().sinto(s)
+    }
+}
 /// Reflects [`ty::CanonicalUserTypeAnnotation`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::CanonicalUserTypeAnnotation<'tcx>, state: S as gstate)]

@@ -575,6 +575,8 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
   | TVar tv -> pp_string fmt (type_db_var_to_string env tv)
   | TNever -> pp_string fmt "!"
   | TLiteral lit_ty -> pp_literal_type fmt lit_ty
+  | TPattern (ty, pat) ->
+      Format.fprintf fmt "%a is %a" (pp_ty env) ty (pp_type_pattern env) pat
   | TTraitType (trait_ref, type_id) ->
       let type_name =
         GAstUtils.get_assoc_type_name env.crate
@@ -620,6 +622,18 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
   | TSlice ty -> Format.fprintf fmt "[%a]" (pp_ty env) ty
   | TPtrMetadata ty -> Format.fprintf fmt "PtrMetadata<%a>" (pp_ty env) ty
   | TError msg -> Format.fprintf fmt "type_error(\"%s\")" msg
+
+and pp_type_pattern (env : fmt_env) (fmt : Format.formatter)
+    (pat : type_pattern) : unit =
+  match pat with
+  | Range (start, stop) ->
+      Format.fprintf fmt "%a..=%a" (pp_constant_expr env) start
+        (pp_constant_expr env) stop
+  | OrPattern patterns ->
+      Format.fprintf fmt "(%a)"
+        (pp_sep_list " | " (pp_type_pattern env))
+        patterns
+  | NotNull -> pp_string fmt "!null"
 
 and ty_to_string env ty = pp_to_string (fun fmt -> pp_ty env fmt ty)
 

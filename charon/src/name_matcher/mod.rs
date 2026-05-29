@@ -180,6 +180,7 @@ impl Pattern {
                 };
                 self.matches_with_generics(ctx, &type_name, Some(&args))
             }
+            TyKind::Pattern(ty, _) => self.matches_ty(ctx, ty),
             TyKind::TypeVar(..)
             | TyKind::Literal(..)
             | TyKind::Never
