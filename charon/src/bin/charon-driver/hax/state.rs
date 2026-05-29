@@ -129,6 +129,7 @@ mod types {
         pub fn new(
             tcx: rustc_middle::ty::TyCtxt<'tcx>,
             options: crate::hax::options::Options,
+            bounds_options: crate::hax::options::BoundsOptions,
         ) -> Self {
             Self {
                 tcx,
@@ -138,7 +139,7 @@ mod types {
                 // `opt_def_id` is used in `utils` for error reporting
                 opt_def_id: None,
                 local_ctx: Rc::new(RefCell::new(LocalContextS::new())),
-                elab_ctx: ElaborationCtx::new(tcx),
+                elab_ctx: ElaborationCtx::new(tcx, bounds_options),
             }
         }
     }
@@ -161,9 +162,13 @@ pub type StateWithOwner<'tcx> = State<Base<'tcx>, DefId, ()>;
 pub type StateWithBinder<'tcx> = State<Base<'tcx>, DefId, types::UnitBinder<'tcx>>;
 
 impl<'tcx> StateWithBase<'tcx> {
-    pub fn new(tcx: rustc_middle::ty::TyCtxt<'tcx>, options: crate::hax::options::Options) -> Self {
+    pub fn new(
+        tcx: rustc_middle::ty::TyCtxt<'tcx>,
+        options: crate::hax::options::Options,
+        bounds_options: crate::hax::options::BoundsOptions,
+    ) -> Self {
         Self {
-            base: Base::new(tcx, options),
+            base: Base::new(tcx, options, bounds_options),
             owner: (),
             binder: (),
         }
@@ -243,11 +248,7 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
     fn with_predicate_searcher<T>(&self, f: impl FnOnce(&mut PredicateSearcher<'tcx>) -> T) -> T {
         self.with_cache(|cache| {
             f(cache.predicate_searcher.get_or_insert_with(|| {
-                PredicateSearcher::new_for_owner(
-                    self.base().elab_ctx,
-                    self.owner_id(),
-                    &self.base().options.bounds_options,
-                )
+                PredicateSearcher::new_for_owner(self.base().elab_ctx, self.owner_id())
             }))
         })
     }

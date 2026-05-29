@@ -77,6 +77,7 @@ pub struct ElaborationCtx<'tcx> {
 
 #[derive(Default)]
 struct ElaborationData<'tcx> {
+    bounds_options: BoundsOptions,
     impl_exprs: intern::ImplExprInterner<'tcx>,
     impl_exprs_arena: TypedArena<ImplExprContents<'tcx>>,
     required_predicates: PredicateCache<'tcx>,
@@ -84,33 +85,22 @@ struct ElaborationData<'tcx> {
     implied_predicates: PredicateCache<'tcx>,
 }
 
-#[derive(Clone, PartialEq, Eq, Hash)]
-struct PredicateCacheKey {
-    def_id: DefId,
-    options: BoundsOptions,
-}
-
 #[derive(Default)]
 struct PredicateCache<'tcx> {
-    values: ShardedHashMap<PredicateCacheKey, ItemPredicates<'tcx>>,
+    values: ShardedHashMap<DefId, ItemPredicates<'tcx>>,
 }
 
 impl<'tcx> PredicateCache<'tcx> {
     fn get_or_insert_with(
         &'tcx self,
         def_id: DefId,
-        options: &BoundsOptions,
         compute: impl FnOnce() -> ItemPredicates<'tcx>,
     ) -> ItemPredicates<'tcx> {
-        let key = PredicateCacheKey {
-            def_id,
-            options: options.clone(),
-        };
-        if let Some(predicates) = self.values.get(&key) {
+        if let Some(predicates) = self.values.get(&def_id) {
             return predicates;
         }
         let predicates = compute();
-        let _ = self.values.insert(key, predicates.clone());
+        let _ = self.values.insert(def_id, predicates.clone());
         predicates
     }
 }
@@ -126,12 +116,19 @@ impl<'tcx> ElaborationData<'tcx> {
 
 impl<'tcx> ElaborationCtx<'tcx> {
     /// Warning: only create a single one.
-    pub fn new(tcx: ty::TyCtxt<'tcx>) -> Self {
+    pub fn new(tcx: ty::TyCtxt<'tcx>, bounds_options: BoundsOptions) -> Self {
         // `ImplExpr` is a copyable `Interned<'tcx, _>` and may outlive the `PredicateSearcher`
         // that produced it. We therefore give each elaboration context session-long storage, like
         // rustc's own arenas. The interned values still contain rustc data bounded by `'tcx`.
-        let data = Box::leak(Box::new(ElaborationData::default()));
+        let data = Box::leak(Box::new(ElaborationData {
+            bounds_options,
+            ..ElaborationData::default()
+        }));
         ElaborationCtx { tcx, data }
+    }
+
+    pub fn bounds_options(&self) -> &BoundsOptions {
+        &self.data.bounds_options
     }
 
     pub fn intern_impl_expr(&self, contents: ImplExprContents<'tcx>) -> ImplExpr<'tcx> {
@@ -141,33 +138,30 @@ impl<'tcx> ElaborationCtx<'tcx> {
     pub(crate) fn cached_required_predicates(
         &self,
         def_id: DefId,
-        options: &BoundsOptions,
         compute: impl FnOnce() -> ItemPredicates<'tcx>,
     ) -> ItemPredicates<'tcx> {
         self.data
             .required_predicates
-            .get_or_insert_with(def_id, options, compute)
+            .get_or_insert_with(def_id, compute)
     }
 
     pub(crate) fn cached_required_recursively_predicates(
         &self,
         def_id: DefId,
-        options: &BoundsOptions,
         compute: impl FnOnce() -> ItemPredicates<'tcx>,
     ) -> ItemPredicates<'tcx> {
         self.data
             .required_recursively_predicates
-            .get_or_insert_with(def_id, options, compute)
+            .get_or_insert_with(def_id, compute)
     }
 
     pub(crate) fn cached_implied_predicates(
         &self,
         def_id: DefId,
-        options: &BoundsOptions,
         compute: impl FnOnce() -> ItemPredicates<'tcx>,
     ) -> ItemPredicates<'tcx> {
         self.data
             .implied_predicates
-            .get_or_insert_with(def_id, options, compute)
+            .get_or_insert_with(def_id, compute)
     }
 }

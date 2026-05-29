@@ -39,10 +39,9 @@ fn initial_self_pred<'tcx>(
 fn parents_trait_predicates<'tcx>(
     elab_ctx: ElaborationCtx<'tcx>,
     self_trait_ref: PolyTraitRef<'tcx>,
-    options: &BoundsOptions,
 ) -> Vec<PolyTraitRef<'tcx>> {
     let tcx = elab_ctx.tcx;
-    ItemPredicates::implied(elab_ctx, self_trait_ref.def_id(), options)
+    ItemPredicates::implied(elab_ctx, self_trait_ref.def_id())
         .iter()
         // Substitute with the `self` args so that the clause makes sense in the
         // outside context.
@@ -86,8 +85,6 @@ pub struct PredicateSearcher<'tcx> {
     pub(crate) typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
     candidates: HashMap<PolyTraitRef<'tcx>, Candidate<'tcx>>,
-    /// Resolution options.
-    pub(crate) options: BoundsOptions,
     /// Whether we're in a trait declaration context where an implicit `Self: Trait` clause is
     /// accessible.
     implicit_self_clause: bool,
@@ -99,11 +96,7 @@ pub struct PredicateSearcher<'tcx> {
 
 impl<'tcx> PredicateSearcher<'tcx> {
     /// Initialize the elaborator with the predicates accessible within this item.
-    pub fn new_for_owner(
-        elab_ctx: ElaborationCtx<'tcx>,
-        owner_id: DefId,
-        options: &BoundsOptions,
-    ) -> Self {
+    pub fn new_for_owner(elab_ctx: ElaborationCtx<'tcx>, owner_id: DefId) -> Self {
         let tcx = elab_ctx.tcx;
         let initial_self_pred = initial_self_pred(tcx, owner_id);
         let mut out = Self {
@@ -113,7 +106,6 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 typing_mode: TypingMode::PostAnalysis,
             },
             candidates: Default::default(),
-            options: options.clone(),
             implicit_self_clause: initial_self_pred.is_some(),
             item_refs_cache: Default::default(),
             impl_exprs_cache: Default::default(),
@@ -123,7 +115,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
             clause,
         }));
         out.insert_bound_predicates(
-            ItemPredicates::required_recursively(elab_ctx, owner_id, options).predicates,
+            ItemPredicates::required_recursively(elab_ctx, owner_id).predicates,
         );
         out
     }
@@ -186,9 +178,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let elab_ctx = self.elab_ctx;
         // Then recursively add their parents. This way ensures a breadth-first order,
         // which means we select the shortest path when looking up predicates.
-        let options = self.options.clone();
         self.insert_candidates(new_candidates.into_iter().flat_map(|candidate| {
-            parents_trait_predicates(elab_ctx, candidate.pred, &options)
+            parents_trait_predicates(elab_ctx, candidate.pred)
                 .into_iter()
                 .enumerate()
                 .map(move |(index, parent_pred)| {
@@ -224,7 +215,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let item_ref = self.resolve_item_reference(alias_ty.def_id, alias_ty.args, true);
 
         // The bounds that hold on the associated type.
-        let item_bounds = ItemPredicates::implied(self.elab_ctx, alias_ty.def_id, &self.options);
+        let item_bounds = ItemPredicates::implied(self.elab_ctx, alias_ty.def_id);
         let item_bounds = item_bounds
             .iter_trait_clauses()
             // Substitute the item generics
@@ -390,7 +381,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                         // `dyn` has `Destruct` in its list of traits.
                         ty::Dynamic(..) => Either::Right(ImplExprAtom::Dyn),
                         ty::Param(..) | ty::Alias(..) | ty::Bound(..) => {
-                            if self.options.add_destruct_bounds {
+                            if self.elab_ctx.bounds_options().add_destruct_bounds {
                                 // We've added `Destruct` impls on everything, we should be able to resolve
                                 // it.
                                 match self.resolve_local(erased_tref.upcast(tcx)) {
@@ -447,7 +438,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<ImplExpr<'tcx>> {
         self.resolve_predicates(
-            ItemPredicates::required_recursively(self.elab_ctx, def_id, &self.options),
+            ItemPredicates::required_recursively(self.elab_ctx, def_id),
             generics,
         )
     }
@@ -458,10 +449,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         def_id: DefId,
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<ImplExpr<'tcx>> {
-        self.resolve_predicates(
-            ItemPredicates::implied(self.elab_ctx, def_id, &self.options),
-            generics,
-        )
+        self.resolve_predicates(ItemPredicates::implied(self.elab_ctx, def_id), generics)
     }
 
     /// Apply the given generics to the provided clauses and resolve the trait references in the

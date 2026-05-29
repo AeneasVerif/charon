@@ -834,7 +834,11 @@ pub fn translate<'tcx>(
     let translate_options = TranslateOptions::new(&mut error_ctx, cli_options);
 
     let traits_to_remove: HashSet<rustc_hir::def_id::DefId> = {
-        let hax_state = hax::state::State::new(tcx, hax::options::Options::default());
+        let hax_state = hax::state::State::new(
+            tcx,
+            hax::options::Options::default(),
+            hax::options::BoundsOptions::default(),
+        );
         translate_options
             .hide_traits
             .iter()
@@ -845,10 +849,10 @@ pub fn translate<'tcx>(
         tcx,
         hax::options::Options {
             inline_anon_consts: !translate_options.raw_consts,
-            bounds_options: hax::options::BoundsOptions {
-                add_destruct_bounds: translate_options.add_destruct_bounds,
-                remove_traits: traits_to_remove,
-            },
+        },
+        hax::options::BoundsOptions {
+            add_destruct_bounds: translate_options.add_destruct_bounds,
+            remove_traits: traits_to_remove,
         },
     );
 

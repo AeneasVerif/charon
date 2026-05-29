@@ -82,7 +82,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 let generics = generics.truncate_to(tcx, tcx.generics_of(tr_def_id));
                 let self_pred = ty::EarlyBinder::bind(self_pred).instantiate(tcx, generics);
                 let num_trait_req_clauses =
-                    ItemPredicates::required_recursively(elab_ctx, tr_def_id, &self.options).len();
+                    ItemPredicates::required_recursively(elab_ctx, tr_def_id).len();
                 Some((self.resolve(&self_pred), num_trait_req_clauses))
             } else {
                 None

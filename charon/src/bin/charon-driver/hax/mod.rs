@@ -28,7 +28,5 @@ pub mod options {
         /// blocks or advanced constant expressions as in `[T; N+1]`), or refer to them as
         /// `GlobalName`s.
         pub inline_anon_consts: bool,
-        /// Options related to bounds.
-        pub bounds_options: BoundsOptions,
     }
 }
