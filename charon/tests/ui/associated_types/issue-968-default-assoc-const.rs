@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--lift-associated-types=* --remove-unused-self-clauses
 
 // Regression test for https://github.com/AeneasVerif/charon/issues/968.
