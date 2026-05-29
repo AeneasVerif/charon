@@ -1,0 +1,330 @@
+#[lang_item("meta_sized")]
+pub trait core::marker::MetaSized<Self>
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    non-dyn-compatible
+}
+
+pub opaque type core::iter::adapters::zip::Zip<A, B>
+where
+    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause1]: core::marker::Sized<B>,
+
+#[lang_item("Option")]
+pub enum core::option::Option<T>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+#[lang_item("IntoIterator")]
+pub trait core::iter::traits::collect::IntoIterator::aarch64-apple-darwin<Self>
+where
+    Self::parent_clause3::Item = Self::Item,
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Item>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::IntoIter>
+    parent_clause3 : [@TraitClause3]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<Self::IntoIter>
+    type Item
+    type IntoIter
+    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter::aarch64-apple-darwin<Self>[Self]
+    vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
+}
+
+#[lang_item("iterator")]
+pub trait core::iter::traits::iterator::Iterator::aarch64-apple-darwin<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Item>
+    type Item
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next::aarch64-apple-darwin<'_0_1, Self>[Self]
+    fn zip<U, [@TraitClause0_1]: core::marker::Sized<U>, [@TraitClause1_1]: core::marker::Sized<Self>, [@TraitClause2_1]: core::iter::traits::collect::IntoIterator::aarch64-apple-darwin<U>> = core::iter::traits::iterator::Iterator::zip::aarch64-apple-darwin<Self, U>[Self, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
+
+pub fn core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}::next<'_0, A, B>(_1: &'_0 mut core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]) -> core::option::Option<(@TraitClause2::Item, @TraitClause3::Item)>[{built_in impl core::marker::Sized for (@TraitClause2::Item, @TraitClause3::Item)}]
+where
+    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause1]: core::marker::Sized<B>,
+    [@TraitClause2]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<A>,
+    [@TraitClause3]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<B>,
+= <opaque>
+
+pub fn core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}::zip<A, B, U>(_1: core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1], _2: U) -> core::iter::adapters::zip::Zip<core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1], @TraitClause6::IntoIter>[@TraitClause5, @TraitClause6::parent_clause2]
+where
+    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause1]: core::marker::Sized<B>,
+    [@TraitClause2]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<A>,
+    [@TraitClause3]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<B>,
+    [@TraitClause4]: core::marker::Sized<U>,
+    [@TraitClause5]: core::marker::Sized<core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]>,
+    [@TraitClause6]: core::iter::traits::collect::IntoIterator::aarch64-apple-darwin<U>,
+= <opaque>
+
+// Full name: core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}
+impl<A, B> core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause1]: core::marker::Sized<B>,
+    [@TraitClause2]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<A>,
+    [@TraitClause3]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<B>,
+{
+    parent_clause0 = {built_in impl core::marker::MetaSized for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}
+    parent_clause1 = {built_in impl core::marker::Sized for (@TraitClause2::Item, @TraitClause3::Item)}
+    type Item = (@TraitClause2::Item, @TraitClause3::Item)
+    fn next<'_0_1> = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}::next<'_0_1, A, B>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn zip<U, [@TraitClause0_1]: core::marker::Sized<U>, [@TraitClause1_1]: core::marker::Sized<core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]>, [@TraitClause2_1]: core::iter::traits::collect::IntoIterator::aarch64-apple-darwin<U>> = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}::zip<A, B, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
+    vtable: core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}::{vtable}<A, B>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+}
+
+#[lang_item("into_iter")]
+pub fn core::iter::traits::collect::IntoIterator::into_iter::aarch64-apple-darwin<Self>(_1: Self) -> @TraitClause0::IntoIter
+where
+    [@TraitClause0]: core::iter::traits::collect::IntoIterator::aarch64-apple-darwin<Self>,
+= <opaque>
+
+pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator::aarch64-apple-darwin for I}::into_iter::aarch64-apple-darwin<I>(_1: I) -> I
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<I>,
+= <opaque>
+
+// Full name: core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator::aarch64-apple-darwin for I}::aarch64-apple-darwin
+impl<I> core::iter::traits::collect::IntoIterator::aarch64-apple-darwin for I
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<I>,
+{
+    parent_clause0 = @TraitClause0::parent_clause0
+    parent_clause1 = @TraitClause1::parent_clause1
+    parent_clause2 = @TraitClause0
+    parent_clause3 = @TraitClause1
+    type Item = @TraitClause1::Item
+    type IntoIter = I
+    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator::aarch64-apple-darwin for I}::into_iter::aarch64-apple-darwin<I>[@TraitClause0, @TraitClause1]
+    vtable: core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator::x86_64-apple-darwin for I}::{vtable}<I>[@TraitClause0, @TraitClause1]
+}
+
+#[lang_item("iterator")]
+pub trait core::iter::traits::iterator::Iterator::x86_64-apple-darwin<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Item>
+    type Item
+    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next::x86_64-apple-darwin<'_0_1, Self>[Self]
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
+
+pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator::x86_64-apple-darwin for I}::into_iter::x86_64-apple-darwin<I>(_1: I) -> I
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: core::iter::traits::iterator::Iterator::x86_64-apple-darwin<I>,
+= <opaque>
+
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next::x86_64-apple-darwin<'_0, Self>(_1: &'_0 mut Self) -> core::option::Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: core::iter::traits::iterator::Iterator::x86_64-apple-darwin<Self>,
+= <opaque>
+
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next::aarch64-apple-darwin<'_0, Self>(_1: &'_0 mut Self) -> core::option::Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<Self>,
+= <opaque>
+
+pub fn core::iter::traits::iterator::Iterator::zip::aarch64-apple-darwin<Self, U>(_1: Self, _2: U) -> core::iter::adapters::zip::Zip<Self, @TraitClause3::IntoIter>[@TraitClause2, @TraitClause3::parent_clause2]
+where
+    [@TraitClause0]: core::iter::traits::iterator::Iterator::aarch64-apple-darwin<Self>,
+    [@TraitClause1]: core::marker::Sized<U>,
+    [@TraitClause2]: core::marker::Sized<Self>,
+    [@TraitClause3]: core::iter::traits::collect::IntoIterator::aarch64-apple-darwin<U>,
+= <opaque>
+
+pub opaque type core::slice::iter::IterMut<mut 'a, T>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    T : 'a,
+    T : 'a,
+
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator::x86_64-apple-darwin for core::slice::iter::IterMut<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::IterMut<'a, T>[@TraitClause0]) -> core::option::Option<&'a mut T>[{built_in impl core::marker::Sized for &'a mut T}]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator::x86_64-apple-darwin for core::slice::iter::IterMut<'a, T>[@TraitClause0]}
+impl<'a, T> core::iter::traits::iterator::Iterator::x86_64-apple-darwin for core::slice::iter::IterMut<'a, T>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    parent_clause0 = {built_in impl core::marker::MetaSized for core::slice::iter::IterMut<'_, T>[@TraitClause0]}
+    parent_clause1 = {built_in impl core::marker::Sized for &'_ mut T}
+    type Item = &'a mut T
+    fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator::x86_64-apple-darwin for core::slice::iter::IterMut<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
+    vtable: core::slice::iter::{impl core::iter::traits::iterator::Iterator::x86_64-apple-darwin for core::slice::iter::IterMut<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
+}
+
+#[lang_item("SliceIter")]
+pub opaque type core::slice::iter::Iter<'a, T>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    T : 'a,
+    T : 'a,
+
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::Iter<'a, T>[@TraitClause0]) -> core::option::Option<&'a T>[{built_in impl core::marker::Sized for &'a T}]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+= <opaque>
+
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}::zip<'a, T, U>(_1: core::slice::iter::Iter<'a, T>[@TraitClause0], _2: U) -> core::iter::adapters::zip::Zip<core::slice::iter::Iter<'a, T>[@TraitClause0], @TraitClause3::IntoIter>[@TraitClause2, @TraitClause3::parent_clause2]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<U>,
+    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'a, T>[@TraitClause0]>,
+    [@TraitClause3]: core::iter::traits::collect::IntoIterator::aarch64-apple-darwin<U>,
+= <opaque>
+
+// Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}
+impl<'a, T> core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    parent_clause0 = {built_in impl core::marker::MetaSized for core::slice::iter::Iter<'_, T>[@TraitClause0]}
+    parent_clause1 = {built_in impl core::marker::Sized for &'_ T}
+    type Item = &'a T
+    fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}::next<'a, '_0_1, T>[@TraitClause0]
+    fn zip<U, [@TraitClause0_1]: core::marker::Sized<U>, [@TraitClause1_1]: core::marker::Sized<core::slice::iter::Iter<'a, T>[@TraitClause0]>, [@TraitClause2_1]: core::iter::traits::collect::IntoIterator::aarch64-apple-darwin<U>> = core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}::zip<'a, T, U>[@TraitClause0, @TraitClause0_1, @TraitClause1_1, @TraitClause2_1]
+    vtable: core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}::{vtable}<'a, T>[@TraitClause0]
+}
+
+#[lang_item("slice_iter")]
+pub fn core::slice::{[T]}::iter<'_0, T>(_1: &'_0 [T]) -> core::slice::iter::Iter<'_0, T>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+= <opaque>
+
+pub fn core::slice::{[T]}::iter_mut<'_0, T>(_1: &'_0 mut [T]) -> core::slice::iter::IterMut<'_0, T>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+= <opaque>
+
+fn test_crate::f<'_0>(blocks_1: &'_0 mut [u8])
+{
+    let _0: (); // return
+    let blocks_1: &'1 mut [u8]; // arg #1
+    let _2: core::slice::iter::IterMut<'3, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let _3: core::slice::iter::IterMut<'4, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let _4: &'5 mut [u8]; // anonymous local
+    let iter_5: core::slice::iter::IterMut<'6, u8>[{built_in impl core::marker::Sized for u8}]; // local
+    let _6: core::option::Option<&'13 mut u8>[{built_in impl core::marker::Sized for &'13 mut u8}]; // anonymous local
+    let _7: &'18 mut core::slice::iter::IterMut<'19, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let _8: &'20 mut core::slice::iter::IterMut<'21, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &two-phase-mut (*blocks_1) with_metadata(copy blocks_1.metadata)
+    _3 = core::slice::{[T]}::iter_mut<'23, u8>[{built_in impl core::marker::Sized for u8}](move _4)
+    storage_dead(_4)
+    _2 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator::x86_64-apple-darwin for I}::into_iter::x86_64-apple-darwin<core::slice::iter::IterMut<'24, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::IterMut<'24, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator::x86_64-apple-darwin for core::slice::iter::IterMut<'a, T>[@TraitClause0]}<'24, u8>[{built_in impl core::marker::Sized for u8}]](move _3)
+    storage_dead(_3)
+    storage_live(iter_5)
+    iter_5 = move _2
+    loop {
+        storage_live(_6)
+        storage_live(_7)
+        storage_live(_8)
+        _8 = &mut iter_5
+        _7 = &two-phase-mut (*_8)
+        _6 = core::slice::iter::{impl core::iter::traits::iterator::Iterator::x86_64-apple-darwin for core::slice::iter::IterMut<'a, T>[@TraitClause0]}::next<'33, '35, u8>[{built_in impl core::marker::Sized for u8}](move _7)
+        storage_dead(_7)
+        match _6 {
+            core::option::Option::None => {
+                break 0
+            },
+            core::option::Option::Some => {
+            },
+        }
+        storage_dead(_8)
+        storage_dead(_6)
+        continue 0
+    }
+    _0 = ()
+    storage_dead(_8)
+    storage_dead(_6)
+    storage_dead(iter_5)
+    storage_dead(_2)
+    return
+}
+
+fn test_crate::g<'_0, '_1>(s0_1: &'_0 [u8], s1_2: &'_1 [u8])
+{
+    let _0: (); // return
+    let s0_1: &'1 [u8]; // arg #1
+    let s1_2: &'2 [u8]; // arg #2
+    let _3: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'14, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'15, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'14, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'15, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+    let _4: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'20, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'21, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'20, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'21, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+    let _5: core::slice::iter::Iter<'26, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let _6: &'27 [u8]; // anonymous local
+    let _7: core::slice::iter::Iter<'28, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
+    let _8: &'29 [u8]; // anonymous local
+    let iter_9: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'30, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'31, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'30, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'31, u8>[{built_in impl core::marker::Sized for u8}]}]; // local
+    let _10: core::option::Option<(&'51 u8, &'52 u8)>[{built_in impl core::marker::Sized for (&'51 u8, &'52 u8)}]; // anonymous local
+    let _11: &'64 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'65, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'66, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'65, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'66, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+    let _12: &'71 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'72, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'73, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'72, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'73, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
+
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &(*s0_1) with_metadata(copy s0_1.metadata)
+    _5 = core::slice::{[T]}::iter<'79, u8>[{built_in impl core::marker::Sized for u8}](move _6)
+    storage_dead(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = &(*s1_2) with_metadata(copy s1_2.metadata)
+    _7 = core::slice::{[T]}::iter<'81, u8>[{built_in impl core::marker::Sized for u8}](move _8)
+    storage_dead(_8)
+    _4 = core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}::zip<'103, u8, core::slice::iter::Iter<'82, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for u8}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'82, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'103, u8>[{built_in impl core::marker::Sized for u8}]}, core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator::aarch64-apple-darwin for I}::aarch64-apple-darwin<core::slice::iter::Iter<'82, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'82, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}<'82, u8>[{built_in impl core::marker::Sized for u8}]]](move _5, move _7)
+    storage_dead(_7)
+    storage_dead(_5)
+    _3 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator::aarch64-apple-darwin for I}::into_iter::aarch64-apple-darwin<core::iter::adapters::zip::Zip<core::slice::iter::Iter<'107, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'109, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'107, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'109, u8>[{built_in impl core::marker::Sized for u8}]}]>[{built_in impl core::marker::Sized for core::iter::adapters::zip::Zip<core::slice::iter::Iter<'107, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'109, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'107, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'109, u8>[{built_in impl core::marker::Sized for u8}]}]}, core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}<core::slice::iter::Iter<'107, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'109, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'107, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'109, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}<'107, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}<'109, u8>[{built_in impl core::marker::Sized for u8}]]](move _4)
+    storage_dead(_4)
+    storage_live(iter_9)
+    iter_9 = move _3
+    loop {
+        storage_live(_10)
+        storage_live(_11)
+        storage_live(_12)
+        _12 = &mut iter_9
+        _11 = &two-phase-mut (*_12)
+        _10 = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::iter::adapters::zip::Zip<A, B>[@TraitClause0, @TraitClause1]}::next<'200, core::slice::iter::Iter<'183, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'184, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'183, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'184, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}<'183, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::{impl core::iter::traits::iterator::Iterator::aarch64-apple-darwin for core::slice::iter::Iter<'a, T>[@TraitClause0]}<'184, u8>[{built_in impl core::marker::Sized for u8}]](move _11)
+        storage_dead(_11)
+        match _10 {
+            core::option::Option::None => {
+                break 0
+            },
+            core::option::Option::Some => {
+            },
+        }
+        storage_dead(_12)
+        storage_dead(_10)
+        continue 0
+    }
+    _0 = ()
+    storage_dead(_12)
+    storage_dead(_10)
+    storage_dead(iter_9)
+    storage_dead(_3)
+    return
+}
+
+
