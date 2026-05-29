@@ -1042,20 +1042,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
             mir::Rvalue::Discriminant(place) => {
                 let place = self.translate_place(span, place)?;
-                // We should always know the enum type; it can't be a generic.
-                if !place
-                    .ty()
-                    .kind()
-                    .as_adt()
-                    .is_some_and(|tref| tref.id.is_adt())
-                {
-                    raise_error!(
-                        self,
-                        span,
-                        "Unexpected scrutinee type for ReadDiscriminant: {}",
-                        place.ty().with_ctx(&self.into_fmt())
-                    )
-                }
                 Ok(Rvalue::Discriminant(place))
             }
             mir::Rvalue::Aggregate(aggregate_kind, operands) => {
