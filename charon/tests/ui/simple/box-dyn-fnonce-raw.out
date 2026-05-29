@@ -1,0 +1,32 @@
+error: Type error after translation:
+       Invalid concretization targets: from "(dyn FnOnce<missing(@TypeBound(2, 0)), Output = missing(@TraitClauseBound(2, 4))::Output> + '1)" to "Box<@TypeBound(0, 1), @TypeBound(0, 2)>[@TraitClauseBound(0, 1), @TraitClauseBound(0, 2), @TraitClauseBound(0, 5)]"
+       Visitor stack:
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::ullbc_ast::StatementKind
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::index_vec::IndexVec<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Args, F, A, [@TraitClause0]: @TraitDecl0<missing(@TypeBound(1, 0))>, [@TraitClause1]: @TraitDecl1<missing(@TypeBound(1, 1))>, [@TraitClause2]: @TraitDecl0<missing(@TypeBound(1, 2))>, [@TraitClause3]: @TraitDecl2<missing(@TypeBound(1, 0))>, [@TraitClause4]: @TraitDecl3<missing(@TypeBound(1, 1)), missing(@TypeBound(1, 0))>, [@TraitClause5]: @TraitDecl4<missing(@TypeBound(1, 2))>>
+ --> /rustc/library/alloc/src/boxed.rs:2249:5
+
+error: Type error after transformations:
+       Invalid concretization targets: from "(dyn FnOnce<missing(@TypeBound(2, 0)), Output = missing(@TraitClauseBound(2, 4))::Output> + '1)" to "Box<@TypeBound(0, 1), @TypeBound(0, 2)>[@TraitClauseBound(0, 1), @TraitClauseBound(0, 2), @TraitClauseBound(0, 5)]"
+       Visitor stack:
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <Args, F, A, [@TraitClause0]: @TraitDecl0<missing(@TypeBound(1, 0))>, [@TraitClause1]: @TraitDecl1<missing(@TypeBound(1, 1))>, [@TraitClause2]: @TraitDecl0<missing(@TypeBound(1, 2))>, [@TraitClause3]: @TraitDecl2<missing(@TypeBound(1, 0))>, [@TraitClause4]: @TraitDecl3<missing(@TypeBound(1, 1)), missing(@TypeBound(1, 0))>, [@TraitClause5]: @TraitDecl4<missing(@TypeBound(1, 2))>>
+ --> /rustc/library/alloc/src/boxed.rs:2249:5
+
+ERROR Charon failed to translate this code (2 errors)

@@ -1,0 +1,13 @@
+error: Error during trait resolution: Could not find a clause for `Binder { value: <<T as std::ptr::Pointee>::Metadata as std::marker::Sized>, bound_vars: [] }` in the item parameters
+ --> tests/ui/traits/pointee-metadata-bounds.rs:8:5
+  |
+8 |     assert_copy::<<T as Pointee>::Metadata>()
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Error during trait resolution: Could not find a clause for `Binder { value: <<T as std::ptr::Pointee>::Metadata as std::marker::Copy>, bound_vars: [] }` in the item parameters
+ --> tests/ui/traits/pointee-metadata-bounds.rs:8:5
+  |
+8 |     assert_copy::<<T as Pointee>::Metadata>()
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

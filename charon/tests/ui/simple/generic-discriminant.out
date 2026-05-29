@@ -1,0 +1,9 @@
+error: Unexpected scrutinee type for ReadDiscriminant: T
+ --> /rustc/library/core/src/mem/mod.rs:1204:18
+
+note: the error occurred when translating `core::mem::discriminant`, which is (transitively) used at the following location(s):
+ --> tests/ui/simple/generic-discriminant.rs:4:5
+  |
+4 |     std::mem::discriminant(x)
+  |     -------------------------
+ERROR Charon failed to translate this code (1 errors)
