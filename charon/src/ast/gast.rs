@@ -247,6 +247,8 @@ pub struct FunDeclRef {
 pub enum GlobalKind {
     /// A static.
     Static,
+    /// A thread-local static.
+    ThreadLocal,
     /// A const with a name (either top-level or an associated const in a trait).
     NamedConst,
     /// A const without a name:

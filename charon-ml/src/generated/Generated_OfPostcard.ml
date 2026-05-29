@@ -2027,8 +2027,9 @@ and global_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 -> Ok Static
-     | 1 -> Ok NamedConst
-     | 2 -> Ok AnonConst
+     | 1 -> Ok ThreadLocal
+     | 2 -> Ok NamedConst
+     | 3 -> Ok AnonConst
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and index_map_of_postcard :

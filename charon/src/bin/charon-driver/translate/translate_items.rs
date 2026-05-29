@@ -605,6 +605,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let ty = self.translate_ty(span, ty)?;
 
         let global_kind = match &def.kind {
+            hax::FullDefKind::Static {
+                thread_local: true, ..
+            } => GlobalKind::ThreadLocal,
             hax::FullDefKind::Static { .. } => GlobalKind::Static,
             hax::FullDefKind::Const {
                 kind: hax::ConstKind::TopLevel,

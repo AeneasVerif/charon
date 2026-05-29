@@ -451,6 +451,8 @@ pub enum FullDefKind<'tcx> {
         safety: Safety,
         /// Whether it's a `static mut` or just a `static`.
         mutability: Mutability,
+        /// Whether it's a `#[thread_local] static`.
+        thread_local: bool,
         /// Whether it's an anonymous static generated for nested allocations.
         nested: bool,
         ty: Ty,
@@ -941,6 +943,7 @@ where
             param_env: get_param_env(s, args),
             safety: safety.sinto(s),
             mutability: mutability.sinto(s),
+            thread_local: tcx.is_thread_local_static(def_id),
             nested: nested.sinto(s),
             ty: type_of_self().sinto(s),
         },

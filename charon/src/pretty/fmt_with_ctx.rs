@@ -903,6 +903,7 @@ where
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let keyword = match self.global_kind {
             GlobalKind::Static => "static",
+            GlobalKind::ThreadLocal => "thread_local",
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
         };
         self.item_meta

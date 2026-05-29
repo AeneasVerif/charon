@@ -1611,6 +1611,7 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
   let keyword =
     match def.global_kind with
     | Static -> "static"
+    | ThreadLocal -> "thread_local"
     | NamedConst | AnonConst -> "const"
   in
   let intro =
