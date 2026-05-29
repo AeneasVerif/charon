@@ -31,8 +31,7 @@ impl<'a> MyCompare<&'a ()> for &'a () {
 
 fn main() {
     let _ = ().method1(&1u32);
-    // TODO: this gives incorrect predicates
-    // let _ = ().method2(false);
+    let _ = ().method2(false);
     // Not allowed to use the more precise signature.
     // let _ = ().method2(String::new());
     let _ = ().compare(&());

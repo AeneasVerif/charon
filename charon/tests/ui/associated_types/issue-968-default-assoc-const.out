@@ -1,0 +1,17 @@
+error: Could not compute the value of @TraitClauseBound(0, 0)::W (on @TraitClauseBound(0, 0)) needed to update item reference test_crate::WithConstTy<@TypeBound(0, 0), @ConstGenericBound(0, 0)>.
+       Constraints in scope:
+       
+  --> tests/ui/associated_types/issue-968-default-assoc-const.rs:10:5
+   |
+10 |     const LEN2: usize = 32;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Could not compute the value of @TraitClauseBound(0, 0)::W (on @TraitClauseBound(0, 0)) needed to update item reference test_crate::WithConstTy<@TypeBound(0, 0), @ConstGenericBound(0, 0)>.
+       Constraints in scope:
+       
+  --> tests/ui/associated_types/issue-968-default-assoc-const.rs:10:5
+   |
+10 |     const LEN2: usize = 32;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)
