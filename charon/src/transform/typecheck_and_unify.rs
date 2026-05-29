@@ -193,6 +193,8 @@ impl TypeCheckVisitor<'_> {
             ) => {
                 assert_eq!(src_id, tar_id);
             }
+            // Can happen with `Box`, where the RHS is `Box`. FIXME(#1163): check for Box here.
+            (TyKind::DynTrait(..), TyKind::Adt(..)) => {}
             _ => {
                 let fmt = &self.ctx.into_fmt();
                 self.error(format!(

@@ -1,4 +1,3 @@
-//@ known-failure
 //@ no-default-options
 //@ charon-args=--include=alloc::boxed::_ --include=core::ops::function::FnOnce
 //@ charon-arg=--start-from=crate
