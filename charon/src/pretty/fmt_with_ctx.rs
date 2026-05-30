@@ -638,7 +638,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
                 .collect(),
         };
         let mut args: Vec<String> = Vec::new();
-        for (ty, name) in self.signature.inputs.iter().zip(arg_names.into_iter()) {
+        for (ty, name) in self.signature.inputs.iter().zip(arg_names) {
             args.push(format!("{}: {}", name, ty.with_ctx(ctx)));
         }
         let args = args.join(", ");

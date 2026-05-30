@@ -1954,6 +1954,7 @@ and attribute_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("VariantsSuffix", variants_suffix) ] ->
         let* variants_suffix = string_of_json ctx variants_suffix in
         Ok (AttrVariantsSuffix variants_suffix)
+    | `String "Transparent" -> Ok AttrTransparent
     | `Assoc [ ("DocComment", doc_comment) ] ->
         let* doc_comment = string_of_json ctx doc_comment in
         Ok (AttrDocComment doc_comment)

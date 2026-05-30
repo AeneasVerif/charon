@@ -167,7 +167,7 @@ impl UllbcPass for Transform {
                 target: start_block,
             };
             // Add the blocks for the inner body.
-            outer_body.body.extend(inner_body.body.into_iter());
+            outer_body.body.extend(inner_body.body);
         }
     }
 }

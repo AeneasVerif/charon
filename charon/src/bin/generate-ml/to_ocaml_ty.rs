@@ -176,8 +176,7 @@ impl<'a> GenerateCtx<'a> {
                             .attr_info
                             .attributes
                             .iter()
-                            .filter_map(|a| a.as_unknown())
-                            .any(|a| a.to_string() == "serde(transparent)")) =>
+                            .any(|a| a.is_transparent())) =>
             {
                 let ty = self.type_to_ocaml_name(&fields[0].ty);
                 format!("{ty} {opaque}")

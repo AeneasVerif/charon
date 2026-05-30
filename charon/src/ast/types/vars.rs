@@ -28,6 +28,7 @@ use crate::{ast::*, impl_from_enum};
     DriveMut,
 )]
 #[serde(transparent)]
+#[cfg_attr(feature = "charon_on_charon", charon::transparent)]
 #[drive(skip)]
 pub struct DeBruijnId {
     pub index: usize,
