@@ -435,7 +435,7 @@ impl<'a, T> Get<'a, T> for &'a MonoContainer<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (&'_ MonoContainer<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for &'_ MonoContainer<T>[TraitClause0]}
+    proof ImpliedClause0: (&'a MonoContainer<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for &'a MonoContainer<T>[TraitClause0]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     fn get = {impl Get<'a, T> for &'a MonoContainer<T>[TraitClause0]}::get<'a, T>[TraitClause0]
     vtable: {impl Get<'a, T> for &'a MonoContainer<T>[TraitClause0]}::{vtable}<'a, T>[TraitClause0]

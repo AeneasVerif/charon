@@ -644,21 +644,7 @@ impl Alias {
 
         let kind = match alias_ty.kind {
             RustAliasKind::Projection { def_id } => {
-                // FIXME: In a case like:
-                // ```
-                // impl<T, U> Trait for Result<T, U>
-                // where
-                //     for<'a> &'a Result<T, U>: IntoIterator,
-                //     for<'a> <&'a Result<T, U> as IntoIterator>::Item: Copy,
-                // {}
-                // ```
-                // the `&'a Result<T, U> as IntoIterator` trait ref has escaping bound variables
-                // yet we dont have a binder around (could even be several). Binding this correctly
-                // is therefore difficult. Since our trait resolution ignores lifetimes anyway, we
-                // just erase them. See also https://github.com/hacspec/hax/issues/747.
-                // FIXME: at least only erase the trait regions
-                let args = crate::hax::traits::erase_free_regions(tcx, alias_ty.args);
-                AliasKind::Projection(ItemRef::translate(s, def_id, args))
+                AliasKind::Projection(ItemRef::translate(s, def_id, alias_ty.args))
             }
             RustAliasKind::Inherent { .. } => AliasKind::Inherent,
             RustAliasKind::Opaque { def_id } => {

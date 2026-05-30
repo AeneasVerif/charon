@@ -220,11 +220,7 @@ fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
         .iter_trait_clauses()
         // Substitute the item generics
         .map(|(_, trait_ref)| ty::EarlyBinder::bind(trait_ref).instantiate(tcx, generics))
-        // We unfortunately don't have a way to normalize without erasing regions.
-        .map(|trait_ref| {
-            tcx.try_normalize_erasing_regions(typing_env, trait_ref)
-                .unwrap_or(trait_ref)
-        })
+        .map(|trait_ref| normalize(tcx, typing_env, trait_ref))
         // Resolve
         .map(|trait_ref| solve_trait(s, trait_ref))
         .collect()

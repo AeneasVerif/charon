@@ -129,7 +129,7 @@ impl<'_0, T> Trait<T> for &'_0 [T]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (&'_ [T]: MetaSized) = {built_in impl MetaSized for &'_ [T]}
+    proof ImpliedClause0: (&'_0 [T]: MetaSized) = {built_in impl MetaSized for &'_0 [T]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<T> for &'_0 [T]}::method<'_0, T, U>[TraitClause0, TraitClause0_1]
     non-dyn-compatible

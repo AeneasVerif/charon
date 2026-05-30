@@ -69,8 +69,8 @@ fn {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>(self_1: &'a u32) 
 
 // Full name: test_crate::{impl Convert<&'a [u8; 4 : usize]> for &'a u32}
 impl<'a> Convert<&'a [u8; 4 : usize]> for &'a u32 {
-    proof ImpliedClause0: (&'_ u32: Sized) = {built_in impl Sized for &'_ u32}
-    proof ImpliedClause1: (&'_ [u8; 4 : usize]: Sized) = {built_in impl Sized for &'_ [u8; 4 : usize]}
+    proof ImpliedClause0: (&'a u32: Sized) = {built_in impl Sized for &'a u32}
+    proof ImpliedClause1: (&'a [u8; 4 : usize]: Sized) = {built_in impl Sized for &'a [u8; 4 : usize]}
     fn method = {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>
     non-dyn-compatible
 }

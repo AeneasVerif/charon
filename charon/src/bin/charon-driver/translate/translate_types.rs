@@ -448,7 +448,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let tail_ty = tcx.struct_tail_raw(
             ty,
             &rustc_middle::traits::ObligationCause::dummy(),
-            |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
+            |ty| hax::normalize(tcx, ty_env, ty),
             || {},
         );
         let hax_ty: hax::Ty = self.t_ctx.catch_sinto(hax_state, span, &tail_ty)?;

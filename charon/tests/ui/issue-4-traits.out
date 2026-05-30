@@ -91,7 +91,7 @@ where
     TraitClause1: (T: Copy),
 {
     proof ImpliedClause0: ([T; N]: Sized) = {built_in impl Sized for [T; N]}
-    proof ImpliedClause1: (&'_ [T]: Sized) = {built_in impl Sized for &'_ [T]}
+    proof ImpliedClause1: (&'_0 [T]: Sized) = {built_in impl Sized for &'_0 [T]}
     proof ImpliedClause2: (TryFromSliceError: Sized) = {built_in impl Sized for TryFromSliceError}
     type Error = TryFromSliceError
     fn try_from = {impl TryFrom<&'_0 [T]> for [T; N]}::try_from<'_0, T, N>[TraitClause0, TraitClause1]

@@ -100,7 +100,7 @@ pub trait LendingIterator<Self>
     type Item<'a>
     where
         TypeOutlives0: Self: 'a,
-        proof ImpliedClause0: (Self::Item<'_>: Sized);
+        proof ImpliedClause0: (Self::Item<'a>: Sized);
     fn next<'a> = test_crate::LendingIterator::next<'a, Self>[Self]
     non-dyn-compatible
 }
@@ -125,7 +125,7 @@ impl<A> Destruct for (A,) {
     non-dyn-compatible
 }
 
-pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<TraitClause0::Item<'_>>[TraitClause0::Item::ImpliedClause0]
+pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<TraitClause0::Item<'a>>[TraitClause0::Item::ImpliedClause0]
 where
     TraitClause0: (Self: LendingIterator),
 = <method_without_default_body>
@@ -172,11 +172,11 @@ impl<'a, T> LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (Option<&'_ T>[{built_in impl Sized for &'_ T}]: MetaSized) = {built_in impl MetaSized for Option<&'_ T>[{built_in impl Sized for &'_ T}]}
+    proof ImpliedClause0: (Option<&'a T>[{built_in impl Sized for &'a T}]: MetaSized) = {built_in impl MetaSized for Option<&'a T>[{built_in impl Sized for &'a T}]}
     type Item<'b> = &'b T
     where
         TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'b,
-        proof ImpliedClause0: (&'_ T: Sized) = {built_in impl Sized for &'_ T};
+        proof ImpliedClause0: (&'b T: Sized) = {built_in impl Sized for &'b T};
     fn next<'_0_1> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, '_0_1, T>[TraitClause0]
     non-dyn-compatible
 }
@@ -187,7 +187,7 @@ where
     TraitClause0: (I: Sized),
     TraitClause1: (T1: Sized),
     TraitClause2: (I: LendingIterator),
-    TraitClause3: for<'a> (T1: FnMut<(TraitClause2::Item<'_>,)>),
+    TraitClause3: for<'a> (T1: FnMut<(TraitClause2::Item<'a>,)>),
     TypeConstraint0: for<'a> TraitClause3::ImpliedClause1::Output = (),
 {
     let _0: (); // return

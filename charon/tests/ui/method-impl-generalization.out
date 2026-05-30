@@ -131,8 +131,8 @@ fn {impl MyCompare<&'a ()> for &'a ()}::compare<'a>(self_1: &'a (), _other_2: &'
 
 // Full name: test_crate::{impl MyCompare<&'a ()> for &'a ()}
 impl<'a> MyCompare<&'a ()> for &'a () {
-    proof ImpliedClause0: (&'_ (): Sized) = {built_in impl Sized for &'_ ()}
-    proof ImpliedClause1: (&'_ (): Sized) = {built_in impl Sized for &'_ ()}
+    proof ImpliedClause0: (&'a (): Sized) = {built_in impl Sized for &'a ()}
+    proof ImpliedClause1: (&'a (): Sized) = {built_in impl Sized for &'a ()}
     fn compare = {impl MyCompare<&'a ()> for &'a ()}::compare<'a>
     non-dyn-compatible
 }

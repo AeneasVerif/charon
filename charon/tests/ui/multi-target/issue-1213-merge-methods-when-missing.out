@@ -149,8 +149,8 @@ impl<'a, T> core::iter::traits::iterator::Iterator for core::slice::iter::IterMu
 where
     TraitClause0: (T: core::marker::Sized),
 {
-    proof ImpliedClause0: (core::slice::iter::IterMut<'_, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::IterMut<'_, T>[TraitClause0]}
-    proof ImpliedClause1: (&'_ mut T: core::marker::Sized) = {built_in impl core::marker::Sized for &'_ mut T}
+    proof ImpliedClause0: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::IterMut<'a, T>[TraitClause0]}
+    proof ImpliedClause1: (&'a mut T: core::marker::Sized) = {built_in impl core::marker::Sized for &'a mut T}
     type Item = &'a mut T
     fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
     fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
@@ -182,8 +182,8 @@ impl<'a, T> core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'
 where
     TraitClause0: (T: core::marker::Sized),
 {
-    proof ImpliedClause0: (core::slice::iter::Iter<'_, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::Iter<'_, T>[TraitClause0]}
-    proof ImpliedClause1: (&'_ T: core::marker::Sized) = {built_in impl core::marker::Sized for &'_ T}
+    proof ImpliedClause0: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::Iter<'a, T>[TraitClause0]}
+    proof ImpliedClause1: (&'a T: core::marker::Sized) = {built_in impl core::marker::Sized for &'a T}
     type Item = &'a T
     fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
     fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]

@@ -51,14 +51,14 @@ trait Foo<Self, T>
         RegionOutlives0: 'a: '_1_1,
         RegionOutlives1: '_1_1: 'a,
         TypeConstraint0: Self::iter_ty::ImpliedClause1::Item = &'_1_1 T,
-        proof ImpliedClause0: (Self::iter_ty<'_, '_>: Sized),
-        proof ImpliedClause1: (Self::iter_ty<'_, '_>: Iterator);
+        proof ImpliedClause0: (Self::iter_ty<'a, '_1_1>: Sized),
+        proof ImpliedClause1: (Self::iter_ty<'a, '_1_1>: Iterator);
     fn iter<'a, TypeOutlives0: T: 'a> = iter<'a, Self, T>[Self]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Foo::iter
-fn iter<'a, Self, T>(_1: &'a Self) -> TraitClause0::iter_ty<'_, '_>
+fn iter<'a, Self, T>(_1: &'a Self) -> TraitClause0::iter_ty<'a, 'a>
 where
     TraitClause0: (Self: Foo<T>),
     TypeOutlives0: T: 'a,

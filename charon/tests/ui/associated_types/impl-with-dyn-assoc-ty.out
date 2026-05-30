@@ -41,8 +41,8 @@ trait Trait<Self, Self_TraitType, Self_Clause2_DynableTraitType>
 // Full name: test_crate::{impl Trait<(dyn DynableTrait<()> + 'static), ()> for ()}
 impl Trait<(dyn DynableTrait<()> + 'static), ()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    proof ImpliedClause1: ((dyn DynableTrait<()>): MetaSized) = {built_in impl MetaSized for (dyn DynableTrait<()>)}
-    proof ImpliedClause2: ((dyn DynableTrait<()>): DynableTrait<()>) = DynableTrait<(dyn DynableTrait<()>), ()>
+    proof ImpliedClause1: ((dyn DynableTrait<()> + 'static): MetaSized) = {built_in impl MetaSized for (dyn DynableTrait<()> + 'static)}
+    proof ImpliedClause2: ((dyn DynableTrait<()> + 'static): DynableTrait<()>) = DynableTrait<(dyn DynableTrait<()> + 'static), ()>
     vtable: {impl Trait<(dyn DynableTrait<()> + 'static), ()> for ()}::{vtable}
 }
 

@@ -46,8 +46,8 @@ trait Trait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     type LifetimeGat<'a>
     where
-        proof ImpliedClause0: (Self::LifetimeGat<'_>: Sized),
-        proof ImpliedClause1: (Self::LifetimeGat<'_>: Clone);
+        proof ImpliedClause0: (Self::LifetimeGat<'a>: Sized),
+        proof ImpliedClause1: (Self::LifetimeGat<'a>: Clone);
     type NonLifetimeGat<T>
     where
         TraitClause0_1: (T: Sized),
@@ -57,7 +57,7 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::lifetime_gat_bound
-fn lifetime_gat_bound<'_0, X>(x_1: TraitClause1::LifetimeGat<'_>)
+fn lifetime_gat_bound<'_0, X>(x_1: TraitClause1::LifetimeGat<'_0>)
 where
     TraitClause0: (X: Sized),
     TraitClause1: (X: Trait),

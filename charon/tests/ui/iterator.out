@@ -3303,8 +3303,8 @@ impl<'a, T> Iterator for Iter<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (Iter<'_, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Iter<'_, T>[TraitClause0]}
-    proof ImpliedClause1: (&'_ T: Sized) = {built_in impl Sized for &'_ T}
+    proof ImpliedClause0: (Iter<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Iter<'a, T>[TraitClause0]}
+    proof ImpliedClause1: (&'a T: Sized) = {built_in impl Sized for &'a T}
     type Item = &'a T
     fn next<'_0_1> = {impl Iterator for Iter<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
     fn next_chunk<'_0_1, const N : usize> = {impl Iterator for Iter<'a, T>[TraitClause0]}::next_chunk<'a, '_0_1, T, N>[TraitClause0]
@@ -4165,8 +4165,8 @@ impl<'a, T> Iterator for Chunks<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (Chunks<'_, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Chunks<'_, T>[TraitClause0]}
-    proof ImpliedClause1: (&'_ [T]: Sized) = {built_in impl Sized for &'_ [T]}
+    proof ImpliedClause0: (Chunks<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Chunks<'a, T>[TraitClause0]}
+    proof ImpliedClause1: (&'a [T]: Sized) = {built_in impl Sized for &'a [T]}
     type Item = &'a [T]
     fn next<'_0_1> = {impl Iterator for Chunks<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
     fn next_chunk<'_0_1, const N : usize, TraitClause0_1: (Chunks<'a, T>[TraitClause0]: Sized)> = {impl Iterator for Chunks<'a, T>[TraitClause0]}::next_chunk<'a, '_0_1, T, N>[TraitClause0, TraitClause0_1]
@@ -5027,8 +5027,8 @@ impl<'a, T> Iterator for ChunksExact<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (ChunksExact<'_, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for ChunksExact<'_, T>[TraitClause0]}
-    proof ImpliedClause1: (&'_ [T]: Sized) = {built_in impl Sized for &'_ [T]}
+    proof ImpliedClause0: (ChunksExact<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for ChunksExact<'a, T>[TraitClause0]}
+    proof ImpliedClause1: (&'a [T]: Sized) = {built_in impl Sized for &'a [T]}
     type Item = &'a [T]
     fn next<'_0_1> = {impl Iterator for ChunksExact<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
     fn next_chunk<'_0_1, const N : usize, TraitClause0_1: (ChunksExact<'a, T>[TraitClause0]: Sized)> = {impl Iterator for ChunksExact<'a, T>[TraitClause0]}::next_chunk<'a, '_0_1, T, N>[TraitClause0, TraitClause0_1]
