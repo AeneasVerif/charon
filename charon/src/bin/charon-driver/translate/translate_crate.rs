@@ -736,8 +736,47 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Auxiliary function to translate function calls and references to functions.
-    /// Translate a function id applied with some substitutions.
+    /// Translate a function reference in a context where late bound regions for its signature are
+    /// in scope.
+    #[tracing::instrument(skip(self, span))]
+    pub(crate) fn translate_unbound_fn_ptr(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+    ) -> Result<FnPtr, Error> {
+        let fun_item = self.translate_fun_item(span, item, kind)?;
+        let fun_id = match fun_item.trait_ref {
+            // Direct function call
+            None => FnPtrKind::Fun(fun_item.id),
+            // Trait method
+            Some(trait_ref) => {
+                let method_decl_id = *fun_item
+                    .id
+                    .as_regular()
+                    .expect("methods are not builtin functions");
+                let trait_decl_id = trait_ref.trait_id();
+                let method_id = self.translate_trait_method_id(trait_decl_id, &item.def_id)?;
+                FnPtrKind::Trait(trait_ref, method_id, method_decl_id)
+            }
+        };
+        let mut generics = fun_item.generics;
+        // The last n regions are the late-bound ones and were provided as erased regions by
+        // `translate_item`.
+        for (a, b) in generics.regions.iter_mut().rev().zip(
+            self.innermost_binder()
+                .params
+                .identity_args()
+                .regions
+                .into_iter()
+                .rev(),
+        ) {
+            *a = b;
+        }
+        Ok(FnPtr::new(fun_id, generics))
+    }
+
+    /// Translate a reference to a function or trait method.
     #[tracing::instrument(skip(self, span))]
     pub(crate) fn translate_bound_fn_ptr(
         &mut self,
@@ -755,35 +794,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             },
         };
         self.translate_region_binder(span, &late_bound, |ctx, _| {
-            let fun_item = ctx.translate_fun_item(span, item, kind)?;
-            let fun_id = match fun_item.trait_ref {
-                // Direct function call
-                None => FnPtrKind::Fun(fun_item.id),
-                // Trait method
-                Some(trait_ref) => {
-                    let method_decl_id = *fun_item
-                        .id
-                        .as_regular()
-                        .expect("methods are not builtin functions");
-                    let trait_decl_id = trait_ref.trait_id();
-                    let method_id = ctx.translate_trait_method_id(trait_decl_id, &item.def_id)?;
-                    FnPtrKind::Trait(trait_ref, method_id, method_decl_id)
-                }
-            };
-            let mut generics = fun_item.generics;
-            // The last n regions are the late-bound ones and were provided as erased regions by
-            // `translate_item`.
-            for (a, b) in generics.regions.iter_mut().rev().zip(
-                ctx.innermost_binder()
-                    .params
-                    .identity_args()
-                    .regions
-                    .into_iter()
-                    .rev(),
-            ) {
-                *a = b;
-            }
-            Ok(FnPtr::new(fun_id, generics))
+            ctx.translate_unbound_fn_ptr(span, item, kind)
         })
     }
 
