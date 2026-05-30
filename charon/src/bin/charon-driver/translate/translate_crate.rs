@@ -745,21 +745,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
     ) -> Result<RegionBinder<FnPtr>, Error> {
-        let fun_item = self.translate_fun_item(span, item, kind)?;
-        let fun_id = match fun_item.trait_ref {
-            // Direct function call
-            None => FnPtrKind::Fun(fun_item.id),
-            // Trait method
-            Some(trait_ref) => {
-                let method_decl_id = *fun_item
-                    .id
-                    .as_regular()
-                    .expect("methods are not builtin functions");
-                let trait_decl_id = trait_ref.trait_id();
-                let method_id = self.translate_trait_method_id(trait_decl_id, &item.def_id)?;
-                FnPtrKind::Trait(trait_ref.move_under_binder(), method_id, method_decl_id)
-            }
-        };
         let late_bound = match self.hax_def(item)?.kind() {
             hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
                 sig.as_ref().rebind(())
@@ -770,7 +755,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             },
         };
         self.translate_region_binder(span, &late_bound, |ctx, _| {
-            let mut generics = fun_item.generics.move_under_binder();
+            let fun_item = ctx.translate_fun_item(span, item, kind)?;
+            let fun_id = match fun_item.trait_ref {
+                // Direct function call
+                None => FnPtrKind::Fun(fun_item.id),
+                // Trait method
+                Some(trait_ref) => {
+                    let method_decl_id = *fun_item
+                        .id
+                        .as_regular()
+                        .expect("methods are not builtin functions");
+                    let trait_decl_id = trait_ref.trait_id();
+                    let method_id = ctx.translate_trait_method_id(trait_decl_id, &item.def_id)?;
+                    FnPtrKind::Trait(trait_ref, method_id, method_decl_id)
+                }
+            };
+            let mut generics = fun_item.generics;
             // The last n regions are the late-bound ones and were provided as erased regions by
             // `translate_item`.
             for (a, b) in generics.regions.iter_mut().rev().zip(

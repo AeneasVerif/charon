@@ -107,7 +107,7 @@ pub fn to_bytes_by_ref<'b>(s_1: &'b u32) -> &'b [u8; 4 : usize]
     // Here `convert` is given generics `<&'_ u32, &'_ [u8; 4]>`, which loses the information
     // that the lifetime is the same by virtue of the trait impl.
     _3 = copy s_1
-    _2 = convert<&'7 u32, &'7 [u8; 4 : usize]>[{built_in impl Sized for &'7 u32}, {built_in impl Sized for &'7 [u8; 4 : usize]}, {impl Convert<&'a [u8; 4 : usize]> for &'a u32}<'7>](move _3)
+    _2 = convert<&'9 u32, &'9 [u8; 4 : usize]>[{built_in impl Sized for &'9 u32}, {built_in impl Sized for &'9 [u8; 4 : usize]}, {impl Convert<&'a [u8; 4 : usize]> for &'a u32}<'9>](move _3)
     _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)

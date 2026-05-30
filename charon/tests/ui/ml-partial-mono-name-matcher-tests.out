@@ -125,7 +125,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &mut x_1
-    _2 = test_crate::identity::<&_ mut _><'15, A>[{built_in impl core::marker::Sized::<&_ mut _><'15> for A}](move _3)
+    _2 = test_crate::identity::<&_ mut _><'16, A>[{built_in impl core::marker::Sized::<&_ mut _><'16> for A}](move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
@@ -134,7 +134,7 @@ where
     _6 = &mut x_1
     _5 = Option::Some { 0: move _6 }
     storage_dead(_6)
-    _4 = test_crate::identity::<Option<&_ mut _>><'25, A>[{built_in impl core::marker::Sized::<Option<&_ mut _>><'25> for A}](move _5)
+    _4 = test_crate::identity::<Option<&_ mut _>><'32, A>[{built_in impl core::marker::Sized::<Option<&_ mut _>><'32> for A}](move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

@@ -152,7 +152,7 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for clos
 
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<u8, closure<'11>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'11>}, {impl FnMut<()> for closure<'a>}<'11>](move _1)
+    _0 = from_fn<u8, closure<'12>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'12>}, {impl FnMut<()> for closure<'a>}<'12>](move _1)
     storage_dead(_1)
     return
 }
