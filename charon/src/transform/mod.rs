@@ -278,7 +278,7 @@ pub enum Pass {
 }
 
 impl TransformCtx {
-    fn run_pass(&mut self, mut pass: Pass) {
+    pub fn run_pass(&mut self, mut pass: Pass) {
         match &mut pass {
             Pass::NonBody(pass) => {
                 if pass.should_run(&self.options) {
@@ -320,7 +320,7 @@ impl TransformCtx {
             }
         };
     }
-    fn run_passes(&mut self, passes: impl IntoIterator<Item = Pass>) {
+    pub fn run_passes(&mut self, passes: impl IntoIterator<Item = Pass>) {
         for pass in passes {
             self.run_pass(pass);
         }
