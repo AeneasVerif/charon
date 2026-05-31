@@ -141,14 +141,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Never => TyKind::Never,
 
             hax::TyKind::Alias(alias) => match &alias.kind {
-                hax::AliasKind::Projection {
-                    trait_proof,
-                    assoc_item,
-                } => {
-                    let trait_ref = self.translate_trait_proof(span, trait_proof)?;
+                hax::AliasKind::Projection(item) => {
+                    let trait_ref = self.translate_trait_proof(
+                        span,
+                        item.in_trait
+                            .as_ref()
+                            .expect("projection without a trait_ref?"),
+                    )?;
                     let assoc_type_id =
-                        self.translate_assoc_type_id(trait_ref.trait_id(), &assoc_item.def_id)?;
-                    TyKind::TraitType(trait_ref, assoc_type_id)
+                        self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
+                    let generics =
+                        self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
+                    TyKind::TraitType(trait_ref, assoc_type_id, generics)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {
                     return self.translate_ty(span, hidden_ty);

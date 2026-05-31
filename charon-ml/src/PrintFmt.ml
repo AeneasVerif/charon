@@ -580,12 +580,13 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
   | TLiteral lit_ty -> pp_literal_type fmt lit_ty
   | TPattern (ty, pat) ->
       Format.fprintf fmt "%a is %a" (pp_ty env) ty (pp_type_pattern env) pat
-  | TTraitType (trait_ref, type_id) ->
+  | TTraitType (trait_ref, type_id, generics) ->
       let type_name =
         GAstUtils.get_assoc_type_name env.crate
           trait_ref.trait_decl_ref.binder_value.id type_id
       in
-      Format.fprintf fmt "%a::%s" (pp_trait_ref env) trait_ref type_name
+      Format.fprintf fmt "%a::%s%a" (pp_trait_ref env) trait_ref type_name
+        (pp_generic_args env) generics
   | TRef (r, rty, ref_kind) -> (
       match ref_kind with
       | RMut ->

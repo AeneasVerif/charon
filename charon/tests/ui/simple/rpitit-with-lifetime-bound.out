@@ -21,13 +21,13 @@ pub trait MyTrait<Self>
         TypeOutlives0: Self: 'a,
         RegionOutlives0: 'a: '_1_1,
         RegionOutlives1: '_1_1: 'a,
-        proof ImpliedClause0: (Self::foo_ty: Sized);
+        proof ImpliedClause0: (Self::foo_ty<'_, '_>: Sized);
     fn foo<'a, TypeOutlives0: Self: 'a> = foo<'a, Self>[Self]
     non-dyn-compatible
 }
 
 // Full name: test_crate::MyTrait::foo
-pub fn foo<'a, Self>() -> TraitClause0::foo_ty
+pub fn foo<'a, Self>() -> TraitClause0::foo_ty<'_, '_>
 where
     TraitClause0: (Self: MyTrait),
     TypeOutlives0: Self: 'a,

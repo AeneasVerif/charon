@@ -16,11 +16,11 @@ pub trait Sized<Self>
 pub trait MyTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self::Ret: Sized)
     type Ret = ()
     where
-        TraitClause0_1: (Self: Sized);
-    vtable: test_crate::MyTrait::{vtable}<Self::Ret>
+        TraitClause0_1: (Self: Sized),
+        proof ImpliedClause0: (Self::Ret[TraitClause0_1]: Sized);
+    vtable: test_crate::MyTrait::{vtable}
 }
 
 // Full name: test_crate::S
@@ -29,10 +29,10 @@ pub struct S {}
 // Full name: test_crate::{impl MyTrait for S}
 impl MyTrait for S {
     proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
-    proof ImpliedClause1: ({impl MyTrait for S}::Ret: Sized) = {impl MyTrait for S}::ImpliedClause1
     type Ret = ()
     where
-        TraitClause0_1: (S: Sized);
+        TraitClause0_1: (S: Sized),
+        proof ImpliedClause0: ({impl MyTrait for S}::Ret[TraitClause0_1]: Sized) = {impl MyTrait for S}::Ret::ImpliedClause0;
     vtable: {impl MyTrait for S}::{vtable}
 }
 

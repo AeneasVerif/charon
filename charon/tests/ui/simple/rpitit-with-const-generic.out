@@ -18,12 +18,12 @@ pub trait Foo<Self>
     proof ImpliedClause0: (Self: MetaSized)
     type bar_ty<const N : usize>
     where
-        proof ImpliedClause0: (Self::bar_ty: Sized);
+        proof ImpliedClause0: (Self::bar_ty<N>: Sized);
     fn bar<const N : usize> = test_crate::Foo::bar<Self, N>[Self]
     non-dyn-compatible
 }
 
-pub fn test_crate::Foo::bar<Self, const N : usize>() -> TraitClause0::bar_ty
+pub fn test_crate::Foo::bar<Self, const N : usize>() -> TraitClause0::bar_ty<N>
 where
     TraitClause0: (Self: Foo),
 = <method_without_default_body>

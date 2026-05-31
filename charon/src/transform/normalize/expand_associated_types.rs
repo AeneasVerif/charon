@@ -326,7 +326,7 @@ mod trait_ref_path {
         /// that.
         pub fn on_real_tref(&self, krate: &TranslatedCrate, tref: TraitRef) -> Option<Ty> {
             let tref = self.tref.on_real_tref(krate, tref)?;
-            let ty = TyKind::TraitType(tref, self.type_id).into_ty();
+            let ty = TyKind::TraitType(tref, self.type_id, GenericArgs::empty()).into_ty();
             Some(ty)
         }
 
@@ -926,7 +926,7 @@ impl UpdateItemBody<'_> {
         };
         let ty = self.type_replacements[dbid].find(&path)?;
         let mut ty = ty.clone().move_under_binders(dbid);
-        if let TyKind::TraitType(tref, type_id) = ty.kind() {
+        if let TyKind::TraitType(tref, type_id, _args) = ty.kind() {
             let path = TraitRefPath::self_ref(tref.trait_id()).with_assoc_type(*type_id);
             // Unnormalizable types may very well show up, e.g. when trait loopiness forces us to
             // create new assoc types.
@@ -1302,7 +1302,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
 
     // Normalize associated types.
     fn visit_ty_kind(&mut self, kind: &mut TyKind) -> ControlFlow<Self::Break> {
-        if let TyKind::TraitType(tref, type_id) = kind {
+        if let TyKind::TraitType(tref, type_id, _args) = kind {
             let path = TraitRefPath::self_ref(tref.trait_id()).with_assoc_type(*type_id);
             if let Some(new_ty) = self.lookup_path_on_trait_ref(&path, tref) {
                 *kind = new_ty.kind().clone();
@@ -1401,7 +1401,7 @@ impl TransformPass for Transform {
                             implied_clauses: Default::default(),
                         },
                     ));
-                    TyKind::TraitType(self_tref.clone(), new_type_id).into_ty()
+                    TyKind::TraitType(self_tref.clone(), new_type_id, GenericArgs::empty()).into_ty()
                 })
             } else {
                 modifications.compute_replacements(|path| {

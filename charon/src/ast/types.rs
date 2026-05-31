@@ -888,7 +888,7 @@ pub enum TyKind {
     ///   type Bar; // type associated to the trait Foo
     /// }
     /// ```
-    TraitType(TraitRef, AssocTypeId),
+    TraitType(TraitRef, AssocTypeId, GenericArgs),
     /// `dyn Trait`
     DynTrait(DynPredicate),
     /// Function pointer type. This is a literal pointer to a region of memory that

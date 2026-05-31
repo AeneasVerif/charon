@@ -855,6 +855,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericsSource {
         match self {
             GenericsSource::Item(id) => write!(f, "{}", id.with_ctx(ctx)),
             GenericsSource::Method(id, name) => write!(f, "{}::{name}", id.with_ctx(ctx)),
+            GenericsSource::TraitType(id, name) => {
+                write!(f, "{}::", id.with_ctx(ctx))?;
+                ctx.format_assoc_type_name(f, *id, *name)
+            }
             GenericsSource::Builtin => write!(f, "<builtin>"),
             GenericsSource::Other => write!(f, "<unknown>"),
         }
@@ -2324,9 +2328,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::Slice(ty) => {
                 write!(f, "[{}]", ty.with_ctx(ctx))
             }
-            TyKind::TraitType(trait_ref, type_id) => {
+            TyKind::TraitType(trait_ref, type_id, generics) => {
                 write!(f, "{}::", trait_ref.with_ctx(ctx))?;
-                ctx.format_assoc_type_name(f, trait_ref.trait_id(), *type_id)
+                ctx.format_assoc_type_name(f, trait_ref.trait_id(), *type_id)?;
+                write!(f, "{}", generics.with_ctx(ctx))
             }
             TyKind::DynTrait(pred) => {
                 write!(f, "(dyn {})", pred.with_ctx(ctx))

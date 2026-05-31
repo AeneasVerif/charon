@@ -770,7 +770,7 @@ and ty_kind =
           eventually disappears from the AST. *)
   | TRef of region * ty * ref_kind  (** A borrow *)
   | TRawPtr of ty * ref_kind  (** A raw pointer. *)
-  | TTraitType of trait_ref * assoc_type_id
+  | TTraitType of trait_ref * assoc_type_id * generic_args
       (** A trait associated type
 
           Ex.:
