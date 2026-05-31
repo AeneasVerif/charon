@@ -1403,10 +1403,11 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = ref_kind_of_json ctx x_1 in
         Ok (TRawPtr (x_0, x_1))
-    | `Assoc [ ("TraitType", `List [ x_0; x_1 ]) ] ->
+    | `Assoc [ ("TraitType", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = trait_ref_of_json ctx x_0 in
         let* x_1 = assoc_type_id_of_json ctx x_1 in
-        Ok (TTraitType (x_0, x_1))
+        let* x_2 = generic_args_of_json ctx x_2 in
+        Ok (TTraitType (x_0, x_1, x_2))
     | `Assoc [ ("DynTrait", dyn_trait) ] ->
         let* dyn_trait = dyn_predicate_of_json ctx dyn_trait in
         Ok (TDynTrait dyn_trait)

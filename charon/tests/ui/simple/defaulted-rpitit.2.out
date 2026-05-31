@@ -16,12 +16,12 @@ pub trait Sized<Self>
 pub trait MyTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self::foo_ty: Sized)
     type foo_ty = ()
     where
-        TraitClause0_1: (Self: Sized);
+        TraitClause0_1: (Self: Sized),
+        proof ImpliedClause0: (Self::foo_ty[TraitClause0_1]: Sized);
     fn foo<TraitClause0_1: (Self: Sized)> = test_crate::MyTrait::foo<Self>[Self, TraitClause0_1]
-    vtable: test_crate::MyTrait::{vtable}<Self::foo_ty>
+    vtable: test_crate::MyTrait::{vtable}
 }
 
 pub fn test_crate::MyTrait::foo<Self>()
@@ -54,10 +54,10 @@ where
 // Full name: test_crate::{impl MyTrait for S}
 impl MyTrait for S {
     proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
-    proof ImpliedClause1: ({impl MyTrait for S}::foo_ty: Sized) = {impl MyTrait for S}::ImpliedClause1
     type foo_ty = ()
     where
-        TraitClause0_1: (S: Sized);
+        TraitClause0_1: (S: Sized),
+        proof ImpliedClause0: ({impl MyTrait for S}::foo_ty[TraitClause0_1]: Sized) = {impl MyTrait for S}::foo_ty::ImpliedClause0;
     fn foo<TraitClause0_1: (S: Sized)> = {impl MyTrait for S}::foo[TraitClause0_1]
     vtable: {impl MyTrait for S}::{vtable}
 }

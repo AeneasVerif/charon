@@ -45,21 +45,21 @@ pub trait Bar<'a, Self>
     proof ImpliedClause0: (Self: MetaSized)
     type Type<'b>
     where
-        proof ImpliedClause0: (Self::Type: Sized),
-        proof ImpliedClause1: for<'c> (Self::Type: Foo<&'a &'b &'c ()>);
+        proof ImpliedClause0: (Self::Type<'_>: Sized),
+        proof ImpliedClause1: for<'c> (Self::Type<'_>: Foo<&'a &'b &'c ()>);
     non-dyn-compatible
 }
 
 // Full name: test_crate::bar
-pub fn bar<'x, 'y, 'z, T>(x_1: TraitClause1::Type) -> &'x &'y &'z ()
+pub fn bar<'x, 'y, 'z, T>(x_1: TraitClause1::Type<'_>) -> &'x &'y &'z ()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Bar<'x>),
 {
     let _0: &'6 &'7 &'8 (); // return
-    let x_1: TraitClause1::Type; // arg #1
-    let _2: &'11 &'12 &'13 (); // anonymous local
-    let _3: TraitClause1::Type; // anonymous local
+    let x_1: TraitClause1::Type<'12>; // arg #1
+    let _2: &'13 &'14 &'15 (); // anonymous local
+    let _3: TraitClause1::Type<'17>; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
@@ -68,7 +68,7 @@ where
     _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for TraitClause1::Type}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for TraitClause1::Type<'41>}::drop_in_place] x_1
     return
 }
 

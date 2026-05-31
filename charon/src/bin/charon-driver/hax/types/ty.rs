@@ -615,12 +615,7 @@ pub struct Alias {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum AliasKind {
     /// The projection of a trait type: `<Ty as Trait<...>>::Type<...>`
-    Projection {
-        /// The `impl Trait for Ty` in `Ty: Trait<..., Type = U>`.
-        trait_proof: TraitProof,
-        /// The `Type` in `Ty: Trait<..., Type = U>`.
-        assoc_item: AssocItem,
-    },
+    Projection(ItemRef),
     /// An associated type in an inherent impl.
     Inherent,
     /// An `impl Trait` opaque type.
@@ -653,8 +648,7 @@ impl Alias {
 
         let kind = match alias_kind {
             RustAliasKind::Projection => {
-                let trait_ref = alias_ty.trait_ref(tcx);
-                // In a case like:
+                // FIXME: In a case like:
                 // ```
                 // impl<T, U> Trait for Result<T, U>
                 // where
@@ -666,12 +660,9 @@ impl Alias {
                 // yet we dont have a binder around (could even be several). Binding this correctly
                 // is therefore difficult. Since our trait resolution ignores lifetimes anyway, we
                 // just erase them. See also https://github.com/hacspec/hax/issues/747.
-                let trait_ref = crate::hax::traits::erase_free_regions(tcx, trait_ref);
-                let item = tcx.associated_item(alias_ty.def_id);
-                AliasKind::Projection {
-                    assoc_item: AssocItem::sfrom(s, &item),
-                    trait_proof: solve_trait(s, ty::Binder::dummy(trait_ref)),
-                }
+                // FIXME: at least only erase the trait regions
+                let args = crate::hax::traits::erase_free_regions(tcx, alias_ty.args);
+                AliasKind::Projection(ItemRef::translate(s, alias_ty.def_id, args))
             }
             RustAliasKind::Inherent => AliasKind::Inherent,
             RustAliasKind::Opaque => {

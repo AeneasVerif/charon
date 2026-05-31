@@ -19,13 +19,13 @@ trait Foo<Self>
     type T<A>
     where
         TraitClause0_1: (A: Sized),
-        proof ImpliedClause0: (Self::T: Sized);
+        proof ImpliedClause0: (Self::T<A>[TraitClause0_1]: Sized);
     fn f<A, TraitClause0_1: (A: Sized)> = f<Self, A>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Foo::f
-fn f<Self, A>(_1: TraitClause0::T)
+fn f<Self, A>(_1: TraitClause0::T<A>[TraitClause1])
 where
     TraitClause0: (Self: Foo),
     TraitClause1: (A: Sized),

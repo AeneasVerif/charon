@@ -49,8 +49,8 @@ pub trait Trait<Self, T>
     type Type<U>
     where
         TraitClause0_1: (U: Sized),
-        proof ImpliedClause0: (Self::Type: Sized),
-        proof ImpliedClause1: (Self::Type: Link<T>);
+        proof ImpliedClause0: (Self::Type<U>[TraitClause0_1]: Sized),
+        proof ImpliedClause1: (Self::Type<U>[TraitClause0_1]: Link<T>);
     non-dyn-compatible
 }
 

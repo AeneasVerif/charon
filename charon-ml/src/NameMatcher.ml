@@ -626,8 +626,8 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
       && match_expr_with_ty ctx c m pty ty
       && match_ref_kind prk rk
   | EVar v, _ -> opt_update_tmap c m v ty
-  | EComp pid, TTraitType (trait_ref, type_id) ->
-      match_trait_type ctx c m pid trait_ref type_id
+  | EComp pid, TTraitType (trait_ref, type_id, generics) ->
+      match_trait_type ctx c m pid trait_ref type_id generics
   | EArrow (pinputs, pout), TFnPtr binder -> begin
       (* Push a region group in the map, if necessary - TODO: make this more precise *)
       let m =
@@ -692,9 +692,10 @@ and match_trait_decl_ref_item (ctx : ctx) (c : match_config) (m : maps)
   else raise (Failure "Unimplemented")
 
 and match_trait_type (ctx : ctx) (c : match_config) (m : maps) (pid : pattern)
-    (tr : T.trait_ref) (type_id : T.assoc_type_id) : bool =
+    (tr : T.trait_ref) (type_id : T.assoc_type_id) (generics : T.generic_args) :
+    bool =
   match_trait_decl_ref_item ctx c m pid tr.trait_decl_ref (AssocIdType type_id)
-    TypesUtils.empty_generic_args
+    generics
 
 and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
     (pgenerics : generic_args) (generics : T.generic_args) : bool =
@@ -1055,14 +1056,14 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
         ( region_to_pattern m r,
           ty_to_pattern_aux ctx c m ty,
           ref_kind_to_pattern rk )
-  | TTraitType (trait_ref, type_id) ->
+  | TTraitType (trait_ref, type_id, generics) ->
       let type_name =
         GAstUtils.get_assoc_type_name ctx.crate
           trait_ref.trait_decl_ref.binder_value.id type_id
       in
       let name =
         trait_ref_item_with_generics_to_pattern ctx c m trait_ref type_name
-          TypesUtils.empty_generic_args
+          generics
       in
       EComp name
   | TFnPtr binder ->

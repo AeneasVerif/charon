@@ -217,7 +217,10 @@ pub fn assoc_tys_for_trait<'tcx>(
             tcx.associated_items(tref.def_id)
                 .in_definition_order()
                 .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Type { .. }))
-                .filter(|assoc| tcx.generics_of(assoc.def_id).own_params.is_empty())
+                .filter(|assoc| {
+                    tcx.generics_of(assoc.def_id).own_params.is_empty()
+                        && tcx.predicates_of(assoc.def_id).predicates.is_empty()
+                })
                 .map(|assoc| ty::AliasTy::new(tcx, assoc.def_id, tref.args)),
         );
         for clause in tcx

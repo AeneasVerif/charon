@@ -77,13 +77,13 @@ pub trait PointerFamily<Self>
     where
         TraitClause0_1: (T: Sized),
         TypeConstraint0: Self::Pointer::ImpliedClause1::Target = T,
-        proof ImpliedClause0: (Self::Pointer: Sized),
-        proof ImpliedClause1: (Self::Pointer: Deref);
+        proof ImpliedClause0: (Self::Pointer<T>[TraitClause0_1]: Sized),
+        proof ImpliedClause1: (Self::Pointer<T>[TraitClause0_1]: Deref);
     fn new<T, TraitClause0_1: (T: Sized)> = test_crate::PointerFamily::new<Self, T>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
-pub fn test_crate::PointerFamily::new<Self, T>(_1: T) -> TraitClause0::Pointer
+pub fn test_crate::PointerFamily::new<Self, T>(_1: T) -> TraitClause0::Pointer<T>[TraitClause1]
 where
     TraitClause0: (Self: PointerFamily),
     TraitClause1: (T: Sized),
@@ -122,13 +122,13 @@ impl PointerFamily for BoxFamily {
 }
 
 // Full name: test_crate::make_pointer
-pub fn make_pointer<F, T>(x_1: T) -> TraitClause2::Pointer
+pub fn make_pointer<F, T>(x_1: T) -> TraitClause2::Pointer<T>[TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
     TraitClause2: (F: PointerFamily),
 {
-    let _0: TraitClause2::Pointer; // return
+    let _0: TraitClause2::Pointer<T>[TraitClause1]; // return
     let x_1: T; // arg #1
     let _2: T; // anonymous local
 

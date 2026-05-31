@@ -1,9 +1,9 @@
 use crate::ast::*;
-use crate::formatter::FmtCtx;
+use crate::formatter::{AstFormatter, FmtCtx};
 use crate::pretty::FmtWithCtx;
 use derive_generic_visitor::*;
 use macros::EnumIsA;
-use std::fmt::Debug;
+use std::fmt::{self, Debug};
 
 /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
 #[derive(Debug, Clone, Eq, PartialEq, Hash, EnumIsA, Drive, DriveMut)]
@@ -12,6 +12,8 @@ pub enum GenericsSource {
     Item(ItemId),
     /// A trait method.
     Method(TraitDeclId, TraitMethodId),
+    /// A trait associated type.
+    TraitType(TraitDeclId, AssocTypeId),
     /// A builtin item like `Box`.
     Builtin,
     /// Some other use of generics outside the main Charon ast.
@@ -31,6 +33,14 @@ impl GenericsSource {
                 "{}::{method_name}",
                 translated.item_name(*trait_id).to_string_with_ctx(fmt_ctx),
             ),
+            GenericsSource::TraitType(trait_id, type_id) => {
+                let type_name =
+                    fmt::from_fn(|f| fmt_ctx.format_assoc_type_name(f, *trait_id, *type_id));
+                format!(
+                    "{}::{type_name}",
+                    translated.item_name(*trait_id).to_string_with_ctx(fmt_ctx),
+                )
+            }
             GenericsSource::Builtin => "<built-in>".to_string(),
             GenericsSource::Other => "<unknown>".to_string(),
         }

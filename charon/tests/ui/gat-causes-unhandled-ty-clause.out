@@ -30,7 +30,7 @@ trait HasGAT<Self>
     type GAT<T>
     where
         TraitClause0_1: (T: Sized),
-        proof ImpliedClause0: (Self::GAT: Sized);
+        proof ImpliedClause0: (Self::GAT<T>[TraitClause0_1]: Sized);
     type Friend
     non-dyn-compatible
 }

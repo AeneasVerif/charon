@@ -100,7 +100,7 @@ pub trait LendingIterator<Self>
     type Item<'a>
     where
         TypeOutlives0: Self: 'a,
-        proof ImpliedClause0: (Self::Item: Sized);
+        proof ImpliedClause0: (Self::Item<'_>: Sized);
     fn next<'a> = test_crate::LendingIterator::next<'a, Self>[Self]
     non-dyn-compatible
 }
@@ -125,7 +125,7 @@ impl<A> Destruct for (A,) {
     non-dyn-compatible
 }
 
-pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<TraitClause0::Item>[TraitClause0::Item::ImpliedClause0]
+pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<TraitClause0::Item<'_>>[TraitClause0::Item::ImpliedClause0]
 where
     TraitClause0: (Self: LendingIterator),
 = <method_without_default_body>
@@ -187,19 +187,19 @@ where
     TraitClause0: (I: Sized),
     TraitClause1: (T1: Sized),
     TraitClause2: (I: LendingIterator),
-    TraitClause3: for<'a> (T1: FnMut<(TraitClause2::Item,)>),
+    TraitClause3: for<'a> (T1: FnMut<(TraitClause2::Item<'_>,)>),
     TypeConstraint0: for<'a> TraitClause3::ImpliedClause1::Output = (),
 {
     let _0: (); // return
     let iter_1: I; // arg #1
     let f_2: T1; // arg #2
     let _3: (); // anonymous local
-    let _4: Option<TraitClause2::Item>[TraitClause2::Item::ImpliedClause0]; // anonymous local
-    let _5: &'1 mut I; // anonymous local
-    let item_6: TraitClause2::Item; // local
-    let _7: &'3 mut T1; // anonymous local
-    let _8: (TraitClause2::Item,); // anonymous local
-    let _9: TraitClause2::Item; // anonymous local
+    let _4: Option<TraitClause2::Item<'4>>[TraitClause2::Item::ImpliedClause0]; // anonymous local
+    let _5: &'7 mut I; // anonymous local
+    let item_6: TraitClause2::Item<'8>; // local
+    let _7: &'10 mut T1; // anonymous local
+    let _8: (TraitClause2::Item<'12>,); // anonymous local
+    let _9: TraitClause2::Item<'13>; // anonymous local
 
     storage_live(_3)
     _0 = ()
@@ -207,7 +207,7 @@ where
         storage_live(_4)
         storage_live(_5)
         _5 = &two-phase-mut iter_1
-        _4 = TraitClause2::next<'5>(move _5)
+        _4 = TraitClause2::next<'15>(move _5)
         storage_dead(_5)
         match _4 {
             Option::Some => {
@@ -224,19 +224,19 @@ where
         storage_live(_9)
         _9 = move item_6
         _8 = (move _9,)
-        _3 = TraitClause3::call_mut<'7>(move _7, move _8)
-        conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_in_place] _9
+        _3 = TraitClause3::call_mut<'32>(move _7, move _8)
+        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'38>}::drop_in_place] _9
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
-        conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_in_place] item_6
+        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'42>}::drop_in_place] item_6
         storage_dead(item_6)
-        conditional_drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<TraitClause2::Item>[TraitClause2::Item::ImpliedClause0]] _4
+        conditional_drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<TraitClause2::Item<'51>>[TraitClause2::Item::ImpliedClause0]] _4
         storage_dead(_4)
         continue 0
     }
     _0 = ()
-    conditional_drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<TraitClause2::Item>[TraitClause2::Item::ImpliedClause0]] _4
+    conditional_drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<TraitClause2::Item<'22>>[TraitClause2::Item::ImpliedClause0]] _4
     storage_dead(_4)
     conditional_drop[{built_in impl Destruct for T1}::drop_in_place] f_2
     conditional_drop[{built_in impl Destruct for I}::drop_in_place] iter_1

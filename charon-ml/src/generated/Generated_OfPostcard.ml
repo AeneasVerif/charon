@@ -1259,7 +1259,8 @@ and ty_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 6 ->
          let* x_0 = trait_ref_of_postcard ctx st in
          let* x_1 = assoc_type_id_of_postcard ctx st in
-         Ok (TTraitType (x_0, x_1))
+         let* x_2 = generic_args_of_postcard ctx st in
+         Ok (TTraitType (x_0, x_1, x_2))
      | 7 ->
          let* x_0 = dyn_predicate_of_postcard ctx st in
          Ok (TDynTrait x_0)
