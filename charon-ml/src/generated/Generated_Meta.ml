@@ -57,6 +57,9 @@ and attribute =
   | AttrVariantsSuffix of string
       (** Same as [VariantsPrefix], but appends to the name instead of
           pre-pending. *)
+  | AttrTransparent
+      (** The structure is treated as a transparent wrapper around its sole
+          field. Written [#[charon::transparent]]. *)
   | AttrDocComment of string  (** A doc-comment such as [/// ...]. *)
   | AttrUnknown of raw_attribute  (** A non-charon-specific attribute. *)
 

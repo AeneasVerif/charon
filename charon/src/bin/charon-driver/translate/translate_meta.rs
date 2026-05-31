@@ -497,6 +497,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             "opaque" if args.is_none() => Attribute::Opaque,
             // `#[charon::opaque]`
             "exclude" if args.is_none() => Attribute::Exclude,
+            // `#[charon::transparent]`
+            "transparent" if args.is_none() => Attribute::Transparent,
             // `#[charon::rename("new_name")]`
             "rename" if let Some(attr) = args => {
                 let Some(attr) = attr

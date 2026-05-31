@@ -254,8 +254,7 @@ impl<'a> GenerateCtx<'a> {
                             .attr_info
                             .attributes
                             .iter()
-                            .filter_map(|a| a.as_unknown())
-                            .any(|a| a.to_string() == "serde(transparent)")) =>
+                            .any(|a| a.is_transparent())) =>
             {
                 let ty = &fields[0].ty;
                 let call = self.type_to_ocaml_call(ty);
@@ -285,17 +284,6 @@ impl<'a> GenerateCtx<'a> {
                 self.build_branch(&pat, &fields, &construct)
             }
             TypeDeclKind::Struct(fields) => {
-                let fields = fields
-                    .iter()
-                    .filter(|field| {
-                        !field
-                            .attr_info
-                            .attributes
-                            .iter()
-                            .filter_map(|a| a.as_unknown())
-                            .any(|a| a.to_string() == "serde(skip)")
-                    })
-                    .collect_vec();
                 let pat: String = fields
                     .iter()
                     .map(|f| {

@@ -1714,10 +1714,11 @@ and attribute_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 4 ->
          let* x_0 = string_of_postcard ctx st in
          Ok (AttrVariantsSuffix x_0)
-     | 5 ->
+     | 5 -> Ok AttrTransparent
+     | 6 ->
          let* x_0 = string_of_postcard ctx st in
          Ok (AttrDocComment x_0)
-     | 6 ->
+     | 7 ->
          let* x_0 = raw_attribute_of_postcard ctx st in
          Ok (AttrUnknown x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

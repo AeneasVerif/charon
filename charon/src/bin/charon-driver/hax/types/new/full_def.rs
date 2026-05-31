@@ -1204,7 +1204,7 @@ impl<'tcx> FullDef<'tcx> {
             let tcx = s.base().tcx;
             for impl_def_id in tcx.inherent_impls(rust_def_id) {
                 children.extend(
-                    tcx.associated_items(impl_def_id)
+                    tcx.associated_items(*impl_def_id)
                         .in_definition_order()
                         .filter_map(|assoc| Some((assoc.opt_name()?, assoc.def_id).sinto(s))),
                 );

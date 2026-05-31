@@ -90,7 +90,7 @@ pub trait Tuple<Self>
     non-dyn-compatible
 }
 
-// Full name: core::ptr::alignment::Alignment
+// Full name: core::mem::alignment::Alignment
 pub opaque type Alignment
 
 // Full name: core::mem::SizedTypeProperties
@@ -226,10 +226,7 @@ where
 // Full name: core::ptr::unique::Unique
 pub opaque type Unique<T>
 
-fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(_1: usize, _2: usize)
-= <opaque>
-
-fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(_1: usize)
+fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(_1: usize)
 = <opaque>
 
 fn core::alloc::layout::{Layout}::from_size_alignment_unchecked::precondition_check(_1: usize, _2: Alignment)
@@ -283,6 +280,44 @@ where
     TraitClause2: (A: Allocator),
 = <missing>
 
+// Full name: alloc::boxed::box_new_uninit
+fn box_new_uninit(layout_1: Layout) -> *mut u8
+{
+    let _0: *mut u8; // return
+    let layout_1: Layout; // arg #1
+    let _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let ptr_3: NonNull<[u8]>; // local
+    let _4: !; // anonymous local
+    let _5: NonNull<u8>; // anonymous local
+    let _6: *mut u8; // anonymous local
+    let _7: *mut [u8]; // anonymous local
+
+    storage_live(ptr_3)
+    storage_live(_4)
+    storage_live(_2)
+    _2 = alloc_impl_runtime(copy layout_1, const false)
+    match _2 {
+        Result::Ok => {
+        },
+        Result::Err => {
+            _4 = handle_alloc_error(move layout_1)
+        },
+    }
+    ptr_3 = copy (_2 as variant Result::Ok).0
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = transmute<NonNull<[u8]>, *mut [u8]>(copy ptr_3)
+    _6 = cast<*mut [u8], *mut u8>(copy _7)
+    storage_dead(_7)
+    _5 = transmute<*mut u8, NonNull<u8>>(copy _6)
+    storage_dead(_6)
+    _0 = transmute<NonNull<u8>, *mut u8>(copy _5)
+    storage_dead(_5)
+    storage_dead(_2)
+    return
+}
+
 // Full name: alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new
 #[lang_item("box_new")]
 pub fn new<T>(x_1: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]
@@ -292,56 +327,14 @@ where
     let _0: Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]; // return
     let x_1: T; // arg #1
     let ptr_2: *mut T; // local
-    let size_3: usize; // local
-    let align_4: usize; // local
-    let layout_5: Layout; // local
-    let _6: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let ptr_7: NonNull<[u8]>; // local
-    let _8: !; // anonymous local
-    let _9: (); // anonymous local
-    let _10: Alignment; // anonymous local
-    let _11: *mut [u8]; // anonymous local
-    let _12: bool; // anonymous local
+    let _3: *mut u8; // anonymous local
 
     storage_live(ptr_2)
-    storage_live(_8)
-    storage_live(_9)
-    storage_live(_11)
-    storage_live(size_3)
-    size_3 = const {impl SizedTypeProperties for T}<T>[TraitClause0]::SIZE
-    storage_live(align_4)
-    align_4 = const {impl SizedTypeProperties for T}<T>[TraitClause0]::ALIGN
-    storage_live(layout_5)
-    storage_live(ptr_7)
-    storage_live(_12)
-    _12 = ub_checks<bool>
-    if move _12 {
-        _9 = core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(copy size_3, copy align_4)
-    } else {
-    }
-    storage_live(_10)
-    _10 = transmute<usize, Alignment>(copy align_4)
-    layout_5 = Layout { 0: copy size_3, 1: move _10 }
-    storage_dead(_10)
-    storage_live(_6)
-    _6 = alloc_impl_runtime(copy layout_5, const false)
-    match _6 {
-        Result::Ok => {
-        },
-        Result::Err => {
-            _8 = handle_alloc_error(move layout_5)
-        },
-    }
-    ptr_7 = copy (_6 as variant Result::Ok).0
-    _11 = transmute<NonNull<[u8]>, *mut [u8]>(copy ptr_7)
-    storage_dead(_6)
-    storage_dead(ptr_7)
-    storage_dead(layout_5)
-    storage_dead(align_4)
-    storage_dead(size_3)
-    ptr_2 = cast<*mut [u8], *mut T>(copy _11)
+    storage_live(_3)
+    _3 = box_new_uninit(const {impl SizedTypeProperties for T}<T>[TraitClause0]::LAYOUT)
+    ptr_2 = cast<*mut u8, *mut T>(copy _3)
     (*ptr_2) = move x_1
-    _0 = transmute<*mut T, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]>(copy ptr_2)
+    _0 = transmute<*mut u8, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]>(copy _3)
     return
 }
 
@@ -365,7 +358,7 @@ where
     let _10: (); // anonymous local
     let _11: (); // anonymous local
     let unique_12: NonNull<u8>; // local
-    let _13: *const u8; // anonymous local
+    let _13: *mut u8; // anonymous local
     let ptr_14: NonNull<T>; // local
     let ptr_15: PhantomData<T>; // local
     let _16: bool; // anonymous local
@@ -393,7 +386,7 @@ where
     storage_live(_16)
     _16 = ub_checks<bool>
     if move _16 {
-        _10 = core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(copy align_9)
+        _10 = core::mem::alignment::{Alignment}::new_unchecked::precondition_check(copy align_9)
     } else {
     }
     alignment_8 = transmute<usize, Alignment>(copy align_9)
@@ -414,8 +407,8 @@ where
             storage_live(_6)
             _6 = &((*self_1)).1
             storage_live(_13)
-            _13 = cast<*mut T, *const u8>(copy _4)
-            unique_12 = NonNull { 0: copy _13 }
+            _13 = cast<*mut T, *mut u8>(copy _4)
+            unique_12 = transmute<*mut u8, NonNull<u8>>(copy _13)
             storage_dead(_13)
             _5 = TraitClause2::deallocate<'7>(move _6, move unique_12, move layout_2)
             storage_dead(_6)

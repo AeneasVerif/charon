@@ -90,6 +90,7 @@ pub enum ImplElem {
     Debug, Default, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut,
 )]
 #[serde(transparent)]
+#[cfg_attr(feature = "charon_on_charon", charon::transparent)]
 pub struct Name {
     pub name: Vec<PathElem>,
 }

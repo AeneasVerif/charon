@@ -241,8 +241,7 @@ impl<'a> GenerateCtx<'a> {
                             .attr_info
                             .attributes
                             .iter()
-                            .filter_map(|a| a.as_unknown())
-                            .any(|a| a.to_string() == "serde(transparent)")) =>
+                            .any(|a| a.is_transparent())) =>
             {
                 let call = self.type_to_ocaml_postcard_call(&fields[0].ty);
                 format!("{call} ctx st")
@@ -265,18 +264,7 @@ impl<'a> GenerateCtx<'a> {
                 format!("{convert}\nOk ({construct})")
             }
             TypeDeclKind::Struct(fields) => {
-                let fields = fields
-                    .iter()
-                    .filter(|field| {
-                        !field
-                            .attr_info
-                            .attributes
-                            .iter()
-                            .filter_map(|a| a.as_unknown())
-                            .any(|a| a.to_string() == "serde(skip)")
-                    })
-                    .collect_vec();
-                let convert = self.convert_postcard_vars(fields.iter().copied());
+                let convert = self.convert_postcard_vars(fields);
                 let construct = fields
                     .iter()
                     .filter(|f| !f.is_opaque())

@@ -127,6 +127,9 @@ pub enum Attribute {
     VariantsPrefix(String),
     /// Same as `VariantsPrefix`, but appends to the name instead of pre-pending.
     VariantsSuffix(String),
+    /// The structure is treated as a transparent wrapper around its sole field.
+    /// Written `#[charon::transparent]`.
+    Transparent,
     /// A doc-comment such as `/// ...`.
     DocComment(String),
     /// A non-charon-specific attribute.

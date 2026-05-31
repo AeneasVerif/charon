@@ -1,4 +1,3 @@
-#![feature(box_patterns)]
 use itertools::Itertools;
 use std::path::PathBuf;
 

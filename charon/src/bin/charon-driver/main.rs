@@ -10,8 +10,6 @@
 #![allow(clippy::manual_map)]
 #![allow(clippy::mem_replace_with_default)]
 #![allow(clippy::useless_format)]
-#![expect(incomplete_features)]
-#![feature(box_patterns)]
 #![feature(deref_patterns)]
 #![feature(iter_array_chunks)]
 #![feature(iterator_try_collect)]
