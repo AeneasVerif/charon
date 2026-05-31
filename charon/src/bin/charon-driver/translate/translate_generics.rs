@@ -210,6 +210,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn outermost_generics_mut(&mut self) -> &mut GenericParams {
         &mut self.outermost_binder_mut().params
     }
+    #[expect(dead_code)]
     pub(crate) fn innermost_generics(&self) -> &GenericParams {
         &self.innermost_binder().params
     }

@@ -112,12 +112,12 @@ pub struct VirtualImplAssocItem {
     pub trait_impl_id: RDefId,
     /// The item declaration.
     pub item_decl_id: RDefId,
-    /// The item implementation, if any.
-    pub item_impl_id: Option<RDefId>,
+    /// The item implementation.
+    pub item_impl_id: RDefId,
 }
 
 impl VirtualImplAssocItem {
-    pub fn new(trait_impl_id: RDefId, item_decl_id: RDefId, item_impl_id: Option<RDefId>) -> Self {
+    pub fn new(trait_impl_id: RDefId, item_decl_id: RDefId, item_impl_id: RDefId) -> Self {
         Self {
             trait_impl_id,
             item_decl_id,
@@ -125,8 +125,8 @@ impl VirtualImplAssocItem {
         }
     }
 
-    pub fn impl_item_or_decl_id<'tcx>(&self) -> RDefId {
-        self.item_impl_id.unwrap_or(self.item_decl_id)
+    pub fn item_impl_id<'tcx>(&self) -> RDefId {
+        self.item_impl_id
     }
 
     /// Arguments just for the item itself (works for both decl and impl), valid in the virtual
@@ -171,15 +171,6 @@ impl VirtualImplAssocItem {
             .impl_trait_ref(self.trait_impl_id)
             .instantiate_identity();
         self.args_for_item_decl(s, impl_trait_ref.args)
-    }
-
-    /// The typing environment of the trait impl, before adding item-local clauses.
-    fn impl_typing_env<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::TypingEnv<'tcx> {
-        let tcx = s.base().tcx;
-        ty::TypingEnv::new(
-            tcx.param_env(self.trait_impl_id),
-            ty::TypingMode::PostAnalysis,
-        )
     }
 }
 
@@ -341,7 +332,7 @@ impl DefId {
                     tcx.def_span(def_id)
                 }
             }
-            DefIdBase::ImplAssocItem(id) => tcx.def_span(id.impl_item_or_decl_id()),
+            DefIdBase::ImplAssocItem(id) => tcx.def_span(id.item_impl_id),
             DefIdBase::Synthetic(..) => rustc_span::DUMMY_SP,
         }
         .sinto(s)
@@ -436,7 +427,7 @@ impl DefId {
                     return generics;
                 }
                 // We build a custom environment here.
-                let item_id = id.impl_item_or_decl_id();
+                let item_id = id.item_impl_id();
                 let decl_generics = tcx.generics_of(item_id);
                 let parent_count = tcx.generics_of(id.trait_impl_id).count();
                 let own_params = tcx
@@ -492,18 +483,12 @@ impl DefId {
         match self.base {
             DefIdBase::ImplAssocItem(id) => {
                 let item_args = id.identity_args_for_item_decl(s);
-                let impl_typing_env = id.impl_typing_env(s);
-                // We normalize item predicates in the impl environment before adding them to the param_env.
+                let impl_predicates = tcx.param_env(id.trait_impl_id).caller_bounds().iter();
                 let item_predicates = tcx
                     .predicates_of(id.item_decl_id)
                     .instantiate_own(tcx, item_args)
-                    .map(|(predicate, _)| normalize(tcx, impl_typing_env, predicate));
-                let predicates = impl_typing_env
-                    .param_env
-                    .caller_bounds()
-                    .iter()
-                    .chain(item_predicates);
-                param_env_from_clauses(tcx, predicates)
+                    .map(|(predicate, _)| predicate);
+                param_env_from_clauses(tcx, impl_predicates.chain(item_predicates))
             }
             DefIdBase::Real(def_id)
             | DefIdBase::Promoted(def_id, ..)
@@ -532,7 +517,7 @@ impl DefId {
                         .predicates
                         .retain(|predicate| !matches!(predicate.id, ItemPredicateId::TraitSelf));
                 }
-                predicates.instantiate(tcx, id.impl_typing_env(s), item_args)
+                predicates.instantiate(tcx, item_args)
             }
             DefIdBase::Real(def_id) | DefIdBase::Synthetic(.., def_id) => {
                 ItemPredicates::required(s.base().elab_ctx, def_id)

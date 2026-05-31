@@ -57,7 +57,7 @@ impl MyTrait for S {
     type foo_ty = ()
     where
         TraitClause0_1: (S: Sized),
-        proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()};
+        proof ImpliedClause0: ({impl MyTrait for S}::foo_ty[TraitClause0_1]: Sized) = {impl MyTrait for S}::foo_ty::ImpliedClause0;
     fn foo<TraitClause0_1: (S: Sized)> = {impl MyTrait for S}::foo[TraitClause0_1]
     vtable: {impl MyTrait for S}::{vtable}
 }

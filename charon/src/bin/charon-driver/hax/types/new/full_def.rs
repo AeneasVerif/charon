@@ -736,28 +736,19 @@ where
                     .map(|decl_assoc| {
                         let decl_def_id = decl_assoc.def_id;
                         let trait_impl_id = def_id;
-                        let value = item_map.remove(&decl_def_id);
-                        let virtual_item = VirtualImplAssocItem::new(
-                            trait_impl_id,
-                            decl_def_id,
-                            value.map(|impl_assoc| impl_assoc.def_id),
-                        );
-                        let virtual_item_def_id = DefId::make_assoc_item_impl(s, virtual_item);
-                        let s = &s.with_hax_owner(&virtual_item_def_id);
-                        let item_decl_args = virtual_item.args_for_item_decl(s, trait_ref.args);
-                        let param_env = {
-                            // Pass `None` to get the generics, but add the known parent.
-                            // FIXME: maybe a custom enum instead of `Option<Args>`.
-                            let mut param_env = get_param_env(s, None);
-                            param_env.generics.parent = Some(this.def_id.clone());
-                            param_env.parent = Some(this.clone());
-                            param_env
-                        };
-                        let required_trait_proofs =
-                            solve_item_implied_traits(s, decl_def_id, item_decl_args);
-                        let value = match value {
+                        let value = match item_map.remove(&decl_def_id) {
                             Some(impl_assoc) => {
                                 let impl_assoc_def_id: DefId = impl_assoc.def_id.sinto(s);
+                                let virtual_item = VirtualImplAssocItem::new(
+                                    trait_impl_id,
+                                    decl_def_id,
+                                    impl_assoc.def_id,
+                                );
+                                let virtual_item_def_id =
+                                    DefId::make_assoc_item_impl(s, virtual_item);
+                                let s = &s.with_hax_owner(&virtual_item_def_id);
+                                let item_decl_args =
+                                    virtual_item.args_for_item_decl(s, trait_ref.args);
                                 let item_impl_args =
                                     virtual_item.args_for_item_impl(s, args_or_default());
                                 let assoc_ty_value =
@@ -772,51 +763,32 @@ where
                                     } else {
                                         None
                                     };
+                                let required_trait_proofs =
+                                    solve_item_implied_traits(s, decl_def_id, item_decl_args);
+                                let param_env = {
+                                    // Pass `None` to get the generics, but add the known parent.
+                                    // FIXME: maybe a custom enum instead of `Option<Args>`.
+                                    let mut param_env = get_param_env(s, None);
+                                    param_env.generics.parent = Some(this.def_id.clone());
+                                    param_env.parent = Some(this.clone());
+                                    param_env
+                                };
                                 let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
                                 let late_bound =
                                     late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
-                                let value = ImplAssocItemValue::Provided {
+                                let value = ImplAssocItemValue {
                                     item,
                                     assoc_ty_value,
                                     implied_trait_proofs: required_trait_proofs,
                                 };
-                                TraitItemBinder {
+                                Some(TraitItemBinder {
                                     def_id: virtual_item_def_id,
                                     param_env,
                                     late_bound,
                                     skip_binder: value,
-                                }
+                                })
                             }
-                            None => {
-                                let decl_hax_def_id: DefId = decl_def_id.sinto(s);
-                                let late_bound =
-                                    late_bound_for_def(s, decl_def_id, Some(item_decl_args));
-                                let value = match decl_assoc.kind {
-                                    ty::AssocKind::Type { .. } => {
-                                        let ty = inst_binder(
-                                            tcx,
-                                            s.typing_env(),
-                                            Some(item_decl_args),
-                                            decl_hax_def_id.type_of(s),
-                                        )
-                                        .sinto(s);
-                                        ImplAssocItemValue::DefaultedTy {
-                                            ty,
-                                            implied_trait_proofs: required_trait_proofs,
-                                        }
-                                    }
-                                    ty::AssocKind::Fn { .. } => ImplAssocItemValue::DefaultedFn,
-                                    ty::AssocKind::Const { .. } => {
-                                        ImplAssocItemValue::DefaultedConst {}
-                                    }
-                                };
-                                TraitItemBinder {
-                                    def_id: virtual_item_def_id,
-                                    param_env,
-                                    late_bound,
-                                    skip_binder: value,
-                                }
-                            }
+                            None => None,
                         };
 
                         ImplAssocItem {
@@ -1010,8 +982,8 @@ pub struct ImplAssocItem {
     /// The definition of the item from the trait declaration. This is an `AssocTy`, `AssocFn` or
     /// `AssocConst`.
     pub decl_def_id: DefId,
-    /// The value of the implemented item.
-    pub value: TraitItemBinder<ImplAssocItemValue>,
+    /// The value of the implemented item, if any.
+    pub value: Option<TraitItemBinder<ImplAssocItemValue>>,
 }
 
 /// The binding context to use when translating a trait impl associated item.
@@ -1025,47 +997,25 @@ pub struct TraitItemBinder<T> {
     pub skip_binder: T,
 }
 
+/// The item is provided by the trait impl.
 #[derive(Clone, Debug)]
-pub enum ImplAssocItemValue {
-    /// The item is provided by the trait impl.
-    Provided {
-        /// The definition of the item in the trait impl. This is an `AssocTy`, `AssocFn` or
-        /// `AssocConst`.
-        item: ItemRef,
-        /// Value of the associated type, if carried directly. `None` for methods and consts.
-        assoc_ty_value: Option<Ty>,
-        /// Trait proofs for the implied associated type bounds. E.g.:
-        /// ```ignore
-        /// trait Foo {
-        ///     type Type<T>: Clone,
-        /// }
-        /// impl Foo for () {
-        ///     type Type<T>: Arc<T>; // would supply a proof for `Arc<T>: Clone`.
-        /// }
-        /// ```
-        /// Empty for methods and consts.
-        implied_trait_proofs: Vec<TraitProof>,
-    },
-    /// This is an associated type that reuses the trait declaration default.
-    DefaultedTy {
-        /// The default type, with generics properly instantiated.
-        ty: Ty,
-        /// Trait proofs for the implied associated type bounds. E.g.:
-        /// ```ignore
-        /// trait Foo {
-        ///     type Type<T>: Clone,
-        /// }
-        /// impl Foo for () {
-        ///     type Type<T>: Arc<T>; // would supply a proof for `Arc<T>: Clone`.
-        /// }
-        /// ```
-        implied_trait_proofs: Vec<TraitProof>,
-    },
-    /// This is a non-overriden default method.
-    DefaultedFn,
-    /// This is an associated const that reuses the trait declaration default. The default const
-    /// value can be found in `decl_def`.
-    DefaultedConst,
+pub struct ImplAssocItemValue {
+    /// The definition of the item in the trait impl. This is an `AssocTy`, `AssocFn` or
+    /// `AssocConst`.
+    pub item: ItemRef,
+    /// Value of the associated type, if carried directly. `None` for methods and consts.
+    pub assoc_ty_value: Option<Ty>,
+    /// Trait proofs for the implied associated type bounds. E.g.:
+    /// ```ignore
+    /// trait Foo {
+    ///     type Type<T>: Clone,
+    /// }
+    /// impl Foo for () {
+    ///     type Type<T>: Arc<T>; // would supply a proof for `Arc<T>: Clone`.
+    /// }
+    /// ```
+    /// Empty for methods and consts.
+    pub implied_trait_proofs: Vec<TraitProof>,
 }
 
 /// Partial data for a trait impl, used for fake trait impls that we generate ourselves such as
@@ -1226,7 +1176,7 @@ impl<'tcx> FullDef<'tcx> {
                 .collect(),
             FullDefKind::TraitImpl { items, .. } => items
                 .iter()
-                .filter_map(|item| Some((item.name?, item.def_id().clone())))
+                .filter_map(|item| Some((item.name?, item.def_id()?.clone())))
                 .collect(),
             _ => vec![],
         };
@@ -1246,13 +1196,13 @@ impl<'tcx> FullDef<'tcx> {
 }
 
 impl ImplAssocItem {
-    /// The relevant definition: the provided implementation if any, otherwise the default
-    /// declaration from the trait declaration.
-    pub fn def_id(&self) -> &DefId {
-        match &self.value.skip_binder {
-            ImplAssocItemValue::Provided { item, .. } => &item.def_id,
-            _ => &self.decl_def_id,
-        }
+    /// The id of the item declaration.
+    pub fn decl_def_id(&self) -> &DefId {
+        &self.decl_def_id
+    }
+    /// The id of the item implementation, if there is one.
+    pub fn def_id(&self) -> Option<&DefId> {
+        Some(&self.value.as_ref()?.skip_binder.item.def_id)
     }
 }
 

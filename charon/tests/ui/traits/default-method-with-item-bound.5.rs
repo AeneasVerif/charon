@@ -1,5 +1,3 @@
-//@ charon-args=--translate-all-methods
-
 trait Iterator {
     type Item;
 

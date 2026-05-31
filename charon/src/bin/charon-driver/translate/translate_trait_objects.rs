@@ -794,8 +794,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         // The method is vtable safe so it has no generics, hence we can skip the binder.
-        let vtable_value = match &item.value.skip_binder {
-            hax::ImplAssocItemValue::Provided { item: item_ref, .. } => {
+        let vtable_value = match &item.value {
+            Some(value) => {
+                let item_ref = &value.skip_binder.item;
                 let shim_ref =
                     self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
                 // In mono mode, we cannot get real types of shim functions by looking up the ones in `struct vtable`
@@ -832,7 +833,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         self.binding_levels.push(binding_level);
                     }
 
-                    let method_id = self.translate_trait_method_id(trait_id, item.def_id())?;
+                    let method_id = self.translate_trait_method_id(trait_id, item.decl_def_id())?;
                     let method_name = self.translated.assoc_item_name(trait_id, method_id);
 
                     VtableMethodValue::Cast((method_name.to_string(), method_ty, shim_ref))
@@ -840,10 +841,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     VtableMethodValue::Const(ConstantExprKind::FnDef(shim_ref))
                 }
             }
-            hax::ImplAssocItemValue::DefaultedFn => VtableMethodValue::Const(
-                ConstantExprKind::Opaque("shim for default methods aren't yet supported".into()),
-            ),
-            _ => return Ok(None),
+            None => VtableMethodValue::Const(ConstantExprKind::Opaque(
+                "shim for default methods aren't yet supported".into(),
+            )),
         };
 
         Ok(Some(vtable_value))

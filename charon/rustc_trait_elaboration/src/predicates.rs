@@ -35,7 +35,7 @@ use rustc_middle::ty::{self, *};
 use rustc_span::def_id::DefId;
 use rustc_span::{DUMMY_SP, Span};
 
-use crate::{ElaborationCtx, ToPolyTraitRef, normalize};
+use crate::{ElaborationCtx, ToPolyTraitRef};
 
 #[derive(Debug, Default, Clone)]
 pub struct BoundsOptions {
@@ -251,18 +251,6 @@ impl<'tcx> ItemPredicates<'tcx> {
                 predicates.add_destruct_bounds(tcx, def_id);
             }
             predicates.filter_traits(options);
-            // Predicates on impl associated items may mention trait-declaration projections such as
-            // `Self::Item`. Normalize them in the parent impl environment before the item's own
-            // local clauses can influence projection resolution.
-            if matches!(def_kind, AssocConst { .. } | AssocFn | AssocTy)
-                && let Some(parent) = tcx.opt_parent(def_id)
-                && matches!(tcx.def_kind(parent), Impl { of_trait: true })
-            {
-                let typing_env = TypingEnv::new(tcx.param_env(parent), TypingMode::PostAnalysis);
-                for predicate in predicates.iter_mut() {
-                    predicate.clause = normalize(tcx, typing_env, predicate.clause);
-                }
-            }
             predicates
         })
     }
@@ -400,18 +388,9 @@ impl<'tcx> ItemPredicates<'tcx> {
     }
 
     /// Substitute all the predicates with these args.
-    pub fn instantiate(
-        mut self,
-        tcx: TyCtxt<'tcx>,
-        typing_env: ty::TypingEnv<'tcx>,
-        args: ty::GenericArgsRef<'tcx>,
-    ) -> Self {
+    pub fn instantiate(mut self, tcx: TyCtxt<'tcx>, args: ty::GenericArgsRef<'tcx>) -> Self {
         for predicate in self.iter_mut() {
-            predicate.clause = normalize(
-                tcx,
-                typing_env,
-                ty::EarlyBinder::bind(predicate.clause).instantiate(tcx, args),
-            );
+            predicate.clause = ty::EarlyBinder::bind(predicate.clause).instantiate(tcx, args);
         }
         self
     }
