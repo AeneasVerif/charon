@@ -17,7 +17,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -25,8 +25,8 @@ pub trait Sized<Self>
 #[lang_item("Result")]
 pub enum Result<T, E>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
 {
   Ok(T),
   Err(E),
@@ -39,7 +39,7 @@ pub opaque type NonNull<T>
 // Full name: core::alloc::Allocator
 pub trait Allocator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     fn allocate<'_0_1> = core::alloc::Allocator::allocate<'_0_1, Self>[Self]
     fn deallocate<'_0_1> = core::alloc::Allocator::deallocate<'_0_1, Self>[Self]
     vtable: core::alloc::Allocator::{vtable}
@@ -47,24 +47,24 @@ pub trait Allocator<Self>
 
 pub fn core::alloc::Allocator::allocate<'_0, Self>(_1: &'_0 Self, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
-    [@TraitClause0]: Allocator<Self>,
+    TraitClause0: (Self: Allocator),
 = <opaque>
 
 pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(_1: &'_0 Self, _2: NonNull<u8>, _3: Layout)
 where
-    [@TraitClause0]: Allocator<Self>,
+    TraitClause0: (Self: Allocator),
 = <opaque>
 
 // Full name: core::intrinsics::size_of_val
 pub unsafe fn size_of_val<T>(ptr_1: *const T) -> usize
 where
-    [@TraitClause0]: MetaSized<T>,
+    TraitClause0: (T: MetaSized),
 = <intrinsic:size_of_val>
 
 // Full name: core::intrinsics::align_of_val
 pub unsafe fn align_of_val<T>(ptr_1: *const T) -> usize
 where
-    [@TraitClause0]: MetaSized<T>,
+    TraitClause0: (T: MetaSized),
 = <intrinsic:align_of_val>
 
 // Full name: core::marker::PhantomData
@@ -86,7 +86,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -96,7 +96,7 @@ pub opaque type Alignment
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     const SIZE : usize
     const ALIGN : usize
     const ALIGNMENT : Alignment
@@ -110,90 +110,90 @@ pub trait SizedTypeProperties<Self>
 #[lang_item("mem_size_const")]
 pub fn SIZE<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::SIZE
 #[lang_item("mem_size_const")]
 pub const SIZE<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = SIZE()
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
 pub fn ALIGN<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
 pub const ALIGN<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = ALIGN()
 
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
 pub fn ALIGNMENT<Self>() -> Alignment
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
 pub const ALIGNMENT<Self>: Alignment
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = ALIGNMENT()
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub fn IS_ZST<Self>() -> bool
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub const IS_ZST<Self>: bool
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = IS_ZST()
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub fn LAYOUT<Self>() -> Layout
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub const LAYOUT<Self>: Layout
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = LAYOUT()
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub fn MAX_SLICE_LEN<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub const MAX_SLICE_LEN<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = MAX_SLICE_LEN()
 
 // Full name: core::mem::{impl SizedTypeProperties for T}
 impl<T> SizedTypeProperties for T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = @TraitClause0
-    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    proof ImpliedClause0: (T: Sized) = TraitClause0
+    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
     non-dyn-compatible
 }
 
@@ -209,18 +209,18 @@ struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
+pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    TraitClause0: (Self: FnOnce<Args>),
 = <method_without_default_body>
 
 // Full name: core::ptr::unique::Unique
@@ -253,7 +253,7 @@ pub fn {impl Allocator for Global}::allocate<'_0>(_1: &'_0 Global, _2: Layout) -
 
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl Allocator for Global {
-    parent_clause0 = {built_in impl MetaSized for Global}
+    proof ImpliedClause0: (Global: MetaSized) = {built_in impl MetaSized for Global}
     fn allocate<'_0_1> = {impl Allocator for Global}::allocate<'_0_1>
     fn deallocate<'_0_1> = {impl Allocator for Global}::deallocate<'_0_1>
     vtable: {impl Allocator for Global}::{vtable}
@@ -267,29 +267,29 @@ pub fn handle_alloc_error(_1: Layout) -> !
 #[lang_item("owned_box")]
 pub struct Box<T, A>
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
 {
   Unique<T>,
   A,
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place
-unsafe fn {impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<T, A>(_1: *mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place
+unsafe fn {impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place<T, A>(_1: *mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
 = <missing>
 
-// Full name: alloc::boxed::{Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new
+// Full name: alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]}::new
 #[lang_item("box_new")]
-pub fn new<T>(x_1: T) -> Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]
+pub fn new<T>(x_1: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    let _0: Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]; // return
+    let _0: Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]; // return
     let x_1: T; // arg #1
     let ptr_2: *mut T; // local
     let size_3: usize; // local
@@ -308,9 +308,9 @@ where
     storage_live(_9)
     storage_live(_11)
     storage_live(size_3)
-    size_3 = const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE
+    size_3 = const {impl SizedTypeProperties for T}<T>[TraitClause0]::SIZE
     storage_live(align_4)
-    align_4 = const {impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN
+    align_4 = const {impl SizedTypeProperties for T}<T>[TraitClause0]::ALIGN
     storage_live(layout_5)
     storage_live(ptr_7)
     storage_live(_12)
@@ -341,19 +341,19 @@ where
     storage_dead(size_3)
     ptr_2 = cast<*mut [u8], *mut T>(copy _11)
     (*ptr_2) = move x_1
-    _0 = transmute<*mut T, Box<T, Global>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}, {impl Allocator for Global}]>(copy ptr_2)
+    _0 = transmute<*mut T, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl Allocator for Global}]>(copy ptr_2)
     return
 }
 
-// Full name: alloc::boxed::{impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop
-pub fn {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'_0, T, A>(self_1: &'_0 mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2])
+// Full name: alloc::boxed::{impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
+pub fn {impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop<'_0, T, A>(self_1: &'_0 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Allocator<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
 {
     let _0: (); // return
-    let self_1: &'1 mut Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
+    let self_1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
     let layout_2: Layout; // local
     let t_3: *const T; // local
     let _4: *mut T; // anonymous local
@@ -387,9 +387,9 @@ where
     _4 = transmute<NonNull<T>, *mut T>(copy ptr_14)
     t_3 = transmute<NonNull<T>, *const T>(copy ptr_14)
     storage_live(alignment_8)
-    size_7 = size_of_val<T>[@TraitClause0](copy t_3)
+    size_7 = size_of_val<T>[TraitClause0](copy t_3)
     storage_live(align_9)
-    align_9 = align_of_val<T>[@TraitClause0](move t_3)
+    align_9 = align_of_val<T>[TraitClause0](move t_3)
     storage_live(_16)
     _16 = ub_checks<bool>
     if move _16 {
@@ -417,7 +417,7 @@ where
             _13 = cast<*mut T, *const u8>(copy _4)
             unique_12 = NonNull { 0: copy _13 }
             storage_dead(_13)
-            _5 = @TraitClause2::deallocate<'7>(move _6, move unique_12, move layout_2)
+            _5 = TraitClause2::deallocate<'7>(move _6, move unique_12, move layout_2)
             storage_dead(_6)
             return
         },
@@ -425,21 +425,21 @@ where
     return
 }
 
-// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::call_once
-pub extern "rust-call" fn {impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::call_once<Args, F, A>(self_1: Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5], args_2: Args) -> @TraitClause4::Output
+// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::call_once
+pub extern "rust-call" fn {impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::call_once<Args, F, A>(self_1: Box<F, A>[TraitClause1, TraitClause2, TraitClause5], args_2: Args) -> TraitClause4::Output
 where
-    [@TraitClause0]: Sized<Args>,
-    [@TraitClause1]: MetaSized<F>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: Tuple<Args>,
-    [@TraitClause4]: FnOnce<F, Args>,
-    [@TraitClause5]: Allocator<A>,
+    TraitClause0: (Args: Sized),
+    TraitClause1: (F: MetaSized),
+    TraitClause2: (A: Sized),
+    TraitClause3: (Args: Tuple),
+    TraitClause4: (F: FnOnce<Args>),
+    TraitClause5: (A: Allocator),
 {
-    let _0: @TraitClause4::Output; // return
-    let self_1: Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]; // arg #1
+    let _0: TraitClause4::Output; // return
+    let self_1: Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // arg #1
     let args_2: Args; // arg #2
-    let _3: Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]; // anonymous local
-    let _4: &'1 mut Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]; // anonymous local
+    let _3: Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // anonymous local
+    let _4: &'1 mut Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // anonymous local
     let _5: (); // anonymous local
     let _6: *const F; // anonymous local
 
@@ -449,106 +449,106 @@ where
     storage_live(_3)
     _3 = move self_1
     _6 = transmute<NonNull<F>, *const F>(copy ((_3).0).0)
-    _0 = @TraitClause4::call_once(move (*_6), move args_2)
+    _0 = TraitClause4::call_once(move (*_6), move args_2)
     _4 = &mut _3
-    _5 = {impl Drop for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop<'6, F, A>[@TraitClause1, @TraitClause2, @TraitClause5](move _4)
+    _5 = {impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop<'6, F, A>[TraitClause1, TraitClause2, TraitClause5](move _4)
     drop[{built_in impl Destruct for A}::drop_in_place] (_3).1
     storage_dead(_3)
     return
 }
 
-// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::call_once::{vtable_method}
-extern "rust-call" fn {vtable_method}<Args, F, A>(_1: (dyn FnOnce<Args, Output = @TraitClause4::Output>), _2: Args) -> @TraitClause4::Output
+// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::call_once::{vtable_method}
+extern "rust-call" fn {vtable_method}<Args, F, A>(_1: (dyn FnOnce<Args, Output = TraitClause4::Output>), _2: Args) -> TraitClause4::Output
 where
-    [@TraitClause0]: Sized<Args>,
-    [@TraitClause1]: MetaSized<F>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: Tuple<Args>,
-    [@TraitClause4]: FnOnce<F, Args>,
-    [@TraitClause5]: Allocator<A>,
+    TraitClause0: (Args: Sized),
+    TraitClause1: (F: MetaSized),
+    TraitClause2: (A: Sized),
+    TraitClause3: (Args: Tuple),
+    TraitClause4: (F: FnOnce<Args>),
+    TraitClause5: (A: Allocator),
 {
-    let _0: @TraitClause4::Output; // return
-    let _1: (dyn FnOnce<Args, Output = @TraitClause4::Output> + '0); // arg #1
+    let _0: TraitClause4::Output; // return
+    let _1: (dyn FnOnce<Args, Output = TraitClause4::Output> + '0); // arg #1
     let _2: Args; // arg #2
-    let _3: Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]; // anonymous local
+    let _3: Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // anonymous local
 
     storage_live(_3)
-    _3 = concretize<(dyn FnOnce<Args, Output = @TraitClause4::Output> + '1), Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]>(move _1)
-    _0 = {impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::call_once<Args, F, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5](move _3, move _2)
+    _3 = concretize<(dyn FnOnce<Args, Output = TraitClause4::Output> + '1), Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>(move _1)
+    _0 = {impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::call_once<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5](move _3, move _2)
     return
 }
 
-// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}<Args, F, A>(dyn_self_1: *mut (dyn FnOnce<Args, Output = @TraitClause4::Output>))
+// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}<Args, F, A>(dyn_self_1: *mut (dyn FnOnce<Args, Output = TraitClause4::Output>))
 where
-    [@TraitClause0]: Sized<Args>,
-    [@TraitClause1]: MetaSized<F>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: Tuple<Args>,
-    [@TraitClause4]: FnOnce<F, Args>,
-    [@TraitClause5]: Allocator<A>,
+    TraitClause0: (Args: Sized),
+    TraitClause1: (F: MetaSized),
+    TraitClause2: (A: Sized),
+    TraitClause3: (Args: Tuple),
+    TraitClause4: (F: FnOnce<Args>),
+    TraitClause5: (A: Allocator),
 {
     let ret_0: (); // return
-    let dyn_self_1: *mut (dyn FnOnce<Args, Output = @TraitClause4::Output> + '0); // arg #1
-    let target_self_2: *mut Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]; // local
+    let dyn_self_1: *mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '0); // arg #1
+    let target_self_2: *mut Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // local
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn FnOnce<Args, Output = @TraitClause4::Output> + '1), *mut Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]>(move dyn_self_1)
-    drop[{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]] (*target_self_2)
+    target_self_2 = concretize<*mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '1), *mut Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>(move dyn_self_1)
+    drop[{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place<F, A>[TraitClause1, TraitClause2, TraitClause5]] (*target_self_2)
     return
 }
 
-// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::{vtable}
-fn {impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::{vtable}<Args, F, A>() -> core::ops::function::FnOnce::{vtable}<Args, @TraitClause4::Output>
+// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable}
+fn {impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable}<Args, F, A>() -> core::ops::function::FnOnce::{vtable}<Args, TraitClause4::Output>
 where
-    [@TraitClause0]: Sized<Args>,
-    [@TraitClause1]: MetaSized<F>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: Tuple<Args>,
-    [@TraitClause4]: FnOnce<F, Args>,
-    [@TraitClause5]: Allocator<A>,
+    TraitClause0: (Args: Sized),
+    TraitClause1: (F: MetaSized),
+    TraitClause2: (A: Sized),
+    TraitClause3: (Args: Tuple),
+    TraitClause4: (F: FnOnce<Args>),
+    TraitClause5: (A: Allocator),
 {
-    let ret_0: core::ops::function::FnOnce::{vtable}<Args, @TraitClause4::Output>; // return
+    let ret_0: core::ops::function::FnOnce::{vtable}<Args, TraitClause4::Output>; // return
     let size_1: usize; // local
     let align_2: usize; // local
 
     storage_live(size_1)
-    size_1 = size_of<Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]>
+    size_1 = size_of<Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>
     storage_live(align_2)
-    align_2 = align_of<Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]>
-    ret_0 = core::ops::function::FnOnce::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<Args, F, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5], method_call_once: const {vtable_method}<Args, F, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5], super_trait_0: const &vtable_of({built_in impl MetaSized for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}) }
+    align_2 = align_of<Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>
+    ret_0 = core::ops::function::FnOnce::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], method_call_once: const {vtable_method}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], super_trait_0: const &vtable_of({built_in impl MetaSized for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}) }
     return
 }
 
-// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::{vtable}
-static {impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::{vtable}<Args, F, A>: core::ops::function::FnOnce::{vtable}<Args, @TraitClause4::Output>
+// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable}
+static {impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable}<Args, F, A>: core::ops::function::FnOnce::{vtable}<Args, TraitClause4::Output>
 where
-    [@TraitClause0]: Sized<Args>,
-    [@TraitClause1]: MetaSized<F>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: Tuple<Args>,
-    [@TraitClause4]: FnOnce<F, Args>,
-    [@TraitClause5]: Allocator<A>,
- = {impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::{vtable}()
+    TraitClause0: (Args: Sized),
+    TraitClause1: (F: MetaSized),
+    TraitClause2: (A: Sized),
+    TraitClause3: (Args: Tuple),
+    TraitClause4: (F: FnOnce<Args>),
+    TraitClause5: (A: Allocator),
+ = {impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable}()
 
-// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}
-impl<Args, F, A> FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]
+// Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}
+impl<Args, F, A> FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]
 where
-    [@TraitClause0]: Sized<Args>,
-    [@TraitClause1]: MetaSized<F>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: Tuple<Args>,
-    [@TraitClause4]: FnOnce<F, Args>,
-    [@TraitClause5]: Allocator<A>,
+    TraitClause0: (Args: Sized),
+    TraitClause1: (F: MetaSized),
+    TraitClause2: (A: Sized),
+    TraitClause3: (Args: Tuple),
+    TraitClause4: (F: FnOnce<Args>),
+    TraitClause5: (A: Allocator),
 {
-    parent_clause0 = {built_in impl MetaSized for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}
-    parent_clause1 = @TraitClause0
-    parent_clause2 = @TraitClause3
-    parent_clause3 = @TraitClause4::parent_clause3
-    type Output = @TraitClause4::Output
-    fn call_once = {impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::call_once<Args, F, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5]
-    vtable: {impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::{vtable}<Args, F, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5]
+    proof ImpliedClause0: (Box<F, A>[TraitClause1, TraitClause2, TraitClause5]: MetaSized) = {built_in impl MetaSized for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}
+    proof ImpliedClause1: (Args: Sized) = TraitClause0
+    proof ImpliedClause2: (Args: Tuple) = TraitClause3
+    proof ImpliedClause3: (TraitClause4::Output: Sized) = TraitClause4::ImpliedClause3
+    type Output = TraitClause4::Output
+    fn call_once = {impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::call_once<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
+    vtable: {impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
 }
 
 // Full name: test_crate::box_box
@@ -565,14 +565,14 @@ pub fn box_box(f_1: Box<(dyn FnOnce<(), Output = ()> + 'static), Global>[{built_
     storage_live(_4)
     _4 = move f_1
     _3 = new<Box<(dyn FnOnce<(), Output = ()> + '24), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '25)}, {built_in impl Sized for Global}, {impl Allocator for Global}]>[{built_in impl Sized for Box<(dyn FnOnce<(), Output = ()> + '30), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '31)}, {built_in impl Sized for Global}, {impl Allocator for Global}]}](move _4)
-    _2 = unsize_cast<Box<Box<(dyn FnOnce<(), Output = ()> + '18), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '19)}, {built_in impl Sized for Global}, {impl Allocator for Global}], Global>[{built_in impl MetaSized for Box<(dyn FnOnce<(), Output = ()> + '20), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '21)}, {built_in impl Sized for Global}, {impl Allocator for Global}]}, {built_in impl Sized for Global}, {impl Allocator for Global}], Box<(dyn FnOnce<(), Output = ()> + '47), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '48)}, {built_in impl Sized for Global}, {impl Allocator for Global}], &{impl FnOnce<Args> for Box<F, A>[@TraitClause1, @TraitClause2, @TraitClause5]}::{vtable}<(), (dyn FnOnce<(), Output = ()> + '67), Global>[{built_in impl Sized for ()}, {built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '69)}, {built_in impl Sized for Global}, {built_in impl Tuple for ()}, FnOnce<(dyn FnOnce<(), Output = ()> + '71), ()>, {impl Allocator for Global}]>(move _3)
-    conditional_drop[{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<Box<(dyn FnOnce<(), Output = ()> + '88), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '89)}, {built_in impl Sized for Global}, {impl Allocator for Global}], Global>[{built_in impl MetaSized for Box<(dyn FnOnce<(), Output = ()> + '88), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '89)}, {built_in impl Sized for Global}, {impl Allocator for Global}]}, {built_in impl Sized for Global}, {impl Allocator for Global}]] _3
+    _2 = unsize_cast<Box<Box<(dyn FnOnce<(), Output = ()> + '18), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '19)}, {built_in impl Sized for Global}, {impl Allocator for Global}], Global>[{built_in impl MetaSized for Box<(dyn FnOnce<(), Output = ()> + '20), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '21)}, {built_in impl Sized for Global}, {impl Allocator for Global}]}, {built_in impl Sized for Global}, {impl Allocator for Global}], Box<(dyn FnOnce<(), Output = ()> + '47), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '48)}, {built_in impl Sized for Global}, {impl Allocator for Global}], &{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable}<(), (dyn FnOnce<(), Output = ()> + '67), Global>[{built_in impl Sized for ()}, {built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '69)}, {built_in impl Sized for Global}, {built_in impl Tuple for ()}, FnOnce<(dyn FnOnce<(), Output = ()> + '71), ()>, {impl Allocator for Global}]>(move _3)
+    conditional_drop[{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place<Box<(dyn FnOnce<(), Output = ()> + '88), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '89)}, {built_in impl Sized for Global}, {impl Allocator for Global}], Global>[{built_in impl MetaSized for Box<(dyn FnOnce<(), Output = ()> + '88), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '89)}, {built_in impl Sized for Global}, {impl Allocator for Global}]}, {built_in impl Sized for Global}, {impl Allocator for Global}]] _3
     storage_dead(_4)
     storage_dead(_3)
     _0 = unsize_cast<Box<(dyn FnOnce<(), Output = ()> + '8), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '9)}, {built_in impl Sized for Global}, {impl Allocator for Global}], Box<(dyn FnOnce<(), Output = ()> + '105), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '106)}, {built_in impl Sized for Global}, {impl Allocator for Global}],  at []>(move _2)
-    conditional_drop[{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<(dyn FnOnce<(), Output = ()> + '113), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '113)}, {built_in impl Sized for Global}, {impl Allocator for Global}]] _2
+    conditional_drop[{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place<(dyn FnOnce<(), Output = ()> + '113), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '113)}, {built_in impl Sized for Global}, {impl Allocator for Global}]] _2
     storage_dead(_2)
-    conditional_drop[{impl Destruct for Box<T, A>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<(dyn FnOnce<(), Output = ()> + '122), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '122)}, {built_in impl Sized for Global}, {impl Allocator for Global}]] f_1
+    conditional_drop[{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place<(dyn FnOnce<(), Output = ()> + '122), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '122)}, {built_in impl Sized for Global}, {impl Allocator for Global}]] f_1
     return
 }
 

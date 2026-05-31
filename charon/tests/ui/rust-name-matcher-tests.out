@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -28,7 +28,7 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -51,23 +51,23 @@ fn bar()
 // Full name: test_crate::Trait
 trait Trait<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    fn method<U, [@TraitClause0_1]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_1]
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    fn method<U, TraitClause0_1: (U: Sized)> = test_crate::Trait::method<Self, T, U>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
 fn test_crate::Trait::method<Self, T, U>()
 where
-    [@TraitClause0]: Trait<Self, T>,
-    [@TraitClause1]: Sized<U>,
+    TraitClause0: (Self: Trait<T>),
+    TraitClause1: (U: Sized),
 = <method_without_default_body>
 
-// Full name: test_crate::{impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::method
-fn {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::method<T, U>()
+// Full name: test_crate::{impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method
+fn {impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method<T, U>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
 {
     let _0: (); // return
 
@@ -76,22 +76,22 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}
-impl<T> Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]
+// Full name: test_crate::{impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
+impl<T> Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}
-    parent_clause1 = {built_in impl Sized for Option<T>[@TraitClause0]}
-    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::method<T, U>[@TraitClause0, @TraitClause0_1]
+    proof ImpliedClause0: (alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]: MetaSized) = {built_in impl MetaSized for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
+    proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
+    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method<T, U>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<T> for [T]}::method
 fn {impl Trait<T> for [T]}::method<T, U>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
 {
     let _0: (); // return
 
@@ -103,19 +103,19 @@ where
 // Full name: test_crate::{impl Trait<T> for [T]}
 impl<T> Trait<T> for [T]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for [T]}
-    parent_clause1 = @TraitClause0
-    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for [T]}::method<T, U>[@TraitClause0, @TraitClause0_1]
+    proof ImpliedClause0: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<T> for [T]}::method<T, U>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<T> for &'_0 [T]}::method
 fn {impl Trait<T> for &'_0 [T]}::method<'_0, T, U>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
 {
     let _0: (); // return
 
@@ -127,28 +127,28 @@ where
 // Full name: test_crate::{impl Trait<T> for &'_0 [T]}
 impl<'_0, T> Trait<T> for &'_0 [T]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for &'_ [T]}
-    parent_clause1 = @TraitClause0
-    fn method<U, [@TraitClause0_1]: Sized<U>> = {impl Trait<T> for &'_0 [T]}::method<'_0, T, U>[@TraitClause0, @TraitClause0_1]
+    proof ImpliedClause0: (&'_ [T]: MetaSized) = {built_in impl MetaSized for &'_ [T]}
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<T> for &'_0 [T]}::method<'_0, T, U>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Generic
 struct Generic<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   value: T,
 }
 
-// Full name: test_crate::{Generic<T>[@TraitClause0]}::new
-fn new<T>(value_1: T) -> Generic<T>[@TraitClause0]
+// Full name: test_crate::{Generic<T>[TraitClause0]}::new
+fn new<T>(value_1: T) -> Generic<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    let _0: Generic<T>[@TraitClause0]; // return
+    let _0: Generic<T>[TraitClause0]; // return
     let value_1: T; // arg #1
     let _2: T; // anonymous local
 
@@ -161,13 +161,13 @@ where
     return
 }
 
-// Full name: test_crate::{Generic<T>[@TraitClause0]}::get
-fn get<'_0, T>(self_1: &'_0 Generic<T>[@TraitClause0]) -> &'_0 T
+// Full name: test_crate::{Generic<T>[TraitClause0]}::get
+fn get<'_0, T>(self_1: &'_0 Generic<T>[TraitClause0]) -> &'_0 T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: &'1 T; // return
-    let self_1: &'3 Generic<T>[@TraitClause0]; // arg #1
+    let self_1: &'3 Generic<T>[TraitClause0]; // arg #1
     let _2: &'4 T; // anonymous local
 
     storage_live(_2)

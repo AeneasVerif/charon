@@ -18,7 +18,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -67,8 +67,8 @@ opaque type core::ops::drop::Drop::{vtable}
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Destruct<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Destruct)
     vtable: core::ops::drop::Drop::{vtable}
 }
 
@@ -193,8 +193,8 @@ unsafe fn {impl Destruct for Point}::drop_in_place(_1: *mut Point)
 
 // Full name: test_crate::{impl Drop for Point}
 impl Drop for Point {
-    parent_clause0 = {built_in impl MetaSized for Point}
-    parent_clause1 = {impl Destruct for Point}
+    proof ImpliedClause0: (Point: MetaSized) = {built_in impl MetaSized for Point}
+    proof ImpliedClause1: (Point: Destruct) = {impl Destruct for Point}
     vtable: {impl Drop for Point}::{vtable}
 }
 

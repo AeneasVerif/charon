@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("Default")]
 pub trait Default<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn default = core::default::Default::default<Self>[Self]
     non-dyn-compatible
 }
@@ -24,7 +24,7 @@ pub trait Default<Self>
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 where
-    [@TraitClause0]: Default<Self>,
+    TraitClause0: (Self: Default),
 = <opaque>
 
 // Full name: core::default::{impl Default for bool}::default
@@ -33,7 +33,7 @@ pub fn {impl Default for bool}::default() -> bool
 
 // Full name: core::default::{impl Default for bool}
 impl Default for bool {
-    parent_clause0 = {built_in impl Sized for bool}
+    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
     fn default = {impl Default for bool}::default
     non-dyn-compatible
 }
@@ -57,8 +57,8 @@ pub unsafe fn new<'a, const N : usize, const M : usize>(_1: &'a [u8; N], _2: &'a
 #[lang_item("Result")]
 pub enum Result<T, E>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
 {
   Ok(T),
   Err(E),
@@ -74,7 +74,7 @@ pub trait Debug<Self>
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
-    [@TraitClause0]: Debug<Self>,
+    TraitClause0: (Self: Debug),
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}::fmt
@@ -90,8 +90,8 @@ impl Debug for bool {
 // Full name: core::fmt::rt::{Argument<'_0>}::new_debug
 pub fn new_debug<'_0, '_1, T>(_1: &'_1 T) -> Argument<'_1>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Debug<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Debug),
 = <opaque>
 
 // Full name: core::marker::Destruct
@@ -113,42 +113,42 @@ pub fn _print<'_0>(_1: Arguments<'_0>)
 // Full name: test_crate::Left
 trait Left<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
     vtable: test_crate::Left::{vtable}<T>
 }
 
 // Full name: test_crate::Right
 trait Right<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
     vtable: test_crate::Right::{vtable}<T>
 }
 
 // Full name: test_crate::Join
 trait Join<Self, U>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<U>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (U: Sized)
     fn test = test_crate::Join::test<Self, U>[Self]
     non-dyn-compatible
 }
 
 fn test_crate::Join::test<Self, U>()
 where
-    [@TraitClause0]: Join<Self, U>,
+    TraitClause0: (Self: Join<U>),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Join<U> for T}::test
 fn {impl Join<U> for T}::test<T, U>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: Left<T, U>,
-    [@TraitClause3]: Right<T, U>,
-    [@TraitClause4]: Default<U>,
-    [@TraitClause5]: Debug<U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (T: Left<U>),
+    TraitClause3: (T: Right<U>),
+    TraitClause4: (U: Default),
+    TraitClause5: (U: Debug),
 {
     let _0: (); // return
     let _1: (); // anonymous local
@@ -172,7 +172,7 @@ where
     storage_live(args_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = @TraitClause4::default()
+    _5 = TraitClause4::default()
     _4 = &_5
     args_3 = (move _4,)
     storage_dead(_4)
@@ -180,7 +180,7 @@ where
     storage_live(_7)
     storage_live(_8)
     _8 = &(*args_3.0)
-    _7 = new_debug<'21, '23, U>[@TraitClause1, @TraitClause5](move _8)
+    _7 = new_debug<'21, '23, U>[TraitClause1, TraitClause5](move _8)
     storage_dead(_8)
     args_6 = [move _7]
     storage_dead(_7)
@@ -215,58 +215,58 @@ where
 // Full name: test_crate::{impl Join<U> for T}
 impl<T, U> Join<U> for T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: Left<T, U>,
-    [@TraitClause3]: Right<T, U>,
-    [@TraitClause4]: Default<U>,
-    [@TraitClause5]: Debug<U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (T: Left<U>),
+    TraitClause3: (T: Right<U>),
+    TraitClause4: (U: Default),
+    TraitClause5: (U: Debug),
 {
-    parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = @TraitClause1
-    fn test = {impl Join<U> for T}::test<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5]
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: (U: Sized) = TraitClause1
+    fn test = {impl Join<U> for T}::test<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Left<U> for T}
 impl<T, U> Left<U> for T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: Default<U>,
-    [@TraitClause3]: Debug<U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (U: Default),
+    TraitClause3: (U: Debug),
 {
-    parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = @TraitClause1
-    vtable: {impl Left<U> for T}::{vtable}<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: (U: Sized) = TraitClause1
+    vtable: {impl Left<U> for T}::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
 }
 
 // Full name: test_crate::{impl Right<U> for T}
 impl<T, U> Right<U> for T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: Default<U>,
-    [@TraitClause3]: Debug<U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (U: Default),
+    TraitClause3: (U: Debug),
 {
-    parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = @TraitClause1
-    vtable: {impl Right<U> for T}::{vtable}<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: (U: Sized) = TraitClause1
+    vtable: {impl Right<U> for T}::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
 }
 
 // Full name: test_crate::try_it
 fn try_it<T>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Default<T>,
-    [@TraitClause2]: Debug<T>,
-    [@TraitClause3]: Left<T, bool>,
-    [@TraitClause4]: Right<T, ()>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Default),
+    TraitClause2: (T: Debug),
+    TraitClause3: (T: Left<bool>),
+    TraitClause4: (T: Right<()>),
 {
     let _0: (); // return
 
     _0 = ()
-    _0 = {impl Join<U> for T}::test<T, bool>[@TraitClause0, {built_in impl Sized for bool}, @TraitClause3, {impl Right<U> for T}<T, bool>[@TraitClause0, {built_in impl Sized for bool}, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
+    _0 = {impl Join<U> for T}::test<T, bool>[TraitClause0, {built_in impl Sized for bool}, TraitClause3, {impl Right<U> for T}<T, bool>[TraitClause0, {built_in impl Sized for bool}, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
     return
 }
 

@@ -11,20 +11,20 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl SizedTypeProperties for ()}
 impl SizedTypeProperties for () {
-    parent_clause0 = {built_in impl Sized for ()}
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     non-dyn-compatible
 }
 

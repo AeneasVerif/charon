@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,19 +16,19 @@ pub trait Sized<Self>
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
 }
 
-// Full name: core::option::{Option<T>[@TraitClause0]}::is_some
-pub fn is_some<'_0, T>(self_1: &'_0 Option<T>[@TraitClause0]) -> bool
+// Full name: core::option::{Option<T>[TraitClause0]}::is_some
+pub fn is_some<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: bool; // return
-    let self_1: &'1 Option<T>[@TraitClause0]; // arg #1
+    let self_1: &'1 Option<T>[TraitClause0]; // arg #1
     let _2: isize; // anonymous local
 
     storage_live(_2)

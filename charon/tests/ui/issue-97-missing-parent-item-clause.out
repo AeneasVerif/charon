@@ -8,33 +8,33 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Ord
 pub trait Ord<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::Ord::{vtable}
 }
 
 // Full name: test_crate::AVLTree
 pub struct AVLTree<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   x: T,
 }
 
-// Full name: test_crate::{AVLTree<T>[@TraitClause0]}::insert
-pub fn insert<'_0, T>(self_1: &'_0 mut AVLTree<T>[@TraitClause0])
+// Full name: test_crate::{AVLTree<T>[TraitClause0]}::insert
+pub fn insert<'_0, T>(self_1: &'_0 mut AVLTree<T>[TraitClause0])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Ord<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Ord),
 {
     let _0: (); // return
-    let self_1: &'1 mut AVLTree<T>[@TraitClause0]; // arg #1
+    let self_1: &'1 mut AVLTree<T>[TraitClause0]; // arg #1
 
     _0 = ()
     panic(core::panicking::panic)
@@ -42,7 +42,7 @@ where
 
 // Full name: test_crate::{impl Ord for u32}
 impl Ord for u32 {
-    parent_clause0 = {built_in impl MetaSized for u32}
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
     vtable: {impl Ord for u32}::{vtable}
 }
 

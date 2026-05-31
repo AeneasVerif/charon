@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -27,32 +27,32 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref
-pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]) -> &'_0 T
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref
+pub fn {impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[TraitClause0, TraitClause1]) -> &'_0 T
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut
-pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]) -> &'_0 mut T
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref_mut
+pub fn {impl DerefMut for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref_mut<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, TraitClause1]) -> &'_0 mut T
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
 // Full name: test_crate::Pair
 pub struct Pair<T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
 {
   x: T1,
   y: T2,
@@ -61,31 +61,31 @@ where
 // Full name: test_crate::List
 pub enum List<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]),
+  Cons(T, alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]),
   Nil,
 }
 
-// Full name: test_crate::List::{impl Destruct for List<T>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>(_1: *mut List<T>[@TraitClause0])
+// Full name: test_crate::List::{impl Destruct for List<T>[TraitClause0]}::drop_in_place
+unsafe fn {impl Destruct for List<T>[TraitClause0]}::drop_in_place<T>(_1: *mut List<T>[TraitClause0])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <missing>
 
-// Full name: test_crate::List::{impl Destruct for List<T>[@TraitClause0]}
-impl<T> Destruct for List<T>[@TraitClause0]
+// Full name: test_crate::List::{impl Destruct for List<T>[TraitClause0]}
+impl<T> Destruct for List<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    fn drop_in_place = {impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
+    fn drop_in_place = {impl Destruct for List<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]
     non-dyn-compatible
 }
 
 // Full name: test_crate::One
 pub enum One<T1>
 where
-    [@TraitClause0]: Sized<T1>,
+    TraitClause0: (T1: Sized),
 {
   One(T1),
 }
@@ -107,8 +107,8 @@ pub struct EmptyStruct {}
 // Full name: test_crate::Sum
 pub enum Sum<T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
 {
   Left(T1),
   Right(T2),
@@ -117,8 +117,8 @@ where
 // Full name: test_crate::Tuple
 pub struct Tuple<T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
 {
   T1,
   T2,
@@ -177,45 +177,45 @@ pub fn create_pair(x_1: u32, y_2: u64) -> Pair<u32, u64>[{built_in impl Sized fo
 // Full name: test_crate::IdType
 pub struct IdType<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   T,
 }
 
-// Full name: test_crate::IdType::{impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place<T>(_1: *mut IdType<T>[@TraitClause0])
+// Full name: test_crate::IdType::{impl Destruct for IdType<T>[TraitClause0]}::drop_in_place
+unsafe fn {impl Destruct for IdType<T>[TraitClause0]}::drop_in_place<T>(_1: *mut IdType<T>[TraitClause0])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <missing>
 
-// Full name: test_crate::IdType::{impl Destruct for IdType<T>[@TraitClause0]}
-impl<T> Destruct for IdType<T>[@TraitClause0]
+// Full name: test_crate::IdType::{impl Destruct for IdType<T>[TraitClause0]}
+impl<T> Destruct for IdType<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    fn drop_in_place = {impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]
+    fn drop_in_place = {impl Destruct for IdType<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]
     non-dyn-compatible
 }
 
 // Full name: test_crate::use_id_type
-pub fn use_id_type<T>(x_1: IdType<T>[@TraitClause0]) -> T
+pub fn use_id_type<T>(x_1: IdType<T>[TraitClause0]) -> T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: T; // return
-    let x_1: IdType<T>[@TraitClause0]; // arg #1
+    let x_1: IdType<T>[TraitClause0]; // arg #1
 
     _0 = move (x_1).0
-    conditional_drop[{impl Destruct for IdType<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]] x_1
+    conditional_drop[{impl Destruct for IdType<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] x_1
     return
 }
 
 // Full name: test_crate::create_id_type
-pub fn create_id_type<T>(x_1: T) -> IdType<T>[@TraitClause0]
+pub fn create_id_type<T>(x_1: T) -> IdType<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    let _0: IdType<T>[@TraitClause0]; // return
+    let _0: IdType<T>[TraitClause0]; // return
     let x_1: T; // arg #1
     let _2: T; // anonymous local
 
@@ -376,10 +376,10 @@ pub fn test_list1()
     _2 = @BoxNew<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move _3)
     storage_dead(_3)
     l_1 = List::Cons { 0: const 0 : i32, 1: move _2 }
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<List<i32>[{built_in impl Sized for i32}], Global>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]] _2
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<List<i32>[{built_in impl Sized for i32}], Global>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{impl Destruct for List<T>[@TraitClause0]}::drop_in_place<i32>[{built_in impl Sized for i32}]] l_1
+    conditional_drop[{impl Destruct for List<T>[TraitClause0]}::drop_in_place<i32>[{built_in impl Sized for i32}]] l_1
     storage_dead(l_1)
     return
 }
@@ -402,13 +402,13 @@ pub fn test_box1()
     storage_live(x_2)
     storage_live(_3)
     _3 = &two-phase-mut b_1
-    x_2 = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref_mut<'9, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
+    x_2 = {impl DerefMut for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref_mut<'9, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
     storage_dead(_3)
     (*x_2) = const 1 : i32
     storage_live(x_4)
     storage_live(_5)
     _5 = &b_1
-    x_4 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::deref<'11, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
+    x_4 = {impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref<'11, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
@@ -424,7 +424,7 @@ pub fn test_box1()
     _0 = ()
     storage_dead(x_4)
     storage_dead(x_2)
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b_1
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b_1
     storage_dead(b_1)
     return
 }
@@ -456,12 +456,12 @@ pub fn test_unreachable(b_1: bool)
 }
 
 // Full name: test_crate::is_cons
-pub fn is_cons<'_0, T>(l_1: &'_0 List<T>[@TraitClause0]) -> bool
+pub fn is_cons<'_0, T>(l_1: &'_0 List<T>[TraitClause0]) -> bool
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: bool; // return
-    let l_1: &'1 List<T>[@TraitClause0]; // arg #1
+    let l_1: &'1 List<T>[TraitClause0]; // arg #1
 
     match (*l_1) {
         List::Cons => {
@@ -476,16 +476,16 @@ where
 }
 
 // Full name: test_crate::split_list
-pub fn split_list<T>(l_1: List<T>[@TraitClause0]) -> (T, List<T>[@TraitClause0])
+pub fn split_list<T>(l_1: List<T>[TraitClause0]) -> (T, List<T>[TraitClause0])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    let _0: (T, List<T>[@TraitClause0]); // return
-    let l_1: List<T>[@TraitClause0]; // arg #1
+    let _0: (T, List<T>[TraitClause0]); // return
+    let l_1: List<T>[TraitClause0]; // arg #1
     let hd_2: T; // local
-    let tl_3: alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let tl_3: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _4: T; // anonymous local
-    let _5: List<T>[@TraitClause0]; // anonymous local
+    let _5: List<T>[TraitClause0]; // anonymous local
 
     match l_1 {
         List::Cons => {
@@ -503,15 +503,15 @@ where
     storage_live(_5)
     _5 = move (*tl_3)
     _0 = (move _4, move _5)
-    conditional_drop[{impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]] _5
+    conditional_drop[{impl Destruct for List<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] _5
     storage_dead(_5)
     conditional_drop[{built_in impl Destruct for T}::drop_in_place] _4
     storage_dead(_4)
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<List<T>[@TraitClause0], Global>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]] tl_3
+    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl_3
     storage_dead(tl_3)
     conditional_drop[{built_in impl Destruct for T}::drop_in_place] hd_2
     storage_dead(hd_2)
-    conditional_drop[{impl Destruct for List<T>[@TraitClause0]}::drop_in_place<T>[@TraitClause0]] l_1
+    conditional_drop[{impl Destruct for List<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] l_1
     return
 }
 
@@ -527,18 +527,18 @@ pub fn test_char() -> char
 // Full name: test_crate::Tree
 pub enum Tree<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   Leaf(T),
-  Node(T, NodeElem<T>[@TraitClause0], alloc::boxed::Box<Tree<T>[@TraitClause0]>[{built_in impl MetaSized for Tree<T>[@TraitClause0]}, {built_in impl Sized for Global}]),
+  Node(T, NodeElem<T>[TraitClause0], alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}]),
 }
 
 // Full name: test_crate::NodeElem
 pub enum NodeElem<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-  Cons(alloc::boxed::Box<Tree<T>[@TraitClause0]>[{built_in impl MetaSized for Tree<T>[@TraitClause0]}, {built_in impl Sized for Global}], alloc::boxed::Box<NodeElem<T>[@TraitClause0]>[{built_in impl MetaSized for NodeElem<T>[@TraitClause0]}, {built_in impl Sized for Global}]),
+  Cons(alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}], alloc::boxed::Box<NodeElem<T>[TraitClause0]>[{built_in impl MetaSized for NodeElem<T>[TraitClause0]}, {built_in impl Sized for Global}]),
   Nil,
 }
 
@@ -643,8 +643,8 @@ pub fn test_even_odd()
 // Full name: test_crate::StructWithTuple
 pub struct StructWithTuple<T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
 {
   p: (T1, T2),
 }
@@ -691,10 +691,10 @@ pub fn new_tuple3() -> StructWithTuple<u64, i64>[{built_in impl Sized for u64}, 
 // Full name: test_crate::StructWithPair
 pub struct StructWithPair<T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
 {
-  p: Pair<T1, T2>[@TraitClause0, @TraitClause1],
+  p: Pair<T1, T2>[TraitClause0, TraitClause1],
 }
 
 // Full name: test_crate::new_pair1

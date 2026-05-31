@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,30 +16,30 @@ pub trait Sized<Self>
 #[lang_item("mem_size_of")]
 pub fn size_of<T>() -> usize
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: closure_inside_inline_const::foo::{const}::closure
 struct closure<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {}
 
 // Full name: closure_inside_inline_const::foo
 pub fn foo<T>() -> usize
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: usize; // return
     let _1: usize; // anonymous local
     let _2: usize; // anonymous local
-    let _f_3: closure<T>[@TraitClause0]; // local
+    let _f_3: closure<T>[TraitClause0]; // local
 
     storage_live(_1)
     storage_live(_2)
     storage_live(_f_3)
     _f_3 = closure {  }
-    _2 = size_of<T>[@TraitClause0]()
+    _2 = size_of<T>[TraitClause0]()
     storage_dead(_f_3)
     _1 = move _2
     _0 = move _1
@@ -49,14 +49,14 @@ where
 // Full name: test_crate::bar
 fn bar<T>()
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let _1: usize; // anonymous local
 
     _0 = ()
     storage_live(_1)
-    _1 = foo<T>[@TraitClause0]()
+    _1 = foo<T>[TraitClause0]()
     storage_dead(_1)
     _0 = ()
     return

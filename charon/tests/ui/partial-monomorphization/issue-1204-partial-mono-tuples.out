@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -18,7 +18,7 @@ pub trait core::marker::MetaSized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 #[lang_item("sized")]
 pub trait core::marker::Sized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<(&_ mut _, &_ mut _)><'_0, '_1, T1>)
     non-dyn-compatible
 }
 
@@ -47,7 +47,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<(&_ mut _, &_ mut _)><'_0, '_1
 // Full name: test_crate::id
 fn id<T>(x_1: T) -> T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: T; // return
     let x_1: T; // arg #1
@@ -59,7 +59,7 @@ where
 
 fn test_crate::id::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>(x_1: (&'_0 mut T0, &'_1 mut T1)) -> (&'_0 mut T0, &'_1 mut T1)
 where
-    [@TraitClause0]: core::marker::Sized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>,
+    TraitClause0: (T0: core::marker::Sized::<(&_ mut _, &_ mut _)><'_0, '_1, T1>),
 {
     let _0: (&'_0 mut T0, &'_1 mut T1); // return
     let x_1: (&'_0 mut T0, &'_1 mut T1); // arg #1
@@ -72,8 +72,8 @@ where
 // Full name: test_crate::call_id_pair_mut
 fn call_id_pair_mut<'a, T, U>(x_1: (&'a mut T, &'a mut U)) -> (&'a mut T, &'a mut U)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
 {
     let _0: (&'4 mut T, &'5 mut U); // return
     let x_1: (&'6 mut T, &'7 mut U); // arg #1

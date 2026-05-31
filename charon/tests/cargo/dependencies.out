@@ -12,7 +12,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -20,7 +20,7 @@ pub trait Sized<Self>
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -28,25 +28,25 @@ pub trait Tuple<Self>
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
+pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    TraitClause0: (Self: FnOnce<Args>),
 = <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -62,10 +62,10 @@ pub enum AssertKind {
 // Full name: take_mut::take
 pub fn take<'_0, T, F>(_1: &'_0 mut T, _2: F)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: FnOnce<F, (T,)>,
-    @TraitClause2::Output = T,
+    TraitClause0: (T: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (F: FnOnce<(T,)>),
+    TypeConstraint0: TraitClause2::Output = T,
 = <opaque>
 
 // Full name: test_cargo_dependencies::main::silly_incr::closure
@@ -95,10 +95,10 @@ fn {impl FnOnce<(u32,)> for closure}::call_once(_1: closure, tupled_args_2: (u32
 
 // Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}
 impl FnOnce<(u32,)> for closure {
-    parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {built_in impl Sized for (u32,)}
-    parent_clause2 = {built_in impl Tuple for (u32,)}
-    parent_clause3 = {built_in impl Sized for u32}
+    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
+    proof ImpliedClause1: ((u32,): Sized) = {built_in impl Sized for (u32,)}
+    proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
+    proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     type Output = u32
     fn call_once = {impl FnOnce<(u32,)> for closure}::call_once
     non-dyn-compatible

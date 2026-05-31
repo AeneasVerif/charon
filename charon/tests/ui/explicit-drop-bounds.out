@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -40,68 +40,68 @@ impl Destruct for String {
 // Full name: test_crate::Trait
 trait Trait<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: Destruct<Self>
-    parent_clause3 : [@TraitClause3]: Destruct<T>
-    parent_clause4 : [@TraitClause4]: Sized<Self::Type>
-    parent_clause5 : [@TraitClause5]: Destruct<Self::Type>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    proof ImpliedClause2: (Self: Destruct)
+    proof ImpliedClause3: (T: Destruct)
+    proof ImpliedClause4: (Self::Type: Sized)
+    proof ImpliedClause5: (Self::Type: Destruct)
     type Type
-    fn foo<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: Destruct<U>> = test_crate::Trait::foo<Self, T, U>[Self, @TraitClause0_1, @TraitClause1_1]
+    fn foo<U, TraitClause0_1: (U: Sized), TraitClause1_1: (U: Destruct)> = test_crate::Trait::foo<Self, T, U>[Self, TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
 fn test_crate::Trait::foo<Self, T, U>(x_1: U)
 where
-    [@TraitClause0]: Trait<Self, T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: Destruct<U>,
+    TraitClause0: (Self: Trait<T>),
+    TraitClause1: (U: Sized),
+    TraitClause2: (U: Destruct),
 {
     let _0: (); // return
     let x_1: U; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[@TraitClause2::drop_in_place] x_1
+    drop[TraitClause2::drop_in_place] x_1
     return
 }
 
 // Full name: test_crate::{impl Trait<u32> for ()}::foo
 fn {impl Trait<u32> for ()}::foo<U>(x_1: U)
 where
-    [@TraitClause0]: Sized<U>,
-    [@TraitClause1]: Destruct<U>,
+    TraitClause0: (U: Sized),
+    TraitClause1: (U: Destruct),
 {
     let _0: (); // return
     let x_1: U; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[@TraitClause1::drop_in_place] x_1
+    drop[TraitClause1::drop_in_place] x_1
     return
 }
 
 // Full name: test_crate::{impl Trait<u32> for ()}
 impl Trait<u32> for () {
-    parent_clause0 = {built_in impl MetaSized for ()}
-    parent_clause1 = {built_in impl Sized for u32}
-    parent_clause2 = {built_in impl Destruct for ()}
-    parent_clause3 = {built_in impl Destruct for u32}
-    parent_clause4 = {built_in impl Sized for String}
-    parent_clause5 = {impl Destruct for String}
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
+    proof ImpliedClause2: ((): Destruct) = {built_in impl Destruct for ()}
+    proof ImpliedClause3: (u32: Destruct) = {built_in impl Destruct for u32}
+    proof ImpliedClause4: (String: Sized) = {built_in impl Sized for String}
+    proof ImpliedClause5: (String: Destruct) = {impl Destruct for String}
     type Type = String
-    fn foo<U, [@TraitClause0_1]: Sized<U>, [@TraitClause1_1]: Destruct<U>> = {impl Trait<u32> for ()}::foo<U>[@TraitClause0_1, @TraitClause1_1]
+    fn foo<U, TraitClause0_1: (U: Sized), TraitClause1_1: (U: Destruct)> = {impl Trait<u32> for ()}::foo<U>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::use_trait
 fn use_trait<T, X>(_x_1: T, _y_2: X)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<X>,
-    [@TraitClause2]: Trait<X, T>,
-    [@TraitClause3]: Destruct<T>,
-    [@TraitClause4]: Destruct<X>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (X: Sized),
+    TraitClause2: (X: Trait<T>),
+    TraitClause3: (T: Destruct),
+    TraitClause4: (X: Destruct),
 {
     let _0: (); // return
     let _x_1: T; // arg #1
@@ -109,8 +109,8 @@ where
 
     _0 = ()
     _0 = ()
-    drop[@TraitClause4::drop_in_place] _y_2
-    drop[@TraitClause3::drop_in_place] _x_1
+    drop[TraitClause4::drop_in_place] _y_2
+    drop[TraitClause3::drop_in_place] _x_1
     return
 }
 

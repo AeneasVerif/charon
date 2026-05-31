@@ -8,14 +8,14 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Hasher
 pub trait Hasher<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::Hasher::{vtable}
 }
 
@@ -24,30 +24,30 @@ pub struct DefaultHasher {}
 
 // Full name: test_crate::{impl Hasher for DefaultHasher}
 impl Hasher for DefaultHasher {
-    parent_clause0 = {built_in impl MetaSized for DefaultHasher}
+    proof ImpliedClause0: (DefaultHasher: MetaSized) = {built_in impl MetaSized for DefaultHasher}
     vtable: {impl Hasher for DefaultHasher}::{vtable}
 }
 
 // Full name: test_crate::Hash
 pub trait Hash<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = test_crate::Hash::hash<'_0_1, '_1_1, Self, H>[Self, @TraitClause0_1, @TraitClause1_1]
+    proof ImpliedClause0: (Self: MetaSized)
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)> = test_crate::Hash::hash<'_0_1, '_1_1, Self, H>[Self, TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
 pub fn test_crate::Hash::hash<'_0, '_1, Self, H>(_1: &'_0 Self, _2: &'_1 mut H)
 where
-    [@TraitClause0]: Hash<Self>,
-    [@TraitClause1]: Sized<H>,
-    [@TraitClause2]: Hasher<H>,
+    TraitClause0: (Self: Hash),
+    TraitClause1: (H: Sized),
+    TraitClause2: (H: Hasher),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Hash for u32}::hash
 pub fn {impl Hash for u32}::hash<'_0, '_1, H>(self_1: &'_0 u32, _state_2: &'_1 mut H)
 where
-    [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: Hasher<H>,
+    TraitClause0: (H: Sized),
+    TraitClause1: (H: Hasher),
 {
     let _0: (); // return
     let self_1: &'1 u32; // arg #1
@@ -60,8 +60,8 @@ where
 
 // Full name: test_crate::{impl Hash for u32}
 impl Hash for u32 {
-    parent_clause0 = {built_in impl MetaSized for u32}
-    fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = {impl Hash for u32}::hash<'_0_1, '_1_1, H>[@TraitClause0_1, @TraitClause1_1]
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)> = {impl Hash for u32}::hash<'_0_1, '_1_1, H>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 

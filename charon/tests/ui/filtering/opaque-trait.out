@@ -8,14 +8,14 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     const CONST1 : usize
     const CONST2 : usize
     const CONST3 : usize
@@ -26,7 +26,7 @@ trait Trait<Self>
 
 fn test_crate::Trait::CONST1<Self>() -> usize
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
 {
     let _0: usize; // return
 
@@ -36,12 +36,12 @@ where
 
 const test_crate::Trait::CONST1<Self>: usize
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
  = test_crate::Trait::CONST1()
 
 fn test_crate::Trait::CONST2<Self>() -> usize
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
 {
     let _0: usize; // return
 
@@ -51,12 +51,12 @@ where
 
 const test_crate::Trait::CONST2<Self>: usize
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
  = test_crate::Trait::CONST2()
 
 fn test_crate::Trait::CONST3<Self>() -> usize
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
 {
     let _0: usize; // return
 
@@ -66,12 +66,12 @@ where
 
 const test_crate::Trait::CONST3<Self>: usize
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
  = test_crate::Trait::CONST3()
 
 fn test_crate::Trait::method1<Self>()
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
 {
     let _0: (); // return
 
@@ -82,7 +82,7 @@ where
 
 fn test_crate::Trait::method2<Self>()
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
 {
     let _0: (); // return
 
@@ -149,7 +149,7 @@ const {impl Trait for ()}::CONST1: usize = {impl Trait for ()}::CONST1()
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = {built_in impl MetaSized for ()}
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     const CONST1 = {impl Trait for ()}::CONST1
     const CONST2 = {impl Trait for ()}::CONST2
     const CONST3 = {impl Trait for ()}::CONST3
@@ -192,7 +192,7 @@ fn {impl Trait for u8}::method1()
 
 // Full name: test_crate::{impl Trait for u8}
 impl Trait for u8 {
-    parent_clause0 = {built_in impl MetaSized for u8}
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
     const CONST1 = test_crate::Trait::CONST1<u8>[{impl Trait for u8}]
     const CONST2 = {impl Trait for u8}::CONST2
     const CONST3 = test_crate::Trait::CONST3<u8>[{impl Trait for u8}]
@@ -204,8 +204,8 @@ impl Trait for u8 {
 // Full name: test_crate::use_method
 fn use_method<T>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Trait<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Trait),
 {
     let _0: (); // return
     let _1: (); // anonymous local
@@ -213,10 +213,10 @@ where
 
     _0 = ()
     storage_live(_1)
-    _1 = @TraitClause1::method1()
+    _1 = TraitClause1::method1()
     storage_dead(_1)
     storage_live(_2)
-    _2 = const @TraitClause1::CONST1
+    _2 = const TraitClause1::CONST1
     storage_dead(_2)
     _0 = ()
     return

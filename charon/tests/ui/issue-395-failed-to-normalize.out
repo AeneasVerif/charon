@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -26,8 +26,8 @@ where
 #[lang_item("iterator")]
 pub trait Iterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
     type Item
     fn next<'_0_1> = next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
@@ -35,16 +35,16 @@ pub trait Iterator<Self>
 
 // Full name: core::iter::traits::iterator::Iterator::next
 #[lang_item("next")]
-pub fn next<'_0, Self>(_1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+pub fn next<'_0, Self>(_1: &'_0 mut Self) -> Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]
 where
-    [@TraitClause0]: Iterator<Self>,
+    TraitClause0: (Self: Iterator),
 = <opaque>
 
 // Full name: test_crate::Trait
 pub trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::AssocType>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::AssocType: Sized)
     type AssocType
     vtable: test_crate::Trait::{vtable}<Self::AssocType>
 }
@@ -52,26 +52,26 @@ pub trait Trait<Self>
 // Full name: test_crate::Alias
 pub type Alias<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Trait<T>,
-    [@TraitClause2]: Trait<T>,
-    [@TraitClause3]: Sized<@TraitClause2::AssocType>, = Option<@TraitClause1::AssocType>[@TraitClause3]
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Trait),
+    TraitClause2: (T: Trait),
+    TraitClause3: (TraitClause2::AssocType: Sized), = Option<TraitClause1::AssocType>[TraitClause3]
 
 // Full name: test_crate::C
 pub trait C<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
     vtable: test_crate::C::{vtable}<T>
 }
 
 // Full name: test_crate::S
 pub struct S<I, F>
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Iterator<I>,
-    [@TraitClause3]: C<F, @TraitClause2::Item>,
+    TraitClause0: (I: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (I: Iterator),
+    TraitClause3: (F: C<TraitClause2::Item>),
 {
   I,
   F,
@@ -80,11 +80,11 @@ where
 // Full name: test_crate::S2
 pub type S2<I, F>
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Iterator<I>,
-    [@TraitClause3]: Iterator<I>,
-    [@TraitClause4]: C<F, @TraitClause3::Item>, = S<I, F>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause4]
+    TraitClause0: (I: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (I: Iterator),
+    TraitClause3: (I: Iterator),
+    TraitClause4: (F: C<TraitClause3::Item>), = S<I, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause4]
 
 
 

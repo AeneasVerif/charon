@@ -10,13 +10,13 @@ pub trait MetaSized<Self>
 // Full name: test_crate::Foo
 trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Foo for u64}
 impl Foo for u64 {
-    parent_clause0 = {built_in impl MetaSized for u64}
+    proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
     non-dyn-compatible
 }
 

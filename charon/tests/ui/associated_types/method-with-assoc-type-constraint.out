@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -27,32 +27,32 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 // Full name: test_crate::IntoIterator
 pub trait IntoIterator<Self, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Item>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Item: Sized)
     vtable: test_crate::IntoIterator::{vtable}<Self_Item>
 }
 
 // Full name: test_crate::FromIterator
 pub trait FromIterator<Self, A>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<A>
-    fn from_iter<T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: IntoIterator<T, A>> = test_crate::FromIterator::from_iter<Self, A, T>[Self, @TraitClause0_1, @TraitClause1_1]
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (A: Sized)
+    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator<A>)> = test_crate::FromIterator::from_iter<Self, A, T>[Self, TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
 pub fn test_crate::FromIterator::from_iter<Self, A, T>(_1: T) -> Self
 where
-    [@TraitClause0]: FromIterator<Self, A>,
-    [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: IntoIterator<T, A>,
+    TraitClause0: (Self: FromIterator<A>),
+    TraitClause1: (T: Sized),
+    TraitClause2: (T: IntoIterator<A>),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
 pub fn {impl FromIterator<()> for ()}::from_iter<I>(iter_1: I)
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I, ()>,
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: IntoIterator<()>),
 {
     let _0: (); // return
     let iter_1: I; // arg #1
@@ -65,9 +65,9 @@ where
 
 // Full name: test_crate::{impl FromIterator<()> for ()}
 impl FromIterator<()> for () {
-    parent_clause0 = {built_in impl Sized for ()}
-    parent_clause1 = {built_in impl Sized for ()}
-    fn from_iter<I, [@TraitClause0_1]: Sized<I>, [@TraitClause1_1]: IntoIterator<I, ()>> = {impl FromIterator<()> for ()}::from_iter<I>[@TraitClause0_1, @TraitClause1_1]
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    fn from_iter<I, TraitClause0_1: (I: Sized), TraitClause1_1: (I: IntoIterator<()>)> = {impl FromIterator<()> for ()}::from_iter<I>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 

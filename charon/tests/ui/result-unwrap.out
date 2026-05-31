@@ -42,7 +42,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -50,8 +50,8 @@ pub trait Sized<Self>
 #[lang_item("Result")]
 pub enum Result<T, E>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
 {
   Ok(T),
   Err(E),
@@ -74,7 +74,7 @@ pub trait Debug<Self>
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
-    [@TraitClause0]: Debug<Self>,
+    TraitClause0: (Self: Debug),
 = <method_without_default_body>
 
 // Full name: core::fmt::num::{impl LowerHex for u32}::fmt
@@ -144,14 +144,14 @@ impl Debug for u32 {
 fn unwrap_failed<'_0, '_1>(_1: &'_0 str, _2: &'_1 (dyn Debug + '_1)) -> !
 = <missing>
 
-pub fn core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(self_1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
+pub fn core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<T, E>(self_1: Result<T, E>[TraitClause0, TraitClause1]) -> T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-    [@TraitClause2]: Debug<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (E: Debug),
 {
     let t_0: T; // return
-    let self_1: Result<T, E>[@TraitClause0, @TraitClause1]; // arg #1
+    let self_1: Result<T, E>[TraitClause0, TraitClause1]; // arg #1
     let e_2: E; // local
     let _3: !; // anonymous local
     let _4: &'3 (dyn Debug + '4); // anonymous local
@@ -167,7 +167,7 @@ where
             e_2 = move (self_1 as variant Result::Err).0
             storage_live(_4)
             _5 = &e_2
-            _4 = unsize_cast<&'6 E, &'7 (dyn Debug + '8), &vtable_of(@TraitClause2)>(copy _5)
+            _4 = unsize_cast<&'6 E, &'7 (dyn Debug + '8), &vtable_of(TraitClause2)>(copy _5)
             _3 = unwrap_failed<'11, '12>(const "called `Result::unwrap()` on an `Err` value", move _4)
         },
     }
@@ -183,7 +183,7 @@ fn test_crate::unwrap(res_1: Result<u32, u32>[{built_in impl Sized for u32}, {bu
 
     storage_live(_2)
     _2 = copy res_1
-    _0 = core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl Debug for u32}](move _2)
+    _0 = core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl Debug for u32}](move _2)
     storage_dead(_2)
     return
 }

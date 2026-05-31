@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -28,7 +28,7 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -36,25 +36,25 @@ pub trait Tuple<Self>
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
+pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    TraitClause0: (Self: FnOnce<Args>),
 = <opaque>
 
 // Full name: test_crate::HasAssoc
 trait HasAssoc<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Output: Sized)
     type Output
     vtable: test_crate::HasAssoc::{vtable}<Self::Output>
 }
@@ -62,17 +62,17 @@ trait HasAssoc<Self>
 // Full name: test_crate::make_closure::closure
 struct closure<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasAssoc<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasAssoc),
 {}
 
 // Full name: test_crate::make_closure
-fn make_closure<T>(x_1: T) -> closure<T>[@TraitClause0, @TraitClause1]
+fn make_closure<T>(x_1: T) -> closure<T>[TraitClause0, TraitClause1]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasAssoc<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasAssoc),
 {
-    let _0: closure<T>[@TraitClause0, @TraitClause1]; // return
+    let _0: closure<T>[TraitClause0, TraitClause1]; // return
     let x_1: T; // arg #1
 
     _0 = closure {  }
@@ -80,14 +80,14 @@ where
     return
 }
 
-// Full name: test_crate::make_closure::{impl FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]}::call_once
-fn {impl FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>(_1: closure<T>[@TraitClause0, @TraitClause1], tupled_args_2: ())
+// Full name: test_crate::make_closure::{impl FnOnce<()> for closure<T>[TraitClause0, TraitClause1]}::call_once
+fn {impl FnOnce<()> for closure<T>[TraitClause0, TraitClause1]}::call_once<T>(_1: closure<T>[TraitClause0, TraitClause1], tupled_args_2: ())
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasAssoc<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasAssoc),
 {
     let _0: (); // return
-    let _1: closure<T>[@TraitClause0, @TraitClause1]; // arg #1
+    let _1: closure<T>[TraitClause0, TraitClause1]; // arg #1
     let tupled_args_2: (); // arg #2
 
     _0 = ()
@@ -95,18 +95,18 @@ where
     return
 }
 
-// Full name: test_crate::make_closure::{impl FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]}
-impl<T> FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]
+// Full name: test_crate::make_closure::{impl FnOnce<()> for closure<T>[TraitClause0, TraitClause1]}
+impl<T> FnOnce<()> for closure<T>[TraitClause0, TraitClause1]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasAssoc<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasAssoc),
 {
-    parent_clause0 = {built_in impl MetaSized for closure<T>[@TraitClause0, @TraitClause1]}
-    parent_clause1 = {built_in impl Sized for ()}
-    parent_clause2 = {built_in impl Tuple for ()}
-    parent_clause3 = {built_in impl Sized for ()}
+    proof ImpliedClause0: (closure<T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<T>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
+    proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
-    fn call_once = {impl FnOnce<()> for closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
+    fn call_once = {impl FnOnce<()> for closure<T>[TraitClause0, TraitClause1]}::call_once<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 

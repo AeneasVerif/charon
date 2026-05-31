@@ -8,23 +8,23 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Foo
 pub struct Foo<F>
 where
-    [@TraitClause0]: Sized<F>,
+    TraitClause0: (F: Sized),
 {
   F,
 }
 
-// Full name: test_crate::{Foo<F>[@TraitClause0]}::method
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method
 pub fn method<F, T>()
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<T>,
+    TraitClause0: (F: Sized),
+    TraitClause1: (T: Sized),
 {
     let _0: (); // return
     let _promoted_1: &'1 i32; // local

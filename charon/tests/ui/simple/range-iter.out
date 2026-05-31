@@ -11,7 +11,7 @@ pub trait Clone<Self>
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
@@ -35,7 +35,7 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    TraitClause0: (Self: PartialEq<Rhs>),
 = <opaque>
 
 // Full name: core::cmp::Ordering
@@ -57,7 +57,7 @@ pub enum Option<T> {
 #[lang_item("partial_ord")]
 pub trait PartialOrd<Self, Rhs>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
+    proof ImpliedClause0: (Self: PartialEq<Rhs>)
     fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
@@ -65,7 +65,7 @@ pub trait PartialOrd<Self, Rhs>
 #[lang_item("cmp_partialord_cmp")]
 pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> Option<Ordering>
 where
-    [@TraitClause0]: PartialOrd<Self, Rhs>,
+    TraitClause0: (Self: PartialOrd<Rhs>),
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
@@ -84,7 +84,7 @@ pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(_1: &'_0 usize,
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
 impl PartialOrd<usize> for usize {
-    parent_clause0 = {impl PartialEq<usize> for usize}
+    proof ImpliedClause0: (usize: PartialEq<usize>) = {impl PartialEq<usize> for usize}
     fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<usize> for usize}::{vtable}
 }
@@ -93,8 +93,8 @@ impl PartialOrd<usize> for usize {
 #[lang_item("range_step")]
 pub trait Step<Self>
 {
-    parent_clause0 : [@TraitClause0]: Clone<Self>
-    parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
+    proof ImpliedClause0: (Self: Clone)
+    proof ImpliedClause1: (Self: PartialOrd<Self>)
     fn steps_between<'_0_1, '_1_1> = core::iter::range::Step::steps_between<'_0_1, '_1_1, Self>[Self]
     fn forward_checked = core::iter::range::Step::forward_checked<Self>[Self]
     fn backward_checked = core::iter::range::Step::backward_checked<Self>[Self]
@@ -103,17 +103,17 @@ pub trait Step<Self>
 
 pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(_1: &'_0 Self, _2: &'_1 Self) -> (usize, Option<usize>)
 where
-    [@TraitClause0]: Step<Self>,
+    TraitClause0: (Self: Step),
 = <opaque>
 
 pub fn core::iter::range::Step::forward_checked<Self>(_1: Self, _2: usize) -> Option<Self>
 where
-    [@TraitClause0]: Step<Self>,
+    TraitClause0: (Self: Step),
 = <opaque>
 
 pub fn core::iter::range::Step::backward_checked<Self>(_1: Self, _2: usize) -> Option<Self>
 where
-    [@TraitClause0]: Step<Self>,
+    TraitClause0: (Self: Step),
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
@@ -130,8 +130,8 @@ pub fn {impl Step for usize}::steps_between<'_0, '_1>(_1: &'_0 usize, _2: &'_1 u
 
 // Full name: core::iter::range::{impl Step for usize}
 impl Step for usize {
-    parent_clause0 = {impl Clone for usize}
-    parent_clause1 = {impl PartialOrd<usize> for usize}
+    proof ImpliedClause0: (usize: Clone) = {impl Clone for usize}
+    proof ImpliedClause1: (usize: PartialOrd<usize>) = {impl PartialOrd<usize> for usize}
     fn steps_between<'_0_1, '_1_1> = {impl Step for usize}::steps_between<'_0_1, '_1_1>
     fn forward_checked = {impl Step for usize}::forward_checked
     fn backward_checked = {impl Step for usize}::backward_checked
@@ -156,28 +156,28 @@ pub trait Iterator<Self, Self_Item>
 // Full name: core::iter::range::{impl Iterator<A> for Range<A>}::next
 pub fn {impl Iterator<A> for Range<A>}::next<'_0, A>(_1: &'_0 mut Range<A>) -> Option<A>
 where
-    [@TraitClause0]: Step<A>,
+    TraitClause0: (A: Step),
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator<A> for Range<A>}
 impl<A> Iterator<A> for Range<A>
 where
-    [@TraitClause0]: Step<A>,
+    TraitClause0: (A: Step),
 {
-    fn next<'_0_1> = {impl Iterator<A> for Range<A>}::next<'_0_1, A>[@TraitClause0]
-    vtable: {impl Iterator<A> for Range<A>}::{vtable}<A>[@TraitClause0]
+    fn next<'_0_1> = {impl Iterator<A> for Range<A>}::next<'_0_1, A>[TraitClause0]
+    vtable: {impl Iterator<A> for Range<A>}::{vtable}<A>[TraitClause0]
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator<Clause0_Item, I> for I}::into_iter
 pub fn {impl IntoIterator<Clause0_Item, I> for I}::into_iter<I, Clause0_Item>(_1: I) -> I
 where
-    [@TraitClause0]: Iterator<I, Clause0_Item>,
+    TraitClause0: (I: Iterator<Clause0_Item>),
 = <opaque>
 
 #[lang_item("next")]
 pub fn core::iter::traits::iterator::Iterator::next<'_0, Self, Clause0_Item>(_1: &'_0 mut Self) -> Option<Clause0_Item>
 where
-    [@TraitClause0]: Iterator<Self, Clause0_Item>,
+    TraitClause0: (Self: Iterator<Clause0_Item>),
 = <opaque>
 
 // Full name: test_crate::iter

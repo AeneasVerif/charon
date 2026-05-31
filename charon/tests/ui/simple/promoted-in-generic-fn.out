@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,13 +16,13 @@ pub trait Sized<Self>
 #[lang_item("mem_size_of")]
 pub fn size_of<T>() -> usize
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: test_crate::f
 fn f<T>()
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let _1: &'1 usize; // anonymous local
@@ -35,7 +35,7 @@ where
     storage_live(_4)
     storage_live(_5)
     // This can't be evaluated generically.
-    _5 = size_of<T>[@TraitClause0]()
+    _5 = size_of<T>[TraitClause0]()
     _4 = &_5
     _3 = move _4
     storage_live(_2)

@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -28,21 +28,21 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 #[lang_item("const_ptr_cast")]
 pub fn cast<T, U>(_1: *const T) -> *const U
 where
-    [@TraitClause0]: Sized<U>,
+    TraitClause0: (U: Sized),
 = <opaque>
 
 // Full name: test_crate::Convert
 trait Convert<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (T: Sized)
     fn method = test_crate::Convert::method<Self, T>[Self]
     non-dyn-compatible
 }
 
 fn test_crate::Convert::method<Self, T>(_1: Self) -> T
 where
-    [@TraitClause0]: Convert<Self, T>,
+    TraitClause0: (Self: Convert<T>),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method
@@ -69,8 +69,8 @@ fn {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>(self_1: &'a u32) 
 
 // Full name: test_crate::{impl Convert<&'a [u8; 4 : usize]> for &'a u32}
 impl<'a> Convert<&'a [u8; 4 : usize]> for &'a u32 {
-    parent_clause0 = {built_in impl Sized for &'_ u32}
-    parent_clause1 = {built_in impl Sized for &'_ [u8; 4 : usize]}
+    proof ImpliedClause0: (&'_ u32: Sized) = {built_in impl Sized for &'_ u32}
+    proof ImpliedClause1: (&'_ [u8; 4 : usize]: Sized) = {built_in impl Sized for &'_ [u8; 4 : usize]}
     fn method = {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>
     non-dyn-compatible
 }
@@ -78,9 +78,9 @@ impl<'a> Convert<&'a [u8; 4 : usize]> for &'a u32 {
 // Full name: test_crate::convert
 fn convert<T, U>(x_1: T) -> U
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: Convert<T, U>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (T: Convert<U>),
 {
     let _0: U; // return
     let x_1: T; // arg #1
@@ -88,7 +88,7 @@ where
 
     storage_live(_2)
     _2 = move x_1
-    _0 = @TraitClause2::method(move _2)
+    _0 = TraitClause2::method(move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
     return

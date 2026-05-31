@@ -8,22 +8,22 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
 trait Trait<Self, Self_Type>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Type>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Type: Sized)
     vtable: test_crate::Trait::{vtable}<Self_Type>
 }
 
 // Full name: test_crate::{impl Trait<bool> for u32}
 impl Trait<bool> for u32 {
-    parent_clause0 = {built_in impl MetaSized for u32}
-    parent_clause1 = {built_in impl Sized for bool}
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (bool: Sized) = {built_in impl Sized for bool}
     vtable: {impl Trait<bool> for u32}::{vtable}
 }
 

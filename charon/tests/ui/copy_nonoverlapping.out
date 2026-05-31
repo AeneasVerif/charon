@@ -24,7 +24,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -32,16 +32,16 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<Self>> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, @TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <method_without_default_body>
 
 // Full name: core::marker::Destruct::drop_in_place
@@ -50,8 +50,8 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self_1: &'_0 mut Self, source_2: &'_1 Self)
 where
-    [@TraitClause0]: Clone<Self>,
-    [@TraitClause1]: Destruct<Self>,
+    TraitClause0: (Self: Clone),
+    TraitClause1: (Self: Destruct),
 {
     let _0: (); // return
     let self_1: &'1 mut Self; // arg #1
@@ -60,8 +60,8 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = @TraitClause0::clone<'5>(move source_2)
-    drop[@TraitClause1::drop_in_place] (*self_1)
+    _3 = TraitClause0::clone<'5>(move source_2)
+    drop[TraitClause1::drop_in_place] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
     return
@@ -80,7 +80,7 @@ pub fn {impl Clone for usize}::clone<'_0>(self_1: &'_0 usize) -> usize
 // Full name: core::clone::impls::{impl Clone for usize}::clone_from
 pub fn {impl Clone for usize}::clone_from<'_0, '_1>(self_1: &'_0 mut usize, source_2: &'_1 usize)
 where
-    [@TraitClause0]: Destruct<usize>,
+    TraitClause0: (usize: Destruct),
 {
     let _0: (); // return
     let self_1: &'1 mut usize; // arg #1
@@ -90,7 +90,7 @@ where
     _0 = ()
     storage_live(_3)
     _3 = {impl Clone for usize}::clone<'5>(move source_2)
-    drop[@TraitClause0::drop_in_place] (*self_1)
+    drop[TraitClause0::drop_in_place] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
     return
@@ -98,9 +98,9 @@ where
 
 // Full name: core::clone::impls::{impl Clone for usize}
 impl Clone for usize {
-    parent_clause0 = {built_in impl Sized for usize}
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
     fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, [@TraitClause0_1]: Destruct<usize>> = {impl Clone for usize}::clone_from<'_0_1, '_1_1>[@TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = {impl Clone for usize}::clone_from<'_0_1, '_1_1>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -117,8 +117,8 @@ pub struct NonNull<T> {
 #[lang_item("Result")]
 pub enum Result<T, E>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
 {
   Ok(T),
   Err(E),
@@ -151,16 +151,16 @@ pub struct Arguments<'a> {
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
 
 // Full name: core::intrinsics::ctpop
 pub fn ctpop<T>(x_1: T) -> u32
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
 = <intrinsic:ctpop>
 
 // Full name: core::panicking::panic_nounwind_fmt::compiletime
@@ -176,19 +176,19 @@ fn compiletime<'_0>(fmt_1: Arguments<'_0>, force_no_backtrace_2: bool) -> !
 // Full name: core::intrinsics::size_of
 pub fn size_of<T>() -> usize
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <intrinsic:size_of>
 
 // Full name: core::intrinsics::align_of
 pub fn align_of<T>() -> usize
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <intrinsic:align_of>
 
 // Full name: core::marker::{impl Copy for usize}
 impl Copy for usize {
-    parent_clause0 = {built_in impl MetaSized for usize}
-    parent_clause1 = {impl Clone for usize}
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: Clone) = {impl Clone for usize}
     non-dyn-compatible
 }
 
@@ -268,7 +268,7 @@ pub struct Alignment {
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     const SIZE : usize
     const ALIGN : usize
     const ALIGNMENT : Alignment
@@ -282,11 +282,11 @@ pub trait SizedTypeProperties<Self>
 #[lang_item("mem_size_const")]
 pub fn SIZE<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 {
     let _0: usize; // return
 
-    _0 = size_of<Self>[@TraitClause0::parent_clause0]()
+    _0 = size_of<Self>[TraitClause0::ImpliedClause0]()
     return
 }
 
@@ -294,18 +294,18 @@ where
 #[lang_item("mem_size_const")]
 pub const SIZE<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = SIZE()
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
 pub fn ALIGN<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 {
     let _0: usize; // return
 
-    _0 = align_of<Self>[@TraitClause0::parent_clause0]()
+    _0 = align_of<Self>[TraitClause0::ImpliedClause0]()
     return
 }
 
@@ -313,7 +313,7 @@ where
 #[lang_item("mem_align_const")]
 pub const ALIGN<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = ALIGN()
 
 // Full name: core::panicking::panic_nounwind_fmt
@@ -402,7 +402,7 @@ fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -455,14 +455,14 @@ fn unwrap_failed() -> !
     panic(core::panicking::panic)
 }
 
-// Full name: core::option::{Option<T>[@TraitClause0]}::unwrap
+// Full name: core::option::{Option<T>[TraitClause0]}::unwrap
 #[lang_item("option_unwrap")]
-pub fn unwrap<T>(self_1: Option<T>[@TraitClause0]) -> T
+pub fn unwrap<T>(self_1: Option<T>[TraitClause0]) -> T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let val_0: T; // return
-    let self_1: Option<T>[@TraitClause0]; // arg #1
+    let self_1: Option<T>[TraitClause0]; // arg #1
     let _2: !; // anonymous local
 
     storage_live(_2)
@@ -480,13 +480,13 @@ where
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
 pub fn ALIGNMENT<Self>() -> Alignment
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 {
     let _0: Alignment; // return
     let _1: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
 
     storage_live(_1)
-    _1 = new(const @TraitClause0::ALIGN)
+    _1 = new(const TraitClause0::ALIGN)
     _0 = unwrap<Alignment>[{built_in impl Sized for Alignment}](move _1)
     storage_dead(_1)
     return
@@ -495,41 +495,41 @@ where
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
 pub const ALIGNMENT<Self>: Alignment
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = ALIGNMENT()
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub fn IS_ZST<Self>() -> bool
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 {
     let _0: bool; // return
 
-    _0 = const @TraitClause0::SIZE == const 0 : usize
+    _0 = const TraitClause0::SIZE == const 0 : usize
     return
 }
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub const IS_ZST<Self>: bool
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = IS_ZST()
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub fn LAYOUT<Self>() -> Layout
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 {
     let _0: Layout; // return
 
-    _0 = from_size_align_unchecked(const @TraitClause0::SIZE, const @TraitClause0::ALIGN)
+    _0 = from_size_align_unchecked(const TraitClause0::SIZE, const TraitClause0::ALIGN)
     return
 }
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub const LAYOUT<Self>: Layout
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = LAYOUT()
 
 pub fn core::num::{usize}::MAX() -> usize
@@ -559,7 +559,7 @@ pub const core::num::{isize}::MAX: isize = core::num::{isize}::MAX()
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub fn MAX_SLICE_LEN<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 {
     let _0: usize; // return
     let _1: usize; // anonymous local
@@ -568,7 +568,7 @@ where
     let _4: usize; // anonymous local
 
     storage_live(_1)
-    _1 = const @TraitClause0::SIZE
+    _1 = const TraitClause0::SIZE
     switch copy _1 {
         0 : usize => {
             _0 = copy core::num::{usize}::MAX
@@ -593,21 +593,21 @@ where
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub const MAX_SLICE_LEN<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = MAX_SLICE_LEN()
 
 // Full name: core::mem::{impl SizedTypeProperties for T}
 impl<T> SizedTypeProperties for T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = @TraitClause0
-    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    proof ImpliedClause0: (T: Sized) = TraitClause0
+    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
     non-dyn-compatible
 }
 
@@ -618,7 +618,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(_1: *const (), _2: *mut ()
 #[lang_item("ptr_copy_nonoverlapping")]
 pub unsafe fn copy_nonoverlapping<T>(src_1: *const T, dst_2: *mut T, count_3: usize)
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let src_1: *const T; // arg #1
@@ -638,7 +638,7 @@ where
         _5 = cast<*const T, *const ()>(copy src_1)
         storage_live(_6)
         _6 = cast<*mut T, *mut ()>(copy dst_2)
-        _4 = core::ptr::copy_nonoverlapping::precondition_check(move _5, move _6, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE, const {impl SizedTypeProperties for T}<T>[@TraitClause0]::ALIGN, copy count_3)
+        _4 = core::ptr::copy_nonoverlapping::precondition_check(move _5, move _6, const {impl SizedTypeProperties for T}<T>[TraitClause0]::SIZE, const {impl SizedTypeProperties for T}<T>[TraitClause0]::ALIGN, copy count_3)
         storage_dead(_6)
         storage_dead(_5)
     } else {
@@ -650,7 +650,7 @@ where
 // Full name: test_crate::write
 fn write<'_0, '_1, T>(x_1: &'_0 mut T, y_2: &'_1 T)
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let x_1: &'1 mut T; // arg #1
@@ -665,7 +665,7 @@ where
     _4 = &raw const (*y_2)
     storage_live(_5)
     _5 = &raw mut (*x_1)
-    _3 = copy_nonoverlapping<T>[@TraitClause0](move _4, move _5, const 1 : usize)
+    _3 = copy_nonoverlapping<T>[TraitClause0](move _4, move _5, const 1 : usize)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)

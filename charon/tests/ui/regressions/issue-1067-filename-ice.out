@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -18,8 +18,8 @@ pub trait Sized<Self>
 #[lang_item("Result")]
 pub enum Result<T, E>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
 {
   Ok(T),
   Err(E),
@@ -35,15 +35,15 @@ pub trait Debug<Self>
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), core::fmt::Error>[{built_in impl Sized for ()}, {built_in impl Sized for core::fmt::Error}]
 where
-    [@TraitClause0]: Debug<Self>,
+    TraitClause0: (Self: Debug),
 = <opaque>
 
-// Full name: core::result::{Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap
-pub fn unwrap<T, E>(_1: Result<T, E>[@TraitClause0, @TraitClause1]) -> T
+// Full name: core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap
+pub fn unwrap<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
-    [@TraitClause2]: Debug<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (E: Debug),
 = <opaque>
 
 pub opaque type std::io::error::Error
@@ -62,31 +62,31 @@ impl Debug for std::io::error::Error {
 #[lang_item("Vec")]
 pub opaque type Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
 
-// Full name: std::io::impls::{impl Write for Vec<u8>[{built_in impl Sized for u8}, @TraitClause0]}::write_all
-pub fn {impl Write for Vec<u8>[{built_in impl Sized for u8}, @TraitClause0]}::write_all<'_0, '_1, A>(_1: &'_0 mut Vec<u8>[{built_in impl Sized for u8}, @TraitClause0], _2: &'_1 [u8]) -> Result<(), std::io::error::Error>[{built_in impl Sized for ()}, {built_in impl Sized for std::io::error::Error}]
+// Full name: std::io::impls::{impl Write for Vec<u8>[{built_in impl Sized for u8}, TraitClause0]}::write_all
+pub fn {impl Write for Vec<u8>[{built_in impl Sized for u8}, TraitClause0]}::write_all<'_0, '_1, A>(_1: &'_0 mut Vec<u8>[{built_in impl Sized for u8}, TraitClause0], _2: &'_1 [u8]) -> Result<(), std::io::error::Error>[{built_in impl Sized for ()}, {built_in impl Sized for std::io::error::Error}]
 where
-    [@TraitClause0]: Sized<A>,
+    TraitClause0: (A: Sized),
 = <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
-// Full name: alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::new
+// Full name: alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new
 #[lang_item("vec_new")]
-pub fn new<T>() -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
+pub fn new<T>() -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: test_crate::main
@@ -121,7 +121,7 @@ fn main()
     _6 = &(*_7)
     _5 = @ArrayToSliceShared<'_, u8, 5 : usize>(move _6)
     storage_dead(_6)
-    _3 = {impl Write for Vec<u8>[{built_in impl Sized for u8}, @TraitClause0]}::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)
+    _3 = {impl Write for Vec<u8>[{built_in impl Sized for u8}, TraitClause0]}::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     _2 = unwrap<(), std::io::error::Error>[{built_in impl Sized for ()}, {built_in impl Sized for std::io::error::Error}, {impl Debug for std::io::error::Error}](move _3)
@@ -129,7 +129,7 @@ fn main()
     storage_dead(_7)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf_1
+    conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf_1
     storage_dead(buf_1)
     return
 }

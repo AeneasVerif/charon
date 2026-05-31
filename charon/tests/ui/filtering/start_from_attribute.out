@@ -30,13 +30,13 @@ fn {impl Trait1 for Type1}::method()
 // Full name: test_crate::module2::Trait2
 trait Trait2<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::module2::Trait2::{vtable}
 }
 
 // Full name: test_crate::module2::{impl Trait2 for Type1}
 impl Trait2 for Type1 {
-    parent_clause0 = {built_in impl MetaSized for Type1}
+    proof ImpliedClause0: (Type1: MetaSized) = {built_in impl MetaSized for Type1}
     vtable: {impl Trait2 for Type1}::{vtable}
 }
 

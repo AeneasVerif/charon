@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
@@ -25,15 +25,15 @@ pub trait Clone<Self>
 #[lang_item("clone_fn")]
 pub fn clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
 
@@ -52,39 +52,39 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 // Full name: test_crate::Iterator
 trait Iterator<Self, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Item>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Item: Sized)
     vtable: test_crate::Iterator::{vtable}<Self_Item>
 }
 
 // Full name: test_crate::IntoIterator
 trait IntoIterator<Self, Self_Item, Self_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Item>
-    parent_clause2 : [@TraitClause2]: Sized<Self_IntoIter>
-    parent_clause3 : [@TraitClause3]: Iterator<Self_IntoIter, Self_Item>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Item: Sized)
+    proof ImpliedClause2: (Self_IntoIter: Sized)
+    proof ImpliedClause3: (Self_IntoIter: Iterator<Self_Item>)
     vtable: test_crate::IntoIterator::{vtable}<Self_Item, Self_IntoIter>
 }
 
 // Full name: test_crate::{impl IntoIterator<Clause1_Item, I> for I}
 impl<I, Clause1_Item> IntoIterator<Clause1_Item, I> for I
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I, Clause1_Item>,
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: Iterator<Clause1_Item>),
 {
-    parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = @TraitClause1::parent_clause1
-    parent_clause2 = @TraitClause0
-    parent_clause3 = @TraitClause1
-    vtable: {impl IntoIterator<Clause1_Item, I> for I}::{vtable}<I>[@TraitClause0, @TraitClause1]
+    proof ImpliedClause0: (I: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: (Clause1_Item: Sized) = TraitClause1::ImpliedClause1
+    proof ImpliedClause2: (I: Sized) = TraitClause0
+    proof ImpliedClause3: (I: Iterator<Clause1_Item>) = TraitClause1
+    vtable: {impl IntoIterator<Clause1_Item, I> for I}::{vtable}<I>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::callee
 fn callee<T, Clause1_Item>(t_1: Clause1_Item) -> Clause1_Item
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Iterator<T, Clause1_Item>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Iterator<Clause1_Item>),
 {
     let _0: Clause1_Item; // return
     let t_1: Clause1_Item; // arg #1
@@ -97,9 +97,9 @@ where
 // Full name: test_crate::caller
 fn caller<T, Clause1_Item, Clause2_Item, Clause2_IntoIter>(t_1: Clause1_Item) -> Clause2_Item
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Iterator<T, Clause1_Item>,
-    [@TraitClause2]: IntoIterator<T, Clause2_Item, Clause2_IntoIter>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Iterator<Clause1_Item>),
+    TraitClause2: (T: IntoIterator<Clause2_Item, Clause2_IntoIter>),
 {
     let _0: Clause2_Item; // return
     let t_1: Clause1_Item; // arg #1
@@ -107,7 +107,7 @@ where
 
     storage_live(_2)
     _2 = move t_1
-    _0 = callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move _2)
+    _0 = callee<T, Clause1_Item>[TraitClause0, TraitClause1](move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for Clause1_Item}::drop_in_place] t_1
     return
@@ -116,8 +116,8 @@ where
 // Full name: test_crate::X
 trait X<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Assoc: Sized)
     fn method<'_0_1> = method<'_0_1, Self, Self_Assoc>[Self]
     vtable: test_crate::X::{vtable}<Self_Assoc>
 }
@@ -125,30 +125,30 @@ trait X<Self, Self_Assoc>
 // Full name: test_crate::X::method
 fn method<'_0, Self, Clause0_Assoc>(_1: &'_0 Self) -> Clause0_Assoc
 where
-    [@TraitClause0]: X<Self, Clause0_Assoc>,
+    TraitClause0: (Self: X<Clause0_Assoc>),
 = <method_without_default_body>
 
 // Full name: test_crate::A
 trait A<Self, Self_Clause1_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: X<Self, Self_Clause1_Assoc>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: X<Self_Clause1_Assoc>)
     vtable: test_crate::A::{vtable}<Self_Clause1_Assoc>
 }
 
 // Full name: test_crate::B
 trait B<Self, Self_Clause1_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: X<Self, Self_Clause1_Assoc>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: X<Self_Clause1_Assoc>)
     vtable: test_crate::B::{vtable}<Self_Clause1_Assoc>
 }
 
 // Full name: test_crate::a
 fn a<T, Clause1_Clause1_Assoc>(x_1: T) -> Clause1_Clause1_Assoc
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: A<T, Clause1_Clause1_Assoc>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: A<Clause1_Clause1_Assoc>),
 {
     let _0: Clause1_Clause1_Assoc; // return
     let x_1: T; // arg #1
@@ -156,7 +156,7 @@ where
 
     storage_live(_2)
     _2 = &x_1
-    _0 = @TraitClause1::parent_clause1::method<'3>(move _2)
+    _0 = TraitClause1::ImpliedClause1::method<'3>(move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
     return
@@ -165,8 +165,8 @@ where
 // Full name: test_crate::b
 fn b<T, Clause1_Clause1_Assoc>(x_1: T) -> Clause1_Clause1_Assoc
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: B<T, Clause1_Clause1_Assoc>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: B<Clause1_Clause1_Assoc>),
 {
     let _0: Clause1_Clause1_Assoc; // return
     let x_1: T; // arg #1
@@ -174,7 +174,7 @@ where
 
     storage_live(_2)
     _2 = &x_1
-    _0 = @TraitClause1::parent_clause1::method<'3>(move _2)
+    _0 = TraitClause1::ImpliedClause1::method<'3>(move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
     return
@@ -183,10 +183,10 @@ where
 // Full name: test_crate::x
 fn x<T, Clause1_Clause1_Assoc, Clause2_Clause1_Assoc>(x_1: T) -> (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: A<T, Clause1_Clause1_Assoc>,
-    [@TraitClause2]: B<T, Clause2_Clause1_Assoc>,
-    [@TraitClause3]: Copy<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: A<Clause1_Clause1_Assoc>),
+    TraitClause2: (T: B<Clause2_Clause1_Assoc>),
+    TraitClause3: (T: Copy),
 {
     let _0: (Clause1_Clause1_Assoc, Clause1_Clause1_Assoc); // return
     let x_1: T; // arg #1
@@ -198,12 +198,12 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = copy x_1
-    _2 = a<T, Clause1_Clause1_Assoc>[@TraitClause0, @TraitClause1](move _3)
+    _2 = a<T, Clause1_Clause1_Assoc>[TraitClause0, TraitClause1](move _3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = copy x_1
-    _4 = b<T, Clause2_Clause1_Assoc>[@TraitClause0, @TraitClause2](move _5)
+    _4 = b<T, Clause2_Clause1_Assoc>[TraitClause0, TraitClause2](move _5)
     storage_dead(_5)
     _0 = (move _2, move _4)
     conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}::drop_in_place] _4

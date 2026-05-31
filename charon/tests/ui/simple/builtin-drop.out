@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -37,13 +37,13 @@ impl Destruct for Global {
     non-dyn-compatible
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3])
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Destruct<T>,
-    [@TraitClause3]: Destruct<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (T: Destruct),
+    TraitClause3: (A: Destruct),
 = <opaque>
 
 // Full name: alloc::string::String
@@ -63,8 +63,8 @@ impl Destruct for String {
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_in_place
 unsafe fn {impl Destruct for [T; N]}::drop_in_place<T, const N : usize>(_1: *mut [T; N])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Destruct<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
 {
     let _0: (); // return
     let _1: *mut [T; N]; // arg #1
@@ -102,7 +102,7 @@ where
             _10 = @SliceIndexMut<'_, T>(move _9, copy _6)
             _7 = &raw mut (*_10)
             _6 = move _6 wrap.+ const 1 : usize
-            drop[@TraitClause1::drop_in_place] (*_7)
+            drop[TraitClause1::drop_in_place] (*_7)
             continue 0
         }
     }
@@ -112,18 +112,18 @@ where
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}
 impl<T, const N : usize> Destruct for [T; N]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Destruct<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
 {
-    fn drop_in_place = {impl Destruct for [T; N]}::drop_in_place<T, N>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Destruct for [T; N]}::drop_in_place<T, N>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_in_place
 unsafe fn {impl Destruct for [T]}::drop_in_place<T>(_1: *mut [T])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Destruct<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
 {
     let _0: (); // return
     let _1: *mut [T]; // arg #1
@@ -155,7 +155,7 @@ where
             _8 = @SliceIndexMut<'_, T>(move _7, copy _4)
             _5 = &raw mut (*_8)
             _4 = move _4 wrap.+ const 1 : usize
-            drop[@TraitClause1::drop_in_place] (*_5)
+            drop[TraitClause1::drop_in_place] (*_5)
             continue 0
         }
     }
@@ -165,19 +165,19 @@ where
 // Full name: test_crate::<slice>::{impl Destruct for [T]}
 impl<T> Destruct for [T]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Destruct<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
 {
-    fn drop_in_place = {impl Destruct for [T]}::drop_in_place<T>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = {impl Destruct for [T]}::drop_in_place<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_in_place
 unsafe fn {impl Destruct for (A, B)}::drop_in_place<A, B>(_1: *mut (A, B))
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Destruct<A>,
-    [@TraitClause2]: Destruct<B>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Destruct),
+    TraitClause2: (B: Destruct),
 {
     let _0: (); // return
     let _1: *mut (A, B); // arg #1
@@ -186,19 +186,19 @@ where
     storage_live(_2)
     _0 = ()
     _2 = &mut (*_1) with_metadata(copy _1.metadata)
-    drop[@TraitClause1::drop_in_place] (*_2).0
-    drop[@TraitClause2::drop_in_place] (*_2).1
+    drop[TraitClause1::drop_in_place] (*_2).0
+    drop[TraitClause2::drop_in_place] (*_2).1
     return
 }
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}
 impl<A, B> Destruct for (A, B)
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Destruct<A>,
-    [@TraitClause2]: Destruct<B>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Destruct),
+    TraitClause2: (B: Destruct),
 {
-    fn drop_in_place = {impl Destruct for (A, B)}::drop_in_place<A, B>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn drop_in_place = {impl Destruct for (A, B)}::drop_in_place<A, B>[TraitClause0, TraitClause1, TraitClause2]
     non-dyn-compatible
 }
 
@@ -222,24 +222,24 @@ fn drop_slice(_1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [Stri
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<[String], Global>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]] _1
+    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<[String], Global>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, {impl Destruct for [T]}<String>[{built_in impl Sized for String}, {impl Destruct for String}], {impl Destruct for Global}]] _1
     return
 }
 
 // Full name: test_crate::drop_tuple
 fn drop_tuple<A, B>(_1: (A, B))
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Destruct<A>,
-    [@TraitClause3]: Destruct<B>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (A: Destruct),
+    TraitClause3: (B: Destruct),
 {
     let _0: (); // return
     let _1: (A, B); // arg #1
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for (A, B)}::drop_in_place<A, B>[@TraitClause0, @TraitClause2, @TraitClause3]] _1
+    drop[{impl Destruct for (A, B)}::drop_in_place<A, B>[TraitClause0, TraitClause2, TraitClause3]] _1
     return
 }
 

@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -27,16 +27,16 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
 }
 
 // Full name: core::option::Option::Some
-fn Some<T>(_1: T) -> Option<T>[@TraitClause0]
+fn Some<T>(_1: T) -> Option<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: alloc::string::String
@@ -104,19 +104,19 @@ fn Foo(_1: u32, _2: String) -> Foo
 // Full name: test_crate::Bar
 enum Bar<'a, T>
 where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
   Variant(&'a T),
 }
 
 // Full name: test_crate::Bar::Variant
-fn Variant<'a, T>(_1: &'a T) -> Bar<'a, T>[@TraitClause0]
+fn Variant<'a, T>(_1: &'a T) -> Bar<'a, T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
-    let _0: Bar<'a, T>[@TraitClause0]; // return
+    let _0: Bar<'a, T>[TraitClause0]; // return
     let _1: &'a T; // arg #1
 
     _0 = Bar::Variant { 0: move _1 }

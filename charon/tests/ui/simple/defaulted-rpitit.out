@@ -8,25 +8,24 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Foo
 pub trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    type bar_ty<const N : usize>
+    proof ImpliedClause0: (Self: MetaSized)
+    type bar_ty<const N : usize> = [u8; N]
     where
-        implied_clause_0 : [@TraitClause0_1]: Sized<Self::bar_ty>
-
+        proof ImpliedClause0: (Self::bar_ty: Sized);
     fn bar<const N : usize> = test_crate::Foo::bar<Self, N>[Self]
     non-dyn-compatible
 }
 
 pub fn test_crate::Foo::bar<Self, const N : usize>() -> [u8; N]
 where
-    [@TraitClause0]: Foo<Self>,
+    TraitClause0: (Self: Foo),
 {
     let _0: [u8; N]; // return
 
@@ -48,8 +47,10 @@ pub fn {impl Foo for S}::bar<const N : usize>() -> [u8; N]
 
 // Full name: test_crate::{impl Foo for S}
 impl Foo for S {
-    parent_clause0 = {built_in impl MetaSized for S}
+    proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
     type bar_ty<const N : usize> = [u8; N]
+    where
+        proof ImpliedClause0: ({impl Foo for S}::bar_ty: Sized) = {impl Foo for S}::bar_ty::ImpliedClause0;
     fn bar<const N : usize> = {impl Foo for S}::bar<N>
     non-dyn-compatible
 }

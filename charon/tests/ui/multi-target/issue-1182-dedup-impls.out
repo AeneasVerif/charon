@@ -3,14 +3,14 @@ pub trait core::marker::MetaSized<Self>
 
 pub trait test_crate::Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
     fn method = test_crate::Foo::method<Self>[Self]
     non-dyn-compatible
 }
 
 pub fn test_crate::Foo::method<Self>() -> u32
 where
-    [@TraitClause0]: test_crate::Foo<Self>,
+    TraitClause0: (Self: test_crate::Foo),
 = <method_without_default_body>
 
 pub struct test_crate::Struct {}
@@ -39,7 +39,7 @@ pub fn test_crate::{impl test_crate::Foo for test_crate::Struct}::method() -> u3
 
 // Full name: test_crate::{impl test_crate::Foo for test_crate::Struct}
 impl test_crate::Foo for test_crate::Struct {
-    parent_clause0 = {built_in impl core::marker::MetaSized for test_crate::Struct}
+    proof ImpliedClause0: (test_crate::Struct: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for test_crate::Struct}
     fn method = test_crate::{impl test_crate::Foo for test_crate::Struct}::method
     non-dyn-compatible
 }

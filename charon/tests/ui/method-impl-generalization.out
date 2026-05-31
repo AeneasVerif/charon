@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
@@ -25,15 +25,15 @@ pub trait Clone<Self>
 #[lang_item("clone_fn")]
 pub fn clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
 
@@ -52,28 +52,28 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn method1 = test_crate::Trait::method1<Self>[Self]
-    fn method2<T, [@TraitClause0_1]: Sized<T>, [@TraitClause1_1]: Copy<T>> = test_crate::Trait::method2<Self, T>[Self, @TraitClause0_1, @TraitClause1_1]
+    fn method2<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = test_crate::Trait::method2<Self, T>[Self, TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
 fn test_crate::Trait::method1<Self>(_1: Self, _2: &'static u32) -> bool
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
 = <method_without_default_body>
 
 fn test_crate::Trait::method2<Self, T>(_1: Self, _2: T)
 where
-    [@TraitClause0]: Trait<Self>,
-    [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Copy<T>,
+    TraitClause0: (Self: Trait),
+    TraitClause1: (T: Sized),
+    TraitClause2: (T: Copy),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method2
 fn {impl Trait for ()}::method2<T>(self_1: (), _other_2: T)
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let self_1: (); // arg #1
@@ -98,24 +98,24 @@ fn {impl Trait for ()}::method1(self_1: (), _other_2: &'static u32) -> bool
 
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = {built_in impl Sized for ()}
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     fn method1 = {impl Trait for ()}::method1
-    fn method2<T, [@TraitClause0_1]: Sized<T>> = {impl Trait for ()}::method2<T>[@TraitClause0_1]
+    fn method2<T, TraitClause0_1: (T: Sized)> = {impl Trait for ()}::method2<T>[TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::MyCompare
 trait MyCompare<Self, Other>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Other>
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (Other: Sized)
     fn compare = test_crate::MyCompare::compare<Self, Other>[Self]
     non-dyn-compatible
 }
 
 fn test_crate::MyCompare::compare<Self, Other>(_1: Self, _2: Other) -> bool
 where
-    [@TraitClause0]: MyCompare<Self, Other>,
+    TraitClause0: (Self: MyCompare<Other>),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl MyCompare<&'a ()> for &'a ()}::compare
@@ -131,8 +131,8 @@ fn {impl MyCompare<&'a ()> for &'a ()}::compare<'a>(self_1: &'a (), _other_2: &'
 
 // Full name: test_crate::{impl MyCompare<&'a ()> for &'a ()}
 impl<'a> MyCompare<&'a ()> for &'a () {
-    parent_clause0 = {built_in impl Sized for &'_ ()}
-    parent_clause1 = {built_in impl Sized for &'_ ()}
+    proof ImpliedClause0: (&'_ (): Sized) = {built_in impl Sized for &'_ ()}
+    proof ImpliedClause1: (&'_ (): Sized) = {built_in impl Sized for &'_ ()}
     fn compare = {impl MyCompare<&'a ()> for &'a ()}::compare<'a>
     non-dyn-compatible
 }
@@ -228,14 +228,14 @@ fn main()
 // Full name: test_crate::Foo
 trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     fn foo<'a, 'b> = test_crate::Foo::foo<'a, 'b, Self>[Self]
     non-dyn-compatible
 }
 
 fn test_crate::Foo::foo<'a, 'b, Self>(_1: &'a (), _2: &'b ()) -> &'a ()
 where
-    [@TraitClause0]: Foo<Self>,
+    TraitClause0: (Self: Foo),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::foo
@@ -251,7 +251,7 @@ fn {impl Foo for ()}::foo<'a, 'b>(x_1: &'b (), y_2: &'a ()) -> &'b ()
 
 // Full name: test_crate::{impl Foo for ()}
 impl Foo for () {
-    parent_clause0 = {built_in impl MetaSized for ()}
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     fn foo<'a, 'b> = {impl Foo for ()}::foo<'a, 'b>
     non-dyn-compatible
 }

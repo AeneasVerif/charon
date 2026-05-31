@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
@@ -24,7 +24,7 @@ pub trait Clone<Self>
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
@@ -33,7 +33,7 @@ pub fn {impl Clone for u8}::clone<'_0>(_1: &'_0 u8) -> u8
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
-    parent_clause0 = {built_in impl Sized for u8}
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
     fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -49,7 +49,7 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    TraitClause0: (Self: PartialEq<Rhs>),
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}::eq
@@ -66,7 +66,7 @@ impl PartialEq<bool> for bool {
 #[lang_item("Default")]
 pub trait Default<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn default = core::default::Default::default<Self>[Self]
     non-dyn-compatible
 }
@@ -74,7 +74,7 @@ pub trait Default<Self>
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 where
-    [@TraitClause0]: Default<Self>,
+    TraitClause0: (Self: Default),
 = <opaque>
 
 // Full name: core::default::{impl Default for bool}::default
@@ -83,7 +83,7 @@ pub fn {impl Default for bool}::default() -> bool
 
 // Full name: core::default::{impl Default for bool}
 impl Default for bool {
-    parent_clause0 = {built_in impl Sized for bool}
+    proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
     fn default = {impl Default for bool}::default
     non-dyn-compatible
 }
@@ -107,63 +107,63 @@ pub opaque type String
 // Full name: test_crate::Struct
 struct Struct<A>
 where
-    [@TraitClause0]: Sized<A>,
+    TraitClause0: (A: Sized),
 {
   A,
 }
 
-// Full name: test_crate::{impl Default for Struct<A>[@TraitClause0]}::default
-pub fn {impl Default for Struct<A>[@TraitClause0]}::default<A>() -> Struct<A>[@TraitClause0]
+// Full name: test_crate::{impl Default for Struct<A>[TraitClause0]}::default
+pub fn {impl Default for Struct<A>[TraitClause0]}::default<A>() -> Struct<A>[TraitClause0]
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Default<A>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Default),
 {
-    let _0: Struct<A>[@TraitClause0]; // return
+    let _0: Struct<A>[TraitClause0]; // return
     let _1: A; // anonymous local
 
     storage_live(_1)
-    _1 = @TraitClause1::default()
+    _1 = TraitClause1::default()
     _0 = Struct { 0: move _1 }
     conditional_drop[{built_in impl Destruct for A}::drop_in_place] _1
     storage_dead(_1)
     return
 }
 
-// Full name: test_crate::{impl Default for Struct<A>[@TraitClause0]}
-impl<A> Default for Struct<A>[@TraitClause0]
+// Full name: test_crate::{impl Default for Struct<A>[TraitClause0]}
+impl<A> Default for Struct<A>[TraitClause0]
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Default<A>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Default),
 {
-    parent_clause0 = {built_in impl Sized for Struct<A>[@TraitClause0]}
-    fn default = {impl Default for Struct<A>[@TraitClause0]}::default<A>[@TraitClause0, @TraitClause1]
+    proof ImpliedClause0: (Struct<A>[TraitClause0]: Sized) = {built_in impl Sized for Struct<A>[TraitClause0]}
+    fn default = {impl Default for Struct<A>[TraitClause0]}::default<A>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
 trait Trait<Self, B, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<B>
-    parent_clause2 : [@TraitClause2]: Sized<Self_Item>
-    fn method<C, [@TraitClause0_1]: Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[Self, @TraitClause0_1]
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (B: Sized)
+    proof ImpliedClause2: (Self_Item: Sized)
+    fn method<C, TraitClause0_1: (C: Sized)> = test_crate::Trait::method<Self, B, C, Self_Item>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
 fn test_crate::Trait::method<Self, B, C, Clause0_Item>()
 where
-    [@TraitClause0]: Trait<Self, B, Clause0_Item>,
-    [@TraitClause1]: Sized<C>,
+    TraitClause0: (Self: Trait<B, Clause0_Item>),
+    TraitClause1: (C: Sized),
 = <method_without_default_body>
 
-// Full name: test_crate::{impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method
-fn {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>()
+// Full name: test_crate::{impl Trait<B, (A, B)> for Struct<A>[TraitClause0]}::method
+fn {impl Trait<B, (A, B)> for Struct<A>[TraitClause0]}::method<A, B, C>()
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Clone<A>,
-    [@TraitClause3]: PartialEq<B, bool>,
-    [@TraitClause4]: Sized<C>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (A: Clone),
+    TraitClause3: (B: PartialEq<bool>),
+    TraitClause4: (C: Sized),
 {
     let _0: (); // return
 
@@ -172,18 +172,18 @@ where
     return
 }
 
-// Full name: test_crate::{impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}
-impl<A, B> Trait<B, (A, B)> for Struct<A>[@TraitClause0]
+// Full name: test_crate::{impl Trait<B, (A, B)> for Struct<A>[TraitClause0]}
+impl<A, B> Trait<B, (A, B)> for Struct<A>[TraitClause0]
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Clone<A>,
-    [@TraitClause3]: PartialEq<B, bool>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (A: Clone),
+    TraitClause3: (B: PartialEq<bool>),
 {
-    parent_clause0 = {built_in impl MetaSized for Struct<A>[@TraitClause0]}
-    parent_clause1 = @TraitClause1
-    parent_clause2 = {built_in impl Sized for (A, B)}
-    fn method<C, [@TraitClause0_1]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_1]
+    proof ImpliedClause0: (Struct<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Struct<A>[TraitClause0]}
+    proof ImpliedClause1: (B: Sized) = TraitClause1
+    proof ImpliedClause2: ((A, B): Sized) = {built_in impl Sized for (A, B)}
+    fn method<C, TraitClause0_1: (C: Sized)> = {impl Trait<B, (A, B)> for Struct<A>[TraitClause0]}::method<A, B, C>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -199,9 +199,9 @@ fn main()
     storage_live(_x_1)
     _x_1 = (const 0 : u8, const false)
     storage_live(_y_2)
-    _y_2 = {impl Default for Struct<A>[@TraitClause0]}::default<bool>[{built_in impl Sized for bool}, {impl Default for bool}]()
+    _y_2 = {impl Default for Struct<A>[TraitClause0]}::default<bool>[{built_in impl Sized for bool}, {impl Default for bool}]()
     storage_live(_3)
-    _3 = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, {impl Clone for u8}, {impl PartialEq<bool> for bool}, {built_in impl Sized for String}]()
+    _3 = {impl Trait<B, (A, B)> for Struct<A>[TraitClause0]}::method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, {impl Clone for u8}, {impl PartialEq<bool> for bool}, {built_in impl Sized for String}]()
     storage_dead(_3)
     _0 = ()
     storage_dead(_y_2)

@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -34,10 +34,10 @@ struct SStatic {
 // Full name: test_crate::E0
 enum E0<mut 'a, mut 'b, T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
-    T1 : 'a,
-    T2 : 'b,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
+    TypeOutlives0: T1: 'a,
+    TypeOutlives1: T2: 'b,
 {
   V1(&'a mut T1, &'b mut T2),
 }
@@ -45,102 +45,102 @@ where
 // Full name: test_crate::E1
 enum E1<mut 'a, mut 'b, T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
-    T1 : 'a,
-    T2 : 'b,
-    T2 : 'a,
-    T1 : 'b,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
+    TypeOutlives0: T1: 'a,
+    TypeOutlives1: T2: 'b,
+    TypeOutlives2: T2: 'a,
+    TypeOutlives3: T1: 'b,
 {
   V1(&'a mut T1, &'b mut T2),
-  V2(alloc::boxed::Box<E1<'a, 'b, T2, T1>[@TraitClause1, @TraitClause0]>[{built_in impl MetaSized for E1<'a, 'b, T2, T1>[@TraitClause1, @TraitClause0]}, {built_in impl Sized for Global}]),
+  V2(alloc::boxed::Box<E1<'a, 'b, T2, T1>[TraitClause1, TraitClause0]>[{built_in impl MetaSized for E1<'a, 'b, T2, T1>[TraitClause1, TraitClause0]}, {built_in impl Sized for Global}]),
 }
 
 // Full name: test_crate::E2
 enum E2<mut 'a, mut 'b, T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
-    T1 : 'a,
-    T2 : 'b,
-    T1 : 'b,
-    T2 : 'a,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
+    TypeOutlives0: T1: 'a,
+    TypeOutlives1: T2: 'b,
+    TypeOutlives2: T1: 'b,
+    TypeOutlives3: T2: 'a,
 {
   V1(&'a mut T1, &'b mut T2),
-  V3(alloc::boxed::Box<E2<'b, 'a, T1, T2>[@TraitClause0, @TraitClause1]>[{built_in impl MetaSized for E2<'b, 'a, T1, T2>[@TraitClause0, @TraitClause1]}, {built_in impl Sized for Global}]),
+  V3(alloc::boxed::Box<E2<'b, 'a, T1, T2>[TraitClause0, TraitClause1]>[{built_in impl MetaSized for E2<'b, 'a, T1, T2>[TraitClause0, TraitClause1]}, {built_in impl Sized for Global}]),
 }
 
 // Full name: test_crate::E3
 enum E3<mut 'a, mut 'b, 'c, T1, T2>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
-    T1 : 'a,
-    T2 : 'b,
-    T2 : 'a,
-    T1 : 'b,
-    T2 : 'c,
-    T1 : 'c,
-    'a : 'c,
-    'b : 'c,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
+    TypeOutlives0: T1: 'a,
+    TypeOutlives1: T2: 'b,
+    TypeOutlives2: T2: 'a,
+    TypeOutlives3: T1: 'b,
+    TypeOutlives4: T2: 'c,
+    TypeOutlives5: T1: 'c,
+    RegionOutlives0: 'a: 'c,
+    RegionOutlives1: 'b: 'c,
 {
   V1(&'a mut T1, &'b mut T2),
-  V2(alloc::boxed::Box<E3<'a, 'b, 'c, T2, T1>[@TraitClause1, @TraitClause0]>[{built_in impl MetaSized for E3<'a, 'b, 'c, T2, T1>[@TraitClause1, @TraitClause0]}, {built_in impl Sized for Global}]),
-  V3(alloc::boxed::Box<E3<'b, 'a, 'c, T1, T2>[@TraitClause0, @TraitClause1]>[{built_in impl MetaSized for E3<'b, 'a, 'c, T1, T2>[@TraitClause0, @TraitClause1]}, {built_in impl Sized for Global}]),
+  V2(alloc::boxed::Box<E3<'a, 'b, 'c, T2, T1>[TraitClause1, TraitClause0]>[{built_in impl MetaSized for E3<'a, 'b, 'c, T2, T1>[TraitClause1, TraitClause0]}, {built_in impl Sized for Global}]),
+  V3(alloc::boxed::Box<E3<'b, 'a, 'c, T1, T2>[TraitClause0, TraitClause1]>[{built_in impl MetaSized for E3<'b, 'a, 'c, T1, T2>[TraitClause0, TraitClause1]}, {built_in impl Sized for Global}]),
   V4(&'c &'a T1),
 }
 
 // Full name: test_crate::E4
 enum E4<mut 'a, mut 'b, 'c, T1, T2, T3>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
-    [@TraitClause2]: Sized<T3>,
-    T1 : 'a,
-    T2 : 'b,
-    T2 : 'a,
-    T1 : 'b,
-    T3 : 'c,
-    T3 : 'a,
-    T3 : 'b,
-    'a : 'c,
-    'b : 'c,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
+    TraitClause2: (T3: Sized),
+    TypeOutlives0: T1: 'a,
+    TypeOutlives1: T2: 'b,
+    TypeOutlives2: T2: 'a,
+    TypeOutlives3: T1: 'b,
+    TypeOutlives4: T3: 'c,
+    TypeOutlives5: T3: 'a,
+    TypeOutlives6: T3: 'b,
+    RegionOutlives0: 'a: 'c,
+    RegionOutlives1: 'b: 'c,
 {
   V1(&'a mut T1, &'b mut T2),
-  V2(alloc::boxed::Box<E4<'a, 'b, 'c, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]>[{built_in impl MetaSized for E4<'a, 'b, 'c, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]}, {built_in impl Sized for Global}]),
-  V3(alloc::boxed::Box<E4<'b, 'a, 'c, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]>[{built_in impl MetaSized for E4<'b, 'a, 'c, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]}, {built_in impl Sized for Global}]),
+  V2(alloc::boxed::Box<E4<'a, 'b, 'c, T2, T1, T3>[TraitClause1, TraitClause0, TraitClause2]>[{built_in impl MetaSized for E4<'a, 'b, 'c, T2, T1, T3>[TraitClause1, TraitClause0, TraitClause2]}, {built_in impl Sized for Global}]),
+  V3(alloc::boxed::Box<E4<'b, 'a, 'c, T1, T2, T3>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for E4<'b, 'a, 'c, T1, T2, T3>[TraitClause0, TraitClause1, TraitClause2]}, {built_in impl Sized for Global}]),
   V4(&'c &'a T3),
 }
 
 // Full name: test_crate::E5
 enum E5<mut 'a, mut 'b, 'c, T1, T2, T3>
 where
-    [@TraitClause0]: Sized<T1>,
-    [@TraitClause1]: Sized<T2>,
-    [@TraitClause2]: Sized<T3>,
-    T1 : 'a,
-    T2 : 'b,
-    T2 : 'a,
-    T1 : 'b,
-    T3 : 'a,
-    T3 : 'c,
-    T3 : 'b,
-    'c : 'a,
-    'c : 'b,
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T2: Sized),
+    TraitClause2: (T3: Sized),
+    TypeOutlives0: T1: 'a,
+    TypeOutlives1: T2: 'b,
+    TypeOutlives2: T2: 'a,
+    TypeOutlives3: T1: 'b,
+    TypeOutlives4: T3: 'a,
+    TypeOutlives5: T3: 'c,
+    TypeOutlives6: T3: 'b,
+    RegionOutlives0: 'c: 'a,
+    RegionOutlives1: 'c: 'b,
 {
   V1(&'a mut T1, &'b mut T2),
-  V2(alloc::boxed::Box<E5<'a, 'b, 'c, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]>[{built_in impl MetaSized for E5<'a, 'b, 'c, T2, T1, T3>[@TraitClause1, @TraitClause0, @TraitClause2]}, {built_in impl Sized for Global}]),
-  V3(alloc::boxed::Box<E5<'b, 'a, 'c, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]>[{built_in impl MetaSized for E5<'b, 'a, 'c, T1, T2, T3>[@TraitClause0, @TraitClause1, @TraitClause2]}, {built_in impl Sized for Global}]),
+  V2(alloc::boxed::Box<E5<'a, 'b, 'c, T2, T1, T3>[TraitClause1, TraitClause0, TraitClause2]>[{built_in impl MetaSized for E5<'a, 'b, 'c, T2, T1, T3>[TraitClause1, TraitClause0, TraitClause2]}, {built_in impl Sized for Global}]),
+  V3(alloc::boxed::Box<E5<'b, 'a, 'c, T1, T2, T3>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for E5<'b, 'a, 'c, T1, T2, T3>[TraitClause0, TraitClause1, TraitClause2]}, {built_in impl Sized for Global}]),
   V4(&'a &'c T3),
 }
 
 // Full name: test_crate::S1
 struct S1<mut 'a, mut 'b, mut 'c, 'd>
 where
-    'c : 'a,
-    'd : 'b,
-    'd : 'a,
-    'c : 'b,
+    RegionOutlives0: 'c: 'a,
+    RegionOutlives1: 'd: 'b,
+    RegionOutlives2: 'd: 'a,
+    RegionOutlives3: 'c: 'b,
 {
   x: E1<'a, 'b, &'c mut u32, &'d u32>[{built_in impl Sized for &'c mut u32}, {built_in impl Sized for &'d u32}],
 }

@@ -8,21 +8,21 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::V
 struct V<T, const N : usize>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   x: [T; N],
 }
 
-fn test_crate::{V<T, N>[@TraitClause0]}::LEN<T, const N : usize>() -> usize
+fn test_crate::{V<T, N>[TraitClause0]}::LEN<T, const N : usize>() -> usize
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: usize; // return
 
@@ -30,15 +30,15 @@ where
     return
 }
 
-const test_crate::{V<T, N>[@TraitClause0]}::LEN<T, const N : usize>: usize
+const test_crate::{V<T, N>[TraitClause0]}::LEN<T, const N : usize>: usize
 where
-    [@TraitClause0]: Sized<T>,
- = test_crate::{V<T, N>[@TraitClause0]}::LEN()
+    TraitClause0: (T: Sized),
+ = test_crate::{V<T, N>[TraitClause0]}::LEN()
 
 // Full name: test_crate::HasLen
 trait HasLen<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     const LEN : usize
     non-dyn-compatible
 }
@@ -57,7 +57,7 @@ const {impl HasLen for [(); N]}::LEN<const N : usize>: usize = {impl HasLen for 
 
 // Full name: test_crate::{impl HasLen for [(); N]}
 impl<const N : usize> HasLen for [(); N] {
-    parent_clause0 = {built_in impl MetaSized for [(); N]}
+    proof ImpliedClause0: ([(); N]: MetaSized) = {built_in impl MetaSized for [(); N]}
     const LEN = {impl HasLen for [(); N]}::LEN<N>
     non-dyn-compatible
 }
@@ -79,7 +79,7 @@ const {impl HasLen for [bool; N]}::LEN<const N : usize>: usize = {impl HasLen fo
 
 // Full name: test_crate::{impl HasLen for [bool; N]}
 impl<const N : usize> HasLen for [bool; N] {
-    parent_clause0 = {built_in impl MetaSized for [bool; N]}
+    proof ImpliedClause0: ([bool; N]: MetaSized) = {built_in impl MetaSized for [bool; N]}
     const LEN = {impl HasLen for [bool; N]}::LEN<N>
     non-dyn-compatible
 }
@@ -87,52 +87,52 @@ impl<const N : usize> HasLen for [bool; N] {
 // Full name: test_crate::Wrapper
 struct Wrapper<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   T,
 }
 
-// Full name: test_crate::{impl HasLen for Wrapper<T>[@TraitClause0]}::LEN
-fn {impl HasLen for Wrapper<T>[@TraitClause0]}::LEN<T>() -> usize
+// Full name: test_crate::{impl HasLen for Wrapper<T>[TraitClause0]}::LEN
+fn {impl HasLen for Wrapper<T>[TraitClause0]}::LEN<T>() -> usize
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasLen<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasLen),
 {
     let _0: usize; // return
 
-    _0 = const @TraitClause1::LEN
+    _0 = const TraitClause1::LEN
     return
 }
 
-// Full name: test_crate::{impl HasLen for Wrapper<T>[@TraitClause0]}::LEN
-const {impl HasLen for Wrapper<T>[@TraitClause0]}::LEN<T>: usize
+// Full name: test_crate::{impl HasLen for Wrapper<T>[TraitClause0]}::LEN
+const {impl HasLen for Wrapper<T>[TraitClause0]}::LEN<T>: usize
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasLen<T>,
- = {impl HasLen for Wrapper<T>[@TraitClause0]}::LEN()
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasLen),
+ = {impl HasLen for Wrapper<T>[TraitClause0]}::LEN()
 
-// Full name: test_crate::{impl HasLen for Wrapper<T>[@TraitClause0]}
-impl<T> HasLen for Wrapper<T>[@TraitClause0]
+// Full name: test_crate::{impl HasLen for Wrapper<T>[TraitClause0]}
+impl<T> HasLen for Wrapper<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasLen<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasLen),
 {
-    parent_clause0 = {built_in impl MetaSized for Wrapper<T>[@TraitClause0]}
-    const LEN = {impl HasLen for Wrapper<T>[@TraitClause0]}::LEN<T>[@TraitClause0, @TraitClause1]
+    proof ImpliedClause0: (Wrapper<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrapper<T>[TraitClause0]}
+    const LEN = {impl HasLen for Wrapper<T>[TraitClause0]}::LEN<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::HasDefaultLen
 pub trait HasDefaultLen<Self, const M : usize>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     const LEN : usize
     non-dyn-compatible
 }
 
 pub fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
 where
-    [@TraitClause0]: HasDefaultLen<Self, M>,
+    TraitClause0: (Self: HasDefaultLen<M>),
 {
     let _0: usize; // return
 
@@ -142,12 +142,12 @@ where
 
 pub const test_crate::HasDefaultLen::LEN<Self, const M : usize>: usize
 where
-    [@TraitClause0]: HasDefaultLen<Self, M>,
+    TraitClause0: (Self: HasDefaultLen<M>),
  = test_crate::HasDefaultLen::LEN()
 
 // Full name: test_crate::{impl HasDefaultLen<N> for [(); N]}
 impl<const N : usize> HasDefaultLen<N> for [(); N] {
-    parent_clause0 = {built_in impl MetaSized for [(); N]}
+    proof ImpliedClause0: ([(); N]: MetaSized) = {built_in impl MetaSized for [(); N]}
     const LEN = test_crate::HasDefaultLen::LEN<[(); N], N>[{impl HasDefaultLen<N> for [(); N]}<N>]
     non-dyn-compatible
 }
@@ -174,7 +174,7 @@ pub const {impl HasDefaultLen<N> for [bool; N]}::LEN<const N : usize>: usize = {
 
 // Full name: test_crate::{impl HasDefaultLen<N> for [bool; N]}
 impl<const N : usize> HasDefaultLen<N> for [bool; N] {
-    parent_clause0 = {built_in impl MetaSized for [bool; N]}
+    proof ImpliedClause0: ([bool; N]: MetaSized) = {built_in impl MetaSized for [bool; N]}
     const LEN = {impl HasDefaultLen<N> for [bool; N]}::LEN<N>
     non-dyn-compatible
 }
@@ -182,8 +182,8 @@ impl<const N : usize> HasDefaultLen<N> for [bool; N] {
 // Full name: test_crate::AlsoHasLen
 trait AlsoHasLen<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: HasLen<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: HasLen)
     const ALSO_LEN : usize
     non-dyn-compatible
 }
@@ -191,13 +191,13 @@ trait AlsoHasLen<Self>
 // Full name: test_crate::AlsoHasLen::ALSO_LEN
 fn ALSO_LEN<Self>() -> usize
 where
-    [@TraitClause0]: AlsoHasLen<Self>,
+    TraitClause0: (Self: AlsoHasLen),
 {
     let _0: usize; // return
     let _1: usize; // anonymous local
 
     storage_live(_1)
-    _1 = const @TraitClause0::parent_clause1::LEN panic.+ const 1 : usize
+    _1 = const TraitClause0::ImpliedClause1::LEN panic.+ const 1 : usize
     _0 = move _1
     return
 }
@@ -205,13 +205,13 @@ where
 // Full name: test_crate::AlsoHasLen::ALSO_LEN
 const ALSO_LEN<Self>: usize
 where
-    [@TraitClause0]: AlsoHasLen<Self>,
+    TraitClause0: (Self: AlsoHasLen),
  = ALSO_LEN()
 
 // Full name: test_crate::{impl AlsoHasLen for [(); N]}
 impl<const N : usize> AlsoHasLen for [(); N] {
-    parent_clause0 = {built_in impl MetaSized for [(); N]}
-    parent_clause1 = {impl HasLen for [(); N]}<N>
+    proof ImpliedClause0: ([(); N]: MetaSized) = {built_in impl MetaSized for [(); N]}
+    proof ImpliedClause1: ([(); N]: HasLen) = {impl HasLen for [(); N]}<N>
     const ALSO_LEN = ALSO_LEN<[(); N]>[{impl AlsoHasLen for [(); N]}<N>]
     non-dyn-compatible
 }

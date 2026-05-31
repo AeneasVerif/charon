@@ -16,7 +16,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -24,8 +24,8 @@ pub trait Sized<Self>
 #[lang_item("cmp_ord_min")]
 pub fn {impl Ord for u64}::min(_1: u64, _2: u64) -> u64
 where
-    [@TraitClause0]: Sized<u64>,
-    [@TraitClause1]: Destruct<u64>,
+    TraitClause0: (u64: Sized),
+    TraitClause1: (u64: Destruct),
 = <opaque>
 
 // Full name: core::marker::Destruct::drop_in_place

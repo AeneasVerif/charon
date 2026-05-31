@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -26,8 +26,8 @@ where
 #[lang_item("iterator")]
 pub trait Iterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
     type Item
     fn next<'_0_1> = next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
@@ -35,30 +35,33 @@ pub trait Iterator<Self>
 
 // Full name: core::iter::traits::iterator::Iterator::next
 #[lang_item("next")]
-pub fn next<'_0, Self>(_1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+pub fn next<'_0, Self>(_1: &'_0 mut Self) -> Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]
 where
-    [@TraitClause0]: Iterator<Self>,
+    TraitClause0: (Self: Iterator),
 = <opaque>
 
 // Full name: test_crate::Foo
 trait Foo<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    type iter_ty<'a, '_1_1, T : 'a, 'a : '_1_1, '_1_1 : 'a, (Self::iter_ty::[@TraitClause1])::Item = &'_1_1 T>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    type iter_ty<'a, '_1_1>
     where
-        implied_clause_0 : [@TraitClause0_1]: Sized<Self::iter_ty>
-        implied_clause_1 : [@TraitClause1_1]: Iterator<Self::iter_ty>
-
-    fn iter<'a, T : 'a> = iter<'a, Self, T>[Self]
+        TypeOutlives0: T: 'a,
+        RegionOutlives0: 'a: '_1_1,
+        RegionOutlives1: '_1_1: 'a,
+        TypeConstraint0: Self::iter_ty::ImpliedClause1::Item = &'_1_1 T,
+        proof ImpliedClause0: (Self::iter_ty: Sized),
+        proof ImpliedClause1: (Self::iter_ty: Iterator);
+    fn iter<'a, TypeOutlives0: T: 'a> = iter<'a, Self, T>[Self]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Foo::iter
-fn iter<'a, Self, T>(_1: &'a Self) -> @TraitClause0::iter_ty
+fn iter<'a, Self, T>(_1: &'a Self) -> TraitClause0::iter_ty
 where
-    [@TraitClause0]: Foo<Self, T>,
-    T : 'a,
+    TraitClause0: (Self: Foo<T>),
+    TypeOutlives0: T: 'a,
 = <method_without_default_body>
 
 

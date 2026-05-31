@@ -583,7 +583,12 @@ and region_param = {
 }
 
 (** The value of a trait associated type. *)
-and trait_assoc_ty_impl = { value : ty }
+and trait_assoc_ty_impl = {
+  value : ty;
+  implied_trait_refs : trait_ref list;
+      (** This matches the corresponding vector in [TraitAssocTy]. In the same
+          way, this is empty after the [lift_associated_item_clauses] pass. *)
+}
 
 (** A predicate of the form [Type: Trait<Args>].
 

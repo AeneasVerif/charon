@@ -7,7 +7,7 @@ pub trait MetaSized<Self>
 // Full name: test_crate::Thing
 trait Thing<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     fn foo = foo<Self>[Self]
     non-dyn-compatible
 }
@@ -15,7 +15,7 @@ trait Thing<Self>
 // Full name: test_crate::Thing::foo
 fn foo<Self>()
 where
-    [@TraitClause0]: Thing<Self>,
+    TraitClause0: (Self: Thing),
 {
     let _0: (); // return
     let _1: &'1 i32; // anonymous local

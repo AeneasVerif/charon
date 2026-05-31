@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -21,66 +21,66 @@ pub struct Witness2 {}
 // Full name: test_crate::HasType1
 pub trait HasType1<Self, Self_Type1>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Type1>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Type1: Sized)
     vtable: test_crate::HasType1::{vtable}<Self_Type1>
 }
 
 // Full name: test_crate::{impl HasType1<()> for Witness1}
 impl HasType1<()> for Witness1 {
-    parent_clause0 = {built_in impl MetaSized for Witness1}
-    parent_clause1 = {built_in impl Sized for ()}
+    proof ImpliedClause0: (Witness1: MetaSized) = {built_in impl MetaSized for Witness1}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     vtable: {impl HasType1<()> for Witness1}::{vtable}
 }
 
 // Full name: test_crate::HasType2
 pub trait HasType2<Self, Self_Type2>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Type2>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Type2: Sized)
     vtable: test_crate::HasType2::{vtable}<Self_Type2>
 }
 
 // Full name: test_crate::Comparator
 pub struct Comparator<A, Clause1_Type1>
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: HasType1<A, Clause1_Type1>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: HasType1<Clause1_Type1>),
 {
   A,
 }
 
 // Full name: test_crate::{impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]> for Witness2}
 impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]> for Witness2 {
-    parent_clause0 = {built_in impl MetaSized for Witness2}
-    parent_clause1 = {built_in impl Sized for Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]}
+    proof ImpliedClause0: (Witness2: MetaSized) = {built_in impl MetaSized for Witness2}
+    proof ImpliedClause1: (Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]: Sized) = {built_in impl Sized for Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]}
     vtable: {impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]> for Witness2}::{vtable}
 }
 
 // Full name: test_crate::HasType3
 pub trait HasType3<Self, Self_Type3>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Type3>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Type3: Sized)
     vtable: test_crate::HasType3::{vtable}<Self_Type3>
 }
 
 // Full name: test_crate::{impl HasType3<Clause1_Type2> for T}
 impl<T, Clause1_Type2> HasType3<Clause1_Type2> for T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasType2<T, Clause1_Type2>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasType2<Clause1_Type2>),
 {
-    parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = @TraitClause1::parent_clause1
-    vtable: {impl HasType3<Clause1_Type2> for T}::{vtable}<T>[@TraitClause0, @TraitClause1]
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: (Clause1_Type2: Sized) = TraitClause1::ImpliedClause1
+    vtable: {impl HasType3<Clause1_Type2> for T}::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::check
 fn check<D, Clause1_Type3>()
 where
-    [@TraitClause0]: Sized<D>,
-    [@TraitClause1]: HasType3<D, Clause1_Type3>,
+    TraitClause0: (D: Sized),
+    TraitClause1: (D: HasType3<Clause1_Type3>),
 {
     let _0: (); // return
 

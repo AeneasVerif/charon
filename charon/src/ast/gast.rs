@@ -453,7 +453,6 @@ pub struct TraitAssocTyImpl {
     pub value: Ty,
     /// This matches the corresponding vector in `TraitAssocTy`. In the same way, this is empty
     /// after the `lift_associated_item_clauses` pass.
-    #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
     pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
 }
 

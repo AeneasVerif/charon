@@ -8,62 +8,62 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::HasOutput
 pub trait HasOutput<Self, Self_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Output: Sized)
     vtable: test_crate::HasOutput::{vtable}<Self_Output>
 }
 
 // Full name: test_crate::Bound
 pub trait Bound<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::Bound::{vtable}
 }
 
 // Full name: test_crate::HasBlockSize
 pub trait HasBlockSize<Self, Self_BlockSize, Self_Clause2_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_BlockSize>
-    parent_clause2 : [@TraitClause2]: HasOutput<Self_BlockSize, Self_Clause2_Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_BlockSize: Sized)
+    proof ImpliedClause2: (Self_BlockSize: HasOutput<Self_Clause2_Output>)
     vtable: test_crate::HasBlockSize::{vtable}<Self_BlockSize>
 }
 
 // Full name: test_crate::HasReaderCore
 pub trait HasReaderCore<Self, Self_ReaderCore, Self_Clause2_BlockSize, Self_Clause2_Clause2_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_ReaderCore>
-    parent_clause2 : [@TraitClause2]: HasBlockSize<Self_ReaderCore, Self_Clause2_BlockSize, Self_Clause2_Clause2_Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_ReaderCore: Sized)
+    proof ImpliedClause2: (Self_ReaderCore: HasBlockSize<Self_Clause2_BlockSize, Self_Clause2_Clause2_Output>)
     vtable: test_crate::HasReaderCore::{vtable}<Self_ReaderCore>
 }
 
 // Full name: test_crate::Wrapper
 pub struct Wrapper<T, Clause1_BlockSize, Clause1_Clause2_Output>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasBlockSize<T, Clause1_BlockSize, Clause1_Clause2_Output>,
-    [@TraitClause2]: Bound<Clause1_Clause2_Output>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasBlockSize<Clause1_BlockSize, Clause1_Clause2_Output>),
+    TraitClause2: (Clause1_Clause2_Output: Bound),
 {
   T,
 }
 
 // Full name: test_crate::foo
-pub fn foo<T, Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output, Clause2_Output>() -> Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[@TraitClause1::parent_clause1, @TraitClause1::parent_clause2, @TraitClause3]
+pub fn foo<T, Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output, Clause2_Output>() -> Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2, TraitClause3]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasReaderCore<T, Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>,
-    [@TraitClause2]: HasOutput<Clause1_Clause2_BlockSize, Clause2_Output>,
-    [@TraitClause3]: Bound<Clause2_Output>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasReaderCore<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>),
+    TraitClause2: (Clause1_Clause2_BlockSize: HasOutput<Clause2_Output>),
+    TraitClause3: (Clause2_Output: Bound),
 {
-    let _0: Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[@TraitClause1::parent_clause1, @TraitClause1::parent_clause2, @TraitClause3]; // return
+    let _0: Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2, TraitClause3]; // return
 
     panic(core::panicking::panic)
 }

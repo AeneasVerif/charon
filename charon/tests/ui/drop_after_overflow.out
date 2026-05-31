@@ -27,14 +27,14 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
-    [@TraitClause0]: Drop<Self>,
+    TraitClause0: (Self: Drop),
 = <opaque>
 
 // Full name: std::io::stdio::_print
@@ -111,7 +111,7 @@ impl Destruct for Foo {
 
 // Full name: test_crate::{impl Drop for Foo}
 impl Drop for Foo {
-    parent_clause0 = {built_in impl MetaSized for Foo}
+    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
     fn drop<'_0_1> = {impl Drop for Foo}::drop<'_0_1>
     vtable: {impl Drop for Foo}::{vtable}
 }

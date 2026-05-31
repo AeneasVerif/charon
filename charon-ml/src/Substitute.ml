@@ -648,7 +648,7 @@ let lookup_fndef_sig (crate : crate) (fn_ptr : fn_ptr region_binder) :
 (* Construct a set of generic arguments in the scope of `params` that matches
    `params` and feeds each required parameter with itself. E.g. given
    parameters for `<T, U> where U: PartialEq<T>`, the arguments would be `<T,
-   U>[@TraitClause0]`. This uses `Bound` variables; we could define the same
+   U>[TraitClause0]`. This uses `Bound` variables; we could define the same
    for `Free` variables if needed.
 *)
 let bound_identity_args (params : generic_params) : generic_args =

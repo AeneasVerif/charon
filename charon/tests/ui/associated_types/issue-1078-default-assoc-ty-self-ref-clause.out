@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -25,27 +25,27 @@ where
 // Full name: test_crate::Foo
 trait Foo<'a, Self, T, Self_X, Self_Item>
 where
-    T : 'a,
-    Self_X : 'a,
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: Self_X: 'a,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: Sized<Self_X>
-    parent_clause3 : [@TraitClause3]: Sized<Self_Item>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    proof ImpliedClause2: (Self_X: Sized)
+    proof ImpliedClause3: (Self_Item: Sized)
     vtable: test_crate::Foo::{vtable}<'a, T, Self_X, Self_Item>
 }
 
-// Full name: test_crate::{impl Foo<'a, Option<T>[@TraitClause0], &'a (), &'a (Option<T>[@TraitClause0], &'a ())> for ()}
-impl<'a, T> Foo<'a, Option<T>[@TraitClause0], &'a (), &'a (Option<T>[@TraitClause0], &'a ())> for ()
+// Full name: test_crate::{impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}
+impl<'a, T> Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()
 where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
-    parent_clause0 = {built_in impl MetaSized for ()}
-    parent_clause1 = {built_in impl Sized for Option<T>[@TraitClause0]}
-    parent_clause2 = {built_in impl Sized for &'_ ()}
-    parent_clause3 = {impl Foo<'a, Option<T>[@TraitClause0], &'a (), &'a (Option<T>[@TraitClause0], &'a ())> for ()}<'a, T>[@TraitClause0]::parent_clause3
-    vtable: {impl Foo<'a, Option<T>[@TraitClause0], &'a (), &'a (Option<T>[@TraitClause0], &'a ())> for ()}::{vtable}<'a, T>[@TraitClause0]
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
+    proof ImpliedClause2: (&'_ (): Sized) = {built_in impl Sized for &'_ ()}
+    proof ImpliedClause3: (&'a (Option<T>[TraitClause0], &'a ()): Sized) = {impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}<'a, T>[TraitClause0]::ImpliedClause3
+    vtable: {impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}::{vtable}<'a, T>[TraitClause0]
 }
 
 

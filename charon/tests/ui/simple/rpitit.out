@@ -8,36 +8,36 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::Foo
 trait Foo<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    type into_iter_ty<U, [@TraitClause0_1]: Sized<U>>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    type into_iter_ty<U>
     where
-        implied_clause_0 : [@TraitClause0_1]: Sized<Self::into_iter_ty>
-        implied_clause_1 : [@TraitClause1_1]: Trait<Self::into_iter_ty>
-
-    fn into_iter<U, [@TraitClause0_1]: Sized<U>> = into_iter<Self, T, U>[Self, @TraitClause0_1]
+        TraitClause0_1: (U: Sized),
+        proof ImpliedClause0: (Self::into_iter_ty: Sized),
+        proof ImpliedClause1: (Self::into_iter_ty: Trait);
+    fn into_iter<U, TraitClause0_1: (U: Sized)> = into_iter<Self, T, U>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Foo::into_iter
-fn into_iter<Self, T, U>(_1: Self) -> @TraitClause0::into_iter_ty
+fn into_iter<Self, T, U>(_1: Self) -> TraitClause0::into_iter_ty
 where
-    [@TraitClause0]: Foo<Self, T>,
-    [@TraitClause1]: Sized<U>,
+    TraitClause0: (Self: Foo<T>),
+    TraitClause1: (U: Sized),
 = <method_without_default_body>
 
 

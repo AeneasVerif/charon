@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -25,23 +25,23 @@ where
 // Full name: test_crate::HasType
 trait HasType<Self, Self_Type>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Type>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Type: Sized)
     vtable: test_crate::HasType::{vtable}<Self_Type>
 }
 
 // Full name: test_crate::HasMethod
 trait HasMethod<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn method<Clause0_Type, [@TraitClause0_1]: HasType<Self, Clause0_Type>> = test_crate::HasMethod::method<Self, Clause0_Type>[Self, @TraitClause0_1]
+    proof ImpliedClause0: (Self: MetaSized)
+    fn method<Clause0_Type, TraitClause0_1: (Self: HasType<Clause0_Type>)> = test_crate::HasMethod::method<Self, Clause0_Type>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
 fn test_crate::HasMethod::method<Self, Clause1_Type>()
 where
-    [@TraitClause0]: HasMethod<Self>,
-    [@TraitClause1]: HasType<Self, Clause1_Type>,
+    TraitClause0: (Self: HasMethod),
+    TraitClause1: (Self: HasType<Clause1_Type>),
 {
     let _0: (); // return
 
@@ -50,11 +50,11 @@ where
     return
 }
 
-// Full name: test_crate::{impl HasMethod for Option<T>[@TraitClause0]}::method
-fn {impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause1_Type>()
+// Full name: test_crate::{impl HasMethod for Option<T>[TraitClause0]}::method
+fn {impl HasMethod for Option<T>[TraitClause0]}::method<T, Clause1_Type>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: HasType<Option<T>[@TraitClause0], Clause1_Type>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (Option<T>[TraitClause0]: HasType<Clause1_Type>),
 {
     let _0: (); // return
 
@@ -63,13 +63,13 @@ where
     return
 }
 
-// Full name: test_crate::{impl HasMethod for Option<T>[@TraitClause0]}
-impl<T> HasMethod for Option<T>[@TraitClause0]
+// Full name: test_crate::{impl HasMethod for Option<T>[TraitClause0]}
+impl<T> HasMethod for Option<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for Option<T>[@TraitClause0]}
-    fn method<Clause0_Type, [@TraitClause0_1]: HasType<Option<T>[@TraitClause0], Clause0_Type>> = {impl HasMethod for Option<T>[@TraitClause0]}::method<T, Clause0_Type>[@TraitClause0, @TraitClause0_1]
+    proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
+    fn method<Clause0_Type, TraitClause0_1: (Option<T>[TraitClause0]: HasType<Clause0_Type>)> = {impl HasMethod for Option<T>[TraitClause0]}::method<T, Clause0_Type>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 

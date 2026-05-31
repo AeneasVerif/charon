@@ -16,7 +16,7 @@ struct test_crate::A::{vtable} {
 // Full name: test_crate::A
 trait A<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::A::{vtable}
 }
 
@@ -31,25 +31,25 @@ struct test_crate::B::{vtable} {
 // Full name: test_crate::B
 trait B<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: A<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: A)
     vtable: test_crate::B::{vtable}
 }
 
 // Full name: test_crate::B::{impl B for i32}
 impl B for i32
 where
-    [@TraitClause0]: MetaSized<i32>,
-    [@TraitClause1]: A<i32>,
+    TraitClause0: (i32: MetaSized),
+    TraitClause1: (i32: A),
 {
-    parent_clause0 = @TraitClause0
-    parent_clause1 = @TraitClause1
+    proof ImpliedClause0: (i32: MetaSized) = TraitClause0
+    proof ImpliedClause1: (i32: A) = TraitClause1
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl A for i32}
 impl A for i32 {
-    parent_clause0 = {built_in impl MetaSized for i32}
+    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
     vtable: {impl A for i32}::{vtable}
 }
 

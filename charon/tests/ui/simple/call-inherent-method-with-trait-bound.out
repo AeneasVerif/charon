@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -26,74 +26,74 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 // Full name: test_crate::Trait
 pub trait Trait<Self, Self_Type>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Type>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Type: Sized)
     vtable: test_crate::Trait::{vtable}<Self_Type>
 }
 
 // Full name: test_crate::{impl Trait<()> for ()}
 impl Trait<()> for () {
-    parent_clause0 = {built_in impl MetaSized for ()}
-    parent_clause1 = {built_in impl Sized for ()}
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     vtable: {impl Trait<()> for ()}::{vtable}
 }
 
 // Full name: test_crate::HashMap
 pub struct HashMap<S>
 where
-    [@TraitClause0]: Sized<S>,
+    TraitClause0: (S: Sized),
 {
   S,
 }
 
-// Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>(_1: *mut HashMap<S>[@TraitClause0])
+// Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place
+unsafe fn {impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place<S>(_1: *mut HashMap<S>[TraitClause0])
 where
-    [@TraitClause0]: Sized<S>,
+    TraitClause0: (S: Sized),
 = <missing>
 
-// Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[@TraitClause0]}
-impl<S> Destruct for HashMap<S>[@TraitClause0]
+// Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[TraitClause0]}
+impl<S> Destruct for HashMap<S>[TraitClause0]
 where
-    [@TraitClause0]: Sized<S>,
+    TraitClause0: (S: Sized),
 {
-    fn drop_in_place = {impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>[@TraitClause0]
+    fn drop_in_place = {impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place<S>[TraitClause0]
     non-dyn-compatible
 }
 
-// Full name: test_crate::{HashMap<S>[@TraitClause0]}::get
-pub fn get<S, Q, Clause2_Type>(_x_1: HashMap<S>[@TraitClause0], _k_2: Q)
+// Full name: test_crate::{HashMap<S>[TraitClause0]}::get
+pub fn get<S, Q, Clause2_Type>(_x_1: HashMap<S>[TraitClause0], _k_2: Q)
 where
-    [@TraitClause0]: Sized<S>,
-    [@TraitClause1]: Sized<Q>,
-    [@TraitClause2]: Trait<Q, Clause2_Type>,
+    TraitClause0: (S: Sized),
+    TraitClause1: (Q: Sized),
+    TraitClause2: (Q: Trait<Clause2_Type>),
 {
     let _0: (); // return
-    let _x_1: HashMap<S>[@TraitClause0]; // arg #1
+    let _x_1: HashMap<S>[TraitClause0]; // arg #1
     let _k_2: Q; // arg #2
 
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for Q}::drop_in_place] _k_2
-    conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>[@TraitClause0]] _x_1
+    conditional_drop[{impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place<S>[TraitClause0]] _x_1
     return
 }
 
 // Full name: test_crate::top_level_get
-pub fn top_level_get<S, Q, Clause2_Type>(_x_1: HashMap<S>[@TraitClause0], _k_2: Q)
+pub fn top_level_get<S, Q, Clause2_Type>(_x_1: HashMap<S>[TraitClause0], _k_2: Q)
 where
-    [@TraitClause0]: Sized<S>,
-    [@TraitClause1]: Sized<Q>,
-    [@TraitClause2]: Trait<Q, Clause2_Type>,
+    TraitClause0: (S: Sized),
+    TraitClause1: (Q: Sized),
+    TraitClause2: (Q: Trait<Clause2_Type>),
 {
     let _0: (); // return
-    let _x_1: HashMap<S>[@TraitClause0]; // arg #1
+    let _x_1: HashMap<S>[TraitClause0]; // arg #1
     let _k_2: Q; // arg #2
 
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for Q}::drop_in_place] _k_2
-    conditional_drop[{impl Destruct for HashMap<S>[@TraitClause0]}::drop_in_place<S>[@TraitClause0]] _x_1
+    conditional_drop[{impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place<S>[TraitClause0]] _x_1
     return
 }
 

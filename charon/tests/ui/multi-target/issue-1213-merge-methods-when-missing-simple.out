@@ -4,13 +4,13 @@ pub trait core::marker::MetaSized<Self>
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
     non-dyn-compatible
 }
 
 trait test_crate::Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
     fn method1<'_0_1> = test_crate::Trait::method1<'_0_1, Self>[Self]
     fn method2<'_0_1> = test_crate::Trait::method2<'_0_1, Self>[Self]
     vtable: test_crate::Trait::{vtable}
@@ -18,7 +18,7 @@ trait test_crate::Trait<Self>
 
 fn test_crate::Trait::method1<'_0, Self>(self_1: &'_0 Self)
 where
-    [@TraitClause0]: test_crate::Trait<Self>,
+    TraitClause0: (Self: test_crate::Trait),
 {
     let _0: (); // return
     let self_1: &'1 Self; // arg #1
@@ -30,7 +30,7 @@ where
 
 fn test_crate::Trait::method2<'_0, Self>(self_1: &'_0 Self)
 where
-    [@TraitClause0]: test_crate::Trait<Self>,
+    TraitClause0: (Self: test_crate::Trait),
 {
     let _0: (); // return
     let self_1: &'1 Self; // arg #1
@@ -42,8 +42,8 @@ where
 
 fn test_crate::f<'_0, T0>(x_1: &'_0 T0)
 where
-    [@TraitClause0]: core::marker::Sized<T0>,
-    [@TraitClause1]: test_crate::Trait<T0>,
+    TraitClause0: (T0: core::marker::Sized),
+    TraitClause1: (T0: test_crate::Trait),
 {
     let _0: (); // return
     let x_1: &'1 T0; // arg #1
@@ -52,15 +52,15 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*x_1)
-    _0 = @TraitClause1::method1<'4>(move _2)
+    _0 = TraitClause1::method1<'4>(move _2)
     storage_dead(_2)
     return
 }
 
 fn test_crate::g<'_0, T0>(x_1: &'_0 T0)
 where
-    [@TraitClause0]: core::marker::Sized<T0>,
-    [@TraitClause1]: test_crate::Trait<T0>,
+    TraitClause0: (T0: core::marker::Sized),
+    TraitClause1: (T0: test_crate::Trait),
 {
     let _0: (); // return
     let x_1: &'1 T0; // arg #1
@@ -69,7 +69,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*x_1)
-    _0 = @TraitClause1::method2<'4>(move _2)
+    _0 = TraitClause1::method2<'4>(move _2)
     storage_dead(_2)
     return
 }
