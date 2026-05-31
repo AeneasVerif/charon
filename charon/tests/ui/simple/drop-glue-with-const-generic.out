@@ -1,4 +1,4 @@
-error: internal compiler error: /rustc-dev/e9e32aca5a4ffd08cbc29547b039d64b92a2c03b/compiler/rustc_middle/src/ty/sty.rs:354:13: cannot find `K/#0` in param-env: ParamEnv {
+error: internal compiler error: /rustc-dev/f8a08b688cbe60acc386ed1fbd1b7cbaaf5576b1/compiler/rustc_middle/src/ty/sty.rs:360:13: cannot find `K/#0` in param-env: ParamEnv {
                                     caller_bounds: [
                                         Binder { value: HostEffectPredicate { trait_ref: <T as std::marker::Destruct>, constness: Maybe }, bound_vars: [] },
                                         Binder { value: TraitPredicate(<T as std::marker::Destruct>, polarity:Positive), bound_vars: [] },
@@ -6,7 +6,7 @@ error: internal compiler error: /rustc-dev/e9e32aca5a4ffd08cbc29547b039d64b92a2c
                                 }
 
 
-thread 'rustc' panicked at /rustc-dev/e9e32aca5a4ffd08cbc29547b039d64b92a2c03b/compiler/rustc_middle/src/ty/sty.rs:354:13:
+thread 'rustc' panicked at /rustc-dev/f8a08b688cbe60acc386ed1fbd1b7cbaaf5576b1/compiler/rustc_middle/src/ty/sty.rs:360:13:
 Box<dyn Any>
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: rustc panicked while retrieving drop glue. This is known to happen with `--precise-drops`; to silence this warning, pass `--opaque '{impl core::marker::Destruct for test_crate::PortableHash}'` to charon

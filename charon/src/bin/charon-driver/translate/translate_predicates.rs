@@ -31,7 +31,6 @@ impl<'tcx> TranslateCtx<'tcx> {
                     SolverTraitLangItem::AsyncFnKindHelper => return None,
                     SolverTraitLangItem::AsyncFnMut => BuiltinImplData::AsyncFnMut,
                     SolverTraitLangItem::AsyncFnOnce => BuiltinImplData::AsyncFnOnce,
-                    SolverTraitLangItem::AsyncFnOnceOutput => return None,
                     SolverTraitLangItem::AsyncIterator => return None,
                     SolverTraitLangItem::BikeshedGuaranteedNoDrop => return None,
                     SolverTraitLangItem::Clone => BuiltinImplData::Clone,

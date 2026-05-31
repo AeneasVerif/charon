@@ -209,9 +209,9 @@ where
     let self_11: UsizeNoHighBit; // local
     let _12: NonNull<u8>; // anonymous local
 
-    storage_live(len_3)
     storage_live(_6)
     storage_live(end_8)
+    storage_live(len_3)
     len_3 = copy ((*self_1)).len
     storage_live(_4)
     storage_live(_5)
@@ -250,6 +250,7 @@ where
     storage_dead(src_10)
     ((*self_1)).len = copy len_3 wrap.+ const 1 : usize
     _0 = &mut (*end_8)
+    storage_dead(len_3)
     return
 }
 

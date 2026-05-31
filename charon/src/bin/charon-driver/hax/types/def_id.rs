@@ -165,7 +165,8 @@ impl VirtualImplAssocItem {
         let tcx = s.base().tcx;
         let impl_trait_ref = tcx
             .impl_trait_ref(self.trait_impl_id)
-            .instantiate_identity();
+            .instantiate_identity()
+            .skip_normalization();
         self.args_for_item_decl(s, impl_trait_ref.args)
     }
 }
@@ -483,7 +484,7 @@ impl DefId {
                 let item_predicates = tcx
                     .predicates_of(id.item_decl_id)
                     .instantiate_own(tcx, item_args)
-                    .map(|(predicate, _)| predicate);
+                    .map(|(predicate, _)| predicate.skip_normalization());
                 param_env_from_clauses(tcx, impl_predicates.chain(item_predicates))
             }
             DefIdBase::Real(def_id)

@@ -88,20 +88,17 @@ pub fn {impl Drop for B}::drop<'_0>(self_1: &'_0 mut B)
 unsafe fn {impl Destruct for B}::drop_in_place(_1: *mut B)
 {
     let _0: (); // return
-    let _1: *mut B; // arg #1
-    let _2: &'1 mut B; // anonymous local
-    let _3: &'2 mut B; // anonymous local
-    let _4: (); // anonymous local
+    let _1: &'1 mut B; // arg #1
+    let _2: &'2 mut B; // anonymous local
+    let _3: (); // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    storage_live(_4)
     _0 = ()
     _2 = &mut (*_1)
-    _3 = &mut (*_2)
-    _4 = {impl Drop for B}::drop<'4>(move _3)
-    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).x
-    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).y
+    _3 = {impl Drop for B}::drop<'4>(move _2)
+    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_1)).x
+    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_1)).y
     return
 }
 
@@ -109,14 +106,11 @@ unsafe fn {impl Destruct for B}::drop_in_place(_1: *mut B)
 unsafe fn {impl Destruct for A}::drop_in_place(_1: *mut A)
 {
     let _0: (); // return
-    let _1: *mut A; // arg #1
-    let _2: &'1 mut A; // anonymous local
+    let _1: &'1 mut A; // arg #1
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1)
-    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).x
-    drop[{impl Destruct for B}::drop_in_place] ((*_2)).b
+    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_1)).x
+    drop[{impl Destruct for B}::drop_in_place] ((*_1)).b
     return
 }
 

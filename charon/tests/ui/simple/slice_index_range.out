@@ -90,21 +90,21 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
 
     storage_live(args_4)
     storage_live(args_5)
-    storage_live(args_9)
     storage_live(_3)
     args_4 = &start_1
     args_5 = &len_2
     storage_live(args_6)
     storage_live(_7)
-    storage_live(_13)
     storage_live(_14)
     storage_live(_10)
     storage_live(_11)
     _14 = &raw const (*args_4)
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
+    storage_live(_13)
     _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
+    storage_dead(_13)
     storage_live(_22)
     _22 = PhantomData {  }
     _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _22 }
@@ -113,17 +113,17 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     _7 = Argument { ty: move _10 }
     storage_dead(_10)
     storage_dead(_14)
-    storage_dead(_13)
     storage_live(_8)
-    storage_live(_18)
     storage_live(_19)
     storage_live(_15)
     storage_live(_16)
     _19 = &raw const (*args_5)
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
+    storage_live(_18)
     _18 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
+    storage_dead(_18)
     storage_live(_23)
     _23 = PhantomData {  }
     _15 = ArgumentType::Placeholder { value: move _16, formatter: copy _17, _lifetime: move _23 }
@@ -132,10 +132,10 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     _8 = Argument { ty: move _15 }
     storage_dead(_15)
     storage_dead(_19)
-    storage_dead(_18)
     args_6 = [move _7, move _8]
     storage_dead(_8)
     storage_dead(_7)
+    storage_live(args_9)
     args_9 = &args_6
     storage_live(_20)
     storage_live(_24)
@@ -148,6 +148,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     _3 = Arguments { template: move _20, args: move _21 }
     storage_dead(_21)
     storage_dead(_20)
+    storage_dead(args_9)
     panic(core::panicking::panic_fmt)
 }
 
@@ -182,21 +183,21 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
 
     storage_live(args_4)
     storage_live(args_5)
-    storage_live(args_9)
     storage_live(_3)
     args_4 = &end_1
     args_5 = &len_2
     storage_live(args_6)
     storage_live(_7)
-    storage_live(_13)
     storage_live(_14)
     storage_live(_10)
     storage_live(_11)
     _14 = &raw const (*args_4)
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
+    storage_live(_13)
     _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
+    storage_dead(_13)
     storage_live(_22)
     _22 = PhantomData {  }
     _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _22 }
@@ -205,17 +206,17 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     _7 = Argument { ty: move _10 }
     storage_dead(_10)
     storage_dead(_14)
-    storage_dead(_13)
     storage_live(_8)
-    storage_live(_18)
     storage_live(_19)
     storage_live(_15)
     storage_live(_16)
     _19 = &raw const (*args_5)
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
+    storage_live(_18)
     _18 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
+    storage_dead(_18)
     storage_live(_23)
     _23 = PhantomData {  }
     _15 = ArgumentType::Placeholder { value: move _16, formatter: copy _17, _lifetime: move _23 }
@@ -224,10 +225,10 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     _8 = Argument { ty: move _15 }
     storage_dead(_15)
     storage_dead(_19)
-    storage_dead(_18)
     args_6 = [move _7, move _8]
     storage_dead(_8)
     storage_dead(_7)
+    storage_live(args_9)
     args_9 = &args_6
     storage_live(_20)
     storage_live(_24)
@@ -240,6 +241,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     _3 = Arguments { template: move _20, args: move _21 }
     storage_dead(_21)
     storage_dead(_20)
+    storage_dead(args_9)
     panic(core::panicking::panic_fmt)
 }
 
@@ -274,21 +276,21 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
 
     storage_live(args_4)
     storage_live(args_5)
-    storage_live(args_9)
     storage_live(_3)
     args_4 = &start_1
     args_5 = &end_2
     storage_live(args_6)
     storage_live(_7)
-    storage_live(_13)
     storage_live(_14)
     storage_live(_10)
     storage_live(_11)
     _14 = &raw const (*args_4)
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
+    storage_live(_13)
     _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
+    storage_dead(_13)
     storage_live(_22)
     _22 = PhantomData {  }
     _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _22 }
@@ -297,17 +299,17 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     _7 = Argument { ty: move _10 }
     storage_dead(_10)
     storage_dead(_14)
-    storage_dead(_13)
     storage_live(_8)
-    storage_live(_18)
     storage_live(_19)
     storage_live(_15)
     storage_live(_16)
     _19 = &raw const (*args_5)
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
+    storage_live(_18)
     _18 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
+    storage_dead(_18)
     storage_live(_23)
     _23 = PhantomData {  }
     _15 = ArgumentType::Placeholder { value: move _16, formatter: copy _17, _lifetime: move _23 }
@@ -316,10 +318,10 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     _8 = Argument { ty: move _15 }
     storage_dead(_15)
     storage_dead(_19)
-    storage_dead(_18)
     args_6 = [move _7, move _8]
     storage_dead(_8)
     storage_dead(_7)
+    storage_live(args_9)
     args_9 = &args_6
     storage_live(_20)
     storage_live(_24)
@@ -332,6 +334,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     _3 = Arguments { template: move _20, args: move _21 }
     storage_dead(_21)
     storage_dead(_20)
+    storage_dead(args_9)
     panic(core::panicking::panic_fmt)
 }
 
@@ -366,21 +369,21 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
 
     storage_live(args_4)
     storage_live(args_5)
-    storage_live(args_9)
     storage_live(_3)
     args_4 = &end_1
     args_5 = &len_2
     storage_live(args_6)
     storage_live(_7)
-    storage_live(_13)
     storage_live(_14)
     storage_live(_10)
     storage_live(_11)
     _14 = &raw const (*args_4)
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
+    storage_live(_13)
     _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
+    storage_dead(_13)
     storage_live(_22)
     _22 = PhantomData {  }
     _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _22 }
@@ -389,17 +392,17 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     _7 = Argument { ty: move _10 }
     storage_dead(_10)
     storage_dead(_14)
-    storage_dead(_13)
     storage_live(_8)
-    storage_live(_18)
     storage_live(_19)
     storage_live(_15)
     storage_live(_16)
     _19 = &raw const (*args_5)
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
+    storage_live(_18)
     _18 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
+    storage_dead(_18)
     storage_live(_23)
     _23 = PhantomData {  }
     _15 = ArgumentType::Placeholder { value: move _16, formatter: copy _17, _lifetime: move _23 }
@@ -408,10 +411,10 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     _8 = Argument { ty: move _15 }
     storage_dead(_15)
     storage_dead(_19)
-    storage_dead(_18)
     args_6 = [move _7, move _8]
     storage_dead(_8)
     storage_dead(_7)
+    storage_live(args_9)
     args_9 = &args_6
     storage_live(_20)
     storage_live(_24)
@@ -424,6 +427,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     _3 = Arguments { template: move _20, args: move _21 }
     storage_dead(_21)
     storage_dead(_20)
+    storage_dead(args_9)
     panic(core::panicking::panic_fmt)
 }
 
@@ -729,13 +733,12 @@ where
 
     storage_live(start_3)
     storage_live(end_4)
-    storage_live(exhausted_5)
-    storage_live(len_6)
-    storage_live(new_len_13)
     storage_live(_16)
     start_3 = copy (self_1).start
     end_4 = copy (self_1).end
+    storage_live(exhausted_5)
     exhausted_5 = copy (self_1).exhausted
+    storage_live(len_6)
     len_6 = copy slice_2.metadata
     storage_live(_7)
     storage_live(_8)
@@ -767,13 +770,14 @@ where
             storage_dead(_17)
             storage_dead(rhs_12)
             storage_dead(self_11)
+            storage_live(new_len_13)
             new_len_13 = copy (_10 as variant Option::Some).0
             storage_live(_14)
             storage_live(ptr_15)
             ptr_15 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
             storage_live(_19)
-            storage_live(_20)
             _19 = cast<*mut [T], *mut T>(copy ptr_15)
+            storage_live(_20)
             _20 = copy _19 offset copy start_3
             _14 = @PtrFromPartsMut<'_, [T]>(copy _20, copy new_len_13)
             storage_dead(_20)
@@ -781,8 +785,11 @@ where
             storage_dead(ptr_15)
             _0 = &mut (*_14) with_metadata(copy _14.metadata)
             storage_dead(_14)
+            storage_dead(new_len_13)
             storage_dead(_10)
             storage_dead(_7)
+            storage_dead(len_6)
+            storage_dead(exhausted_5)
             return
         }
         storage_dead(_17)
@@ -825,13 +832,12 @@ where
 
     storage_live(start_3)
     storage_live(end_4)
-    storage_live(exhausted_5)
-    storage_live(len_6)
-    storage_live(new_len_13)
     storage_live(_16)
     start_3 = copy (self_1).start
     end_4 = copy (self_1).end
+    storage_live(exhausted_5)
     exhausted_5 = copy (self_1).exhausted
+    storage_live(len_6)
     len_6 = copy slice_2.metadata
     storage_live(_7)
     storage_live(_8)
@@ -863,13 +869,14 @@ where
             storage_dead(_17)
             storage_dead(rhs_12)
             storage_dead(self_11)
+            storage_live(new_len_13)
             new_len_13 = copy (_10 as variant Option::Some).0
             storage_live(_14)
             storage_live(_15)
             _15 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
             storage_live(_19)
-            storage_live(_20)
             _19 = cast<*const [T], *const T>(copy _15)
+            storage_live(_20)
             _20 = copy _19 offset copy start_3
             _14 = @PtrFromPartsShared<'_, [T]>(copy _20, copy new_len_13)
             storage_dead(_20)
@@ -877,8 +884,11 @@ where
             storage_dead(_15)
             _0 = &(*_14) with_metadata(copy _14.metadata)
             storage_dead(_14)
+            storage_dead(new_len_13)
             storage_dead(_10)
             storage_dead(_7)
+            storage_dead(len_6)
+            storage_dead(exhausted_5)
             return
         }
         storage_dead(_17)
@@ -991,7 +1001,8 @@ where
         self_9 = copy exclusive_end_3
     } else {
     }
-    storage_live(new_len_6)
+    storage_dead(self_10)
+    storage_dead(self_11)
     storage_live(_12)
     _12 = ub_checks<bool>
     if move _12 {
@@ -1001,10 +1012,11 @@ where
         storage_dead(_5)
     } else {
     }
+    storage_live(new_len_6)
     new_len_6 = copy exclusive_end_3 ub.- copy self_9
     storage_live(_7)
-    storage_live(_8)
     _7 = cast<*mut [T], *mut T>(copy slice_2)
+    storage_live(_8)
     _8 = copy _7 offset copy self_9
     _0 = @PtrFromPartsMut<'_, [T]>(copy _8, copy new_len_6)
     storage_dead(_8)
@@ -1112,7 +1124,8 @@ where
         self_9 = copy exclusive_end_3
     } else {
     }
-    storage_live(new_len_6)
+    storage_dead(self_10)
+    storage_dead(self_11)
     storage_live(_12)
     _12 = ub_checks<bool>
     if move _12 {
@@ -1122,10 +1135,11 @@ where
         storage_dead(_5)
     } else {
     }
+    storage_live(new_len_6)
     new_len_6 = copy exclusive_end_3 ub.- copy self_9
     storage_live(_7)
-    storage_live(_8)
     _7 = cast<*const [T], *const T>(copy slice_2)
+    storage_live(_8)
     _8 = copy _7 offset copy self_9
     _0 = @PtrFromPartsShared<'_, [T]>(copy _8, copy new_len_6)
     storage_dead(_8)
@@ -1164,7 +1178,6 @@ where
     storage_live(exclusive_end_6)
     storage_live(new_len_12)
     storage_live(self_15)
-    storage_live(self_16)
     storage_live(_3)
     self_4 = copy (self_1).end
     _5 = copy slice_2.metadata
@@ -1174,6 +1187,7 @@ where
         _17 = Option::None {  }
         _0 = move _17
     } else {
+        storage_live(self_16)
         self_15 = move (self_1).start
         self_16 = move (self_1).exhausted
         exclusive_end_6 = copy self_4 wrap.+ const 1 : usize
@@ -1181,7 +1195,7 @@ where
             self_15 = copy exclusive_end_6
         } else {
         }
-        storage_live(_8)
+        storage_dead(self_16)
         storage_live(_11)
         _11 = copy exclusive_end_6 < copy self_15
         if move _11 {
@@ -1195,12 +1209,13 @@ where
             storage_live(_7)
             _7 = copy exclusive_end_6 <= copy _5
             if move _7 {
+                storage_live(_8)
                 storage_live(_9)
                 storage_live(ptr_10)
                 ptr_10 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
                 storage_live(_13)
-                storage_live(_14)
                 _13 = cast<*mut [T], *mut T>(copy ptr_10)
+                storage_live(_14)
                 _14 = copy _13 offset copy self_15
                 _9 = @PtrFromPartsMut<'_, [T]>(copy _14, copy new_len_12)
                 storage_dead(_14)
@@ -1209,6 +1224,7 @@ where
                 _8 = &mut (*_9) with_metadata(copy _9.metadata)
                 _0 = Option::Some { 0: copy _8 }
                 storage_dead(_9)
+                storage_dead(_8)
             } else {
                 storage_live(_18)
                 _18 = Option::None {  }
@@ -1216,7 +1232,6 @@ where
             }
         }
         storage_dead(_7)
-        storage_dead(_8)
     }
     storage_dead(_3)
     return
@@ -1252,7 +1267,6 @@ where
     storage_live(exclusive_end_6)
     storage_live(new_len_12)
     storage_live(self_15)
-    storage_live(self_16)
     storage_live(_3)
     self_4 = copy (self_1).end
     _5 = copy slice_2.metadata
@@ -1262,6 +1276,7 @@ where
         _17 = Option::None {  }
         _0 = move _17
     } else {
+        storage_live(self_16)
         self_15 = move (self_1).start
         self_16 = move (self_1).exhausted
         exclusive_end_6 = copy self_4 wrap.+ const 1 : usize
@@ -1269,7 +1284,7 @@ where
             self_15 = copy exclusive_end_6
         } else {
         }
-        storage_live(_8)
+        storage_dead(self_16)
         storage_live(_11)
         _11 = copy exclusive_end_6 < copy self_15
         if move _11 {
@@ -1283,12 +1298,13 @@ where
             storage_live(_7)
             _7 = copy exclusive_end_6 <= copy _5
             if move _7 {
+                storage_live(_8)
                 storage_live(_9)
                 storage_live(_10)
                 _10 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
                 storage_live(_13)
-                storage_live(_14)
                 _13 = cast<*const [T], *const T>(copy _10)
+                storage_live(_14)
                 _14 = copy _13 offset copy self_15
                 _9 = @PtrFromPartsShared<'_, [T]>(copy _14, copy new_len_12)
                 storage_dead(_14)
@@ -1297,6 +1313,7 @@ where
                 _8 = &(*_9) with_metadata(copy _9.metadata)
                 _0 = Option::Some { 0: copy _8 }
                 storage_dead(_9)
+                storage_dead(_8)
             } else {
                 storage_live(_18)
                 _18 = Option::None {  }
@@ -1304,7 +1321,6 @@ where
             }
         }
         storage_dead(_7)
-        storage_dead(_8)
     }
     storage_dead(_3)
     return

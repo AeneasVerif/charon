@@ -292,7 +292,6 @@ fn box_new_uninit(layout_1: Layout) -> *mut u8
     let _6: *mut u8; // anonymous local
     let _7: *mut [u8]; // anonymous local
 
-    storage_live(ptr_3)
     storage_live(_4)
     storage_live(_2)
     _2 = alloc_impl_runtime(copy layout_1, const false)
@@ -303,6 +302,7 @@ fn box_new_uninit(layout_1: Layout) -> *mut u8
             _4 = handle_alloc_error(move layout_1)
         },
     }
+    storage_live(ptr_3)
     ptr_3 = copy (_2 as variant Result::Ok).0
     storage_live(_5)
     storage_live(_6)
@@ -314,6 +314,7 @@ fn box_new_uninit(layout_1: Layout) -> *mut u8
     storage_dead(_6)
     _0 = transmute<NonNull<u8>, *mut u8>(copy _5)
     storage_dead(_5)
+    storage_dead(ptr_3)
     storage_dead(_2)
     return
 }
@@ -364,18 +365,18 @@ where
     let _16: bool; // anonymous local
     let _17: bool; // anonymous local
 
-    storage_live(layout_2)
     storage_live(_4)
     storage_live(_5)
     storage_live(size_7)
     storage_live(_10)
     storage_live(_11)
     storage_live(unique_12)
+    _0 = ()
     storage_live(ptr_14)
     storage_live(ptr_15)
-    _0 = ()
     ptr_14 = copy (((*self_1)).0).0
     ptr_15 = copy (((*self_1)).0).1
+    storage_live(layout_2)
     storage_live(t_3)
     _4 = transmute<NonNull<T>, *mut T>(copy ptr_14)
     t_3 = transmute<NonNull<T>, *const T>(copy ptr_14)
@@ -412,9 +413,11 @@ where
             storage_dead(_13)
             _5 = TraitClause2::deallocate<'7>(move _6, move unique_12, move layout_2)
             storage_dead(_6)
-            return
         },
     }
+    storage_dead(layout_2)
+    storage_dead(ptr_14)
+    storage_dead(ptr_15)
     return
 }
 

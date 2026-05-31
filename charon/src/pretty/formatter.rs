@@ -65,7 +65,7 @@ pub trait AstFormatter: Sized {
         {
             write!(f, "{name}")
         } else {
-            write!(f, "{}", &method_id.to_pretty_string())
+            write!(f, "{}", method_id.to_pretty_string())
         }
     }
     fn format_assoc_type_name(
@@ -80,7 +80,7 @@ pub trait AstFormatter: Sized {
         {
             write!(f, "{name}")
         } else {
-            write!(f, "{}", &type_id.to_pretty_string())
+            write!(f, "{}", type_id.to_pretty_string())
         }
     }
     fn format_assoc_const_name(
@@ -95,7 +95,7 @@ pub trait AstFormatter: Sized {
         {
             write!(f, "{name}")
         } else {
-            write!(f, "{}", &const_id.to_pretty_string())
+            write!(f, "{}", const_id.to_pretty_string())
         }
     }
     fn format_enum_variant_name(

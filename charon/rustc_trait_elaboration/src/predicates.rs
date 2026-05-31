@@ -390,7 +390,9 @@ impl<'tcx> ItemPredicates<'tcx> {
     /// Substitute all the predicates with these args.
     pub fn instantiate(mut self, tcx: TyCtxt<'tcx>, args: ty::GenericArgsRef<'tcx>) -> Self {
         for predicate in self.iter_mut() {
-            predicate.clause = ty::EarlyBinder::bind(predicate.clause).instantiate(tcx, args);
+            predicate.clause = ty::EarlyBinder::bind(predicate.clause)
+                .instantiate(tcx, args)
+                .skip_norm_wip();
         }
         self
     }

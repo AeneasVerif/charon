@@ -917,7 +917,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         tgt_ty: &Ty,
     ) -> Result<Rvalue, Error> {
         match rvalue {
-            mir::Rvalue::Use(operand) => Ok(Rvalue::Use(self.translate_operand(span, operand)?)),
+            mir::Rvalue::Use(operand, _) => Ok(Rvalue::Use(self.translate_operand(span, operand)?)),
             mir::Rvalue::CopyForDeref(place) => {
                 // According to the documentation, it seems to be an optimisation
                 // for drop elaboration. We treat it as a regular copy.
@@ -1148,6 +1148,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     "charon does not support unsafe lifetime binders"
                 );
             }
+            mir::Rvalue::Reborrow(..) => {
+                raise_error!(
+                    self,
+                    span,
+                    "charon does not support reborrow rvalues (for Reborrow traits)"
+                );
+            }
         }
     }
 
@@ -1216,8 +1223,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     Some(StatementKind::PlaceMention(place))
                 }
             }
-            // This is for the stacked borrows memory model.
-            mir::StatementKind::Retag(_, _) => None,
             // These two are only there to make borrow-checking accept less code, and are removed
             // in later MIRs.
             mir::StatementKind::FakeRead(..) => None,
@@ -1287,7 +1292,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 destination,
                 target,
                 unwind,
-                fn_span: _,
                 ..
             } => self.translate_function_call(span, func, args, destination, target, unwind)?,
             TerminatorKind::Assert {

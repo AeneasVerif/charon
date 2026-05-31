@@ -85,17 +85,14 @@ where
     TypeOutlives1: B: 'a,
 {
     let _0: (); // return
-    let _1: *mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let _2: &'1 mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let _1: &'1 mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1)
-    match (*_2) {
+    match (*_1) {
         Cow::Borrowed => {
         },
         _ => {
-            drop[TraitClause1::ImpliedClause4::drop_in_place] ((*_2) as variant Cow::Owned).0
+            drop[TraitClause1::ImpliedClause4::drop_in_place] ((*_1) as variant Cow::Owned).0
             return
         },
     }

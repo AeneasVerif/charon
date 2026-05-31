@@ -443,6 +443,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .def_id
             .type_of(hax_state)
             .instantiate(tcx, item.rustc_args(hax_state));
+        let ty = hax::normalize(tcx, ty_env, ty);
 
         // Get the tail type, which determines the metadata of `ty`.
         let tail_ty = tcx.struct_tail_raw(
@@ -503,10 +504,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use rustc_abi as r_abi;
 
         fn translate_variant_layout(
-            variant_layout: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
+            variant_layout: &r_abi::VariantLayout<r_abi::FieldIdx>,
             tagger: Vec<(ByteCount, ScalarValue)>,
         ) -> Option<VariantLayout> {
-            let field_offsets = match &variant_layout.fields {
+            let field_offsets = variant_layout
+                .field_offsets
+                .iter()
+                .map(|o| o.bytes())
+                .collect();
+            Some(VariantLayout {
+                field_offsets,
+                uninhabited: variant_layout.is_uninhabited(),
+                tagger,
+            })
+        }
+
+        fn translate_layout_data(
+            layout_data: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
+            tagger: Vec<(ByteCount, ScalarValue)>,
+        ) -> Option<VariantLayout> {
+            let field_offsets = match &layout_data.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
                     offsets.iter().map(|o| o.bytes()).collect()
                 }
@@ -516,7 +533,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             };
             Some(VariantLayout {
                 field_offsets,
-                uninhabited: variant_layout.is_uninhabited(),
+                uninhabited: layout_data.is_uninhabited(),
                 tagger,
             })
         }
@@ -549,6 +566,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .def_id
             .type_of(hax_state)
             .instantiate(tcx, item.rustc_args(hax_state));
+        let ty = hax::normalize(tcx, ty_env, ty);
         let pseudo_input = ty_env.as_query_input(ty);
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
@@ -629,8 +647,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         ..
                     } => {
                         if niche_variants.contains(untagged_variant)
-                            && let Some(start) = tag_for_variant(*niche_variants.start())
-                            && let Some(end) = tag_for_variant(*niche_variants.end())
+                            && let Some(start) = tag_for_variant(niche_variants.start)
+                            && let Some(end) = tag_for_variant(niche_variants.last)
                         {
                             // Add an inner discriminator; the outer one filters the whole range of
                             // values considered to be discriminants, the inner one selects known
@@ -669,11 +687,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         };
                         let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
                             (0..n_variants).map(|_| None).collect();
-                        variant_layouts[variant_id] = translate_variant_layout(&layout, vec![]);
+                        variant_layouts[variant_id] = translate_layout_data(&layout, vec![]);
                         variant_layouts
                     }
                     r_abi::FieldsShape::Union(_) => {
-                        vec![translate_variant_layout(&layout, vec![])].into()
+                        vec![translate_layout_data(&layout, vec![])].into()
                     }
                     r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => {
                         vec![].into()

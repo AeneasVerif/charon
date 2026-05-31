@@ -242,7 +242,11 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let item_bounds = item_bounds
             .iter_trait_clauses()
             // Substitute the item generics
-            .map(|(_, tref)| EarlyBinder::bind(tref).instantiate(tcx, args))
+            .map(|(_, tref)| {
+                EarlyBinder::bind(tref)
+                    .instantiate(tcx, args)
+                    .skip_normalization()
+            })
             .enumerate();
 
         // Add all the bounds on the corresponding associated item.
@@ -351,7 +355,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                     .filter_map(|assoc| {
                         let ty =
                             Ty::new_projection(tcx, assoc.def_id, erased_tref.skip_binder().args);
-                        let ty = crate::erase_and_norm(tcx, self.typing_env, ty);
+                        let ty = crate::erase_and_norm(tcx, self.typing_env, Unnormalized::new(ty));
                         if let TyKind::Alias(alias_ty) = ty.kind()
                             && alias_ty.kind.def_id() == assoc.def_id
                         {
@@ -489,7 +493,11 @@ impl<'tcx> PredicateSearcher<'tcx> {
         predicates
             .iter_trait_clauses()
             // Substitute the item generics
-            .map(|(_, trait_ref)| EarlyBinder::bind(trait_ref).instantiate(tcx, generics))
+            .map(|(_, trait_ref)| {
+                EarlyBinder::bind(trait_ref)
+                    .instantiate(tcx, generics)
+                    .skip_normalization()
+            })
             // Resolve
             .map(|trait_ref| self.resolve(&trait_ref))
             .collect()

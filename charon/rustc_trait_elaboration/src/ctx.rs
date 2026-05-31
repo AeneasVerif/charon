@@ -103,7 +103,7 @@ impl<'tcx> PredicateCache<'tcx> {
             return predicates;
         }
         let predicates = compute();
-        let _ = self.values.insert(def_id, predicates.clone());
+        self.values.insert_unique(def_id, predicates.clone());
         predicates
     }
 }

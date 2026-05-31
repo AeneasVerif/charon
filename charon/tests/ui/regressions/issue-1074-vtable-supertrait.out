@@ -55,12 +55,9 @@ pub struct MyStruct {}
 unsafe fn {impl Destruct for MyStruct}::drop_in_place(_1: *mut MyStruct)
 {
     let _0: (); // return
-    let _1: *mut MyStruct; // arg #1
-    let _2: &'1 mut MyStruct; // anonymous local
+    let _1: &'1 mut MyStruct; // arg #1
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1)
     return
 }
 

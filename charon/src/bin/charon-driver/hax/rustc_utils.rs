@@ -17,7 +17,7 @@ where
     T: ty::TypeFoldable<ty::TyCtxt<'tcx>> + Clone,
 {
     match args {
-        None => x.instantiate_identity(),
+        None => x.instantiate_identity().skip_normalization(),
         Some(args) => normalize(tcx, typing_env, x.instantiate(tcx, args)),
     }
 }
@@ -51,7 +51,9 @@ impl<'tcx, T: ty::TypeFoldable<ty::TyCtxt<'tcx>>> ty::Binder<'tcx, T> {
         tcx: ty::TyCtxt<'tcx>,
         generics: &[ty::GenericArg<'tcx>],
     ) -> ty::Binder<'tcx, T> {
-        ty::EarlyBinder::bind(self).instantiate(tcx, generics)
+        ty::EarlyBinder::bind(self)
+            .instantiate(tcx, generics)
+            .skip_normalization()
     }
 }
 
@@ -173,10 +175,12 @@ pub fn get_method_sig<'tcx>(
     let implemented_trait_ref = tcx
         .impl_trait_ref(impl_def_id)
         .instantiate(tcx, method_args);
+    let implemented_trait_ref = normalize(tcx, typing_env, implemented_trait_ref);
     // Construct arguments for the declared method generics in the context of the implemented
     // method generics.
     let decl_args = method_args.rebase_onto(tcx, impl_def_id, implemented_trait_ref.args);
-    let mut sig = declared_sig.instantiate(tcx, decl_args);
+    let sig = declared_sig.instantiate(tcx, decl_args);
+    let sig = normalize(tcx, typing_env, sig);
 
     if let container_named_lts = tcx
         .generics_of(impl_def_id)
@@ -195,9 +199,10 @@ pub fn get_method_sig<'tcx>(
     {
         // Avoids using the same lifetime name twice in the same scope (once in impl parameters,
         // second in the method declaration late-bound vars).
-        sig = tcx.anonymize_bound_vars(sig);
+        tcx.anonymize_bound_vars(sig)
+    } else {
+        sig
     }
-    normalize(tcx, typing_env, sig)
 }
 
 /// Generates a list of `<trait_ref>::Ty` type aliases for each non-gat associated type of the
@@ -231,7 +236,7 @@ pub fn assoc_tys_for_trait<'tcx>(
             .iter_instantiated(tcx, tref.args)
         {
             if let Some(pred) = clause.as_trait_clause() {
-                let tref = erase_and_norm(tcx, typing_env, pred.skip_binder().trait_ref);
+                let tref = erase_and_norm(tcx, typing_env, pred.map(|b| b.skip_binder().trait_ref));
                 gather_assoc_tys(tcx, typing_env, assoc_tys, tref);
             }
         }
@@ -278,7 +283,7 @@ pub fn dyn_self_ty<'tcx>(
         tcx.mk_poly_existential_predicates(&preds)
     };
     let ty = tcx.mk_ty_from_kind(ty::Dynamic(preds, re_erased));
-    let ty = normalize(tcx, typing_env, ty);
+    let ty = normalize(tcx, typing_env, ty::Unnormalized::new_wip(ty));
     Some(ty)
 }
 
@@ -296,7 +301,9 @@ pub fn closure_once_shim<'tcx>(
         ty::ClosureKind::FnOnce => return None,
     };
     let mir = tcx.instance_mir(instance.def).clone();
-    let mir = ty::EarlyBinder::bind(mir).instantiate(tcx, instance.args);
+    let mir = ty::EarlyBinder::bind(mir)
+        .instantiate(tcx, instance.args)
+        .skip_normalization();
     Some(mir)
 }
 
@@ -306,12 +313,11 @@ pub fn drop_glue_shim<'tcx>(
     instantiate: Option<ty::GenericArgsRef<'tcx>>,
 ) -> mir::Body<'tcx> {
     let tcx = s.base().tcx;
-    let drop_in_place =
-        tcx.require_lang_item(rustc_hir::LangItem::DropInPlace, rustc_span::DUMMY_SP);
+    let drop_in_place = tcx.require_lang_item(rustc_hir::LangItem::DropGlue, rustc_span::DUMMY_SP);
     let ty = def_id.type_of(s);
     let ty = match instantiate {
-        None => ty.instantiate_identity(),
-        Some(args) => ty.instantiate(tcx, args),
+        None => ty.instantiate_identity().skip_normalization(),
+        Some(args) => ty.instantiate(tcx, args).skip_normalization(),
     };
     let instance_kind = ty::InstanceKind::DropGlue(drop_in_place, Some(ty));
     tcx.instance_mir(instance_kind).clone()

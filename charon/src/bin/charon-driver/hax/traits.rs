@@ -144,8 +144,11 @@ pub fn super_clause_to_clause_and_trait_proof<'tcx, S: UnderOwnerState<'tcx>>(
     ) {
         return None;
     }
-    let impl_trait_ref =
-        rustc_middle::ty::Binder::dummy(tcx.impl_trait_ref(impl_did).instantiate_identity());
+    let impl_trait_ref = rustc_middle::ty::Binder::dummy(
+        tcx.impl_trait_ref(impl_did)
+            .instantiate_identity()
+            .skip_normalization(),
+    );
     let new_clause = clause.instantiate_supertrait(tcx, impl_trait_ref);
     let trait_proof = solve_trait(
         s,
@@ -227,7 +230,9 @@ pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
     let self_pred = self_predicate(tcx, tr_def_id);
     // Substitute to be in the context of the current item.
     let generics = generics.truncate_to(tcx, tcx.generics_of(tr_def_id));
-    let self_pred = ty::EarlyBinder::bind(self_pred).instantiate(tcx, generics);
+    let self_pred = ty::EarlyBinder::bind(self_pred)
+        .instantiate(tcx, generics)
+        .skip_normalization();
 
     // Resolve
     Some(solve_trait(s, self_pred))

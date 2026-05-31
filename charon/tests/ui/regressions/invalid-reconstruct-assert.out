@@ -161,11 +161,8 @@ where
 
     bb0: {
         storage_live(base_5);
-        storage_live(half_8);
-        storage_live(mid_10);
         storage_live(_15);
         storage_live(_21);
-        storage_live(result_25);
         storage_live(_30);
         storage_live(_36);
         storage_live(_38);
@@ -208,10 +205,12 @@ where
 
     bb5: {
         storage_dead(_7);
+        storage_live(half_8);
         storage_live(_9);
         _9 = copy size_3;
         half_8 = move _9 ub./ const 2 : usize;
         storage_dead(_9);
+        storage_live(mid_10);
         storage_live(_11);
         _11 = copy base_5;
         mid_10 = move _11 wrap.+ copy half_8;
@@ -333,6 +332,8 @@ where
         storage_dead(_16);
         size_3 = copy size_3 wrap.- copy half_8;
         storage_dead(cmp_12);
+        storage_dead(mid_10);
+        storage_dead(half_8);
         storage_dead(_6);
         goto bb4;
     }
@@ -349,6 +350,7 @@ where
     }
 
     bb22: {
+        storage_live(result_25);
         storage_live(_26);
         storage_live(_27);
         _27 = copy _39 == const -1 : i8;
@@ -382,6 +384,7 @@ where
         assert(copy cond_28 == true) else undefined_behavior;
         storage_dead(cond_28);
         _0 = Result::Err { 0: copy result_25 };
+        storage_dead(result_25);
         goto bb28;
     }
 

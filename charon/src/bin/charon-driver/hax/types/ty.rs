@@ -266,7 +266,7 @@ impl FieldDef {
         instantiate: ty::GenericArgsRef<'tcx>,
     ) -> FieldDef {
         let tcx = s.base().tcx;
-        let ty = fdef.ty(tcx, instantiate).sinto(s);
+        let ty = normalize(tcx, s.typing_env(), fdef.ty(tcx, instantiate)).sinto(s);
         let name = {
             let name = fdef.name.sinto(s);
             let is_user_provided = {
@@ -551,7 +551,9 @@ pub struct GenericParamDef {
             ty::GenericParamDefKind::Lifetime => GenericParamDefKind::Lifetime,
             ty::GenericParamDefKind::Type { has_default, synthetic } => GenericParamDefKind::Type { has_default, synthetic },
             ty::GenericParamDefKind::Const { has_default, .. } => {
-                let ty = s.base().tcx.type_of(self.def_id).instantiate_identity().sinto(s);
+                let tcx = s.base().tcx;
+                let ty = tcx.type_of(self.def_id).instantiate_identity();
+                let ty = normalize(tcx, s.typing_env(), ty).sinto(s);
                 GenericParamDefKind::Const { has_default, ty }
             },
         }
@@ -629,7 +631,7 @@ impl Alias {
 
         // Try to normalize the alias first.
         let ty = ty::Ty::new_alias(tcx, *alias_ty);
-        let ty = crate::hax::traits::normalize(tcx, typing_env, ty);
+        let ty = normalize(tcx, typing_env, ty::Unnormalized::new(ty));
         let ty::Alias(alias_ty) = ty.kind() else {
             let ty: Ty = ty.sinto(s);
             return ty.kind().clone();
@@ -643,6 +645,7 @@ impl Alias {
             RustAliasKind::Opaque { def_id } => {
                 // Reveal the underlying `impl Trait` type.
                 let ty = tcx.type_of(def_id).instantiate(tcx, alias_ty.args);
+                let ty = normalize(tcx, s.typing_env(), ty);
                 AliasKind::Opaque {
                     hidden_ty: ty.sinto(s),
                 }
@@ -711,7 +714,7 @@ pub enum TyKind {
             let item = translate_item_ref(s, *fun_id, generics);
             let tcx = s.base().tcx;
             let fn_sig = tcx.fn_sig(*fun_id).instantiate(tcx, generics);
-            let fn_sig = Box::new(fn_sig.sinto(s));
+            let fn_sig = Box::new(normalize(tcx, s.typing_env(), fn_sig).sinto(s));
             TyKind::FnDef { item, fn_sig }
         },
     )]
@@ -723,11 +726,10 @@ pub enum TyKind {
 
     #[custom_arm(
         ty::TyKind::FnPtr(tys, header) => {
+            let fn_sig_kind = ty::FnSigKind::new(header.abi(), header.safety(), header.c_variadic());
             let sig = tys.map_bound(|tys| ty::FnSig {
                 inputs_and_output: tys.inputs_and_output,
-                c_variadic: header.c_variadic,
-                safety: header.safety,
-                abi: header.abi,
+                fn_sig_kind,
             });
             TyKind::Arrow(Box::new(sig.sinto(s)))
         },
@@ -1060,8 +1062,11 @@ pub struct TyFnSig {
     pub inputs: Vec<Ty>,
     #[value(self.output().sinto(s))]
     pub output: Ty,
+    #[value(self.c_variadic())]
     pub c_variadic: bool,
+    #[value(self.safety())]
     pub safety: Safety,
+    #[value(self.abi())]
     pub abi: ExternAbi,
 }
 
@@ -1567,6 +1572,7 @@ impl AssocItem {
                 let implemented_trait_ref = tcx
                     .impl_trait_ref(container_id)
                     .instantiate(tcx, container_args);
+                let implemented_trait_ref = normalize(tcx, s.typing_env(), implemented_trait_ref);
                 let implemented_trait_item = {
                     let implemented_item_id = implemented_item_id.sinto(s);
                     let generics =

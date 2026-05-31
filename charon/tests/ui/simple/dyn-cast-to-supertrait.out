@@ -91,12 +91,9 @@ struct HouseCat {}
 unsafe fn {impl Destruct for HouseCat}::drop_in_place(_1: *mut HouseCat)
 {
     let _0: (); // return
-    let _1: *mut HouseCat; // arg #1
-    let _2: &'1 mut HouseCat; // anonymous local
+    let _1: &'1 mut HouseCat; // arg #1
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1)
     return
 }
 

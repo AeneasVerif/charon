@@ -91,6 +91,13 @@ where
   Some(T),
 }
 
+// Full name: core::ptr::drop_glue
+#[lang_item("drop_glue")]
+unsafe fn drop_glue<'_0, T>(_1: &'_0 mut T)
+where
+    TraitClause0: (T: Destruct),
+= <opaque>
+
 // Full name: core::slice::index::private_slice_index::Sealed
 pub trait Sealed<Self>
 {
@@ -256,51 +263,67 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
+// Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_in_place
+unsafe fn {impl Destruct for [T]}::drop_in_place<T>(_1: *mut [T])
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: &'1 mut [T]; // arg #1
+    let _2: usize; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: *mut T; // anonymous local
+    let _5: bool; // anonymous local
+    let _6: &'_ mut [T]; // anonymous local
+    let _7: &'_ mut T; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _0 = ()
+    _2 = copy _1.metadata
+    _3 = const 0 : usize
+    loop {
+        _5 = copy _3 == copy _2
+        if move _5 {
+            break 0
+        } else {
+            storage_live(_6)
+            _6 = &mut (*_1) with_metadata(copy _1.metadata)
+            storage_live(_7)
+            _7 = @SliceIndexMut<'_, T>(move _6, copy _3)
+            _4 = &raw mut (*_7)
+            _3 = move _3 wrap.+ const 1 : usize
+            drop[{built_in impl Destruct for T}::drop_in_place] (*_4)
+            continue 0
+        }
+    }
+    return
+}
+
+// Full name: test_crate::<slice>::{impl Destruct for [T]}
+impl<T> Destruct for [T]
+where
+    TraitClause0: (T: Sized),
+{
+    fn drop_in_place = {impl Destruct for [T]}::drop_in_place<T>[TraitClause0]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_in_place
 unsafe fn {impl Destruct for [T; N]}::drop_in_place<T, const N : usize>(_1: *mut [T; N])
 where
     TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let _1: *mut [T; N]; // arg #1
-    let _2: &'1 mut [T; N]; // anonymous local
-    let _3: *mut [T; N]; // anonymous local
-    let _4: *mut [T]; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: *mut T; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: &'_ mut [T]; // anonymous local
-    let _10: &'_ mut T; // anonymous local
+    let _1: &'1 mut [T; N]; // arg #1
+    let _2: &'3 mut [T]; // anonymous local
 
     storage_live(_2)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
     _0 = ()
-    _2 = &mut (*_1)
-    _3 = &raw mut (*_2)
-    _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
-    _5 = copy _4.metadata
-    _6 = const 0 : usize
-    loop {
-        _8 = copy _6 == copy _5
-        if move _8 {
-            break 0
-        } else {
-            storage_live(_9)
-            _9 = &mut (*_4) with_metadata(copy _4.metadata)
-            storage_live(_10)
-            _10 = @SliceIndexMut<'_, T>(move _9, copy _6)
-            _7 = &raw mut (*_10)
-            _6 = move _6 wrap.+ const 1 : usize
-            drop[{built_in impl Destruct for T}::drop_in_place] (*_7)
-            continue 0
-        }
-    }
+    _2 = @ArrayToSliceMut<'_, T, N>(move _1)
+    _0 = drop_glue<'6, [T]>[{impl Destruct for [T]}<T>[TraitClause0]](move _2)
     return
 }
 
