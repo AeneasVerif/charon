@@ -48,14 +48,14 @@ fn main()
 // Full name: test_crate::foo::Trait
 pub trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     fn defaulted<'_0_1> = test_crate::foo::Trait::defaulted<'_0_1, Self>[Self]
     vtable: test_crate::foo::Trait::{vtable}
 }
 
 pub fn test_crate::foo::Trait::defaulted<'_0, Self>(self_1: &'_0 Self)
 where
-    [@TraitClause0]: Trait<Self>,
+    TraitClause0: (Self: Trait),
 {
     let _0: (); // return
     let self_1: &'1 Self; // arg #1
@@ -67,7 +67,7 @@ where
 
 // Full name: test_crate::foo::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = {built_in impl MetaSized for ()}
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     fn defaulted<'_0_1> = {impl Trait for ()}::defaulted<'_0_1>
     vtable: {impl Trait for ()}::{vtable}
 }

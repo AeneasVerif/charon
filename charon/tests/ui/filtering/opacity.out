@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,8 +16,8 @@ pub trait Sized<Self>
 #[lang_item("From")]
 pub trait From<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (T: Sized)
     fn from = core::convert::From::from<Self, T>[Self]
     non-dyn-compatible
 }
@@ -25,20 +25,20 @@ pub trait From<Self, T>
 #[lang_item("from_fn")]
 pub fn core::convert::From::from<Self, T>(_1: T) -> Self
 where
-    [@TraitClause0]: From<Self, T>,
+    TraitClause0: (Self: From<T>),
 = <opaque>
 
 // Full name: core::convert::{impl Into<U> for T}::into
 pub fn {impl Into<U> for T}::into<T, U>(self_1: T) -> U
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: From<U, T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (U: From<T>),
 {
     let _0: U; // return
     let self_1: T; // arg #1
 
-    _0 = @TraitClause2::from(move self_1)
+    _0 = TraitClause2::from(move self_1)
     return
 }
 
@@ -54,8 +54,8 @@ pub fn {impl From<u32> for u64}::from(small_1: u32) -> u64
 
 // Full name: core::convert::num::{impl From<u32> for u64}
 impl From<u32> for u64 {
-    parent_clause0 = {built_in impl Sized for u64}
-    parent_clause1 = {built_in impl Sized for u32}
+    proof ImpliedClause0: (u64: Sized) = {built_in impl Sized for u64}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
     fn from = {impl From<u32> for u64}::from
     non-dyn-compatible
 }
@@ -64,19 +64,19 @@ impl From<u32> for u64 {
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
 }
 
-// Full name: core::option::{Option<T>[@TraitClause0]}::is_some
-pub fn is_some<'_0, T>(self_1: &'_0 Option<T>[@TraitClause0]) -> bool
+// Full name: core::option::{Option<T>[TraitClause0]}::is_some
+pub fn is_some<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: bool; // return
-    let self_1: &'1 Option<T>[@TraitClause0]; // arg #1
+    let self_1: &'1 Option<T>[TraitClause0]; // arg #1
     let _2: isize; // anonymous local
 
     storage_live(_2)

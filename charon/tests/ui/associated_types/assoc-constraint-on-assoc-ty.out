@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -27,16 +27,16 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 // Full name: test_crate::Trait
 trait Trait<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Assoc: Sized)
     vtable: test_crate::Trait::{vtable}<Self_Assoc>
 }
 
 // Full name: test_crate::takes_trait
 fn takes_trait<I, Clause1_Assoc>(it_1: I)
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Trait<I, Clause1_Assoc>,
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: Trait<Clause1_Assoc>),
 {
     let _0: (); // return
     let it_1: I; // arg #1
@@ -50,17 +50,17 @@ where
 // Full name: test_crate::IntoIterator
 trait IntoIterator<Self, Self_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
-    parent_clause2 : [@TraitClause2]: Trait<Self_IntoIter, ()>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_IntoIter: Sized)
+    proof ImpliedClause2: (Self_IntoIter: Trait<()>)
     vtable: test_crate::IntoIterator::{vtable}<Self_IntoIter>
 }
 
 // Full name: test_crate::collect
 fn collect<I, Clause1_IntoIter>(it_1: Clause1_IntoIter)
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I, Clause1_IntoIter>,
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: IntoIterator<Clause1_IntoIter>),
 {
     let _0: (); // return
     let it_1: Clause1_IntoIter; // arg #1
@@ -69,7 +69,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = move it_1
-    _0 = takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause1, @TraitClause1::parent_clause2](move _2)
+    _0 = takes_trait<Clause1_IntoIter, ()>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2](move _2)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_in_place] it_1
     return

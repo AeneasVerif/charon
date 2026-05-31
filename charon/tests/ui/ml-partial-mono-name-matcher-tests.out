@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -18,7 +18,7 @@ pub trait core::marker::MetaSized::<&_ mut _><'_0, T0>
 #[lang_item("sized")]
 pub trait core::marker::Sized::<&_ mut _><'_0, T0>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<&_ mut _><'_0, T0>
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<&_ mut _><'_0>)
     non-dyn-compatible
 }
 
@@ -28,7 +28,7 @@ pub trait core::marker::MetaSized::<Option<&_ mut _>><'_0, T0>
 #[lang_item("sized")]
 pub trait core::marker::Sized::<Option<&_ mut _>><'_0, T0>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<Option<&_ mut _>><'_0, T0>
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<Option<&_ mut _>><'_0>)
     non-dyn-compatible
 }
 
@@ -74,7 +74,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<Option<&_ mut _>><'_0, T0>(_1:
 // Full name: test_crate::identity
 fn identity<T>(x_1: T) -> T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: T; // return
     let x_1: T; // arg #1
@@ -86,7 +86,7 @@ where
 
 fn test_crate::identity::<&_ mut _><'_0, T0>(x_1: &'_0 mut T0) -> &'_0 mut T0
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
     let _0: &'_0 mut T0; // return
     let x_1: &'_0 mut T0; // arg #1
@@ -98,7 +98,7 @@ where
 
 fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(x_1: Option<&'_0 mut T0>) -> Option<&'_0 mut T0>
 where
-    [@TraitClause0]: core::marker::Sized::<Option<&_ mut _>><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<Option<&_ mut _>><'_0>),
 {
     let _0: Option<&'_0 mut T0>; // return
     let x_1: Option<&'_0 mut T0>; // arg #1
@@ -111,7 +111,7 @@ where
 // Full name: test_crate::use_id_mut
 fn use_id_mut<A>(x_1: A)
 where
-    [@TraitClause0]: Sized<A>,
+    TraitClause0: (A: Sized),
 {
     let _0: (); // return
     let x_1: A; // arg #1

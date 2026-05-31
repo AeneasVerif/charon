@@ -15,14 +15,14 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 // Full name: test_crate::drop
 fn drop<T>(_1: T)
 where
-    [@TraitClause0]: Destruct<T>,
+    TraitClause0: (T: Destruct),
 {
     let _0: (); // return
     let _1: T; // arg #1
 
     _0 = ()
     _0 = ()
-    conditional_drop[@TraitClause0::drop_in_place] _1
+    conditional_drop[TraitClause0::drop_in_place] _1
     return
 }
 

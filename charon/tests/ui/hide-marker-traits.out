@@ -18,7 +18,7 @@ trait Idx<Self>
 // Full name: test_crate::IndexVec
 pub struct IndexVec<I>
 where
-    [@TraitClause0]: Idx<I>,
+    TraitClause0: (I: Idx),
 {
   i: I,
 }
@@ -26,9 +26,9 @@ where
 // Full name: test_crate::Vector
 pub struct Vector<I>
 where
-    [@TraitClause0]: Idx<I>,
+    TraitClause0: (I: Idx),
 {
-  vector: IndexVec<I>[@TraitClause0],
+  vector: IndexVec<I>[TraitClause0],
 }
 
 // Full name: test_crate::foo

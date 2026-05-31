@@ -8,23 +8,23 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::HasAssoc
 pub trait HasAssoc<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Assoc: Sized)
     vtable: test_crate::HasAssoc::{vtable}<Self_Assoc>
 }
 
 // Full name: test_crate::Alias
 pub type Alias<B, Clause1_Assoc>
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: HasAssoc<B, Clause1_Assoc>, = Clause1_Assoc
+    TraitClause0: (B: Sized),
+    TraitClause1: (B: HasAssoc<Clause1_Assoc>), = Clause1_Assoc
 
 
 

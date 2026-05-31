@@ -95,7 +95,7 @@ impl GenericParams {
 
     /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
     /// each required parameter with itself. E.g. given parameters for `<T, U> where U:
-    /// PartialEq<T>`, the arguments would be `<T, U>[@TraitClause0]`.
+    /// PartialEq<T>`, the arguments would be `<T, U>[TraitClause0]`.
     pub fn identity_args(&self) -> GenericArgs {
         self.identity_args_at_depth(DeBruijnId::zero())
     }

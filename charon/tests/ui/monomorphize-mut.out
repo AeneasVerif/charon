@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -18,7 +18,7 @@ pub trait core::marker::MetaSized::<&_ mut _><'_0, T0>
 #[lang_item("sized")]
 pub trait core::marker::Sized::<&_ mut _><'_0, T0>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<&_ mut _><'_0, T0>
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<&_ mut _><'_0>)
     non-dyn-compatible
 }
 
@@ -28,94 +28,94 @@ pub trait core::marker::MetaSized::<&_ mut &_ mut _><'_0, '_1, T0>
 #[lang_item("sized")]
 pub trait core::marker::Sized::<&_ mut &_ mut _><'_0, '_1, T0>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<&_ mut &_ mut _><'_0, '_1, T0>
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<&_ mut &_ mut _><'_0, '_1>)
     non-dyn-compatible
 }
 
 #[lang_item("meta_sized")]
-pub trait core::marker::MetaSized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::MetaSized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
 #[lang_item("sized")]
-pub trait core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause0])
     non-dyn-compatible
 }
 
 #[lang_item("meta_sized")]
-pub trait core::marker::MetaSized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>
+pub trait core::marker::MetaSized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
 #[lang_item("sized")]
-pub trait core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>
+pub trait core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>[@TraitClause0, @TraitClause1]
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause0, TraitClause1])
     non-dyn-compatible
 }
 
 #[lang_item("meta_sized")]
-pub trait core::marker::MetaSized::<Iter<_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::MetaSized::<Iter<_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: Sized<T0>,
-    T0 : '_0,
+    TraitClause0: (T0: Sized),
+    TypeOutlives0: T0: '_0,
 
 #[lang_item("sized")]
-pub trait core::marker::Sized::<Iter<_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::Sized::<Iter<_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: Sized<T0>,
-    T0 : '_0,
+    TraitClause0: (T0: Sized),
+    TypeOutlives0: T0: '_0,
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<Iter<_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<Iter<_, _>[TraitClause0]><'_0>[TraitClause0])
     non-dyn-compatible
 }
 
 #[lang_item("meta_sized")]
-pub trait core::marker::MetaSized::<IterWrapper<_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::MetaSized::<IterWrapper<_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: Sized<T0>,
-    T0 : '_0,
+    TraitClause0: (T0: Sized),
+    TypeOutlives0: T0: '_0,
 
 #[lang_item("sized")]
-pub trait core::marker::Sized::<IterWrapper<_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: Sized<T0>,
-    T0 : '_0,
+    TraitClause0: (T0: Sized),
+    TypeOutlives0: T0: '_0,
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<IterWrapper<_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<IterWrapper<_, _>[TraitClause0]><'_0>[TraitClause0])
     non-dyn-compatible
 }
 
 #[lang_item("meta_sized")]
-pub trait core::marker::MetaSized::<IterMut<_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::MetaSized::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: Sized<T0>,
-    T0 : '_0,
-    T0 : '_0,
+    TraitClause0: (T0: Sized),
+    TypeOutlives0: T0: '_0,
+    TypeOutlives1: T0: '_0,
 
 #[lang_item("sized")]
-pub trait core::marker::Sized::<IterMut<_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::Sized::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: Sized<T0>,
-    T0 : '_0,
-    T0 : '_0,
+    TraitClause0: (T0: Sized),
+    TypeOutlives0: T0: '_0,
+    TypeOutlives1: T0: '_0,
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized::<IterMut<_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause0])
     non-dyn-compatible
 }
 
 #[lang_item("meta_sized")]
-pub trait core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -135,56 +135,56 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 #[lang_item("Option")]
 pub enum core::option::Option::<&_ mut _><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
   None,
   Some(&'_0 mut T0),
 }
 
 #[lang_item("destruct")]
-pub trait core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>[TraitClause0]
     non-dyn-compatible
 }
 
 #[lang_item("Option")]
-pub enum core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'_0, T0>
+pub enum core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
   None,
-  Some(core::option::Option::<&_ mut _><'_0, T0>[@TraitClause1]),
+  Some(core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]),
 }
 
 #[lang_item("destruct")]
-pub trait core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>
+pub trait core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>[@TraitClause0, @TraitClause1]
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: core::slice::iter::IterMut
 pub opaque type IterMut<mut 'a, T>
 where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
-    T : 'a,
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
 
 #[lang_item("destruct")]
-pub trait core::marker::Destruct::<IterMut<_, _>[@TraitClause0]><'_0, T0>
+pub trait core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
-    [@TraitClause0]: Sized<T0>,
-    T0 : '_0,
-    T0 : '_0,
+    TraitClause0: (T0: Sized),
+    TypeOutlives0: T0: '_0,
+    TypeOutlives1: T0: '_0,
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<IterMut<_, _>[@TraitClause0]><'_0, T0>[@TraitClause0]
+    fn drop_in_place = core::marker::Destruct::drop_in_place::<IterMut<_, _>[TraitClause0]><'_0, T0>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -195,29 +195,29 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 unsafe fn core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>(_1: *mut &'_0 mut T0)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>(_1: *mut core::option::Option::<&_ mut _><'_0, T0>[@TraitClause0])
+unsafe fn core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>(_1: *mut core::option::Option::<&_ mut _><'_0, T0>[TraitClause0])
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>(_1: *mut core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'_0, T0>[@TraitClause0, @TraitClause1])
+unsafe fn core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>(_1: *mut core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<IterMut<_, _>[@TraitClause0]><'_0, T0>(_1: *mut IterMut<'_0, T0>[@TraitClause0])
+unsafe fn core::marker::Destruct::drop_in_place::<IterMut<_, _>[TraitClause0]><'_0, T0>(_1: *mut IterMut<'_0, T0>[TraitClause0])
 where
-    [@TraitClause0]: Sized<T0>,
-    T0 : '_0,
-    T0 : '_0,
+    TraitClause0: (T0: Sized),
+    TypeOutlives0: T0: '_0,
+    TypeOutlives1: T0: '_0,
 = <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -225,26 +225,26 @@ pub trait Tuple<Self>
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
     type Output
     fn call_once = call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
 // Full name: core::ops::function::FnOnce::call_once
-pub extern "rust-call" fn call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
+pub extern "rust-call" fn call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    TraitClause0: (Self: FnOnce<Args>),
 = <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -253,7 +253,7 @@ where
 #[lang_item("Option")]
 pub enum core::option::Option::<&_ mut &_ mut _><'_0, '_1, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut &_ mut _><'_0, '_1, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut &_ mut _><'_0, '_1>),
 {
   None,
   Some(&'_0 mut &'_1 mut T0),
@@ -262,53 +262,53 @@ where
 // Full name: test_crate::Iter
 struct Iter<mut 'a, T>
 where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
   head: &'a mut T,
   tail: core::option::Option::<&_ mut _><'a, T>[{built_in impl core::marker::Sized::<&_ mut _><'a> for T}],
 }
 
 #[lang_item("Option")]
-pub enum core::option::Option::<Iter<_, _>[@TraitClause1]><'_0, T0>
+pub enum core::option::Option::<Iter<_, _>[TraitClause1]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<Iter<_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: Sized<T0>,
-    T0 : '_0,
+    TraitClause0: (T0: core::marker::Sized::<Iter<_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: Sized),
+    TypeOutlives0: T0: '_0,
 {
   None,
-  Some(Iter<'_0, T0>[@TraitClause1]),
+  Some(Iter<'_0, T0>[TraitClause1]),
 }
 
 // Full name: test_crate::IterWrapper
 struct IterWrapper<mut 'a, T>
 where
-    [@TraitClause0]: Sized<T>,
-    T : 'a,
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
-  Iter<'a, T>[@TraitClause0],
+  Iter<'a, T>[TraitClause0],
 }
 
 #[lang_item("Option")]
-pub enum core::option::Option::<IterWrapper<_, _>[@TraitClause1]><'_0, T0>
+pub enum core::option::Option::<IterWrapper<_, _>[TraitClause1]><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<IterWrapper<_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: Sized<T0>,
-    T0 : '_0,
+    TraitClause0: (T0: core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: Sized),
+    TypeOutlives0: T0: '_0,
 {
   None,
-  Some(IterWrapper<'_0, T0>[@TraitClause1]),
+  Some(IterWrapper<'_0, T0>[TraitClause1]),
 }
 
-// Full name: core::option::{Option<T>[@TraitClause0]}::map
-pub fn map<T, U, F>(_1: Option<T>[@TraitClause0], _2: F) -> Option<U>[@TraitClause1]
+// Full name: core::option::{Option<T>[TraitClause0]}::map
+pub fn map<T, U, F>(_1: Option<T>[TraitClause0], _2: F) -> Option<U>[TraitClause1]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: Sized<F>,
-    [@TraitClause3]: FnOnce<F, (T,)>,
-    [@TraitClause4]: Destruct<F>,
-    @TraitClause3::Output = U,
+    TraitClause0: (T: Sized),
+    TraitClause1: (U: Sized),
+    TraitClause2: (F: Sized),
+    TraitClause3: (F: FnOnce<(T,)>),
+    TraitClause4: (F: Destruct),
+    TypeConstraint0: TraitClause3::Output = U,
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -318,8 +318,8 @@ pub struct Global {}
 // Full name: test_crate::option_mut
 fn option_mut<X, A>(x_1: A)
 where
-    [@TraitClause0]: Sized<X>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (X: Sized),
+    TraitClause1: (A: Sized),
 {
     let _0: (); // return
     let x_1: A; // arg #1
@@ -328,7 +328,7 @@ where
     let _4: u32; // anonymous local
     let _5: core::option::Option::<&_ mut _><'16, A>[{built_in impl core::marker::Sized::<&_ mut _><'16> for A}]; // anonymous local
     let _6: &'19 mut A; // anonymous local
-    let _7: core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'41, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'41>[{built_in impl core::marker::Sized::<&_ mut _><'41> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'41> for A}]; // anonymous local
+    let _7: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'41, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'41>[{built_in impl core::marker::Sized::<&_ mut _><'41> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'41> for A}]; // anonymous local
     let _8: core::option::Option::<&_ mut _><'50, A>[{built_in impl core::marker::Sized::<&_ mut _><'50> for A}]; // anonymous local
     let _9: &'53 mut A; // anonymous local
     let _10: core::option::Option::<&_ mut &_ mut _><'68, '69, u32>[{built_in impl core::marker::Sized::<&_ mut &_ mut _><'68, '69> for u32}]; // anonymous local
@@ -357,7 +357,7 @@ where
     _9 = &mut x_1
     _8 = core::option::Option::<&_ mut _>::Some { 0: move _9 }
     storage_dead(_9)
-    _7 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]>::Some { 0: move _8 }
+    _7 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]>::Some { 0: move _8 }
     storage_dead(_8)
     storage_dead(_7)
     storage_live(_10)
@@ -381,7 +381,7 @@ where
 // Full name: test_crate::identity
 fn identity<T>(x_1: T) -> T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: T; // return
     let x_1: T; // arg #1
@@ -393,7 +393,7 @@ where
 
 fn test_crate::identity::<&_ mut _><'_0, T0>(x_1: &'_0 mut T0) -> &'_0 mut T0
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
     let _0: &'_0 mut T0; // return
     let x_1: &'_0 mut T0; // arg #1
@@ -403,52 +403,52 @@ where
     return
 }
 
-fn test_crate::identity::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'_0, T0>(x_1: core::option::Option::<&_ mut _><'_0, T0>[@TraitClause1]) -> core::option::Option::<&_ mut _><'_0, T0>[@TraitClause1]
+fn test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>(x_1: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]) -> core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]
 where
-    [@TraitClause0]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    let _0: core::option::Option::<&_ mut _><'_0, T0>[@TraitClause1]; // return
-    let x_1: core::option::Option::<&_ mut _><'_0, T0>[@TraitClause1]; // arg #1
+    let _0: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]; // return
+    let x_1: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0>[@TraitClause1] for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_in_place] x_1
     return
 }
 
-fn test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause1, @TraitClause2]><'_0, T0>(x_1: core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'_0, T0>[@TraitClause1, @TraitClause2]) -> core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'_0, T0>[@TraitClause1, @TraitClause2]
+fn test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'_0, T0>(x_1: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]) -> core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]
 where
-    [@TraitClause0]: core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0, T0>[@TraitClause1, @TraitClause2],
-    [@TraitClause1]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_0, T0>[@TraitClause2],
-    [@TraitClause2]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2]),
+    TraitClause1: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause2]),
+    TraitClause2: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    let _0: core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'_0, T0>[@TraitClause1, @TraitClause2]; // return
-    let x_1: core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'_0, T0>[@TraitClause1, @TraitClause2]; // arg #1
+    let _0: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]; // return
+    let x_1: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'_0>[@TraitClause1, @TraitClause2] for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2] for T0}::drop_in_place] x_1
     return
 }
 
-fn test_crate::identity::<IterMut<_, _>[@TraitClause1]><'_0, T0>(x_1: IterMut<'_0, T0>[@TraitClause1]) -> IterMut<'_0, T0>[@TraitClause1]
+fn test_crate::identity::<IterMut<_, _>[TraitClause1]><'_0, T0>(x_1: IterMut<'_0, T0>[TraitClause1]) -> IterMut<'_0, T0>[TraitClause1]
 where
-    [@TraitClause0]: core::marker::Sized::<IterMut<_, _>[@TraitClause0]><'_0, T0>[@TraitClause1],
-    [@TraitClause1]: Sized<T0>,
-    T0 : '_0,
-    T0 : '_0,
+    TraitClause0: (T0: core::marker::Sized::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1]),
+    TraitClause1: (T0: Sized),
+    TypeOutlives0: T0: '_0,
+    TypeOutlives1: T0: '_0,
 {
-    let _0: IterMut<'_0, T0>[@TraitClause1]; // return
-    let x_1: IterMut<'_0, T0>[@TraitClause1]; // arg #1
+    let _0: IterMut<'_0, T0>[TraitClause1]; // return
+    let x_1: IterMut<'_0, T0>[TraitClause1]; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[@TraitClause0]><'_0>[@TraitClause1] for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_in_place] x_1
     return
 }
 
 // Full name: test_crate::mutable_identity
 fn mutable_identity<'_0, T>(x_1: &'_0 mut T) -> &'_0 mut T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: &'1 mut T; // return
     let x_1: &'2 mut T; // arg #1
@@ -472,8 +472,8 @@ where
 // Full name: test_crate::use_id_mut
 fn use_id_mut<X, A>(x_1: A)
 where
-    [@TraitClause0]: Sized<X>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (X: Sized),
+    TraitClause1: (A: Sized),
 {
     let _0: (); // return
     let x_1: A; // arg #1
@@ -486,8 +486,8 @@ where
     let _8: core::option::Option::<&_ mut _><'14, u32>[{built_in impl core::marker::Sized::<&_ mut _><'14> for u32}]; // anonymous local
     let _9: &'17 mut u32; // anonymous local
     let _10: u32; // anonymous local
-    let _11: core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'45, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'45>[{built_in impl core::marker::Sized::<&_ mut _><'45> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'45> for A}]; // anonymous local
-    let _12: core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'54, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'54>[{built_in impl core::marker::Sized::<&_ mut _><'54> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'54> for A}]; // anonymous local
+    let _11: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'45, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'45>[{built_in impl core::marker::Sized::<&_ mut _><'45> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'45> for A}]; // anonymous local
+    let _12: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'54, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'54>[{built_in impl core::marker::Sized::<&_ mut _><'54> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'54> for A}]; // anonymous local
     let _13: core::option::Option::<&_ mut _><'63, A>[{built_in impl core::marker::Sized::<&_ mut _><'63> for A}]; // anonymous local
     let _14: &'66 mut A; // anonymous local
     let _15: Option<&'72 u32>[{built_in impl Sized for &'72 u32}]; // anonymous local
@@ -535,7 +535,7 @@ where
     _9 = &mut _10
     _8 = core::option::Option::<&_ mut _>::Some { 0: move _9 }
     storage_dead(_9)
-    _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><'97, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'97>[{built_in impl core::marker::Sized::<&_ mut _><'97> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'97> for u32}](move _8)
+    _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'97, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'97>[{built_in impl core::marker::Sized::<&_ mut _><'97> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'97> for u32}](move _8)
     storage_dead(_8)
     storage_dead(_10)
     storage_dead(_7)
@@ -547,9 +547,9 @@ where
     _14 = &mut x_1
     _13 = core::option::Option::<&_ mut _>::Some { 0: move _14 }
     storage_dead(_14)
-    _12 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]>::Some { 0: move _13 }
+    _12 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]>::Some { 0: move _13 }
     storage_dead(_13)
-    _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause1, @TraitClause2]><'144, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[@TraitClause1]><_, _>[@TraitClause0, @TraitClause1]><'144>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'144>[{built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'144>[{built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'144> for A}](move _12)
+    _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'144, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'144>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'144>[{built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'144>[{built_in impl core::marker::Sized::<&_ mut _><'144> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'144> for A}](move _12)
     storage_live(_21)
     storage_live(_24)
     storage_live(_25)
@@ -580,14 +580,14 @@ where
 // Full name: test_crate::Foo1
 struct Foo1<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   T,
 }
 
 struct test_crate::Foo1::<&_ mut _><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
   &'_0 mut T0,
 }
@@ -595,31 +595,31 @@ where
 // Full name: test_crate::Foo2
 struct Foo2<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-  Foo1<T>[@TraitClause0],
+  Foo1<T>[TraitClause0],
 }
 
 struct test_crate::Foo2::<&_ mut _><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-  test_crate::Foo1::<&_ mut _><'_0, T0>[@TraitClause0],
+  test_crate::Foo1::<&_ mut _><'_0, T0>[TraitClause0],
 }
 
 // Full name: test_crate::Foo3
 struct Foo3<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-  Foo2<T>[@TraitClause0],
+  Foo2<T>[TraitClause0],
 }
 
 struct test_crate::Foo3::<&_ mut _><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-  test_crate::Foo2::<&_ mut _><'_0, T0>[@TraitClause0],
+  test_crate::Foo2::<&_ mut _><'_0, T0>[TraitClause0],
 }
 
 // Full name: test_crate::use_foo
@@ -636,39 +636,39 @@ fn use_foo<'_0>(_1: test_crate::Foo3::<&_ mut _><'_0, u32>[{built_in impl core::
 // Full name: test_crate::Triple
 struct Triple<A, B, C>
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Sized<C>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (C: Sized),
 {
   A,
   B,
   C,
 }
 
-struct test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[@TraitClause3]><'_0, '_1, '_2, T0, T1, T2>
+struct test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'_0, '_1, '_2, T0, T1, T2>
 where
-    [@TraitClause0]: Sized<T0>,
-    [@TraitClause1]: core::marker::Sized::<&_ mut &_ mut _><'_0, '_1, T1>,
-    [@TraitClause2]: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'_2, T2>[@TraitClause3],
-    [@TraitClause3]: core::marker::Sized::<&_ mut _><'_2, T2>,
+    TraitClause0: (T0: Sized),
+    TraitClause1: (T1: core::marker::Sized::<&_ mut &_ mut _><'_0, '_1>),
+    TraitClause2: (T2: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_2>[TraitClause3]),
+    TraitClause3: (T2: core::marker::Sized::<&_ mut _><'_2>),
 {
   T0,
   &'_0 mut &'_1 mut T1,
-  core::option::Option::<&_ mut _><'_2, T2>[@TraitClause3],
+  core::option::Option::<&_ mut _><'_2, T2>[TraitClause3],
 }
 
 // Full name: test_crate::Example
 type Example<'a, 'b, T>
 where
-    [@TraitClause0]: Sized<T>, = test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[@TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'a, 'b> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'a>[{built_in impl core::marker::Sized::<&_ mut _><'a> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'a> for bool}]
+    TraitClause0: (T: Sized), = test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'a, 'b> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'a>[{built_in impl core::marker::Sized::<&_ mut _><'a> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'a> for bool}]
 
 // Full name: test_crate::use_example
-fn use_example<'a, 'b, T>(_1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[@TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'a, 'b> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'a>[{built_in impl core::marker::Sized::<&_ mut _><'a> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'a> for bool}])
+fn use_example<'a, 'b, T>(_1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'a, 'b> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'a>[{built_in impl core::marker::Sized::<&_ mut _><'a> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'a> for bool}])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let _1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[@TraitClause3]><'42, '43, '44, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'42, '43> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[@TraitClause0]><'44>[{built_in impl core::marker::Sized::<&_ mut _><'44> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'44> for bool}]; // arg #1
+    let _1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'42, '43, '44, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'42, '43> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'44>[{built_in impl core::marker::Sized::<&_ mut _><'44> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'44> for bool}]; // arg #1
 
     _0 = ()
     _0 = ()
@@ -678,35 +678,35 @@ where
 // Full name: test_crate::List
 enum List<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   Nil,
-  Cons(ListNode<T>[@TraitClause0]),
+  Cons(ListNode<T>[TraitClause0]),
 }
 
 // Full name: test_crate::ListNode
 struct ListNode<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   val: T,
-  next: alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}],
+  next: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}],
 }
 
 enum test_crate::List::<&_ mut _><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
   Nil,
-  Cons(test_crate::ListNode::<&_ mut _><'_0, T0>[@TraitClause0]),
+  Cons(test_crate::ListNode::<&_ mut _><'_0, T0>[TraitClause0]),
 }
 
 struct test_crate::ListNode::<&_ mut _><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
   val: &'_0 mut T0,
-  next: alloc::boxed::Box<test_crate::List::<&_ mut _><'_0, T0>[@TraitClause0]>[{built_in impl core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[@TraitClause0]><'_0>[@TraitClause0] for T0}, {built_in impl Sized for Global}],
+  next: alloc::boxed::Box<test_crate::List::<&_ mut _><'_0, T0>[TraitClause0]>[{built_in impl core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause0] for T0}, {built_in impl Sized for Global}],
 }
 
 // Full name: test_crate::use_list_mut
@@ -722,20 +722,20 @@ fn use_list_mut<'_0, '_1>(_1: &'_0 test_crate::List::<&_ mut _><'_1, u32>[{built
 
 struct test_crate::Iter::<_, &_ mut _><'_0, '_1, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_1, T0>,
-    &'_1 mut T0 : '_0,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_1>),
+    TypeOutlives0: &'_1 mut T0: '_0,
 {
   head: &'_0 mut &'_1 mut T0,
   tail: core::option::Option::<&_ mut &_ mut _><'_0, '_1, T0>[{built_in impl core::marker::Sized::<&_ mut &_ mut _><'_0, '_1> for T0}],
 }
 
 // Full name: test_crate::use_iter
-fn use_iter<'a, 'b, T>(_1: core::option::Option::<Iter<_, _>[@TraitClause1]><'a, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[@TraitClause0]><'a>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}])
+fn use_iter<'a, 'b, T>(_1: core::option::Option::<Iter<_, _>[TraitClause1]><'a, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[TraitClause0]><'a>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let _1: core::option::Option::<Iter<_, _>[@TraitClause1]><'6, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[@TraitClause0]><'6>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
+    let _1: core::option::Option::<Iter<_, _>[TraitClause1]><'6, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[TraitClause0]><'6>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
 
     _0 = ()
     _0 = ()
@@ -745,7 +745,7 @@ where
 // Full name: test_crate::use_iter_mut
 fn use_iter_mut<'a, 'b, T>(_1: test_crate::Iter::<_, &_ mut _><'a, 'b, T>[{built_in impl core::marker::Sized::<&_ mut _><'b> for T}])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let _1: test_crate::Iter::<_, &_ mut _><'7, '8, T>[{built_in impl core::marker::Sized::<&_ mut _><'8> for T}]; // arg #1
@@ -756,12 +756,12 @@ where
 }
 
 // Full name: test_crate::use_iter_wrapper
-fn use_iter_wrapper<'a, 'b, T>(_1: core::option::Option::<IterWrapper<_, _>[@TraitClause1]><'a, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[@TraitClause0]><'a>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}])
+fn use_iter_wrapper<'a, 'b, T>(_1: core::option::Option::<IterWrapper<_, _>[TraitClause1]><'a, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'a>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let _1: core::option::Option::<IterWrapper<_, _>[@TraitClause1]><'6, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[@TraitClause0]><'6>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
+    let _1: core::option::Option::<IterWrapper<_, _>[TraitClause1]><'6, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'6>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
 
     _0 = ()
     _0 = ()
@@ -771,21 +771,21 @@ where
 // Full name: test_crate::ArrayWrapper
 struct ArrayWrapper<T, const N : usize>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   [T; N],
 }
 
 struct test_crate::ArrayWrapper::<&_ mut _, 1 : usize><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
   [&'_0 mut T0; 1 : usize],
 }
 
 struct test_crate::ArrayWrapper::<&_ mut _, 2 : usize><'_0, T0>
 where
-    [@TraitClause0]: core::marker::Sized::<&_ mut _><'_0, T0>,
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
   [&'_0 mut T0; 2 : usize],
 }
@@ -805,7 +805,7 @@ fn use_const_generic<'_0, '_1>(_1: test_crate::ArrayWrapper::<&_ mut _, 1 : usiz
 // Full name: test_crate::use_opaque_iter
 fn use_opaque_iter<'a, 'b, T>(x_1: IterMut<'a, bool>[{built_in impl Sized for bool}])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let x_1: IterMut<'1, bool>[{built_in impl Sized for bool}]; // arg #1
@@ -816,7 +816,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = move x_1
-    _2 = test_crate::identity::<IterMut<_, _>[@TraitClause1]><'4, bool>[{built_in impl core::marker::Sized::<IterMut<_, _>[@TraitClause0]><'4>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}](move _3)
+    _2 = test_crate::identity::<IterMut<_, _>[TraitClause1]><'4, bool>[{built_in impl core::marker::Sized::<IterMut<_, _>[TraitClause0]><'4>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

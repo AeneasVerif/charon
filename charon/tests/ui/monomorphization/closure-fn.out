@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -31,7 +31,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<closure<'_, '_>>(_1: *mut clos
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -43,9 +43,9 @@ opaque type core::ops::function::FnOnce::{vtable}
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
     vtable: core::ops::function::FnOnce::{vtable}
 }
 
@@ -55,10 +55,10 @@ opaque type core::ops::function::FnMut::{vtable}
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
-    parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
     vtable: core::ops::function::FnMut::{vtable}
 }
 
@@ -66,10 +66,10 @@ pub trait FnMut<Self, Args>
 #[lang_item("fn")]
 pub trait Fn<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
-    parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
     vtable: core::ops::function::Fn::{vtable}
 }
 
@@ -87,27 +87,27 @@ pub extern "rust-call" fn call_once(_1: closure<'_, '_>, _2: (u8, u8)) -> u8
 
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnOnce<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
-    parent_clause1 = {built_in impl Sized for (u8, u8)}
-    parent_clause2 = {built_in impl Tuple for (u8, u8)}
+    proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
+    proof ImpliedClause1: ((u8, u8): Sized) = {built_in impl Sized for (u8, u8)}
+    proof ImpliedClause2: ((u8, u8): Tuple) = {built_in impl Tuple for (u8, u8)}
     non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnMut<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> FnMut<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
-    parent_clause1 = {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
-    parent_clause2 = {built_in impl Sized for (u8, u8)}
-    parent_clause3 = {built_in impl Tuple for (u8, u8)}
+    proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
+    proof ImpliedClause1: (closure<'_0, '_1>: FnOnce<(u8, u8)>) = {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
+    proof ImpliedClause2: ((u8, u8): Sized) = {built_in impl Sized for (u8, u8)}
+    proof ImpliedClause3: ((u8, u8): Tuple) = {built_in impl Tuple for (u8, u8)}
     non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> Fn<(u8, u8)> for closure<'_0, '_1> {
-    parent_clause0 = {built_in impl MetaSized for closure<'_0, '_1>}
-    parent_clause1 = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
-    parent_clause2 = {built_in impl Sized for (u8, u8)}
-    parent_clause3 = {built_in impl Tuple for (u8, u8)}
+    proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
+    proof ImpliedClause1: (closure<'_0, '_1>: FnMut<(u8, u8)>) = {impl FnMut<(u8, u8)> for closure<'_0, '_1>}<'_0, '_1>
+    proof ImpliedClause2: ((u8, u8): Sized) = {built_in impl Sized for (u8, u8)}
+    proof ImpliedClause3: ((u8, u8): Tuple) = {built_in impl Tuple for (u8, u8)}
     non-dyn-compatible
 }
 

@@ -8,14 +8,14 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::ToU64
 pub trait ToU64<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     fn to_u64 = to_u64<Self>[Self]
     vtable: test_crate::ToU64::{vtable}
 }
@@ -23,15 +23,15 @@ pub trait ToU64<Self>
 // Full name: test_crate::ToU64::to_u64
 pub fn to_u64<Self>(_1: Self) -> u64
 where
-    [@TraitClause0]: ToU64<Self>,
+    TraitClause0: (Self: ToU64),
 = <method_without_default_body>
 
 // Full name: test_crate::WithConstTy
 pub trait WithConstTy<Self, Self_W, const LEN : usize>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_W>
-    parent_clause2 : [@TraitClause2]: ToU64<Self_W>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_W: Sized)
+    proof ImpliedClause2: (Self_W: ToU64)
     const LEN2 : usize
     non-dyn-compatible
 }

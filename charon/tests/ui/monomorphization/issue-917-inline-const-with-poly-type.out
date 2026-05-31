@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -28,7 +28,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(_1: *mut closur
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -40,9 +40,9 @@ opaque type core::ops::function::FnOnce::{vtable}
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
     vtable: core::ops::function::FnOnce::{vtable}
 }
 
@@ -52,10 +52,10 @@ opaque type core::ops::function::FnMut::{vtable}
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
-    parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
     vtable: core::ops::function::FnMut::{vtable}
 }
 
@@ -63,10 +63,10 @@ pub trait FnMut<Self, Args>
 #[lang_item("fn")]
 pub trait Fn<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnMut<Self, Args>
-    parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
     vtable: core::ops::function::Fn::{vtable}
 }
 
@@ -81,18 +81,18 @@ impl Destruct for closure::<()> {
 
 // Full name: test_crate::foo::{const}::{impl FnOnce<((),)> for closure::<()>}
 impl FnOnce<((),)> for closure::<()> {
-    parent_clause0 = {built_in impl MetaSized for closure::<()>}
-    parent_clause1 = {built_in impl Sized for ((),)}
-    parent_clause2 = {built_in impl Tuple for ((),)}
+    proof ImpliedClause0: (closure::<()>: MetaSized) = {built_in impl MetaSized for closure::<()>}
+    proof ImpliedClause1: (((),): Sized) = {built_in impl Sized for ((),)}
+    proof ImpliedClause2: (((),): Tuple) = {built_in impl Tuple for ((),)}
     non-dyn-compatible
 }
 
 // Full name: test_crate::foo::{const}::{impl FnMut<((),)> for closure::<()>}
 impl FnMut<((),)> for closure::<()> {
-    parent_clause0 = {built_in impl MetaSized for closure::<()>}
-    parent_clause1 = {impl FnOnce<((),)> for closure::<()>}
-    parent_clause2 = {built_in impl Sized for ((),)}
-    parent_clause3 = {built_in impl Tuple for ((),)}
+    proof ImpliedClause0: (closure::<()>: MetaSized) = {built_in impl MetaSized for closure::<()>}
+    proof ImpliedClause1: (closure::<()>: FnOnce<((),)>) = {impl FnOnce<((),)> for closure::<()>}
+    proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
+    proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     non-dyn-compatible
 }
 
@@ -164,10 +164,10 @@ fn foo::<()>(x_1: ())
 
 // Full name: test_crate::foo::{const}::{impl Fn<((),)> for closure::<()>}
 impl Fn<((),)> for closure::<()> {
-    parent_clause0 = {built_in impl MetaSized for closure::<()>}
-    parent_clause1 = {impl FnMut<((),)> for closure::<()>}
-    parent_clause2 = {built_in impl Sized for ((),)}
-    parent_clause3 = {built_in impl Tuple for ((),)}
+    proof ImpliedClause0: (closure::<()>: MetaSized) = {built_in impl MetaSized for closure::<()>}
+    proof ImpliedClause1: (closure::<()>: FnMut<((),)>) = {impl FnMut<((),)> for closure::<()>}
+    proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
+    proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     non-dyn-compatible
 }
 

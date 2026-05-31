@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -34,12 +34,12 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <missing>
 
 // Full name: core::bool::{bool}::then_some
-pub fn then_some<T>(self_1: bool, t_2: T) -> Option<T>[@TraitClause0]
+pub fn then_some<T>(self_1: bool, t_2: T) -> Option<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Destruct<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
 {
-    let _0: Option<T>[@TraitClause0]; // return
+    let _0: Option<T>[TraitClause0]; // return
     let self_1: bool; // arg #1
     let t_2: T; // arg #2
     let _3: T; // anonymous local
@@ -47,7 +47,7 @@ where
     if copy self_1 {
     } else {
         _0 = Option::None {  }
-        drop[@TraitClause1::drop_in_place] t_2
+        drop[TraitClause1::drop_in_place] t_2
         return
     }
     storage_live(_3)
@@ -70,14 +70,14 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    TraitClause0: (Self: PartialEq<Rhs>),
 = <method_without_default_body>
 
 // Full name: core::cmp::PartialEq::ne
 #[lang_item("cmp_partialeq_ne")]
 pub fn ne<'_0, '_1, Self, Rhs>(self_1: &'_0 Self, other_2: &'_1 Rhs) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    TraitClause0: (Self: PartialEq<Rhs>),
 {
     let _0: bool; // return
     let self_1: &'1 Self; // arg #1
@@ -85,7 +85,7 @@ where
     let _3: bool; // anonymous local
 
     storage_live(_3)
-    _3 = @TraitClause0::eq<'6, '7>(move self_1, move other_2)
+    _3 = TraitClause0::eq<'6, '7>(move self_1, move other_2)
     _0 = ~(move _3)
     storage_dead(_3)
     return
@@ -141,7 +141,7 @@ pub struct Global {}
 // Full name: alloc::raw_vec::RawVecInner
 struct RawVecInner<A>
 where
-    [@TraitClause0]: Sized<A>,
+    TraitClause0: (A: Sized),
 {
   ptr: Unique<u8>,
   cap: UsizeNoHighBit,
@@ -151,10 +151,10 @@ where
 // Full name: alloc::raw_vec::RawVec
 struct RawVec<T, A>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 {
-  inner: RawVecInner<A>[@TraitClause1],
+  inner: RawVecInner<A>[TraitClause1],
   _marker: PhantomData<T>,
 }
 
@@ -162,18 +162,18 @@ where
 #[lang_item("Vec")]
 pub struct Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
 {
-  buf: RawVec<T, type_error("removed allocator parameter")>[@TraitClause0, @TraitClause1],
+  buf: RawVec<T, type_error("removed allocator parameter")>[TraitClause0, TraitClause1],
   len: usize,
 }
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
 // Full name: issue_114_opaque_bodies_aux::inline_always
@@ -206,7 +206,7 @@ pub fn inline_never() -> u32
 // Full name: issue_114_opaque_bodies_aux::inline_generic
 pub fn inline_generic<T>() -> u32
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: u32; // return
 
@@ -296,7 +296,7 @@ fn vec(_x_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Gl
 
     _0 = ()
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
+    conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
     return
 }
 
@@ -312,8 +312,8 @@ fn max() -> usize
 // Full name: test_crate::partial_eq
 fn partial_eq<T>(_x_1: T)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: PartialEq<T, T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: PartialEq<T>),
 {
     let _0: (); // return
     let _x_1: T; // arg #1

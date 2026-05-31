@@ -8,42 +8,42 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Trait
 trait Trait<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Assoc>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Assoc: Sized)
     vtable: test_crate::Trait::{vtable}<Self_Assoc>
 }
 
 // Full name: test_crate::IntoIterator
 trait IntoIterator<Self, Self_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
-    parent_clause2 : [@TraitClause2]: Trait<Self_IntoIter, ()>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_IntoIter: Sized)
+    proof ImpliedClause2: (Self_IntoIter: Trait<()>)
     vtable: test_crate::IntoIterator::{vtable}<Self_IntoIter>
 }
 
 // Full name: test_crate::IntoIntoIterator
 trait IntoIntoIterator<Self, Self_IntoIntoIter, Self_Clause2_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_IntoIntoIter>
-    parent_clause2 : [@TraitClause2]: IntoIterator<Self_IntoIntoIter, Self_Clause2_IntoIter>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_IntoIntoIter: Sized)
+    proof ImpliedClause2: (Self_IntoIntoIter: IntoIterator<Self_Clause2_IntoIter>)
     vtable: test_crate::IntoIntoIterator::{vtable}<Self_IntoIntoIter>
 }
 
 // Full name: test_crate::foo
 fn foo<I, Clause1_IntoIntoIter, Clause1_Clause2_IntoIter, Clause2_Assoc>()
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIntoIterator<I, Clause1_IntoIntoIter, Clause1_Clause2_IntoIter>,
-    [@TraitClause2]: Trait<Clause1_Clause2_IntoIter, Clause2_Assoc>,
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: IntoIntoIterator<Clause1_IntoIntoIter, Clause1_Clause2_IntoIter>),
+    TraitClause2: (Clause1_Clause2_IntoIter: Trait<Clause2_Assoc>),
 {
     let _0: (); // return
 

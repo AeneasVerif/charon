@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
@@ -24,7 +24,7 @@ pub trait Clone<Self>
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::marker::Destruct
@@ -43,7 +43,7 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -52,9 +52,9 @@ where
 // Full name: test_crate::Trait
 trait Trait<Self, T, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    parent_clause2 : [@TraitClause2]: Sized<Self_Item>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    proof ImpliedClause2: (Self_Item: Sized)
     vtable: test_crate::Trait::{vtable}<T, Self_Item>
 }
 
@@ -73,7 +73,7 @@ pub fn {impl Clone for Struct}::clone<'_0>(self_1: &'_0 Struct) -> Struct
 
 // Full name: test_crate::{impl Clone for Struct}
 impl Clone for Struct {
-    parent_clause0 = {built_in impl Sized for Struct}
+    proof ImpliedClause0: (Struct: Sized) = {built_in impl Sized for Struct}
     fn clone<'_0_1> = {impl Clone for Struct}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -81,44 +81,44 @@ impl Clone for Struct {
 // Full name: test_crate::{impl Trait<T, u32> for Struct}
 impl<T> Trait<T, u32> for Struct
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for Struct}
-    parent_clause1 = @TraitClause0
-    parent_clause2 = {built_in impl Sized for u32}
-    vtable: {impl Trait<T, u32> for Struct}::{vtable}<T>[@TraitClause0]
+    proof ImpliedClause0: (Struct: MetaSized) = {built_in impl MetaSized for Struct}
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    proof ImpliedClause2: (u32: Sized) = {built_in impl Sized for u32}
+    vtable: {impl Trait<T, u32> for Struct}::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::Alias
 trait Alias<Self, U>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Trait<Self, Option<U>[Self::parent_clause3], u32>
-    parent_clause2 : [@TraitClause2]: Clone<Self>
-    parent_clause3 : [@TraitClause3]: Sized<U>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Trait<Option<U>[Self::ImpliedClause3], u32>)
+    proof ImpliedClause2: (Self: Clone)
+    proof ImpliedClause3: (U: Sized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Alias::{impl Alias<U> for Self}
 impl<Self, U> Alias<U> for Self
 where
-    [@TraitClause0]: MetaSized<Self>,
-    [@TraitClause1]: Trait<Self, Option<U>[@TraitClause3], u32>,
-    [@TraitClause2]: Clone<Self>,
-    [@TraitClause3]: Sized<U>,
+    TraitClause0: (Self: MetaSized),
+    TraitClause1: (Self: Trait<Option<U>[TraitClause3], u32>),
+    TraitClause2: (Self: Clone),
+    TraitClause3: (U: Sized),
 {
-    parent_clause0 = @TraitClause0
-    parent_clause1 = @TraitClause1
-    parent_clause2 = @TraitClause2
-    parent_clause3 = @TraitClause3
+    proof ImpliedClause0: (Self: MetaSized) = TraitClause0
+    proof ImpliedClause1: (Self: Trait<Option<U>[TraitClause3], u32>) = TraitClause1
+    proof ImpliedClause2: (Self: Clone) = TraitClause2
+    proof ImpliedClause3: (U: Sized) = TraitClause3
     non-dyn-compatible
 }
 
 // Full name: test_crate::takes_alias
 fn takes_alias<T>(x_1: T)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Alias<T, ()>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Alias<()>),
 {
     let _0: (); // return
     let x_1: T; // arg #1
@@ -129,7 +129,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = @TraitClause1::parent_clause2::clone<'3>(move _3)
+    _2 = TraitClause1::ImpliedClause2::clone<'3>(move _3)
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for T}::drop_in_place] _2
     storage_dead(_2)

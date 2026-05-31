@@ -8,27 +8,27 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Foo
 trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    type T<A, [@TraitClause0_1]: Sized<A>>
+    proof ImpliedClause0: (Self: MetaSized)
+    type T<A>
     where
-        implied_clause_0 : [@TraitClause0_1]: Sized<Self::T>
-
-    fn f<A, [@TraitClause0_1]: Sized<A>> = f<Self, A>[Self, @TraitClause0_1]
+        TraitClause0_1: (A: Sized),
+        proof ImpliedClause0: (Self::T: Sized);
+    fn f<A, TraitClause0_1: (A: Sized)> = f<Self, A>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Foo::f
-fn f<Self, A>(_1: @TraitClause0::T)
+fn f<Self, A>(_1: TraitClause0::T)
 where
-    [@TraitClause0]: Foo<Self>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (Self: Foo),
+    TraitClause1: (A: Sized),
 = <method_without_default_body>
 
 

@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -41,10 +41,10 @@ impl Destruct for Global {
 #[lang_item("Vec")]
 pub opaque type Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
-    [@TraitClause2]: Destruct<T>,
-    [@TraitClause3]: Destruct<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+    TraitClause2: (T: Destruct),
+    TraitClause3: (type_error("removed allocator parameter"): Destruct),
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -52,13 +52,13 @@ pub struct String {
   vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}],
 }
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Destruct<T>,
-    [@TraitClause3]: Destruct<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (T: Destruct),
+    TraitClause3: (A: Destruct),
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
@@ -71,7 +71,7 @@ unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
     storage_live(_2)
     _0 = ()
     _2 = &mut (*_1)
-    drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}]] ((*_2)).vec
+    drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}]] ((*_2)).vec
     return
 }
 

@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
@@ -25,7 +25,7 @@ pub trait Clone<Self>
 #[lang_item("clone_fn")]
 pub fn clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::cmp::PartialEq
@@ -40,14 +40,14 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    TraitClause0: (Self: PartialEq<Rhs>),
 = <opaque>
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
 pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    proof ImpliedClause0: (Self: PartialEq<Self>)
     non-dyn-compatible
 }
 
@@ -63,7 +63,7 @@ pub enum Ordering {
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -73,7 +73,7 @@ where
 #[lang_item("partial_ord")]
 pub trait PartialOrd<Self, Rhs>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
+    proof ImpliedClause0: (Self: PartialEq<Rhs>)
     fn partial_cmp<'_0_1, '_1_1> = partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
@@ -82,8 +82,8 @@ pub trait PartialOrd<Self, Rhs>
 #[lang_item("Ord")]
 pub trait Ord<Self>
 {
-    parent_clause0 : [@TraitClause0]: Eq<Self>
-    parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
+    proof ImpliedClause0: (Self: Eq)
+    proof ImpliedClause1: (Self: PartialOrd<Self>)
     fn cmp<'_0_1, '_1_1> = cmp<'_0_1, '_1_1, Self>[Self]
     non-dyn-compatible
 }
@@ -92,14 +92,14 @@ pub trait Ord<Self>
 #[lang_item("ord_cmp_method")]
 pub fn cmp<'_0, '_1, Self>(_1: &'_0 Self, _2: &'_1 Self) -> Ordering
 where
-    [@TraitClause0]: Ord<Self>,
+    TraitClause0: (Self: Ord),
 = <opaque>
 
 // Full name: core::cmp::PartialOrd::partial_cmp
 #[lang_item("cmp_partialord_cmp")]
 pub fn partial_cmp<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
-    [@TraitClause0]: PartialOrd<Self, Rhs>,
+    TraitClause0: (Self: PartialOrd<Rhs>),
 = <opaque>
 
 // Full name: core::fmt::Error
@@ -109,8 +109,8 @@ pub struct Error {}
 #[lang_item("Result")]
 pub enum Result<T, E>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
 {
   Ok(T),
   Err(E),
@@ -127,13 +127,13 @@ pub trait Debug<Self>
 // Full name: core::fmt::Debug::fmt
 pub fn fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
-    [@TraitClause0]: Debug<Self>,
+    TraitClause0: (Self: Debug),
 = <opaque>
 
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     fn finish<'_0_1> = finish<'_0_1, Self>[Self]
     fn write<'_0_1, '_1_1> = write<'_0_1, '_1_1, Self>[Self]
     vtable: core::hash::Hasher::{vtable}
@@ -143,28 +143,28 @@ pub trait Hasher<Self>
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0_1, '_1_1, H, [@TraitClause0_1]: Sized<H>, [@TraitClause1_1]: Hasher<H>> = hash<'_0_1, '_1_1, Self, H>[Self, @TraitClause0_1, @TraitClause1_1]
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)> = hash<'_0_1, '_1_1, Self, H>[Self, TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
 // Full name: core::hash::Hash::hash
 pub fn hash<'_0, '_1, Self, H>(_1: &'_0 Self, _2: &'_1 mut H)
 where
-    [@TraitClause0]: Hash<Self>,
-    [@TraitClause1]: Sized<H>,
-    [@TraitClause2]: Hasher<H>,
+    TraitClause0: (Self: Hash),
+    TraitClause1: (H: Sized),
+    TraitClause2: (H: Hasher),
 = <opaque>
 
 // Full name: core::hash::Hasher::finish
 pub fn finish<'_0, Self>(_1: &'_0 Self) -> u64
 where
-    [@TraitClause0]: Hasher<Self>,
+    TraitClause0: (Self: Hasher),
 = <opaque>
 
 // Full name: core::hash::Hasher::write
 pub fn write<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 [u8])
 where
-    [@TraitClause0]: Hasher<Self>,
+    TraitClause0: (Self: Hasher),
 = <opaque>
 
 // Full name: core::marker::Send
@@ -175,8 +175,8 @@ pub trait Send<Self>
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
 
@@ -196,15 +196,15 @@ pub trait Unpin<Self>
 #[lang_item("pointee_trait")]
 pub trait Pointee<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self::Metadata>
-    parent_clause1 : [@TraitClause1]: Debug<Self::Metadata>
-    parent_clause2 : [@TraitClause2]: Copy<Self::Metadata>
-    parent_clause3 : [@TraitClause3]: Send<Self::Metadata>
-    parent_clause4 : [@TraitClause4]: Sync<Self::Metadata>
-    parent_clause5 : [@TraitClause5]: Ord<Self::Metadata>
-    parent_clause6 : [@TraitClause6]: Hash<Self::Metadata>
-    parent_clause7 : [@TraitClause7]: Unpin<Self::Metadata>
-    parent_clause8 : [@TraitClause8]: Freeze<Self::Metadata>
+    proof ImpliedClause0: (Self::Metadata: Sized)
+    proof ImpliedClause1: (Self::Metadata: Debug)
+    proof ImpliedClause2: (Self::Metadata: Copy)
+    proof ImpliedClause3: (Self::Metadata: Send)
+    proof ImpliedClause4: (Self::Metadata: Sync)
+    proof ImpliedClause5: (Self::Metadata: Ord)
+    proof ImpliedClause6: (Self::Metadata: Hash)
+    proof ImpliedClause7: (Self::Metadata: Unpin)
+    proof ImpliedClause8: (Self::Metadata: Freeze)
     type Metadata
     non-dyn-compatible
 }
@@ -212,8 +212,8 @@ pub trait Pointee<Self>
 // Full name: test_crate::assert_copy
 fn assert_copy<T>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
 {
     let _0: (); // return
 
@@ -225,12 +225,12 @@ where
 // Full name: test_crate::foo
 fn foo<T>()
 where
-    [@TraitClause0]: MetaSized<T>,
+    TraitClause0: (T: MetaSized),
 {
     let _0: (); // return
 
     _0 = ()
-    _0 = assert_copy<{built_in impl Pointee for T}::Metadata>[{built_in impl Pointee for T}::parent_clause0, {built_in impl Pointee for T}::parent_clause2]()
+    _0 = assert_copy<{built_in impl Pointee for T}::Metadata>[{built_in impl Pointee for T}::ImpliedClause0, {built_in impl Pointee for T}::ImpliedClause2]()
     return
 }
 

@@ -35,17 +35,17 @@ struct test_crate::MyTrait::{vtable} {
 // Full name: test_crate::MyTrait
 pub trait MyTrait<Self>
 where
-    Self : 'static,
+    TypeOutlives0: Self: 'static,
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Send<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Send)
     fn foo<'_0_1> = test_crate::MyTrait::foo<'_0_1, Self>[Self]
     vtable: test_crate::MyTrait::{vtable}
 }
 
 pub fn test_crate::MyTrait::foo<'_0, Self>(_1: &'_0 Self)
 where
-    [@TraitClause0]: MyTrait<Self>,
+    TraitClause0: (Self: MyTrait),
 = <method_without_default_body>
 
 // Full name: test_crate::MyStruct
@@ -129,8 +129,8 @@ static {impl MyTrait for MyStruct}::{vtable}: test_crate::MyTrait::{vtable} = {i
 
 // Full name: test_crate::{impl MyTrait for MyStruct}
 impl MyTrait for MyStruct {
-    parent_clause0 = {built_in impl MetaSized for MyStruct}
-    parent_clause1 = {built_in impl Send for MyStruct}
+    proof ImpliedClause0: (MyStruct: MetaSized) = {built_in impl MetaSized for MyStruct}
+    proof ImpliedClause1: (MyStruct: Send) = {built_in impl Send for MyStruct}
     fn foo<'_0_1> = {impl MyTrait for MyStruct}::foo<'_0_1>
     vtable: {impl MyTrait for MyStruct}::{vtable}
 }

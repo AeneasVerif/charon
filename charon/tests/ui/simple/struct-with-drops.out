@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -27,15 +27,15 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Destruct<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Destruct)
     fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
     vtable: core::ops::drop::Drop::{vtable}
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
-    [@TraitClause0]: Drop<Self>,
+    TraitClause0: (Self: Drop),
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -52,13 +52,13 @@ impl Destruct for Global {
     non-dyn-compatible
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3])
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Destruct<T>,
-    [@TraitClause3]: Destruct<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (T: Destruct),
+    TraitClause3: (A: Destruct),
 = <opaque>
 
 // Full name: test_crate::B
@@ -100,8 +100,8 @@ unsafe fn {impl Destruct for B}::drop_in_place(_1: *mut B)
     _2 = &mut (*_1)
     _3 = &mut (*_2)
     _4 = {impl Drop for B}::drop<'4>(move _3)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).x
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).y
+    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).x
+    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).y
     return
 }
 
@@ -115,7 +115,7 @@ unsafe fn {impl Destruct for A}::drop_in_place(_1: *mut A)
     storage_live(_2)
     _0 = ()
     _2 = &mut (*_1)
-    drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).x
+    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}]] ((*_2)).x
     drop[{impl Destruct for B}::drop_in_place] ((*_2)).b
     return
 }
@@ -146,8 +146,8 @@ fn takes_a(_1: A)
 
 // Full name: test_crate::{impl Drop for B}
 impl Drop for B {
-    parent_clause0 = {built_in impl MetaSized for B}
-    parent_clause1 = {impl Destruct for B}
+    proof ImpliedClause0: (B: MetaSized) = {built_in impl MetaSized for B}
+    proof ImpliedClause1: (B: Destruct) = {impl Destruct for B}
     fn drop<'_0_1> = {impl Drop for B}::drop<'_0_1>
     vtable: {impl Drop for B}::{vtable}
 }

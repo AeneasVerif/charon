@@ -11,21 +11,21 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    TraitClause0: (Self: PartialEq<Rhs>),
 = <opaque>
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
 pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+    proof ImpliedClause0: (Self: PartialEq<Self>)
     fn assert_receiver_is_total_eq<'_0_1> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_1, Self>[Self]
     non-dyn-compatible
 }
 
 pub fn core::cmp::Eq::assert_receiver_is_total_eq<'_0, Self>(_1: &'_0 Self)
 where
-    [@TraitClause0]: Eq<Self>,
+    TraitClause0: (Self: Eq),
 = <opaque>
 
 // Full name: core::fmt::Error
@@ -39,7 +39,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -47,8 +47,8 @@ pub trait Sized<Self>
 #[lang_item("Result")]
 pub enum Result<T, E>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<E>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
 {
   Ok(T),
   Err(E),
@@ -64,7 +64,7 @@ pub trait Debug<Self>
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
-    [@TraitClause0]: Debug<Self>,
+    TraitClause0: (Self: Debug),
 = <opaque>
 
 pub fn core::fmt::{Formatter<'a>}::write_str<'a, '_1, '_2>(_1: &'_1 mut Formatter<'a>, _2: &'_2 str) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
@@ -74,7 +74,7 @@ pub fn core::fmt::{Formatter<'a>}::write_str<'a, '_1, '_2>(_1: &'_1 mut Formatte
 #[lang_item("structural_peq")]
 pub trait StructuralPartialEq<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: core::marker::StructuralPartialEq::{vtable}
 }
 
@@ -82,9 +82,9 @@ pub trait StructuralPartialEq<Self>
 #[lang_item("const_param_ty")]
 pub trait ConstParamTy_<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: StructuralPartialEq<Self>
-    parent_clause2 : [@TraitClause2]: Eq<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: StructuralPartialEq)
+    proof ImpliedClause2: (Self: Eq)
     non-dyn-compatible
 }
 
@@ -148,22 +148,22 @@ impl PartialEq<Foo> for Foo {
 
 // Full name: test_crate::{impl Eq for Foo}
 impl Eq for Foo {
-    parent_clause0 = {impl PartialEq<Foo> for Foo}
+    proof ImpliedClause0: (Foo: PartialEq<Foo>) = {impl PartialEq<Foo> for Foo}
     fn assert_receiver_is_total_eq<'_0_1> = {impl Eq for Foo}::assert_receiver_is_total_eq<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl StructuralPartialEq for Foo}
 impl StructuralPartialEq for Foo {
-    parent_clause0 = {built_in impl MetaSized for Foo}
+    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
     vtable: {impl StructuralPartialEq for Foo}::{vtable}
 }
 
 // Full name: test_crate::{impl ConstParamTy_ for Foo}
 impl ConstParamTy_ for Foo {
-    parent_clause0 = {built_in impl MetaSized for Foo}
-    parent_clause1 = {impl StructuralPartialEq for Foo}
-    parent_clause2 = {impl Eq for Foo}
+    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
+    proof ImpliedClause1: (Foo: StructuralPartialEq) = {impl StructuralPartialEq for Foo}
+    proof ImpliedClause2: (Foo: Eq) = {impl Eq for Foo}
     non-dyn-compatible
 }
 

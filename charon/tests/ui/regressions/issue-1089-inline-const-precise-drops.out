@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -27,8 +27,8 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 // Full name: test_crate::foo
 fn foo<T>() -> usize
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Destruct<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
 {
     let _0: usize; // return
     let _1: usize; // anonymous local

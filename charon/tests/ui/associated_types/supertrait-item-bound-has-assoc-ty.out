@@ -8,53 +8,53 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::WithTarget
 pub trait WithTarget<Self, Self_Target>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Target>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Target: Sized)
     vtable: test_crate::WithTarget::{vtable}<Self_Target>
 }
 
 // Full name: test_crate::ParentTrait
 pub trait ParentTrait<Self, Self_FromParent, Self_Clause2_Target>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_FromParent>
-    parent_clause2 : [@TraitClause2]: WithTarget<Self_FromParent, Self_Clause2_Target>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_FromParent: Sized)
+    proof ImpliedClause2: (Self_FromParent: WithTarget<Self_Clause2_Target>)
     vtable: test_crate::ParentTrait::{vtable}<Self_FromParent>
 }
 
 // Full name: test_crate::ChildTrait
 pub trait ChildTrait<Self, Self_Clause1_FromParent, Self_Clause1_Clause2_Target>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: ParentTrait<Self, Self_Clause1_FromParent, Self_Clause1_Clause2_Target>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: ParentTrait<Self_Clause1_FromParent, Self_Clause1_Clause2_Target>)
     fn convert = test_crate::ChildTrait::convert<Self, Self_Clause1_FromParent, Self_Clause1_Clause2_Target>[Self]
     non-dyn-compatible
 }
 
 pub fn test_crate::ChildTrait::convert<Self, Clause0_Clause1_FromParent, Clause0_Clause1_Clause2_Target>(_1: Clause0_Clause1_FromParent) -> Clause0_Clause1_Clause2_Target
 where
-    [@TraitClause0]: ChildTrait<Self, Clause0_Clause1_FromParent, Clause0_Clause1_Clause2_Target>,
+    TraitClause0: (Self: ChildTrait<Clause0_Clause1_FromParent, Clause0_Clause1_Clause2_Target>),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl WithTarget<u32> for u32}
 impl WithTarget<u32> for u32 {
-    parent_clause0 = {built_in impl MetaSized for u32}
-    parent_clause1 = {built_in impl Sized for u32}
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
     vtable: {impl WithTarget<u32> for u32}::{vtable}
 }
 
 // Full name: test_crate::{impl ParentTrait<u32, u32> for u32}
 impl ParentTrait<u32, u32> for u32 {
-    parent_clause0 = {built_in impl MetaSized for u32}
-    parent_clause1 = {built_in impl Sized for u32}
-    parent_clause2 = {impl WithTarget<u32> for u32}
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
+    proof ImpliedClause2: (u32: WithTarget<u32>) = {impl WithTarget<u32> for u32}
     vtable: {impl ParentTrait<u32, u32> for u32}::{vtable}
 }
 
@@ -70,8 +70,8 @@ pub fn {impl ChildTrait<u32, u32> for u32}::convert(x_1: u32) -> u32
 
 // Full name: test_crate::{impl ChildTrait<u32, u32> for u32}
 impl ChildTrait<u32, u32> for u32 {
-    parent_clause0 = {built_in impl MetaSized for u32}
-    parent_clause1 = {impl ParentTrait<u32, u32> for u32}
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: ParentTrait<u32, u32>) = {impl ParentTrait<u32, u32> for u32}
     fn convert = {impl ChildTrait<u32, u32> for u32}::convert
     non-dyn-compatible
 }

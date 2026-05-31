@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -24,10 +24,10 @@ pub trait Tuple<Self>
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args, Self_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    parent_clause3 : [@TraitClause3]: Sized<Self_Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self_Output: Sized)
     fn call_once = call_once<Self, Args, Self_Output>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
 }
@@ -36,10 +36,10 @@ pub trait FnOnce<Self, Args, Self_Output>
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args, Self_Clause1_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args, Self_Clause1_Output>
-    parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args, Self_Clause1_Output>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
     fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args, Self_Clause1_Output>[Self]
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
@@ -48,51 +48,51 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
 #[lang_item("fn")]
 pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnMut<Self, Args, Self_Clause1_Clause1_Output>
-    parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args, Self_Clause1_Clause1_Output>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
     fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args, Self_Clause1_Clause1_Output>[Self]
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
 
 pub extern "rust-call" fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(_1: &'_0 Self, _2: Args) -> Clause0_Clause1_Clause1_Output
 where
-    [@TraitClause0]: Fn<Self, Args, Clause0_Clause1_Clause1_Output>,
+    TraitClause0: (Self: Fn<Args, Clause0_Clause1_Clause1_Output>),
 = <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut
 pub extern "rust-call" fn call_mut<'_0, Self, Args, Clause0_Clause1_Output>(_1: &'_0 mut Self, _2: Args) -> Clause0_Clause1_Output
 where
-    [@TraitClause0]: FnMut<Self, Args, Clause0_Clause1_Output>,
+    TraitClause0: (Self: FnMut<Args, Clause0_Clause1_Output>),
 = <opaque>
 
 // Full name: core::ops::function::FnOnce::call_once
 pub extern "rust-call" fn call_once<Self, Args, Clause0_Output>(_1: Self, _2: Args) -> Clause0_Output
 where
-    [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
+    TraitClause0: (Self: FnOnce<Args, Clause0_Output>),
 = <opaque>
 
 // Full name: test_crate::Trait
 pub trait Trait<Self, Self_Foo>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self_Foo>
-    parent_clause2 : [@TraitClause2]: Fn<Self_Foo, (), ()>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Foo: Sized)
+    proof ImpliedClause2: (Self_Foo: Fn<(), ()>)
     fn call<'_0_1> = test_crate::Trait::call<'_0_1, Self, Self_Foo>[Self]
     vtable: test_crate::Trait::{vtable}<Self_Foo>
 }
 
 pub fn test_crate::Trait::call<'_0, Self, Clause0_Foo>(_1: &'_0 Self)
 where
-    [@TraitClause0]: Trait<Self, Clause0_Foo>,
+    TraitClause0: (Self: Trait<Clause0_Foo>),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait<F> for F}::call
 pub fn {impl Trait<F> for F}::call<'_0, F>(self_1: &'_0 F)
 where
-    [@TraitClause0]: Fn<F, (), ()>,
-    [@TraitClause1]: Sized<F>,
+    TraitClause0: (F: Fn<(), ()>),
+    TraitClause1: (F: Sized),
 {
     let _0: (); // return
     let self_1: &'1 F; // arg #1
@@ -104,7 +104,7 @@ where
     _2 = &(*self_1)
     storage_live(_3)
     _3 = ()
-    _0 = @TraitClause0::call<'4>(move _2, move _3)
+    _0 = TraitClause0::call<'4>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -113,14 +113,14 @@ where
 // Full name: test_crate::{impl Trait<F> for F}
 impl<F> Trait<F> for F
 where
-    [@TraitClause0]: Fn<F, (), ()>,
-    [@TraitClause1]: Sized<F>,
+    TraitClause0: (F: Fn<(), ()>),
+    TraitClause1: (F: Sized),
 {
-    parent_clause0 = @TraitClause0::parent_clause0
-    parent_clause1 = @TraitClause1
-    parent_clause2 = @TraitClause0
-    fn call<'_0_1> = {impl Trait<F> for F}::call<'_0_1, F>[@TraitClause0, @TraitClause1]
-    vtable: {impl Trait<F> for F}::{vtable}<F>[@TraitClause0, @TraitClause1]
+    proof ImpliedClause0: (F: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: (F: Sized) = TraitClause1
+    proof ImpliedClause2: (F: Fn<(), ()>) = TraitClause0
+    fn call<'_0_1> = {impl Trait<F> for F}::call<'_0_1, F>[TraitClause0, TraitClause1]
+    vtable: {impl Trait<F> for F}::{vtable}<F>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::use_foo

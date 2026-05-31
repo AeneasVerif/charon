@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
@@ -24,7 +24,7 @@ pub trait Clone<Self>
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
@@ -33,7 +33,7 @@ pub fn {impl Clone for u8}::clone<'_0>(_1: &'_0 u8) -> u8
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl Clone for u8 {
-    parent_clause0 = {built_in impl Sized for u8}
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
     fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -42,28 +42,28 @@ impl Clone for u8 {
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
 
 pub fn core::intrinsics::wrapping_add<T>(a_1: T, b_2: T) -> T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
 = <intrinsic:wrapping_add>
 
 // Full name: core::marker::{impl Copy for u8}
 impl Copy for u8 {
-    parent_clause0 = {built_in impl MetaSized for u8}
-    parent_clause1 = {impl Clone for u8}
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    proof ImpliedClause1: (u8: Clone) = {impl Clone for u8}
     non-dyn-compatible
 }
 
 pub fn test_crate::first::nested::wrapping_add<T>(lhs_1: T, rhs_2: T) -> T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
 = <intrinsic:wrapping_add>
 
 pub fn test_crate::first::nested::call() -> u8

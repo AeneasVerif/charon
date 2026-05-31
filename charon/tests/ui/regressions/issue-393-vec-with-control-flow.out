@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,13 +16,13 @@ pub trait Sized<Self>
 #[lang_item("maybe_uninit")]
 pub opaque type MaybeUninit<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -32,45 +32,45 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: MetaSized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
-// Full name: alloc::boxed::{alloc::boxed::Box<T>[@TraitClause0::parent_clause0, {built_in impl Sized for Global}]}::new_uninit
-pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, {built_in impl Sized for Global}]
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new_uninit
+pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[TraitClause0]}, {built_in impl Sized for Global}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
-// Full name: alloc::boxed::{alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, @TraitClause1]}::write
-pub fn write<T, A>(_1: alloc::boxed::Box<MaybeUninit<T>[@TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[@TraitClause0]}, @TraitClause1], _2: T) -> alloc::boxed::Box<T>[@TraitClause0::parent_clause0, @TraitClause1]
+// Full name: alloc::boxed::{alloc::boxed::Box<MaybeUninit<T>[TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[TraitClause0]}, TraitClause1]}::write
+pub fn write<T, A>(_1: alloc::boxed::Box<MaybeUninit<T>[TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[TraitClause0]}, TraitClause1], _2: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, TraitClause1]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub opaque type Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: alloc::slice::{[T]}::into_vec
-pub fn into_vec<T, A>(_1: alloc::boxed::Box<[T]>[{built_in impl MetaSized for [T]}, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
+pub fn into_vec<T, A>(_1: alloc::boxed::Box<[T]>[{built_in impl MetaSized for [T]}, TraitClause1]) -> Vec<T>[TraitClause0, TraitClause1]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
 // Full name: test_crate::next
@@ -100,7 +100,7 @@ pub fn next(b_1: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in
         _0 = Option::None {  }
         storage_dead(_5)
         storage_dead(_4)
-        conditional_drop[{impl Destruct for alloc::boxed::Box<T>[@TraitClause0, @TraitClause1]}::drop_in_place<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]] _3
+        conditional_drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1 : usize]>[{built_in impl Sized for [u8; 1 : usize]}]}, {built_in impl Sized for Global}]] _3
         storage_dead(_3)
         storage_dead(vec_2)
         return
@@ -125,9 +125,9 @@ pub fn next(b_1: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in
     storage_live(_6)
     _6 = move vec_2
     _0 = Option::Some { 0: move _6 }
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _6
+    conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _6
     storage_dead(_6)
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] vec_2
+    conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] vec_2
     storage_dead(vec_2)
     return
 }

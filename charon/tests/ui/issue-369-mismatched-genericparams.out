@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -25,41 +25,41 @@ where
 // Full name: test_crate::FromResidual
 pub trait FromResidual<Self, R>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<R>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (R: Sized)
     vtable: test_crate::FromResidual::{vtable}<R>
 }
 
 // Full name: test_crate::Try
 pub trait Try<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FromResidual<Self, ()>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FromResidual<()>)
+    proof ImpliedClause2: (Self::Residual: Sized)
     type Residual
     vtable: test_crate::Try::{vtable}<Self::Residual>
 }
 
-// Full name: test_crate::{impl FromResidual<()> for Option<T>[@TraitClause0]}
-impl<T> FromResidual<()> for Option<T>[@TraitClause0]
+// Full name: test_crate::{impl FromResidual<()> for Option<T>[TraitClause0]}
+impl<T> FromResidual<()> for Option<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for Option<T>[@TraitClause0]}
-    parent_clause1 = {built_in impl Sized for ()}
-    vtable: {impl FromResidual<()> for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
+    proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    vtable: {impl FromResidual<()> for Option<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
 }
 
-// Full name: test_crate::{impl Try for Option<T>[@TraitClause0]}
-impl<T> Try for Option<T>[@TraitClause0]
+// Full name: test_crate::{impl Try for Option<T>[TraitClause0]}
+impl<T> Try for Option<T>[TraitClause0]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for Option<T>[@TraitClause0]}
-    parent_clause1 = {impl FromResidual<()> for Option<T>[@TraitClause0]}<T>[@TraitClause0]
-    parent_clause2 = {built_in impl Sized for ()}
+    proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
+    proof ImpliedClause1: (Option<T>[TraitClause0]: FromResidual<()>) = {impl FromResidual<()> for Option<T>[TraitClause0]}<T>[TraitClause0]
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     type Residual = ()
-    vtable: {impl Try for Option<T>[@TraitClause0]}::{vtable}<T>[@TraitClause0]
+    vtable: {impl Try for Option<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
 }
 
 

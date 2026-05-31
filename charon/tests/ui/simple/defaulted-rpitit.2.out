@@ -8,24 +8,26 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::MyTrait
 pub trait MyTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::foo_ty>
-    type foo_ty<[@TraitClause0_1]: Sized<Self>>
-    fn foo<[@TraitClause0_1]: Sized<Self>> = test_crate::MyTrait::foo<Self>[Self, @TraitClause0_1]
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::foo_ty: Sized)
+    type foo_ty = ()
+    where
+        TraitClause0_1: (Self: Sized);
+    fn foo<TraitClause0_1: (Self: Sized)> = test_crate::MyTrait::foo<Self>[Self, TraitClause0_1]
     vtable: test_crate::MyTrait::{vtable}<Self::foo_ty>
 }
 
 pub fn test_crate::MyTrait::foo<Self>()
 where
-    [@TraitClause0]: MyTrait<Self>,
-    [@TraitClause1]: Sized<Self>,
+    TraitClause0: (Self: MyTrait),
+    TraitClause1: (Self: Sized),
 {
     let _0: (); // return
 
@@ -40,7 +42,7 @@ pub struct S {}
 // Full name: test_crate::{impl MyTrait for S}::foo
 pub fn {impl MyTrait for S}::foo()
 where
-    [@TraitClause0]: Sized<S>,
+    TraitClause0: (S: Sized),
 {
     let _0: (); // return
 
@@ -51,10 +53,12 @@ where
 
 // Full name: test_crate::{impl MyTrait for S}
 impl MyTrait for S {
-    parent_clause0 = {built_in impl MetaSized for S}
-    parent_clause1 = {impl MyTrait for S}::parent_clause1
-    type foo_ty<[@TraitClause0_1]: Sized<S>> = ()
-    fn foo<[@TraitClause0_1]: Sized<S>> = {impl MyTrait for S}::foo[@TraitClause0_1]
+    proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
+    proof ImpliedClause1: ({impl MyTrait for S}::foo_ty: Sized) = {impl MyTrait for S}::ImpliedClause1
+    type foo_ty = ()
+    where
+        TraitClause0_1: (S: Sized);
+    fn foo<TraitClause0_1: (S: Sized)> = {impl MyTrait for S}::foo[TraitClause0_1]
     vtable: {impl MyTrait for S}::{vtable}
 }
 

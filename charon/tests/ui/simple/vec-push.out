@@ -12,7 +12,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -33,7 +33,7 @@ pub opaque type Alignment
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     const SIZE : usize
     const ALIGN : usize
     const ALIGNMENT : Alignment
@@ -47,90 +47,90 @@ pub trait SizedTypeProperties<Self>
 #[lang_item("mem_size_const")]
 pub fn SIZE<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::SIZE
 #[lang_item("mem_size_const")]
 pub const SIZE<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = SIZE()
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
 pub fn ALIGN<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
 pub const ALIGN<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = ALIGN()
 
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
 pub fn ALIGNMENT<Self>() -> Alignment
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
 pub const ALIGNMENT<Self>: Alignment
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = ALIGNMENT()
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub fn IS_ZST<Self>() -> bool
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub const IS_ZST<Self>: bool
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = IS_ZST()
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub fn LAYOUT<Self>() -> Layout
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub const LAYOUT<Self>: Layout
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = LAYOUT()
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub fn MAX_SLICE_LEN<Self>() -> usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub const MAX_SLICE_LEN<Self>: usize
 where
-    [@TraitClause0]: SizedTypeProperties<Self>,
+    TraitClause0: (Self: SizedTypeProperties),
  = MAX_SLICE_LEN()
 
 // Full name: core::mem::{impl SizedTypeProperties for T}
 impl<T> SizedTypeProperties for T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = @TraitClause0
-    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[@TraitClause0]]
+    proof ImpliedClause0: (T: Sized) = TraitClause0
+    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
     non-dyn-compatible
 }
 
@@ -161,48 +161,48 @@ impl Destruct for Global {
 // Full name: alloc::raw_vec::RawVec
 opaque type RawVec<T, A>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 
 // Full name: alloc::raw_vec::RawVecInner
 opaque type RawVecInner<A>
 where
-    [@TraitClause0]: Sized<A>,
+    TraitClause0: (A: Sized),
 
-// Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}::grow_one
-fn grow_one<'_0, T, A>(_1: &'_0 mut RawVec<T, A>[@TraitClause0, @TraitClause1])
+// Full name: alloc::raw_vec::{RawVec<T, A>[TraitClause0, TraitClause1]}::grow_one
+fn grow_one<'_0, T, A>(_1: &'_0 mut RawVec<T, A>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Destruct<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Destruct),
 = <opaque>
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub struct Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
 {
-  buf: RawVec<T, type_error("removed allocator parameter")>[@TraitClause0, @TraitClause1],
+  buf: RawVec<T, type_error("removed allocator parameter")>[TraitClause0, TraitClause1],
   len: usize,
 }
 
-// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push_mut
-pub fn push_mut<'_0, T, A>(self_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], value_2: T) -> &'_0 mut T
+// Full name: alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::push_mut
+pub fn push_mut<'_0, T, A>(self_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1], value_2: T) -> &'_0 mut T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Destruct<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Destruct),
 {
     let _0: &'1 mut T; // return
-    let self_1: &'3 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
+    let self_1: &'3 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
     let value_2: T; // arg #2
     let len_3: usize; // local
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: (); // anonymous local
-    let _7: &'7 mut RawVec<T, A>[@TraitClause0, @TraitClause1]; // anonymous local
+    let _7: &'7 mut RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
     let end_8: *mut T; // local
     let self_9: *mut T; // local
     let src_10: T; // local
@@ -215,7 +215,7 @@ where
     len_3 = copy ((*self_1)).len
     storage_live(_4)
     storage_live(_5)
-    switch const {impl SizedTypeProperties for T}<T>[@TraitClause0]::SIZE {
+    switch const {impl SizedTypeProperties for T}<T>[TraitClause0]::SIZE {
         0 : usize => {
             _5 = const 18446744073709551615 : usize
         },
@@ -231,7 +231,7 @@ where
         storage_dead(_5)
         storage_live(_7)
         _7 = &two-phase-mut ((*self_1)).buf
-        _6 = grow_one<'11, T, A>[@TraitClause0, @TraitClause1, @TraitClause2](move _7)
+        _6 = grow_one<'11, T, A>[TraitClause0, TraitClause1, TraitClause2](move _7)
         storage_dead(_7)
     } else {
         storage_dead(_5)
@@ -253,21 +253,21 @@ where
     return
 }
 
-// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
-pub fn push<'_0, T, A>(self_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], value_2: T)
+// Full name: alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::push
+pub fn push<'_0, T, A>(self_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1], value_2: T)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Destruct<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Destruct),
 {
     let _0: (); // return
-    let self_1: &'1 mut Vec<T>[@TraitClause0, @TraitClause1]; // arg #1
+    let self_1: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
     let value_2: T; // arg #2
     let _3: &'3 mut T; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = push_mut<'5, T, A>[@TraitClause0, @TraitClause1, @TraitClause2](move self_1, move value_2)
+    _3 = push_mut<'5, T, A>[TraitClause0, TraitClause1, TraitClause2](move self_1, move value_2)
     storage_dead(_3)
     return
 }

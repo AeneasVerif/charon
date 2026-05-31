@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("Default")]
 pub trait Default<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn default = core::default::Default::default<Self>[Self]
     non-dyn-compatible
 }
@@ -24,7 +24,7 @@ pub trait Default<Self>
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 where
-    [@TraitClause0]: Default<Self>,
+    TraitClause0: (Self: Default),
 = <opaque>
 
 // Full name: core::default::{impl Default for u32}::default
@@ -51,7 +51,7 @@ unsafe fn drop_in_place<Self>(_1: *mut Self)
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -68,7 +68,7 @@ pub enum AssertKind {
 #[lang_item("slice_len_fn")]
 pub fn len<'_0, T>(_1: &'_0 [T]) -> usize
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: test_crate::function_call
@@ -242,7 +242,7 @@ pub fn {impl Default for Foo}::default() -> Foo
 
 // Full name: test_crate::{impl Default for Foo}
 impl Default for Foo {
-    parent_clause0 = {built_in impl Sized for Foo}
+    proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
     fn default = {impl Default for Foo}::default
     non-dyn-compatible
 }
@@ -272,7 +272,7 @@ pub fn {impl Default for Bar}::default() -> Bar
 
 // Full name: test_crate::{impl Default for Bar}
 impl Default for Bar {
-    parent_clause0 = {built_in impl Sized for Bar}
+    proof ImpliedClause0: (Bar: Sized) = {built_in impl Sized for Bar}
     fn default = {impl Default for Bar}::default
     non-dyn-compatible
 }
@@ -280,7 +280,7 @@ impl Default for Bar {
 // Full name: test_crate::eat
 fn eat<T>(_1: T)
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let _1: T; // arg #1

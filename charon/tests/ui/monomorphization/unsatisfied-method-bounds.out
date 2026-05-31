@@ -17,7 +17,7 @@ struct test_crate::MyIterator::{vtable} {
 // Full name: test_crate::MyIterator
 trait MyIterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::MyIterator::{vtable}
 }
 
@@ -51,13 +51,13 @@ fn method<'_0>(self_1: &'_0 B)
 
 // Full name: test_crate::{impl MyIterator for A}
 impl MyIterator for A {
-    parent_clause0 = {built_in impl MetaSized for A}
+    proof ImpliedClause0: (A: MetaSized) = {built_in impl MetaSized for A}
     vtable: {impl MyIterator for A}::{vtable}
 }
 
 // Full name: test_crate::{impl MyIterator for B}
 impl MyIterator for B {
-    parent_clause0 = {built_in impl MetaSized for B}
+    proof ImpliedClause0: (B: MetaSized) = {built_in impl MetaSized for B}
     vtable: {impl MyIterator for B}::{vtable}
 }
 

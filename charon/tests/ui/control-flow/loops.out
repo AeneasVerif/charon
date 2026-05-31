@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -16,7 +16,7 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
@@ -24,7 +24,7 @@ pub trait Clone<Self>
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
@@ -33,7 +33,7 @@ pub fn {impl Clone for i32}::clone<'_0>(_1: &'_0 i32) -> i32
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl Clone for i32 {
-    parent_clause0 = {built_in impl Sized for i32}
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
     fn clone<'_0_1> = {impl Clone for i32}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -44,7 +44,7 @@ pub fn {impl Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
 
 // Full name: core::clone::impls::{impl Clone for usize}
 impl Clone for usize {
-    parent_clause0 = {built_in impl Sized for usize}
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
     fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -55,7 +55,7 @@ pub fn {impl Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
 
 // Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
-    parent_clause0 = {built_in impl Sized for u32}
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
     non-dyn-compatible
 }
@@ -71,7 +71,7 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    TraitClause0: (Self: PartialEq<Rhs>),
 = <opaque>
 
 // Full name: core::cmp::Ordering
@@ -86,7 +86,7 @@ pub enum Ordering {
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
@@ -96,7 +96,7 @@ where
 #[lang_item("partial_ord")]
 pub trait PartialOrd<Self, Rhs>
 {
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
+    proof ImpliedClause0: (Self: PartialEq<Rhs>)
     fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
@@ -104,7 +104,7 @@ pub trait PartialOrd<Self, Rhs>
 #[lang_item("cmp_partialord_cmp")]
 pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 where
-    [@TraitClause0]: PartialOrd<Self, Rhs>,
+    TraitClause0: (Self: PartialOrd<Rhs>),
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
@@ -143,7 +143,7 @@ pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(_1: &'_0 i32, _2: &
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
 impl PartialOrd<i32> for i32 {
-    parent_clause0 = {impl PartialEq<i32> for i32}
+    proof ImpliedClause0: (i32: PartialEq<i32>) = {impl PartialEq<i32> for i32}
     fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<i32> for i32}::{vtable}
 }
@@ -154,7 +154,7 @@ pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(_1: &'_0 usize,
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
 impl PartialOrd<usize> for usize {
-    parent_clause0 = {impl PartialEq<usize> for usize}
+    proof ImpliedClause0: (usize: PartialEq<usize>) = {impl PartialEq<usize> for usize}
     fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<usize> for usize}::{vtable}
 }
@@ -165,7 +165,7 @@ pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(_1: &'_0 u32, _2: &
 
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
 impl PartialOrd<u32> for u32 {
-    parent_clause0 = {impl PartialEq<u32> for u32}
+    proof ImpliedClause0: (u32: PartialEq<u32>) = {impl PartialEq<u32> for u32}
     fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<u32> for u32}::partial_cmp<'_0_1, '_1_1>
     vtable: {impl PartialOrd<u32> for u32}::{vtable}
 }
@@ -174,9 +174,9 @@ impl PartialOrd<u32> for u32 {
 #[lang_item("range_step")]
 pub trait Step<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
-    parent_clause2 : [@TraitClause2]: PartialOrd<Self, Self>
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (Self: Clone)
+    proof ImpliedClause2: (Self: PartialOrd<Self>)
     fn steps_between<'_0_1, '_1_1> = core::iter::range::Step::steps_between<'_0_1, '_1_1, Self>[Self]
     fn forward_checked = core::iter::range::Step::forward_checked<Self>[Self]
     fn backward_checked = core::iter::range::Step::backward_checked<Self>[Self]
@@ -185,17 +185,17 @@ pub trait Step<Self>
 
 pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(_1: &'_0 Self, _2: &'_1 Self) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
-    [@TraitClause0]: Step<Self>,
+    TraitClause0: (Self: Step),
 = <opaque>
 
-pub fn core::iter::range::Step::forward_checked<Self>(_1: Self, _2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
+pub fn core::iter::range::Step::forward_checked<Self>(_1: Self, _2: usize) -> Option<Self>[TraitClause0::ImpliedClause0]
 where
-    [@TraitClause0]: Step<Self>,
+    TraitClause0: (Self: Step),
 = <opaque>
 
-pub fn core::iter::range::Step::backward_checked<Self>(_1: Self, _2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
+pub fn core::iter::range::Step::backward_checked<Self>(_1: Self, _2: usize) -> Option<Self>[TraitClause0::ImpliedClause0]
 where
-    [@TraitClause0]: Step<Self>,
+    TraitClause0: (Self: Step),
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
@@ -212,9 +212,9 @@ pub fn {impl Step for usize}::steps_between<'_0, '_1>(_1: &'_0 usize, _2: &'_1 u
 
 // Full name: core::iter::range::{impl Step for usize}
 impl Step for usize {
-    parent_clause0 = {built_in impl Sized for usize}
-    parent_clause1 = {impl Clone for usize}
-    parent_clause2 = {impl PartialOrd<usize> for usize}
+    proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
+    proof ImpliedClause1: (usize: Clone) = {impl Clone for usize}
+    proof ImpliedClause2: (usize: PartialOrd<usize>) = {impl PartialOrd<usize> for usize}
     fn steps_between<'_0_1, '_1_1> = {impl Step for usize}::steps_between<'_0_1, '_1_1>
     fn forward_checked = {impl Step for usize}::forward_checked
     fn backward_checked = {impl Step for usize}::backward_checked
@@ -235,9 +235,9 @@ pub fn {impl Step for u32}::steps_between<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) 
 
 // Full name: core::iter::range::{impl Step for u32}
 impl Step for u32 {
-    parent_clause0 = {built_in impl Sized for u32}
-    parent_clause1 = {impl Clone for u32}
-    parent_clause2 = {impl PartialOrd<u32> for u32}
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    proof ImpliedClause1: (u32: Clone) = {impl Clone for u32}
+    proof ImpliedClause2: (u32: PartialOrd<u32>) = {impl PartialOrd<u32> for u32}
     fn steps_between<'_0_1, '_1_1> = {impl Step for u32}::steps_between<'_0_1, '_1_1>
     fn forward_checked = {impl Step for u32}::forward_checked
     fn backward_checked = {impl Step for u32}::backward_checked
@@ -258,9 +258,9 @@ pub fn {impl Step for i32}::steps_between<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) 
 
 // Full name: core::iter::range::{impl Step for i32}
 impl Step for i32 {
-    parent_clause0 = {built_in impl Sized for i32}
-    parent_clause1 = {impl Clone for i32}
-    parent_clause2 = {impl PartialOrd<i32> for i32}
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    proof ImpliedClause1: (i32: Clone) = {impl Clone for i32}
+    proof ImpliedClause2: (i32: PartialOrd<i32>) = {impl PartialOrd<i32> for i32}
     fn steps_between<'_0_1, '_1_1> = {impl Step for i32}::steps_between<'_0_1, '_1_1>
     fn forward_checked = {impl Step for i32}::forward_checked
     fn backward_checked = {impl Step for i32}::backward_checked
@@ -271,7 +271,7 @@ impl Step for i32 {
 #[lang_item("Range")]
 pub struct Range<Idx>
 where
-    [@TraitClause0]: Sized<Idx>,
+    TraitClause0: (Idx: Sized),
 {
   start: Idx,
   end: Idx,
@@ -281,55 +281,55 @@ where
 #[lang_item("iterator")]
 pub trait Iterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Item>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
     type Item
     fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
-// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}::next
-pub fn {impl Iterator for Range<A>[@TraitClause0]}::next<'_0, A>(_1: &'_0 mut Range<A>[@TraitClause0]) -> Option<A>[@TraitClause0]
+// Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}::next
+pub fn {impl Iterator for Range<A>[TraitClause0]}::next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClause0]
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Step<A>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Step),
 = <opaque>
 
-// Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}
-impl<A> Iterator for Range<A>[@TraitClause0]
+// Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}
+impl<A> Iterator for Range<A>[TraitClause0]
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Step<A>,
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Step),
 {
-    parent_clause0 = {built_in impl MetaSized for Range<A>[@TraitClause0]}
-    parent_clause1 = @TraitClause0
+    proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
+    proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
-    fn next<'_0_1> = {impl Iterator for Range<A>[@TraitClause0]}::next<'_0_1, A>[@TraitClause0, @TraitClause1]
-    vtable: {impl Iterator for Range<A>[@TraitClause0]}::{vtable}<A>[@TraitClause0, @TraitClause1]
+    fn next<'_0_1> = {impl Iterator for Range<A>[TraitClause0]}::next<'_0_1, A>[TraitClause0, TraitClause1]
+    vtable: {impl Iterator for Range<A>[TraitClause0]}::{vtable}<A>[TraitClause0, TraitClause1]
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
 pub fn {impl IntoIterator for I}::into_iter<I>(_1: I) -> I
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I>,
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: Iterator),
 = <opaque>
 
 #[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(_1: &'_0 mut Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause1]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(_1: &'_0 mut Self) -> Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]
 where
-    [@TraitClause0]: Iterator<Self>,
+    TraitClause0: (Self: Iterator),
 = <opaque>
 
 pub trait core::slice::index::private_slice_index::Sealed<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: core::slice::index::private_slice_index::Sealed::{vtable}
 }
 
 // Full name: core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for usize}
 impl core::slice::index::private_slice_index::Sealed for usize {
-    parent_clause0 = {built_in impl MetaSized for usize}
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
     vtable: {impl core::slice::index::private_slice_index::Sealed for usize}::{vtable}
 }
 
@@ -337,10 +337,10 @@ impl core::slice::index::private_slice_index::Sealed for usize {
 #[lang_item("SliceIndex")]
 pub trait SliceIndex<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: core::slice::index::private_slice_index::Sealed<Self>
-    parent_clause2 : [@TraitClause2]: MetaSized<T>
-    parent_clause3 : [@TraitClause3]: MetaSized<Self::Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: core::slice::index::private_slice_index::Sealed)
+    proof ImpliedClause2: (T: MetaSized)
+    proof ImpliedClause3: (Self::Output: MetaSized)
     type Output
     fn get<'_0_1> = core::slice::index::SliceIndex::get<'_0_1, Self, T>[Self]
     fn get_mut<'_0_1> = core::slice::index::SliceIndex::get_mut<'_0_1, Self, T>[Self]
@@ -351,89 +351,89 @@ pub trait SliceIndex<Self, T>
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(_1: Self, _2: &'_0 T) -> Option<&'_0 @TraitClause0::Output>[{built_in impl Sized for &'_0 @TraitClause0::Output}]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(_1: Self, _2: &'_0 T) -> Option<&'_0 TraitClause0::Output>[{built_in impl Sized for &'_0 TraitClause0::Output}]
 where
-    [@TraitClause0]: SliceIndex<Self, T>,
+    TraitClause0: (Self: SliceIndex<T>),
 = <opaque>
 
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(_1: Self, _2: &'_0 mut T) -> Option<&'_0 mut @TraitClause0::Output>[{built_in impl Sized for &'_0 mut @TraitClause0::Output}]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(_1: Self, _2: &'_0 mut T) -> Option<&'_0 mut TraitClause0::Output>[{built_in impl Sized for &'_0 mut TraitClause0::Output}]
 where
-    [@TraitClause0]: SliceIndex<Self, T>,
+    TraitClause0: (Self: SliceIndex<T>),
 = <opaque>
 
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(_1: Self, _2: *const T) -> *const @TraitClause0::Output
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(_1: Self, _2: *const T) -> *const TraitClause0::Output
 where
-    [@TraitClause0]: SliceIndex<Self, T>,
+    TraitClause0: (Self: SliceIndex<T>),
 = <opaque>
 
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(_1: Self, _2: *mut T) -> *mut @TraitClause0::Output
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(_1: Self, _2: *mut T) -> *mut TraitClause0::Output
 where
-    [@TraitClause0]: SliceIndex<Self, T>,
+    TraitClause0: (Self: SliceIndex<T>),
 = <opaque>
 
-pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(_1: Self, _2: &'_0 T) -> &'_0 @TraitClause0::Output
+pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(_1: Self, _2: &'_0 T) -> &'_0 TraitClause0::Output
 where
-    [@TraitClause0]: SliceIndex<Self, T>,
+    TraitClause0: (Self: SliceIndex<T>),
 = <opaque>
 
-pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(_1: Self, _2: &'_0 mut T) -> &'_0 mut @TraitClause0::Output
+pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(_1: Self, _2: &'_0 mut T) -> &'_0 mut TraitClause0::Output
 where
-    [@TraitClause0]: SliceIndex<Self, T>,
+    TraitClause0: (Self: SliceIndex<T>),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
 pub fn {impl SliceIndex<[T]> for usize}::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
 pub fn {impl SliceIndex<[T]> for usize}::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
 pub unsafe fn {impl SliceIndex<[T]> for usize}::get_unchecked_mut<T>(_1: usize, _2: *mut [T]) -> *mut T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
 pub unsafe fn {impl SliceIndex<[T]> for usize}::get_unchecked<T>(_1: usize, _2: *const [T]) -> *const T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_mut
 pub fn {impl SliceIndex<[T]> for usize}::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
 pub fn {impl SliceIndex<[T]> for usize}::get<'_0, T>(_1: usize, _2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}
 impl<T> SliceIndex<[T]> for usize
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for usize}
-    parent_clause1 = {impl core::slice::index::private_slice_index::Sealed for usize}
-    parent_clause2 = {built_in impl MetaSized for [T]}
-    parent_clause3 = @TraitClause0::parent_clause0
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (usize: core::slice::index::private_slice_index::Sealed) = {impl core::slice::index::private_slice_index::Sealed for usize}
+    proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause3: (T: MetaSized) = TraitClause0::ImpliedClause0
     type Output = T
-    fn get<'_0_1> = {impl SliceIndex<[T]> for usize}::get<'_0_1, T>[@TraitClause0]
-    fn get_mut<'_0_1> = {impl SliceIndex<[T]> for usize}::get_mut<'_0_1, T>[@TraitClause0]
-    fn get_unchecked = {impl SliceIndex<[T]> for usize}::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = {impl SliceIndex<[T]> for usize}::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0_1> = {impl SliceIndex<[T]> for usize}::index<'_0_1, T>[@TraitClause0]
-    fn index_mut<'_0_1> = {impl SliceIndex<[T]> for usize}::index_mut<'_0_1, T>[@TraitClause0]
-    vtable: {impl SliceIndex<[T]> for usize}::{vtable}<T>[@TraitClause0]
+    fn get<'_0_1> = {impl SliceIndex<[T]> for usize}::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = {impl SliceIndex<[T]> for usize}::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = {impl SliceIndex<[T]> for usize}::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<[T]> for usize}::get_unchecked_mut<T>[TraitClause0]
+    fn index<'_0_1> = {impl SliceIndex<[T]> for usize}::index<'_0_1, T>[TraitClause0]
+    fn index_mut<'_0_1> = {impl SliceIndex<[T]> for usize}::index_mut<'_0_1, T>[TraitClause0]
+    vtable: {impl SliceIndex<[T]> for usize}::{vtable}<T>[TraitClause0]
 }
 
 // Full name: alloc::alloc::Global
@@ -444,22 +444,22 @@ pub struct Global {}
 #[lang_item("Vec")]
 pub opaque type Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
 
-pub fn alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'_0, T, A>(_1: &'_0 Vec<T>[@TraitClause0, @TraitClause1]) -> usize
+pub fn alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::len<'_0, T, A>(_1: &'_0 Vec<T>[TraitClause0, TraitClause1]) -> usize
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
-// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut
-pub fn {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'_0, T, I, A>(_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause2], _2: I) -> &'_0 mut @TraitClause3::Output
+// Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[TraitClause0, TraitClause2]}::index_mut
+pub fn {impl IndexMut<I> for Vec<T>[TraitClause0, TraitClause2]}::index_mut<'_0, T, I, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause2], _2: I) -> &'_0 mut TraitClause3::Output
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Sized<A>,
-    [@TraitClause3]: SliceIndex<I, [T]>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: (A: Sized),
+    TraitClause3: (I: SliceIndex<[T]>),
 = <opaque>
 
 // Full name: test_crate::test_loop1
@@ -1217,7 +1217,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
     storage_live(_4)
     storage_live(_5)
     _5 = Range { start: const 0 : i32, end: const 128 : i32 }
-    _4 = {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[@TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5)
+    _4 = {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5)
     storage_dead(_5)
     storage_live(iter_6)
     iter_6 = move _4
@@ -1227,7 +1227,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_9)
         _9 = &mut iter_6
         _8 = &two-phase-mut (*_9)
-        _7 = {impl Iterator for Range<A>[@TraitClause0]}::next<'9, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8)
+        _7 = {impl Iterator for Range<A>[TraitClause0]}::next<'9, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8)
         storage_dead(_8)
         match _7 {
             Option::None => {
@@ -1252,7 +1252,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
     _13 = copy step_out_1
     _12 = Range { start: const 0 : usize, end: move _13 }
     storage_dead(_13)
-    _11 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _12)
+    _11 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _12)
     storage_dead(_12)
     storage_live(iter_14)
     iter_14 = move _11
@@ -1262,7 +1262,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_17)
         _17 = &mut iter_14
         _16 = &two-phase-mut (*_17)
-        _15 = {impl Iterator for Range<A>[@TraitClause0]}::next<'11, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _16)
+        _15 = {impl Iterator for Range<A>[TraitClause0]}::next<'11, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _16)
         storage_dead(_16)
         match _15 {
             Option::None => {
@@ -1277,7 +1277,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         _20 = copy step_in_2
         _19 = Range { start: const 0 : usize, end: move _20 }
         storage_dead(_20)
-        _18 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[@TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _19)
+        _18 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _19)
         storage_dead(_19)
         storage_live(iter_21)
         iter_21 = move _18
@@ -1287,7 +1287,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
             storage_live(_24)
             _24 = &mut iter_21
             _23 = &two-phase-mut (*_24)
-            _22 = {impl Iterator for Range<A>[@TraitClause0]}::next<'13, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _23)
+            _22 = {impl Iterator for Range<A>[TraitClause0]}::next<'13, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _23)
             storage_dead(_23)
             match _22 {
                 Option::None => {
@@ -1350,7 +1350,7 @@ pub fn loop_inside_if(b_1: bool, n_2: u32) -> u32
         _7 = copy n_2
         _6 = Range { start: const 0 : u32, end: move _7 }
         storage_dead(_7)
-        _5 = {impl IntoIterator for I}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[@TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move _6)
+        _5 = {impl IntoIterator for I}::into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, {impl Iterator for Range<A>[TraitClause0]}<u32>[{built_in impl Sized for u32}, {impl Step for u32}]](move _6)
         storage_dead(_6)
         storage_live(iter_8)
         iter_8 = move _5
@@ -1360,7 +1360,7 @@ pub fn loop_inside_if(b_1: bool, n_2: u32) -> u32
             storage_live(_11)
             _11 = &mut iter_8
             _10 = &two-phase-mut (*_11)
-            _9 = {impl Iterator for Range<A>[@TraitClause0]}::next<'4, u32>[{built_in impl Sized for u32}, {impl Step for u32}](move _10)
+            _9 = {impl Iterator for Range<A>[TraitClause0]}::next<'4, u32>[{built_in impl Sized for u32}, {impl Step for u32}](move _10)
             storage_dead(_10)
             match _9 {
                 Option::None => {
@@ -1532,7 +1532,7 @@ pub fn clear<'_0>(v_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_i
         storage_live(_5)
         storage_live(_6)
         _6 = &(*v_1)
-        _5 = alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::len<'8, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _6)
+        _5 = alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::len<'8, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _6)
         storage_dead(_6)
         _3 = move _4 < move _5
         if move _3 {
@@ -1546,7 +1546,7 @@ pub fn clear<'_0>(v_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_i
         _8 = &mut (*v_1)
         storage_live(_9)
         _9 = copy i_2
-        _7 = {impl IndexMut<I> for Vec<T>[@TraitClause0, @TraitClause2]}::index_mut<'10, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
+        _7 = {impl IndexMut<I> for Vec<T>[TraitClause0, TraitClause2]}::index_mut<'10, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, {impl SliceIndex<[T]> for usize}<u32>[{built_in impl Sized for u32}]](move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
         (*_7) = const 0 : u32
@@ -1567,9 +1567,9 @@ pub fn clear<'_0>(v_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_i
 // Full name: test_crate::List
 pub enum List<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]),
+  Cons(T, alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]),
   Nil,
 }
 
@@ -1628,18 +1628,18 @@ pub fn get_elem_mut<'_0>(ls_1: &'_0 mut List<usize>[{built_in impl Sized for usi
 }
 
 // Full name: test_crate::list_nth_mut_loop_with_id
-pub fn list_nth_mut_loop_with_id<'_0, T>(ls_1: &'_0 mut List<T>[@TraitClause0], i_2: u32) -> &'_0 mut T
+pub fn list_nth_mut_loop_with_id<'_0, T>(ls_1: &'_0 mut List<T>[TraitClause0], i_2: u32) -> &'_0 mut T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: &'1 mut T; // return
-    let ls_1: &'3 mut List<T>[@TraitClause0]; // arg #1
+    let ls_1: &'3 mut List<T>[TraitClause0]; // arg #1
     let i_2: u32; // arg #2
     let x_3: &'4 mut T; // local
-    let tl_4: &'6 mut alloc::boxed::Box<List<T>[@TraitClause0]>[{built_in impl MetaSized for List<T>[@TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let tl_4: &'6 mut alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
-    let _7: &'7 mut List<T>[@TraitClause0]; // anonymous local
+    let _7: &'7 mut List<T>[TraitClause0]; // anonymous local
     let _8: u32; // anonymous local
 
     storage_live(_8)

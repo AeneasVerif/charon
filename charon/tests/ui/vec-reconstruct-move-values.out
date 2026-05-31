@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -20,21 +20,21 @@ pub struct Global {}
 #[lang_item("Vec")]
 pub opaque type Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: alloc::slice::{[T]}::into_vec
-pub fn into_vec<T, A>(_1: alloc::boxed::Box<[T]>[{built_in impl MetaSized for [T]}, @TraitClause1]) -> Vec<T>[@TraitClause0, @TraitClause1]
+pub fn into_vec<T, A>(_1: alloc::boxed::Box<[T]>[{built_in impl MetaSized for [T]}, TraitClause1]) -> Vec<T>[TraitClause0, TraitClause1]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
 // Full name: test_crate::NoCopy
@@ -108,14 +108,14 @@ fn move_values(flag_1: bool)
         ret_12 = into_vec<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}](move y_14)
         _w_7 = move ret_12
         _0 = ()
-        conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _w_7
+        conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _w_7
         storage_dead(_w_7)
         storage_dead(y_6)
     } else {
         _0 = ()
     }
     storage_dead(_5)
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v_3
+    conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v_3
     storage_dead(_v_3)
     storage_dead(x_2)
     return

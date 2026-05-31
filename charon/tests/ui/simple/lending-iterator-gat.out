@@ -12,7 +12,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -31,7 +31,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -39,10 +39,10 @@ pub trait Tuple<Self>
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
@@ -52,38 +52,38 @@ pub trait FnOnce<Self, Args>
 #[lang_item("fn_mut")]
 pub trait FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: FnOnce<Self, Args>
-    parent_clause2 : [@TraitClause2]: Sized<Args>
-    parent_clause3 : [@TraitClause3]: Tuple<Args>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
     fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
-    vtable: core::ops::function::FnMut::{vtable}<Args, Self::parent_clause1::Output>
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
-pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> @TraitClause0::parent_clause1::Output
+pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
 where
-    [@TraitClause0]: FnMut<Self, Args>,
+    TraitClause0: (Self: FnMut<Args>),
 = <opaque>
 
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
+pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    TraitClause0: (Self: FnOnce<Args>),
 = <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
 }
 
-// Full name: core::option::Option::{impl Destruct for Option<T>[@TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<T>(_1: *mut Option<T>[@TraitClause0])
+// Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_in_place
+unsafe fn {impl Destruct for Option<T>[TraitClause0]}::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::panicking::AssertKind
@@ -96,11 +96,11 @@ pub enum AssertKind {
 // Full name: test_crate::LendingIterator
 pub trait LendingIterator<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    type Item<'a, Self : 'a>
+    proof ImpliedClause0: (Self: MetaSized)
+    type Item<'a>
     where
-        implied_clause_0 : [@TraitClause0_1]: Sized<Self::Item>
-
+        TypeOutlives0: Self: 'a,
+        proof ImpliedClause0: (Self::Item: Sized);
     fn next<'a> = test_crate::LendingIterator::next<'a, Self>[Self]
     non-dyn-compatible
 }
@@ -125,15 +125,15 @@ impl<A> Destruct for (A,) {
     non-dyn-compatible
 }
 
-pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<@TraitClause0::Item>[(@TraitClause0::Item::[@TraitClause0])]
+pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<TraitClause0::Item>[TraitClause0::Item::ImpliedClause0]
 where
-    [@TraitClause0]: LendingIterator<Self>,
+    TraitClause0: (Self: LendingIterator),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next
 pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>(self_1: &'b mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: Option<&'6 T>[{built_in impl Sized for &'6 T}]; // return
     let self_1: &'13 mut Option<&'14 T>[{built_in impl Sized for &'14 T}]; // arg #1
@@ -170,33 +170,36 @@ where
 // Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}
 impl<'a, T> LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
-    parent_clause0 = {built_in impl MetaSized for Option<&'_ T>[{built_in impl Sized for &'_ T}]}
-    type Item<'b, Option<&'a T>[{built_in impl Sized for &'a T}] : 'b> = &'b T
-    fn next<'b> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>[@TraitClause0]
+    proof ImpliedClause0: (Option<&'_ T>[{built_in impl Sized for &'_ T}]: MetaSized) = {built_in impl MetaSized for Option<&'_ T>[{built_in impl Sized for &'_ T}]}
+    type Item<'b> = &'b T
+    where
+        TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'b,
+        proof ImpliedClause0: (&'_ T: Sized) = {built_in impl Sized for &'_ T};
+    fn next<'b> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>[TraitClause0]
     non-dyn-compatible
 }
 
 // Full name: test_crate::for_each
 pub fn for_each<I, T1>(iter_1: I, f_2: T1)
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<T1>,
-    [@TraitClause2]: LendingIterator<I>,
-    [@TraitClause3]: for<'a> FnMut<T1, (@TraitClause2::Item,)>,
-    for<'a> @TraitClause3::parent_clause1::Output = (),
+    TraitClause0: (I: Sized),
+    TraitClause1: (T1: Sized),
+    TraitClause2: (I: LendingIterator),
+    TraitClause3: for<'a> (T1: FnMut<(TraitClause2::Item,)>),
+    TypeConstraint0: for<'a> TraitClause3::ImpliedClause1::Output = (),
 {
     let _0: (); // return
     let iter_1: I; // arg #1
     let f_2: T1; // arg #2
     let _3: (); // anonymous local
-    let _4: Option<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]; // anonymous local
+    let _4: Option<TraitClause2::Item>[TraitClause2::Item::ImpliedClause0]; // anonymous local
     let _5: &'1 mut I; // anonymous local
-    let item_6: @TraitClause2::Item; // local
+    let item_6: TraitClause2::Item; // local
     let _7: &'3 mut T1; // anonymous local
-    let _8: (@TraitClause2::Item,); // anonymous local
-    let _9: @TraitClause2::Item; // anonymous local
+    let _8: (TraitClause2::Item,); // anonymous local
+    let _9: TraitClause2::Item; // anonymous local
 
     storage_live(_3)
     _0 = ()
@@ -204,7 +207,7 @@ where
         storage_live(_4)
         storage_live(_5)
         _5 = &two-phase-mut iter_1
-        _4 = @TraitClause2::next<'5>(move _5)
+        _4 = TraitClause2::next<'5>(move _5)
         storage_dead(_5)
         match _4 {
             Option::Some => {
@@ -221,19 +224,19 @@ where
         storage_live(_9)
         _9 = move item_6
         _8 = (move _9,)
-        _3 = @TraitClause3::call_mut<'7>(move _7, move _8)
-        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}::drop_in_place] _9
+        _3 = TraitClause3::call_mut<'7>(move _7, move _8)
+        conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_in_place] _9
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
-        conditional_drop[{built_in impl Destruct for @TraitClause2::Item}::drop_in_place] item_6
+        conditional_drop[{built_in impl Destruct for TraitClause2::Item}::drop_in_place] item_6
         storage_dead(item_6)
-        conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4
+        conditional_drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<TraitClause2::Item>[TraitClause2::Item::ImpliedClause0]] _4
         storage_dead(_4)
         continue 0
     }
     _0 = ()
-    conditional_drop[{impl Destruct for Option<T>[@TraitClause0]}::drop_in_place<@TraitClause2::Item>[(@TraitClause2::Item::[@TraitClause0])]] _4
+    conditional_drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<TraitClause2::Item>[TraitClause2::Item::ImpliedClause0]] _4
     storage_dead(_4)
     conditional_drop[{built_in impl Destruct for T1}::drop_in_place] f_2
     conditional_drop[{built_in impl Destruct for I}::drop_in_place] iter_1
@@ -290,10 +293,10 @@ fn {impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once<'_0, '_1>(_1: closure<'
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ i32,)> for closure<'_0>}
 impl<'_0, '_1> FnOnce<(&'_ i32,)> for closure<'_0> {
-    parent_clause0 = {built_in impl MetaSized for closure<'_0>}
-    parent_clause1 = {built_in impl Sized for (&'_ i32,)}
-    parent_clause2 = {built_in impl Tuple for (&'_ i32,)}
-    parent_clause3 = {built_in impl Sized for ()}
+    proof ImpliedClause0: (closure<'_0>: MetaSized) = {built_in impl MetaSized for closure<'_0>}
+    proof ImpliedClause1: ((&'_ i32,): Sized) = {built_in impl Sized for (&'_ i32,)}
+    proof ImpliedClause2: ((&'_ i32,): Tuple) = {built_in impl Tuple for (&'_ i32,)}
+    proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = {impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once<'_0, '_1>
     non-dyn-compatible
@@ -301,10 +304,10 @@ impl<'_0, '_1> FnOnce<(&'_ i32,)> for closure<'_0> {
 
 // Full name: test_crate::main::{impl FnMut<(&'_ i32,)> for closure<'_0>}
 impl<'_0, '_1> FnMut<(&'_ i32,)> for closure<'_0> {
-    parent_clause0 = {built_in impl MetaSized for closure<'_0>}
-    parent_clause1 = {impl FnOnce<(&'_ i32,)> for closure<'_0>}<'_0, '_1>
-    parent_clause2 = {built_in impl Sized for (&'_ i32,)}
-    parent_clause3 = {built_in impl Tuple for (&'_ i32,)}
+    proof ImpliedClause0: (closure<'_0>: MetaSized) = {built_in impl MetaSized for closure<'_0>}
+    proof ImpliedClause1: (closure<'_0>: FnOnce<(&'_ i32,)>) = {impl FnOnce<(&'_ i32,)> for closure<'_0>}<'_0, '_1>
+    proof ImpliedClause2: ((&'_ i32,): Sized) = {built_in impl Sized for (&'_ i32,)}
+    proof ImpliedClause3: ((&'_ i32,): Tuple) = {built_in impl Tuple for (&'_ i32,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }

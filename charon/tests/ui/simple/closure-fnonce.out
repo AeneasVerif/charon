@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -27,7 +27,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -35,34 +35,34 @@ pub trait Tuple<Self>
 #[lang_item("mem_drop")]
 pub fn drop<T>(_1: T)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Destruct<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
 = <opaque>
 
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    parent_clause3 : [@TraitClause3]: Sized<Self::Output>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> @TraitClause0::Output
+pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
 where
-    [@TraitClause0]: FnOnce<Self, Args>,
+    TraitClause0: (Self: FnOnce<Args>),
 = <opaque>
 
 // Full name: test_crate::apply_to_zero_once
 fn apply_to_zero_once<T0>(f_1: T0) -> u8
 where
-    [@TraitClause0]: Sized<T0>,
-    [@TraitClause1]: FnOnce<T0, (u8,)>,
-    @TraitClause1::Output = u8,
+    TraitClause0: (T0: Sized),
+    TraitClause1: (T0: FnOnce<(u8,)>),
+    TypeConstraint0: TraitClause1::Output = u8,
 {
     let _0: u8; // return
     let f_1: T0; // arg #1
@@ -73,7 +73,7 @@ where
     _2 = move f_1
     storage_live(_3)
     _3 = (const 0 : u8,)
-    _0 = @TraitClause1::call_once(move _2, move _3)
+    _0 = TraitClause1::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T0}::drop_in_place] f_1
@@ -138,10 +138,10 @@ fn {impl FnOnce<(u8,)> for closure}::call_once(_1: closure, tupled_args_2: (u8,)
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}
 impl FnOnce<(u8,)> for closure {
-    parent_clause0 = {built_in impl MetaSized for closure}
-    parent_clause1 = {built_in impl Sized for (u8,)}
-    parent_clause2 = {built_in impl Tuple for (u8,)}
-    parent_clause3 = {built_in impl Sized for u8}
+    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
+    proof ImpliedClause1: ((u8,): Sized) = {built_in impl Sized for (u8,)}
+    proof ImpliedClause2: ((u8,): Tuple) = {built_in impl Tuple for (u8,)}
+    proof ImpliedClause3: (u8: Sized) = {built_in impl Sized for u8}
     type Output = u8
     fn call_once = {impl FnOnce<(u8,)> for closure}::call_once
     non-dyn-compatible

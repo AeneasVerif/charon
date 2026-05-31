@@ -1111,11 +1111,11 @@ and trait_assoc_ty_impl_of_postcard (ctx : of_postcard_ctx)
     (st : postcard_state) : (trait_assoc_ty_impl, string) result =
   combine_error_msgs st __FUNCTION__
     (let* value = ty_of_postcard ctx st in
-     let* _ =
+     let* implied_trait_refs =
        index_vec_of_postcard trait_clause_id_of_postcard trait_ref_of_postcard
          ctx st
      in
-     Ok ({ value } : trait_assoc_ty_impl))
+     Ok ({ value; implied_trait_refs } : trait_assoc_ty_impl))
 
 and trait_clause_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (trait_clause_id, string) result =

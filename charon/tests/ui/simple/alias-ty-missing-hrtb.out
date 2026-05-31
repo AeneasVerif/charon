@@ -8,15 +8,15 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::HasLifetimeAssoc
 pub trait HasLifetimeAssoc<'a, Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Assoc>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Assoc: Sized)
     type Assoc
     vtable: test_crate::HasLifetimeAssoc::{vtable}<'a, Self::Assoc>
 }
@@ -24,8 +24,8 @@ pub trait HasLifetimeAssoc<'a, Self>
 // Full name: test_crate::FnAlias
 pub type FnAlias<B>
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: HasLifetimeAssoc<'_, B>, = fn<'a>(@TraitClause1::Assoc)
+    TraitClause0: (B: Sized),
+    TraitClause1: (B: HasLifetimeAssoc<'_>), = fn<'a>(TraitClause1::Assoc)
 
 
 

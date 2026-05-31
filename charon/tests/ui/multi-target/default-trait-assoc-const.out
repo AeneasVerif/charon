@@ -3,14 +3,14 @@ pub trait core::marker::MetaSized<Self>
 
 trait test_crate::Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::MetaSized<Self>
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
     const VALUE : usize
     non-dyn-compatible
 }
 
 fn test_crate::Trait::VALUE<Self>() -> usize
 where
-    [@TraitClause0]: test_crate::Trait<Self>,
+    TraitClause0: (Self: test_crate::Trait),
 {
     let _0: usize; // return
 
@@ -20,12 +20,12 @@ where
 
 const test_crate::Trait::VALUE<Self>: usize
 where
-    [@TraitClause0]: test_crate::Trait<Self>,
+    TraitClause0: (Self: test_crate::Trait),
  = test_crate::Trait::VALUE()
 
 // Full name: test_crate::{impl test_crate::Trait for ()}
 impl test_crate::Trait for () {
-    parent_clause0 = {built_in impl core::marker::MetaSized for ()}
+    proof ImpliedClause0: ((): core::marker::MetaSized) = {built_in impl core::marker::MetaSized for ()}
     const VALUE = test_crate::Trait::VALUE<()>[test_crate::{impl test_crate::Trait for ()}]
     non-dyn-compatible
 }

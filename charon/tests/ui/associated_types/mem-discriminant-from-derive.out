@@ -11,7 +11,7 @@ pub trait PartialEq<Self, Rhs>
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
+    TraitClause0: (Self: PartialEq<Rhs>),
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}::eq
@@ -27,7 +27,7 @@ impl PartialEq<u8> for u8 {
 // Full name: core::cmp::impls::{impl PartialEq<&'_0 B> for &'_1 A}::eq
 pub fn {impl PartialEq<&'_0 B> for &'_1 A}::eq<'_0, '_1, '_2, '_3, A, B>(_1: &'_2 &'_1 A, _2: &'_3 &'_0 B) -> bool
 where
-    [@TraitClause0]: PartialEq<A, B>,
+    TraitClause0: (A: PartialEq<B>),
 = <opaque>
 
 // Full name: core::marker::MetaSized
@@ -38,7 +38,7 @@ pub trait MetaSized<Self>
 #[lang_item("structural_peq")]
 pub trait StructuralPartialEq<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: core::marker::StructuralPartialEq::{vtable}
 }
 
@@ -50,7 +50,7 @@ enum Enum {
 
 // Full name: test_crate::{impl StructuralPartialEq for Enum}
 impl StructuralPartialEq for Enum {
-    parent_clause0 = {built_in impl MetaSized for Enum}
+    proof ImpliedClause0: (Enum: MetaSized) = {built_in impl MetaSized for Enum}
     vtable: {impl StructuralPartialEq for Enum}::{vtable}
 }
 

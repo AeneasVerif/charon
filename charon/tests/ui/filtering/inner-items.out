@@ -27,13 +27,13 @@ fn inner1()
 // Full name: test_crate::foo::Trait
 trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::foo::Trait::{vtable}
 }
 
 // Full name: test_crate::foo::{impl Trait for ()}
 impl Trait for () {
-    parent_clause0 = {built_in impl MetaSized for ()}
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     vtable: {impl Trait for ()}::{vtable}
 }
 

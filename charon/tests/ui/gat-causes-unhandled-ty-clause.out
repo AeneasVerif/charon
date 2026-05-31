@@ -8,15 +8,15 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::HasAssoc
 trait HasAssoc<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Assoc>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Assoc: Sized)
     type Assoc
     vtable: test_crate::HasAssoc::{vtable}<Self::Assoc>
 }
@@ -24,24 +24,24 @@ trait HasAssoc<Self>
 // Full name: test_crate::HasGAT
 trait HasGAT<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<Self::Friend>
-    parent_clause2 : [@TraitClause2]: HasAssoc<Self::Friend>
-    type GAT<T, [@TraitClause0_1]: Sized<T>>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Friend: Sized)
+    proof ImpliedClause2: (Self::Friend: HasAssoc)
+    type GAT<T>
     where
-        implied_clause_0 : [@TraitClause0_1]: Sized<Self::GAT>
-
+        TraitClause0_1: (T: Sized),
+        proof ImpliedClause0: (Self::GAT: Sized);
     type Friend
     non-dyn-compatible
 }
 
 // Full name: test_crate::floatify
-fn floatify<C>() -> @TraitClause1::parent_clause2::Assoc
+fn floatify<C>() -> TraitClause1::ImpliedClause2::Assoc
 where
-    [@TraitClause0]: Sized<C>,
-    [@TraitClause1]: HasGAT<C>,
+    TraitClause0: (C: Sized),
+    TraitClause1: (C: HasGAT),
 {
-    let _0: @TraitClause1::parent_clause2::Assoc; // return
+    let _0: TraitClause1::ImpliedClause2::Assoc; // return
 
     panic(core::panicking::panic)
 }

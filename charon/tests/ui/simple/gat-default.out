@@ -8,7 +8,7 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -20,24 +20,27 @@ pub struct Global {}
 #[lang_item("Vec")]
 pub opaque type Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: test_crate::Collection
 trait Collection<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    type Sibling<U, [@TraitClause0_1]: Sized<U>>
+    proof ImpliedClause0: (Self: MetaSized)
+    type Sibling<U> = Vec<U>[TraitClause0_1, {built_in impl Sized for Global}]
     where
-        implied_clause_0 : [@TraitClause0_1]: Sized<Self::Sibling>
-
+        TraitClause0_1: (U: Sized),
+        proof ImpliedClause0: (Self::Sibling: Sized);
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Collection for ()}
 impl Collection for () {
-    parent_clause0 = {built_in impl MetaSized for ()}
-    type Sibling<U, [@TraitClause0_1]: Sized<U>> = Vec<U>[@TraitClause0_1, {built_in impl Sized for Global}]
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    type Sibling<U> = Vec<U>[TraitClause0_1, {built_in impl Sized for Global}]
+    where
+        TraitClause0_1: (U: Sized),
+        proof ImpliedClause0: ({impl Collection for ()}::Sibling: Sized) = {impl Collection for ()}::Sibling::ImpliedClause0;
     non-dyn-compatible
 }
 

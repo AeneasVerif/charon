@@ -8,13 +8,13 @@ pub trait MetaSized<Self>
 #[lang_item("Cell")]
 pub opaque type Cell<T>
 where
-    [@TraitClause0]: MetaSized<T>,
+    TraitClause0: (T: MetaSized),
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -22,7 +22,7 @@ pub trait Sized<Self>
 #[lang_item("clone")]
 pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
+    proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
     non-dyn-compatible
 }
@@ -31,28 +31,28 @@ pub trait Clone<Self>
 #[lang_item("copy")]
 pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Clone<Self>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
 
-// Full name: core::cell::{Cell<T>[@TraitClause0::parent_clause0]}::get
-pub fn get<'_0, T>(_1: &'_0 Cell<T>[@TraitClause0::parent_clause0]) -> T
+// Full name: core::cell::{Cell<T>[TraitClause0::ImpliedClause0]}::get
+pub fn get<'_0, T>(_1: &'_0 Cell<T>[TraitClause0::ImpliedClause0]) -> T
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
 = <opaque>
 
-// Full name: core::cell::{Cell<T>[@TraitClause0]}::get_mut
-pub fn get_mut<'_0, T>(_1: &'_0 mut Cell<T>[@TraitClause0]) -> &'_0 mut T
+// Full name: core::cell::{Cell<T>[TraitClause0]}::get_mut
+pub fn get_mut<'_0, T>(_1: &'_0 mut Cell<T>[TraitClause0]) -> &'_0 mut T
 where
-    [@TraitClause0]: MetaSized<T>,
+    TraitClause0: (T: MetaSized),
 = <opaque>
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    [@TraitClause0]: Clone<Self>,
+    TraitClause0: (Self: Clone),
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
@@ -61,15 +61,15 @@ pub fn {impl Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
 
 // Full name: core::clone::impls::{impl Clone for u32}
 impl Clone for u32 {
-    parent_clause0 = {built_in impl Sized for u32}
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: core::marker::{impl Copy for u32}
 impl Copy for u32 {
-    parent_clause0 = {built_in impl MetaSized for u32}
-    parent_clause1 = {impl Clone for u32}
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = {impl Clone for u32}
     non-dyn-compatible
 }
 
@@ -87,7 +87,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("mem_swap")]
 pub fn core::mem::swap<'_0, '_1, T>(_1: &'_0 mut T, _2: &'_1 mut T)
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::num::niche_types::NonZeroU32Inner
@@ -99,50 +99,50 @@ pub fn {impl Clone for NonZeroU32Inner}::clone<'_0>(_1: &'_0 NonZeroU32Inner) ->
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}
 impl Clone for NonZeroU32Inner {
-    parent_clause0 = {built_in impl Sized for NonZeroU32Inner}
+    proof ImpliedClause0: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
     fn clone<'_0_1> = {impl Clone for NonZeroU32Inner}::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: core::num::niche_types::{impl Copy for NonZeroU32Inner}
 impl Copy for NonZeroU32Inner {
-    parent_clause0 = {built_in impl MetaSized for NonZeroU32Inner}
-    parent_clause1 = {impl Clone for NonZeroU32Inner}
+    proof ImpliedClause0: (NonZeroU32Inner: MetaSized) = {built_in impl MetaSized for NonZeroU32Inner}
+    proof ImpliedClause1: (NonZeroU32Inner: Clone) = {impl Clone for NonZeroU32Inner}
     non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::private::Sealed
 pub trait Sealed<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     vtable: core::num::nonzero::private::Sealed::{vtable}
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
 pub trait ZeroablePrimitive<Self>
 {
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Copy<Self>
-    parent_clause2 : [@TraitClause2]: Sealed<Self>
-    parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
-    parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (Self: Copy)
+    proof ImpliedClause2: (Self: Sealed)
+    proof ImpliedClause3: (Self::NonZeroInner: Sized)
+    proof ImpliedClause4: (Self::NonZeroInner: Copy)
     type NonZeroInner
     non-dyn-compatible
 }
 
 // Full name: core::num::nonzero::{impl Sealed for u32}
 impl Sealed for u32 {
-    parent_clause0 = {built_in impl MetaSized for u32}
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
     vtable: {impl Sealed for u32}::{vtable}
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
 impl ZeroablePrimitive for u32 {
-    parent_clause0 = {built_in impl Sized for u32}
-    parent_clause1 = {impl Copy for u32}
-    parent_clause2 = {impl Sealed for u32}
-    parent_clause3 = {built_in impl Sized for NonZeroU32Inner}
-    parent_clause4 = {impl Copy for NonZeroU32Inner}
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    proof ImpliedClause1: (u32: Copy) = {impl Copy for u32}
+    proof ImpliedClause2: (u32: Sealed) = {impl Sealed for u32}
+    proof ImpliedClause3: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
+    proof ImpliedClause4: (NonZeroU32Inner: Copy) = {impl Copy for NonZeroU32Inner}
     type NonZeroInner = NonZeroU32Inner
     non-dyn-compatible
 }
@@ -151,30 +151,30 @@ impl ZeroablePrimitive for u32 {
 #[lang_item("NonZero")]
 pub opaque type NonZero<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ZeroablePrimitive<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: ZeroablePrimitive),
 
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
   None,
   Some(T),
 }
 
-pub fn core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}::new<T>(_1: T) -> Option<NonZero<T>[@TraitClause0, @TraitClause1]>[{built_in impl Sized for NonZero<T>[@TraitClause0, @TraitClause1]}]
+pub fn core::num::nonzero::{NonZero<T>[TraitClause0, TraitClause1]}::new<T>(_1: T) -> Option<NonZero<T>[TraitClause0, TraitClause1]>[{built_in impl Sized for NonZero<T>[TraitClause0, TraitClause1]}]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: ZeroablePrimitive<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: ZeroablePrimitive),
 = <opaque>
 
-// Full name: core::option::{Option<T>[@TraitClause0]}::unwrap
+// Full name: core::option::{Option<T>[TraitClause0]}::unwrap
 #[lang_item("option_unwrap")]
-pub fn unwrap<T>(_1: Option<T>[@TraitClause0]) -> T
+pub fn unwrap<T>(_1: Option<T>[TraitClause0]) -> T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -195,33 +195,33 @@ impl Destruct for Global {
 #[lang_item("Vec")]
 pub opaque type Vec<T>
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<type_error("removed allocator parameter")>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[@TraitClause0, @TraitClause1])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
 = <opaque>
 
 #[lang_item("vec_new")]
-pub fn alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::new<T>() -> Vec<T>[@TraitClause0, {built_in impl Sized for Global}]
+pub fn alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new<T>() -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 = <opaque>
 
-// Full name: alloc::vec::{Vec<T>[@TraitClause0, @TraitClause1]}::push
-pub fn push<'_0, T, A>(_1: &'_0 mut Vec<T>[@TraitClause0, @TraitClause1], _2: T)
+// Full name: alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::push
+pub fn push<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1], _2: T)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-    [@TraitClause2]: Destruct<A>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Destruct),
 = <opaque>
 
 pub fn test_crate::swap<'a, T>(x_1: &'a mut T, y_2: &'a mut T)
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: (); // return
     let x_1: &'1 mut T; // arg #1
@@ -234,7 +234,7 @@ where
     _3 = &two-phase-mut (*x_1)
     storage_live(_4)
     _4 = &two-phase-mut (*y_2)
-    _0 = core::mem::swap<'7, '8, T>[@TraitClause0](move _3, move _4)
+    _0 = core::mem::swap<'7, '8, T>[TraitClause0](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -251,7 +251,7 @@ pub fn test_new_non_zero_u32(x_1: u32) -> NonZero<u32>[{built_in impl Sized for 
     storage_live(_2)
     storage_live(_3)
     _3 = copy x_1
-    _2 = core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}::new<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}](move _3)
+    _2 = core::num::nonzero::{NonZero<T>[TraitClause0, TraitClause1]}::new<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}](move _3)
     storage_dead(_3)
     _0 = unwrap<NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]>[{built_in impl Sized for NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]}](move _2)
     storage_dead(_2)
@@ -268,7 +268,7 @@ pub fn test_vec_push()
 
     _0 = ()
     storage_live(v_1)
-    v_1 = alloc::vec::{Vec<T>[@TraitClause0, {built_in impl Sized for Global}]}::new<u32>[{built_in impl Sized for u32}]()
+    v_1 = alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new<u32>[{built_in impl Sized for u32}]()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut v_1
@@ -276,7 +276,7 @@ pub fn test_vec_push()
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[@TraitClause0, @TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v_1
+    conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v_1
     storage_dead(v_1)
     return
 }

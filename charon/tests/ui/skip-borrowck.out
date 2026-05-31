@@ -8,14 +8,14 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::choose
 fn choose<'a, T>(b_1: bool, x_2: &'a mut T, y_3: &'a mut T) -> &'a mut T
 where
-    [@TraitClause0]: Sized<T>,
+    TraitClause0: (T: Sized),
 {
     let _0: &'1 mut T; // return
     let b_1: bool; // arg #1

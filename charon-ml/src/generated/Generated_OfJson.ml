@@ -1207,9 +1207,13 @@ and trait_assoc_ty_impl_of_json (ctx : of_json_ctx) (js : json) :
     (trait_assoc_ty_impl, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("value", value); ("implied_trait_refs", _) ] ->
+    | `Assoc [ ("value", value); ("implied_trait_refs", implied_trait_refs) ] ->
         let* value = ty_of_json ctx value in
-        Ok ({ value } : trait_assoc_ty_impl)
+        let* implied_trait_refs =
+          index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
+            implied_trait_refs
+        in
+        Ok ({ value; implied_trait_refs } : trait_assoc_ty_impl)
     | _ -> Error "")
 
 and trait_clause_id_of_json (ctx : of_json_ctx) (js : json) :

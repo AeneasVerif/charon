@@ -16,10 +16,10 @@ pub trait MetaSized<Self>
 #[lang_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: MetaSized<Borrowed>
-    parent_clause2 : [@TraitClause2]: Destruct<Self>
-    parent_clause3 : [@TraitClause3]: Destruct<Borrowed>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Borrowed: MetaSized)
+    proof ImpliedClause2: (Self: Destruct)
+    proof ImpliedClause3: (Borrowed: Destruct)
     fn borrow<'_0_1> = borrow<'_0_1, Self, Borrowed>[Self]
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
@@ -27,14 +27,14 @@ pub trait Borrow<Self, Borrowed>
 // Full name: core::borrow::Borrow::borrow
 pub fn borrow<'_0, Self, Borrowed>(_1: &'_0 Self) -> &'_0 Borrowed
 where
-    [@TraitClause0]: Borrow<Self, Borrowed>,
+    TraitClause0: (Self: Borrow<Borrowed>),
 = <opaque>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
@@ -45,11 +45,11 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 #[lang_item("ToOwned")]
 pub trait ToOwned<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    parent_clause1 : [@TraitClause1]: Destruct<Self>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Owned>
-    parent_clause3 : [@TraitClause3]: Borrow<Self::Owned, Self>
-    parent_clause4 : [@TraitClause4]: Destruct<Self::Owned>
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Destruct)
+    proof ImpliedClause2: (Self::Owned: Sized)
+    proof ImpliedClause3: (Self::Owned: Borrow<Self>)
+    proof ImpliedClause4: (Self::Owned: Destruct)
     type Owned
     fn to_owned<'_0_1> = to_owned<'_0_1, Self>[Self]
     non-dyn-compatible
@@ -57,36 +57,36 @@ pub trait ToOwned<Self>
 
 // Full name: alloc::borrow::ToOwned::to_owned
 #[lang_item("to_owned_method")]
-pub fn to_owned<'_0, Self>(_1: &'_0 Self) -> @TraitClause0::Owned
+pub fn to_owned<'_0, Self>(_1: &'_0 Self) -> TraitClause0::Owned
 where
-    [@TraitClause0]: ToOwned<Self>,
+    TraitClause0: (Self: ToOwned),
 = <opaque>
 
 // Full name: test_crate::Cow
 enum Cow<'a, B>
 where
-    [@TraitClause0]: MetaSized<B>,
-    [@TraitClause1]: ToOwned<B>,
-    [@TraitClause2]: Destruct<B>,
-    B : 'a,
-    B : 'a,
+    TraitClause0: (B: MetaSized),
+    TraitClause1: (B: ToOwned),
+    TraitClause2: (B: Destruct),
+    TypeOutlives0: B: 'a,
+    TypeOutlives1: B: 'a,
 {
   Borrowed(&'a B),
-  Owned(@TraitClause1::Owned),
+  Owned(TraitClause1::Owned),
 }
 
-// Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place
-unsafe fn {impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<'a, B>(_1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2])
+// Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place
+unsafe fn {impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place<'a, B>(_1: *mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2])
 where
-    [@TraitClause0]: MetaSized<B>,
-    [@TraitClause1]: ToOwned<B>,
-    [@TraitClause2]: Destruct<B>,
-    B : 'a,
-    B : 'a,
+    TraitClause0: (B: MetaSized),
+    TraitClause1: (B: ToOwned),
+    TraitClause2: (B: Destruct),
+    TypeOutlives0: B: 'a,
+    TypeOutlives1: B: 'a,
 {
     let _0: (); // return
-    let _1: *mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
-    let _2: &'1 mut Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // anonymous local
+    let _1: *mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
+    let _2: &'1 mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
 
     storage_live(_2)
     _0 = ()
@@ -95,40 +95,40 @@ where
         Cow::Borrowed => {
         },
         _ => {
-            drop[@TraitClause1::parent_clause4::drop_in_place] ((*_2) as variant Cow::Owned).0
+            drop[TraitClause1::ImpliedClause4::drop_in_place] ((*_2) as variant Cow::Owned).0
             return
         },
     }
     return
 }
 
-// Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}
-impl<'a, B> Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]
+// Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}
+impl<'a, B> Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]
 where
-    [@TraitClause0]: MetaSized<B>,
-    [@TraitClause1]: ToOwned<B>,
-    [@TraitClause2]: Destruct<B>,
-    B : 'a,
-    B : 'a,
+    TraitClause0: (B: MetaSized),
+    TraitClause1: (B: ToOwned),
+    TraitClause2: (B: Destruct),
+    TypeOutlives0: B: 'a,
+    TypeOutlives1: B: 'a,
 {
-    fn drop_in_place = {impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn drop_in_place = {impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place<'a, B>[TraitClause0, TraitClause1, TraitClause2]
     non-dyn-compatible
 }
 
 // Full name: test_crate::drop_cow
-fn drop_cow<'a, B>(_1: Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2])
+fn drop_cow<'a, B>(_1: Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2])
 where
-    [@TraitClause0]: MetaSized<B>,
-    [@TraitClause1]: ToOwned<B>,
-    [@TraitClause2]: Destruct<B>,
-    B : 'a,
+    TraitClause0: (B: MetaSized),
+    TraitClause1: (B: ToOwned),
+    TraitClause2: (B: Destruct),
+    TypeOutlives0: B: 'a,
 {
     let _0: (); // return
-    let _1: Cow<'1, B>[@TraitClause0, @TraitClause1, @TraitClause2]; // arg #1
+    let _1: Cow<'1, B>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for Cow<'a, B>[@TraitClause0, @TraitClause1, @TraitClause2]}::drop_in_place<'4, B>[@TraitClause0, @TraitClause1, @TraitClause2]] _1
+    drop[{impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place<'4, B>[TraitClause0, TraitClause1, TraitClause2]] _1
     return
 }
 

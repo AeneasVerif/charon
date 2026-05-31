@@ -16,14 +16,14 @@ pub trait MetaSized<Self>
 #[lang_item("sized")]
 pub trait Sized<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: test_crate::Ord
 trait Ord<Self>
 {
-    parent_clause0 : [@TraitClause0]: MetaSized<Self>
+    proof ImpliedClause0: (Self: MetaSized)
     fn cmp<'_0_1, '_1_1> = cmp<'_0_1, '_1_1, Self>[Self]
     non-dyn-compatible
 }
@@ -31,21 +31,21 @@ trait Ord<Self>
 // Full name: test_crate::Ord::cmp
 fn cmp<'_0, '_1, Self>(_1: &'_0 Self, _2: &'_1 Self) -> Ordering
 where
-    [@TraitClause0]: Ord<Self>,
+    TraitClause0: (Self: Ord),
 = <method_without_default_body>
 
 // Full name: test_crate::min
 fn min<T>()
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Ord<T>,
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Ord),
 {
     let _0: (); // return
-    let _1: for<'_0_1, '_1_1> @TraitClause1::cmp<'_0_1, '_1_1>; // anonymous local
+    let _1: for<'_0_1, '_1_1> TraitClause1::cmp<'_0_1, '_1_1>; // anonymous local
 
     _0 = ()
     storage_live(_1)
-    _1 = const @TraitClause1::cmp<'4, '5>
+    _1 = const TraitClause1::cmp<'4, '5>
     storage_dead(_1)
     _0 = ()
     return
