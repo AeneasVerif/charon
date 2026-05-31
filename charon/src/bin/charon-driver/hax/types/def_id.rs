@@ -129,21 +129,48 @@ impl VirtualImplAssocItem {
         self.item_impl_id.unwrap_or(self.item_decl_id)
     }
 
-    /// Construct generic args for the item declaration, valid in the context of this item's
-    /// params (context given by a `TraitItemBinder`).
+    /// Arguments just for the item itself (works for both decl and impl), valid in the virtual
+    /// item context.
+    fn own_args<'tcx>(&self, s: &impl BaseState<'tcx>) -> Vec<ty::GenericArg<'tcx>> {
+        let tcx = s.base().tcx;
+        DefId::make_assoc_item_impl(s, *self)
+            .generics_of(s)
+            .own_params
+            .iter()
+            .map(|param| tcx.mk_param_from_def(&param))
+            .collect()
+    }
+
+    /// Construct generic args for the item declaration, valid in the virtual item context.
+    pub fn args_for_item_decl<'tcx>(
+        &self,
+        s: &impl BaseState<'tcx>,
+        trait_args: ty::GenericArgsRef<'tcx>,
+    ) -> ty::GenericArgsRef<'tcx> {
+        let tcx = s.base().tcx;
+        tcx.mk_args_from_iter(trait_args.iter().chain(self.own_args(s)))
+    }
+
+    /// Construct generic args for the item implementation, valid in the virtual item context.
+    pub fn args_for_item_impl<'tcx>(
+        &self,
+        s: &impl BaseState<'tcx>,
+        impl_args: ty::GenericArgsRef<'tcx>,
+    ) -> ty::GenericArgsRef<'tcx> {
+        let tcx = s.base().tcx;
+        tcx.mk_args_from_iter(impl_args.iter().chain(self.own_args(s)))
+    }
+
+    /// Construct generic args for the item declaration, valid in the virtual item context.
     pub fn identity_args_for_item_decl<'tcx>(
         &self,
         s: &impl BaseState<'tcx>,
     ) -> ty::GenericArgsRef<'tcx> {
         let tcx = s.base().tcx;
-        let trait_impl_id = self.trait_impl_id;
-        // TODO: support virtual contexts when the item doesn't exist.
-        let real_item_id = self.item_impl_id.unwrap();
-        let item_args = ty::GenericArgs::identity_for_item(tcx, real_item_id);
-        let impl_trait_ref = tcx.impl_trait_ref(trait_impl_id).instantiate_identity();
-        // This rebase is sensible because the "method" portion of the params of both the impl and
-        // decl items are identical.
-        item_args.rebase_onto(tcx, trait_impl_id, impl_trait_ref.args)
+        let impl_trait_ref = tcx
+            .impl_trait_ref(self.trait_impl_id)
+            .instantiate_identity();
+        self.args_for_item_decl(s, impl_trait_ref.args)
     }
 }
 

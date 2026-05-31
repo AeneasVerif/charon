@@ -252,6 +252,8 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
         let base = s.base();
         let owner = s.owner();
         if let DefIdBase::ImplAssocItem(id) = owner.base {
+            let param_env = owner.param_env(s);
+            let predicates = owner.required_predicates(s);
             s.with_cache(|cache| {
                 let predicate_searcher =
                     cache.virtual_predicate_searcher.get_or_insert_with(|| {
@@ -259,9 +261,7 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
                             .elab_ctx
                             .predicate_searcher_for(id.trait_impl_id)
                             .clone();
-                        let param_env = owner.param_env(s);
                         predicate_searcher.set_param_env(param_env);
-                        let predicates = owner.required_predicates(s);
                         predicate_searcher.insert_bound_predicates(predicates.iter());
                         predicate_searcher
                     });

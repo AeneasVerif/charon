@@ -85,7 +85,7 @@ impl Trait for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     type Type = u32
     where
-        TraitClause0_1: ((): AlsoHasAssoc),
+        TraitClause0_1: ((): HasAssoc),
         proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32},
         proof ImpliedClause1: (u32: PartialEq<u32>) = {impl PartialEq<u32> for u32};
     non-dyn-compatible

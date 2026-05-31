@@ -173,10 +173,10 @@ where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Option<&'a T>[{built_in impl Sized for &'a T}]: MetaSized) = {built_in impl MetaSized for Option<&'a T>[{built_in impl Sized for &'a T}]}
-    type Item<'b> = &'b T
+    type Item<'a> = &'a T
     where
-        TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'b,
-        proof ImpliedClause0: (&'b T: Sized) = {built_in impl Sized for &'b T};
+        TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'a,
+        proof ImpliedClause0: (&'a T: Sized) = {built_in impl Sized for &'a T};
     fn next<'_0_1> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, '_0_1, T>[TraitClause0]
     non-dyn-compatible
 }

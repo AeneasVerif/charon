@@ -1153,7 +1153,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     };
                     consts.set_slot_extend(assoc_const_id, gref);
                 }
-                hax::FullDefKind::AssocTy { value, .. } => {
+                hax::FullDefKind::AssocTy { .. } => {
                     let assoc_type_id = *assoc_item_id.as_type().unwrap();
                     let binder_kind = BinderKind::TraitType(trait_id, assoc_type_id);
                     let assoc_ty = match &impl_item.value.skip_binder {
@@ -1164,14 +1164,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             PredicateOrigin::WhereClauseOnType,
                             |ctx, impl_value| {
                                 let Provided {
+                                    assoc_ty_value,
                                     implied_trait_proofs,
                                     ..
                                 } = impl_value
                                 else {
                                     unreachable!()
                                 };
-                                let (ty, _trait_proofs) = value.as_ref().unwrap();
-                                let ty = ctx.translate_ty(item_span, ty)?;
+                                let ty =
+                                    ctx.translate_ty(item_span, assoc_ty_value.as_ref().unwrap())?;
                                 let implied_trait_refs =
                                     ctx.translate_trait_proofs(item_span, implied_trait_proofs)?;
                                 Ok(TraitAssocTyImpl {

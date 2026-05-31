@@ -746,17 +746,23 @@ where
                                 );
                                 let virtual_item_def_id =
                                     DefId::make_assoc_item_impl(s, virtual_item);
-                                let s = &if matches!(decl_assoc.kind, ty::AssocKind::Type { .. }) {
-                                    // TODO: also use virtual defid
-                                    s.with_rustc_owner(impl_assoc.def_id)
-                                } else {
-                                    s.with_hax_owner(&virtual_item_def_id)
-                                };
-                                let item_decl_args = virtual_item.identity_args_for_item_decl(s);
-                                let item_impl_args = {
-                                    let item_args = impl_assoc_def_id.identity_args(s);
-                                    item_args.rebase_onto(tcx, trait_impl_id, args_or_default())
-                                };
+                                let s = &s.with_hax_owner(&virtual_item_def_id);
+                                let item_decl_args =
+                                    virtual_item.args_for_item_decl(s, trait_ref.args);
+                                let item_impl_args =
+                                    virtual_item.args_for_item_impl(s, args_or_default());
+                                let assoc_ty_value =
+                                    if matches!(decl_assoc.kind, ty::AssocKind::Type { .. }) {
+                                        let ty = inst_binder(
+                                            tcx,
+                                            s.typing_env(),
+                                            Some(item_impl_args),
+                                            impl_assoc_def_id.type_of(s),
+                                        );
+                                        Some(ty.sinto(s))
+                                    } else {
+                                        None
+                                    };
                                 let required_trait_proofs =
                                     solve_item_implied_traits(s, decl_def_id, item_decl_args);
                                 let param_env = {
@@ -771,7 +777,7 @@ where
                                 let late_bound = late_bound_for_def(s, impl_assoc.def_id);
                                 let value = ImplAssocItemValue::Provided {
                                     item,
-                                    assoc_ty_value: None,
+                                    assoc_ty_value,
                                     implied_trait_proofs: required_trait_proofs,
                                 };
                                 TraitItemBinder {
