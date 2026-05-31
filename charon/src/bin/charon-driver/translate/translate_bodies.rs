@@ -1100,7 +1100,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         use ty::AdtKind;
                         trace!("{:?}", rvalue);
 
-                        let adt_kind = self.tcx.adt_def(def_id).adt_kind();
+                        let adt_kind = self.tcx.adt_def(*def_id).adt_kind();
                         let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
                         let tref = self.translate_type_decl_ref(span, &item)?;
                         let variant_id = match adt_kind {

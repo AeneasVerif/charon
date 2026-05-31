@@ -125,7 +125,7 @@ pub const MAX: usize = MAX()
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
 pub struct NonNull<T> {
-  pointer: *const T,
+  pointer: *const T is !null,
 }
 
 // Full name: core::ptr::unique::Unique

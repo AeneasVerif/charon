@@ -226,7 +226,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         Some(match &def_id.kind {
             Enum | Struct | Union | TyAlias | ForeignTy => TransItemSourceKind::Type,
             Fn | AssocFn => TransItemSourceKind::Fun,
-            Const | Static { .. } | AssocConst => TransItemSourceKind::Global,
+            Const { .. } | Static { .. } | AssocConst { .. } => TransItemSourceKind::Global,
             Trait | TraitAlias => TransItemSourceKind::TraitDecl,
             Impl { of_trait: true } => TransItemSourceKind::TraitImpl(TraitImplSource::Normal),
             Impl { of_trait: false } => TransItemSourceKind::InherentImpl,

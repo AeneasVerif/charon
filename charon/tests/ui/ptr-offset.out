@@ -28,7 +28,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::ptr::alignment::Alignment
+// Full name: core::mem::alignment::Alignment
 pub opaque type Alignment
 
 // Full name: core::mem::SizedTypeProperties

@@ -212,10 +212,10 @@ impl<'tcx> ItemPredicates<'tcx> {
             let options = elab_ctx.bounds_options();
             let def_kind = tcx.def_kind(def_id);
             let mut predicates = match def_kind {
-                AssocConst
+                AssocConst { .. }
                 | AssocFn
                 | AssocTy
-                | Const
+                | Const { .. }
                 | Enum
                 | Fn
                 | ForeignTy
@@ -398,6 +398,13 @@ fn inherits_parent_clauses<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
     use DefKind::*;
     matches!(
         tcx.def_kind(def_id),
-        AnonConst | AssocConst | AssocFn | AssocTy | Closure | Ctor(..) | InlineConst | Variant
+        AnonConst
+            | AssocConst { .. }
+            | AssocFn
+            | AssocTy
+            | Closure
+            | Ctor(..)
+            | InlineConst
+            | Variant
     )
 }

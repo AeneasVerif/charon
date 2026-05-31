@@ -38,7 +38,9 @@ pub enum DefKind {
     AssocTy,
     TyParam,
     Fn,
-    Const,
+    Const {
+        is_type_const: bool,
+    },
     ConstParam,
     Static {
         safety: Safety,
@@ -47,7 +49,9 @@ pub enum DefKind {
     },
     Ctor(CtorOf, CtorKind),
     AssocFn,
-    AssocConst,
+    AssocConst {
+        is_type_const: bool,
+    },
     Macro(MacroKinds),
     ExternCrate,
     Use,
@@ -267,9 +271,9 @@ impl DefId {
     pub fn visibility<'tcx>(&self, tcx: ty::TyCtxt<'tcx>) -> Option<bool> {
         use DefKind::*;
         match self.kind {
-            AssocConst
+            AssocConst { .. }
             | AssocFn
-            | Const
+            | Const { .. }
             | Enum
             | Field
             | Fn
@@ -393,11 +397,9 @@ pub enum DefPathItem {
     LifetimeNs(Symbol),
     Closure,
     Ctor,
-    LateAnonConst,
     AnonConst,
     #[disable_mapping]
     PromotedConst,
-    DesugaredAnonymousLifetime,
     OpaqueTy,
     OpaqueLifetime(Symbol),
     AnonAssocTy(Symbol),

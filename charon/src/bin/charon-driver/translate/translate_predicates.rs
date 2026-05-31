@@ -40,6 +40,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     SolverTraitLangItem::Destruct => BuiltinImplData::UntrackedDestruct,
                     SolverTraitLangItem::DiscriminantKind => BuiltinImplData::DiscriminantKind,
                     SolverTraitLangItem::Drop => return None,
+                    SolverTraitLangItem::Field => return None,
                     SolverTraitLangItem::Fn => BuiltinImplData::Fn,
                     SolverTraitLangItem::FnMut => BuiltinImplData::FnMut,
                     SolverTraitLangItem::FnOnce => BuiltinImplData::FnOnce,
