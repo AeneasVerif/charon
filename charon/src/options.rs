@@ -438,9 +438,13 @@ impl CliOpts {
                     self.include.push("core::marker::MetaSized".to_owned());
                 }
                 Preset::Soteria => {
+                    self.desugar_drops = true;
                     self.extract_opaque_bodies = true;
-                    self.monomorphize = true;
                     self.mir = Some(MirLevel::Elaborated);
+                    self.monomorphize = true;
+                    self.no_normalize = true;
+                    self.precise_drops = true;
+                    self.raw_consts = true;
                     self.ullbc = true;
                 }
                 Preset::Tests => {
