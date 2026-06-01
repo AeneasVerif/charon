@@ -673,7 +673,7 @@ impl LifetimeMutabilityComputer {
             let tcx = s.base().tcx;
             let def_id = item.real_rust_def_id();
             let adt_def = tcx.adt_def(def_id);
-            let generics = ty::GenericArgs::identity_for_item(tcx, def_id);
+            let generics = item.identity_args(s);
             for variant in adt_def.variants() {
                 for field in &variant.fields {
                     field.ty(tcx, generics).visit_with(&mut visitor);

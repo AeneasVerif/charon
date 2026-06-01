@@ -85,7 +85,9 @@ mod types {
     #[derive(Default)]
     pub struct GlobalCache<'tcx> {
         /// Per-item cache.
-        pub per_item: HashMap<RDefId, ItemCache<'tcx>>,
+        pub per_item: HashMap<DefId, ItemCache<'tcx>>,
+        /// Map rustc def ids to their hax counterpart.
+        pub def_ids: HashMap<RDefId, DefId>,
         /// Map that recovers rustc args for a given `ItemRef`.
         pub reverse_item_refs_map: HashMap<ItemRef, ty::GenericArgsRef<'tcx>>,
         /// We create some artificial items; their def_ids are stored here. See the
@@ -97,8 +99,6 @@ mod types {
     /// Per-item cache
     #[derive(Default)]
     pub struct ItemCache<'tcx> {
-        /// The translated `DefId`.
-        pub def_id: Option<DefId>,
         /// The translated definitions, generic in the Body kind.
         /// Each rustc `DefId` gives several hax `DefId`s: one for each promoted constant (if any),
         /// and the base one represented by `None`. Moreover we can instantiate definitions with
@@ -181,7 +181,7 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
     /// Create a state with the given owner.
     fn with_hax_owner(&self, owner: &DefId) -> StateWithOwner<'tcx> {
         let mut base = self.base();
-        base.opt_def_id = owner.underlying_rust_def_id();
+        base.opt_def_id = owner.as_real_or_promoted();
         State {
             owner: owner.clone(),
             base,
@@ -199,7 +199,7 @@ impl<'tcx, T: HasBase<'tcx> + Clone> BaseState<'tcx> for T {}
 /// State of anything below an `owner`.
 pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwner {
     fn owner_id(&self) -> RDefId {
-        self.owner().as_def_id_even_synthetic()
+        self.owner().as_real_promoted_or_synthetic()
     }
     fn with_base(&self, base: types::Base<'tcx>) -> StateWithOwner<'tcx> {
         State {
@@ -231,8 +231,8 @@ pub trait WithGlobalCacheExt<'tcx>: BaseState<'tcx> {
     }
     /// Access the cache for a given item. You must not call `sinto` within this function as this
     /// will likely result in `BorrowMut` panics.
-    fn with_item_cache<T>(&self, def_id: RDefId, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
-        self.with_global_cache(|cache| f(cache.per_item.entry(def_id).or_default()))
+    fn with_item_cache<T>(&self, def_id: &DefId, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
+        self.with_global_cache(|cache| f(cache.per_item.entry(def_id.clone()).or_default()))
     }
 }
 impl<'tcx, S: BaseState<'tcx>> WithGlobalCacheExt<'tcx> for S {}
@@ -241,7 +241,7 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
     /// Access the cache for the current item. You must not call `sinto` within this function as
     /// this will likely result in `BorrowMut` panics.
     fn with_cache<T>(&self, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
-        self.with_item_cache(self.owner_id(), f)
+        self.with_item_cache(&self.owner(), f)
     }
     fn with_predicate_searcher<T>(&self, f: impl FnOnce(&mut PredicateSearcher<'tcx>) -> T) -> T {
         let base = self.base();

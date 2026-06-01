@@ -129,17 +129,19 @@ impl ItemRef {
         }
 
         // Don't resolve if the DefId isn't real.
-        let is_real_def_id = hax_def_id.as_rust_def_id().is_some();
+        let is_real_def_id = hax_def_id.as_real_def_id().is_some();
         let resolve_assoc_item_trait_ref = is_real_def_id && resolve_assoc_item_trait_ref;
-        let def_id = hax_def_id.as_def_id_even_synthetic();
+        let def_id = hax_def_id.as_real_promoted_or_synthetic();
         let item_ref = s.with_predicate_searcher(|pred_searcher| {
             pred_searcher.resolve_item_reference(def_id, generics, resolve_assoc_item_trait_ref)
         });
 
-        // If the original `DefId` was not real, make sure we keep that around.
         let def_id = if is_real_def_id {
+            // This can have changed if the item was normalized to a direct referent to an impl
+            // item.
             item_ref.def_id.sinto(s)
         } else {
+            // If the original `DefId` was not real, make sure we keep that around.
             assert_eq!(item_ref.def_id, def_id);
             hax_def_id
         };

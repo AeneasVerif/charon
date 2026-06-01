@@ -43,10 +43,8 @@ where
     S: UnderOwnerState<'tcx>,
 {
     let tcx = s.base().tcx;
-    let rust_def_id = def_id.as_def_id_even_synthetic();
-    let this = if can_have_generics(tcx, rust_def_id) {
-        let args_or_default =
-            args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, rust_def_id));
+    let this = if def_id.can_have_generics(s) {
+        let args_or_default = args.unwrap_or_else(|| def_id.identity_args(s));
         ItemRef::translate_from_hax_def_id(s, def_id.clone(), args_or_default)
     } else {
         ItemRef::dummy_without_generics(s, def_id.clone())
@@ -57,7 +55,7 @@ where
     let diagnostic_item;
     let kind;
     match def_id.base {
-        DefIdBase::Synthetic(item, rust_def_id) => {
+        DefIdBase::Synthetic(item, ..) => {
             let adt_kind = match item {
                 SyntheticItem::Array => AdtKind::Array,
                 SyntheticItem::Slice => AdtKind::Slice,
@@ -66,7 +64,7 @@ where
             let param_env = get_param_env(s, args);
             let destruct_impl = {
                 let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
-                let type_of_self = inst_binder(tcx, s.typing_env(), args, tcx.type_of(rust_def_id));
+                let type_of_self = inst_binder(tcx, s.typing_env(), args, def_id.type_of(s));
                 virtual_impl_for(s, ty::TraitRef::new(tcx, destruct_trait, [type_of_self]))
             };
             kind = FullDefKind::Adt {
@@ -147,21 +145,22 @@ impl DefId {
     pub fn def_span<'tcx>(&self, s: &impl BaseState<'tcx>) -> Span {
         use DefKind::*;
         let tcx = s.base().tcx;
-        if let Some(def_id) = self.underlying_rust_def_id() {
-            if let ForeignMod = &self.kind {
-                // These kind causes `def_span` to panic.
-                rustc_span::DUMMY_SP
-            } else if let Some(ldid) = def_id.as_local()
-                && let hir_id = tcx.local_def_id_to_hir_id(ldid)
-                && matches!(tcx.hir_node(hir_id), rustc_hir::Node::Synthetic)
-            {
-                // Synthetic items (those we create ourselves) make `def_span` panic.
-                rustc_span::DUMMY_SP
-            } else {
-                tcx.def_span(def_id)
+        match self.base {
+            DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => {
+                if let ForeignMod = &self.kind {
+                    // This kind causes `def_span` to panic.
+                    rustc_span::DUMMY_SP
+                } else if let Some(ldid) = def_id.as_local()
+                    && let hir_id = tcx.local_def_id_to_hir_id(ldid)
+                    && matches!(tcx.hir_node(hir_id), rustc_hir::Node::Synthetic)
+                {
+                    // This kind causes `def_span` to panic.
+                    rustc_span::DUMMY_SP
+                } else {
+                    tcx.def_span(def_id)
+                }
             }
-        } else {
-            rustc_span::DUMMY_SP
+            DefIdBase::Synthetic(..) => rustc_span::DUMMY_SP,
         }
         .sinto(s)
     }
@@ -213,11 +212,9 @@ impl ItemRef {
     where
         S: BaseState<'tcx>,
     {
-        let tcx = s.base().tcx;
         let s = &s.with_hax_owner(&self.def_id);
-        let def_id = self.def_id.as_def_id_even_synthetic();
         let args = self.rustc_args(s);
-        crate::hax::drop_glue_shim(tcx, def_id, Some(args))
+        crate::hax::drop_glue_shim(s, &self.def_id, Some(args))
     }
 
     /// For `FnMut`&`Fn` closures: the MIR for the `call_once` method; it simply calls
@@ -229,8 +226,7 @@ impl ItemRef {
         let tcx = s.base().tcx;
         let s = &s.with_hax_owner(&self.def_id);
         let args = self.rustc_args(s);
-        let def_id = self.def_id.real_rust_def_id();
-        let closure_ty = inst_binder(tcx, s.typing_env(), Some(args), tcx.type_of(def_id));
+        let closure_ty = inst_binder(tcx, s.typing_env(), Some(args), self.def_id.type_of(s));
         crate::hax::closure_once_shim(tcx, closure_ty)
     }
 }
@@ -266,12 +262,7 @@ impl ParamEnv {
             generics: TyGenerics {
                 parent: parent.map(|p| p.def_id.clone()),
                 parent_count: parent
-                    .map(|parent| {
-                        s.base()
-                            .tcx
-                            .generics_of(parent.def_id.underlying_rust_def_id().unwrap())
-                            .count()
-                    })
+                    .map(|parent| parent.def_id.generics_of(s).count())
                     .unwrap_or(0),
                 params: vec![],
                 has_self: false,
@@ -540,7 +531,7 @@ fn gen_vtable_sig<'tcx>(
     // Move into the context of the container (trait decl or impl) instead of the method.
     let s = &s.with_rustc_owner(container_id);
     let args = {
-        let container_generics = tcx.generics_of(container_id);
+        let container_generics = s.owner().generics_of(s);
         args.map(|args| args.truncate_to(tcx, container_generics))
     };
 
@@ -636,13 +627,12 @@ fn translate_full_def_kind<'tcx, S>(
 where
     S: BaseState<'tcx>,
 {
-    let def_id = &this.def_id;
-    let s = &s.with_hax_owner(def_id);
-    let def_id = def_id.real_rust_def_id();
+    let hax_def_id = &this.def_id;
+    let s = &s.with_hax_owner(hax_def_id);
+    let def_id = hax_def_id.real_rust_def_id();
     let tcx = s.base().tcx;
-    let type_of_self = || inst_binder(tcx, s.typing_env(), args, tcx.type_of(def_id));
-    let args_or_default =
-        || args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, def_id));
+    let type_of_self = || inst_binder(tcx, s.typing_env(), args, hax_def_id.type_of(s));
+    let args_or_default = || args.unwrap_or_else(|| hax_def_id.identity_args(s));
     match get_def_kind(tcx, def_id) {
         RDefKind::Struct { .. } | RDefKind::Union { .. } | RDefKind::Enum { .. } => {
             let def = tcx.adt_def(def_id);
@@ -707,8 +697,8 @@ where
                 .in_definition_order()
                 .map(|assoc| {
                     let item_args = args.map(|args| {
-                        let item_identity_args =
-                            ty::GenericArgs::identity_for_item(tcx, assoc.def_id);
+                        let item_def_id: DefId = assoc.def_id.sinto(s);
+                        let item_identity_args = item_def_id.identity_args(s);
                         let item_args = item_identity_args.rebase_onto(tcx, def_id, args);
                         tcx.mk_args(item_args)
                     });
@@ -726,15 +716,13 @@ where
             use std::collections::HashMap;
             let param_env = get_param_env(s, args);
             if !of_trait {
-                let ty = tcx.type_of(def_id);
-                let ty = inst_binder(tcx, s.typing_env(), args, ty);
                 let items = tcx
                     .associated_items(def_id)
                     .in_definition_order()
                     .map(|assoc| {
                         let item_args = args.map(|args| {
-                            let item_identity_args =
-                                ty::GenericArgs::identity_for_item(tcx, assoc.def_id);
+                            let item_def_id: DefId = assoc.def_id.sinto(s);
+                            let item_identity_args = item_def_id.identity_args(s);
                             let item_args = item_identity_args.rebase_onto(tcx, def_id, args);
                             tcx.mk_args(item_args)
                         });
@@ -743,7 +731,7 @@ where
                     .collect::<Vec<_>>();
                 FullDefKind::InherentImpl {
                     param_env,
-                    ty: ty.sinto(s),
+                    ty: type_of_self().sinto(s),
                     items,
                 }
             } else {
@@ -773,13 +761,11 @@ where
                             Some(impl_assoc) => {
                                 let s = &s.with_rustc_owner(impl_assoc.def_id);
                                 let item_decl_args = {
-                                    let item_args =
-                                        ty::GenericArgs::identity_for_item(tcx, impl_assoc.def_id);
+                                    let item_args = s.owner().identity_args(s);
                                     item_args.rebase_onto(tcx, def_id, trait_ref.args)
                                 };
                                 let item_impl_args = {
-                                    let item_args =
-                                        ty::GenericArgs::identity_for_item(tcx, impl_assoc.def_id);
+                                    let item_args = s.owner().identity_args(s);
                                     item_args.rebase_onto(tcx, def_id, args_or_default())
                                 };
                                 let required_trait_proofs =
@@ -798,11 +784,11 @@ where
                                 }
                             }
                             None => {
+                                let decl_hax_def_id = decl_def_id.sinto(s);
                                 let required_trait_proofs =
-                                    if tcx.generics_of(decl_def_id).is_own_empty() {
+                                    if decl_hax_def_id.generics_of(s).is_own_empty() {
                                         // Non-GAT case.
-                                        let item_args =
-                                            ty::GenericArgs::identity_for_item(tcx, decl_def_id);
+                                        let item_args = decl_hax_def_id.identity_args(s);
                                         let args =
                                             item_args.rebase_onto(tcx, def_id, trait_ref.args);
                                         // TODO: is it the right `def_id`?
@@ -816,9 +802,9 @@ where
                                     };
                                 let value = match decl_assoc.kind {
                                     ty::AssocKind::Type { .. } => {
-                                        let ty = if tcx.generics_of(decl_def_id).is_own_empty() {
-                                            let ty = tcx
-                                                .type_of(decl_def_id)
+                                        let ty = if decl_hax_def_id.generics_of(s).is_own_empty() {
+                                            let ty = decl_hax_def_id
+                                                .type_of(s)
                                                 .instantiate(tcx, trait_ref.args)
                                                 .sinto(s);
                                             Some(ty)
@@ -1150,7 +1136,7 @@ impl<'tcx> FullDef<'tcx> {
             _ => panic!("expected a Const or AssocConst definition"),
         }
         let s = &s.with_hax_owner(self.def_id());
-        let def_id = self.def_id().as_rust_def_id()?;
+        let def_id = self.def_id().as_real_def_id()?;
         let args = self.this().rustc_args(s);
         let uneval = ty::UnevaluatedConst::new(def_id, args);
         let c = eval_ty_constant(s, uneval)?;
@@ -1275,7 +1261,7 @@ impl<'tcx> FullDef<'tcx> {
             _ => vec![],
         };
         // Add inherent impl items if any.
-        if let Some(rust_def_id) = self.def_id().as_rust_def_id() {
+        if let Some(rust_def_id) = self.def_id().as_real_def_id() {
             let tcx = s.base().tcx;
             for impl_def_id in tcx.inherent_impls(rust_def_id) {
                 children.extend(
@@ -1322,12 +1308,12 @@ fn get_trait_decl_dyn_self_ty<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> Option<ty::Ty<'tcx>> {
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();
-    let def_id = s.owner_id();
+    let def_id = s.owner();
 
     let self_tref = ty::TraitRef::new_from_args(
         tcx,
-        def_id,
-        args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, def_id)),
+        def_id.real_rust_def_id(),
+        args.unwrap_or_else(|| def_id.identity_args(s)),
     );
     rustc_utils::dyn_self_ty(tcx, typing_env, self_tref).map(|ty| {
         if args.is_some() {
@@ -1383,19 +1369,20 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> ParamEnv {
     let tcx = s.base().tcx;
-    let def_id = s.owner_id();
+    let owner = s.owner();
+    let def_id = owner.as_real_promoted_or_synthetic();
     // Rustc adds generic params to closures and inline consts for impl details purposes; we hide these.
     let is_typeck_child = tcx.is_typeck_child(def_id);
-    let mut generics = tcx.generics_of(def_id).sinto(s);
+    let mut generics = owner.generics_of(s).sinto(s);
     if is_typeck_child {
         generics.params = Default::default();
     }
 
     let parent = generics.parent.as_ref().map(|parent| {
-        let parent = parent.real_rust_def_id();
-        let args = args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, def_id));
-        let parent_args = args.truncate_to(tcx, tcx.generics_of(parent));
-        translate_item_ref(s, parent, parent_args)
+        let parent_args = args
+            .map(|args| args.truncate_to(tcx, parent.generics_of(s)))
+            .unwrap_or_else(|| parent.identity_args(s));
+        ItemRef::translate_from_hax_def_id(s, parent.clone(), parent_args)
     });
     match args {
         None => ParamEnv {
@@ -1403,7 +1390,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
             predicates: if is_typeck_child {
                 GenericPredicates::default()
             } else {
-                ItemPredicates::required(s.base().elab_ctx, def_id).sinto(s)
+                owner.required_predicates(s).sinto(s)
             },
             parent,
         },

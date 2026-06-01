@@ -182,19 +182,6 @@ pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
     ItemRef::translate(s, def_id, generics)
 }
 
-/// Solve the trait obligations for a specific item use (for example, a method call, an ADT, etc.)
-/// in the current context. Just like generic args include generics of parent items, this includes
-/// trait proofs for parent items.
-#[tracing::instrument(level = "trace", skip(s), ret)]
-pub fn solve_item_required_traits<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    def_id: RDefId,
-    generics: ty::GenericArgsRef<'tcx>,
-) -> Vec<TraitProof> {
-    let predicates = ItemPredicates::required_recursively(s.base().elab_ctx, def_id);
-    solve_item_traits_inner(s, generics, predicates)
-}
-
 /// Solve the trait obligations for implementing a trait (or for trait associated type bounds) in
 /// the current context.
 #[tracing::instrument(level = "trace", skip(s), ret)]

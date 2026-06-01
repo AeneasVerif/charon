@@ -437,11 +437,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
-        let rdefid = item.def_id.real_rust_def_id();
         let hax_state = &self.hax_state;
         let ty_env = hax_state.typing_env();
-        let ty = tcx
-            .type_of(rdefid)
+        let ty = item
+            .def_id
+            .type_of(hax_state)
             .instantiate(tcx, item.rustc_args(hax_state));
 
         // Get the tail type, which determines the metadata of `ty`.
@@ -542,12 +542,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         let tcx = self.t_ctx.tcx;
-        let rdefid = item.def_id.real_rust_def_id();
         let hax_state = self.hax_state_with_id();
         assert_eq!(hax_state.owner(), item.def_id);
         let ty_env = hax_state.typing_env();
-        let ty = tcx
-            .type_of(rdefid)
+        let ty = item
+            .def_id
+            .type_of(hax_state)
             .instantiate(tcx, item.rustc_args(hax_state));
         let pseudo_input = ty_env.as_query_input(ty);
         let ptr_size = self.translated.the_target_information().target_pointer_size;

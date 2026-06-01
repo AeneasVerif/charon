@@ -78,7 +78,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         // For items in the current crate that have bodies, also enqueue items defined in that
         // body.
         if !item_meta.opacity.is_opaque()
-            && let Some(def_id) = def.def_id().as_rust_def_id()
+            && let Some(def_id) = def.def_id().as_real_def_id()
             && let Some(ldid) = def_id.as_local()
             && let node = self.tcx.hir_node_by_def_id(ldid)
             && let Some(body_id) = node.body_id()
@@ -541,7 +541,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let intrinsic_name = def
             .def_id()
-            .as_rust_def_id()
+            .as_real_def_id()
             .and_then(|id| self.tcx.intrinsic(id))
             .map(|i| i.name.to_ident_string());
 

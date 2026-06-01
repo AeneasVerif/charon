@@ -84,13 +84,7 @@ pub trait HasParamEnv<'tcx> {
 
 impl<'tcx, S: UnderOwnerState<'tcx>> HasParamEnv<'tcx> for S {
     fn param_env(&self) -> ty::ParamEnv<'tcx> {
-        let tcx = self.base().tcx;
-        let def_id = self.owner_id();
-        if can_have_generics(tcx, def_id) {
-            tcx.param_env(def_id)
-        } else {
-            ty::ParamEnv::empty()
-        }
+        self.owner().param_env(self)
     }
     fn typing_env(&self) -> ty::TypingEnv<'tcx> {
         ty::TypingEnv::new(self.param_env(), ty::TypingMode::PostAnalysis)
@@ -311,13 +305,14 @@ pub fn closure_once_shim<'tcx>(
 }
 
 pub fn drop_glue_shim<'tcx>(
-    tcx: ty::TyCtxt<'tcx>,
-    def_id: RDefId,
+    s: &impl BaseState<'tcx>,
+    def_id: &DefId,
     instantiate: Option<ty::GenericArgsRef<'tcx>>,
 ) -> mir::Body<'tcx> {
+    let tcx = s.base().tcx;
     let drop_in_place =
         tcx.require_lang_item(rustc_hir::LangItem::DropInPlace, rustc_span::DUMMY_SP);
-    let ty = tcx.type_of(def_id);
+    let ty = def_id.type_of(s);
     let ty = match instantiate {
         None => ty.instantiate_identity(),
         Some(args) => ty.instantiate(tcx, args),

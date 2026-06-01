@@ -11,6 +11,7 @@ use crate::hax::prelude::*;
 use charon_lib::ast::HashConsed;
 
 pub use rustc_middle::mir::Promoted as PromotedId;
+use rustc_span::DUMMY_SP;
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
 sinto_reexport!(hir::Safety);
@@ -96,40 +97,6 @@ pub enum DefIdBase {
     Synthetic(SyntheticItem, RDefId),
 }
 
-impl DefIdBase {
-    pub fn underlying_def_id(self) -> Option<RDefId> {
-        match self {
-            Self::Real(did) | Self::Promoted(did, ..) => Some(did),
-            Self::Synthetic(.., did) => Some(did),
-        }
-    }
-    pub fn as_real(self) -> Option<RDefId> {
-        match self {
-            Self::Real(did) => Some(did),
-            _ => None,
-        }
-    }
-    pub fn as_promoted(self) -> Option<(RDefId, PromotedId)> {
-        match self {
-            Self::Promoted(did, promoted) => Some((did, promoted)),
-            _ => None,
-        }
-    }
-    pub fn as_real_or_promoted(self) -> Option<RDefId> {
-        match self {
-            Self::Real(did) | Self::Promoted(did, ..) => Some(did),
-            _ => None,
-        }
-    }
-    pub fn as_synthetic(self) -> Option<SyntheticItem> {
-        if let Self::Synthetic(v, _) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-}
-
 impl DefIdContents {
     pub fn make_def_id<'tcx, S: BaseState<'tcx>>(self, _s: &S) -> DefId {
         let contents = HashConsed::new(self);
@@ -140,31 +107,53 @@ impl DefIdContents {
 impl DefId {
     /// The rustc def_id corresponding to this item, if there is one. Promoted constants don't have
     /// a rustc def_id.
-    pub fn as_rust_def_id(&self) -> Option<RDefId> {
-        self.base.as_real()
+    pub fn as_real_def_id(&self) -> Option<RDefId> {
+        match self.base {
+            DefIdBase::Real(did) => Some(did),
+            _ => None,
+        }
     }
     /// The rustc def_id of this item. Panics if this is not a real rustc item.
     pub fn real_rust_def_id(&self) -> RDefId {
-        self.as_rust_def_id().unwrap()
+        self.as_real_def_id().unwrap()
     }
     /// The def_id of this item or its parent if this is a promoted constant.
-    pub fn underlying_rust_def_id(&self) -> Option<RDefId> {
-        self.base.as_real_or_promoted()
+    pub fn as_real_or_promoted(&self) -> Option<RDefId> {
+        match self.base {
+            DefIdBase::Real(did) | DefIdBase::Promoted(did, ..) => Some(did),
+            _ => None,
+        }
     }
     /// The def_id of this item, or its parent if this is a promoted constant, or a made-up `DefId`
     /// for synthetic items. The method is explicitly named to phase out `DefId`s for synthetic
     /// items.
-    pub fn as_def_id_even_synthetic(&self) -> RDefId {
-        self.base.underlying_def_id().unwrap()
+    pub fn as_real_promoted_or_synthetic(&self) -> RDefId {
+        match self.base {
+            DefIdBase::Real(did) | DefIdBase::Promoted(did, ..) | DefIdBase::Synthetic(.., did) => {
+                did
+            }
+        }
+    }
+    pub fn promoted_id(&self) -> Option<PromotedId> {
+        match self.base {
+            DefIdBase::Promoted(_, promoted) => Some(promoted),
+            _ => None,
+        }
+    }
+    /// Returns the [`SyntheticItem`] encoded by a [rustc `DefId`](RDefId), if
+    /// any.
+    ///
+    /// Note that this method relies on rustc indexes, which are session
+    /// specific. See [`Self`] documentation.
+    pub fn as_synthetic<'tcx>(&self, _s: &impl BaseState<'tcx>) -> Option<SyntheticItem> {
+        match self.base {
+            DefIdBase::Synthetic(v, _) => Some(v),
+            _ => None,
+        }
     }
 
     pub fn is_local(&self) -> bool {
-        self.base
-            .underlying_def_id()
-            .is_some_and(|did| did.is_local())
-    }
-    pub fn promoted_id(&self) -> Option<PromotedId> {
-        self.base.as_promoted().map(|(_, p)| p)
+        self.as_real_promoted_or_synthetic().is_local()
     }
 
     fn make<'tcx, S: BaseState<'tcx>>(s: &S, def_id: RDefId) -> Self {
@@ -192,24 +181,22 @@ impl DefId {
         contents.make_def_id(s)
     }
 
-    /// Returns the [`SyntheticItem`] encoded by a [rustc `DefId`](RDefId), if
-    /// any.
-    ///
-    /// Note that this method relies on rustc indexes, which are session
-    /// specific. See [`Self`] documentation.
-    pub fn as_synthetic<'tcx>(&self, _s: &impl BaseState<'tcx>) -> Option<SyntheticItem> {
-        self.base.as_synthetic()
+    /// Construct a hax `DefId` for the nth promoted constant of the current item. That `DefId` has
+    /// no corresponding rustc `DefId`.
+    pub fn make_promoted_child<'tcx, S: BaseState<'tcx>>(
+        &self,
+        s: &S,
+        promoted_id: PromotedId,
+    ) -> Self {
+        let contents = DefIdContents {
+            base: DefIdBase::Promoted(self.real_rust_def_id(), promoted_id),
+            kind: DefKind::PromotedConst,
+        };
+        contents.make_def_id(s)
     }
+}
 
-    pub fn parent<'tcx>(&self, s: &impl BaseState<'tcx>) -> Option<DefId> {
-        match self.base {
-            DefIdBase::Real(def_id) => s.tcx().opt_parent(def_id),
-            DefIdBase::Promoted(def_id, _) => Some(def_id),
-            DefIdBase::Synthetic(..) => Some(rustc_span::def_id::CRATE_DEF_ID.to_def_id()),
-        }
-        .sinto(s)
-    }
-
+impl DefId {
     pub fn crate_name<'tcx>(&self, s: &impl BaseState<'tcx>) -> Symbol {
         let tcx = s.base().tcx;
         match self.base {
@@ -250,18 +237,66 @@ impl DefId {
         }
     }
 
-    /// Construct a hax `DefId` for the nth promoted constant of the current item. That `DefId` has
-    /// no corresponding rustc `DefId`.
-    pub fn make_promoted_child<'tcx, S: BaseState<'tcx>>(
-        &self,
-        s: &S,
-        promoted_id: PromotedId,
-    ) -> Self {
-        let contents = DefIdContents {
-            base: DefIdBase::Promoted(self.real_rust_def_id(), promoted_id),
-            kind: DefKind::PromotedConst,
-        };
-        contents.make_def_id(s)
+    pub fn parent<'tcx>(&self, s: &impl BaseState<'tcx>) -> Option<DefId> {
+        match self.base {
+            DefIdBase::Real(def_id) => s.tcx().opt_parent(def_id),
+            DefIdBase::Promoted(def_id, _) => Some(def_id),
+            DefIdBase::Synthetic(..) => Some(rustc_span::def_id::CRATE_DEF_ID.to_def_id()),
+        }
+        .sinto(s)
+    }
+
+    pub fn can_have_generics<'tcx>(&self, s: &impl BaseState<'tcx>) -> bool {
+        match self.base {
+            DefIdBase::Real(def_id)
+            | DefIdBase::Promoted(def_id, ..)
+            | DefIdBase::Synthetic(.., def_id) => can_have_generics(s.base().tcx, def_id),
+        }
+    }
+
+    pub fn generics_of<'tcx>(&self, s: &impl BaseState<'tcx>) -> &'tcx ty::Generics {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id) | DefIdBase::Synthetic(.., def_id) => tcx.generics_of(def_id),
+            // TODO: wrong
+            DefIdBase::Promoted(def_id, ..) => tcx.generics_of(def_id),
+        }
+    }
+
+    pub fn identity_args<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::GenericArgsRef<'tcx> {
+        if self.can_have_generics(s) {
+            let tcx = s.base().tcx;
+            ty::GenericArgs::identity_for_item(tcx, self.as_real_promoted_or_synthetic())
+        } else {
+            ty::GenericArgsRef::default()
+        }
+    }
+
+    pub fn param_env<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::ParamEnv<'tcx> {
+        let tcx = s.base().tcx;
+        if self.can_have_generics(s) {
+            match self.base {
+                DefIdBase::Real(def_id)
+                | DefIdBase::Promoted(def_id, ..)
+                | DefIdBase::Synthetic(.., def_id) => tcx.param_env(def_id),
+            }
+        } else {
+            ty::ParamEnv::empty()
+        }
+    }
+
+    pub fn required_predicates<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> ItemPredicates<'tcx> {
+        match self.base {
+            DefIdBase::Real(def_id) | DefIdBase::Synthetic(.., def_id) => {
+                ItemPredicates::required(s.base().elab_ctx, def_id)
+            }
+            DefIdBase::Promoted(..) => ItemPredicates::new_unmapped(DUMMY_SP, []),
+        }
+    }
+
+    pub fn type_of<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> ty::EarlyBinder<'tcx, ty::Ty<'tcx>> {
+        let def_id = self.as_real_promoted_or_synthetic();
+        s.base().tcx.type_of(def_id)
     }
 }
 
@@ -288,7 +323,7 @@ impl DefId {
             | Union
             | Use
             | Variant => {
-                let def_id = self.as_rust_def_id()?;
+                let def_id = self.as_real_def_id()?;
                 Some(tcx.visibility(def_id).is_public())
             }
             // These kinds don't have visibility modifiers (which would cause `visibility` to panic).
@@ -317,7 +352,7 @@ impl DefId {
             // These kinds cause `get_attrs` to panic.
             ConstParam | LifetimeParam | TyParam | ForeignMod | InlineConst => &[],
             _ => {
-                if let Some(def_id) = self.as_rust_def_id() {
+                if let Some(def_id) = self.as_real_def_id() {
                     if let Some(ldid) = def_id.as_local() {
                         tcx.hir_attrs(tcx.local_def_id_to_hir_id(ldid))
                     } else {
@@ -369,11 +404,13 @@ pub(crate) fn get_def_kind<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> hir::
 
 impl<'s, S: BaseState<'s>> SInto<S, DefId> for RDefId {
     fn sinto(&self, s: &S) -> DefId {
-        if let Some(def_id) = s.with_item_cache(*self, |cache| cache.def_id.clone()) {
+        if let Some(def_id) = s.with_global_cache(|cache| cache.def_ids.get(self).cloned()) {
             return def_id;
         }
         let def_id = DefId::make(s, *self);
-        s.with_item_cache(*self, |cache| cache.def_id = Some(def_id.clone()));
+        s.with_global_cache(|cache| {
+            cache.def_ids.insert(*self, def_id.clone());
+        });
         def_id
     }
 }

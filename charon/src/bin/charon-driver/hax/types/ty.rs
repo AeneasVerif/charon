@@ -312,11 +312,10 @@ impl VariantDef {
         discr_val: ty::util::Discr<'tcx>,
         instantiate: Option<ty::GenericArgsRef<'tcx>>,
     ) -> Self {
-        let tcx = s.base().tcx;
-        let instantiate =
-            instantiate.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, def.def_id));
+        let def_id = def.def_id.sinto(s);
+        let instantiate = instantiate.unwrap_or_else(|| def_id.identity_args(s));
         VariantDef {
-            def_id: def.def_id.sinto(s),
+            def_id,
             ctor: def.ctor.sinto(s),
             name: def.name.sinto(s),
             discr_def: def.discr.sinto(s),
@@ -834,10 +833,8 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
     }
 
     fn fresh_param_ty<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ty::ParamTy {
-        let tcx = s.base().tcx;
-        let def_id = s.owner_id();
-        let generics = tcx.generics_of(def_id);
-        let param_count = generics.parent_count + generics.own_params.len();
+        let generics = s.owner().generics_of(s);
+        let param_count = generics.count();
         ty::ParamTy::new(param_count as u32 + 1, rustc_span::Symbol::intern("_dyn"))
     }
 
@@ -1560,9 +1557,9 @@ impl AssocItem {
     ) -> AssocItem {
         let tcx = s.base().tcx;
         // We want to solve traits in the context of this item.
-        let s = &s.with_rustc_owner(item.def_id);
-        let item_args =
-            item_args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, item.def_id));
+        let item_def_id = item.def_id.sinto(s);
+        let s = &s.with_hax_owner(&item_def_id);
+        let item_args = item_args.unwrap_or_else(|| item_def_id.identity_args(s));
         let container_id = item.container_id(tcx);
         let container_args = item_args.truncate_to(tcx, tcx.generics_of(container_id));
         let container = match item.container {
