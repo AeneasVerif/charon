@@ -31,7 +31,7 @@ use std::collections::HashSet;
 
 use rustc_hir::LangItem;
 use rustc_hir::def::DefKind;
-use rustc_middle::ty::*;
+use rustc_middle::ty::{self, *};
 use rustc_span::def_id::DefId;
 use rustc_span::{DUMMY_SP, Span};
 
@@ -385,6 +385,14 @@ impl<'tcx> ItemPredicates<'tcx> {
     }
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut ItemPredicate<'tcx>> {
         self.predicates.iter_mut()
+    }
+
+    /// Substitute all the predicates with these args.
+    pub fn instantiate(mut self, tcx: TyCtxt<'tcx>, args: ty::GenericArgsRef<'tcx>) -> Self {
+        for predicate in self.iter_mut() {
+            predicate.clause = ty::EarlyBinder::bind(predicate.clause).instantiate(tcx, args);
+        }
+        self
     }
 }
 

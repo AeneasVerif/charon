@@ -115,25 +115,49 @@ impl ItemRef {
         hax_def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
     ) -> ItemRef {
-        Self::translate_from_hax_def_id_maybe_resolve(s, hax_def_id, generics, true)
+        Self::translate_from_hax_def_id_maybe_resolve(
+            s,
+            hax_def_id,
+            generics,
+            AssocItemResolution::ImplItem,
+        )
     }
+
+    pub fn translate_projection<'tcx, S: UnderOwnerState<'tcx>>(
+        s: &S,
+        def_id: RDefId,
+        generics: ty::GenericArgsRef<'tcx>,
+    ) -> ItemRef {
+        let hax_def_id = def_id.sinto(s);
+        Self::translate_from_hax_def_id_maybe_resolve(
+            s,
+            hax_def_id,
+            generics,
+            AssocItemResolution::TraitProof,
+        )
+    }
+
     pub fn translate_from_hax_def_id_maybe_resolve<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
         hax_def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
-        resolve_assoc_item_trait_ref: bool,
+        assoc_item_resolution: AssocItemResolution,
     ) -> ItemRef {
-        let key = (hax_def_id.clone(), generics, resolve_assoc_item_trait_ref);
+        let key = (hax_def_id.clone(), generics, assoc_item_resolution);
         if let Some(item) = s.with_cache(|cache| cache.item_refs.get(&key).cloned()) {
             return item;
         }
 
         // Don't resolve if the DefId isn't real.
         let is_real_def_id = hax_def_id.as_real_def_id().is_some();
-        let resolve_assoc_item_trait_ref = is_real_def_id && resolve_assoc_item_trait_ref;
+        let assoc_item_resolution = if is_real_def_id {
+            assoc_item_resolution
+        } else {
+            AssocItemResolution::None
+        };
         let def_id = hax_def_id.as_real_promoted_or_synthetic();
         let item_ref = s.with_predicate_searcher(|pred_searcher| {
-            pred_searcher.resolve_item_reference(def_id, generics, resolve_assoc_item_trait_ref)
+            pred_searcher.resolve_item_reference(def_id, generics, assoc_item_resolution)
         });
 
         let def_id = if is_real_def_id {

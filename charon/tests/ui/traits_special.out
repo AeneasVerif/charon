@@ -60,7 +60,7 @@ impl<'_0> From<&'_0 bool> for bool {
     proof ImpliedClause1: (&'_0 bool: Sized) = {built_in impl Sized for &'_0 bool}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     type Error = ()
-    fn from = {impl From<&'_0 bool> for bool}::from<'_0>
+    fn from<TraitClause0_1: (bool: Sized)> = {impl From<&'_0 bool> for bool}::from<'_0>
     vtable: {impl From<&'_0 bool> for bool}::{vtable}<'_0>
 }
 

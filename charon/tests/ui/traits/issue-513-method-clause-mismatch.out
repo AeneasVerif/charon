@@ -82,7 +82,7 @@ where
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
-    fn method<T, TraitClause0_1: (T: Sized)> = {impl Trait for ()}::method<T>[TraitClause0_1]
+    fn method<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = {impl Trait for ()}::method<T>[TraitClause0_1]
     non-dyn-compatible
 }
 

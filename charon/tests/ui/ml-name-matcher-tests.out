@@ -248,7 +248,7 @@ where
 {
     proof ImpliedClause0: (Option<U>[TraitClause1]: MetaSized) = {built_in impl MetaSized for Option<U>[TraitClause1]}
     proof ImpliedClause1: (alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
-    fn method<V, TraitClause0_1: (V: Sized)> = {impl Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]}::method<T, U, V>[TraitClause0, TraitClause1, TraitClause0_1]
+    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]}::method<T, U, U>[TraitClause0, TraitClause1, TraitClause0_1]
     non-dyn-compatible
 }
 

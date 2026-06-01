@@ -39,7 +39,7 @@ fn {impl Trait for ()}::method()
 // Full name: test_crate::{impl Trait for ()}
 impl Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn method = {impl Trait for ()}::method
+    fn method<TraitClause0_1: ((): Sized)> = {impl Trait for ()}::method
     vtable: {impl Trait for ()}::{vtable}
 }
 

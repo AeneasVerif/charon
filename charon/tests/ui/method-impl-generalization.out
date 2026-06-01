@@ -100,7 +100,7 @@ fn {impl Trait for ()}::method1(self_1: (), _other_2: &'static u32) -> bool
 impl Trait for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     fn method1 = {impl Trait for ()}::method1
-    fn method2<T, TraitClause0_1: (T: Sized)> = {impl Trait for ()}::method2<T>[TraitClause0_1]
+    fn method2<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = {impl Trait for ()}::method2<T>[TraitClause0_1]
     non-dyn-compatible
 }
 

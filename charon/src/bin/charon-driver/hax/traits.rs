@@ -3,8 +3,9 @@ use rustc_span::def_id::DefId as RDefId;
 
 pub use rustc_trait_elaboration as elaboration;
 pub use rustc_trait_elaboration::{
-    ElaborationCtx, ItemPredicate, ItemPredicateId, ItemPredicates, PredicateSearcher,
-    ToPolyTraitRef, erase_and_norm, erase_free_regions, normalize, self_predicate,
+    AssocItemResolution, ElaborationCtx, ItemPredicate, ItemPredicateId, ItemPredicates,
+    PredicateSearcher, ToPolyTraitRef, erase_and_norm, erase_free_regions, normalize,
+    self_predicate,
 };
 
 use crate::hax::prelude::*;

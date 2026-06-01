@@ -108,9 +108,13 @@ mod types {
         /// Cache the `Ty` translations.
         pub tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
-        pub item_refs: HashMap<(DefId, ty::GenericArgsRef<'tcx>, bool), ItemRef>,
+        pub item_refs: HashMap<(DefId, ty::GenericArgsRef<'tcx>, AssocItemResolution), ItemRef>,
         /// Cache of trait refs to resolved trait proofs.
         pub trait_proofs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::TraitProof>,
+        /// Generics for this item, if it is virtual.
+        pub virtual_generics: Option<&'tcx ty::Generics>,
+        /// Predicate searcher for this item, if it is virtual.
+        pub virtual_predicate_searcher: Option<PredicateSearcher<'tcx>>,
     }
 
     #[derive(Clone)]
@@ -244,9 +248,29 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
         self.with_item_cache(&self.owner(), f)
     }
     fn with_predicate_searcher<T>(&self, f: impl FnOnce(&mut PredicateSearcher<'tcx>) -> T) -> T {
-        let base = self.base();
-        let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(self.owner_id());
-        f(&mut predicate_searcher)
+        let s = self;
+        let base = s.base();
+        let owner = s.owner();
+        if let DefIdBase::ImplAssocItem(id) = owner.base {
+            s.with_cache(|cache| {
+                let predicate_searcher =
+                    cache.virtual_predicate_searcher.get_or_insert_with(|| {
+                        let mut predicate_searcher = base
+                            .elab_ctx
+                            .predicate_searcher_for(id.trait_impl_id)
+                            .clone();
+                        let param_env = owner.param_env(s);
+                        predicate_searcher.set_param_env(param_env);
+                        let predicates = owner.required_predicates(s);
+                        predicate_searcher.insert_bound_predicates(predicates.iter());
+                        predicate_searcher
+                    });
+                f(predicate_searcher)
+            })
+        } else {
+            let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(s.owner_id());
+            f(&mut predicate_searcher)
+        }
     }
 }
 impl<'tcx, S: UnderOwnerState<'tcx>> WithItemCacheExt<'tcx> for S {}

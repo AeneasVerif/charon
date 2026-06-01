@@ -140,7 +140,7 @@ where
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     type Assoc = ()
-    fn broken<'_0_1, TraitClause0_1: ((): Foo)> = {impl Broken for T}::broken<'_0_1, T>[TraitClause0, {impl Foo for ()}]
+    fn broken<'_0_1> = {impl Broken for T}::broken<'_0_1, T>[TraitClause0, {impl Foo for ()}]
     vtable: {impl Broken for T}::{vtable}<T>[TraitClause0]
 }
 

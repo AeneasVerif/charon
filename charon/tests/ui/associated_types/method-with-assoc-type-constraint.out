@@ -67,7 +67,7 @@ where
 impl FromIterator<()> for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    fn from_iter<I, TraitClause0_1: (I: Sized), TraitClause1_1: (I: IntoIterator<()>)> = {impl FromIterator<()> for ()}::from_iter<I>[TraitClause0_1, TraitClause1_1]
+    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator<()>)> = {impl FromIterator<()> for ()}::from_iter<T>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 

@@ -637,7 +637,7 @@ impl Alias {
 
         let kind = match alias_ty.kind {
             RustAliasKind::Projection { def_id } => {
-                AliasKind::Projection(ItemRef::translate(s, def_id, alias_ty.args))
+                AliasKind::Projection(ItemRef::translate_projection(s, def_id, alias_ty.args))
             }
             RustAliasKind::Inherent { .. } => AliasKind::Inherent,
             RustAliasKind::Opaque { def_id } => {
@@ -1583,7 +1583,7 @@ impl AssocItem {
                         s,
                         implemented_item_id,
                         generics,
-                        false,
+                        AssocItemResolution::None,
                     )
                 };
                 AssocItemContainer::TraitImplContainer {

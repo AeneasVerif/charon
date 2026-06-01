@@ -119,6 +119,9 @@ where
                 .sinto(s);
             diagnostic_item = tcx.get_diagnostic_name(rust_def_id).sinto(s);
         }
+        DefIdBase::ImplAssocItem(_) => {
+            panic!("virtual trait impl associated items do not have `FullDef`s")
+        }
     }
 
     let attributes = def_id.attrs(tcx).to_vec();
@@ -140,31 +143,6 @@ where
 }
 
 impl DefId {
-    /// Get the span of the definition of this item. This is the span used in diagnostics when
-    /// referring to the item.
-    pub fn def_span<'tcx>(&self, s: &impl BaseState<'tcx>) -> Span {
-        use DefKind::*;
-        let tcx = s.base().tcx;
-        match self.base {
-            DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => {
-                if let ForeignMod = &self.kind {
-                    // This kind causes `def_span` to panic.
-                    rustc_span::DUMMY_SP
-                } else if let Some(ldid) = def_id.as_local()
-                    && let hir_id = tcx.local_def_id_to_hir_id(ldid)
-                    && matches!(tcx.hir_node(hir_id), rustc_hir::Node::Synthetic)
-                {
-                    // This kind causes `def_span` to panic.
-                    rustc_span::DUMMY_SP
-                } else {
-                    tcx.def_span(def_id)
-                }
-            }
-            DefIdBase::Synthetic(..) => rustc_span::DUMMY_SP,
-        }
-        .sinto(s)
-    }
-
     /// Get the full definition of this item.
     pub fn full_def<'tcx, S>(&self, s: &S) -> Arc<FullDef<'tcx>>
     where
@@ -757,49 +735,71 @@ where
                     .in_definition_order()
                     .map(|decl_assoc| {
                         let decl_def_id = decl_assoc.def_id;
+                        let trait_impl_id = def_id;
                         let value = match item_map.remove(&decl_def_id) {
                             Some(impl_assoc) => {
-                                let s = &s.with_rustc_owner(impl_assoc.def_id);
-                                let item_decl_args = {
-                                    let item_args = s.owner().identity_args(s);
-                                    item_args.rebase_onto(tcx, def_id, trait_ref.args)
+                                let impl_assoc_def_id: DefId = impl_assoc.def_id.sinto(s);
+                                let virtual_item = VirtualImplAssocItem::new(
+                                    trait_impl_id,
+                                    decl_def_id,
+                                    Some(impl_assoc.def_id),
+                                );
+                                let virtual_item_def_id =
+                                    DefId::make_assoc_item_impl(s, virtual_item);
+                                let s = &if matches!(decl_assoc.kind, ty::AssocKind::Type { .. }) {
+                                    // TODO: also use virtual defid
+                                    s.with_rustc_owner(impl_assoc.def_id)
+                                } else {
+                                    s.with_hax_owner(&virtual_item_def_id)
                                 };
+                                let item_decl_args = virtual_item.identity_args_for_item_decl(s);
                                 let item_impl_args = {
-                                    let item_args = s.owner().identity_args(s);
-                                    item_args.rebase_onto(tcx, def_id, args_or_default())
+                                    let item_args = impl_assoc_def_id.identity_args(s);
+                                    item_args.rebase_onto(tcx, trait_impl_id, args_or_default())
                                 };
                                 let required_trait_proofs =
                                     solve_item_implied_traits(s, decl_def_id, item_decl_args);
+                                let param_env = {
+                                    // Pass `None` to get the generics, but add the known parent.
+                                    // FIXME: maybe a custom enum instead of `Option<Args>`.
+                                    let mut param_env = get_param_env(s, None);
+                                    param_env.generics.parent = Some(this.def_id.clone());
+                                    param_env.parent = Some(this.clone());
+                                    param_env
+                                };
                                 let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
+                                let late_bound = late_bound_for_def(s, impl_assoc.def_id);
                                 let value = ImplAssocItemValue::Provided {
                                     item,
                                     assoc_ty_value: None,
                                     implied_trait_proofs: required_trait_proofs,
                                 };
                                 TraitItemBinder {
-                                    def_id: impl_assoc.def_id.sinto(s),
-                                    param_env: get_param_env(s, None),
-                                    late_bound: late_bound_for_def(s, impl_assoc.def_id),
+                                    def_id: virtual_item_def_id,
+                                    param_env,
+                                    late_bound,
                                     skip_binder: value,
                                 }
                             }
                             None => {
                                 let decl_hax_def_id = decl_def_id.sinto(s);
-                                let required_trait_proofs =
-                                    if decl_hax_def_id.generics_of(s).is_own_empty() {
-                                        // Non-GAT case.
-                                        let item_args = decl_hax_def_id.identity_args(s);
-                                        let args =
-                                            item_args.rebase_onto(tcx, def_id, trait_ref.args);
-                                        // TODO: is it the right `def_id`?
-                                        let state_with_id = s.with_rustc_owner(def_id);
-                                        solve_item_implied_traits(&state_with_id, decl_def_id, args)
-                                    } else {
-                                        // FIXME: For GATs, we need a param_env that has the arguments of
-                                        // the impl plus those of the associated type, but there's no
-                                        // def_id with that param_env.
-                                        vec![]
-                                    };
+                                let required_trait_proofs = if decl_hax_def_id
+                                    .generics_of(s)
+                                    .is_own_empty()
+                                {
+                                    // Non-GAT case.
+                                    let item_args = decl_hax_def_id.identity_args(s);
+                                    let args =
+                                        item_args.rebase_onto(tcx, trait_impl_id, trait_ref.args);
+                                    // TODO: is it the right `def_id`?
+                                    let state_with_id = s.with_rustc_owner(trait_impl_id);
+                                    solve_item_implied_traits(&state_with_id, decl_def_id, args)
+                                } else {
+                                    // FIXME: For GATs, we need a param_env that has the arguments of
+                                    // the impl plus those of the associated type, but there's no
+                                    // def_id with that param_env.
+                                    vec![]
+                                };
                                 let value = match decl_assoc.kind {
                                     ty::AssocKind::Type { .. } => {
                                         let ty = if decl_hax_def_id.generics_of(s).is_own_empty() {
@@ -1370,9 +1370,8 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> ParamEnv {
     let tcx = s.base().tcx;
     let owner = s.owner();
-    let def_id = owner.as_real_promoted_or_synthetic();
     // Rustc adds generic params to closures and inline consts for impl details purposes; we hide these.
-    let is_typeck_child = tcx.is_typeck_child(def_id);
+    let is_typeck_child = owner.is_typeck_child(s);
     let mut generics = owner.generics_of(s).sinto(s);
     if is_typeck_child {
         generics.params = Default::default();

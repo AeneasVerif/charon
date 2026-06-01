@@ -1,4 +1,3 @@
-//@ known-failure
 trait Trait {
     fn fold(&self)
     where
