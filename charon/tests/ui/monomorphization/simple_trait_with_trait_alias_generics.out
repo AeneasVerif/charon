@@ -30,10 +30,10 @@ trait A<Self, T>
 }
 
 // Full name: test_crate::{impl A<i32> for i32}
-impl A<i32> for i32 {
+impl "impl_A_i32_for_i32" A<i32> for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
     proof ImpliedClause1: (i32: Sized) = {built_in impl Sized for i32}
-    vtable: {impl A<i32> for i32}::{vtable}
+    vtable: impl_A_i32_for_i32::{vtable}
 }
 
 // Full name: test_crate::f::<i32>

@@ -58,7 +58,7 @@ unsafe fn {vtable_drop_shim}::<()>(dyn_self_1: *mut (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for ()}::{vtable}::<()>
-fn {impl Trait for ()}::{vtable}::<()>() -> test_crate::Trait::{vtable}
+fn impl_Trait_for_unit::{vtable}::<()>() -> test_crate::Trait::{vtable}
 {
     let ret_0: test_crate::Trait::{vtable}; // return
     let size_1: usize; // local
@@ -85,12 +85,12 @@ fn {impl Trait for ()}::{vtable}::<()>() -> test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl Trait for ()}::{vtable}::<()>
-static {impl Trait for ()}::{vtable}::<()>: test_crate::Trait::{vtable} = {impl Trait for ()}::{vtable}::<()>()
+static impl_Trait_for_unit::{vtable}::<()>: test_crate::Trait::{vtable} = impl_Trait_for_unit::{vtable}::<()>()
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    vtable: {impl Trait for ()}::{vtable}::<()>
+    vtable: impl_Trait_for_unit::{vtable}::<()>
 }
 
 // Full name: test_crate::f
@@ -106,7 +106,7 @@ pub fn f<'_0>(x_1: &'_0 ()) -> &'_0 (dyn Trait + '_0)
     storage_live(_3)
     storage_live(_4)
     _4 = &(*x_1)
-    _3 = unsize_cast<&'11 (), &'12 (dyn Trait + '13), &{impl Trait for ()}::{vtable}::<()>>(move _4)
+    _3 = unsize_cast<&'11 (), &'12 (dyn Trait + '13), &impl_Trait_for_unit::{vtable}::<()>>(move _4)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)
     _0 = unsize_cast<&'7 (dyn Trait + '8), &'15 (dyn Trait + '16),  at []>(move _2)

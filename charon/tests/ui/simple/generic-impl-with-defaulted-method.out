@@ -43,7 +43,7 @@ where
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[TraitClause0]}::foo
-pub fn {impl BoolTrait for Option<T>[TraitClause0]}::foo<'_0, T>(self_1: &'_0 Option<T>[TraitClause0])
+pub fn impl_BoolTrait_for_Option::foo<'_0, T>(self_1: &'_0 Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 {
@@ -56,13 +56,13 @@ where
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[TraitClause0]}
-impl<T> BoolTrait for Option<T>[TraitClause0]
+impl<T> "impl_BoolTrait_for_Option" BoolTrait for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    fn foo<'_0_1> = {impl BoolTrait for Option<T>[TraitClause0]}::foo<'_0_1, T>[TraitClause0]
-    vtable: {impl BoolTrait for Option<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+    fn foo<'_0_1> = impl_BoolTrait_for_Option::foo<'_0_1, T>[TraitClause0]
+    vtable: impl_BoolTrait_for_Option::{vtable}<T>[TraitClause0]
 }
 
 

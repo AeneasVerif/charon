@@ -28,7 +28,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Internal for i32}::internal_method
-fn {impl Internal for i32}::internal_method<'_0>(self_1: &'_0 i32) -> i32
+fn impl_Internal_for_i32::internal_method<'_0>(self_1: &'_0 i32) -> i32
 {
     let _0: i32; // return
     let self_1: &'1 i32; // arg #1
@@ -45,12 +45,12 @@ fn {impl Internal for i32}::internal_method<'_0>(self_1: &'_0 i32) -> i32
 }
 
 // Full name: test_crate::{impl Internal for i32}
-impl Internal for i32 {
+impl "impl_Internal_for_i32" Internal for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
     proof ImpliedClause1: (i32: Sized) = {built_in impl Sized for i32}
     type IntAssoc = i32
-    fn internal_method<'_0_1> = {impl Internal for i32}::internal_method<'_0_1>
-    vtable: {impl Internal for i32}::{vtable}
+    fn internal_method<'_0_1> = impl_Internal_for_i32::internal_method<'_0_1>
+    vtable: impl_Internal_for_i32::{vtable}
 }
 
 // Full name: test_crate::main

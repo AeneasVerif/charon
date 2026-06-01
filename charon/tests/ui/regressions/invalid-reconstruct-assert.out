@@ -9,7 +9,7 @@ pub enum Ordering {
 }
 
 // Full name: core::cmp::impls::{impl Ord for u32}::cmp
-pub fn {impl Ord for u32}::cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Ordering
+pub fn impl_Ord_for_u32::cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Ordering
 = <opaque>
 
 // Full name: core::marker::Destruct
@@ -100,7 +100,7 @@ fn core::hint::assert_unchecked::precondition_check(_1: bool)
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check
-fn {impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check(_1: usize, _2: usize)
+fn impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(_1: usize, _2: usize)
 = <opaque>
 
 // Full name: core::slice::{[T]}::binary_search_by
@@ -243,7 +243,7 @@ where
     bb7: {
         storage_live(_31);
         _31 = copy self_1.metadata;
-        _30 = {impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check(copy mid_10, move _31) -> bb12 (unwind: bb11);
+        _30 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy mid_10, move _31) -> bb12 (unwind: bb11);
     }
 
     bb8: {
@@ -264,7 +264,7 @@ where
     bb9: {
         storage_live(_37);
         _37 = copy self_1.metadata;
-        _36 = {impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check(copy index_22, move _37) -> bb16 (unwind: bb15);
+        _36 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy index_22, move _37) -> bb16 (unwind: bb15);
     }
 
     bb10: {
@@ -419,7 +419,7 @@ where
 struct closure {}
 
 // Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}::call_mut
-fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args_2: (&'_0 u32,)) -> Ordering
+fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args_2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: &'1 mut closure; // arg #1
@@ -450,7 +450,7 @@ fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(_1: &'_1 mut closure
         _7 = move _8;
         _6 = &(*_7);
         _5 = &(*_6);
-        _0 = {impl Ord for u32}::cmp<'10, '11>(move _4, move _5) -> bb2 (unwind: bb1);
+        _0 = impl_Ord_for_u32::cmp<'10, '11>(move _4, move _5) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -466,11 +466,11 @@ fn {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_1>(_1: &'_1 mut closure
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
+unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
 = <missing>
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}::call_once
-fn {impl FnOnce<(&'_ u32,)> for closure}::call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
+fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: closure; // arg #1
@@ -480,15 +480,15 @@ fn {impl FnOnce<(&'_ u32,)> for closure}::call_once<'_0>(_1: closure, _2: (&'_0 
     bb0: {
         storage_live(_3);
         _3 = &mut _1;
-        _0 = {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '8>(move _3, move _2) -> bb2 (unwind: bb1);
+        _0 = impl_FnMut_tuple_for_closure::call_mut<'_0, '8>(move _3, move _2) -> bb2 (unwind: bb1);
     }
 
     bb1: {
-        drop[{impl Destruct for closure}::drop_in_place] _1 -> bb3 (unwind: bb4);
+        drop[impl_Destruct_for_closure::drop_in_place] _1 -> bb3 (unwind: bb4);
     }
 
     bb2: {
-        drop[{impl Destruct for closure}::drop_in_place] _1 -> bb6 (unwind: bb5);
+        drop[impl_Destruct_for_closure::drop_in_place] _1 -> bb6 (unwind: bb5);
     }
 
     bb3: {
@@ -509,23 +509,23 @@ fn {impl FnOnce<(&'_ u32,)> for closure}::call_once<'_0>(_1: closure, _2: (&'_0 
 }
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}
-impl<'_0> FnOnce<(&'_ u32,)> for closure {
+impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ u32,)> for closure {
     proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
     proof ImpliedClause1: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
     proof ImpliedClause2: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
     proof ImpliedClause3: (Ordering: Sized) = {built_in impl Sized for Ordering}
     type Output = Ordering
-    fn call_once = {impl FnOnce<(&'_ u32,)> for closure}::call_once<'_0>
+    fn call_once = impl_FnOnce_tuple_for_closure::call_once<'_0>
     non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}
-impl<'_0> FnMut<(&'_ u32,)> for closure {
+impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_ u32,)> for closure {
     proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
-    proof ImpliedClause1: (closure: FnOnce<(&'_ u32,)>) = {impl FnOnce<(&'_ u32,)> for closure}<'_0>
+    proof ImpliedClause1: (closure: FnOnce<(&'_ u32,)>) = impl_FnOnce_tuple_for_closure<'_0>
     proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
     proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
-    fn call_mut<'_0_1> = {impl FnMut<(&'_ u32,)> for closure}::call_mut<'_0, '_0_1>
+    fn call_mut<'_0_1> = impl_FnMut_tuple_for_closure::call_mut<'_0, '_0_1>
     non-dyn-compatible
 }
 
@@ -562,7 +562,7 @@ fn main()
         storage_dead(_7);
         storage_live(_8);
         _8 = closure {  };
-        res_5 = binary_search_by<'9, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, {impl FnMut<(&'_ u32,)> for closure}<'13>](move _6, move _8) -> bb2 (unwind: bb1);
+        res_5 = binary_search_by<'9, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnMut_tuple_for_closure<'13>](move _6, move _8) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -581,8 +581,8 @@ fn main()
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+impl "impl_Destruct_for_closure" Destruct for closure {
+    fn drop_in_place = impl_Destruct_for_closure::drop_in_place
     non-dyn-compatible
 }
 

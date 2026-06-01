@@ -29,7 +29,7 @@ where
 = <opaque>
 
 // Full name: core::convert::{impl Into<U> for T}::into
-pub fn {impl Into<U> for T}::into<T, U>(self_1: T) -> U
+pub fn impl_Into_for_T::into<T, U>(self_1: T) -> U
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -43,7 +43,7 @@ where
 }
 
 // Full name: core::convert::num::{impl From<u32> for u64}::from
-pub fn {impl From<u32> for u64}::from(small_1: u32) -> u64
+pub fn impl_From_u32_for_u64::from(small_1: u32) -> u64
 {
     let _0: u64; // return
     let small_1: u32; // arg #1
@@ -53,10 +53,10 @@ pub fn {impl From<u32> for u64}::from(small_1: u32) -> u64
 }
 
 // Full name: core::convert::num::{impl From<u32> for u64}
-impl From<u32> for u64 {
+impl "impl_From_u32_for_u64" From<u32> for u64 {
     proof ImpliedClause0: (u64: Sized) = {built_in impl Sized for u64}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
-    fn from = {impl From<u32> for u64}::from
+    fn from = impl_From_u32_for_u64::from
     non-dyn-compatible
 }
 
@@ -121,7 +121,7 @@ fn foo()
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_3)
-    _3 = {impl Into<U> for T}::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, {impl From<u32> for u64}](const 42 : u32)
+    _3 = impl_Into_for_T::into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, impl_From_u32_for_u64](const 42 : u32)
     storage_live(_10)
     storage_live(_13)
     storage_live(_14)

@@ -21,20 +21,20 @@ where
 
 // Full name: core::borrow::{impl Borrow<T> for T}::borrow
 #[lang_item("noop_method_borrow")]
-pub fn {impl Borrow<T> for T}::borrow<'_0, T>(_1: &'_0 T) -> &'_0 T
+pub fn impl_Borrow_for_T::borrow<'_0, T>(_1: &'_0 T) -> &'_0 T
 where
     TraitClause0: (T: MetaSized),
 = <opaque>
 
 // Full name: core::borrow::{impl Borrow<T> for T}
-impl<T> Borrow<T> for T
+impl<T> "impl_Borrow_for_T" Borrow<T> for T
 where
     TraitClause0: (T: MetaSized),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0
     proof ImpliedClause1: (T: MetaSized) = TraitClause0
-    fn borrow<'_0_1> = {impl Borrow<T> for T}::borrow<'_0_1, T>[TraitClause0]
-    vtable: {impl Borrow<T> for T}::{vtable}<T>[TraitClause0]
+    fn borrow<'_0_1> = impl_Borrow_for_T::borrow<'_0_1, T>[TraitClause0]
+    vtable: impl_Borrow_for_T::{vtable}<T>[TraitClause0]
 }
 
 // Full name: core::cmp::PartialEq
@@ -60,18 +60,18 @@ pub trait Eq<Self>
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
-pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> bool
+pub fn impl_PartialEq_u32_for_u32::eq<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
-impl PartialEq<u32> for u32 {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<u32> for u32}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<u32> for u32}::{vtable}
+impl "impl_PartialEq_u32_for_u32" PartialEq<u32> for u32 {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_u32_for_u32::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_u32_for_u32::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl Eq for u32}
-impl Eq for u32 {
-    proof ImpliedClause0: (u32: PartialEq<u32>) = {impl PartialEq<u32> for u32}
+impl "impl_Eq_for_u32" Eq for u32 {
+    proof ImpliedClause0: (u32: PartialEq<u32>) = impl_PartialEq_u32_for_u32
     non-dyn-compatible
 }
 
@@ -135,15 +135,15 @@ where
 = <opaque>
 
 // Full name: core::hash::impls::{impl Hash for u32}::hash
-pub fn {impl Hash for u32}::hash<'_0, '_1, H>(_1: &'_0 u32, _2: &'_1 mut H)
+pub fn impl_Hash_for_u32::hash<'_0, '_1, H>(_1: &'_0 u32, _2: &'_1 mut H)
 where
     TraitClause0: (H: Sized),
     TraitClause1: (H: Hasher),
 = <opaque>
 
 // Full name: core::hash::impls::{impl Hash for u32}
-impl Hash for u32 {
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)> = {impl Hash for u32}::hash<'_0_1, '_1_1, H>[TraitClause0_1, TraitClause1_1]
+impl "impl_Hash_for_u32" Hash for u32 {
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)> = impl_Hash_for_u32::hash<'_0_1, '_1_1, H>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -196,7 +196,7 @@ where
 = <opaque>
 
 // Full name: std::collections::hash::map::{impl Index<&'_0 Q> for HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4]}::index
-pub fn {impl Index<&'_0 Q> for HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4]}::index<'_0, '_1, K, Q, V, S, A>(_1: &'_1 HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4], _2: &'_0 Q) -> &'_1 V
+pub fn impl_Index_for_HashMap::index<'_0, '_1, K, Q, V, S, A>(_1: &'_1 HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4], _2: &'_0 Q) -> &'_1 V
 where
     TraitClause0: (K: Sized),
     TraitClause1: (Q: MetaSized),
@@ -218,33 +218,33 @@ pub opaque type RandomState
 pub opaque type DefaultHasher
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}::finish
-pub fn {impl Hasher for DefaultHasher}::finish<'_0>(_1: &'_0 DefaultHasher) -> u64
+pub fn impl_Hasher_for_DefaultHasher::finish<'_0>(_1: &'_0 DefaultHasher) -> u64
 = <opaque>
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}::write
-pub fn {impl Hasher for DefaultHasher}::write<'_0, '_1>(_1: &'_0 mut DefaultHasher, _2: &'_1 [u8])
+pub fn impl_Hasher_for_DefaultHasher::write<'_0, '_1>(_1: &'_0 mut DefaultHasher, _2: &'_1 [u8])
 = <opaque>
 
 // Full name: std::hash::random::{impl Hasher for DefaultHasher}
-impl Hasher for DefaultHasher {
+impl "impl_Hasher_for_DefaultHasher" Hasher for DefaultHasher {
     proof ImpliedClause0: (DefaultHasher: MetaSized) = {built_in impl MetaSized for DefaultHasher}
-    fn finish<'_0_1> = {impl Hasher for DefaultHasher}::finish<'_0_1>
-    fn write<'_0_1, '_1_1> = {impl Hasher for DefaultHasher}::write<'_0_1, '_1_1>
-    vtable: {impl Hasher for DefaultHasher}::{vtable}
+    fn finish<'_0_1> = impl_Hasher_for_DefaultHasher::finish<'_0_1>
+    fn write<'_0_1, '_1_1> = impl_Hasher_for_DefaultHasher::write<'_0_1, '_1_1>
+    vtable: impl_Hasher_for_DefaultHasher::{vtable}
 }
 
 // Full name: std::hash::random::{impl BuildHasher for RandomState}::build_hasher
-pub fn {impl BuildHasher for RandomState}::build_hasher<'_0>(_1: &'_0 RandomState) -> DefaultHasher
+pub fn impl_BuildHasher_for_RandomState::build_hasher<'_0>(_1: &'_0 RandomState) -> DefaultHasher
 = <opaque>
 
 // Full name: std::hash::random::{impl BuildHasher for RandomState}
-impl BuildHasher for RandomState {
+impl "impl_BuildHasher_for_RandomState" BuildHasher for RandomState {
     proof ImpliedClause0: (RandomState: MetaSized) = {built_in impl MetaSized for RandomState}
     proof ImpliedClause1: (DefaultHasher: Sized) = {built_in impl Sized for DefaultHasher}
-    proof ImpliedClause2: (DefaultHasher: Hasher) = {impl Hasher for DefaultHasher}
+    proof ImpliedClause2: (DefaultHasher: Hasher) = impl_Hasher_for_DefaultHasher
     type Hasher = DefaultHasher
-    fn build_hasher<'_0_1> = {impl BuildHasher for RandomState}::build_hasher<'_0_1>
-    vtable: {impl BuildHasher for RandomState}::{vtable}
+    fn build_hasher<'_0_1> = impl_BuildHasher_for_RandomState::build_hasher<'_0_1>
+    vtable: impl_BuildHasher_for_RandomState::{vtable}
 }
 
 // Full name: alloc::alloc::Global
@@ -293,7 +293,7 @@ pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>
     _15 = move _16
     _5 = &(*_15)
     _4 = &(*_5)
-    _2 = get<'28, '29, u32, u32, RandomState, Global, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}, {built_in impl MetaSized for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Hash for u32}, {impl Eq for u32}](move _3, move _4)
+    _2 = get<'28, '29, u32, u32, RandomState, Global, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState, {built_in impl MetaSized for u32}, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Hash_for_u32, impl_Eq_for_u32](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     match _2 {
@@ -301,7 +301,7 @@ pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>
             storage_live(_7)
             storage_live(_8)
             _8 = &two-phase-mut (*map_1)
-            _7 = insert<'31, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _8, const 22 : u32, const 33 : u32)
+            _7 = insert<'31, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _8, const 22 : u32, const 33 : u32)
             storage_live(_17)
             storage_live(_20)
             storage_live(_21)
@@ -319,7 +319,7 @@ pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>
             _14 = move _17
             _13 = &(*_14)
             _12 = &(*_13)
-            _10 = {impl Index<&'_0 Q> for HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4]}::index<'33, '35, u32, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, {impl Eq for u32}, {impl Hash for u32}, {impl Borrow<T> for T}<u32>[{built_in impl MetaSized for u32}], {impl Eq for u32}, {impl Hash for u32}, {impl BuildHasher for RandomState}](move _11, move _12)
+            _10 = impl_Index_for_HashMap::index<'33, '35, u32, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _11, move _12)
             storage_dead(_12)
             storage_dead(_11)
             _9 = &(*_10)

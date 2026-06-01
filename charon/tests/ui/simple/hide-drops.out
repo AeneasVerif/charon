@@ -5,7 +5,7 @@
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
+unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::{String}::new
@@ -21,7 +21,7 @@ fn use_string(_1: String)
 
     _0 = ()
     _0 = ()
-    conditional_drop[{impl Destruct for String}::drop_in_place] _1
+    conditional_drop[impl_Destruct_for_String::drop_in_place] _1
     return
 }
 
@@ -35,7 +35,7 @@ fn main()
     storage_live(_s_1)
     _s_1 = new()
     _0 = ()
-    conditional_drop[{impl Destruct for String}::drop_in_place] _s_1
+    conditional_drop[impl_Destruct_for_String::drop_in_place] _s_1
     storage_dead(_s_1)
     return
 }

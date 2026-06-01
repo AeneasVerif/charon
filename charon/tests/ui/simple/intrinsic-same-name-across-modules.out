@@ -28,13 +28,13 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn {impl Clone for u8}::clone<'_0>(_1: &'_0 u8) -> u8
+pub fn impl_Clone_for_u8::clone<'_0>(_1: &'_0 u8) -> u8
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}
-impl Clone for u8 {
+impl "impl_Clone_for_u8" Clone for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -54,9 +54,9 @@ where
 = <intrinsic:wrapping_add>
 
 // Full name: core::marker::{impl Copy for u8}
-impl Copy for u8 {
+impl "impl_Copy_for_u8" Copy for u8 {
     proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
-    proof ImpliedClause1: (u8: Clone) = {impl Clone for u8}
+    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
     non-dyn-compatible
 }
 
@@ -70,7 +70,7 @@ pub fn test_crate::first::nested::call() -> u8
 {
     let _0: u8; // return
 
-    _0 = test_crate::first::nested::wrapping_add<u8>[{built_in impl Sized for u8}, {impl Copy for u8}](const 1 : u8, const 2 : u8)
+    _0 = test_crate::first::nested::wrapping_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 1 : u8, const 2 : u8)
     return
 }
 
@@ -78,7 +78,7 @@ fn test_crate::call() -> u8
 {
     let _0: u8; // return
 
-    _0 = core::intrinsics::wrapping_add<u8>[{built_in impl Sized for u8}, {impl Copy for u8}](const 3 : u8, const 4 : u8)
+    _0 = core::intrinsics::wrapping_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 3 : u8, const 4 : u8)
     return
 }
 

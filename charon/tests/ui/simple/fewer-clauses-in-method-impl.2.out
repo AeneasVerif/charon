@@ -27,7 +27,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method
-fn {impl Trait for ()}::method()
+fn impl_Trait_for_unit::method()
 {
     let _0: (); // return
 
@@ -37,10 +37,10 @@ fn {impl Trait for ()}::method()
 }
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn method<TraitClause0_1: ((): Sized)> = {impl Trait for ()}::method
-    vtable: {impl Trait for ()}::{vtable}
+    fn method<TraitClause0_1: ((): Sized)> = impl_Trait_for_unit::method
+    vtable: impl_Trait_for_unit::{vtable}
 }
 
 // Full name: test_crate::main
@@ -49,7 +49,7 @@ pub fn main()
     let _0: (); // return
 
     _0 = ()
-    _0 = {impl Trait for ()}::method()
+    _0 = impl_Trait_for_unit::method()
     return
 }
 

@@ -49,7 +49,7 @@ pub trait Copy<Self>
 struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
-pub fn {impl Clone for Foo}::clone<'_0>(self_1: &'_0 Foo) -> Foo
+pub fn impl_Clone_for_Foo::clone<'_0>(self_1: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return
     let self_1: &'1 Foo; // arg #1
@@ -59,23 +59,23 @@ pub fn {impl Clone for Foo}::clone<'_0>(self_1: &'_0 Foo) -> Foo
 }
 
 // Full name: test_crate::{impl Clone for Foo}
-impl Clone for Foo {
+impl "impl_Clone_for_Foo" Clone for Foo {
     proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
-    fn clone<'_0_1> = {impl Clone for Foo}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_Foo::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl TrivialClone for Foo}
-impl TrivialClone for Foo {
+impl "impl_TrivialClone_for_Foo" TrivialClone for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
-    proof ImpliedClause1: (Foo: Clone) = {impl Clone for Foo}
+    proof ImpliedClause1: (Foo: Clone) = impl_Clone_for_Foo
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Copy for Foo}
-impl Copy for Foo {
+impl "impl_Copy_for_Foo" Copy for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
-    proof ImpliedClause1: (Foo: Clone) = {impl Clone for Foo}
+    proof ImpliedClause1: (Foo: Clone) = impl_Clone_for_Foo
     non-dyn-compatible
 }
 

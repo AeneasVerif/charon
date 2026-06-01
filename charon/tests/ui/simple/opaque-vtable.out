@@ -20,21 +20,21 @@ where
 = <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::method
-pub fn {impl Trait for ()}::method<'_0>(_1: &'_0 ())
+pub fn impl_Trait_for_unit::method<'_0>(_1: &'_0 ())
 = <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
-fn {impl Trait for ()}::{vtable}() -> test_crate::x::Trait::{vtable}
+fn impl_Trait_for_unit::{vtable}() -> test_crate::x::Trait::{vtable}
 = <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
-static {impl Trait for ()}::{vtable}: test_crate::x::Trait::{vtable} = {impl Trait for ()}::{vtable}()
+static impl_Trait_for_unit::{vtable}: test_crate::x::Trait::{vtable} = impl_Trait_for_unit::{vtable}()
 
 // Full name: test_crate::x::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn method<'_0_1> = {impl Trait for ()}::method<'_0_1>
-    vtable: {impl Trait for ()}::{vtable}
+    fn method<'_0_1> = impl_Trait_for_unit::method<'_0_1>
+    vtable: impl_Trait_for_unit::{vtable}
 }
 
 // Full name: test_crate::use_debug
@@ -76,7 +76,7 @@ fn main()
     _5 = move _6
     _4 = &(*_5)
     _3 = &(*_4)
-    _2 = unsize_cast<&'6 (), &'10 (dyn Trait + '11), &{impl Trait for ()}::{vtable}>(move _3)
+    _2 = unsize_cast<&'6 (), &'10 (dyn Trait + '11), &impl_Trait_for_unit::{vtable}>(move _3)
     storage_dead(_3)
     _1 = use_debug<'13>(move _2)
     storage_dead(_2)

@@ -94,7 +94,7 @@ where
 }
 
 // Full name: core::option::{impl Clone for Option<T>[TraitClause0]}::clone
-pub fn {impl Clone for Option<T>[TraitClause0]}::clone<'_0, T>(_1: &'_0 Option<T>[TraitClause0]) -> Option<T>[TraitClause0]
+pub fn impl_Clone_for_Option::clone<'_0, T>(_1: &'_0 Option<T>[TraitClause0]) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -102,25 +102,25 @@ where
 = <opaque>
 
 // Full name: core::option::{impl Clone for Option<T>[TraitClause0]}
-impl<T> Clone for Option<T>[TraitClause0]
+impl<T> "impl_Clone_for_Option" Clone for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     TraitClause2: (T: Destruct),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
-    fn clone<'_0_1> = {impl Clone for Option<T>[TraitClause0]}::clone<'_0_1, T>[TraitClause0, TraitClause1, TraitClause2]
+    fn clone<'_0_1> = impl_Clone_for_Option::clone<'_0_1, T>[TraitClause0, TraitClause1, TraitClause2]
     non-dyn-compatible
 }
 
 // Full name: core::option::{impl Copy for Option<T>[TraitClause0]}
-impl<T> Copy for Option<T>[TraitClause0]
+impl<T> "impl_Copy_for_Option" Copy for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    proof ImpliedClause1: (Option<T>[TraitClause0]: Clone) = {impl Clone for Option<T>[TraitClause0]}<T>[TraitClause0, TraitClause1::ImpliedClause1, {built_in impl Destruct for T}]
+    proof ImpliedClause1: (Option<T>[TraitClause0]: Clone) = impl_Clone_for_Option<T>[TraitClause0, TraitClause1::ImpliedClause1, {built_in impl Destruct for T}]
     non-dyn-compatible
 }
 
@@ -205,14 +205,14 @@ where
     proof ImpliedClause0: (&'a T: MetaSized) = {built_in impl MetaSized for &'a T}
     proof ImpliedClause1: (&'a T: Copy) = {impl Copy for &'_0 T}<'_, T>
     proof ImpliedClause2: (Option<&'a T>[{built_in impl Sized for &'a T}]: Sized) = {built_in impl Sized for Option<&'a T>[{built_in impl Sized for &'a T}]}
-    proof ImpliedClause3: (Option<&'a T>[{built_in impl Sized for &'a T}]: Clone) = {impl Clone for Option<T>[TraitClause0]}<&'_ T>[{built_in impl Sized for &'_ T}, {impl Clone for &'_0 T}<'_, T>, {built_in impl Destruct for &'_ T}]
+    proof ImpliedClause3: (Option<&'a T>[{built_in impl Sized for &'a T}]: Clone) = impl_Clone_for_Option<&'_ T>[{built_in impl Sized for &'_ T}, {impl Clone for &'_0 T}<'_, T>, {built_in impl Destruct for &'_ T}]
     fn use_item_required = {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_required<'a, T>[TraitClause0]
     fn use_item_provided<Clause0_Item, TraitClause0_1: (Option<&'a T>[{built_in impl Sized for &'a T}]: test_crate::Foo<'a, Clause0_Item>)> = {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_provided<'a, T, Clause0_Item>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}::use_item_required
-fn {impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}::use_item_required<'a, T>(x_1: T) -> T
+fn impl_Foo_for_Option::use_item_required<'a, T>(x_1: T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
@@ -226,7 +226,7 @@ where
 }
 
 // Full name: test_crate::{impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}::use_item_provided
-fn {impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}::use_item_provided<'a, T, Clause2_Item>(x_1: T) -> T
+fn impl_Foo_for_Option::use_item_provided<'a, T, Clause2_Item>(x_1: T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
@@ -241,18 +241,18 @@ where
 }
 
 // Full name: test_crate::{impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}
-impl<'a, T> test_crate::Foo<'a, T> for Option<T>[TraitClause0]
+impl<'a, T> "impl_Foo_for_Option" test_crate::Foo<'a, T> for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
     TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    proof ImpliedClause1: (Option<T>[TraitClause0]: Copy) = {impl Copy for Option<T>[TraitClause0]}<T>[TraitClause0, TraitClause1]
+    proof ImpliedClause1: (Option<T>[TraitClause0]: Copy) = impl_Copy_for_Option<T>[TraitClause0, TraitClause1]
     proof ImpliedClause2: (T: Sized) = TraitClause0
     proof ImpliedClause3: (T: Clone) = TraitClause1::ImpliedClause1
-    fn use_item_required = {impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}::use_item_required<'a, T>[TraitClause0, TraitClause1]
-    fn use_item_provided<Clause0_Item, TraitClause0_1: (T: test_crate::Foo<'a, Clause0_Item>)> = {impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}::use_item_provided<'a, T, Clause0_Item>[TraitClause0, TraitClause1, TraitClause0_1]
+    fn use_item_required = impl_Foo_for_Option::use_item_required<'a, T>[TraitClause0, TraitClause1]
+    fn use_item_provided<Clause0_Item, TraitClause0_1: (T: test_crate::Foo<'a, Clause0_Item>)> = impl_Foo_for_Option::use_item_provided<'a, T, Clause0_Item>[TraitClause0, TraitClause1, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -293,7 +293,7 @@ fn call_fn()
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }
-    _1 = external_use_item<'19, &'19 bool, Option<&'19 bool>[{built_in impl Sized for &'19 bool}], &'34 bool>[{built_in impl Sized for &'19 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'19, bool>[{built_in impl Sized for bool}], {impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}<'19, &'34 bool>[{built_in impl Sized for &'34 bool}, {impl Copy for &'_0 T}<'34, bool>]](move _2)
+    _1 = external_use_item<'19, &'19 bool, Option<&'19 bool>[{built_in impl Sized for &'19 bool}], &'34 bool>[{built_in impl Sized for &'19 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'19, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'19, &'34 bool>[{built_in impl Sized for &'34 bool}, {impl Copy for &'_0 T}<'34, bool>]](move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
@@ -324,10 +324,10 @@ trait test_crate::loopy::Bar<Self, Self_BarTy>
 }
 
 // Full name: test_crate::loopy::{impl test_crate::loopy::Bar<bool> for ()}
-impl test_crate::loopy::Bar<bool> for () {
+impl "impl_Bar_for_unit" test_crate::loopy::Bar<bool> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (bool: Sized) = {built_in impl Sized for bool}
-    vtable: {impl test_crate::loopy::Bar<bool> for ()}::{vtable}
+    vtable: impl_Bar_for_unit::{vtable}
 }
 
 trait test_crate::loopy::Foo<Self>
@@ -342,14 +342,14 @@ trait test_crate::loopy::Foo<Self>
 }
 
 // Full name: test_crate::loopy::{impl test_crate::loopy::Foo for ()}
-impl test_crate::loopy::Foo for () {
+impl "impl_Foo_for_unit" test_crate::loopy::Foo for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause2: ((): test_crate::loopy::Foo) = {impl test_crate::loopy::Foo for ()}
-    proof ImpliedClause3: ((): test_crate::loopy::Bar<bool>) = {impl test_crate::loopy::Bar<bool> for ()}
+    proof ImpliedClause2: ((): test_crate::loopy::Foo) = impl_Foo_for_unit
+    proof ImpliedClause3: ((): test_crate::loopy::Bar<bool>) = impl_Bar_for_unit
     type FooTy = ()
     type Self_Clause3_BarTy = bool
-    vtable: {impl test_crate::loopy::Foo for ()}::{vtable}
+    vtable: impl_Foo_for_unit::{vtable}
 }
 
 // Full name: test_crate::loopy::Baz
@@ -366,15 +366,15 @@ trait Baz<Self, T>
 }
 
 // Full name: test_crate::loopy::{impl Baz<()> for ()}
-impl Baz<()> for () {
+impl "impl_Baz_unit_for_unit" Baz<()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause2: ((): Baz<()>) = {impl Baz<()> for ()}
-    proof ImpliedClause3: ((): test_crate::loopy::Bar<bool>) = {impl test_crate::loopy::Bar<bool> for ()}
+    proof ImpliedClause2: ((): Baz<()>) = impl_Baz_unit_for_unit
+    proof ImpliedClause3: ((): test_crate::loopy::Bar<bool>) = impl_Bar_for_unit
     proof ImpliedClause4: (usize: Sized) = {built_in impl Sized for usize}
     type BazTy = usize
     type Self_Clause3_BarTy = bool
-    vtable: {impl Baz<()> for ()}::{vtable}
+    vtable: impl_Baz_unit_for_unit::{vtable}
 }
 
 trait test_crate::loopy_with_generics::Bar<'a, Self, T, U, Self_BarTy>
@@ -387,7 +387,7 @@ trait test_crate::loopy_with_generics::Bar<'a, Self, T, U, Self_BarTy>
 }
 
 // Full name: test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a T> for ()}
-impl<'a, T> test_crate::loopy_with_generics::Bar<'a, u8, T, &'a T> for ()
+impl<'a, T> "impl_Bar_u8_for_unit" test_crate::loopy_with_generics::Bar<'a, u8, T, &'a T> for ()
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: 'a,
@@ -396,7 +396,7 @@ where
     proof ImpliedClause1: (u8: Sized) = {built_in impl Sized for u8}
     proof ImpliedClause2: (T: Sized) = TraitClause0
     proof ImpliedClause3: (&'a T: Sized) = {built_in impl Sized for &'a T}
-    vtable: {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a T> for ()}::{vtable}<'a, T>[TraitClause0]
+    vtable: impl_Bar_u8_for_unit::{vtable}<'a, T>[TraitClause0]
 }
 
 trait test_crate::loopy_with_generics::Foo<'b, Self, T>
@@ -412,15 +412,15 @@ trait test_crate::loopy_with_generics::Foo<'b, Self, T>
 }
 
 // Full name: test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}
-impl test_crate::loopy_with_generics::Foo<'static, u16> for () {
+impl "impl_Foo_u16_for_unit" test_crate::loopy_with_generics::Foo<'static, u16> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (u16: Sized) = {built_in impl Sized for u16}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause3: ((): test_crate::loopy_with_generics::Foo<'static, u16>) = {impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}
-    proof ImpliedClause4: ((): test_crate::loopy_with_generics::Bar<'static, u8, Option<u16>[{built_in impl Sized for u16}], &'_ Option<u16>[{built_in impl Sized for u16}]>) = {impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a T> for ()}<'_, Option<u16>[{built_in impl Sized for u16}]>[{built_in impl Sized for Option<u16>[{built_in impl Sized for u16}]}]
+    proof ImpliedClause3: ((): test_crate::loopy_with_generics::Foo<'static, u16>) = impl_Foo_u16_for_unit
+    proof ImpliedClause4: ((): test_crate::loopy_with_generics::Bar<'static, u8, Option<u16>[{built_in impl Sized for u16}], &'_ Option<u16>[{built_in impl Sized for u16}]>) = impl_Bar_u8_for_unit<'_, Option<u16>[{built_in impl Sized for u16}]>[{built_in impl Sized for Option<u16>[{built_in impl Sized for u16}]}]
     type FooTy = ()
     type Self_Clause4_BarTy = &'_ Option<u16>[{built_in impl Sized for u16}]
-    vtable: {impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}::{vtable}
+    vtable: impl_Foo_u16_for_unit::{vtable}
 }
 
 // Full name: test_crate::cow::Cow
@@ -448,7 +448,7 @@ where
 }
 
 // Full name: test_crate::params::{impl test_crate::params::Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}
-impl<'a, T> test_crate::params::Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()
+impl<'a, T> "impl_Foo_Option_for_unit" test_crate::params::Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: 'a,
@@ -456,8 +456,8 @@ where
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
     proof ImpliedClause2: (&'a (): Sized) = {built_in impl Sized for &'a ()}
-    proof ImpliedClause3: (&'a (Option<T>[TraitClause0], &'a ()): Sized) = {impl test_crate::params::Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}<'a, T>[TraitClause0]::ImpliedClause3
-    vtable: {impl test_crate::params::Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}::{vtable}<'a, T>[TraitClause0]
+    proof ImpliedClause3: (&'a (Option<T>[TraitClause0], &'a ()): Sized) = impl_Foo_Option_for_unit<'a, T>[TraitClause0]::ImpliedClause3
+    vtable: impl_Foo_Option_for_unit::{vtable}<'a, T>[TraitClause0]
 }
 
 

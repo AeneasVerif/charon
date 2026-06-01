@@ -64,7 +64,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method
-fn {impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method<T, U>()
+fn impl_Trait_Option_for_Box_Global::method<T, U>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -77,18 +77,18 @@ where
 }
 
 // Full name: test_crate::{impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
-impl<T> Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+impl<T> "impl_Trait_Option_for_Box_Global" Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]: MetaSized) = {built_in impl MetaSized for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
-    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method<T, U>[TraitClause0, TraitClause0_1]
+    fn method<U, TraitClause0_1: (U: Sized)> = impl_Trait_Option_for_Box_Global::method<T, U>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<T> for [T]}::method
-fn {impl Trait<T> for [T]}::method<T, U>()
+fn impl_Trait_for_slice::method<T, U>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -101,13 +101,13 @@ where
 }
 
 // Full name: test_crate::{impl Trait<T> for [T]}
-impl<T> Trait<T> for [T]
+impl<T> "impl_Trait_for_slice" Trait<T> for [T]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<T> for [T]}::method<T, U>[TraitClause0, TraitClause0_1]
+    fn method<U, TraitClause0_1: (U: Sized)> = impl_Trait_for_slice::method<T, U>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 

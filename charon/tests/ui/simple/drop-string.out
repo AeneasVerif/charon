@@ -28,12 +28,12 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
+unsafe fn impl_Destruct_for_Global::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl Destruct for Global {
-    fn drop_in_place = {impl Destruct for Global}::drop_in_place
+impl "impl_Destruct_for_Global" Destruct for Global {
+    fn drop_in_place = impl_Destruct_for_Global::drop_in_place
     non-dyn-compatible
 }
 
@@ -49,11 +49,11 @@ where
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub struct String {
-  vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}],
+  vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global],
 }
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
+unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -62,13 +62,13 @@ where
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
+unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
 {
     let _0: (); // return
     let _1: &'1 mut String; // arg #1
 
     _0 = ()
-    drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}]] ((*_1)).vec
+    drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global]] ((*_1)).vec
     return
 }
 
@@ -85,7 +85,7 @@ fn use_string(_1: String)
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for String}::drop_in_place] _1
+    drop[impl_Destruct_for_String::drop_in_place] _1
     return
 }
 
@@ -101,11 +101,11 @@ fn main()
     s_1 = new()
     storage_live(_2)
     _2 = new()
-    drop[{impl Destruct for String}::drop_in_place] s_1
+    drop[impl_Destruct_for_String::drop_in_place] s_1
     s_1 = move _2
     storage_dead(_2)
     _0 = ()
-    drop[{impl Destruct for String}::drop_in_place] s_1
+    drop[impl_Destruct_for_String::drop_in_place] s_1
     storage_dead(s_1)
     return
 }

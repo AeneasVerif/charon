@@ -15,12 +15,12 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn {impl Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
+pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for usize}
-impl Clone for usize {
-    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
+impl "impl_Clone_for_usize" Clone for usize {
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -69,24 +69,24 @@ where
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
-pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> bool
+pub fn impl_PartialEq_usize_for_usize::eq<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
-impl PartialEq<usize> for usize {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<usize> for usize}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<usize> for usize}::{vtable}
+impl "impl_PartialEq_usize_for_usize" PartialEq<usize> for usize {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_usize_for_usize::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_usize_for_usize::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
-pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> Option<Ordering>
+pub fn impl_PartialOrd_usize_for_usize::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> Option<Ordering>
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
-impl PartialOrd<usize> for usize {
-    proof ImpliedClause0: (usize: PartialEq<usize>) = {impl PartialEq<usize> for usize}
-    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
-    vtable: {impl PartialOrd<usize> for usize}::{vtable}
+impl "impl_PartialOrd_usize_for_usize" PartialOrd<usize> for usize {
+    proof ImpliedClause0: (usize: PartialEq<usize>) = impl_PartialEq_usize_for_usize
+    fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_usize_for_usize::partial_cmp<'_0_1, '_1_1>
+    vtable: impl_PartialOrd_usize_for_usize::{vtable}
 }
 
 // Full name: core::iter::range::Step
@@ -117,24 +117,24 @@ where
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
-pub fn {impl Step for usize}::backward_checked(_1: usize, _2: usize) -> Option<usize>
+pub fn impl_Step_for_usize::backward_checked(_1: usize, _2: usize) -> Option<usize>
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::forward_checked
-pub fn {impl Step for usize}::forward_checked(_1: usize, _2: usize) -> Option<usize>
+pub fn impl_Step_for_usize::forward_checked(_1: usize, _2: usize) -> Option<usize>
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::steps_between
-pub fn {impl Step for usize}::steps_between<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> (usize, Option<usize>)
+pub fn impl_Step_for_usize::steps_between<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> (usize, Option<usize>)
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}
-impl Step for usize {
-    proof ImpliedClause0: (usize: Clone) = {impl Clone for usize}
-    proof ImpliedClause1: (usize: PartialOrd<usize>) = {impl PartialOrd<usize> for usize}
-    fn steps_between<'_0_1, '_1_1> = {impl Step for usize}::steps_between<'_0_1, '_1_1>
-    fn forward_checked = {impl Step for usize}::forward_checked
-    fn backward_checked = {impl Step for usize}::backward_checked
+impl "impl_Step_for_usize" Step for usize {
+    proof ImpliedClause0: (usize: Clone) = impl_Clone_for_usize
+    proof ImpliedClause1: (usize: PartialOrd<usize>) = impl_PartialOrd_usize_for_usize
+    fn steps_between<'_0_1, '_1_1> = impl_Step_for_usize::steps_between<'_0_1, '_1_1>
+    fn forward_checked = impl_Step_for_usize::forward_checked
+    fn backward_checked = impl_Step_for_usize::backward_checked
     non-dyn-compatible
 }
 
@@ -154,22 +154,22 @@ pub trait Iterator<Self, Self_Item>
 }
 
 // Full name: core::iter::range::{impl Iterator<A> for Range<A>}::next
-pub fn {impl Iterator<A> for Range<A>}::next<'_0, A>(_1: &'_0 mut Range<A>) -> Option<A>
+pub fn impl_Iterator_for_Range::next<'_0, A>(_1: &'_0 mut Range<A>) -> Option<A>
 where
     TraitClause0: (A: Step),
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator<A> for Range<A>}
-impl<A> Iterator<A> for Range<A>
+impl<A> "impl_Iterator_for_Range" Iterator<A> for Range<A>
 where
     TraitClause0: (A: Step),
 {
-    fn next<'_0_1> = {impl Iterator<A> for Range<A>}::next<'_0_1, A>[TraitClause0]
-    vtable: {impl Iterator<A> for Range<A>}::{vtable}<A>[TraitClause0]
+    fn next<'_0_1> = impl_Iterator_for_Range::next<'_0_1, A>[TraitClause0]
+    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0]
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator<Clause0_Item, I> for I}::into_iter
-pub fn {impl IntoIterator<Clause0_Item, I> for I}::into_iter<I, Clause0_Item>(_1: I) -> I
+pub fn impl_IntoIterator_for_T::into_iter<I, Clause0_Item>(_1: I) -> I
 where
     TraitClause0: (I: Iterator<Clause0_Item>),
 = <opaque>
@@ -201,7 +201,7 @@ fn iter(n_1: usize)
     _4 = copy n_1
     _3 = Range { start: const 0 : usize, end: move _4 }
     storage_dead(_4)
-    _2 = {impl IntoIterator<Clause0_Item, I> for I}::into_iter<Range<usize>, usize>[{impl Iterator<A> for Range<A>}<usize>[{impl Step for usize}]](move _3)
+    _2 = impl_IntoIterator_for_T::into_iter<Range<usize>, usize>[impl_Iterator_for_Range<usize>[impl_Step_for_usize]](move _3)
     storage_dead(_3)
     storage_live(iter_5)
     iter_5 = move _2
@@ -211,7 +211,7 @@ fn iter(n_1: usize)
         storage_live(_8)
         _8 = &mut iter_5
         _7 = &two-phase-mut (*_8)
-        _6 = {impl Iterator<A> for Range<A>}::next<'4, usize>[{impl Step for usize}](move _7)
+        _6 = impl_Iterator_for_Range::next<'4, usize>[impl_Step_for_usize](move _7)
         storage_dead(_7)
         match _6 {
             Option::None => {

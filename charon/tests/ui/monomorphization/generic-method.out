@@ -15,7 +15,7 @@ trait Foo<Self>
 }
 
 // Full name: test_crate::{impl Foo for u64}
-impl Foo for u64 {
+impl "impl_Foo_for_u64" Foo for u64 {
     proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
     non-dyn-compatible
 }

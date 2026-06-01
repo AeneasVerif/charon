@@ -49,7 +49,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
-pub fn {impl FromIterator<()> for ()}::from_iter<I>(iter_1: I)
+pub fn impl_FromIterator_unit_for_unit::from_iter<I>(iter_1: I)
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: IntoIterator<()>),
@@ -64,10 +64,10 @@ where
 }
 
 // Full name: test_crate::{impl FromIterator<()> for ()}
-impl FromIterator<()> for () {
+impl "impl_FromIterator_unit_for_unit" FromIterator<()> for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator<()>)> = {impl FromIterator<()> for ()}::from_iter<T>[TraitClause0_1, TraitClause1_1]
+    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator<()>)> = impl_FromIterator_unit_for_unit::from_iter<T>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 

@@ -94,7 +94,7 @@ where
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for Option<T>[TraitClause0]}::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
+unsafe fn impl_Destruct_for_Option::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -124,7 +124,7 @@ pub trait BoolTrait<Self>
 }
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_in_place
-unsafe fn {impl Destruct for (A, B)}::drop_in_place<A, B>(_1: *mut (A, B))
+unsafe fn impl_Destruct_for_tuple::drop_in_place<A, B>(_1: *mut (A, B))
 where
     TraitClause0: (A: Sized),
 {
@@ -138,11 +138,11 @@ where
 }
 
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}
-impl<A, B> Destruct for (A, B)
+impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
 where
     TraitClause0: (A: Sized),
 {
-    fn drop_in_place = {impl Destruct for (A, B)}::drop_in_place<A, B>[TraitClause0]
+    fn drop_in_place = impl_Destruct_for_tuple::drop_in_place<A, B>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -163,7 +163,7 @@ where
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
-pub fn {impl BoolTrait for bool}::get_bool<'_0>(self_1: &'_0 bool) -> bool
+pub fn impl_BoolTrait_for_bool::get_bool<'_0>(self_1: &'_0 bool) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 bool; // arg #1
@@ -173,7 +173,7 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(self_1: &'_0 bool) -> bool
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}::ret_true
-pub fn {impl BoolTrait for bool}::ret_true<'_0>(self_1: &'_0 bool) -> bool
+pub fn impl_BoolTrait_for_bool::ret_true<'_0>(self_1: &'_0 bool) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 bool; // arg #1
@@ -183,11 +183,11 @@ pub fn {impl BoolTrait for bool}::ret_true<'_0>(self_1: &'_0 bool) -> bool
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}
-impl BoolTrait for bool {
+impl "impl_BoolTrait_for_bool" BoolTrait for bool {
     proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
-    fn get_bool<'_0_1> = {impl BoolTrait for bool}::get_bool<'_0_1>
-    fn ret_true<'_0_1> = {impl BoolTrait for bool}::ret_true<'_0_1>
-    vtable: {impl BoolTrait for bool}::{vtable}
+    fn get_bool<'_0_1> = impl_BoolTrait_for_bool::get_bool<'_0_1>
+    fn ret_true<'_0_1> = impl_BoolTrait_for_bool::ret_true<'_0_1>
+    vtable: impl_BoolTrait_for_bool::{vtable}
 }
 
 // Full name: test_crate::test_bool_trait_bool
@@ -202,12 +202,12 @@ pub fn test_bool_trait_bool(x_1: bool) -> bool
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = {impl BoolTrait for bool}::get_bool<'4>(move _3)
+    _2 = impl_BoolTrait_for_bool::get_bool<'4>(move _3)
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         _4 = &x_1
-        _0 = {impl BoolTrait for bool}::ret_true<'6>(move _4)
+        _0 = impl_BoolTrait_for_bool::ret_true<'6>(move _4)
         storage_dead(_4)
     } else {
         storage_dead(_3)
@@ -218,7 +218,7 @@ pub fn test_bool_trait_bool(x_1: bool) -> bool
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[TraitClause0]}::get_bool
-pub fn {impl BoolTrait for Option<T>[TraitClause0]}::get_bool<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
+pub fn impl_BoolTrait_for_Option::get_bool<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
 {
@@ -238,7 +238,7 @@ where
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[TraitClause0]}::ret_true
-pub fn {impl BoolTrait for Option<T>[TraitClause0]}::ret_true<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
+pub fn impl_BoolTrait_for_Option::ret_true<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
 {
@@ -250,14 +250,14 @@ where
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[TraitClause0]}
-impl<T> BoolTrait for Option<T>[TraitClause0]
+impl<T> "impl_BoolTrait_for_Option" BoolTrait for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    fn get_bool<'_0_1> = {impl BoolTrait for Option<T>[TraitClause0]}::get_bool<'_0_1, T>[TraitClause0]
-    fn ret_true<'_0_1> = {impl BoolTrait for Option<T>[TraitClause0]}::ret_true<'_0_1, T>[TraitClause0]
-    vtable: {impl BoolTrait for Option<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+    fn get_bool<'_0_1> = impl_BoolTrait_for_Option::get_bool<'_0_1, T>[TraitClause0]
+    fn ret_true<'_0_1> = impl_BoolTrait_for_Option::ret_true<'_0_1, T>[TraitClause0]
+    vtable: impl_BoolTrait_for_Option::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::test_bool_trait_option
@@ -274,19 +274,19 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = {impl BoolTrait for Option<T>[TraitClause0]}::get_bool<'4, T>[TraitClause0](move _3)
+    _2 = impl_BoolTrait_for_Option::get_bool<'4, T>[TraitClause0](move _3)
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         _4 = &x_1
-        _0 = {impl BoolTrait for Option<T>[TraitClause0]}::ret_true<'6, T>[TraitClause0](move _4)
+        _0 = impl_BoolTrait_for_Option::ret_true<'6, T>[TraitClause0](move _4)
         storage_dead(_4)
     } else {
         storage_dead(_3)
         _0 = const false
     }
     storage_dead(_2)
-    conditional_drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_Option::drop_in_place<T>[TraitClause0]] x_1
     return
 }
 
@@ -322,7 +322,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl ToU64 for u64}::to_u64
-pub fn {impl ToU64 for u64}::to_u64(self_1: u64) -> u64
+pub fn impl_ToU64_for_u64::to_u64(self_1: u64) -> u64
 {
     let _0: u64; // return
     let self_1: u64; // arg #1
@@ -332,14 +332,14 @@ pub fn {impl ToU64 for u64}::to_u64(self_1: u64) -> u64
 }
 
 // Full name: test_crate::{impl ToU64 for u64}
-impl ToU64 for u64 {
+impl "impl_ToU64_for_u64" ToU64 for u64 {
     proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
-    fn to_u64 = {impl ToU64 for u64}::to_u64
-    vtable: {impl ToU64 for u64}::{vtable}
+    fn to_u64 = impl_ToU64_for_u64::to_u64
+    vtable: impl_ToU64_for_u64::{vtable}
 }
 
 // Full name: test_crate::{impl ToU64 for (A, A)}::to_u64
-pub fn {impl ToU64 for (A, A)}::to_u64<A>(self_1: (A, A)) -> u64
+pub fn impl_ToU64_for_tuple::to_u64<A>(self_1: (A, A)) -> u64
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: ToU64),
@@ -367,19 +367,19 @@ where
     _0 = move _6
     storage_dead(_4)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for (A, B)}::drop_in_place<A, A>[TraitClause0]] self_1
+    conditional_drop[impl_Destruct_for_tuple::drop_in_place<A, A>[TraitClause0]] self_1
     return
 }
 
 // Full name: test_crate::{impl ToU64 for (A, A)}
-impl<A> ToU64 for (A, A)
+impl<A> "impl_ToU64_for_tuple" ToU64 for (A, A)
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: ToU64),
 {
     proof ImpliedClause0: ((A, A): MetaSized) = {built_in impl MetaSized for (A, A)}
-    fn to_u64 = {impl ToU64 for (A, A)}::to_u64<A>[TraitClause0, TraitClause1]
-    vtable: {impl ToU64 for (A, A)}::{vtable}<A>[TraitClause0, TraitClause1]
+    fn to_u64 = impl_ToU64_for_tuple::to_u64<A>[TraitClause0, TraitClause1]
+    vtable: impl_ToU64_for_tuple::{vtable}<A>[TraitClause0, TraitClause1]
 }
 
 pub fn test_crate::f<T>(x_1: (T, T)) -> u64
@@ -393,9 +393,9 @@ where
 
     storage_live(_2)
     _2 = move x_1
-    _0 = {impl ToU64 for (A, A)}::to_u64<T>[TraitClause0, TraitClause1](move _2)
+    _0 = impl_ToU64_for_tuple::to_u64<T>[TraitClause0, TraitClause1](move _2)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for (A, B)}::drop_in_place<T, T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_tuple::drop_in_place<T, T>[TraitClause0]] x_1
     return
 }
 
@@ -413,7 +413,7 @@ where
     _2 = move x_1
     _0 = TraitClause1::to_u64(move _2)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for (A, B)}::drop_in_place<T, T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_tuple::drop_in_place<T, T>[TraitClause0]] x_1
     return
 }
 
@@ -426,7 +426,7 @@ pub fn h0(x_1: u64) -> u64
 
     storage_live(_2)
     _2 = copy x_1
-    _0 = {impl ToU64 for u64}::to_u64(move _2)
+    _0 = impl_ToU64_for_u64::to_u64(move _2)
     storage_dead(_2)
     return
 }
@@ -440,22 +440,22 @@ where
 }
 
 // Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for Wrapper<T>[TraitClause0]}::drop_in_place<T>(_1: *mut Wrapper<T>[TraitClause0])
+unsafe fn impl_Destruct_for_Wrapper::drop_in_place<T>(_1: *mut Wrapper<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <missing>
 
 // Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[TraitClause0]}
-impl<T> Destruct for Wrapper<T>[TraitClause0]
+impl<T> "impl_Destruct_for_Wrapper" Destruct for Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    fn drop_in_place = {impl Destruct for Wrapper<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]
+    fn drop_in_place = impl_Destruct_for_Wrapper::drop_in_place<T>[TraitClause0]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl ToU64 for Wrapper<T>[TraitClause0]}::to_u64
-pub fn {impl ToU64 for Wrapper<T>[TraitClause0]}::to_u64<T>(self_1: Wrapper<T>[TraitClause0]) -> u64
+pub fn impl_ToU64_for_Wrapper::to_u64<T>(self_1: Wrapper<T>[TraitClause0]) -> u64
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: ToU64),
@@ -468,19 +468,19 @@ where
     _2 = move (self_1).x
     _0 = TraitClause1::to_u64(move _2)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for Wrapper<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] self_1
+    conditional_drop[impl_Destruct_for_Wrapper::drop_in_place<T>[TraitClause0]] self_1
     return
 }
 
 // Full name: test_crate::{impl ToU64 for Wrapper<T>[TraitClause0]}
-impl<T> ToU64 for Wrapper<T>[TraitClause0]
+impl<T> "impl_ToU64_for_Wrapper" ToU64 for Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: ToU64),
 {
     proof ImpliedClause0: (Wrapper<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrapper<T>[TraitClause0]}
-    fn to_u64 = {impl ToU64 for Wrapper<T>[TraitClause0]}::to_u64<T>[TraitClause0, TraitClause1]
-    vtable: {impl ToU64 for Wrapper<T>[TraitClause0]}::{vtable}<T>[TraitClause0, TraitClause1]
+    fn to_u64 = impl_ToU64_for_Wrapper::to_u64<T>[TraitClause0, TraitClause1]
+    vtable: impl_ToU64_for_Wrapper::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::h1
@@ -492,7 +492,7 @@ pub fn h1(x_1: Wrapper<u64>[{built_in impl Sized for u64}]) -> u64
 
     storage_live(_2)
     _2 = move x_1
-    _0 = {impl ToU64 for Wrapper<T>[TraitClause0]}::to_u64<u64>[{built_in impl Sized for u64}, {impl ToU64 for u64}](move _2)
+    _0 = impl_ToU64_for_Wrapper::to_u64<u64>[{built_in impl Sized for u64}, impl_ToU64_for_u64](move _2)
     storage_dead(_2)
     return
 }
@@ -509,9 +509,9 @@ where
 
     storage_live(_2)
     _2 = move x_1
-    _0 = {impl ToU64 for Wrapper<T>[TraitClause0]}::to_u64<T>[TraitClause0, TraitClause1](move _2)
+    _0 = impl_ToU64_for_Wrapper::to_u64<T>[TraitClause0, TraitClause1](move _2)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for Wrapper<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_Wrapper::drop_in_place<T>[TraitClause0]] x_1
     return
 }
 
@@ -530,7 +530,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl ToType<bool> for u64}::to_type
-pub fn {impl ToType<bool> for u64}::to_type(self_1: u64) -> bool
+pub fn impl_ToType_bool_for_u64::to_type(self_1: u64) -> bool
 {
     let _0: bool; // return
     let self_1: u64; // arg #1
@@ -544,11 +544,11 @@ pub fn {impl ToType<bool> for u64}::to_type(self_1: u64) -> bool
 }
 
 // Full name: test_crate::{impl ToType<bool> for u64}
-impl ToType<bool> for u64 {
+impl "impl_ToType_bool_for_u64" ToType<bool> for u64 {
     proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
     proof ImpliedClause1: (bool: Sized) = {built_in impl Sized for bool}
-    fn to_type = {impl ToType<bool> for u64}::to_type
-    vtable: {impl ToType<bool> for u64}::{vtable}
+    fn to_type = impl_ToType_bool_for_u64::to_type
+    vtable: impl_ToType_bool_for_u64::{vtable}
 }
 
 // Full name: test_crate::OfType
@@ -638,7 +638,7 @@ struct TestType1 {
 }
 
 // Full name: test_crate::{TestType<T>[TraitClause0]}::test::{impl TestTrait for TestType1}::test
-fn {impl TestTrait for TestType1}::test<'_0>(self_1: &'_0 TestType1) -> bool
+fn impl_TestTrait_for_TestType1::test<'_0>(self_1: &'_0 TestType1) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 TestType1; // arg #1
@@ -686,7 +686,7 @@ where
         storage_dead(_7)
         storage_live(_8)
         _8 = &y_5
-        _0 = {impl TestTrait for TestType1}::test<'5>(move _8)
+        _0 = impl_TestTrait_for_TestType1::test<'5>(move _8)
         storage_dead(_8)
     } else {
         storage_dead(_7)
@@ -713,10 +713,10 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{TestType<T>[TraitClause0]}::test::{impl TestTrait for TestType1}
-impl TestTrait for TestType1 {
+impl "impl_TestTrait_for_TestType1" TestTrait for TestType1 {
     proof ImpliedClause0: (TestType1: MetaSized) = {built_in impl MetaSized for TestType1}
-    fn test<'_0_1> = {impl TestTrait for TestType1}::test<'_0_1>
-    vtable: {impl TestTrait for TestType1}::{vtable}
+    fn test<'_0_1> = impl_TestTrait_for_TestType1::test<'_0_1>
+    vtable: impl_TestTrait_for_TestType1::{vtable}
 }
 
 // Full name: test_crate::BoolWrapper
@@ -725,7 +725,7 @@ pub struct BoolWrapper {
 }
 
 // Full name: test_crate::{impl ToType<T> for BoolWrapper}::to_type
-pub fn {impl ToType<T> for BoolWrapper}::to_type<T>(self_1: BoolWrapper) -> T
+pub fn impl_ToType_for_BoolWrapper::to_type<T>(self_1: BoolWrapper) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (bool: ToType<T>),
@@ -742,15 +742,15 @@ where
 }
 
 // Full name: test_crate::{impl ToType<T> for BoolWrapper}
-impl<T> ToType<T> for BoolWrapper
+impl<T> "impl_ToType_for_BoolWrapper" ToType<T> for BoolWrapper
 where
     TraitClause0: (T: Sized),
     TraitClause1: (bool: ToType<T>),
 {
     proof ImpliedClause0: (BoolWrapper: MetaSized) = {built_in impl MetaSized for BoolWrapper}
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    fn to_type = {impl ToType<T> for BoolWrapper}::to_type<T>[TraitClause0, TraitClause1]
-    vtable: {impl ToType<T> for BoolWrapper}::{vtable}<T>[TraitClause0, TraitClause1]
+    fn to_type = impl_ToType_for_BoolWrapper::to_type<T>[TraitClause0, TraitClause1]
+    vtable: impl_ToType_for_BoolWrapper::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::WithConstTy
@@ -791,7 +791,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::f
-pub fn {impl WithConstTy<32 : usize> for bool}::f<'_0, '_1>(_1: &'_0 mut u64, _2: &'_1 [u8; 32 : usize])
+pub fn impl_WithConstTy_for_bool::f<'_0, '_1>(_1: &'_0 mut u64, _2: &'_1 [u8; 32 : usize])
 {
     let _0: (); // return
     let _1: &'1 mut u64; // arg #1
@@ -815,16 +815,16 @@ pub fn LEN1() -> usize
 pub const LEN1: usize = LEN1()
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}
-impl WithConstTy<32 : usize> for bool {
+impl "impl_WithConstTy_for_bool" WithConstTy<32 : usize> for bool {
     proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
     proof ImpliedClause1: (u8: Sized) = {built_in impl Sized for u8}
     proof ImpliedClause2: (u64: Sized) = {built_in impl Sized for u64}
-    proof ImpliedClause3: (u64: ToU64) = {impl ToU64 for u64}
+    proof ImpliedClause3: (u64: ToU64) = impl_ToU64_for_u64
     const LEN1 = LEN1
-    const LEN2 = LEN2<bool, 32 : usize>[{impl WithConstTy<32 : usize> for bool}]
+    const LEN2 = LEN2<bool, 32 : usize>[impl_WithConstTy_for_bool]
     type V = u8
     type W = u64
-    fn f<'_0_1, '_1_1> = {impl WithConstTy<32 : usize> for bool}::f<'_0_1, '_1_1>
+    fn f<'_0_1, '_1_1> = impl_WithConstTy_for_bool::f<'_0_1, '_1_1>
     non-dyn-compatible
 }
 
@@ -999,16 +999,16 @@ pub trait ChildTrait1<Self>
 }
 
 // Full name: test_crate::{impl ParentTrait1 for usize}
-impl ParentTrait1 for usize {
+impl "impl_ParentTrait1_for_usize" ParentTrait1 for usize {
     proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    vtable: {impl ParentTrait1 for usize}::{vtable}
+    vtable: impl_ParentTrait1_for_usize::{vtable}
 }
 
 // Full name: test_crate::{impl ChildTrait1 for usize}
-impl ChildTrait1 for usize {
+impl "impl_ChildTrait1_for_usize" ChildTrait1 for usize {
     proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: ParentTrait1) = {impl ParentTrait1 for usize}
-    vtable: {impl ChildTrait1 for usize}::{vtable}
+    proof ImpliedClause1: (usize: ParentTrait1) = impl_ParentTrait1_for_usize
+    vtable: impl_ChildTrait1_for_usize::{vtable}
 }
 
 // Full name: test_crate::Iterator
@@ -1093,24 +1093,24 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl WithTarget for u32}
-impl WithTarget for u32 {
+impl "impl_WithTarget_for_u32" WithTarget for u32 {
     proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
     type Target = u32
-    vtable: {impl WithTarget for u32}::{vtable}
+    vtable: impl_WithTarget_for_u32::{vtable}
 }
 
 // Full name: test_crate::{impl ParentTrait2 for u32}
-impl ParentTrait2 for u32 {
+impl "impl_ParentTrait2_for_u32" ParentTrait2 for u32 {
     proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
-    proof ImpliedClause2: (u32: WithTarget) = {impl WithTarget for u32}
+    proof ImpliedClause2: (u32: WithTarget) = impl_WithTarget_for_u32
     type U = u32
-    vtable: {impl ParentTrait2 for u32}::{vtable}
+    vtable: impl_ParentTrait2_for_u32::{vtable}
 }
 
 // Full name: test_crate::{impl ChildTrait2 for u32}::convert
-pub fn {impl ChildTrait2 for u32}::convert(x_1: u32) -> u32
+pub fn impl_ChildTrait2_for_u32::convert(x_1: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -1120,10 +1120,10 @@ pub fn {impl ChildTrait2 for u32}::convert(x_1: u32) -> u32
 }
 
 // Full name: test_crate::{impl ChildTrait2 for u32}
-impl ChildTrait2 for u32 {
+impl "impl_ChildTrait2_for_u32" ChildTrait2 for u32 {
     proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: ParentTrait2) = {impl ParentTrait2 for u32}
-    fn convert = {impl ChildTrait2 for u32}::convert
+    proof ImpliedClause1: (u32: ParentTrait2) = impl_ParentTrait2_for_u32
+    fn convert = impl_ChildTrait2_for_u32::convert
     non-dyn-compatible
 }
 
@@ -1214,7 +1214,7 @@ pub trait Trait<Self>
 }
 
 // Full name: test_crate::{impl Trait for [T; N]}::LEN
-pub fn {impl Trait for [T; N]}::LEN<T, const N : usize>() -> usize
+pub fn impl_Trait_for_array::LEN<T, const N : usize>() -> usize
 where
     TraitClause0: (T: Sized),
 {
@@ -1225,23 +1225,23 @@ where
 }
 
 // Full name: test_crate::{impl Trait for [T; N]}::LEN
-pub const {impl Trait for [T; N]}::LEN<T, const N : usize>: usize
+pub const impl_Trait_for_array::LEN<T, const N : usize>: usize
 where
     TraitClause0: (T: Sized),
- = {impl Trait for [T; N]}::LEN()
+ = impl_Trait_for_array::LEN()
 
 // Full name: test_crate::{impl Trait for [T; N]}
-impl<T, const N : usize> Trait for [T; N]
+impl<T, const N : usize> "impl_Trait_for_array" Trait for [T; N]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: ([T; N]: MetaSized) = {built_in impl MetaSized for [T; N]}
-    const LEN = {impl Trait for [T; N]}::LEN<T, N>[TraitClause0]
+    const LEN = impl_Trait_for_array::LEN<T, N>[TraitClause0]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait for Wrapper<T>[TraitClause0]}::LEN
-pub fn {impl Trait for Wrapper<T>[TraitClause0]}::LEN<T>() -> usize
+pub fn impl_Trait_for_Wrapper::LEN<T>() -> usize
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
@@ -1253,20 +1253,20 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Wrapper<T>[TraitClause0]}::LEN
-pub const {impl Trait for Wrapper<T>[TraitClause0]}::LEN<T>: usize
+pub const impl_Trait_for_Wrapper::LEN<T>: usize
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
- = {impl Trait for Wrapper<T>[TraitClause0]}::LEN()
+ = impl_Trait_for_Wrapper::LEN()
 
 // Full name: test_crate::{impl Trait for Wrapper<T>[TraitClause0]}
-impl<T> Trait for Wrapper<T>[TraitClause0]
+impl<T> "impl_Trait_for_Wrapper" Trait for Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
 {
     proof ImpliedClause0: (Wrapper<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrapper<T>[TraitClause0]}
-    const LEN = {impl Trait for Wrapper<T>[TraitClause0]}::LEN<T>[TraitClause0, TraitClause1]
+    const LEN = impl_Trait_for_Wrapper::LEN<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -1278,7 +1278,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = copy {impl Trait for Wrapper<T>[TraitClause0]}::LEN<T>[TraitClause0, TraitClause1]
+    _0 = copy impl_Trait_for_Wrapper::LEN<T>[TraitClause0, TraitClause1]
     return
 }
 
@@ -1350,12 +1350,12 @@ trait RecursiveImpl<Self>
 }
 
 // Full name: test_crate::{impl RecursiveImpl for ()}
-impl RecursiveImpl for () {
+impl "impl_RecursiveImpl_for_unit" RecursiveImpl for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause2: ((): RecursiveImpl) = {impl RecursiveImpl for ()}
+    proof ImpliedClause2: ((): RecursiveImpl) = impl_RecursiveImpl_for_unit
     type Item = ()
-    vtable: {impl RecursiveImpl for ()}::{vtable}
+    vtable: impl_RecursiveImpl_for_unit::{vtable}
 }
 
 // Full name: test_crate::flabada

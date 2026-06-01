@@ -36,7 +36,7 @@ where
 = <opaque>
 
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
-pub fn {impl BoolTrait for bool}::get_bool<'_0>(self_1: &'_0 bool) -> bool
+pub fn impl_BoolTrait_for_bool::get_bool<'_0>(self_1: &'_0 bool) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 bool; // arg #1
@@ -46,14 +46,14 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(self_1: &'_0 bool) -> bool
 }
 
 // Full name: test_crate::{impl BoolTrait for bool}
-impl BoolTrait for bool {
+impl "impl_BoolTrait_for_bool" BoolTrait for bool {
     proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
-    fn get_bool<'_0_1> = {impl BoolTrait for bool}::get_bool<'_0_1>
-    vtable: {impl BoolTrait for bool}::{vtable}
+    fn get_bool<'_0_1> = impl_BoolTrait_for_bool::get_bool<'_0_1>
+    vtable: impl_BoolTrait_for_bool::{vtable}
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[TraitClause0]}::get_bool
-pub fn {impl BoolTrait for Option<T>[TraitClause0]}::get_bool<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
+pub fn impl_BoolTrait_for_Option::get_bool<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: BoolTrait),
@@ -82,14 +82,14 @@ where
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[TraitClause0]}
-impl<T> BoolTrait for Option<T>[TraitClause0]
+impl<T> "impl_BoolTrait_for_Option" BoolTrait for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: BoolTrait),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    fn get_bool<'_0_1> = {impl BoolTrait for Option<T>[TraitClause0]}::get_bool<'_0_1, T>[TraitClause0, TraitClause1]
-    vtable: {impl BoolTrait for Option<T>[TraitClause0]}::{vtable}<T>[TraitClause0, TraitClause1]
+    fn get_bool<'_0_1> = impl_BoolTrait_for_Option::get_bool<'_0_1, T>[TraitClause0, TraitClause1]
+    vtable: impl_BoolTrait_for_Option::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test_bool_trait_option

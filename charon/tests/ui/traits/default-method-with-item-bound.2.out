@@ -63,7 +63,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}::defaulted
-pub fn {impl Trait for Empty<T>[TraitClause0]}::defaulted<'_0, T>(self_1: &'_0 Empty<T>[TraitClause0]) -> TraitClause2::Assoc2
+pub fn impl_Trait_for_Empty::defaulted<'_0, T>(self_1: &'_0 Empty<T>[TraitClause0]) -> TraitClause2::Assoc2
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc1),
@@ -78,19 +78,19 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}
-impl<T> Trait for Empty<T>[TraitClause0]
+impl<T> "impl_Trait_for_Empty" Trait for Empty<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Empty<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Empty<T>[TraitClause0]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     type Item = T
-    fn defaulted<'_0_1, TraitClause0_1: (T: HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = {impl Trait for Empty<T>[TraitClause0]}::defaulted<'_0_1, T>[TraitClause0, TraitClause0_1, TraitClause1_1]
-    vtable: {impl Trait for Empty<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+    fn defaulted<'_0_1, TraitClause0_1: (T: HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = impl_Trait_for_Empty::defaulted<'_0_1, T>[TraitClause0, TraitClause0_1, TraitClause1_1]
+    vtable: impl_Trait_for_Empty::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::{impl Trait for ()}::defaulted
-pub fn {impl Trait for ()}::defaulted<'_0>(self_1: &'_0 ()) -> TraitClause1::Assoc2
+pub fn impl_Trait_for_unit::defaulted<'_0>(self_1: &'_0 ()) -> TraitClause1::Assoc2
 where
     TraitClause0: ((): HasAssoc1),
     TraitClause1: (TraitClause0::Assoc1: HasAssoc2),
@@ -104,12 +104,12 @@ where
 }
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     type Item = ()
-    fn defaulted<'_0_1, TraitClause0_1: ((): HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = {impl Trait for ()}::defaulted<'_0_1>[TraitClause0_1, TraitClause1_1]
-    vtable: {impl Trait for ()}::{vtable}
+    fn defaulted<'_0_1, TraitClause0_1: ((): HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = impl_Trait_for_unit::defaulted<'_0_1>[TraitClause0_1, TraitClause1_1]
+    vtable: impl_Trait_for_unit::{vtable}
 }
 
 

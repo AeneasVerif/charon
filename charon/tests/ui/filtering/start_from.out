@@ -53,7 +53,7 @@ fn test_crate::hidden_module::do_translate_glob()
 struct Type1 {}
 
 // Full name: test_crate::hidden_module::{impl Trait1 for Type1}::method
-fn {impl Trait1 for Type1}::method()
+fn impl_Trait1_for_Type1::method()
 {
     let _0: (); // return
 
@@ -70,9 +70,9 @@ trait Trait2<Self>
 }
 
 // Full name: test_crate::hidden_module::{impl Trait2 for Type1}
-impl Trait2 for Type1 {
+impl "impl_Trait2_for_Type1" Trait2 for Type1 {
     proof ImpliedClause0: (Type1: MetaSized) = {built_in impl MetaSized for Type1}
-    vtable: {impl Trait2 for Type1}::{vtable}
+    vtable: impl_Trait2_for_Type1::{vtable}
 }
 
 

@@ -28,13 +28,13 @@ where
 = <opaque>
 
 // Full name: core::default::{impl Default for bool}::default
-pub fn {impl Default for bool}::default() -> bool
+pub fn impl_Default_for_bool::default() -> bool
 = <opaque>
 
 // Full name: core::default::{impl Default for bool}
-impl Default for bool {
+impl "impl_Default_for_bool" Default for bool {
     proof ImpliedClause0: (bool: Sized) = {built_in impl Sized for bool}
-    fn default = {impl Default for bool}::default
+    fn default = impl_Default_for_bool::default
     non-dyn-compatible
 }
 
@@ -78,13 +78,13 @@ where
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}::fmt
-pub fn {impl Debug for bool}::fmt<'_0, '_1, '_2>(_1: &'_0 bool, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn impl_Debug_for_bool::fmt<'_0, '_1, '_2>(_1: &'_0 bool, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for bool}
-impl Debug for bool {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Debug for bool}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl Debug for bool}::{vtable}
+impl "impl_Debug_for_bool" Debug for bool {
+    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_bool::fmt<'_0_1, '_1_1, '_2_1>
+    vtable: impl_Debug_for_bool::{vtable}
 }
 
 // Full name: core::fmt::rt::{Argument<'_0>}::new_debug
@@ -141,7 +141,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Join<U> for T}::test
-fn {impl Join<U> for T}::test<T, U>()
+fn impl_Join_for_T::test<T, U>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -213,7 +213,7 @@ where
 }
 
 // Full name: test_crate::{impl Join<U> for T}
-impl<T, U> Join<U> for T
+impl<T, U> "impl_Join_for_T" Join<U> for T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -224,12 +224,12 @@ where
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (U: Sized) = TraitClause1
-    fn test = {impl Join<U> for T}::test<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
+    fn test = impl_Join_for_T::test<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Left<U> for T}
-impl<T, U> Left<U> for T
+impl<T, U> "impl_Left_for_T" Left<U> for T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -238,11 +238,11 @@ where
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (U: Sized) = TraitClause1
-    vtable: {impl Left<U> for T}::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    vtable: impl_Left_for_T::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
 }
 
 // Full name: test_crate::{impl Right<U> for T}
-impl<T, U> Right<U> for T
+impl<T, U> "impl_Right_for_T" Right<U> for T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -251,7 +251,7 @@ where
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (U: Sized) = TraitClause1
-    vtable: {impl Right<U> for T}::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    vtable: impl_Right_for_T::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
 }
 
 // Full name: test_crate::try_it
@@ -266,7 +266,7 @@ where
     let _0: (); // return
 
     _0 = ()
-    _0 = {impl Join<U> for T}::test<T, bool>[TraitClause0, {built_in impl Sized for bool}, TraitClause3, {impl Right<U> for T}<T, bool>[TraitClause0, {built_in impl Sized for bool}, {impl Default for bool}, {impl Debug for bool}], {impl Default for bool}, {impl Debug for bool}]()
+    _0 = impl_Join_for_T::test<T, bool>[TraitClause0, {built_in impl Sized for bool}, TraitClause3, impl_Right_for_T<T, bool>[TraitClause0, {built_in impl Sized for bool}, impl_Default_for_bool, impl_Debug_for_bool], impl_Default_for_bool, impl_Debug_for_bool]()
     return
 }
 

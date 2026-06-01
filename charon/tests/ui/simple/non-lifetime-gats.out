@@ -44,29 +44,29 @@ where
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Box::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
 = <opaque>
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref
-pub fn {impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[TraitClause0, TraitClause1]) -> &'_0 T
+pub fn impl_Deref_for_Box::deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[TraitClause0, TraitClause1]) -> &'_0 T
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
 = <opaque>
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}
-impl<T, A> Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]
+impl<T, A> "impl_Deref_for_Box" Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0
     type Target = T
-    fn deref<'_0_1> = {impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref<'_0_1, T, A>[TraitClause0, TraitClause1]
-    vtable: {impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::{vtable}<T, A>[TraitClause0, TraitClause1]
+    fn deref<'_0_1> = impl_Deref_for_Box::deref<'_0_1, T, A>[TraitClause0, TraitClause1]
+    vtable: impl_Deref_for_Box::{vtable}<T, A>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::PointerFamily
@@ -93,7 +93,7 @@ where
 pub struct BoxFamily {}
 
 // Full name: test_crate::{impl PointerFamily for BoxFamily}::new
-pub fn {impl PointerFamily for BoxFamily}::new<T>(value_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+pub fn impl_PointerFamily_for_BoxFamily::new<T>(value_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 {
@@ -110,14 +110,14 @@ where
 }
 
 // Full name: test_crate::{impl PointerFamily for BoxFamily}
-impl PointerFamily for BoxFamily {
+impl "impl_PointerFamily_for_BoxFamily" PointerFamily for BoxFamily {
     proof ImpliedClause0: (BoxFamily: MetaSized) = {built_in impl MetaSized for BoxFamily}
     type Pointer<T> = alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]
     where
         TraitClause0_1: (T: Sized),
         proof ImpliedClause0: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]},
-        proof ImpliedClause1: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Deref) = {impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}<T, Global>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}];
-    fn new<T, TraitClause0_1: (T: Sized)> = {impl PointerFamily for BoxFamily}::new<T>[TraitClause0_1]
+        proof ImpliedClause1: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Deref) = impl_Deref_for_Box<T, Global>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}];
+    fn new<T, TraitClause0_1: (T: Sized)> = impl_PointerFamily_for_BoxFamily::new<T>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -148,8 +148,8 @@ pub fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = make_pointer<BoxFamily, i32>[{built_in impl Sized for BoxFamily}, {built_in impl Sized for i32}, {impl PointerFamily for BoxFamily}](const 42 : i32)
-    conditional_drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] _1
+    _1 = make_pointer<BoxFamily, i32>[{built_in impl Sized for BoxFamily}, {built_in impl Sized for i32}, impl_PointerFamily_for_BoxFamily](const 42 : i32)
+    conditional_drop[impl_Destruct_for_Box::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
     _0 = ()
     return

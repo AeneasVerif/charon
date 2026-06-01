@@ -40,7 +40,7 @@ where
 pub struct S {}
 
 // Full name: test_crate::{impl MyTrait for S}::foo
-pub fn {impl MyTrait for S}::foo()
+pub fn impl_MyTrait_for_S::foo()
 where
     TraitClause0: (S: Sized),
 {
@@ -52,14 +52,14 @@ where
 }
 
 // Full name: test_crate::{impl MyTrait for S}
-impl MyTrait for S {
+impl "impl_MyTrait_for_S" MyTrait for S {
     proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
     type foo_ty = ()
     where
         TraitClause0_1: (S: Sized),
-        proof ImpliedClause0: ({impl MyTrait for S}::foo_ty[TraitClause0_1]: Sized) = {impl MyTrait for S}::foo_ty::ImpliedClause0;
-    fn foo<TraitClause0_1: (S: Sized)> = {impl MyTrait for S}::foo[TraitClause0_1]
-    vtable: {impl MyTrait for S}::{vtable}
+        proof ImpliedClause0: (impl_MyTrait_for_S::foo_ty[TraitClause0_1]: Sized) = impl_MyTrait_for_S::foo_ty::ImpliedClause0;
+    fn foo<TraitClause0_1: (S: Sized)> = impl_MyTrait_for_S::foo[TraitClause0_1]
+    vtable: impl_MyTrait_for_S::{vtable}
 }
 
 

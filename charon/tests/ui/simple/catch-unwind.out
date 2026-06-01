@@ -81,7 +81,7 @@ where
 }
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_in_place<T, E>(_1: *mut Result<T, E>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Result::drop_in_place<T, E>(_1: *mut Result<T, E>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
@@ -105,7 +105,7 @@ where
 struct closure {}
 
 // Full name: test_crate::main::{impl FnOnce<()> for closure}::call_once
-fn {impl FnOnce<()> for closure}::call_once(_1: closure, tupled_args_2: ())
+fn impl_FnOnce_unit_for_closure::call_once(_1: closure, tupled_args_2: ())
 {
     let _0: (); // return
     let _1: closure; // arg #1
@@ -117,13 +117,13 @@ fn {impl FnOnce<()> for closure}::call_once(_1: closure, tupled_args_2: ())
 }
 
 // Full name: test_crate::main::{impl FnOnce<()> for closure}
-impl FnOnce<()> for closure {
+impl "impl_FnOnce_unit_for_closure" FnOnce<()> for closure {
     proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
-    fn call_once = {impl FnOnce<()> for closure}::call_once
+    fn call_once = impl_FnOnce_unit_for_closure::call_once
     non-dyn-compatible
 }
 
@@ -138,9 +138,9 @@ fn main()
     storage_live(_1)
     storage_live(_2)
     _2 = closure {  }
-    _1 = catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, {impl FnOnce<()> for closure}, {built_in impl UnwindSafe for closure}](move _2)
+    _1 = catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, impl_FnOnce_unit_for_closure, {built_in impl UnwindSafe for closure}](move _2)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_in_place<(), alloc::boxed::Box<(dyn Any + Send + '48)>[{built_in impl MetaSized for (dyn Any + Send + '49)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '48)>[{built_in impl MetaSized for (dyn Any + Send + '49)}, {built_in impl Sized for Global}]}]] _1
+    conditional_drop[impl_Destruct_for_Result::drop_in_place<(), alloc::boxed::Box<(dyn Any + Send + '48)>[{built_in impl MetaSized for (dyn Any + Send + '49)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '48)>[{built_in impl MetaSized for (dyn Any + Send + '49)}, {built_in impl Sized for Global}]}]] _1
     storage_dead(_1)
     _0 = ()
     return

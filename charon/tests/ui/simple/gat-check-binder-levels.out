@@ -31,14 +31,14 @@ pub trait Link<Self, T>
 }
 
 // Full name: test_crate::{impl Link<T> for U}
-impl<T, U> Link<T> for U
+impl<T, U> "impl_Link_for_T" Link<T> for U
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
 {
     proof ImpliedClause0: (U: MetaSized) = TraitClause1::ImpliedClause0
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    vtable: {impl Link<T> for U}::{vtable}<T, U>[TraitClause0, TraitClause1]
+    vtable: impl_Link_for_T::{vtable}<T, U>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::Trait
@@ -58,7 +58,7 @@ pub trait Trait<Self, T>
 pub struct Foo {}
 
 // Full name: test_crate::{impl Trait<Option<T>[TraitClause0]> for Foo}
-impl<T> Trait<Option<T>[TraitClause0]> for Foo
+impl<T> "impl_Trait_Option_for_Foo" Trait<Option<T>[TraitClause0]> for Foo
 where
     TraitClause0: (T: Sized),
 {
@@ -68,7 +68,7 @@ where
     where
         TraitClause0_1: (U: Sized),
         proof ImpliedClause0: ((T, U): Sized) = {built_in impl Sized for (T, U)},
-        proof ImpliedClause1: ((T, U): Link<Option<T>[TraitClause0]>) = {impl Link<T> for U}<Option<T>[TraitClause0], (T, U)>[{built_in impl Sized for Option<T>[TraitClause0]}, {built_in impl Sized for (T, U)}];
+        proof ImpliedClause1: ((T, U): Link<Option<T>[TraitClause0]>) = impl_Link_for_T<Option<T>[TraitClause0], (T, U)>[{built_in impl Sized for Option<T>[TraitClause0]}, {built_in impl Sized for (T, U)}];
     non-dyn-compatible
 }
 

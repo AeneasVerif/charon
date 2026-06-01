@@ -21,9 +21,9 @@ trait A<Self>
 }
 
 // Full name: test_crate::{impl A for i32}
-impl A for i32 {
+impl "impl_A_for_i32" A for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    vtable: {impl A for i32}::{vtable}
+    vtable: impl_A_for_i32::{vtable}
 }
 
 // Full name: test_crate::f::<i32>

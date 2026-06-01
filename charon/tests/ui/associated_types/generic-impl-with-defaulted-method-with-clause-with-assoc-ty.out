@@ -51,7 +51,7 @@ where
 }
 
 // Full name: test_crate::{impl HasMethod for Option<T>[TraitClause0]}::method
-fn {impl HasMethod for Option<T>[TraitClause0]}::method<T, Clause1_Type>()
+fn impl_HasMethod_for_Option::method<T, Clause1_Type>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Option<T>[TraitClause0]: HasType<Clause1_Type>),
@@ -64,12 +64,12 @@ where
 }
 
 // Full name: test_crate::{impl HasMethod for Option<T>[TraitClause0]}
-impl<T> HasMethod for Option<T>[TraitClause0]
+impl<T> "impl_HasMethod_for_Option" HasMethod for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    fn method<Clause0_Type, TraitClause0_1: (Option<T>[TraitClause0]: HasType<Clause0_Type>)> = {impl HasMethod for Option<T>[TraitClause0]}::method<T, Clause0_Type>[TraitClause0, TraitClause0_1]
+    fn method<Clause0_Type, TraitClause0_1: (Option<T>[TraitClause0]: HasType<Clause0_Type>)> = impl_HasMethod_for_Option::method<T, Clause0_Type>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 

@@ -67,13 +67,13 @@ where
 }
 
 // Full name: core::fmt::num::{impl Debug for i32}::fmt
-pub fn {impl Debug for i32}::fmt<'_0, '_1, '_2>(_1: &'_0 i32, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn impl_Debug_for_i32::fmt<'_0, '_1, '_2>(_1: &'_0 i32, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: core::fmt::num::{impl Debug for i32}
-impl Debug for i32 {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Debug for i32}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl Debug for i32}::{vtable}
+impl "impl_Debug_for_i32" Debug for i32 {
+    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_i32::fmt<'_0_1, '_1_1, '_2_1>
+    vtable: impl_Debug_for_i32::{vtable}
 }
 
 // Full name: core::fmt::rt::{Argument<'_0>}::new_debug
@@ -102,7 +102,7 @@ where
     TypeOutlives1: T: 'a,
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::next
-pub fn {impl Iterator for Iter<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
+pub fn impl_Iterator_for_Iter::next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -160,7 +160,7 @@ where
         storage_live(_7)
         _7 = &mut iter_4
         _6 = &two-phase-mut (*_7)
-        _5 = {impl Iterator for Iter<'a, T>[TraitClause0]}::next<'49, '51, T>[TraitClause0](move _6)
+        _5 = impl_Iterator_for_Iter::next<'49, '51, T>[TraitClause0](move _6)
         storage_dead(_6)
         match _5 {
             Option::None => {
@@ -251,7 +251,7 @@ fn main()
     _3 = &(*_4)
     _2 = @ArrayToSliceShared<'_, i32, 3 : usize>(move _3)
     storage_dead(_3)
-    _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, {impl Debug for i32}](move _2)
+    _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, impl_Debug_for_i32](move _2)
     storage_dead(_2)
     storage_dead(_4)
     storage_dead(_1)

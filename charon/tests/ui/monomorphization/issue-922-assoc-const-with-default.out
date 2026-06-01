@@ -23,7 +23,7 @@ pub trait SizedTypeProperties<Self>
 }
 
 // Full name: test_crate::{impl SizedTypeProperties for ()}
-impl SizedTypeProperties for () {
+impl "impl_SizedTypeProperties_for_unit" SizedTypeProperties for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     non-dyn-compatible
 }
@@ -36,7 +36,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = const {impl SizedTypeProperties for ()}::IS_ZST
+    _1 = const impl_SizedTypeProperties_for_unit::IS_ZST
     storage_dead(_1)
     _0 = ()
     return

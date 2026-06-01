@@ -100,41 +100,41 @@ where
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<()> for ()}::eq
-pub fn {impl PartialEq<()> for ()}::eq<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> bool
+pub fn impl_PartialEq_unit_for_unit::eq<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<()> for ()}
-impl PartialEq<()> for () {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<()> for ()}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<()> for ()}::{vtable}
+impl "impl_PartialEq_unit_for_unit" PartialEq<()> for () {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_unit_for_unit::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_unit_for_unit::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl Eq for ()}
-impl Eq for () {
-    proof ImpliedClause0: ((): PartialEq<()>) = {impl PartialEq<()> for ()}
+impl "impl_Eq_for_unit" Eq for () {
+    proof ImpliedClause0: ((): PartialEq<()>) = impl_PartialEq_unit_for_unit
     non-dyn-compatible
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<()> for ()}::partial_cmp
-pub fn {impl PartialOrd<()> for ()}::partial_cmp<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn impl_PartialOrd_unit_for_unit::partial_cmp<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<()> for ()}
-impl PartialOrd<()> for () {
-    proof ImpliedClause0: ((): PartialEq<()>) = {impl PartialEq<()> for ()}
-    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<()> for ()}::partial_cmp<'_0_1, '_1_1>
-    vtable: {impl PartialOrd<()> for ()}::{vtable}
+impl "impl_PartialOrd_unit_for_unit" PartialOrd<()> for () {
+    proof ImpliedClause0: ((): PartialEq<()>) = impl_PartialEq_unit_for_unit
+    fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_unit_for_unit::partial_cmp<'_0_1, '_1_1>
+    vtable: impl_PartialOrd_unit_for_unit::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl Ord for ()}::cmp
-pub fn {impl Ord for ()}::cmp<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> Ordering
+pub fn impl_Ord_for_unit::cmp<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> Ordering
 = <opaque>
 
 // Full name: core::cmp::impls::{impl Ord for ()}
-impl Ord for () {
-    proof ImpliedClause0: ((): Eq) = {impl Eq for ()}
-    proof ImpliedClause1: ((): PartialOrd<()>) = {impl PartialOrd<()> for ()}
-    fn cmp<'_0_1, '_1_1> = {impl Ord for ()}::cmp<'_0_1, '_1_1>
+impl "impl_Ord_for_unit" Ord for () {
+    proof ImpliedClause0: ((): Eq) = impl_Eq_for_unit
+    proof ImpliedClause1: ((): PartialOrd<()>) = impl_PartialOrd_unit_for_unit
+    fn cmp<'_0_1, '_1_1> = impl_Ord_for_unit::cmp<'_0_1, '_1_1>
     non-dyn-compatible
 }
 
@@ -166,13 +166,13 @@ where
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for ()}::fmt
-pub fn {impl Debug for ()}::fmt<'_0, '_1, '_2>(_1: &'_0 (), _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn impl_Debug_for_unit::fmt<'_0, '_1, '_2>(_1: &'_0 (), _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <opaque>
 
 // Full name: core::fmt::{impl Debug for ()}
-impl Debug for () {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Debug for ()}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl Debug for ()}::{vtable}
+impl "impl_Debug_for_unit" Debug for () {
+    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_unit::fmt<'_0_1, '_1_1, '_2_1>
+    vtable: impl_Debug_for_unit::{vtable}
 }
 
 // Full name: core::hash::Hasher
@@ -212,15 +212,15 @@ where
 = <opaque>
 
 // Full name: core::hash::impls::{impl Hash for ()}::hash
-pub fn {impl Hash for ()}::hash<'_0, '_1, H>(_1: &'_0 (), _2: &'_1 mut H)
+pub fn impl_Hash_for_unit::hash<'_0, '_1, H>(_1: &'_0 (), _2: &'_1 mut H)
 where
     TraitClause0: (H: Sized),
     TraitClause1: (H: Hasher),
 = <opaque>
 
 // Full name: core::hash::impls::{impl Hash for ()}
-impl Hash for () {
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)> = {impl Hash for ()}::hash<'_0_1, '_1_1, H>[TraitClause0_1, TraitClause1_1]
+impl "impl_Hash_for_unit" Hash for () {
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)> = impl_Hash_for_unit::hash<'_0_1, '_1_1, H>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -276,7 +276,7 @@ where
 }
 
 // Full name: core::ptr::metadata::Thin::{impl Thin for Self}
-impl<Self> Thin for Self
+impl<Self> "impl_Thin_for_T" Thin for Self
 where
     TraitClause0: (Self: Pointee),
     TypeConstraint0: TraitClause0::Metadata = (),
@@ -300,7 +300,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = null<u8>[{impl Thin for Self}<u8>[{built_in impl Pointee for u8 where Metadata  = ()}]]()
+    _1 = null<u8>[impl_Thin_for_T<u8>[{built_in impl Pointee for u8 where Metadata  = ()}]]()
     storage_dead(_1)
     _0 = ()
     return

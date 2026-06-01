@@ -28,12 +28,12 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
+unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
-    fn drop_in_place = {impl Destruct for String}::drop_in_place
+impl "impl_Destruct_for_String" Destruct for String {
+    fn drop_in_place = impl_Destruct_for_String::drop_in_place
     non-dyn-compatible
 }
 
@@ -67,7 +67,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait<u32> for ()}::foo
-fn {impl Trait<u32> for ()}::foo<U>(x_1: U)
+fn impl_Trait_u32_for_unit::foo<U>(x_1: U)
 where
     TraitClause0: (U: Sized),
     TraitClause1: (U: Destruct),
@@ -82,15 +82,15 @@ where
 }
 
 // Full name: test_crate::{impl Trait<u32> for ()}
-impl Trait<u32> for () {
+impl "impl_Trait_u32_for_unit" Trait<u32> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
     proof ImpliedClause2: ((): Destruct) = {built_in impl Destruct for ()}
     proof ImpliedClause3: (u32: Destruct) = {built_in impl Destruct for u32}
     proof ImpliedClause4: (String: Sized) = {built_in impl Sized for String}
-    proof ImpliedClause5: (String: Destruct) = {impl Destruct for String}
+    proof ImpliedClause5: (String: Destruct) = impl_Destruct_for_String
     type Type = String
-    fn foo<U, TraitClause0_1: (U: Sized), TraitClause1_1: (U: Destruct)> = {impl Trait<u32> for ()}::foo<U>[TraitClause0_1, TraitClause1_1]
+    fn foo<U, TraitClause0_1: (U: Sized), TraitClause1_1: (U: Destruct)> = impl_Trait_u32_for_unit::foo<U>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 
@@ -125,7 +125,7 @@ fn main()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
-    _1 = use_trait<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, {impl Trait<u32> for ()}, {built_in impl Destruct for u32}, {built_in impl Destruct for ()}](const 42 : u32, move _2)
+    _1 = use_trait<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_Trait_u32_for_unit, {built_in impl Destruct for u32}, {built_in impl Destruct for ()}](const 42 : u32, move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

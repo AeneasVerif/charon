@@ -80,13 +80,13 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
-pub fn {impl Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}
-impl Clone for u32 {
+impl "impl_Clone_for_u32" Clone for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -131,13 +131,13 @@ where
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for Option<T>[TraitClause0]}::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
+unsafe fn impl_Destruct_for_Option::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_in_place
-unsafe fn {impl Destruct for (A,)}::drop_in_place<A>(_1: *mut (A,))
+unsafe fn impl_Destruct_for_tuple::drop_in_place<A>(_1: *mut (A,))
 {
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
@@ -148,8 +148,8 @@ unsafe fn {impl Destruct for (A,)}::drop_in_place<A>(_1: *mut (A,))
 }
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}
-impl<A> Destruct for (A,) {
-    fn drop_in_place = {impl Destruct for (A,)}::drop_in_place<A>
+impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
+    fn drop_in_place = impl_Destruct_for_tuple::drop_in_place<A>
     non-dyn-compatible
 }
 
@@ -213,7 +213,7 @@ where
         },
     }
     conditional_drop[{built_in impl Destruct for F}::drop_in_place] f_2
-    conditional_drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_Option::drop_in_place<T>[TraitClause0]] x_1
     return
 }
 
@@ -1213,7 +1213,7 @@ pub fn test_id_clone(x_1: u32) -> u32
     let _4: u32; // anonymous local
 
     storage_live(f_2)
-    f_2 = cast<id_clone<u32>[{built_in impl Sized for u32}, {impl Clone for u32}], fn(u32) -> u32>(const id_clone<u32>[{built_in impl Sized for u32}, {impl Clone for u32}])
+    f_2 = cast<id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32], fn(u32) -> u32>(const id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32])
     storage_live(_3)
     _3 = copy f_2
     storage_live(_4)
@@ -1260,7 +1260,7 @@ pub fn test_map_option_id_clone(x_1: Option<u32>[{built_in impl Sized for u32}])
 
     storage_live(_2)
     _2 = copy x_1
-    _0 = map_option<u32, id_clone<u32>[{built_in impl Sized for u32}, {impl Clone for u32}]>[{built_in impl Sized for u32}, {built_in impl Sized for id_clone<u32>[{built_in impl Sized for u32}, {impl Clone for u32}]}, {built_in impl Fn<(u32,), u32> for id_clone<u32>[{built_in impl Sized for u32}, {impl Clone for u32}]}](move _2, const id_clone<u32>[{built_in impl Sized for u32}, {impl Clone for u32}])
+    _0 = map_option<u32, id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]>[{built_in impl Sized for u32}, {built_in impl Sized for id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]}, {built_in impl Fn<(u32,), u32> for id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]}](move _2, const id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32])
     storage_dead(_2)
     return
 }

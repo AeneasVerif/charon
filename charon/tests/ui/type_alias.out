@@ -86,42 +86,42 @@ where
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: alloc::slice::{impl Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]}::borrow
-pub fn {impl Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]}::borrow<'_0, T, A>(_1: &'_0 Vec<T>[TraitClause0, TraitClause1]) -> &'_0 [T]
+pub fn impl_Borrow_slice_for_Vec::borrow<'_0, T, A>(_1: &'_0 Vec<T>[TraitClause0, TraitClause1]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
 = <opaque>
 
 // Full name: alloc::slice::{impl Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]}
-impl<T, A> Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]
+impl<T, A> "impl_Borrow_slice_for_Vec" Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
 {
     proof ImpliedClause0: (Vec<T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for Vec<T>[TraitClause0, TraitClause1]}
     proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
-    fn borrow<'_0_1> = {impl Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]}::borrow<'_0_1, T, A>[TraitClause0, TraitClause1]
-    vtable: {impl Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]}::{vtable}<T, A>[TraitClause0, TraitClause1]
+    fn borrow<'_0_1> = impl_Borrow_slice_for_Vec::borrow<'_0_1, T, A>[TraitClause0, TraitClause1]
+    vtable: impl_Borrow_slice_for_Vec::{vtable}<T, A>[TraitClause0, TraitClause1]
 }
 
 // Full name: alloc::slice::{impl ToOwned for [T]}::to_owned
-pub fn {impl ToOwned for [T]}::to_owned<'_0, T>(_1: &'_0 [T]) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
+pub fn impl_ToOwned_for_slice::to_owned<'_0, T>(_1: &'_0 [T]) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 = <opaque>
 
 // Full name: alloc::slice::{impl ToOwned for [T]}
-impl<T> ToOwned for [T]
+impl<T> "impl_ToOwned_for_slice" ToOwned for [T]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
     proof ImpliedClause0: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause1: (Vec<T>[TraitClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for Vec<T>[TraitClause0, {built_in impl Sized for Global}]}
-    proof ImpliedClause2: (Vec<T>[TraitClause0, {built_in impl Sized for Global}]: Borrow<[T]>) = {impl Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]}<T, Global>[TraitClause0, {built_in impl Sized for Global}]
+    proof ImpliedClause2: (Vec<T>[TraitClause0, {built_in impl Sized for Global}]: Borrow<[T]>) = impl_Borrow_slice_for_Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}]
     type Owned = Vec<T>[TraitClause0, {built_in impl Sized for Global}]
-    fn to_owned<'_0_1> = {impl ToOwned for [T]}::to_owned<'_0_1, T>[TraitClause0, TraitClause1]
+    fn to_owned<'_0_1> = impl_ToOwned_for_slice::to_owned<'_0_1, T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -137,7 +137,7 @@ where
 pub type Generic2<'a, T>
 where
     TraitClause0: (T: Sized),
-    TraitClause1: (T: Clone), = Cow<'a, [T]>[{built_in impl MetaSized for [T]}, {impl ToOwned for [T]}<T>[TraitClause0, TraitClause1]]
+    TraitClause1: (T: Clone), = Cow<'a, [T]>[{built_in impl MetaSized for [T]}, impl_ToOwned_for_slice<T>[TraitClause0, TraitClause1]]
 
 // Full name: test_crate::GenericWithoutBound
 pub type GenericWithoutBound<'a, T>

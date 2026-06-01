@@ -44,7 +44,19 @@ pub enum PathElem {
 ///   impl<T> PartialEq for List<T> { ...}
 ///   ```
 /// We distinguish the two.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("ImplElem"))]
 pub enum ImplElem {
     Ty(Box<Binder<Ty>>),

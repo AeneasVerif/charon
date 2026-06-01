@@ -62,7 +62,7 @@ trait Trait<Self, T, Self_Item>
 struct Struct {}
 
 // Full name: test_crate::{impl Clone for Struct}::clone
-pub fn {impl Clone for Struct}::clone<'_0>(self_1: &'_0 Struct) -> Struct
+pub fn impl_Clone_for_Struct::clone<'_0>(self_1: &'_0 Struct) -> Struct
 {
     let _0: Struct; // return
     let self_1: &'1 Struct; // arg #1
@@ -72,21 +72,21 @@ pub fn {impl Clone for Struct}::clone<'_0>(self_1: &'_0 Struct) -> Struct
 }
 
 // Full name: test_crate::{impl Clone for Struct}
-impl Clone for Struct {
+impl "impl_Clone_for_Struct" Clone for Struct {
     proof ImpliedClause0: (Struct: Sized) = {built_in impl Sized for Struct}
-    fn clone<'_0_1> = {impl Clone for Struct}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_Struct::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<T, u32> for Struct}
-impl<T> Trait<T, u32> for Struct
+impl<T> "impl_Trait_for_Struct" Trait<T, u32> for Struct
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Struct: MetaSized) = {built_in impl MetaSized for Struct}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     proof ImpliedClause2: (u32: Sized) = {built_in impl Sized for u32}
-    vtable: {impl Trait<T, u32> for Struct}::{vtable}<T>[TraitClause0]
+    vtable: impl_Trait_for_Struct::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::Alias
@@ -100,7 +100,7 @@ trait Alias<Self, U>
 }
 
 // Full name: test_crate::Alias::{impl Alias<U> for Self}
-impl<Self, U> Alias<U> for Self
+impl<Self, U> "impl_Alias_for_T" Alias<U> for Self
 where
     TraitClause0: (Self: MetaSized),
     TraitClause1: (Self: Trait<Option<U>[TraitClause3], u32>),
@@ -149,7 +149,7 @@ fn use_alias()
     storage_live(_1)
     storage_live(_2)
     _2 = Struct {  }
-    _1 = takes_alias<Struct>[{built_in impl Sized for Struct}, {impl Alias<U> for Self}<Struct, ()>[{built_in impl MetaSized for Struct}, {impl Trait<T, u32> for Struct}<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}], {impl Clone for Struct}, {built_in impl Sized for ()}]](move _2)
+    _1 = takes_alias<Struct>[{built_in impl Sized for Struct}, impl_Alias_for_T<Struct, ()>[{built_in impl MetaSized for Struct}, impl_Trait_for_Struct<Option<()>[{built_in impl Sized for ()}]>[{built_in impl Sized for Option<()>[{built_in impl Sized for ()}]}], impl_Clone_for_Struct, {built_in impl Sized for ()}]](move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

@@ -39,14 +39,14 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn {impl Clone for i32}::clone<'_0>(_1: &'_0 i32) -> i32
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
-impl Clone for i32 {
+impl "impl_Clone_for_i32" Clone for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
     proof ImpliedClause1: (i32: Destruct) = {built_in impl Destruct for i32}
-    fn clone<'_0_1> = {impl Clone for i32}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -69,17 +69,17 @@ where
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
+unsafe fn impl_Destruct_for_Global::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl Destruct for Global {
-    fn drop_in_place = {impl Destruct for Global}::drop_in_place
+impl "impl_Destruct_for_Global" Destruct for Global {
+    fn drop_in_place = impl_Destruct_for_Global::drop_in_place
     non-dyn-compatible
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
+unsafe fn impl_Destruct_for_Box::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -88,14 +88,14 @@ where
 = <opaque>
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}
-impl<T, A> Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+impl<T, A> "impl_Destruct_for_Box" Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (T: Destruct),
     TraitClause3: (A: Destruct),
 {
-    fn drop_in_place = {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<T, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    fn drop_in_place = impl_Destruct_for_Box::drop_in_place<T, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
     non-dyn-compatible
 }
 
@@ -123,21 +123,21 @@ where
     TraitClause0: (Self: Modifiable<T>),
 = <method_without_default_body>
 
-// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::modify
-fn {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::modify<'_0, '_1, T>(self_1: &'_0 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}], arg_2: &'_1 T) -> T
+// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}::modify
+fn impl_Modifiable_for_Box_i32_Global::modify<'_0, '_1, T>(self_1: &'_0 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global], arg_2: &'_1 T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     TraitClause2: (T: Destruct),
 {
     let _0: T; // return
-    let self_1: &'1 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // arg #1
+    let self_1: &'1 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // arg #1
     let arg_2: &'3 T; // arg #2
     let _3: (i32, bool); // anonymous local
     let _4: &'4 T; // anonymous local
-    let _5: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
-    let _6: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
-    let _7: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
+    let _5: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
+    let _6: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
+    let _7: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
     let _8: *const i32; // anonymous local
     let _9: *const i32; // anonymous local
     let _10: *const i32; // anonymous local
@@ -165,7 +165,7 @@ where
     return
 }
 
-// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::modify::{vtable_method}
+// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}::modify::{vtable_method}
 fn {vtable_method}<'_0, '_1, T>(_1: &'_0 mut (dyn Modifiable<T>), _2: &'_1 T) -> T
 where
     TraitClause0: (T: Sized),
@@ -175,15 +175,15 @@ where
     let _0: T; // return
     let _1: &'_0 mut (dyn Modifiable<T> + '0); // arg #1
     let _2: &'_1 T; // arg #2
-    let _3: &'_0 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
+    let _3: &'_0 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
 
     storage_live(_3)
-    _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>(move _1)
-    _0 = {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::modify<'_0, '_1, T>[TraitClause0, TraitClause1, TraitClause2](move _3, move _2)
+    _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]>(move _1)
+    _0 = impl_Modifiable_for_Box_i32_Global::modify<'_0, '_1, T>[TraitClause0, TraitClause1, TraitClause2](move _3, move _2)
     return
 }
 
-// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable_drop_shim}
+// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}::{vtable_drop_shim}
 unsafe fn {vtable_drop_shim}<T>(dyn_self_1: *mut (dyn Modifiable<T>))
 where
     TraitClause0: (T: Sized),
@@ -192,17 +192,17 @@ where
 {
     let ret_0: (); // return
     let dyn_self_1: *mut (dyn Modifiable<T> + '0); // arg #1
-    let target_self_2: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // local
+    let target_self_2: *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // local
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>(move dyn_self_1)
-    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]] (*target_self_2)
+    target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]>(move dyn_self_1)
+    drop[impl_Destruct_for_Box::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]] (*target_self_2)
     return
 }
 
-// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable}
-fn {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable}<T>() -> test_crate::Modifiable::{vtable}<T>
+// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}::{vtable}
+fn impl_Modifiable_for_Box_i32_Global::{vtable}<T>() -> test_crate::Modifiable::{vtable}<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -213,34 +213,34 @@ where
     let align_2: usize; // local
 
     storage_live(size_1)
-    size_1 = size_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>
+    size_1 = size_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]>
     storage_live(align_2)
-    align_2 = align_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]>
-    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[TraitClause0, TraitClause1, TraitClause2], method_modify: const {vtable_method}<'1, '2, T>[TraitClause0, TraitClause1, TraitClause2], super_trait_0: const &vtable_of({built_in impl MetaSized for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}) }
+    align_2 = align_of<alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]>
+    ret_0 = test_crate::Modifiable::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[TraitClause0, TraitClause1, TraitClause2], method_modify: const {vtable_method}<'1, '2, T>[TraitClause0, TraitClause1, TraitClause2], super_trait_0: const &vtable_of({built_in impl MetaSized for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}) }
     return
 }
 
-// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable}
-static {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable}<T>: test_crate::Modifiable::{vtable}<T>
+// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}::{vtable}
+static impl_Modifiable_for_Box_i32_Global::{vtable}<T>: test_crate::Modifiable::{vtable}<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     TraitClause2: (T: Destruct),
- = {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable}()
+ = impl_Modifiable_for_Box_i32_Global::{vtable}()
 
-// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}
-impl<T> Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]
+// Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}
+impl<T> "impl_Modifiable_for_Box_i32_Global" Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     TraitClause2: (T: Destruct),
 {
-    proof ImpliedClause0: (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]: MetaSized) = {built_in impl MetaSized for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}
+    proof ImpliedClause0: (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]: MetaSized) = {built_in impl MetaSized for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    proof ImpliedClause2: (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]: Destruct) = {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]
+    proof ImpliedClause2: (alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]: Destruct) = impl_Destruct_for_Box<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]
     proof ImpliedClause3: (T: Destruct) = TraitClause2
-    fn modify<'_0_1, '_1_1> = {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::modify<'_0_1, '_1_1, T>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: {impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable}<T>[TraitClause0, TraitClause1, TraitClause2]
+    fn modify<'_0_1, '_1_1> = impl_Modifiable_for_Box_i32_Global::modify<'_0_1, '_1_1, T>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: impl_Modifiable_for_Box_i32_Global::{vtable}<T>[TraitClause0, TraitClause1, TraitClause2]
 }
 
 // Full name: test_crate::modify_trait_object
@@ -253,9 +253,9 @@ where
     let _0: T; // return
     let arg_1: &'1 T; // arg #1
     let x_2: &'5 mut (dyn Modifiable<T> + '6); // local
-    let _3: &'8 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
-    let _4: &'9 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
-    let _5: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]; // anonymous local
+    let _3: &'8 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
+    let _4: &'9 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
+    let _5: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
     let _6: &'10 mut (dyn Modifiable<T> + '11); // anonymous local
     let _7: &'12 T; // anonymous local
 
@@ -266,7 +266,7 @@ where
     _5 = @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const 199 : i32)
     _4 = &mut _5
     _3 = &mut (*_4)
-    x_2 = unsize_cast<&'8 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}], &'13 mut (dyn Modifiable<T> + '14), &{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]}::{vtable}<T>[TraitClause0, TraitClause1, TraitClause2]>(move _3)
+    x_2 = unsize_cast<&'8 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global], &'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_Box_i32_Global::{vtable}<T>[TraitClause0, TraitClause1, TraitClause2]>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_live(_6)
@@ -276,7 +276,7 @@ where
     _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
-    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {impl Destruct for Global}]] _5
+    drop[impl_Destruct_for_Box::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]] _5
     storage_dead(_5)
     storage_dead(x_2)
     return
@@ -308,7 +308,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = modify_trait_object<'6, i32>[{built_in impl Sized for i32}, {impl Clone for i32}, {built_in impl Destruct for i32}](move _2)
+    _1 = modify_trait_object<'6, i32>[{built_in impl Sized for i32}, impl_Clone_for_i32, {built_in impl Destruct for i32}](move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)

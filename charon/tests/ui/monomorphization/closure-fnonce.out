@@ -54,12 +54,12 @@ pub extern "rust-call" fn call_once(_1: closure, _2: (u8,)) -> u8
 = <opaque>
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}
-impl Destruct for closure {
+impl "impl_Destruct_for_closure" Destruct for closure {
     non-dyn-compatible
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}
-impl FnOnce<(u8,)> for closure {
+impl "impl_FnOnce_tuple_for_closure" FnOnce<(u8,)> for closure {
     proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
     proof ImpliedClause1: ((u8,): Sized) = {built_in impl Sized for (u8,)}
     proof ImpliedClause2: ((u8,): Tuple) = {built_in impl Tuple for (u8,)}
@@ -78,10 +78,10 @@ fn apply_to_zero_once::<closure>(f_1: closure) -> u8
     _2 = move f_1
     storage_live(_3)
     _3 = (const 0 : u8,)
-    _0 = {impl FnOnce<(u8,)> for closure}::call_once(move _2, move _3)
+    _0 = impl_FnOnce_tuple_for_closure::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for closure}::drop_in_place] f_1
+    conditional_drop[impl_Destruct_for_closure::drop_in_place] f_1
     return
 }
 
@@ -108,7 +108,7 @@ fn main()
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
+unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
 {
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1

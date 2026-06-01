@@ -22,7 +22,7 @@ pub trait Sized<Self>
 
 // Full name: core::cmp::impls::{impl Ord for u64}::min
 #[lang_item("cmp_ord_min")]
-pub fn {impl Ord for u64}::min(_1: u64, _2: u64) -> u64
+pub fn impl_Ord_for_u64::min(_1: u64, _2: u64) -> u64
 where
     TraitClause0: (u64: Sized),
     TraitClause1: (u64: Destruct),
@@ -40,7 +40,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = {impl Ord for u64}::min[{built_in impl Sized for u64}, {built_in impl Destruct for u64}](const 1 : u64, const 2 : u64)
+    _1 = impl_Ord_for_u64::min[{built_in impl Sized for u64}, {built_in impl Destruct for u64}](const 1 : u64, const 2 : u64)
     storage_dead(_1)
     _0 = ()
     return

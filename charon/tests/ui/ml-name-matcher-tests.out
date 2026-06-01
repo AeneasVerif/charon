@@ -75,7 +75,7 @@ pub trait SliceIndex<Self, T>
 }
 
 // Full name: core::slice::index::{impl Index<I> for [T]}::index
-pub fn {impl Index<I> for [T]}::index<'_0, T, I>(_1: &'_0 [T], _2: I) -> &'_0 TraitClause2::Output
+pub fn impl_Index_for_slice::index<'_0, T, I>(_1: &'_0 [T], _2: I) -> &'_0 TraitClause2::Output
 where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
@@ -83,9 +83,9 @@ where
 = <opaque>
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}
-impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}] {
+impl "impl_Sealed_for_RangeFrom_usize" Sealed for RangeFrom<usize>[{built_in impl Sized for usize}] {
     proof ImpliedClause0: (RangeFrom<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for RangeFrom<usize>[{built_in impl Sized for usize}]}
-    vtable: {impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}::{vtable}
+    vtable: impl_Sealed_for_RangeFrom_usize::{vtable}
 }
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(_1: Self, _2: &'_0 T) -> Option<&'_0 TraitClause0::Output>[{built_in impl Sized for &'_0 TraitClause0::Output}]
@@ -119,58 +119,58 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut
-pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
+pub fn impl_SliceIndex_slice_for_RangeFrom_usize::index_mut<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index
-pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> &'_0 [T]
+pub fn impl_SliceIndex_slice_for_RangeFrom_usize::index<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: *mut [T]) -> *mut [T]
+pub unsafe fn impl_SliceIndex_slice_for_RangeFrom_usize::get_unchecked_mut<T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: *mut [T]) -> *mut [T]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked
-pub unsafe fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: *const [T]) -> *const [T]
+pub unsafe fn impl_SliceIndex_slice_for_RangeFrom_usize::get_unchecked<T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: *const [T]) -> *const [T]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut
-pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+pub fn impl_SliceIndex_slice_for_RangeFrom_usize::get_mut<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get
-pub fn {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
+pub fn impl_SliceIndex_slice_for_RangeFrom_usize::get<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}
-impl<T> SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]
+impl<T> "impl_SliceIndex_slice_for_RangeFrom_usize" SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (RangeFrom<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for RangeFrom<usize>[{built_in impl Sized for usize}]}
-    proof ImpliedClause1: (RangeFrom<usize>[{built_in impl Sized for usize}]: Sealed) = {impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}
+    proof ImpliedClause1: (RangeFrom<usize>[{built_in impl Sized for usize}]: Sealed) = impl_Sealed_for_RangeFrom_usize
     proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause3: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     type Output = [T]
-    fn get<'_0_1> = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get<'_0_1, T>[TraitClause0]
-    fn get_mut<'_0_1> = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_mut<'_0_1, T>[TraitClause0]
-    fn get_unchecked = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>[TraitClause0]
-    fn get_unchecked_mut = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>[TraitClause0]
-    fn index<'_0_1> = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index<'_0_1, T>[TraitClause0]
-    fn index_mut<'_0_1> = {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut<'_0_1, T>[TraitClause0]
-    vtable: {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::{vtable}<T>[TraitClause0]
+    fn get<'_0_1> = impl_SliceIndex_slice_for_RangeFrom_usize::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = impl_SliceIndex_slice_for_RangeFrom_usize::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = impl_SliceIndex_slice_for_RangeFrom_usize::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = impl_SliceIndex_slice_for_RangeFrom_usize::get_unchecked_mut<T>[TraitClause0]
+    fn index<'_0_1> = impl_SliceIndex_slice_for_RangeFrom_usize::index<'_0_1, T>[TraitClause0]
+    fn index_mut<'_0_1> = impl_SliceIndex_slice_for_RangeFrom_usize::index_mut<'_0_1, T>[TraitClause0]
+    vtable: impl_SliceIndex_slice_for_RangeFrom_usize::{vtable}<T>[TraitClause0]
 }
 
 // Full name: alloc::alloc::Global
@@ -203,7 +203,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method
-fn {impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method<T, U>()
+fn impl_Trait_Option_for_Box_Global::method<T, U>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -216,18 +216,18 @@ where
 }
 
 // Full name: test_crate::{impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
-impl<T> Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+impl<T> "impl_Trait_Option_for_Box_Global" Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]: MetaSized) = {built_in impl MetaSized for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
-    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method<T, U>[TraitClause0, TraitClause0_1]
+    fn method<U, TraitClause0_1: (U: Sized)> = impl_Trait_Option_for_Box_Global::method<T, U>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]}::method
-fn {impl Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]}::method<T, U, V>()
+fn impl_Trait_Box_for_Option::method<T, U, V>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -241,14 +241,14 @@ where
 }
 
 // Full name: test_crate::{impl Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]}
-impl<T, U> Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]
+impl<T, U> "impl_Trait_Box_for_Option" Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
 {
     proof ImpliedClause0: (Option<U>[TraitClause1]: MetaSized) = {built_in impl MetaSized for Option<U>[TraitClause1]}
     proof ImpliedClause1: (alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
-    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]}::method<T, U, U>[TraitClause0, TraitClause1, TraitClause0_1]
+    fn method<U, TraitClause0_1: (U: Sized)> = impl_Trait_Box_for_Option::method<T, U, U>[TraitClause0, TraitClause1, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -311,7 +311,7 @@ fn foo()
     _8 = &(*slice_3) with_metadata(copy slice_3.metadata)
     storage_live(_9)
     _9 = RangeFrom { start: const 1 : usize }
-    _7 = {impl Index<I> for [T]}::index<'18, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}<bool>[{built_in impl Sized for bool}]](move _8, move _9)
+    _7 = impl_Index_for_slice::index<'18, bool, RangeFrom<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for bool}, {built_in impl Sized for RangeFrom<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_RangeFrom_usize<bool>[{built_in impl Sized for bool}]](move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
     _6 = &(*_7) with_metadata(copy _7.metadata)

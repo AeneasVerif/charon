@@ -90,7 +90,7 @@ where
 }
 
 // Full name: test_crate::make::{impl FnOnce<(), ()> for closure<T>}::call_once
-fn {impl FnOnce<(), ()> for closure<T>}::call_once<T>(_1: closure<T>, tupled_args_2: ())
+fn impl_FnOnce_unit_for_closure::call_once<T>(_1: closure<T>, tupled_args_2: ())
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Child),
@@ -105,7 +105,7 @@ where
 }
 
 // Full name: test_crate::make::{impl FnOnce<(), ()> for closure<T>}
-impl<T> FnOnce<(), ()> for closure<T>
+impl<T> "impl_FnOnce_unit_for_closure" FnOnce<(), ()> for closure<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Child),
@@ -114,7 +114,7 @@ where
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
-    fn call_once = {impl FnOnce<(), ()> for closure<T>}::call_once<T>[TraitClause0, TraitClause1]
+    fn call_once = impl_FnOnce_unit_for_closure::call_once<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 

@@ -26,7 +26,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for T}::method
-pub fn {impl Trait for T}::method<'_0, T>(self_1: &'_0 T)
+pub fn impl_Trait_for_T::method<'_0, T>(self_1: &'_0 T)
 where
     TraitClause0: (T: Sized),
 {
@@ -39,13 +39,13 @@ where
 }
 
 // Full name: test_crate::{impl Trait for T}
-impl<T> Trait for T
+impl<T> "impl_Trait_for_T" Trait for T
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
-    fn method<'_0_1> = {impl Trait for T}::method<'_0_1, T>[TraitClause0]
-    vtable: {impl Trait for T}::{vtable}<T>[TraitClause0]
+    fn method<'_0_1> = impl_Trait_for_T::method<'_0_1, T>[TraitClause0]
+    vtable: impl_Trait_for_T::{vtable}<T>[TraitClause0]
 }
 
 

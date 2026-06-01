@@ -37,7 +37,7 @@ where
 pub struct S {}
 
 // Full name: test_crate::{impl Foo for S}::bar
-pub fn {impl Foo for S}::bar<const N : usize>() -> [u8; N]
+pub fn impl_Foo_for_S::bar<const N : usize>() -> [u8; N]
 {
     let _0: [u8; N]; // return
 
@@ -46,12 +46,12 @@ pub fn {impl Foo for S}::bar<const N : usize>() -> [u8; N]
 }
 
 // Full name: test_crate::{impl Foo for S}
-impl Foo for S {
+impl "impl_Foo_for_S" Foo for S {
     proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
     type bar_ty<const N : usize> = [u8; N]
     where
-        proof ImpliedClause0: ({impl Foo for S}::bar_ty<N>: Sized) = {impl Foo for S}::bar_ty::ImpliedClause0;
-    fn bar<const N : usize> = {impl Foo for S}::bar<N>
+        proof ImpliedClause0: (impl_Foo_for_S::bar_ty<N>: Sized) = impl_Foo_for_S::bar_ty::ImpliedClause0;
+    fn bar<const N : usize> = impl_Foo_for_S::bar<N>
     non-dyn-compatible
 }
 

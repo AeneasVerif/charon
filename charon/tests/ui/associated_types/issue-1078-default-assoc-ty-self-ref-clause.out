@@ -36,7 +36,7 @@ where
 }
 
 // Full name: test_crate::{impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}
-impl<'a, T> Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()
+impl<'a, T> "impl_Foo_Option_for_unit" Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: 'a,
@@ -44,8 +44,8 @@ where
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
     proof ImpliedClause2: (&'a (): Sized) = {built_in impl Sized for &'a ()}
-    proof ImpliedClause3: (&'a (Option<T>[TraitClause0], &'a ()): Sized) = {impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}<'a, T>[TraitClause0]::ImpliedClause3
-    vtable: {impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}::{vtable}<'a, T>[TraitClause0]
+    proof ImpliedClause3: (&'a (Option<T>[TraitClause0], &'a ()): Sized) = impl_Foo_Option_for_unit<'a, T>[TraitClause0]::ImpliedClause3
+    vtable: impl_Foo_Option_for_unit::{vtable}<'a, T>[TraitClause0]
 }
 
 

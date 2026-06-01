@@ -75,7 +75,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Option<T>[TraitClause0]}::defaulted
-pub fn {impl Trait for Option<T>[TraitClause0]}::defaulted<'_0, T>(self_1: &'_0 Option<T>[TraitClause0])
+pub fn impl_Trait_for_Option::defaulted<'_0, T>(self_1: &'_0 Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Option<T>[TraitClause0]: Copy),
@@ -89,19 +89,19 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Option<T>[TraitClause0]}
-impl<T> Trait for Option<T>[TraitClause0]
+impl<T> "impl_Trait_for_Option" Trait for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     type Item = T
-    fn defaulted<'_0_1, TraitClause0_1: (Option<T>[TraitClause0]: Copy)> = {impl Trait for Option<T>[TraitClause0]}::defaulted<'_0_1, T>[TraitClause0, TraitClause0_1]
-    vtable: {impl Trait for Option<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+    fn defaulted<'_0_1, TraitClause0_1: (Option<T>[TraitClause0]: Copy)> = impl_Trait_for_Option::defaulted<'_0_1, T>[TraitClause0, TraitClause0_1]
+    vtable: impl_Trait_for_Option::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::{impl Trait for String}::defaulted
-pub fn {impl Trait for String}::defaulted<'_0>(self_1: &'_0 String)
+pub fn impl_Trait_for_String::defaulted<'_0>(self_1: &'_0 String)
 where
     TraitClause0: (String: Copy),
 {
@@ -114,12 +114,12 @@ where
 }
 
 // Full name: test_crate::{impl Trait for String}
-impl Trait for String {
+impl "impl_Trait_for_String" Trait for String {
     proof ImpliedClause0: (String: MetaSized) = {built_in impl MetaSized for String}
     proof ImpliedClause1: (String: Sized) = {built_in impl Sized for String}
     type Item = String
-    fn defaulted<'_0_1, TraitClause0_1: (String: Copy)> = {impl Trait for String}::defaulted<'_0_1>[TraitClause0_1]
-    vtable: {impl Trait for String}::{vtable}
+    fn defaulted<'_0_1, TraitClause0_1: (String: Copy)> = impl_Trait_for_String::defaulted<'_0_1>[TraitClause0_1]
+    vtable: impl_Trait_for_String::{vtable}
 }
 
 

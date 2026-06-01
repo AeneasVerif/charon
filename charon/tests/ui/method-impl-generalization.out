@@ -71,7 +71,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method2
-fn {impl Trait for ()}::method2<T>(self_1: (), _other_2: T)
+fn impl_Trait_for_unit::method2<T>(self_1: (), _other_2: T)
 where
     TraitClause0: (T: Sized),
 {
@@ -86,7 +86,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for ()}::method1
-fn {impl Trait for ()}::method1(self_1: (), _other_2: &'static u32) -> bool
+fn impl_Trait_for_unit::method1(self_1: (), _other_2: &'static u32) -> bool
 {
     let _0: bool; // return
     let self_1: (); // arg #1
@@ -97,10 +97,10 @@ fn {impl Trait for ()}::method1(self_1: (), _other_2: &'static u32) -> bool
 }
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
-    fn method1 = {impl Trait for ()}::method1
-    fn method2<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = {impl Trait for ()}::method2<T>[TraitClause0_1]
+    fn method1 = impl_Trait_for_unit::method1
+    fn method2<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = impl_Trait_for_unit::method2<T>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -182,7 +182,7 @@ fn main()
     _13 = move _14
     _4 = &(*_13)
     _3 = &(*_4)
-    _1 = {impl Trait for ()}::method1(move _2, move _3)
+    _1 = impl_Trait_for_unit::method1(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_4)
@@ -190,7 +190,7 @@ fn main()
     storage_live(_5)
     storage_live(_6)
     _6 = ()
-    _5 = {impl Trait for ()}::method2<bool>[{built_in impl Sized for bool}](move _6, const false)
+    _5 = impl_Trait_for_unit::method2<bool>[{built_in impl Sized for bool}](move _6, const false)
     storage_live(_16)
     storage_live(_21)
     storage_live(_22)
@@ -239,7 +239,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::foo
-fn {impl Foo for ()}::foo<'a, 'b>(x_1: &'a (), y_2: &'b ()) -> &'a ()
+fn impl_Foo_for_unit::foo<'a, 'b>(x_1: &'a (), y_2: &'b ()) -> &'a ()
 {
     let _0: &'1 (); // return
     let x_1: &'2 (); // arg #1
@@ -250,9 +250,9 @@ fn {impl Foo for ()}::foo<'a, 'b>(x_1: &'a (), y_2: &'b ()) -> &'a ()
 }
 
 // Full name: test_crate::{impl Foo for ()}
-impl Foo for () {
+impl "impl_Foo_for_unit" Foo for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn foo<'a, 'b> = {impl Foo for ()}::foo<'a, 'b>
+    fn foo<'a, 'b> = impl_Foo_for_unit::foo<'a, 'b>
     non-dyn-compatible
 }
 
@@ -286,7 +286,7 @@ fn call_foo<'e>(x_1: &'e ()) -> &'e ()
     _6 = move _7
     _5 = &(*_6)
     _4 = &(*_5)
-    _2 = {impl Foo for ()}::foo<'11, '12>(move _3, move _4)
+    _2 = impl_Foo_for_unit::foo<'11, '12>(move _3, move _4)
     _0 = &(*_2)
     storage_dead(_4)
     storage_dead(_3)

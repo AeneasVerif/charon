@@ -52,7 +52,7 @@ where
 pub struct MyStruct {}
 
 // Full name: test_crate::MyStruct::{impl Destruct for MyStruct}::drop_in_place
-unsafe fn {impl Destruct for MyStruct}::drop_in_place(_1: *mut MyStruct)
+unsafe fn impl_Destruct_for_MyStruct::drop_in_place(_1: *mut MyStruct)
 {
     let _0: (); // return
     let _1: &'1 mut MyStruct; // arg #1
@@ -62,13 +62,13 @@ unsafe fn {impl Destruct for MyStruct}::drop_in_place(_1: *mut MyStruct)
 }
 
 // Full name: test_crate::MyStruct::{impl Destruct for MyStruct}
-impl Destruct for MyStruct {
-    fn drop_in_place = {impl Destruct for MyStruct}::drop_in_place
+impl "impl_Destruct_for_MyStruct" Destruct for MyStruct {
+    fn drop_in_place = impl_Destruct_for_MyStruct::drop_in_place
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::foo
-pub fn {impl MyTrait for MyStruct}::foo<'_0>(self_1: &'_0 MyStruct)
+pub fn impl_MyTrait_for_MyStruct::foo<'_0>(self_1: &'_0 MyStruct)
 {
     let _0: (); // return
     let self_1: &'1 MyStruct; // arg #1
@@ -88,7 +88,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn MyTrait))
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn MyTrait + '1), &'_0 MyStruct>(move _1)
-    _0 = {impl MyTrait for MyStruct}::foo<'_0>(move _2)
+    _0 = impl_MyTrait_for_MyStruct::foo<'_0>(move _2)
     return
 }
 
@@ -102,12 +102,12 @@ unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn MyTrait))
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn MyTrait + '1), *mut MyStruct>(move dyn_self_1)
-    drop[{impl Destruct for MyStruct}::drop_in_place] (*target_self_2)
+    drop[impl_Destruct_for_MyStruct::drop_in_place] (*target_self_2)
     return
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::{vtable}
-fn {impl MyTrait for MyStruct}::{vtable}() -> test_crate::MyTrait::{vtable}
+fn impl_MyTrait_for_MyStruct::{vtable}() -> test_crate::MyTrait::{vtable}
 {
     let ret_0: test_crate::MyTrait::{vtable}; // return
     let size_1: usize; // local
@@ -122,14 +122,14 @@ fn {impl MyTrait for MyStruct}::{vtable}() -> test_crate::MyTrait::{vtable}
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::{vtable}
-static {impl MyTrait for MyStruct}::{vtable}: test_crate::MyTrait::{vtable} = {impl MyTrait for MyStruct}::{vtable}()
+static impl_MyTrait_for_MyStruct::{vtable}: test_crate::MyTrait::{vtable} = impl_MyTrait_for_MyStruct::{vtable}()
 
 // Full name: test_crate::{impl MyTrait for MyStruct}
-impl MyTrait for MyStruct {
+impl "impl_MyTrait_for_MyStruct" MyTrait for MyStruct {
     proof ImpliedClause0: (MyStruct: MetaSized) = {built_in impl MetaSized for MyStruct}
     proof ImpliedClause1: (MyStruct: Send) = {built_in impl Send for MyStruct}
-    fn foo<'_0_1> = {impl MyTrait for MyStruct}::foo<'_0_1>
-    vtable: {impl MyTrait for MyStruct}::{vtable}
+    fn foo<'_0_1> = impl_MyTrait_for_MyStruct::foo<'_0_1>
+    vtable: impl_MyTrait_for_MyStruct::{vtable}
 }
 
 // Full name: test_crate::main
@@ -160,7 +160,7 @@ fn main()
     _6 = move _7
     _3 = &(*_6)
     _2 = &(*_3)
-    x_1 = unsize_cast<&'6 MyStruct, &'12 (dyn MyTrait + '13), &{impl MyTrait for MyStruct}::{vtable}>(move _2)
+    x_1 = unsize_cast<&'6 MyStruct, &'12 (dyn MyTrait + '13), &impl_MyTrait_for_MyStruct::{vtable}>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)

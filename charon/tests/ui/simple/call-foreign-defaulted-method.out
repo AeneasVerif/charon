@@ -5,7 +5,7 @@
 pub trait MetaSized<Self>
 
 // Full name: test_crate::foo::{impl Trait for ()}::defaulted
-pub fn {impl Trait for ()}::defaulted<'_0>(self_1: &'_0 ())
+pub fn impl_Trait_for_unit::defaulted<'_0>(self_1: &'_0 ())
 {
     let _0: (); // return
     let self_1: &'1 (); // arg #1
@@ -38,7 +38,7 @@ fn main()
     storage_live(_2)
     _3 = move _4
     _2 = &(*_3)
-    _1 = {impl Trait for ()}::defaulted<'5>(move _2)
+    _1 = impl_Trait_for_unit::defaulted<'5>(move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
@@ -66,10 +66,10 @@ where
 }
 
 // Full name: test_crate::foo::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn defaulted<'_0_1> = {impl Trait for ()}::defaulted<'_0_1>
-    vtable: {impl Trait for ()}::{vtable}
+    fn defaulted<'_0_1> = impl_Trait_for_unit::defaulted<'_0_1>
+    vtable: impl_Trait_for_unit::{vtable}
 }
 
 

@@ -30,12 +30,12 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::{impl Trait for Option<T>[TraitClause0]}
-impl<T> Trait for Option<T>[TraitClause0]
+impl<T> "impl_Trait_for_Option" Trait for Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    vtable: {impl Trait for Option<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+    vtable: impl_Trait_for_Option::{vtable}<T>[TraitClause0]
 }
 
 

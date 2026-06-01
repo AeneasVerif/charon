@@ -467,7 +467,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Counter for usize}::incr
-pub fn {impl Counter for usize}::incr<'_0>(self_1: &'_0 mut usize) -> usize
+pub fn impl_Counter_for_usize::incr<'_0>(self_1: &'_0 mut usize) -> usize
 {
     let _0: usize; // return
     let self_1: &'1 mut usize; // arg #1
@@ -485,10 +485,10 @@ pub fn {impl Counter for usize}::incr<'_0>(self_1: &'_0 mut usize) -> usize
 }
 
 // Full name: test_crate::{impl Counter for usize}
-impl Counter for usize {
+impl "impl_Counter_for_usize" Counter for usize {
     proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    fn incr<'_0_1> = {impl Counter for usize}::incr<'_0_1>
-    vtable: {impl Counter for usize}::{vtable}
+    fn incr<'_0_1> = impl_Counter_for_usize::incr<'_0_1>
+    vtable: impl_Counter_for_usize::{vtable}
 }
 
 // Full name: test_crate::use_counter

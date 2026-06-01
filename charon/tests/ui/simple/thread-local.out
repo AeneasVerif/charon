@@ -178,16 +178,16 @@ impl DestroyedState for ! {
 }
 
 // Full name: std::sys::thread_local::native::lazy::{impl DestroyedState for ()}::register_dtor
-pub fn {impl DestroyedState for ()}::register_dtor<'_0, T>(_1: &'_0 Storage<T, ()>[TraitClause0, {built_in impl Sized for ()}])
+pub fn impl_DestroyedState_for_unit::register_dtor<'_0, T>(_1: &'_0 Storage<T, ()>[TraitClause0, {built_in impl Sized for ()}])
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: std::sys::thread_local::native::lazy::{impl DestroyedState for ()}
-impl DestroyedState for () {
+impl "impl_DestroyedState_for_unit" DestroyedState for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause1: ((): Copy) = {built_in impl Copy for ()}
-    fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized)> = {impl DestroyedState for ()}::register_dtor<'_0_1, T>[TraitClause0_1]
+    fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized)> = impl_DestroyedState_for_unit::register_dtor<'_0_1, T>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -241,7 +241,7 @@ fn test_crate::FOO::{const}::closure::__RUST_STD_INTERNAL_VAL() -> Storage<u32, 
 {
     let _0: Storage<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}]; // return
 
-    _0 = std::sys::thread_local::native::lazy::{Storage<T, D>[TraitClause0, TraitClause1]}::new<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, {impl DestroyedState for ()}]()
+    _0 = std::sys::thread_local::native::lazy::{Storage<T, D>[TraitClause0, TraitClause1]}::new<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_DestroyedState_for_unit]()
     return
 }
 
@@ -266,7 +266,7 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
     _4 = &(*_5)
     storage_live(_6)
     _6 = move __rust_std_internal_init_3
-    _0 = get_or_init<'13, '14, u32, (), __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, {impl DestroyedState for ()}, {built_in impl Sized for __rust_std_internal_init_fn}, {built_in impl FnOnce<()> for __rust_std_internal_init_fn where Output  = u32}](move _4, move _6, const __rust_std_internal_init_fn)
+    _0 = get_or_init<'13, '14, u32, (), __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_DestroyedState_for_unit, {built_in impl Sized for __rust_std_internal_init_fn}, {built_in impl FnOnce<()> for __rust_std_internal_init_fn where Output  = u32}](move _4, move _6, const __rust_std_internal_init_fn)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)

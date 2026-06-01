@@ -28,7 +28,7 @@ where
 = <opaque>
 
 // Full name: core::default::{impl Default for u32}::default
-pub fn {impl Default for u32}::default() -> u32
+pub fn impl_Default_for_u32::default() -> u32
 = <opaque>
 
 // Full name: core::fmt::Arguments
@@ -224,16 +224,16 @@ struct Foo {
 }
 
 // Full name: test_crate::{impl Default for Foo}::default
-pub fn {impl Default for Foo}::default() -> Foo
+pub fn impl_Default_for_Foo::default() -> Foo
 {
     let _0: Foo; // return
     let _1: u32; // anonymous local
     let _2: u32; // anonymous local
 
     storage_live(_1)
-    _1 = {impl Default for u32}::default()
+    _1 = impl_Default_for_u32::default()
     storage_live(_2)
-    _2 = {impl Default for u32}::default()
+    _2 = impl_Default_for_u32::default()
     _0 = Foo { x: move _1, y: move _2 }
     storage_dead(_2)
     storage_dead(_1)
@@ -241,9 +241,9 @@ pub fn {impl Default for Foo}::default() -> Foo
 }
 
 // Full name: test_crate::{impl Default for Foo}
-impl Default for Foo {
+impl "impl_Default_for_Foo" Default for Foo {
     proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
-    fn default = {impl Default for Foo}::default
+    fn default = impl_Default_for_Foo::default
     non-dyn-compatible
 }
 
@@ -254,16 +254,16 @@ struct Bar {
 }
 
 // Full name: test_crate::{impl Default for Bar}::default
-pub fn {impl Default for Bar}::default() -> Bar
+pub fn impl_Default_for_Bar::default() -> Bar
 {
     let _0: Bar; // return
     let _1: u32; // anonymous local
     let _2: u32; // anonymous local
 
     storage_live(_1)
-    _1 = {impl Default for u32}::default()
+    _1 = impl_Default_for_u32::default()
     storage_live(_2)
-    _2 = {impl Default for u32}::default()
+    _2 = impl_Default_for_u32::default()
     _0 = Bar { x: move _1, super_long_field_name: move _2 }
     storage_dead(_2)
     storage_dead(_1)
@@ -271,9 +271,9 @@ pub fn {impl Default for Bar}::default() -> Bar
 }
 
 // Full name: test_crate::{impl Default for Bar}
-impl Default for Bar {
+impl "impl_Default_for_Bar" Default for Bar {
     proof ImpliedClause0: (Bar: Sized) = {built_in impl Sized for Bar}
-    fn default = {impl Default for Bar}::default
+    fn default = impl_Default_for_Bar::default
     non-dyn-compatible
 }
 
@@ -337,7 +337,7 @@ fn foo()
     _0 = ()
     storage_live(_3)
     // Call `default` and destructure the result
-    _3 = {impl Default for Foo}::default()
+    _3 = impl_Default_for_Foo::default()
     storage_live(x_1)
     x_1 = copy (_3).x
     storage_live(y_2)
@@ -359,7 +359,7 @@ fn foo()
     storage_live(_10)
     // Call `default` and destructure the result
     // This is the long field
-    _10 = {impl Default for Bar}::default()
+    _10 = impl_Default_for_Bar::default()
     storage_live(x_8)
     x_8 = copy (_10).x
     storage_live(super_long_field_name_9)

@@ -92,7 +92,7 @@ where
 }
 
 // Full name: core::convert::num::{impl From<i32> for i64}::from
-pub fn {impl From<i32> for i64}::from(small_1: i32) -> i64
+pub fn impl_From_i32_for_i64::from(small_1: i32) -> i64
 {
     let _0: i64; // return
     let small_1: i32; // arg #1
@@ -170,7 +170,7 @@ where
 }
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -283,7 +283,7 @@ fn convert(x_1: i32) -> i64
 
     storage_live(_2)
     _2 = copy x_1
-    _0 = {impl From<i32> for i64}::from(move _2)
+    _0 = impl_From_i32_for_i64::from(move _2)
     storage_dead(_2)
     return
 }
@@ -296,7 +296,7 @@ fn vec(_x_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Gl
 
     _0 = ()
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
+    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
     return
 }
 
