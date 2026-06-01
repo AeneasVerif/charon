@@ -1,0 +1,36 @@
+disabled backtrace
+warning[E9999]: Couldn't convert constant back to an expression
+                
+                Context:
+                 - const_value: Indirect {
+                    alloc_id: a4,
+                    offset: Size(0 bytes),
+                }
+                 - ty: alloc::raw_vec::RawVec<u8, std::alloc::Global>
+                 - err: InterpErrorInfo(
+                    InterpErrorInfoInner {
+                        kind: UndefinedBehavior(
+                            DanglingIntPointer {
+                                addr: 1,
+                                inbounds_size: 0,
+                                msg: Dereferenceable,
+                            },
+                        ),
+                        backtrace: InterpErrorBacktrace {
+                            backtrace: None,
+                        },
+                    },
+                )
+                
+
+error: Unsupported constant: "ConstEvalVal"
+ --> /rustc/library/alloc/src/vec/mod.rs:464:9
+
+note: the error occurred when translating `alloc::string::{alloc::string::String}::new`, which is (transitively) used at the following location(s):
+ --> tests/ui/consts/string-new-constevalval.rs:7:13
+  |
+7 |     let _ = String::new();
+  |             -------------
+warning: 1 warning emitted
+
+ERROR Charon failed to translate this code (1 errors)
