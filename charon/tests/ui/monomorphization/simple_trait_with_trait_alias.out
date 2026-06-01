@@ -20,33 +20,6 @@ trait A<Self>
     vtable: test_crate::A::{vtable}
 }
 
-struct test_crate::B::{vtable} {
-  size: usize,
-  align: usize,
-  drop: *const (),
-  super_trait_0: &'static core::marker::MetaSized::{vtable},
-  super_trait_1: &'static test_crate::A::{vtable},
-}
-
-// Full name: test_crate::B
-trait B<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: A)
-    vtable: test_crate::B::{vtable}
-}
-
-// Full name: test_crate::B::{impl B for i32}
-impl B for i32
-where
-    TraitClause0: (i32: MetaSized),
-    TraitClause1: (i32: A),
-{
-    proof ImpliedClause0: (i32: MetaSized) = TraitClause0
-    proof ImpliedClause1: (i32: A) = TraitClause1
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl A for i32}
 impl A for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}

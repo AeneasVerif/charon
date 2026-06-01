@@ -1,13 +1,119 @@
-error: Item is not monomorphic: Mono(ItemRef { contents: HashConsed(ItemRefContents { def_id: test_crate::{impl#0}, generic_args: [Type(Ty { kind: HashConsed(Param(ParamTy { index: 0, name: "T" })) })], trait_proofs: [HashConsed(TraitProofContents { pred: Binder { value: ItemRef { contents: HashConsed(ItemRefContents { def_id: core::marker::Sized, generic_args: [Type(Ty { kind: HashConsed(Param(ParamTy { index: 0, name: "T" })) })], trait_proofs: [], in_trait: None, has_param: true, has_non_lt_param: true }) }, bound_vars: [] }, kind: LocalBound(Required(test_crate::{impl#0}, 0)) })], in_trait: None, has_param: true, has_non_lt_param: true }) })
- --> tests/ui/monomorphization/vtable-blanket-impl.rs:8:1
-  |
-8 | impl<T> Trait for T {
-  | ^^^^^^^^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-error: Item `test_crate::{impl#0}` caused errors; ignoring.
- --> tests/ui/monomorphization/vtable-blanket-impl.rs:8:1
-  |
-8 | impl<T> Trait for T {
-  | ^^^^^^^^^^^^^^^^^^^
+opaque type core::marker::MetaSized::{vtable}
 
-ERROR Charon failed to translate this code (2 errors)
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_method: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::{impl Trait for ()}::method::<()>
+pub fn method::<()><'_0>(self_1: &'_0 ()) -> usize
+{
+    let _0: usize; // return
+    let self_1: &'1 (); // arg #1
+
+    _0 = const 0 : usize
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}::method::{vtable_method}::<()>
+fn {vtable_method}::<()><'_0>(_1: &'_0 (dyn Trait)) -> usize
+{
+    let _0: usize; // return
+    let _1: &'_0 (dyn Trait + '0); // arg #1
+    let _2: &'_0 (); // anonymous local
+
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn Trait + '1), &'_0 ()>(move _1)
+    _0 = method::<()><'_0>(move _2)
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}::{vtable_drop_shim}::<()>
+unsafe fn {vtable_drop_shim}::<()>(dyn_self_1: *mut (dyn Trait))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Trait + '0); // arg #1
+    let target_self_2: *mut (); // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Trait + '1), *mut ()>(move dyn_self_1)
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}::{vtable}::<()>
+fn {impl Trait for ()}::{vtable}::<()>() -> test_crate::Trait::{vtable}
+{
+    let ret_0: test_crate::Trait::{vtable}; // return
+    let size_1: usize; // local
+    let align_2: usize; // local
+    let drop_3: unsafe fn(*mut (dyn Trait + '0)); // local
+    let erased_drop_4: *const (); // local
+    let method_5: fn<'_0_1>(&'_0_1 (dyn Trait + '1)) -> usize; // local
+    let erased_method_6: *const (); // local
+
+    storage_live(size_1)
+    size_1 = size_of<()>
+    storage_live(align_2)
+    align_2 = align_of<()>
+    storage_live(drop_3)
+    storage_live(erased_drop_4)
+    drop_3 = const {vtable_drop_shim}::<()>
+    erased_drop_4 = cast<unsafe fn(*mut (dyn Trait + '4)), *const ()>(move drop_3)
+    storage_live(method_5)
+    storage_live(erased_method_6)
+    method_5 = const {vtable_method}::<()><'7>
+    erased_method_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '9)) -> usize, *const ()>(move method_5)
+    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_method: move erased_method_6, super_trait_0: const &vtable_of({built_in impl MetaSized for ()}) }
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}::{vtable}::<()>
+static {impl Trait for ()}::{vtable}::<()>: test_crate::Trait::{vtable} = {impl Trait for ()}::{vtable}::<()>()
+
+// Full name: test_crate::{impl Trait for ()}
+impl Trait for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    vtable: {impl Trait for ()}::{vtable}::<()>
+}
+
+// Full name: test_crate::f
+pub fn f<'_0>(x_1: &'_0 ()) -> &'_0 (dyn Trait + '_0)
+{
+    let _0: &'3 (dyn Trait + '4); // return
+    let x_1: &'6 (); // arg #1
+    let _2: &'7 (dyn Trait + '8); // anonymous local
+    let _3: &'9 (dyn Trait + '10); // anonymous local
+    let _4: &'11 (); // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*x_1)
+    _3 = unsize_cast<&'11 (), &'12 (dyn Trait + '13), &{impl Trait for ()}::{vtable}::<()>>(move _4)
+    storage_dead(_4)
+    _2 = &(*_3) with_metadata(copy _3.metadata)
+    _0 = unsize_cast<&'7 (dyn Trait + '8), &'15 (dyn Trait + '16),  at []>(move _2)
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
+
+

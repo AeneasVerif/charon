@@ -1,17 +1,149 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at /rustc-dev/f8a08b688cbe60acc386ed1fbd1b7cbaaf5576b1/compiler/rustc_type_ir/src/binder.rs:856:9:
-expected region for `'_/#0` ('_/#0/0) but found Type(Pattern<'{erased}>) when instantiating args=[Pattern<'{erased}>]
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Hax panicked when translating `test_crate::Trait::method`.
- --> tests/ui/monomorphization/vtable-lifetime-impl.rs:5:5
-  |
-5 |     fn method(&self);
-  |     ^^^^^^^^^^^^^^^^^
+opaque type core::marker::MetaSized::{vtable}
 
-error: Item `test_crate::{impl#0}` caused errors; ignoring.
-  --> tests/ui/monomorphization/vtable-lifetime-impl.rs:10:1
-   |
-10 | impl Trait for Pattern<'_> {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
 
-ERROR Charon failed to translate this code (2 errors)
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+
+// Full name: test_crate::Pattern::<'_>
+pub struct Pattern::<'_> {
+  &'_ str,
+}
+
+unsafe fn core::marker::Destruct::drop_in_place::<Pattern::<'_>>(_1: *mut Pattern::<'_>)
+= <opaque>
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_method: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::Pattern::{impl Destruct for Pattern::<'_>}
+impl Destruct for Pattern::<'_> {
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Pattern::{impl Destruct for Pattern::<'_>}::drop_in_place::<'_>
+unsafe fn {impl Destruct for Pattern::<'_>}::drop_in_place::<'_>(_1: *mut Pattern::<'_>)
+{
+    let _0: (); // return
+    let _1: &'1 mut Pattern::<'_>; // arg #1
+
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for Pattern::<'_>}::method::<'_>
+pub fn method::<'_><'_0>(self_1: &'_0 Pattern::<'_>)
+{
+    let _0: (); // return
+    let self_1: &'1 Pattern::<'_>; // arg #1
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for Pattern::<'_>}::method::{vtable_method}::<'_>
+fn {vtable_method}::<'_><'_0>(_1: &'_0 (dyn Trait))
+{
+    let _0: (); // return
+    let _1: &'_0 (dyn Trait + '0); // arg #1
+    let _2: &'_0 Pattern::<'_>; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn Trait + '1), &'_0 Pattern::<'_>>(move _1)
+    _0 = method::<'_><'_0>(move _2)
+    return
+}
+
+// Full name: test_crate::{impl Trait for Pattern::<'_>}::{vtable_drop_shim}::<'_>
+unsafe fn {vtable_drop_shim}::<'_>(dyn_self_1: *mut (dyn Trait))
+{
+    let ret_0: (); // return
+    let dyn_self_1: *mut (dyn Trait + '0); // arg #1
+    let target_self_2: *mut Pattern::<'_>; // local
+
+    ret_0 = ()
+    storage_live(target_self_2)
+    target_self_2 = concretize<*mut (dyn Trait + '1), *mut Pattern::<'_>>(move dyn_self_1)
+    drop[{impl Destruct for Pattern::<'_>}::drop_in_place] (*target_self_2)
+    return
+}
+
+// Full name: test_crate::{impl Trait for Pattern::<'_>}::{vtable}::<'_>
+fn {impl Trait for Pattern::<'_>}::{vtable}::<'_>() -> test_crate::Trait::{vtable}
+{
+    let ret_0: test_crate::Trait::{vtable}; // return
+    let size_1: usize; // local
+    let align_2: usize; // local
+    let drop_3: unsafe fn(*mut (dyn Trait + '0)); // local
+    let erased_drop_4: *const (); // local
+    let method_5: fn<'_0_1>(&'_0_1 (dyn Trait + '1)); // local
+    let erased_method_6: *const (); // local
+
+    storage_live(size_1)
+    size_1 = size_of<Pattern::<'_>>
+    storage_live(align_2)
+    align_2 = align_of<Pattern::<'_>>
+    storage_live(drop_3)
+    storage_live(erased_drop_4)
+    drop_3 = const {vtable_drop_shim}::<'_>
+    erased_drop_4 = cast<unsafe fn(*mut (dyn Trait + '4)), *const ()>(move drop_3)
+    storage_live(method_5)
+    storage_live(erased_method_6)
+    method_5 = const {vtable_method}::<'_><'7>
+    erased_method_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '9)), *const ()>(move method_5)
+    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_method: move erased_method_6, super_trait_0: const &vtable_of({built_in impl MetaSized for Pattern::<'_>}) }
+    return
+}
+
+// Full name: test_crate::{impl Trait for Pattern::<'_>}::{vtable}::<'_>
+static {impl Trait for Pattern::<'_>}::{vtable}::<'_>: test_crate::Trait::{vtable} = {impl Trait for Pattern::<'_>}::{vtable}::<'_>()
+
+// Full name: test_crate::{impl Trait for Pattern::<'_>}
+impl Trait for Pattern::<'_> {
+    proof ImpliedClause0: (Pattern::<'_>: MetaSized) = {built_in impl MetaSized for Pattern::<'_>}
+    vtable: {impl Trait for Pattern::<'_>}::{vtable}::<'_>
+}
+
+// Full name: test_crate::f
+pub fn f<'a>(x_1: &'a Pattern::<'_>) -> &'a (dyn Trait + 'a)
+{
+    let _0: &'3 (dyn Trait + '4); // return
+    let x_1: &'6 Pattern::<'_>; // arg #1
+    let _2: &'7 (dyn Trait + '8); // anonymous local
+    let _3: &'9 (dyn Trait + '10); // anonymous local
+    let _4: &'11 Pattern::<'_>; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*x_1)
+    _3 = unsize_cast<&'11 Pattern::<'_>, &'12 (dyn Trait + '13), &{impl Trait for Pattern::<'_>}::{vtable}::<'_>>(move _4)
+    storage_dead(_4)
+    _2 = &(*_3) with_metadata(copy _3.metadata)
+    _0 = unsize_cast<&'7 (dyn Trait + '8), &'15 (dyn Trait + '16),  at []>(move _2)
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
+
+

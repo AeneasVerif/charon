@@ -109,7 +109,7 @@ pub enum TraitImplSource {
 impl TransItemSource {
     pub fn new(item: RustcItem, kind: TransItemSourceKind) -> Self {
         if let RustcItem::Mono(item) = &item {
-            if item.has_param {
+            if item.has_non_lt_param {
                 panic!("Item is not monomorphic: {item:?}")
             }
         } else if let RustcItem::MonoTrait(_) = &item
