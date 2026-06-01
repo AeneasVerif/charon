@@ -378,3 +378,20 @@ pub fn trick_exit_computation() {
     }
     x = 12;
 }
+
+// Regression test for https://github.com/AeneasVerif/charon/issues/1051
+// The `return true` inside the loop was incorrectly converted to `break`.
+pub fn loop_inside_if_return_break(mut y: u32) -> bool {
+    if y > 0 {
+        loop {
+            if y == 0 {
+                return true;
+            }
+            y -= 1;
+            if y == 0 {
+                break;
+            }
+        }
+    }
+    false
+}

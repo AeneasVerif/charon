@@ -111,7 +111,6 @@ struct CfgInfo {
     /// The blocks whose terminators are a switch are stored here.
     pub switch_blocks: HashSet<src::BlockId>,
     /// Tree of which nodes dominates which other nodes.
-    #[expect(unused)]
     pub dominator_tree: Dominators<BlockId>,
     /// Computed data about each block.
     pub block_data: IndexVec<BlockId, Box<BlockData>>,
@@ -626,8 +625,60 @@ impl ExitInfo {
     fn compute_loop_exits(ctx: &TransformCtx, cfg: &mut CfgInfo) {
         for &loop_id in &cfg.loop_entries {
             // Compute the candidates.
-            let loop_exits: SeqHashMap<BlockId, LoopExitRank> =
+            let mut loop_exits: SeqHashMap<BlockId, LoopExitRank> =
                 Self::compute_loop_exit_ranks(cfg, loop_id);
+
+            // Hard filter: discard exit candidates that are dominated by the loop header when
+            // non-dominated candidates exist.
+            // This is related to: https://github.com/AeneasVerif/charon/issues/1051
+            //
+            // Example (from issue #1051):
+            // ```
+            // fn f(b: bool) -> bool {
+            //     if b {
+            //         loop {
+            //             if b { return true; }  // bb5: dominated by loop header
+            //             break;                 // bb9→bb4: exits the loop
+            //         }
+            //     }
+            //     false                          // bb4: NOT dominated by loop header
+            // }
+            // ```
+            //
+            // Without the filter, bb5 (`return true`) ranks higher than bb4 in the exit
+            // candidates because it is closer to the loop header.
+            //
+            // Note: for simple `while cond { body } after;` loops, ALL exit candidates are
+            // dominated by the loop header (every path from the function entry goes through
+            // the loop header). In that case `has_non_dominated` is false and the filter is
+            // a no-op.
+            //
+            // Note: we ignore blocks that can only reach error nodes  when checking
+            // for non-dominated candidates: we do not consider them as real exits.
+            //
+            // Example:
+            // ```
+            // for i in 0..5 {
+            //     for j in 0..5 { a[i][j] = f(old[i][j]); }
+            // }
+            // ```
+            // The MIR actually contains two matches because of the iterators, and these
+            // two matches share the same `undefined_behavior` fallthrough block. This block
+            // is not dominated by the inner loop header, so `has_non_dominated` would be
+            // true, causing the filter to discard the inner loop's real exit.
+
+            let is_dominated_by_loop = |bid: &BlockId| -> bool {
+                cfg.dominator_tree
+                    .dominators(*bid)
+                    .is_some_and(|mut doms| doms.any(|d| d == loop_id))
+            };
+            let has_non_dominated = loop_exits
+                .keys()
+                .any(|bid| !is_dominated_by_loop(bid) && !cfg.block_data[*bid].only_reach_error);
+            if has_non_dominated {
+                loop_exits.retain(|bid, _| !is_dominated_by_loop(bid));
+            }
+
             // We choose the exit with:
             // - the most occurrences
             // - the least total distance (if there are several possibilities)
@@ -884,6 +935,7 @@ enum ReconstructMode {
 }
 
 struct ReconstructCtx<'a> {
+    ctx: &'a TransformCtx,
     cfg: CfgInfo,
     body: &'a src::ExprBody,
     /// The depth of `loop` contexts we may `break`/`continue` to.
@@ -897,7 +949,7 @@ struct ReconstructCtx<'a> {
 }
 
 impl<'a> ReconstructCtx<'a> {
-    fn build(ctx: &TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
+    fn build(ctx: &'a TransformCtx, src_body: &'a src::ExprBody) -> Result<Self, Irreducible> {
         // Compute all sorts of graph-related information about the control-flow graph, including
         // reachability, the dominator tree, loop entries, and loop/switch exits.
         let cfg = CfgInfo::build(ctx, &src_body.body)?;
@@ -906,6 +958,7 @@ impl<'a> ReconstructCtx<'a> {
         // conditional branchings.
         let allow_duplication = true;
         Ok(ReconstructCtx {
+            ctx,
             cfg,
             body: src_body,
             break_context_depth: 0,
@@ -942,9 +995,10 @@ impl<'a> ReconstructCtx<'a> {
     /// Translate a jump to the given block. The span is used to create the jump statement, if any.
     #[tracing::instrument(skip(self), ret, fields(stack = ?self.special_jump_stack))]
     fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
+        // Look up target_block in the special jump stack (from the top).
         match self
             .special_jump_stack
-            .iter_mut()
+            .iter()
             .rev()
             .enumerate()
             .find(|(_, j)| j.target_block == target_block)
@@ -965,7 +1019,33 @@ impl<'a> ReconstructCtx<'a> {
                     SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
                         mk_block(tgt::StatementKind::Break(self.break_context_depth - depth))
                     }
-                    SpecialJumpKind::NextBlock => mk_block(tgt::StatementKind::Nop),
+                    SpecialJumpKind::NextBlock => {
+                        // A [NextBlock] entry means "this block will be translated after the
+                        // current switch." Normally, we should generate a no-op to fall
+                        // through to the code after the switch.
+                        //
+                        // However, if there is a [LoopContinue]/[LoopBreak] between the top of
+                        // the stack and and this [NextBlock] entry, it means we are inside a loop
+                        // nested within a switch. A no-op here would mean "fall through to the
+                        // end of the loop body" (= implicit continue), which is wrong: the original
+                        // code intended to exit the loop and reach the outer continuation block.
+                        // If we fall into this case, it also means that the block we currently
+                        // want to jump to is *not* one of these loop exits, meaning we can't
+                        // insert a break.
+                        let n = self.special_jump_stack.len();
+                        let has_intervening_loop = i > 0
+                            && self.special_jump_stack[(n - i)..n]
+                                .iter()
+                                .any(|j| matches!(j.kind, SpecialJumpKind::LoopContinue(_)));
+                        if has_intervening_loop {
+                            register_error!(
+                                &self.ctx,
+                                span,
+                                "Could not reconstruct the control-flow",
+                            );
+                        }
+                        mk_block(tgt::StatementKind::Nop)
+                    }
                 }
             }
             // Translate the block without a jump.
