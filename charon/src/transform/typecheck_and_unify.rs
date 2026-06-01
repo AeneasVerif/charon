@@ -41,6 +41,12 @@ struct TypeCheckVisitor<'a> {
     /// Remember the names of the types visited up to here.
     visit_stack: Vec<&'static str>,
     body_lt_unifier: Option<UnionFind<RegionId>>,
+    /// Copies of default methods may have contradictory premises like `Self::Item = bool` and
+    /// `Self::Item = u32` which may equate entirely different types. We don't try to reason about
+    /// this and instead accept this fact. It's fine because the original methods will be
+    /// type-checked.
+    /// Example where this matters: tests/ui/traits/default-method-with-item-bound.6.rs
+    accept_type_errors: bool,
 }
 
 impl VisitorWithSpan for TypeCheckVisitor<'_> {
@@ -118,6 +124,7 @@ impl TypeCheckVisitor<'_> {
             (TyKind::TraitType(..), _) | (_, TyKind::TraitType(..)) => {}
             (TyKind::PtrMetadata(..), _) | (_, TyKind::PtrMetadata(..)) => {}
             (TyKind::Error(_), _) | (_, TyKind::Error(_)) => {}
+            _ if self.accept_type_errors => {}
             _ => return Err(TypeError),
         }
         Ok(())
@@ -640,6 +647,18 @@ impl TransformPass for Check {
     }
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.for_each_item_mut(|ctx, mut item| {
+            // Accept type errors within copies of default methods. See docs for
+            // `accept_type_errors` for why.
+            let accept_type_errors = matches!(
+                &item,
+                ItemRefMut::Fun(FunDecl {
+                    src: ItemSource::TraitImpl {
+                        reuses_default: true,
+                        ..
+                    },
+                    ..
+                })
+            );
             let mut visitor = TypeCheckVisitor {
                 ctx,
                 phase: *self,
@@ -647,6 +666,7 @@ impl TransformPass for Check {
                 binder_stack: BindingStack::empty(),
                 visit_stack: Default::default(),
                 body_lt_unifier: None,
+                accept_type_errors,
             };
             let _ = item.drive_mut(&mut visitor);
         });
