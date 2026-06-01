@@ -1,0 +1,35 @@
+disabled backtrace
+warning[E9999]: Couldn't convert constant back to an expression
+                
+                Context:
+                 - const_value: Scalar(
+                    0x0000000000000000,
+                )
+                 - ty: *const u8
+                 - err: InterpErrorInfo(
+                    InterpErrorInfoInner {
+                        kind: UndefinedBehavior(
+                            DanglingIntPointer {
+                                addr: 0,
+                                inbounds_size: 0,
+                                msg: Dereferenceable,
+                            },
+                        ),
+                        backtrace: InterpErrorBacktrace {
+                            backtrace: None,
+                        },
+                    },
+                )
+                
+
+error: Unsupported constant: "ConstEvalVal"
+ --> /rustc/library/core/src/ptr/metadata.rs:120:5
+
+note: the error occurred when translating `core::ptr::null::<u8>`, which is (transitively) used at the following location(s):
+ --> tests/ui/consts/ptr-null-constevalval.rs:8:13
+  |
+8 |     let _ = core::ptr::null::<u8>();
+  |             -----------------------
+warning: 1 warning emitted
+
+ERROR Charon failed to translate this code (1 errors)
