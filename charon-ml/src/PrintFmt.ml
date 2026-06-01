@@ -504,6 +504,7 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
       Format.fprintf fmt "&vtable_of(%a)" (pp_trait_ref env) trait_ref
   | CFnDef fn_ptr -> pp_fn_ptr env fmt fn_ptr
   | CFnPtr fn_ptr -> Format.fprintf fmt "fnptr(%a)" (pp_fn_ptr env) fn_ptr
+  | CTypeId ty -> Format.fprintf fmt "TypeId(%a)" (pp_ty env) ty
   | CRawMemory bytes ->
       Format.fprintf fmt "RawMemory(%a)" (pp_sep_list ", " (pp_byte env)) bytes
   | COpaque reason -> Format.fprintf fmt "Opaque(%s)" reason

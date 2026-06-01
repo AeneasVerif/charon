@@ -650,6 +650,8 @@ pub enum ConstantExprKind {
     ///
     /// We eliminate this case in a micro-pass.
     FnPtr(FnPtr),
+    /// The `TypeId` value for a type.
+    TypeId(Ty),
     /// A pointer with no provenance (e.g. 0 for the null pointer)
     ///
     /// We eliminate this case in a micro-pass.
