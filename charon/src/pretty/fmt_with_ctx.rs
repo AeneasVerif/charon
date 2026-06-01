@@ -551,12 +551,8 @@ impl Display for FloatTy {
 impl Display for FloatValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         let v = &self.value;
-        match self.ty {
-            FloatTy::F16 => write!(f, "{v} : f16"),
-            FloatTy::F32 => write!(f, "{v} : f32"),
-            FloatTy::F64 => write!(f, "{v} : f64"),
-            FloatTy::F128 => write!(f, "{v} : f128"),
-        }
+        let ty = self.ty;
+        write!(f, "{v}{ty}")
     }
 }
 
@@ -1741,8 +1737,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
 impl Display for ScalarValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         match self {
-            ScalarValue::Signed(ty, v) => write!(f, "{v} : {}", ty),
-            ScalarValue::Unsigned(ty, v) => write!(f, "{v} : {}", ty),
+            ScalarValue::Signed(ty, v) => write!(f, "{v}{ty}"),
+            ScalarValue::Unsigned(ty, v) => write!(f, "{v}{ty}"),
         }
     }
 }

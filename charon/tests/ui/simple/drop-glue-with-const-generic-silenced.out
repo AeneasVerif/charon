@@ -57,14 +57,14 @@ impl<const K : usize> "impl_Destruct_for_PortableHash" Destruct for PortableHash
 }
 
 // Full name: test_crate::foo
-fn foo(_1: PortableHash<42 : usize>)
+fn foo(_1: PortableHash<42usize>)
 {
     let _0: (); // return
-    let _1: PortableHash<42 : usize>; // arg #1
+    let _1: PortableHash<42usize>; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[impl_Destruct_for_PortableHash::drop_in_place<42 : usize>] _1
+    drop[impl_Destruct_for_PortableHash::drop_in_place<42usize>] _1
     return
 }
 

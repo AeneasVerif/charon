@@ -8,20 +8,20 @@ pub fn MAX() -> usize
 pub const MAX: usize = MAX()
 
 // Full name: core::num::{u128}::to_ne_bytes
-pub fn to_ne_bytes(_1: u128) -> [u8; 16 : usize]
+pub fn to_ne_bytes(_1: u128) -> [u8; 16usize]
 = <opaque>
 
 // Full name: test_crate::S
-fn S() -> [u8; 16 : usize]
+fn S() -> [u8; 16usize]
 {
-    let _0: [u8; 16 : usize]; // return
+    let _0: [u8; 16usize]; // return
 
-    _0 = to_ne_bytes(const 24197857199965561741520400062332047378 : u128)
+    _0 = to_ne_bytes(const 24197857199965561741520400062332047378u128)
     return
 }
 
 // Full name: test_crate::S
-const S: [u8; 16 : usize] = S()
+const S: [u8; 16usize] = S()
 
 // Full name: test_crate::HasBEDiscr
 enum HasBEDiscr {
@@ -45,7 +45,7 @@ fn main()
     storage_live(_6)
     _0 = ()
     storage_live(x_1)
-    x_1 = const 52 : usize
+    x_1 = const 52usize
     storage_live(y_2)
     y_2 = copy MAX
     storage_live(z_3)
@@ -58,7 +58,7 @@ fn main()
     storage_dead(_5)
     storage_dead(_4)
     storage_live(a_7)
-    a_7 = const 102 : u128 panic.<< const 64 : i32
+    a_7 = const 102u128 panic.<< const 64i32
     storage_live(b_8)
     b_8 = HasBEDiscr::Second {  }
     _0 = ()

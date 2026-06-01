@@ -64,11 +64,11 @@ let pp_big_int (fmt : Format.formatter) (bi : big_int) : unit =
   pp_string fmt (Z.to_string bi)
 
 let pp_scalar_value (fmt : Format.formatter) (sv : scalar_value) : unit =
-  Format.fprintf fmt "%a : %a" pp_big_int (Scalars.get_val sv) pp_integer_type
+  Format.fprintf fmt "%a%a" pp_big_int (Scalars.get_val sv) pp_integer_type
     (Scalars.get_ty sv)
 
 let pp_float_value (fmt : Format.formatter) (fv : float_value) : unit =
-  Format.fprintf fmt "%s : %a" fv.float_value pp_float_type fv.float_ty
+  Format.fprintf fmt "%s%a" fv.float_value pp_float_type fv.float_ty
 
 let escape_string (s : string) : string =
   let buf = Buffer.create (String.length s) in

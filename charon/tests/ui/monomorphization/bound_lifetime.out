@@ -36,7 +36,7 @@ fn main()
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = const 42 : u32
+    _7 = const 42u32
     _6 = &_7
     _5 = move _6
     storage_live(_4)

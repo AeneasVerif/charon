@@ -15,12 +15,12 @@ fn two() -> &'static u32
     storage_live(_2)
     storage_live(_3)
     storage_live(_1)
-    _2 = const 1 : u32 panic.+ const 1 : u32
+    _2 = const 1u32 panic.+ const 1u32
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = const 1 : u32 wrap.+ const 1 : u32
+    _7 = const 1u32 wrap.+ const 1u32
     _6 = move _7
     _5 = &_6
     _4 = move _5

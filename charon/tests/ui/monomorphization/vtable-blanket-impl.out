@@ -27,7 +27,7 @@ pub fn method::<()><'_0>(self_1: &'_0 ()) -> usize
     let _0: usize; // return
     let self_1: &'1 (); // arg #1
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 

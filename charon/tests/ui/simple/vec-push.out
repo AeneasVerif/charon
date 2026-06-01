@@ -216,8 +216,8 @@ where
     storage_live(_4)
     storage_live(_5)
     switch const impl_SizedTypeProperties_for_T<T>[TraitClause0]::SIZE {
-        0 : usize => {
-            _5 = const 18446744073709551615 : usize
+        0usize => {
+            _5 = const 18446744073709551615usize
         },
         _ => {
             storage_live(self_11)
@@ -248,7 +248,7 @@ where
     src_10 = move value_2
     (*end_8) = move src_10
     storage_dead(src_10)
-    ((*self_1)).len = copy len_3 wrap.+ const 1 : usize
+    ((*self_1)).len = copy len_3 wrap.+ const 1usize
     _0 = &mut (*end_8)
     storage_dead(len_3)
     return
@@ -283,7 +283,7 @@ fn vec<'_0>(x_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl
     _0 = ()
     storage_live(_2)
     _2 = &two-phase-mut (*x_1)
-    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, const 42 : u32)
+    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, const 42u32)
     storage_dead(_2)
     return
 }

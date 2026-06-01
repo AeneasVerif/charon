@@ -81,7 +81,7 @@ fn impl_FnMut_unit_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, tu
 
     storage_live(_3)
     _0 = ()
-    _3 = copy (*((*_1)).0) panic.+ const 1 : i32
+    _3 = copy (*((*_1)).0) panic.+ const 1i32
     (*((*_1)).0) = move _3
     _0 = ()
     return
@@ -100,7 +100,7 @@ fn foo()
 
     _0 = ()
     storage_live(x_1)
-    x_1 = const 0 : i32
+    x_1 = const 0i32
     storage_live(rx_2)
     rx_2 = &mut x_1
     storage_live(closure_3)

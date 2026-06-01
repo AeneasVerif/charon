@@ -120,18 +120,18 @@ pub fn sum<'_0>(s_1: &'_0 [u32]) -> u32
     storage_live(_24)
     storage_live(sum_2)
     // `let sum`
-    sum_2 = const 0 : u32
+    sum_2 = const 0u32
     storage_live(i_3)
     // `let i`
     //  indented sub-comment
     // unindented sub-comment
-    i_3 = const 0 : usize
+    i_3 = const 0usize
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     // Function call
     _6 = copy sum_2
-    _7 = copy _6 panic.+ const 2 : u32
+    _7 = copy _6 panic.+ const 2u32
     _5 = move _7
     storage_dead(_6)
     _4 = function_call(move _5)
@@ -168,7 +168,7 @@ pub fn sum<'_0>(s_1: &'_0 [u32]) -> u32
         storage_dead(_12)
         storage_dead(_13)
         // Increment `i`
-        _15 = copy i_3 panic.+ const 1 : usize
+        _15 = copy i_3 panic.+ const 1usize
         i_3 = move _15
         // Before end of loop
         storage_dead(_8)
@@ -182,13 +182,13 @@ pub fn sum<'_0>(s_1: &'_0 [u32]) -> u32
     storage_live(_18)
     // Assign the result of an `if`.
     _18 = copy sum_2
-    _17 = move _18 > const 10 : u32
+    _17 = move _18 > const 10u32
     if move _17 {
         storage_dead(_18)
         storage_live(_19)
         // sum + 100
         _19 = copy sum_2
-        _20 = copy _19 panic.+ const 100 : u32
+        _20 = copy _19 panic.+ const 100u32
         _16 = move _20
         storage_dead(_19)
     } else {
@@ -204,7 +204,7 @@ pub fn sum<'_0>(s_1: &'_0 [u32]) -> u32
     storage_live(_23)
     // Function call
     _23 = copy sum_2
-    _24 = copy _23 panic.+ const 2 : u32
+    _24 = copy _23 panic.+ const 2u32
     _22 = move _24
     storage_dead(_23)
     _21 = function_call(move _22)
@@ -309,7 +309,7 @@ fn foo()
     let _12: Bar; // anonymous local
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
-    let a_15: [u32; 10 : usize]; // local
+    let a_15: [u32; 10usize]; // local
     let _16: (&'3 u32, &'4 u32); // anonymous local
     let _17: &'5 u32; // anonymous local
     let _18: usize; // anonymous local
@@ -330,7 +330,7 @@ fn foo()
     let _33: &'23 u32; // anonymous local
     let _34: &'31 u32; // anonymous local
     let _35: u32; // anonymous local
-    let _36: &'_ [u32; 10 : usize]; // anonymous local
+    let _36: &'_ [u32; 10usize]; // anonymous local
     let _37: &'_ u32; // anonymous local
 
     storage_live(_32)
@@ -381,22 +381,22 @@ fn foo()
     storage_dead(_11)
     storage_live(a_15)
     // Build an array
-    a_15 = @ArrayRepeat<u32, 10 : usize>(const 0 : u32)
+    a_15 = @ArrayRepeat<u32, 10usize>(const 0u32)
     storage_live(_16)
     storage_live(_17)
     storage_live(_18)
     // `assert_eq`
-    _18 = const 9 : usize
+    _18 = const 9usize
     storage_live(_33)
     storage_live(_34)
     storage_live(_35)
-    _35 = const 9 : u32
+    _35 = const 9u32
     _34 = &_35
     _33 = move _34
     storage_live(_36)
     _36 = &a_15
     storage_live(_37)
-    _37 = @ArrayIndexShared<'_, u32, 10 : usize>(move _36, copy _18)
+    _37 = @ArrayIndexShared<'_, u32, 10usize>(move _36, copy _18)
     _17 = &(*_37)
     storage_live(_19)
     _32 = move _33
@@ -455,7 +455,7 @@ fn CONSTANT() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 42 : u32
+    _0 = const 42u32
     return
 }
 
@@ -477,8 +477,8 @@ pub fn thing()
     storage_live(x_1)
     storage_live(_2)
     // This comment belongs above the assignment to `x` and not above intermediate computations.
-    _2 = copy CONSTANT panic.>> const 3 : i32
-    _3 = copy _2 panic.+ const 12 : u32
+    _2 = copy CONSTANT panic.>> const 3i32
+    _3 = copy _2 panic.+ const 12u32
     x_1 = move _3
     storage_dead(_2)
     storage_live(_4)

@@ -23,19 +23,19 @@ fn some_method<'_0>(self_1: &'_0 Point::<i32>)
     storage_live(_2)
     storage_live(_3)
     _3 = copy ((*self_1)).x
-    _2 = move _3 > const 0 : i32
+    _2 = move _3 > const 0i32
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         storage_live(_5)
         _5 = copy ((*self_1)).y
-        _4 = move _5 < const 100 : u64
+        _4 = move _5 < const 100u64
         if move _4 {
             storage_dead(_5)
             storage_live(_6)
             storage_live(_7)
             _7 = copy ((*self_1)).z
-            _6 = move _7 != const 0 : i32
+            _6 = move _7 != const 0i32
             if move _6 {
                 storage_dead(_7)
                 storage_dead(_6)
@@ -65,7 +65,7 @@ fn main()
 
     _0 = ()
     storage_live(p_1)
-    p_1 = Point::<i32> { x: const 10 : i32, y: const 50 : u64, z: const 1 : i32 }
+    p_1 = Point::<i32> { x: const 10i32, y: const 50u64, z: const 1i32 }
     storage_live(_2)
     storage_live(_3)
     _3 = &p_1

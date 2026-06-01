@@ -357,18 +357,18 @@ impl "impl_FnMut_tuple_for_closure" FnMut<(i32,)> for closure {
     non-dyn-compatible
 }
 
-pub fn test_crate::map(x_1: [i32; 256 : usize]) -> [i32; 256 : usize]
+pub fn test_crate::map(x_1: [i32; 256usize]) -> [i32; 256usize]
 {
-    let _0: [i32; 256 : usize]; // return
-    let x_1: [i32; 256 : usize]; // arg #1
-    let _2: [i32; 256 : usize]; // anonymous local
+    let _0: [i32; 256usize]; // return
+    let x_1: [i32; 256usize]; // arg #1
+    let _2: [i32; 256usize]; // anonymous local
     let _3: closure; // anonymous local
 
     storage_live(_2)
     _2 = copy x_1
     storage_live(_3)
     _3 = closure {  }
-    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, impl_FnMut_tuple_for_closure, impl_Destruct_for_closure, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
+    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, impl_FnMut_tuple_for_closure, impl_Destruct_for_closure, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -379,15 +379,15 @@ pub fn array<const LEN : usize>() -> [u8; LEN]
 {
     let _0: [u8; LEN]; // return
 
-    _0 = @ArrayRepeat<u8, LEN>(const 0 : u8)
+    _0 = @ArrayRepeat<u8, LEN>(const 0u8)
     return
 }
 
 // Full name: test_crate::cbd
-fn cbd(prf_input_1: [u8; 33 : usize])
+fn cbd(prf_input_1: [u8; 33usize])
 {
     let _0: (); // return
-    let prf_input_1: [u8; 33 : usize]; // arg #1
+    let prf_input_1: [u8; 33usize]; // arg #1
     let _2: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let _3: Range<u8>[{built_in impl Sized for u8}]; // anonymous local
     let iter_4: Range<u8>[{built_in impl Sized for u8}]; // local
@@ -397,13 +397,13 @@ fn cbd(prf_input_1: [u8; 33 : usize])
     let i_8: u8; // local
     let _9: u8; // anonymous local
     let _10: usize; // anonymous local
-    let _11: &'_ mut [u8; 33 : usize]; // anonymous local
+    let _11: &'_ mut [u8; 33usize]; // anonymous local
     let _12: &'_ mut u8; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = Range { start: const 0 : u8, end: const 3 : u8 }
+    _3 = Range { start: const 0u8, end: const 3u8 }
     _2 = impl_IntoIterator_for_T::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Range<u8>[{built_in impl Sized for u8}, impl_Step_for_u8]](move _3)
     storage_dead(_3)
     storage_live(iter_4)
@@ -428,11 +428,11 @@ fn cbd(prf_input_1: [u8; 33 : usize])
         storage_live(_9)
         _9 = copy i_8
         storage_live(_10)
-        _10 = const 0 : usize
+        _10 = const 0usize
         storage_live(_11)
         _11 = &mut prf_input_1
         storage_live(_12)
-        _12 = @ArrayIndexMut<'_, u8, 33 : usize>(move _11, copy _10)
+        _12 = @ArrayIndexMut<'_, u8, 33usize>(move _11, copy _10)
         (*_12) = move _9
         storage_dead(_9)
         storage_dead(_10)

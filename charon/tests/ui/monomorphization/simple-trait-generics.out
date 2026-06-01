@@ -124,7 +124,7 @@ fn main()
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
-    _10 = const 42 : i32
+    _10 = const 42i32
     _9 = &_10
     _8 = move _9
     storage_live(_6)

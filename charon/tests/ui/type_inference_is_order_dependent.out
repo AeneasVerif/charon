@@ -156,15 +156,15 @@ where
     let args_3: (&'4 U,); // local
     let _4: &'5 U; // anonymous local
     let _5: U; // anonymous local
-    let args_6: [Argument<'8>; 1 : usize]; // local
+    let args_6: [Argument<'8>; 1usize]; // local
     let _7: Argument<'9>; // anonymous local
     let _8: &'10 U; // anonymous local
-    let _9: &'12 [u8; 4 : usize]; // anonymous local
-    let _10: &'13 [u8; 4 : usize]; // anonymous local
-    let _11: &'16 [Argument<'17>; 1 : usize]; // anonymous local
-    let _12: &'18 [Argument<'19>; 1 : usize]; // anonymous local
-    let _13: [u8; 4 : usize]; // anonymous local
-    let _14: &'25 [u8; 4 : usize]; // anonymous local
+    let _9: &'12 [u8; 4usize]; // anonymous local
+    let _10: &'13 [u8; 4usize]; // anonymous local
+    let _11: &'16 [Argument<'17>; 1usize]; // anonymous local
+    let _12: &'18 [Argument<'19>; 1usize]; // anonymous local
+    let _13: [u8; 4usize]; // anonymous local
+    let _14: &'25 [u8; 4usize]; // anonymous local
 
     _0 = ()
     storage_live(_1)
@@ -187,7 +187,7 @@ where
     storage_live(_9)
     storage_live(_10)
     storage_live(_13)
-    _13 = [const 192 : u8, const 1 : u8, const 10 : u8, const 0 : u8]
+    _13 = [const 192u8, const 1u8, const 10u8, const 0u8]
     storage_live(_14)
     _14 = &_13
     _10 = move _14
@@ -196,7 +196,7 @@ where
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'27, 4 : usize, 1 : usize>(move _9, move _11)
+    _2 = new<'27, 4usize, 1usize>(move _9, move _11)
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)

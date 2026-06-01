@@ -164,7 +164,7 @@ pub fn incr_u32(x_1: u32) -> u32
     storage_live(_3)
     storage_live(_2)
     _2 = copy x_1
-    _3 = copy _2 panic.+ const 1 : u32
+    _3 = copy _2 panic.+ const 1u32
     _0 = move _3
     storage_dead(_2)
     return
@@ -1024,7 +1024,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call<'_0>(_
     x_3 = move tupled_args_2.0
     storage_live(_4)
     _4 = copy x_3
-    _5 = copy _4 panic.+ const 1 : u32
+    _5 = copy _4 panic.+ const 1u32
     _0 = move _5
     storage_dead(_4)
     return
@@ -1282,7 +1282,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call<'_0>(_
     x_3 = move tupled_args_2.0
     storage_live(_4)
     _4 = copy x_3
-    _5 = copy _4 panic.+ const 1 : u32
+    _5 = copy _4 panic.+ const 1u32
     _0 = move _5
     storage_dead(_4)
     return
@@ -1687,7 +1687,7 @@ pub fn test_closure_capture(x_1: u32, y_2: u32) -> u32
     storage_live(_7)
     _7 = &(*f_3)
     storage_live(_8)
-    _8 = (const 0 : u32,)
+    _8 = (const 0u32,)
     _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'25, '26, '27>(move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)
@@ -1984,18 +1984,18 @@ impl FnMut<(i32,), i32> for test_crate::test_array_map::closure {
 }
 
 // Full name: test_crate::test_array_map
-pub fn test_array_map(x_1: [i32; 256 : usize]) -> [i32; 256 : usize]
+pub fn test_array_map(x_1: [i32; 256usize]) -> [i32; 256usize]
 {
-    let _0: [i32; 256 : usize]; // return
-    let x_1: [i32; 256 : usize]; // arg #1
-    let _2: [i32; 256 : usize]; // anonymous local
+    let _0: [i32; 256usize]; // return
+    let x_1: [i32; 256usize]; // arg #1
+    let _2: [i32; 256usize]; // anonymous local
     let _3: test_crate::test_array_map::closure; // anonymous local
 
     storage_live(_2)
     _2 = copy x_1
     storage_live(_3)
     _3 = test_crate::test_array_map::closure {  }
-    _0 = map<i32, test_crate::test_array_map::closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for test_crate::test_array_map::closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}, {impl Destruct for test_crate::test_array_map::closure}, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
+    _0 = map<i32, test_crate::test_array_map::closure, i32, 256usize>[{built_in impl Sized for i32}, {built_in impl Sized for test_crate::test_array_map::closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}, {impl Destruct for test_crate::test_array_map::closure}, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -2048,13 +2048,13 @@ fn test_fnmut_with_ref()
     storage_live(_10)
     storage_live(_11)
     storage_live(_12)
-    _12 = const 15 : usize
+    _12 = const 15usize
     _11 = &_12
     _10 = move _11
     storage_live(_9)
     _0 = ()
     storage_live(sum_1)
-    sum_1 = const 0 : usize
+    sum_1 = const 0usize
     storage_live(closure_2)
     storage_live(_3)
     _3 = &mut sum_1

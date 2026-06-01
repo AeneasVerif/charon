@@ -73,7 +73,7 @@ fn main()
     _5 = const false
     storage_live(b_1)
     _5 = const true
-    b_1 = @BoxNew<u32>[{built_in impl Sized for u32}, {built_in impl Destruct for u32}](const 1 : u32)
+    b_1 = @BoxNew<u32>[{built_in impl Sized for u32}, {built_in impl Destruct for u32}](const 1u32)
     storage_live(_2)
     _2 = const false
     if move _2 {

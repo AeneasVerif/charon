@@ -99,34 +99,34 @@ fn f1<'_0>(a_1: &'_0 [u8]) -> usize
     storage_live(_9)
     storage_live(_10)
     storage_live(sampled_2)
-    sampled_2 = const 0 : usize
+    sampled_2 = const 0usize
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = const 0 : usize
+    _5 = const 0usize
     storage_live(_13)
     _13 = &(*a_1) with_metadata(copy a_1.metadata)
     storage_live(_14)
     _14 = @SliceIndexShared<'_, u8>(move _13, copy _5)
     _4 = copy (*_14)
-    _3 = move _4 < const 42 : u8
+    _3 = move _4 < const 42u8
     if move _3 {
         storage_dead(_5)
         storage_dead(_4)
         storage_live(_6)
         storage_live(_7)
         storage_live(_8)
-        _8 = const 1 : usize
+        _8 = const 1usize
         storage_live(_11)
         _11 = &(*a_1) with_metadata(copy a_1.metadata)
         storage_live(_12)
         _12 = @SliceIndexShared<'_, u8>(move _11, copy _8)
         _7 = copy (*_12)
-        _6 = move _7 < const 16 : u8
+        _6 = move _7 < const 16u8
         if move _6 {
             storage_dead(_8)
             storage_dead(_7)
-            _9 = copy sampled_2 panic.+ const 100 : usize
+            _9 = copy sampled_2 panic.+ const 100usize
             sampled_2 = move _9
         } else {
             storage_dead(_8)
@@ -138,7 +138,7 @@ fn f1<'_0>(a_1: &'_0 [u8]) -> usize
     }
     storage_dead(_6)
     storage_dead(_3)
-    _10 = copy sampled_2 panic.+ const 101 : usize
+    _10 = copy sampled_2 panic.+ const 101usize
     sampled_2 = move _10
     _0 = copy sampled_2
     storage_dead(sampled_2)
@@ -150,7 +150,7 @@ fn FIELD_MODULUS() -> i16
 {
     let _0: i16; // return
 
-    _0 = const 8 : i16
+    _0 = const 8i16
     return
 }
 
@@ -219,12 +219,12 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
     storage_live(_37)
     storage_live(_44)
     storage_live(sampled_3)
-    sampled_3 = const 0 : usize
+    sampled_3 = const 0usize
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     _6 = &(*a_1) with_metadata(copy a_1.metadata)
-    _5 = chunks<'25, u8>[{built_in impl Sized for u8}](move _6, const 3 : usize)
+    _5 = chunks<'25, u8>[{built_in impl Sized for u8}](move _6, const 3usize)
     storage_dead(_6)
     _4 = impl_IntoIterator_for_T::into_iter<Chunks<'27, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'27, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Chunks<'27, u8>[{built_in impl Sized for u8}]](move _5)
     storage_dead(_5)
@@ -250,7 +250,7 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
         storage_live(b1_12)
         storage_live(_13)
         storage_live(_14)
-        _14 = const 0 : usize
+        _14 = const 0usize
         storage_live(_49)
         _49 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
         storage_live(_50)
@@ -262,7 +262,7 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
         storage_live(b2_15)
         storage_live(_16)
         storage_live(_17)
-        _17 = const 1 : usize
+        _17 = const 1usize
         storage_live(_51)
         _51 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
         storage_live(_52)
@@ -274,7 +274,7 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
         storage_live(b3_18)
         storage_live(_19)
         storage_live(_20)
-        _20 = const 2 : usize
+        _20 = const 2usize
         storage_live(_53)
         _53 = &(*bytes_11) with_metadata(copy bytes_11.metadata)
         storage_live(_54)
@@ -288,9 +288,9 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
         storage_live(_23)
         storage_live(_24)
         _24 = copy b2_15
-        _23 = move _24 & const 15 : i16
+        _23 = move _24 & const 15i16
         storage_dead(_24)
-        _22 = move _23 panic.<< const 8 : i32
+        _22 = move _23 panic.<< const 8i32
         storage_dead(_23)
         storage_live(_25)
         _25 = copy b1_12
@@ -301,12 +301,12 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
         storage_live(_27)
         storage_live(_28)
         _28 = copy b3_18
-        _27 = move _28 panic.<< const 4 : i32
+        _27 = move _28 panic.<< const 4i32
         storage_dead(_28)
         storage_live(_29)
         storage_live(_30)
         _30 = copy b2_15
-        _29 = move _30 panic.>> const 4 : i32
+        _29 = move _30 panic.>> const 4i32
         storage_dead(_30)
         d2_26 = move _27 | move _29
         storage_dead(_29)
@@ -320,7 +320,7 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
             storage_live(_33)
             storage_live(_34)
             _34 = copy sampled_3
-            _33 = move _34 < const 16 : usize
+            _33 = move _34 < const 16usize
             if move _33 {
                 storage_dead(_34)
                 storage_live(_35)
@@ -334,7 +334,7 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
                 (*_46) = move _35
                 storage_dead(_35)
                 storage_dead(_36)
-                _37 = copy sampled_3 panic.+ const 1 : usize
+                _37 = copy sampled_3 panic.+ const 1usize
                 sampled_3 = move _37
             } else {
                 storage_dead(_34)
@@ -353,7 +353,7 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
             storage_live(_40)
             storage_live(_41)
             _41 = copy sampled_3
-            _40 = move _41 < const 16 : usize
+            _40 = move _41 < const 16usize
             if move _40 {
                 storage_dead(_41)
                 storage_live(_42)
@@ -367,7 +367,7 @@ fn f2<'_0, '_1>(a_1: &'_0 [u8], result_2: &'_1 mut [i16]) -> usize
                 (*_48) = move _42
                 storage_dead(_42)
                 storage_dead(_43)
-                _44 = copy sampled_3 panic.+ const 1 : usize
+                _44 = copy sampled_3 panic.+ const 1usize
                 sampled_3 = move _44
             } else {
                 storage_dead(_41)

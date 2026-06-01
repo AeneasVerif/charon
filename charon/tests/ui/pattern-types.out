@@ -1,16 +1,16 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::Positive
-pub type Positive = i32 is 1 : i32..=2147483647 : i32
+pub type Positive = i32 is 1i32..=2147483647i32
 
 // Full name: test_crate::NonNullPtr
 pub type NonNullPtr = *const u8 is !null
 
 // Full name: test_crate::keep_positive
-pub fn keep_positive(x_1: i32 is 1 : i32..=2147483647 : i32) -> i32 is 1 : i32..=2147483647 : i32
+pub fn keep_positive(x_1: i32 is 1i32..=2147483647i32) -> i32 is 1i32..=2147483647i32
 {
-    let _0: i32 is 1 : i32..=2147483647 : i32; // return
-    let x_1: i32 is 1 : i32..=2147483647 : i32; // arg #1
+    let _0: i32 is 1i32..=2147483647i32; // return
+    let x_1: i32 is 1i32..=2147483647i32; // arg #1
 
     _0 = copy x_1
     return

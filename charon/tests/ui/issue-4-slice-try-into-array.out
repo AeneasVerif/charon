@@ -154,8 +154,8 @@ pub fn trait_error<'_0>(s_1: &'_0 [u8])
 {
     let _0: (); // return
     let s_1: &'1 [u8]; // arg #1
-    let _array_2: [u8; 4 : usize]; // local
-    let _3: Result<[u8; 4 : usize], TryFromSliceError>[{built_in impl Sized for [u8; 4 : usize]}, {built_in impl Sized for TryFromSliceError}]; // anonymous local
+    let _array_2: [u8; 4usize]; // local
+    let _3: Result<[u8; 4usize], TryFromSliceError>[{built_in impl Sized for [u8; 4usize]}, {built_in impl Sized for TryFromSliceError}]; // anonymous local
     let _4: &'2 [u8]; // anonymous local
 
     _0 = ()
@@ -163,9 +163,9 @@ pub fn trait_error<'_0>(s_1: &'_0 [u8])
     storage_live(_3)
     storage_live(_4)
     _4 = &(*s_1) with_metadata(copy s_1.metadata)
-    _3 = impl_TryInto_for_T::try_into<&'4 [u8], [u8; 4 : usize]>[{built_in impl Sized for &'4 [u8]}, {built_in impl Sized for [u8; 4 : usize]}, impl_TryFrom_for_array<'4, u8, 4 : usize>[{built_in impl Sized for u8}, impl_Copy_for_u8]](move _4)
+    _3 = impl_TryInto_for_T::try_into<&'4 [u8], [u8; 4usize]>[{built_in impl Sized for &'4 [u8]}, {built_in impl Sized for [u8; 4usize]}, impl_TryFrom_for_array<'4, u8, 4usize>[{built_in impl Sized for u8}, impl_Copy_for_u8]](move _4)
     storage_dead(_4)
-    _array_2 = unwrap<[u8; 4 : usize], TryFromSliceError>[{built_in impl Sized for [u8; 4 : usize]}, {built_in impl Sized for TryFromSliceError}, impl_Debug_for_TryFromSliceError](move _3)
+    _array_2 = unwrap<[u8; 4usize], TryFromSliceError>[{built_in impl Sized for [u8; 4usize]}, {built_in impl Sized for TryFromSliceError}, impl_Debug_for_TryFromSliceError](move _3)
     storage_dead(_3)
     _0 = ()
     storage_dead(_array_2)

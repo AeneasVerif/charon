@@ -23,7 +23,7 @@ fn multiple_targets(x_1: u32) -> u32
             return
         }
         target 1 => {
-            x_1 = const 1 : u32
+            x_1 = const 1u32
             _0 = copy x_1
             return
         }

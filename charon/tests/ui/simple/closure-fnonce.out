@@ -72,7 +72,7 @@ where
     storage_live(_2)
     _2 = move f_1
     storage_live(_3)
-    _3 = (const 0 : u8,)
+    _3 = (const 0u8,)
     _0 = TraitClause1::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -127,7 +127,7 @@ fn impl_FnOnce_tuple_for_closure::call_once(_1: closure, tupled_args_2: (u8,)) -
     storage_dead(_4)
     storage_live(_6)
     _6 = copy x_3
-    _7 = copy _6 panic.+ const 1 : u8
+    _7 = copy _6 panic.+ const 1u8
     _0 = move _7
     storage_dead(_6)
     return

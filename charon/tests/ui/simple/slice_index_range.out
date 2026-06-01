@@ -67,10 +67,10 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     let _3: Arguments<'1>; // anonymous local
     let args_4: &'3 usize; // local
     let args_5: &'4 usize; // local
-    let args_6: [Argument<'7>; 2 : usize]; // local
+    let args_6: [Argument<'7>; 2usize]; // local
     let _7: Argument<'8>; // anonymous local
     let _8: Argument<'9>; // anonymous local
-    let args_9: &'12 [Argument<'13>; 2 : usize]; // local
+    let args_9: &'12 [Argument<'13>; 2usize]; // local
     let _10: ArgumentType<'15>; // anonymous local
     let _11: NonNull<()>; // anonymous local
     let _12: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
@@ -85,8 +85,8 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     let _21: NonNull<Argument<'18>>; // anonymous local
     let _22: PhantomData<&'30 ()>; // anonymous local
     let _23: PhantomData<&'39 ()>; // anonymous local
-    let _24: [u8; 57 : usize]; // anonymous local
-    let _25: &'44 [u8; 57 : usize]; // anonymous local
+    let _24: [u8; 57usize]; // anonymous local
+    let _25: &'44 [u8; 57usize]; // anonymous local
 
     storage_live(args_4)
     storage_live(args_5)
@@ -139,12 +139,12 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     args_9 = &args_6
     storage_live(_20)
     storage_live(_24)
-    _24 = [const 18 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 115 : u8, const 116 : u8, const 97 : u8, const 114 : u8, const 116 : u8, const 32 : u8, const 105 : u8, const 110 : u8, const 100 : u8, const 101 : u8, const 120 : u8, const 32 : u8, const 192 : u8, const 34 : u8, const 32 : u8, const 111 : u8, const 117 : u8, const 116 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 102 : u8, const 111 : u8, const 114 : u8, const 32 : u8, const 115 : u8, const 108 : u8, const 105 : u8, const 99 : u8, const 101 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 108 : u8, const 101 : u8, const 110 : u8, const 103 : u8, const 116 : u8, const 104 : u8, const 32 : u8, const 192 : u8, const 0 : u8]
+    _24 = [const 18u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
     storage_live(_25)
     _25 = &_24
-    _20 = transmute<&'44 [u8; 57 : usize], NonNull<u8>>(move _25)
+    _20 = transmute<&'44 [u8; 57usize], NonNull<u8>>(move _25)
     storage_live(_21)
-    _21 = transmute<&'12 [Argument<'13>; 2 : usize], NonNull<Argument<'45>>>(copy args_9)
+    _21 = transmute<&'12 [Argument<'13>; 2usize], NonNull<Argument<'45>>>(copy args_9)
     _3 = Arguments { template: move _20, args: move _21 }
     storage_dead(_21)
     storage_dead(_20)
@@ -160,10 +160,10 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     let _3: Arguments<'1>; // anonymous local
     let args_4: &'3 usize; // local
     let args_5: &'4 usize; // local
-    let args_6: [Argument<'7>; 2 : usize]; // local
+    let args_6: [Argument<'7>; 2usize]; // local
     let _7: Argument<'8>; // anonymous local
     let _8: Argument<'9>; // anonymous local
-    let args_9: &'12 [Argument<'13>; 2 : usize]; // local
+    let args_9: &'12 [Argument<'13>; 2usize]; // local
     let _10: ArgumentType<'15>; // anonymous local
     let _11: NonNull<()>; // anonymous local
     let _12: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
@@ -178,8 +178,8 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     let _21: NonNull<Argument<'18>>; // anonymous local
     let _22: PhantomData<&'30 ()>; // anonymous local
     let _23: PhantomData<&'39 ()>; // anonymous local
-    let _24: [u8; 55 : usize]; // anonymous local
-    let _25: &'44 [u8; 55 : usize]; // anonymous local
+    let _24: [u8; 55usize]; // anonymous local
+    let _25: &'44 [u8; 55usize]; // anonymous local
 
     storage_live(args_4)
     storage_live(args_5)
@@ -232,12 +232,12 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     args_9 = &args_6
     storage_live(_20)
     storage_live(_24)
-    _24 = [const 16 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 101 : u8, const 110 : u8, const 100 : u8, const 32 : u8, const 105 : u8, const 110 : u8, const 100 : u8, const 101 : u8, const 120 : u8, const 32 : u8, const 192 : u8, const 34 : u8, const 32 : u8, const 111 : u8, const 117 : u8, const 116 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 102 : u8, const 111 : u8, const 114 : u8, const 32 : u8, const 115 : u8, const 108 : u8, const 105 : u8, const 99 : u8, const 101 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 108 : u8, const 101 : u8, const 110 : u8, const 103 : u8, const 116 : u8, const 104 : u8, const 32 : u8, const 192 : u8, const 0 : u8]
+    _24 = [const 16u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 101u8, const 110u8, const 100u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
     storage_live(_25)
     _25 = &_24
-    _20 = transmute<&'44 [u8; 55 : usize], NonNull<u8>>(move _25)
+    _20 = transmute<&'44 [u8; 55usize], NonNull<u8>>(move _25)
     storage_live(_21)
-    _21 = transmute<&'12 [Argument<'13>; 2 : usize], NonNull<Argument<'45>>>(copy args_9)
+    _21 = transmute<&'12 [Argument<'13>; 2usize], NonNull<Argument<'45>>>(copy args_9)
     _3 = Arguments { template: move _20, args: move _21 }
     storage_dead(_21)
     storage_dead(_20)
@@ -253,10 +253,10 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     let _3: Arguments<'1>; // anonymous local
     let args_4: &'3 usize; // local
     let args_5: &'4 usize; // local
-    let args_6: [Argument<'7>; 2 : usize]; // local
+    let args_6: [Argument<'7>; 2usize]; // local
     let _7: Argument<'8>; // anonymous local
     let _8: Argument<'9>; // anonymous local
-    let args_9: &'12 [Argument<'13>; 2 : usize]; // local
+    let args_9: &'12 [Argument<'13>; 2usize]; // local
     let _10: ArgumentType<'15>; // anonymous local
     let _11: NonNull<()>; // anonymous local
     let _12: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
@@ -271,8 +271,8 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     let _21: NonNull<Argument<'18>>; // anonymous local
     let _22: PhantomData<&'30 ()>; // anonymous local
     let _23: PhantomData<&'39 ()>; // anonymous local
-    let _24: [u8; 40 : usize]; // anonymous local
-    let _25: &'44 [u8; 40 : usize]; // anonymous local
+    let _24: [u8; 40usize]; // anonymous local
+    let _25: &'44 [u8; 40usize]; // anonymous local
 
     storage_live(args_4)
     storage_live(args_5)
@@ -325,12 +325,12 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     args_9 = &args_6
     storage_live(_20)
     storage_live(_24)
-    _24 = [const 22 : u8, const 115 : u8, const 108 : u8, const 105 : u8, const 99 : u8, const 101 : u8, const 32 : u8, const 105 : u8, const 110 : u8, const 100 : u8, const 101 : u8, const 120 : u8, const 32 : u8, const 115 : u8, const 116 : u8, const 97 : u8, const 114 : u8, const 116 : u8, const 115 : u8, const 32 : u8, const 97 : u8, const 116 : u8, const 32 : u8, const 192 : u8, const 13 : u8, const 32 : u8, const 98 : u8, const 117 : u8, const 116 : u8, const 32 : u8, const 101 : u8, const 110 : u8, const 100 : u8, const 115 : u8, const 32 : u8, const 97 : u8, const 116 : u8, const 32 : u8, const 192 : u8, const 0 : u8]
+    _24 = [const 22u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 115u8, const 32u8, const 97u8, const 116u8, const 32u8, const 192u8, const 13u8, const 32u8, const 98u8, const 117u8, const 116u8, const 32u8, const 101u8, const 110u8, const 100u8, const 115u8, const 32u8, const 97u8, const 116u8, const 32u8, const 192u8, const 0u8]
     storage_live(_25)
     _25 = &_24
-    _20 = transmute<&'44 [u8; 40 : usize], NonNull<u8>>(move _25)
+    _20 = transmute<&'44 [u8; 40usize], NonNull<u8>>(move _25)
     storage_live(_21)
-    _21 = transmute<&'12 [Argument<'13>; 2 : usize], NonNull<Argument<'45>>>(copy args_9)
+    _21 = transmute<&'12 [Argument<'13>; 2usize], NonNull<Argument<'45>>>(copy args_9)
     _3 = Arguments { template: move _20, args: move _21 }
     storage_dead(_21)
     storage_dead(_20)
@@ -346,10 +346,10 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     let _3: Arguments<'1>; // anonymous local
     let args_4: &'3 usize; // local
     let args_5: &'4 usize; // local
-    let args_6: [Argument<'7>; 2 : usize]; // local
+    let args_6: [Argument<'7>; 2usize]; // local
     let _7: Argument<'8>; // anonymous local
     let _8: Argument<'9>; // anonymous local
-    let args_9: &'12 [Argument<'13>; 2 : usize]; // local
+    let args_9: &'12 [Argument<'13>; 2usize]; // local
     let _10: ArgumentType<'15>; // anonymous local
     let _11: NonNull<()>; // anonymous local
     let _12: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
@@ -364,8 +364,8 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     let _21: NonNull<Argument<'18>>; // anonymous local
     let _22: PhantomData<&'30 ()>; // anonymous local
     let _23: PhantomData<&'39 ()>; // anonymous local
-    let _24: [u8; 55 : usize]; // anonymous local
-    let _25: &'44 [u8; 55 : usize]; // anonymous local
+    let _24: [u8; 55usize]; // anonymous local
+    let _25: &'44 [u8; 55usize]; // anonymous local
 
     storage_live(args_4)
     storage_live(args_5)
@@ -418,12 +418,12 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     args_9 = &args_6
     storage_live(_20)
     storage_live(_24)
-    _24 = [const 16 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 101 : u8, const 110 : u8, const 100 : u8, const 32 : u8, const 105 : u8, const 110 : u8, const 100 : u8, const 101 : u8, const 120 : u8, const 32 : u8, const 192 : u8, const 34 : u8, const 32 : u8, const 111 : u8, const 117 : u8, const 116 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 114 : u8, const 97 : u8, const 110 : u8, const 103 : u8, const 101 : u8, const 32 : u8, const 102 : u8, const 111 : u8, const 114 : u8, const 32 : u8, const 115 : u8, const 108 : u8, const 105 : u8, const 99 : u8, const 101 : u8, const 32 : u8, const 111 : u8, const 102 : u8, const 32 : u8, const 108 : u8, const 101 : u8, const 110 : u8, const 103 : u8, const 116 : u8, const 104 : u8, const 32 : u8, const 192 : u8, const 0 : u8]
+    _24 = [const 16u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 101u8, const 110u8, const 100u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
     storage_live(_25)
     _25 = &_24
-    _20 = transmute<&'44 [u8; 55 : usize], NonNull<u8>>(move _25)
+    _20 = transmute<&'44 [u8; 55usize], NonNull<u8>>(move _25)
     storage_live(_21)
-    _21 = transmute<&'12 [Argument<'13>; 2 : usize], NonNull<Argument<'45>>>(copy args_9)
+    _21 = transmute<&'12 [Argument<'13>; 2usize], NonNull<Argument<'45>>>(copy args_9)
     _3 = Arguments { template: move _20, args: move _21 }
     storage_dead(_21)
     storage_dead(_20)
@@ -748,7 +748,7 @@ where
         storage_dead(_8)
         storage_live(_9)
         _9 = copy end_4
-        end_4 = move _9 wrap.+ const 1 : usize
+        end_4 = move _9 wrap.+ const 1usize
         storage_dead(_9)
         if copy exhausted_5 {
             start_3 = copy end_4
@@ -847,7 +847,7 @@ where
         storage_dead(_8)
         storage_live(_9)
         _9 = copy end_4
-        end_4 = move _9 wrap.+ const 1 : usize
+        end_4 = move _9 wrap.+ const 1usize
         storage_dead(_9)
         if copy exhausted_5 {
             start_3 = copy end_4
@@ -957,9 +957,9 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
     _16 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _14 = copy _16.metadata
     storage_dead(_16)
-    _13 = move _14 wrap.<< const 1 : i32
+    _13 = move _14 wrap.<< const 1i32
     storage_dead(_14)
-    _12 = move _13 | const 1 : usize
+    _12 = move _13 | const 1usize
     storage_dead(_13)
     _11 = transmute<usize, NonNull<Argument<'12>>>(move _12)
     storage_dead(_12)
@@ -996,7 +996,7 @@ where
     self_9 = move (self_1).start
     self_10 = move (self_1).end
     self_11 = move (self_1).exhausted
-    exclusive_end_3 = copy self_10 wrap.+ const 1 : usize
+    exclusive_end_3 = copy self_10 wrap.+ const 1usize
     if copy self_11 {
         self_9 = copy exclusive_end_3
     } else {
@@ -1080,9 +1080,9 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
     _16 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _14 = copy _16.metadata
     storage_dead(_16)
-    _13 = move _14 wrap.<< const 1 : i32
+    _13 = move _14 wrap.<< const 1i32
     storage_dead(_14)
-    _12 = move _13 | const 1 : usize
+    _12 = move _13 | const 1usize
     storage_dead(_13)
     _11 = transmute<usize, NonNull<Argument<'12>>>(move _12)
     storage_dead(_12)
@@ -1119,7 +1119,7 @@ where
     self_9 = move (self_1).start
     self_10 = move (self_1).end
     self_11 = move (self_1).exhausted
-    exclusive_end_3 = copy self_10 wrap.+ const 1 : usize
+    exclusive_end_3 = copy self_10 wrap.+ const 1usize
     if copy self_11 {
         self_9 = copy exclusive_end_3
     } else {
@@ -1190,7 +1190,7 @@ where
         storage_live(self_16)
         self_15 = move (self_1).start
         self_16 = move (self_1).exhausted
-        exclusive_end_6 = copy self_4 wrap.+ const 1 : usize
+        exclusive_end_6 = copy self_4 wrap.+ const 1usize
         if copy self_16 {
             self_15 = copy exclusive_end_6
         } else {
@@ -1279,7 +1279,7 @@ where
         storage_live(self_16)
         self_15 = move (self_1).start
         self_16 = move (self_1).exhausted
-        exclusive_end_6 = copy self_4 wrap.+ const 1 : usize
+        exclusive_end_6 = copy self_4 wrap.+ const 1usize
         if copy self_16 {
             self_15 = copy exclusive_end_6
         } else {
@@ -1360,7 +1360,7 @@ pub fn slice_index_range<'_0>(slice_1: &'_0 [u8]) -> &'_0 [u8]
     storage_live(_4)
     _4 = &(*slice_1) with_metadata(copy slice_1.metadata)
     storage_live(_5)
-    _5 = new<usize>[{built_in impl Sized for usize}](const 0 : usize, const 10 : usize)
+    _5 = new<usize>[{built_in impl Sized for usize}](const 0usize, const 10usize)
     _3 = impl_Index_for_slice::index<'7, u8, RangeInclusive<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for u8}, {built_in impl Sized for RangeInclusive<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_RangeInclusive_usize<u8>[{built_in impl Sized for u8}]](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)

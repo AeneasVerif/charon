@@ -98,7 +98,7 @@ where
     storage_live(_2)
     _2 = &(*f_1)
     storage_live(_3)
-    _3 = (const 10 : u8, const 20 : u8)
+    _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call<'4>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -120,7 +120,7 @@ where
     storage_live(_2)
     _2 = &mut (*f_1)
     storage_live(_3)
-    _3 = (const 10 : u8, const 20 : u8)
+    _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call_mut<'4>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -142,7 +142,7 @@ where
     storage_live(_2)
     _2 = move f_1
     storage_live(_3)
-    _3 = (const 10 : u8, const 20 : u8)
+    _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -293,9 +293,9 @@ fn main()
 
     _0 = ()
     storage_live(v_1)
-    v_1 = const 5 : u8
+    v_1 = const 5u8
     storage_live(z_2)
-    z_2 = const 1 : u8
+    z_2 = const 1u8
     storage_live(f_3)
     storage_live(_4)
     _4 = &v_1
@@ -308,7 +308,7 @@ fn main()
     storage_live(_7)
     _7 = &f_3
     storage_live(_8)
-    _8 = (const 10 : u8, const 20 : u8)
+    _8 = (const 10u8, const 20u8)
     _6 = impl_Fn_tuple_for_closure::call<'37, '38, '39>(move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)

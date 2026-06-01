@@ -64,28 +64,28 @@ pub struct Concrete {}
 pub struct Concrete {}
 
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
-fn ARR() -> [u64; 1 : usize]
+fn ARR() -> [u64; 1usize]
 {
-    let _0: [u64; 1 : usize]; // return
+    let _0: [u64; 1usize]; // return
 
-    _0 = [const 7 : u64]
+    _0 = [const 7u64]
     return
 }
 
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
-const ARR: [u64; 1 : usize] = ARR()
+const ARR: [u64; 1usize] = ARR()
 
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
 pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
 {
     let _0: Option::<&'_ [u64]>; // return
     let _1: &'1 [u64]; // anonymous local
-    let _2: &'3 [u64; 1 : usize]; // anonymous local
-    let _3: &'4 [u64; 1 : usize]; // anonymous local
-    let _4: &'5 [u64; 1 : usize]; // anonymous local
-    let _5: &'6 [u64; 1 : usize]; // anonymous local
-    let _6: &'8 [u64; 1 : usize]; // anonymous local
-    let _7: [u64; 1 : usize]; // anonymous local
+    let _2: &'3 [u64; 1usize]; // anonymous local
+    let _3: &'4 [u64; 1usize]; // anonymous local
+    let _4: &'5 [u64; 1usize]; // anonymous local
+    let _5: &'6 [u64; 1usize]; // anonymous local
+    let _6: &'8 [u64; 1usize]; // anonymous local
+    let _7: [u64; 1usize]; // anonymous local
 
     storage_live(_5)
     storage_live(_6)
@@ -100,7 +100,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = @ArrayToSliceShared<'_, u64, 1 : usize>(move _2)
+    _1 = @ArrayToSliceShared<'_, u64, 1usize>(move _2)
     storage_dead(_2)
     _0 = Option::<&'_ [u64]>::Some { 0: move _1 }
     storage_dead(_1)
@@ -109,28 +109,28 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
 }
 
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
-fn ARR() -> [u64; 1 : usize]
+fn ARR() -> [u64; 1usize]
 {
-    let _0: [u64; 1 : usize]; // return
+    let _0: [u64; 1usize]; // return
 
-    _0 = [const 7 : u64]
+    _0 = [const 7u64]
     return
 }
 
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
-const ARR: [u64; 1 : usize] = ARR()
+const ARR: [u64; 1usize] = ARR()
 
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
 pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}]
 {
     let _0: Option<&'6 [u64]>[{built_in impl Sized for &'6 [u64]}]; // return
     let _1: &'9 [u64]; // anonymous local
-    let _2: &'11 [u64; 1 : usize]; // anonymous local
-    let _3: &'12 [u64; 1 : usize]; // anonymous local
-    let _4: &'13 [u64; 1 : usize]; // anonymous local
-    let _5: &'14 [u64; 1 : usize]; // anonymous local
-    let _6: &'21 [u64; 1 : usize]; // anonymous local
-    let _7: [u64; 1 : usize]; // anonymous local
+    let _2: &'11 [u64; 1usize]; // anonymous local
+    let _3: &'12 [u64; 1usize]; // anonymous local
+    let _4: &'13 [u64; 1usize]; // anonymous local
+    let _5: &'14 [u64; 1usize]; // anonymous local
+    let _6: &'21 [u64; 1usize]; // anonymous local
+    let _7: [u64; 1usize]; // anonymous local
 
     storage_live(_5)
     storage_live(_6)
@@ -145,7 +145,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{b
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = @ArrayToSliceShared<'_, u64, 1 : usize>(move _2)
+    _1 = @ArrayToSliceShared<'_, u64, 1usize>(move _2)
     storage_dead(_2)
     _0 = Option::Some { 0: move _1 }
     storage_dead(_1)
@@ -170,7 +170,7 @@ pub fn {impl MyConfig for Concrete}::op(x_1: u64) -> u64
     storage_live(_3)
     storage_live(_2)
     _2 = copy x_1
-    _3 = copy _2 panic.+ const 1 : u64
+    _3 = copy _2 panic.+ const 1u64
     _0 = move _3
     storage_dead(_2)
     return
@@ -187,7 +187,7 @@ pub fn {impl MyConfig for Concrete}::op(x_1: u64) -> u64
     storage_live(_3)
     storage_live(_2)
     _2 = copy x_1
-    _3 = copy _2 panic.+ const 1 : u64
+    _3 = copy _2 panic.+ const 1u64
     _0 = move _3
     storage_dead(_2)
     return

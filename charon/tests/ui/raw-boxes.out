@@ -270,7 +270,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
     storage_live(_5)
     _5 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](move align_1)
     switch copy _5 {
-        1 : u32 => {
+        1u32 => {
         },
         _ => {
             storage_dead(_5)
@@ -292,9 +292,9 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
             _13 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
             _11 = copy _13.metadata
             storage_dead(_13)
-            _10 = move _11 wrap.<< const 1 : i32
+            _10 = move _11 wrap.<< const 1i32
             storage_dead(_11)
-            _9 = move _10 | const 1 : usize
+            _9 = move _10 | const 1usize
             storage_dead(_10)
             _8 = transmute<usize, NonNull<Argument<'12>>>(move _9)
             storage_dead(_9)
@@ -341,7 +341,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     storage_live(_8)
     _8 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](copy align_2)
     switch copy _8 {
-        1 : u32 => {
+        1u32 => {
             storage_dead(_8)
             storage_live(_20)
             _20 = ub_checks<bool>
@@ -353,7 +353,7 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
             storage_live(_10)
             storage_live(_11)
             _11 = transmute<Alignment, usize>(copy alignment_7)
-            _10 = const 9223372036854775808 : usize ub.- move _11
+            _10 = const 9223372036854775808usize ub.- move _11
             storage_dead(_11)
             _3 = copy size_1 <= move _10
             storage_dead(_10)
@@ -385,9 +385,9 @@ fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(
     _19 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _17 = copy _19.metadata
     storage_dead(_19)
-    _16 = move _17 wrap.<< const 1 : i32
+    _16 = move _17 wrap.<< const 1i32
     storage_dead(_17)
-    _15 = move _16 | const 1 : usize
+    _15 = move _16 | const 1usize
     storage_dead(_16)
     _14 = transmute<usize, NonNull<Argument<'12>>>(move _15)
     storage_dead(_15)
@@ -468,7 +468,7 @@ pub fn is_aligned_to<T>(self_1: *const T, align_2: usize) -> bool
     storage_live(_7)
     _7 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](copy align_2)
     switch copy _7 {
-        1 : u32 => {
+        1u32 => {
         },
         _ => {
             storage_dead(_7)
@@ -491,9 +491,9 @@ pub fn is_aligned_to<T>(self_1: *const T, align_2: usize) -> bool
             _17 = transmute<&'11 str, &'10 [u8]>(const "is_aligned_to: align is not a power-of-two")
             _15 = copy _17.metadata
             storage_dead(_17)
-            _14 = move _15 wrap.<< const 1 : i32
+            _14 = move _15 wrap.<< const 1i32
             storage_dead(_15)
-            _13 = move _14 | const 1 : usize
+            _13 = move _14 | const 1usize
             storage_dead(_14)
             _12 = transmute<usize, NonNull<Argument<'12>>>(move _13)
             storage_dead(_13)
@@ -512,11 +512,11 @@ pub fn is_aligned_to<T>(self_1: *const T, align_2: usize) -> bool
     _5 = transmute<*const (), usize>(copy _8)
     storage_dead(_8)
     storage_live(_6)
-    _6 = copy align_2 wrap.- const 1 : usize
+    _6 = copy align_2 wrap.- const 1usize
     _4 = move _5 & move _6
     storage_dead(_6)
     storage_dead(_5)
-    _0 = move _4 == const 0 : usize
+    _0 = move _4 == const 0usize
     storage_dead(_4)
     return
 }
@@ -558,7 +558,7 @@ fn core::ptr::write_bytes::precondition_check(addr_1: *const (), align_2: usize,
             storage_live(_9)
             storage_live(_10)
             _10 = transmute<*const (), usize>(copy addr_1)
-            _9 = move _10 == const 0 : usize
+            _9 = move _10 == const 0usize
             storage_dead(_10)
             _4 = ~(move _9)
             storage_dead(_9)
@@ -590,9 +590,9 @@ fn core::ptr::write_bytes::precondition_check(addr_1: *const (), align_2: usize,
     _18 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _16 = copy _18.metadata
     storage_dead(_18)
-    _15 = move _16 wrap.<< const 1 : i32
+    _15 = move _16 wrap.<< const 1i32
     storage_dead(_16)
-    _14 = move _15 | const 1 : usize
+    _14 = move _15 | const 1usize
     storage_dead(_15)
     _13 = transmute<usize, NonNull<Argument<'12>>>(move _14)
     storage_dead(_14)
@@ -667,7 +667,7 @@ where
             storage_live(_14)
             storage_live(_15)
             _14 = @discriminant(_5)
-            _15 = copy _14 == const 1 : isize
+            _15 = copy _14 == const 1isize
             assert(move _15 == true) else undefined_behavior
             storage_live(_20)
             _20 = AllocError {  }
@@ -702,13 +702,13 @@ where
         storage_live(_17)
         _17 = transmute<NonNull<u8>, *const ()>(copy self_9)
         storage_live(_18)
-        _18 = copy count_10 == const 0 : usize
-        _16 = core::ptr::write_bytes::precondition_check(move _17, const 1 : usize, move _18)
+        _18 = copy count_10 == const 0usize
+        _16 = core::ptr::write_bytes::precondition_check(move _17, const 1usize, move _18)
         storage_dead(_18)
         storage_dead(_17)
     } else {
     }
-    _7 = write_bytes<u8>[{built_in impl Sized for u8}](move self_8, const 0 : u8, move count_10)
+    _7 = write_bytes<u8>[{built_in impl Sized for u8}](move self_8, const 0u8, move count_10)
     storage_dead(count_10)
     storage_dead(self_8)
     _0 = Result::Ok { 0: copy ptr_6 }
@@ -750,9 +750,9 @@ pub fn from_str<'a>(s_1: &'static str) -> Arguments<'a>
     _9 = transmute<&'3 str, &'9 [u8]>(copy s_1)
     _7 = copy _9.metadata
     storage_dead(_9)
-    _6 = move _7 wrap.<< const 1 : i32
+    _6 = move _7 wrap.<< const 1i32
     storage_dead(_7)
-    _5 = move _6 | const 1 : usize
+    _5 = move _6 | const 1usize
     storage_dead(_6)
     _4 = transmute<usize, NonNull<Argument<'10>>>(move _5)
     storage_dead(_5)
@@ -910,11 +910,11 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
     _0 = ()
     storage_live(_6)
     switch copy count_5 {
-        0 : usize => {
+        0usize => {
             zero_size_7 = const true
         },
         _ => {
-            zero_size_7 = copy size_3 == const 0 : usize
+            zero_size_7 = copy size_3 == const 0usize
         },
     }
     storage_live(_8)
@@ -945,7 +945,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
                     storage_live(_19)
                     storage_live(_20)
                     _20 = transmute<*mut (), usize>(copy dst_2)
-                    _19 = move _20 == const 0 : usize
+                    _19 = move _20 == const 0usize
                     storage_dead(_20)
                     _10 = ~(move _19)
                     storage_dead(_19)
@@ -973,7 +973,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
             storage_live(_16)
             storage_live(_17)
             _17 = transmute<*const (), usize>(copy src_1)
-            _16 = move _17 == const 0 : usize
+            _16 = move _17 == const 0usize
             storage_dead(_17)
             _8 = ~(move _16)
             storage_dead(_16)
@@ -999,7 +999,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
                         storage_live(_19)
                         storage_live(_20)
                         _20 = transmute<*mut (), usize>(copy dst_2)
-                        _19 = move _20 == const 0 : usize
+                        _19 = move _20 == const 0usize
                         storage_dead(_20)
                         _10 = ~(move _19)
                         storage_dead(_19)
@@ -1053,9 +1053,9 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src_1: *const (), dst_2: *
     _28 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _26 = copy _28.metadata
     storage_dead(_28)
-    _25 = move _26 wrap.<< const 1 : i32
+    _25 = move _26 wrap.<< const 1i32
     storage_dead(_26)
-    _24 = move _25 | const 1 : usize
+    _24 = move _25 | const 1usize
     storage_dead(_25)
     _23 = transmute<usize, NonNull<Argument<'12>>>(move _24)
     storage_dead(_24)
@@ -1111,7 +1111,7 @@ where
             storage_live(_14)
             storage_live(_15)
             _14 = @discriminant(_7)
-            _15 = copy _14 == const 1 : isize
+            _15 = copy _14 == const 1isize
             assert(move _15 == true) else undefined_behavior
             storage_live(_23)
             _23 = AllocError {  }
@@ -1151,7 +1151,7 @@ where
         _20 = transmute<NonNull<u8>, *const ()>(copy ptr_2)
         storage_live(_21)
         _21 = transmute<NonNull<u8>, *mut ()>(copy _16)
-        _19 = core::ptr::copy_nonoverlapping::precondition_check(move _20, move _21, const 1 : usize, const 1 : usize, copy count_11)
+        _19 = core::ptr::copy_nonoverlapping::precondition_check(move _20, move _21, const 1usize, const 1usize, copy count_11)
         storage_dead(_21)
         storage_dead(_20)
     } else {
@@ -1211,7 +1211,7 @@ where
             storage_live(_14)
             storage_live(_15)
             _14 = @discriminant(_7)
-            _15 = copy _14 == const 1 : isize
+            _15 = copy _14 == const 1isize
             assert(move _15 == true) else undefined_behavior
             storage_live(_23)
             _23 = AllocError {  }
@@ -1251,7 +1251,7 @@ where
         _20 = transmute<NonNull<u8>, *const ()>(copy ptr_2)
         storage_live(_21)
         _21 = transmute<NonNull<u8>, *mut ()>(copy _16)
-        _19 = core::ptr::copy_nonoverlapping::precondition_check(move _20, move _21, const 1 : usize, const 1 : usize, copy count_11)
+        _19 = core::ptr::copy_nonoverlapping::precondition_check(move _20, move _21, const 1usize, const 1usize, copy count_11)
         storage_dead(_21)
         storage_dead(_20)
     } else {
@@ -1311,7 +1311,7 @@ where
             storage_live(_14)
             storage_live(_15)
             _14 = @discriminant(_7)
-            _15 = copy _14 == const 1 : isize
+            _15 = copy _14 == const 1isize
             assert(move _15 == true) else undefined_behavior
             storage_live(_23)
             _23 = AllocError {  }
@@ -1351,7 +1351,7 @@ where
         _20 = transmute<NonNull<u8>, *const ()>(copy ptr_2)
         storage_live(_21)
         _21 = transmute<NonNull<u8>, *mut ()>(copy _16)
-        _19 = core::ptr::copy_nonoverlapping::precondition_check(move _20, move _21, const 1 : usize, const 1 : usize, copy count_11)
+        _19 = core::ptr::copy_nonoverlapping::precondition_check(move _20, move _21, const 1usize, const 1usize, copy count_11)
         storage_dead(_21)
         storage_dead(_20)
     } else {
@@ -1428,7 +1428,7 @@ pub fn core::mem::alignment::{Alignment}::new(align_1: usize) -> Option<Alignmen
     storage_live(_3)
     _3 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](copy align_1)
     switch copy _3 {
-        1 : u32 => {
+        1u32 => {
         },
         _ => {
             storage_dead(_3)
@@ -1561,7 +1561,7 @@ where
 {
     let _0: bool; // return
 
-    _0 = const TraitClause0::SIZE == const 0 : usize
+    _0 = const TraitClause0::SIZE == const 0usize
     return
 }
 
@@ -1592,7 +1592,7 @@ pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
 
-    _0 = ~(const 0 : usize)
+    _0 = ~(const 0usize)
     return
 }
 
@@ -1608,10 +1608,10 @@ pub fn core::num::{isize}::MAX() -> isize
     storage_live(_2)
     storage_live(_3)
     storage_live(_1)
-    _2 = cast<i32, u32>(const 1 : i32)
-    _3 = move _2 < const 64 : u32
+    _2 = cast<i32, u32>(const 1i32)
+    _3 = move _2 < const 64u32
     assert(move _3 == true) (overflow) else panic
-    _1 = copy core::num::{usize}::MAX wrap.>> const 1 : i32
+    _1 = copy core::num::{usize}::MAX wrap.>> const 1i32
     _0 = cast<usize, isize>(move _1)
     storage_dead(_1)
     return
@@ -1635,7 +1635,7 @@ where
     storage_live(_1)
     _1 = const TraitClause0::SIZE
     switch copy _1 {
-        0 : usize => {
+        0usize => {
             _0 = copy core::num::{usize}::MAX
         },
         _ => {
@@ -1645,7 +1645,7 @@ where
             _3 = cast<isize, usize>(copy core::num::{isize}::MAX)
             storage_live(_4)
             _4 = copy n_2
-            _5 = copy _4 == const 0 : usize
+            _5 = copy _4 == const 0usize
             assert(move _5 == false) (division_by_zero) else panic
             _0 = move _3 ub./ move _4
             storage_dead(_4)
@@ -1707,7 +1707,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr_1: *
     storage_live(_5)
     _5 = transmute<*mut (), usize>(copy ptr_1)
     switch copy _5 {
-        0 : usize => {
+        0usize => {
         },
         _ => {
             storage_dead(_5)
@@ -1733,9 +1733,9 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr_1: *
     _13 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _11 = copy _13.metadata
     storage_dead(_13)
-    _10 = move _11 wrap.<< const 1 : i32
+    _10 = move _11 wrap.<< const 1i32
     storage_dead(_11)
-    _9 = move _10 | const 1 : usize
+    _9 = move _10 | const 1usize
     storage_dead(_10)
     _8 = transmute<usize, NonNull<Argument<'12>>>(move _9)
     storage_dead(_9)
@@ -1784,9 +1784,9 @@ fn core::hint::assert_unchecked::precondition_check(cond_1: bool)
         _12 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: hint::assert_unchecked must never be called when the condition is false\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
         _10 = copy _12.metadata
         storage_dead(_12)
-        _9 = move _10 wrap.<< const 1 : i32
+        _9 = move _10 wrap.<< const 1i32
         storage_dead(_10)
-        _8 = move _9 | const 1 : usize
+        _8 = move _9 | const 1usize
         storage_dead(_9)
         _7 = transmute<usize, NonNull<Argument<'12>>>(move _8)
         storage_dead(_8)
@@ -1880,7 +1880,7 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
     storage_live(size_3)
     size_3 = copy (layout_1).size
     switch copy size_3 {
-        0 : usize => {
+        0usize => {
             storage_live(_4)
             storage_live(data_5)
             _13 = copy (layout_1).align
@@ -1888,7 +1888,7 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
             storage_live(ptr_14)
             storage_live(data_15)
             data_15 = transmute<Alignment, *mut u8>(copy _13)
-            ptr_14 = *mut  (copy data_15, const 0 : usize)
+            ptr_14 = *mut  (copy data_15, const 0usize)
             storage_dead(data_15)
             storage_live(_34)
             _34 = ub_checks<bool>
@@ -1925,7 +1925,7 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
             storage_live(_23)
             _23 = transmute<*mut u8, usize>(copy raw_ptr_6)
             switch copy _23 {
-                0 : usize => {
+                0usize => {
                     storage_dead(_23)
                     storage_live(_37)
                     _37 = Option::None {  }
@@ -1940,7 +1940,7 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
                     storage_live(_32)
                     storage_live(_33)
                     _32 = @discriminant(_10)
-                    _33 = copy _32 == const 1 : isize
+                    _33 = copy _32 == const 1isize
                     assert(move _33 == true) else undefined_behavior
                     storage_live(_40)
                     _40 = AllocError {  }
@@ -2095,7 +2095,7 @@ fn grow_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_3:
     storage_live(old_size_6)
     old_size_6 = copy (old_layout_3).size
     switch copy old_size_6 {
-        0 : usize => {
+        0usize => {
             _0 = alloc_impl_runtime(move new_layout_4, move zeroed_5)
         },
         _ => {
@@ -2133,7 +2133,7 @@ fn grow_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_3:
                 storage_live(_33)
                 _33 = transmute<*mut u8, usize>(copy raw_ptr_12)
                 switch copy _33 {
-                    0 : usize => {
+                    0usize => {
                         storage_dead(_33)
                         storage_live(_63)
                         _63 = Option::None {  }
@@ -2148,7 +2148,7 @@ fn grow_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_3:
                         storage_live(_38)
                         storage_live(_39)
                         _38 = @discriminant(_16)
-                        _39 = copy _38 == const 1 : isize
+                        _39 = copy _38 == const 1isize
                         assert(move _39 == true) else undefined_behavior
                         storage_live(_66)
                         _66 = AllocError {  }
@@ -2201,13 +2201,13 @@ fn grow_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_3:
                                 storage_live(_41)
                                 _41 = cast<*mut u8, *const ()>(copy self_19)
                                 storage_live(_42)
-                                _42 = copy count_20 == const 0 : usize
-                                _40 = core::ptr::write_bytes::precondition_check(move _41, const 1 : usize, move _42)
+                                _42 = copy count_20 == const 0usize
+                                _40 = core::ptr::write_bytes::precondition_check(move _41, const 1usize, move _42)
                                 storage_dead(_42)
                                 storage_dead(_41)
                             } else {
                             }
-                            _18 = write_bytes<u8>[{built_in impl Sized for u8}](move self_19, const 0 : u8, move count_20)
+                            _18 = write_bytes<u8>[{built_in impl Sized for u8}](move self_19, const 0u8, move count_20)
                             storage_dead(count_20)
                             storage_dead(self_19)
                         } else {
@@ -2250,7 +2250,7 @@ fn grow_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_3:
                         storage_live(_48)
                         storage_live(_49)
                         _48 = @discriminant(_24)
-                        _49 = copy _48 == const 1 : isize
+                        _49 = copy _48 == const 1isize
                         assert(move _49 == true) else undefined_behavior
                         storage_live(_61)
                         _61 = AllocError {  }
@@ -2289,7 +2289,7 @@ fn grow_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_3:
                     _54 = transmute<NonNull<u8>, *const ()>(copy ptr_2)
                     storage_live(_55)
                     _55 = transmute<NonNull<u8>, *mut ()>(copy _50)
-                    _53 = core::ptr::copy_nonoverlapping::precondition_check(move _54, move _55, const 1 : usize, const 1 : usize, copy old_size_6)
+                    _53 = core::ptr::copy_nonoverlapping::precondition_check(move _54, move _55, const 1usize, const 1usize, copy old_size_6)
                     storage_dead(_55)
                     storage_dead(_54)
                 } else {
@@ -2401,11 +2401,11 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
     storage_live(new_size_6)
     new_size_6 = copy (new_layout_4).size
     switch copy new_size_6 {
-        0 : usize => {
+        0usize => {
             storage_live(_30)
             _30 = copy (old_layout_3).size
             switch copy _30 {
-                0 : usize => {
+                0usize => {
                 },
                 _ => {
                     storage_live(_31)
@@ -2422,7 +2422,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
             storage_live(ptr_33)
             storage_live(data_34)
             data_34 = transmute<Alignment, *mut u8>(copy _32)
-            ptr_33 = *mut  (copy data_34, const 0 : usize)
+            ptr_33 = *mut  (copy data_34, const 0usize)
             storage_dead(data_34)
             storage_live(_61)
             _61 = ub_checks<bool>
@@ -2473,7 +2473,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
                 storage_live(_40)
                 _40 = transmute<*mut u8, usize>(copy raw_ptr_15)
                 switch copy _40 {
-                    0 : usize => {
+                    0usize => {
                         storage_dead(_40)
                         storage_live(_68)
                         _68 = Option::None {  }
@@ -2488,7 +2488,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
                         storage_live(_49)
                         storage_live(_50)
                         _49 = @discriminant(_19)
-                        _50 = copy _49 == const 1 : isize
+                        _50 = copy _49 == const 1isize
                         assert(move _50 == true) else undefined_behavior
                         storage_live(_71)
                         _71 = AllocError {  }
@@ -2566,7 +2566,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
                         storage_live(_52)
                         storage_live(_53)
                         _52 = @discriminant(_24)
-                        _53 = copy _52 == const 1 : isize
+                        _53 = copy _52 == const 1isize
                         assert(move _53 == true) else undefined_behavior
                         storage_live(_66)
                         _66 = AllocError {  }
@@ -2605,7 +2605,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
                     _58 = transmute<NonNull<u8>, *const ()>(copy ptr_2)
                     storage_live(_59)
                     _59 = transmute<NonNull<u8>, *mut ()>(copy _54)
-                    _57 = core::ptr::copy_nonoverlapping::precondition_check(move _58, move _59, const 1 : usize, const 1 : usize, copy new_size_6)
+                    _57 = core::ptr::copy_nonoverlapping::precondition_check(move _58, move _59, const 1usize, const 1usize, copy new_size_6)
                     storage_dead(_59)
                     storage_dead(_58)
                 } else {
@@ -2616,7 +2616,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
                 storage_live(_60)
                 _60 = copy (old_layout_3).size
                 switch copy _60 {
-                    0 : usize => {
+                    0usize => {
                     },
                     _ => {
                         _28 = __rust_dealloc(move ptr_2, move _60, move _29)
@@ -2684,7 +2684,7 @@ pub unsafe fn impl_Allocator_for_Global::deallocate<'_0>(self_1: &'_0 Global, pt
     storage_live(_4)
     _4 = copy (layout_3).size
     switch copy _4 {
-        0 : usize => {
+        0usize => {
         },
         _ => {
             storage_live(_5)
@@ -2950,7 +2950,7 @@ unsafe fn foo()
     storage_live(_9)
     _0 = ()
     storage_live(b_1)
-    b_1 = alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new<i32>[{built_in impl Sized for i32}](const 42 : i32)
+    b_1 = alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new<i32>[{built_in impl Sized for i32}](const 42i32)
     storage_live(p_2)
     storage_live(_3)
     _3 = move b_1
@@ -2958,7 +2958,7 @@ unsafe fn foo()
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new<i32>[{built_in impl Sized for i32}](const 42 : i32)
+    _5 = alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new<i32>[{built_in impl Sized for i32}](const 42i32)
     _4 = leak<'2, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, impl_Allocator_for_Global](move _5)
     storage_dead(_5)
     storage_dead(_4)

@@ -81,7 +81,7 @@ where
     storage_live(_2)
     _2 = &mut f_1
     storage_live(_3)
-    _3 = (const 0 : u8,)
+    _3 = (const 0u8,)
     _0 = TraitClause1::call_mut<'3>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -110,7 +110,7 @@ fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, t
     storage_live(_4)
     storage_live(_7)
     x_3 = move tupled_args_2.0
-    _4 = copy (*((*_1)).0) panic.+ const 1 : u8
+    _4 = copy (*((*_1)).0) panic.+ const 1u8
     (*((*_1)).0) = move _4
     storage_live(_5)
     _5 = copy x_3
@@ -174,7 +174,7 @@ fn main()
 
     _0 = ()
     storage_live(z_1)
-    z_1 = const 3 : u8
+    z_1 = const 3u8
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)

@@ -107,13 +107,13 @@ fn main()
     storage_live(_7)
     storage_live(_10)
     storage_live(_11)
-    _11 = Option::Some { 0: const 1 : i32 }
+    _11 = Option::Some { 0: const 1i32 }
     _10 = &_11
     _7 = move _10
     storage_live(_6)
     storage_live(_8)
     storage_live(_9)
-    _9 = Option::Some { 0: const 1 : i32 }
+    _9 = Option::Some { 0: const 1i32 }
     _8 = &_9
     _6 = move _8
     storage_live(_4)

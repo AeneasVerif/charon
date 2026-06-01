@@ -152,7 +152,7 @@ fn main()
     storage_live(_2)
     storage_live(_3)
     _3 = copy f_1
-    _2 = Some<u8>[{built_in impl Sized for u8}](const 42 : u8)
+    _2 = Some<u8>[{built_in impl Sized for u8}](const 42u8)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(f_4)
@@ -163,7 +163,7 @@ fn main()
     storage_live(_6)
     storage_live(_7)
     _7 = copy f_4
-    _6 = (move _7)(const 42 : u8)
+    _6 = (move _7)(const 42u8)
     storage_dead(_7)
     storage_dead(_6)
     storage_live(f_8)
@@ -173,14 +173,14 @@ fn main()
     _10 = copy f_8
     storage_live(_11)
     _11 = new()
-    _9 = Foo(const 42 : u32, move _11)
+    _9 = Foo(const 42u32, move _11)
     storage_dead(_11)
     storage_dead(_10)
     conditional_drop[impl_Destruct_for_Foo::drop_in_place] _9
     storage_live(_18)
     storage_live(_19)
     storage_live(_20)
-    _20 = const 42 : i32
+    _20 = const 42i32
     _19 = &_20
     _18 = move _19
     storage_dead(_9)

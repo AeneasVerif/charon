@@ -280,12 +280,12 @@ trait test_crate::NttIntrinsicsInterface<Self>
     non-dyn-compatible
 }
 
-fn test_crate::NttIntrinsicsInterface::vec128_load<'_0, Self>(_1: &'_0 [u16; 8 : usize]) -> TraitClause0::Vec128
+fn test_crate::NttIntrinsicsInterface::vec128_load<'_0, Self>(_1: &'_0 [u16; 8usize]) -> TraitClause0::Vec128
 where
     TraitClause0: (Self: test_crate::NttIntrinsicsInterface),
 = <method_without_default_body>
 
-fn test_crate::NttIntrinsicsInterface::vec128_store<'_0, Self>(_1: &'_0 mut [u16; 8 : usize], _2: TraitClause0::Vec128)
+fn test_crate::NttIntrinsicsInterface::vec128_store<'_0, Self>(_1: &'_0 mut [u16; 8usize], _2: TraitClause0::Vec128)
 where
     TraitClause0: (Self: test_crate::NttIntrinsicsInterface),
 = <method_without_default_body>
@@ -315,15 +315,15 @@ fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate:
     return
 }
 
-fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm}::vec128_store<'_0>(dst_1: &'_0 mut [u16; 8 : usize], val_2: core::core_arch::x86::__m128i)
+fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm}::vec128_store<'_0>(dst_1: &'_0 mut [u16; 8usize], val_2: core::core_arch::x86::__m128i)
 {
     let _0: (); // return
-    let dst_1: &'1 mut [u16; 8 : usize]; // arg #1
+    let dst_1: &'1 mut [u16; 8usize]; // arg #1
     let val_2: core::core_arch::x86::__m128i; // arg #2
     let _3: *mut core::core_arch::x86::__m128i; // anonymous local
     let _4: *mut u16; // anonymous local
     let _5: &'3 mut [u16]; // anonymous local
-    let _6: &'4 mut [u16; 8 : usize]; // anonymous local
+    let _6: &'4 mut [u16; 8usize]; // anonymous local
     let _7: core::core_arch::x86::__m128i; // anonymous local
 
     _0 = ()
@@ -332,7 +332,7 @@ fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate:
     storage_live(_5)
     storage_live(_6)
     _6 = &two-phase-mut (*dst_1)
-    _5 = @ArrayToSliceMut<'_, u16, 8 : usize>(move _6)
+    _5 = @ArrayToSliceMut<'_, u16, 8usize>(move _6)
     storage_dead(_6)
     _4 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _5)
     storage_dead(_5)
@@ -346,21 +346,21 @@ fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate:
     return
 }
 
-fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm}::vec128_load<'_0>(src_1: &'_0 [u16; 8 : usize]) -> core::core_arch::x86::__m128i
+fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm}::vec128_load<'_0>(src_1: &'_0 [u16; 8usize]) -> core::core_arch::x86::__m128i
 {
     let _0: core::core_arch::x86::__m128i; // return
-    let src_1: &'1 [u16; 8 : usize]; // arg #1
+    let src_1: &'1 [u16; 8usize]; // arg #1
     let _2: *const core::core_arch::x86::__m128i; // anonymous local
     let _3: *const u16; // anonymous local
     let _4: &'3 [u16]; // anonymous local
-    let _5: &'4 [u16; 8 : usize]; // anonymous local
+    let _5: &'4 [u16; 8usize]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*src_1)
-    _4 = @ArrayToSliceShared<'_, u16, 8 : usize>(move _5)
+    _4 = @ArrayToSliceShared<'_, u16, 8usize>(move _5)
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
     storage_dead(_4)
@@ -403,14 +403,14 @@ fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate
     return
 }
 
-fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon}::vec128_store<'_0>(dst_1: &'_0 mut [u16; 8 : usize], val_2: core::core_arch::arm_shared::neon::uint16x8_t)
+fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon}::vec128_store<'_0>(dst_1: &'_0 mut [u16; 8usize], val_2: core::core_arch::arm_shared::neon::uint16x8_t)
 {
     let _0: (); // return
-    let dst_1: &'1 mut [u16; 8 : usize]; // arg #1
+    let dst_1: &'1 mut [u16; 8usize]; // arg #1
     let val_2: core::core_arch::arm_shared::neon::uint16x8_t; // arg #2
     let _3: *mut u16; // anonymous local
     let _4: &'3 mut [u16]; // anonymous local
-    let _5: &'4 mut [u16; 8 : usize]; // anonymous local
+    let _5: &'4 mut [u16; 8usize]; // anonymous local
     let _6: core::core_arch::arm_shared::neon::uint16x8_t; // anonymous local
 
     _0 = ()
@@ -418,7 +418,7 @@ fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate
     storage_live(_4)
     storage_live(_5)
     _5 = &two-phase-mut (*dst_1)
-    _4 = @ArrayToSliceMut<'_, u16, 8 : usize>(move _5)
+    _4 = @ArrayToSliceMut<'_, u16, 8usize>(move _5)
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
     storage_dead(_4)
@@ -430,19 +430,19 @@ fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate
     return
 }
 
-fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon}::vec128_load<'_0>(src_1: &'_0 [u16; 8 : usize]) -> core::core_arch::arm_shared::neon::uint16x8_t
+fn test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon}::vec128_load<'_0>(src_1: &'_0 [u16; 8usize]) -> core::core_arch::arm_shared::neon::uint16x8_t
 {
     let _0: core::core_arch::arm_shared::neon::uint16x8_t; // return
-    let src_1: &'1 [u16; 8 : usize]; // arg #1
+    let src_1: &'1 [u16; 8usize]; // arg #1
     let _2: *const u16; // anonymous local
     let _3: &'3 [u16]; // anonymous local
-    let _4: &'4 [u16; 8 : usize]; // anonymous local
+    let _4: &'4 [u16; 8usize]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = &(*src_1)
-    _3 = @ArrayToSliceShared<'_, u16, 8 : usize>(move _4)
+    _3 = @ArrayToSliceShared<'_, u16, 8usize>(move _4)
     storage_dead(_4)
     _2 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _3)
     storage_dead(_3)
@@ -463,11 +463,11 @@ impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsN
     non-dyn-compatible
 }
 
-fn test_crate::ntt_layer_generic<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: &'_1 [u16; 8 : usize])
+fn test_crate::ntt_layer_generic<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16; 8usize])
 {
     let _0: (); // return
-    let a_1: &'1 mut [u16; 8 : usize]; // arg #1
-    let b_2: &'3 [u16; 8 : usize]; // arg #2
+    let a_1: &'1 mut [u16; 8usize]; // arg #1
+    let b_2: &'3 [u16; 8usize]; // arg #2
     let _3: core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // anonymous local
     let _4: core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // anonymous local
     let iter_5: core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // local
@@ -481,17 +481,17 @@ fn test_crate::ntt_layer_generic<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: 
     let _13: u16; // anonymous local
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
-    let _16: &'_ [u16; 8 : usize]; // anonymous local
+    let _16: &'_ [u16; 8usize]; // anonymous local
     let _17: &'_ u16; // anonymous local
-    let _18: &'_ [u16; 8 : usize]; // anonymous local
+    let _18: &'_ [u16; 8usize]; // anonymous local
     let _19: &'_ u16; // anonymous local
-    let _20: &'_ mut [u16; 8 : usize]; // anonymous local
+    let _20: &'_ mut [u16; 8usize]; // anonymous local
     let _21: &'_ mut u16; // anonymous local
 
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = core::ops::range::Range { start: const 0 : usize, end: const 8 : usize }
+    _4 = core::ops::range::Range { start: const 0usize, end: const 8usize }
     _3 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]>[{built_in impl core::marker::Sized for core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]}, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}<usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}]](move _4)
     storage_dead(_4)
     storage_live(iter_5)
@@ -520,7 +520,7 @@ fn test_crate::ntt_layer_generic<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: 
         storage_live(_16)
         _16 = &(*a_1)
         storage_live(_17)
-        _17 = @ArrayIndexShared<'_, u16, 8 : usize>(move _16, copy _12)
+        _17 = @ArrayIndexShared<'_, u16, 8usize>(move _16, copy _12)
         _11 = copy (*_17)
         storage_live(_13)
         storage_live(_14)
@@ -528,7 +528,7 @@ fn test_crate::ntt_layer_generic<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: 
         storage_live(_18)
         _18 = &(*b_2)
         storage_live(_19)
-        _19 = @ArrayIndexShared<'_, u16, 8 : usize>(move _18, copy _14)
+        _19 = @ArrayIndexShared<'_, u16, 8usize>(move _18, copy _14)
         _13 = copy (*_19)
         _10 = core::num::{u16}::wrapping_add(move _11, move _13)
         storage_dead(_13)
@@ -538,7 +538,7 @@ fn test_crate::ntt_layer_generic<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: 
         storage_live(_20)
         _20 = &mut (*a_1)
         storage_live(_21)
-        _21 = @ArrayIndexMut<'_, u16, 8 : usize>(move _20, copy _15)
+        _21 = @ArrayIndexMut<'_, u16, 8usize>(move _20, copy _15)
         (*_21) = move _10
         storage_dead(_10)
         storage_dead(_15)
@@ -557,23 +557,23 @@ fn test_crate::ntt_layer_generic<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: 
     return
 }
 
-fn test_crate::ntt_layer_vec128<'_0, '_1, T>(a_1: &'_0 mut [u16; 8 : usize], b_2: &'_1 [u16; 8 : usize])
+fn test_crate::ntt_layer_vec128<'_0, '_1, T>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16; 8usize])
 where
     TraitClause0: (T: core::marker::Sized),
     TraitClause1: (T: test_crate::NttIntrinsicsInterface),
 {
     let _0: (); // return
-    let a_1: &'1 mut [u16; 8 : usize]; // arg #1
-    let b_2: &'3 [u16; 8 : usize]; // arg #2
+    let a_1: &'1 mut [u16; 8usize]; // arg #1
+    let b_2: &'3 [u16; 8usize]; // arg #2
     let va_3: TraitClause1::Vec128; // local
-    let _4: &'4 [u16; 8 : usize]; // anonymous local
+    let _4: &'4 [u16; 8usize]; // anonymous local
     let vb_5: TraitClause1::Vec128; // local
-    let _6: &'5 [u16; 8 : usize]; // anonymous local
+    let _6: &'5 [u16; 8usize]; // anonymous local
     let vr_7: TraitClause1::Vec128; // local
     let _8: TraitClause1::Vec128; // anonymous local
     let _9: TraitClause1::Vec128; // anonymous local
     let _10: (); // anonymous local
-    let _11: &'6 mut [u16; 8 : usize]; // anonymous local
+    let _11: &'6 mut [u16; 8usize]; // anonymous local
     let _12: TraitClause1::Vec128; // anonymous local
 
     _0 = ()
@@ -615,7 +615,7 @@ fn test_crate::SYMCRYPT_CPU_FEATURE_SSE2() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 1 : u32
+    _0 = const 1u32
     return
 }
 
@@ -625,7 +625,7 @@ fn test_crate::SYMCRYPT_CPU_FEATURE_NEON() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 2 : u32
+    _0 = const 2u32
     return
 }
 
@@ -640,18 +640,18 @@ fn test_crate::cpu_features_present(_mask_1: u32) -> bool
     return
 }
 
-fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: &'_1 [u16; 8 : usize])
+fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16; 8usize])
 {
     let _0: (); // return
-    let a_1: &'1 mut [u16; 8 : usize]; // arg #1
-    let b_2: &'3 [u16; 8 : usize]; // arg #2
+    let a_1: &'1 mut [u16; 8usize]; // arg #1
+    let b_2: &'3 [u16; 8usize]; // arg #2
     let _3: bool; // anonymous local
     let _4: (); // anonymous local
-    let _5: &'4 mut [u16; 8 : usize]; // anonymous local
-    let _6: &'5 [u16; 8 : usize]; // anonymous local
+    let _5: &'4 mut [u16; 8usize]; // anonymous local
+    let _6: &'5 [u16; 8usize]; // anonymous local
     let _7: (); // anonymous local
-    let _8: &'6 mut [u16; 8 : usize]; // anonymous local
-    let _9: &'7 [u16; 8 : usize]; // anonymous local
+    let _8: &'6 mut [u16; 8usize]; // anonymous local
+    let _9: &'7 [u16; 8usize]; // anonymous local
 
     _0 = ()
     storage_live(_3)
@@ -683,18 +683,18 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 m
     return
 }
 
-fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8 : usize], b_2: &'_1 [u16; 8 : usize])
+fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16; 8usize])
 {
     let _0: (); // return
-    let a_1: &'1 mut [u16; 8 : usize]; // arg #1
-    let b_2: &'3 [u16; 8 : usize]; // arg #2
+    let a_1: &'1 mut [u16; 8usize]; // arg #1
+    let b_2: &'3 [u16; 8usize]; // arg #2
     let _3: bool; // anonymous local
     let _4: (); // anonymous local
-    let _5: &'4 mut [u16; 8 : usize]; // anonymous local
-    let _6: &'5 [u16; 8 : usize]; // anonymous local
+    let _5: &'4 mut [u16; 8usize]; // anonymous local
+    let _6: &'5 [u16; 8usize]; // anonymous local
     let _7: (); // anonymous local
-    let _8: &'6 mut [u16; 8 : usize]; // anonymous local
-    let _9: &'7 [u16; 8 : usize]; // anonymous local
+    let _8: &'6 mut [u16; 8usize]; // anonymous local
+    let _9: &'7 [u16; 8usize]; // anonymous local
 
     _0 = ()
     storage_live(_3)
@@ -726,7 +726,7 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a_1: &'_0 
     return
 }
 
-fn test_crate::poly_element_ntt_layer<'_0, '_1>(_1: &'_0 mut [u16; 8 : usize], _2: &'_1 [u16; 8 : usize])
+fn test_crate::poly_element_ntt_layer<'_0, '_1>(_1: &'_0 mut [u16; 8usize], _2: &'_1 [u16; 8usize])
 = target_dispatch {
     x86_64-apple-darwin => test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>,
     aarch64-apple-darwin => test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>,

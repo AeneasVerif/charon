@@ -38,7 +38,7 @@ pub fn hello() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 1 : u32
+    _0 = const 1u32
     return
 }
 
@@ -47,7 +47,7 @@ pub fn hello() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 2 : u32
+    _0 = const 2u32
     return
 }
 
@@ -100,7 +100,7 @@ fn main()
     storage_live(_23)
     storage_live(_24)
     storage_live(_25)
-    _25 = const 3 : u32
+    _25 = const 3u32
     _24 = &_25
     _23 = move _24
     _5 = move _8.0

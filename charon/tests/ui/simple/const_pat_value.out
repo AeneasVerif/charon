@@ -1,19 +1,19 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::Positive
-pub type Positive = i32 is 1 : i32..=2147483647 : i32
+pub type Positive = i32 is 1i32..=2147483647i32
 
 // Full name: test_crate::ONE
-fn ONE() -> i32 is 1 : i32..=2147483647 : i32
+fn ONE() -> i32 is 1i32..=2147483647i32
 {
-    let _0: i32 is 1 : i32..=2147483647 : i32; // return
+    let _0: i32 is 1i32..=2147483647i32; // return
 
-    _0 = const 1 : i32
+    _0 = const 1i32
     return
 }
 
 // Full name: test_crate::ONE
-const ONE: i32 is 1 : i32..=2147483647 : i32 = ONE()
+const ONE: i32 is 1i32..=2147483647i32 = ONE()
 
 
 

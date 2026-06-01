@@ -167,7 +167,7 @@ fn main()
     storage_live(_14)
     storage_live(_17)
     storage_live(_18)
-    _18 = const 1 : u32
+    _18 = const 1u32
     _17 = &_18
     _14 = move _17
     storage_live(_11)

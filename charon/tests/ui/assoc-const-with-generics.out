@@ -69,7 +69,7 @@ fn {impl HasLen for [bool; N]}::LEN<const N : usize>() -> usize
     let _1: usize; // anonymous local
 
     storage_live(_1)
-    _1 = const N panic.+ const 1 : usize
+    _1 = const N panic.+ const 1usize
     _0 = move _1
     return
 }
@@ -197,7 +197,7 @@ where
     let _1: usize; // anonymous local
 
     storage_live(_1)
-    _1 = const TraitClause0::ImpliedClause1::LEN panic.+ const 1 : usize
+    _1 = const TraitClause0::ImpliedClause1::LEN panic.+ const 1usize
     _0 = move _1
     return
 }

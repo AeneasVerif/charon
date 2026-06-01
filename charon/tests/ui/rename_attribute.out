@@ -120,9 +120,9 @@ fn C() -> u32
     storage_live(_2)
     storage_live(_3)
     storage_live(_1)
-    _2 = const 100 : u32 panic.+ const 10 : u32
+    _2 = const 100u32 panic.+ const 10u32
     _1 = move _2
-    _3 = copy _1 panic.+ const 1 : u32
+    _3 = copy _1 panic.+ const 1u32
     _0 = move _3
     storage_dead(_1)
     return

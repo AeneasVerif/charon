@@ -402,7 +402,7 @@ where
     storage_dead(alignment_8)
     storage_dead(t_3)
     switch copy size_7 {
-        0 : usize => {
+        0usize => {
         },
         _ => {
             storage_live(_6)

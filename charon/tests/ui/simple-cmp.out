@@ -25,9 +25,9 @@ fn main()
 
     _0 = ()
     storage_live(x_1)
-    x_1 = const 11 : i32
+    x_1 = const 11i32
     storage_live(y_2)
-    y_2 = const 22 : i32
+    y_2 = const 22i32
     storage_live(_3)
     storage_live(_4)
     _4 = &x_1

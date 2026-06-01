@@ -16,7 +16,7 @@ fn main()
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = const 0 : u8
+    _8 = const 0u8
     _7 = &_8
     _6 = move _7
     storage_live(_5)

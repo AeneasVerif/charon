@@ -45,49 +45,49 @@ fn nested_vecs()
     let _2: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
     let _3: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
     let ret_4: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
-    let x_5: alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}]; // local
+    let x_5: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // local
     let y_6: alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}]; // local
     let ret_7: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
-    let x_8: alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}]; // local
+    let x_8: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // local
     let y_9: alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}]; // local
     let ret_10: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
-    let x_11: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]}, {built_in impl Sized for Global}]; // local
+    let x_11: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}, {built_in impl Sized for Global}]; // local
     let y_12: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]}, {built_in impl Sized for Global}]; // local
-    let _13: [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]; // anonymous local
-    let _14: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]}, {built_in impl Sized for Global}]; // anonymous local
-    let _15: [u8; 1 : usize]; // anonymous local
-    let _16: alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}]; // anonymous local
-    let _17: [u8; 1 : usize]; // anonymous local
-    let _18: alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _13: [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]; // anonymous local
+    let _14: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _15: [u8; 1usize]; // anonymous local
+    let _16: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _17: [u8; 1usize]; // anonymous local
+    let _18: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     _0 = ()
     storage_live(_nested_1)
     storage_live(_2)
     storage_live(_15)
-    _15 = [const 1 : u8]
+    _15 = [const 1u8]
     storage_live(_16)
-    _16 = @BoxNew<[u8; 1 : usize], Global>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}](move _15)
+    _16 = @BoxNew<[u8; 1usize], Global>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}](move _15)
     storage_live(ret_4)
     storage_live(x_5)
     storage_live(y_6)
     storage_dead(_15)
     x_5 = move _16
     storage_dead(_16)
-    y_6 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1 : usize>(move x_5)
+    y_6 = unsize_cast<alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x_5)
     ret_4 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_6)
     _2 = move ret_4
     storage_live(_3)
     storage_live(_17)
-    _17 = [const 2 : u8]
+    _17 = [const 2u8]
     storage_live(_18)
-    _18 = @BoxNew<[u8; 1 : usize], Global>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}](move _17)
+    _18 = @BoxNew<[u8; 1usize], Global>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}](move _17)
     storage_live(ret_7)
     storage_live(x_8)
     storage_live(y_9)
     storage_dead(_17)
     x_8 = move _18
     storage_dead(_18)
-    y_9 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1 : usize>(move x_8)
+    y_9 = unsize_cast<alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x_8)
     ret_7 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_9)
     _3 = move ret_7
     storage_live(_13)
@@ -97,14 +97,14 @@ fn nested_vecs()
     conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _2
     storage_dead(_2)
     storage_live(_14)
-    _14 = @BoxNew<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize], Global>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]}, {built_in impl Sized for Global}](move _13)
+    _14 = @BoxNew<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize], Global>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}, {built_in impl Sized for Global}](move _13)
     storage_live(ret_10)
     storage_live(x_11)
     storage_live(y_12)
     storage_dead(_13)
     x_11 = move _14
     storage_dead(_14)
-    y_12 = unsize_cast<alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]}, {built_in impl Sized for Global}], 2 : usize>(move x_11)
+    y_12 = unsize_cast<alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]}, {built_in impl Sized for Global}], 2usize>(move x_11)
     ret_10 = into_vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}](move y_12)
     _nested_1 = move ret_10
     _0 = ()
@@ -120,30 +120,30 @@ fn nested_single()
     let _nested_1: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
     let _2: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
     let ret_3: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
-    let x_4: alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}]; // local
+    let x_4: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // local
     let y_5: alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}]; // local
     let ret_6: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
-    let x_7: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]}, {built_in impl Sized for Global}]; // local
+    let x_7: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}, {built_in impl Sized for Global}]; // local
     let y_8: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]}, {built_in impl Sized for Global}]; // local
-    let _9: [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]; // anonymous local
-    let _10: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]}, {built_in impl Sized for Global}]; // anonymous local
-    let _11: [u8; 1 : usize]; // anonymous local
-    let _12: alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _9: [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]; // anonymous local
+    let _10: alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _11: [u8; 1usize]; // anonymous local
+    let _12: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     _0 = ()
     storage_live(_nested_1)
     storage_live(_2)
     storage_live(_11)
-    _11 = [const 1 : u8]
+    _11 = [const 1u8]
     storage_live(_12)
-    _12 = @BoxNew<[u8; 1 : usize], Global>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}](move _11)
+    _12 = @BoxNew<[u8; 1usize], Global>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}](move _11)
     storage_live(ret_3)
     storage_live(x_4)
     storage_live(y_5)
     storage_dead(_11)
     x_4 = move _12
     storage_dead(_12)
-    y_5 = unsize_cast<alloc::boxed::Box<[u8; 1 : usize]>[{built_in impl MetaSized for [u8; 1 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1 : usize>(move x_4)
+    y_5 = unsize_cast<alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x_4)
     ret_3 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_5)
     _2 = move ret_3
     storage_live(_9)
@@ -151,14 +151,14 @@ fn nested_single()
     conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _2
     storage_dead(_2)
     storage_live(_10)
-    _10 = @BoxNew<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize], Global>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]}, {built_in impl Sized for Global}](move _9)
+    _10 = @BoxNew<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize], Global>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}, {built_in impl Sized for Global}](move _9)
     storage_live(ret_6)
     storage_live(x_7)
     storage_live(y_8)
     storage_dead(_9)
     x_7 = move _10
     storage_dead(_10)
-    y_8 = unsize_cast<alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]}, {built_in impl Sized for Global}], 1 : usize>(move x_7)
+    y_8 = unsize_cast<alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]}, {built_in impl Sized for Global}], 1usize>(move x_7)
     ret_6 = into_vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}](move y_8)
     _nested_1 = move ret_6
     _0 = ()

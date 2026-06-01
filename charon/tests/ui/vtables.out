@@ -260,9 +260,9 @@ fn impl_Checkable_i32_for_i32::check<'_0>(self_1: &'_0 i32) -> bool
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = impl_Super_i32_for_i32::super_method<'4>(move _3, const 10 : i32)
+    _2 = impl_Super_i32_for_i32::super_method<'4>(move _3, const 10i32)
     storage_dead(_3)
-    _0 = move _2 > const 0 : i32
+    _0 = move _2 > const 0i32
     storage_dead(_2)
     return
 }
@@ -356,7 +356,7 @@ fn impl_NoParam_for_i32::dummy<'_0>(self_1: &'_0 i32)
     storage_live(_2)
     storage_live(_3)
     _3 = copy (*self_1)
-    _2 = move _3 > const 0 : i32
+    _2 = move _3 > const 0i32
     if move _2 {
     } else {
         storage_dead(_3)
@@ -435,7 +435,7 @@ where
     let _4: &'4 T; // anonymous local
 
     storage_live(_3)
-    _3 = copy (*self_1) panic.+ const 1 : i32
+    _3 = copy (*self_1) panic.+ const 1i32
     (*self_1) = move _3
     storage_live(_4)
     _4 = &(*arg_2)
@@ -533,7 +533,7 @@ where
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = const 199 : i32
+    _5 = const 199i32
     _4 = &mut _5
     _3 = &mut (*_4)
     x_2 = unsize_cast<&'8 mut i32, &'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
@@ -1046,13 +1046,13 @@ fn use_alias<'_0>(x_1: &'_0 (dyn Both32And64 + '_0))
     storage_live(_11)
     storage_live(_14)
     storage_live(_15)
-    _15 = const 200 : i64
+    _15 = const 200i64
     _14 = &_15
     _11 = move _14
     storage_live(_10)
     storage_live(_12)
     storage_live(_13)
-    _13 = const 100 : i32
+    _13 = const 100i32
     _12 = &_13
     _10 = move _12
     storage_live(_8)
@@ -1202,7 +1202,7 @@ fn main()
     storage_live(_86)
     storage_live(_95)
     storage_live(_96)
-    _96 = const 42 : i32
+    _96 = const 42i32
     _95 = &_96
     _86 = move _95
     storage_live(_77)
@@ -1239,7 +1239,7 @@ fn main()
     storage_live(_7)
     storage_live(_8)
     storage_live(_9)
-    _9 = const 99 : i32
+    _9 = const 99i32
     _8 = &mut _9
     _7 = &mut (*_8)
     y_6 = unsize_cast<&'16 mut i32, &'121 mut (dyn Modifiable<i32> + '122), &impl_Modifiable_for_i32::{vtable}<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32]>(move _7)
@@ -1281,14 +1281,14 @@ fn main()
         storage_live(_22)
         storage_live(_23)
         storage_live(_24)
-        _24 = const 100 : i32
+        _24 = const 100i32
         _23 = &mut _24
         _22 = &(*_23)
         _20 = (copy ((*_21.metadata)).method_modify)(move _21, move _22)
         storage_live(_87)
         storage_live(_97)
         storage_live(_98)
-        _98 = const 100 : i32
+        _98 = const 100i32
         _97 = &_98
         _87 = move _97
         storage_dead(_22)
@@ -1333,7 +1333,7 @@ fn main()
         storage_live(_88)
         storage_live(_99)
         storage_live(_100)
-        _100 = const 42 : i32
+        _100 = const 42i32
         _99 = &_100
         _88 = move _99
         storage_dead(_30)
@@ -1367,19 +1367,19 @@ fn main()
         storage_live(_91)
         storage_live(_105)
         storage_live(_106)
-        _106 = const 200 : i64
+        _106 = const 200i64
         _105 = &_106
         _91 = move _105
         storage_live(_90)
         storage_live(_103)
         storage_live(_104)
-        _104 = const 100 : i32
+        _104 = const 100i32
         _103 = &_104
         _90 = move _103
         storage_live(_89)
         storage_live(_101)
         storage_live(_102)
-        _102 = const 42 : i32
+        _102 = const 42i32
         _101 = &_102
         _89 = move _101
         storage_dead(_44)
@@ -1410,13 +1410,13 @@ fn main()
         storage_live(_93)
         storage_live(_109)
         storage_live(_110)
-        _110 = const 10 : i32
+        _110 = const 10i32
         _109 = &_110
         _93 = move _109
         storage_live(_92)
         storage_live(_107)
         storage_live(_108)
-        _108 = const 42 : i32
+        _108 = const 42i32
         _107 = &_108
         _92 = move _107
         storage_dead(_52)
@@ -1451,7 +1451,7 @@ fn main()
         storage_live(_94)
         storage_live(_111)
         storage_live(_112)
-        _112 = const 10 : i32
+        _112 = const 10i32
         _111 = &_112
         _94 = move _111
         storage_dead(_62)

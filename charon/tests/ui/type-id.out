@@ -3,7 +3,7 @@
 // Full name: core::any::TypeId
 #[lang_item("type_id")]
 pub struct TypeId {
-  data: [*const (); 2 : usize],
+  data: [*const (); 2usize],
 }
 
 // Full name: core::marker::MetaSized

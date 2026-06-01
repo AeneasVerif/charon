@@ -22,7 +22,7 @@ fn slice_pattern_end<'_0>(x_1: &'_0 [()])
     _0 = ()
     _3 = copy x_1.metadata
     _2 = move _3
-    _4 = const 1 : usize
+    _4 = const 1usize
     _5 = move _2 >= move _4
     if move _5 {
     } else {
@@ -35,7 +35,7 @@ fn slice_pattern_end<'_0>(x_1: &'_0 [()])
     storage_live(_8)
     _8 = len((*x_1))
     storage_live(_9)
-    _9 = copy _8 ub.- const 1 : usize
+    _9 = copy _8 ub.- const 1usize
     storage_dead(_8)
     storage_live(_10)
     _10 = @SliceIndexShared<'_, ()>(move _7, copy _9)
