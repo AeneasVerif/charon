@@ -312,6 +312,14 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let impl_source = match impl_source {
             Ok(impl_source) => impl_source,
             Err(e) => {
+                // When dealing with default methods we do some dodgy param-env manipulation, which
+                // because of normalization can make some trait goals no longer provable. As a
+                // stopgap we catch them here if we happened to have the right thing in scope.
+                if let Some(candidate) = self.resolve_local(erased_tref.upcast(tcx)) {
+                    let trait_proof = candidate.proof;
+                    self.trait_proofs_cache.insert(*tref, trait_proof);
+                    return trait_proof;
+                }
                 return error(format!(
                     "Could not find a clause for `{tref:?}` \
                     in the current context: `{e:?}`"

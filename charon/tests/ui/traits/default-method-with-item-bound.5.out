@@ -98,7 +98,7 @@ fn {impl Iterator for Iter<'a, T>[TraitClause0]}::rposition<'a, '_1, T, P>(self_
 where
     TraitClause0: (T: Sized),
     TraitClause1: (P: Sized),
-    TraitClause2: (P: FnMut<(TraitClause3::ImpliedClause1::Item,)>),
+    TraitClause2: (P: FnMut<(&'a T,)>),
     TraitClause3: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator),
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = (),
 {
@@ -118,7 +118,7 @@ where
     proof ImpliedClause0: (Iter<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Iter<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a T: Sized) = {built_in impl Sized for &'a T}
     type Item = &'a T
-    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(TraitClause2_1::ImpliedClause1::Item,)>), TraitClause2_1: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = ()> = {impl Iterator for Iter<'a, T>[TraitClause0]}::rposition<'a, '_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(&'a T,)>), TraitClause2_1: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = ()> = {impl Iterator for Iter<'a, T>[TraitClause0]}::rposition<'a, '_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     non-dyn-compatible
 }
 

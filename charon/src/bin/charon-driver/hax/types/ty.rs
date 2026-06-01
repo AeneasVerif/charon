@@ -815,20 +815,13 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
         // Populate a predicate searcher that knows about the `dyn` clauses.
         let mut predicate_searcher = s.with_predicate_searcher(|ps| ps.clone());
         predicate_searcher.insert_bound_predicates(preds.iter());
-        predicate_searcher.set_param_env(
-            rustc_trait_selection::traits::normalize_param_env_or_error(
-                tcx,
-                ty::ParamEnv::new(
-                    tcx.mk_clauses_from_iter(
-                        s.param_env()
-                            .caller_bounds()
-                            .iter()
-                            .chain(preds.iter().map(|pred| pred.clause)),
-                    ),
-                ),
-                rustc_trait_selection::traits::ObligationCause::dummy(),
-            ),
-        );
+        predicate_searcher.set_param_env(param_env_from_clauses(
+            tcx,
+            s.param_env()
+                .caller_bounds()
+                .iter()
+                .chain(preds.iter().map(|pred| pred.clause)),
+        ));
         predicate_searcher
     }
 

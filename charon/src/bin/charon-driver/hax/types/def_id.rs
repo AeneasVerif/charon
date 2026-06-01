@@ -172,6 +172,15 @@ impl VirtualImplAssocItem {
             .instantiate_identity();
         self.args_for_item_decl(s, impl_trait_ref.args)
     }
+
+    /// The typing environment of the trait impl, before adding item-local clauses.
+    fn impl_typing_env<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::TypingEnv<'tcx> {
+        let tcx = s.base().tcx;
+        ty::TypingEnv::new(
+            tcx.param_env(self.trait_impl_id),
+            ty::TypingMode::PostAnalysis,
+        )
+    }
 }
 
 impl DefIdContents {
@@ -483,19 +492,18 @@ impl DefId {
         match self.base {
             DefIdBase::ImplAssocItem(id) => {
                 let item_args = id.identity_args_for_item_decl(s);
-                let predicates = tcx
-                    .predicates_of(id.trait_impl_id)
-                    .instantiate_identity(tcx)
-                    .predicates
-                    .into_iter()
-                    .chain(
-                        tcx.predicates_of(id.item_decl_id)
-                            .instantiate_own(tcx, item_args)
-                            .map(|(predicate, _)| predicate),
-                    );
-                let cause = rustc_trait_selection::traits::ObligationCause::dummy();
-                let param_env = ty::ParamEnv::new(tcx.mk_clauses_from_iter(predicates));
-                rustc_trait_selection::traits::normalize_param_env_or_error(tcx, param_env, cause)
+                let impl_typing_env = id.impl_typing_env(s);
+                // We normalize item predicates in the impl environment before adding them to the param_env.
+                let item_predicates = tcx
+                    .predicates_of(id.item_decl_id)
+                    .instantiate_own(tcx, item_args)
+                    .map(|(predicate, _)| normalize(tcx, impl_typing_env, predicate));
+                let predicates = impl_typing_env
+                    .param_env
+                    .caller_bounds()
+                    .iter()
+                    .chain(item_predicates);
+                param_env_from_clauses(tcx, predicates)
             }
             DefIdBase::Real(def_id)
             | DefIdBase::Promoted(def_id, ..)
@@ -509,6 +517,10 @@ impl DefId {
         }
     }
 
+    pub fn typing_env<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::TypingEnv<'tcx> {
+        ty::TypingEnv::new(self.param_env(s), ty::TypingMode::PostAnalysis)
+    }
+
     pub fn required_predicates<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> ItemPredicates<'tcx> {
         match self.base {
             DefIdBase::ImplAssocItem(id) => {
@@ -520,7 +532,7 @@ impl DefId {
                         .predicates
                         .retain(|predicate| !matches!(predicate.id, ItemPredicateId::TraitSelf));
                 }
-                predicates.instantiate(tcx, item_args)
+                predicates.instantiate(tcx, id.impl_typing_env(s), item_args)
             }
             DefIdBase::Real(def_id) | DefIdBase::Synthetic(.., def_id) => {
                 ItemPredicates::required(s.base().elab_ctx, def_id)

@@ -34,6 +34,16 @@ where
     inst_binder(tcx, typing_env, args, ty::EarlyBinder::bind(x))
 }
 
+/// Make a new `ParamEnv` from a list of clauses.
+pub fn param_env_from_clauses<'tcx>(
+    tcx: ty::TyCtxt<'tcx>,
+    predicates: impl Iterator<Item = ty::Clause<'tcx>>,
+) -> ty::ParamEnv<'tcx> {
+    let cause = rustc_trait_selection::traits::ObligationCause::dummy();
+    let param_env = ty::ParamEnv::new(tcx.mk_clauses_from_iter(predicates));
+    rustc_trait_selection::traits::normalize_param_env_or_error(tcx, param_env, cause)
+}
+
 #[extension_traits::extension(pub trait SubstBinder)]
 impl<'tcx, T: ty::TypeFoldable<ty::TyCtxt<'tcx>>> ty::Binder<'tcx, T> {
     fn subst(
@@ -74,20 +84,6 @@ pub(crate) fn get_variant_kind<'s, S: UnderOwnerState<'s>>(
     } else {
         let index = variant_index;
         VariantKind::Enum { index }
-    }
-}
-
-pub trait HasParamEnv<'tcx> {
-    fn param_env(&self) -> ty::ParamEnv<'tcx>;
-    fn typing_env(&self) -> ty::TypingEnv<'tcx>;
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> HasParamEnv<'tcx> for S {
-    fn param_env(&self) -> ty::ParamEnv<'tcx> {
-        self.owner().param_env(self)
-    }
-    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
-        ty::TypingEnv::new(self.param_env(), ty::TypingMode::PostAnalysis)
     }
 }
 

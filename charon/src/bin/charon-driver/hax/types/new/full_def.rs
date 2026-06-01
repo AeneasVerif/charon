@@ -736,19 +736,28 @@ where
                     .map(|decl_assoc| {
                         let decl_def_id = decl_assoc.def_id;
                         let trait_impl_id = def_id;
-                        let value = match item_map.remove(&decl_def_id) {
+                        let value = item_map.remove(&decl_def_id);
+                        let virtual_item = VirtualImplAssocItem::new(
+                            trait_impl_id,
+                            decl_def_id,
+                            value.map(|impl_assoc| impl_assoc.def_id),
+                        );
+                        let virtual_item_def_id = DefId::make_assoc_item_impl(s, virtual_item);
+                        let s = &s.with_hax_owner(&virtual_item_def_id);
+                        let item_decl_args = virtual_item.args_for_item_decl(s, trait_ref.args);
+                        let param_env = {
+                            // Pass `None` to get the generics, but add the known parent.
+                            // FIXME: maybe a custom enum instead of `Option<Args>`.
+                            let mut param_env = get_param_env(s, None);
+                            param_env.generics.parent = Some(this.def_id.clone());
+                            param_env.parent = Some(this.clone());
+                            param_env
+                        };
+                        let required_trait_proofs =
+                            solve_item_implied_traits(s, decl_def_id, item_decl_args);
+                        let value = match value {
                             Some(impl_assoc) => {
                                 let impl_assoc_def_id: DefId = impl_assoc.def_id.sinto(s);
-                                let virtual_item = VirtualImplAssocItem::new(
-                                    trait_impl_id,
-                                    decl_def_id,
-                                    Some(impl_assoc.def_id),
-                                );
-                                let virtual_item_def_id =
-                                    DefId::make_assoc_item_impl(s, virtual_item);
-                                let s = &s.with_hax_owner(&virtual_item_def_id);
-                                let item_decl_args =
-                                    virtual_item.args_for_item_decl(s, trait_ref.args);
                                 let item_impl_args =
                                     virtual_item.args_for_item_impl(s, args_or_default());
                                 let assoc_ty_value =
@@ -763,18 +772,9 @@ where
                                     } else {
                                         None
                                     };
-                                let required_trait_proofs =
-                                    solve_item_implied_traits(s, decl_def_id, item_decl_args);
-                                let param_env = {
-                                    // Pass `None` to get the generics, but add the known parent.
-                                    // FIXME: maybe a custom enum instead of `Option<Args>`.
-                                    let mut param_env = get_param_env(s, None);
-                                    param_env.generics.parent = Some(this.def_id.clone());
-                                    param_env.parent = Some(this.clone());
-                                    param_env
-                                };
                                 let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
-                                let late_bound = late_bound_for_def(s, impl_assoc.def_id);
+                                let late_bound =
+                                    late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
                                 let value = ImplAssocItemValue::Provided {
                                     item,
                                     assoc_ty_value,
@@ -788,64 +788,32 @@ where
                                 }
                             }
                             None => {
-                                let decl_hax_def_id = decl_def_id.sinto(s);
-                                let required_trait_proofs = if decl_hax_def_id
-                                    .generics_of(s)
-                                    .is_own_empty()
-                                {
-                                    // Non-GAT case.
-                                    let item_args = decl_hax_def_id.identity_args(s);
-                                    let args =
-                                        item_args.rebase_onto(tcx, trait_impl_id, trait_ref.args);
-                                    // TODO: is it the right `def_id`?
-                                    let state_with_id = s.with_rustc_owner(trait_impl_id);
-                                    solve_item_implied_traits(&state_with_id, decl_def_id, args)
-                                } else {
-                                    // FIXME: For GATs, we need a param_env that has the arguments of
-                                    // the impl plus those of the associated type, but there's no
-                                    // def_id with that param_env.
-                                    vec![]
-                                };
+                                let decl_hax_def_id: DefId = decl_def_id.sinto(s);
+                                let late_bound =
+                                    late_bound_for_def(s, decl_def_id, Some(item_decl_args));
                                 let value = match decl_assoc.kind {
                                     ty::AssocKind::Type { .. } => {
-                                        let ty = if decl_hax_def_id.generics_of(s).is_own_empty() {
-                                            let ty = decl_hax_def_id
-                                                .type_of(s)
-                                                .instantiate(tcx, trait_ref.args)
-                                                .sinto(s);
-                                            Some(ty)
-                                        } else {
-                                            None
-                                        };
+                                        let ty = inst_binder(
+                                            tcx,
+                                            s.typing_env(),
+                                            Some(item_decl_args),
+                                            decl_hax_def_id.type_of(s),
+                                        )
+                                        .sinto(s);
                                         ImplAssocItemValue::DefaultedTy {
                                             ty,
                                             implied_trait_proofs: required_trait_proofs,
                                         }
                                     }
-                                    ty::AssocKind::Fn { .. } => {
-                                        let sig = if tcx.generics_of(decl_def_id).is_own_empty() {
-                                            // The method doesn't have generics of its own, so
-                                            // we can instantiate it with just the trait
-                                            // generics.
-                                            let sig = tcx
-                                                .fn_sig(decl_def_id)
-                                                .instantiate(tcx, trait_ref.args)
-                                                .sinto(s);
-                                            Some(sig)
-                                        } else {
-                                            None
-                                        };
-                                        ImplAssocItemValue::DefaultedFn { sig }
-                                    }
+                                    ty::AssocKind::Fn { .. } => ImplAssocItemValue::DefaultedFn,
                                     ty::AssocKind::Const { .. } => {
                                         ImplAssocItemValue::DefaultedConst {}
                                     }
                                 };
-                                // TODO: it's all wrong
                                 TraitItemBinder {
-                                    def_id: s.owner().clone(),
-                                    param_env: ParamEnv::empty(s, Some(this)),
-                                    late_bound: Binder::empty(),
+                                    def_id: virtual_item_def_id,
+                                    param_env,
+                                    late_bound,
                                     skip_binder: value,
                                 }
                             }
@@ -1016,12 +984,16 @@ where
     }
 }
 
-fn late_bound_for_def<'tcx, S: UnderOwnerState<'tcx>>(s: &S, def_id: RDefId) -> Binder<()> {
+fn late_bound_for_def<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    def_id: RDefId,
+    args: Option<ty::GenericArgsRef<'tcx>>,
+) -> Binder<()> {
     if matches!(
         s.base().tcx.def_kind(def_id),
         RDefKind::Fn { .. } | RDefKind::AssocFn { .. }
     ) {
-        get_method_sig(s.base().tcx, s.typing_env(), def_id, None)
+        get_method_sig(s.base().tcx, s.typing_env(), def_id, args)
             .sinto(s)
             .map(|_| ())
     } else {
@@ -1076,10 +1048,8 @@ pub enum ImplAssocItemValue {
     },
     /// This is an associated type that reuses the trait declaration default.
     DefaultedTy {
-        /// The default type, with generics properly instantiated. `None` if the type has generics
-        /// of its own, because then we'd need to resolve traits but the type doesn't have its own
-        /// `DefId`.
-        ty: Option<Ty>,
+        /// The default type, with generics properly instantiated.
+        ty: Ty,
         /// Trait proofs for the implied associated type bounds. E.g.:
         /// ```ignore
         /// trait Foo {
@@ -1092,13 +1062,7 @@ pub enum ImplAssocItemValue {
         implied_trait_proofs: Vec<TraitProof>,
     },
     /// This is a non-overriden default method.
-    /// FIXME: provide properly instantiated generics.
-    DefaultedFn {
-        /// The signature of the method, if we could translate it. `None` if the method has
-        /// generics of its own, because then we'd need to resolve traits but the method doesn't
-        /// have its own `DefId`.
-        sig: Option<PolyFnSig>,
-    },
+    DefaultedFn,
     /// This is an associated const that reuses the trait declaration default. The default const
     /// value can be found in `decl_def`.
     DefaultedConst,

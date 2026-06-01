@@ -32,7 +32,7 @@ impl MyTrait for S {
     type Ret = ()
     where
         TraitClause0_1: (S: Sized),
-        proof ImpliedClause0: ({impl MyTrait for S}::Ret[TraitClause0_1]: Sized) = {impl MyTrait for S}::Ret::ImpliedClause0;
+        proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()};
     vtable: {impl MyTrait for S}::{vtable}
 }
 

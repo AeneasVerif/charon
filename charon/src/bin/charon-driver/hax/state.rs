@@ -1,6 +1,6 @@
 use crate::hax::prelude::*;
 use paste::paste;
-use rustc_middle::ty::TyCtxt;
+use rustc_middle::ty::{self, TyCtxt};
 
 macro_rules! mk_aux {
     ($state:ident {$($lts:lifetime)*} $field:ident {$($field_type:tt)+} {$($gen:tt)*} {$($gen_full:tt)*} {$($params:tt)*} {$($fields:tt)*}) => {
@@ -204,6 +204,12 @@ impl<'tcx, T: HasBase<'tcx> + Clone> BaseState<'tcx> for T {}
 pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwner {
     fn owner_id(&self) -> RDefId {
         self.owner().as_real_promoted_or_synthetic()
+    }
+    fn param_env(&self) -> ty::ParamEnv<'tcx> {
+        self.owner().param_env(self)
+    }
+    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
+        self.owner().typing_env(self)
     }
     fn with_base(&self, base: types::Base<'tcx>) -> StateWithOwner<'tcx> {
         State {

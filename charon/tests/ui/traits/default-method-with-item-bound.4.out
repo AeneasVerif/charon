@@ -59,7 +59,7 @@ fn {impl Trait for Empty<T>[TraitClause0]}::provided<'_0, T, P>(self_1: &'_0 mut
 where
     TraitClause0: (T: Sized),
     TraitClause1: (P: Sized),
-    TraitClause2: (P: Has<TraitClause3::ImpliedClause1::Item>),
+    TraitClause2: (P: Has<T>),
     TraitClause3: (Empty<T>[TraitClause0]: Exact),
 {
     let _0: (); // return
@@ -78,7 +78,7 @@ where
     proof ImpliedClause0: (Empty<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Empty<T>[TraitClause0]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     type Item = T
-    fn provided<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Has<TraitClause2_1::ImpliedClause1::Item>), TraitClause2_1: (Empty<T>[TraitClause0]: Exact)> = {impl Trait for Empty<T>[TraitClause0]}::provided<'_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn provided<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Has<T>), TraitClause2_1: (Empty<T>[TraitClause0]: Exact)> = {impl Trait for Empty<T>[TraitClause0]}::provided<'_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     non-dyn-compatible
 }
 

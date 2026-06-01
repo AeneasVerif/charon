@@ -840,7 +840,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     VtableMethodValue::Const(ConstantExprKind::FnDef(shim_ref))
                 }
             }
-            hax::ImplAssocItemValue::DefaultedFn { .. } => VtableMethodValue::Const(
+            hax::ImplAssocItemValue::DefaultedFn => VtableMethodValue::Const(
                 ConstantExprKind::Opaque("shim for default methods aren't yet supported".into()),
             ),
             _ => return Ok(None),

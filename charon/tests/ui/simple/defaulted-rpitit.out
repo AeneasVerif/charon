@@ -50,7 +50,7 @@ impl Foo for S {
     proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
     type bar_ty<const N : usize> = [u8; N]
     where
-        proof ImpliedClause0: ({impl Foo for S}::bar_ty<N>: Sized) = {impl Foo for S}::bar_ty::ImpliedClause0;
+        proof ImpliedClause0: ([u8; N]: Sized) = {built_in impl Sized for [u8; N]};
     fn bar<const N : usize> = {impl Foo for S}::bar<N>
     non-dyn-compatible
 }
