@@ -224,7 +224,7 @@ pub trait BodyTransformCtx: Sized {
     /// Assign an rvalue to a place, unless the rvalue is a move in which case we just use the
     /// moved place.
     fn rval_to_place(&mut self, rvalue: Rvalue, ty: Ty) -> Place {
-        if let Rvalue::Use(Operand::Move(place)) = rvalue {
+        if let Rvalue::Use(Operand::Move(place), WithRetag::No) = rvalue {
             place
         } else {
             let var = self.fresh_var(None, ty);

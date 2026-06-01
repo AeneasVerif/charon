@@ -170,7 +170,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let ret = bb.new_var(None, c.ty.clone());
                 bb.push_statement(StatementKind::Assign(
                     ret,
-                    Rvalue::Use(Operand::Const(Box::new(c))),
+                    Rvalue::Use(Operand::Const(Box::new(c)), WithRetag::No),
                 ));
                 Ok(Body::Unstructured(bb.build()))
             } else {
@@ -917,12 +917,18 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         tgt_ty: &Ty,
     ) -> Result<Rvalue, Error> {
         match rvalue {
-            mir::Rvalue::Use(operand, _) => Ok(Rvalue::Use(self.translate_operand(span, operand)?)),
+            mir::Rvalue::Use(operand, retag) => {
+                let retag = match retag {
+                    mir::WithRetag::Yes => WithRetag::Yes,
+                    mir::WithRetag::No => WithRetag::No,
+                };
+                Ok(Rvalue::Use(self.translate_operand(span, operand)?, retag))
+            }
             mir::Rvalue::CopyForDeref(place) => {
                 // According to the documentation, it seems to be an optimisation
                 // for drop elaboration. We treat it as a regular copy.
                 let place = self.translate_place(span, place)?;
-                Ok(Rvalue::Use(Operand::Copy(place)))
+                Ok(Rvalue::Use(Operand::Copy(place), WithRetag::No))
             }
             mir::Rvalue::Repeat(operand, cnst) => {
                 let c = self.translate_ty_constant_expr(span, cnst)?;
@@ -1037,9 +1043,12 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     mir::UnOp::Neg => UnOp::Neg(OverflowMode::Wrap),
                     mir::UnOp::PtrMetadata => match operand {
                         Operand::Copy(p) | Operand::Move(p) => {
-                            return Ok(Rvalue::Use(Operand::Copy(
-                                p.project(ProjectionElem::PtrMetadata, tgt_ty.clone()),
-                            )));
+                            return Ok(Rvalue::Use(
+                                Operand::Copy(
+                                    p.project(ProjectionElem::PtrMetadata, tgt_ty.clone()),
+                                ),
+                                WithRetag::No,
+                            ));
                         }
                         Operand::Const(_) => {
                             panic!("unexpected metadata operand")

@@ -62,7 +62,7 @@ fn transform_constant_expr(
 
                     // Evaluate the referenced value
                     let bval_ty = bval.ty().clone();
-                    ctx.rval_to_place(Rvalue::Use(bval), bval_ty)
+                    ctx.rval_to_place(Rvalue::Use(bval, WithRetag::No), bval_ty)
                 }
             };
             match (rk, metadata) {
@@ -180,7 +180,7 @@ impl UllbcPass for Transform {
                         {
                             Rvalue::Repeat(op.clone(), ty.clone(), len)
                         }
-                        Rvalue::Use(Operand::Const(e)) if e.kind.is_adt() && e.ty.is_unit() => {
+                        Rvalue::Use(Operand::Const(e), _) if e.kind.is_adt() && e.ty.is_unit() => {
                             Rvalue::unit_value()
                         }
                         _ => rvalue,

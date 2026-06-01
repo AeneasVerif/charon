@@ -1573,7 +1573,7 @@ impl_display_via_ctx!(Rvalue);
 impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Rvalue::Use(x) => write!(f, "{}", x.with_ctx(ctx)),
+            Rvalue::Use(x, _) => write!(f, "{}", x.with_ctx(ctx)),
             Rvalue::Ref {
                 place,
                 kind: borrow_kind,

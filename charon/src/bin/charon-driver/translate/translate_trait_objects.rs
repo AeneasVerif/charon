@@ -951,10 +951,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             // ```
             let mut mk_cast = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
                 let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
-                let shim = Rvalue::Use(Operand::Const(Box::new(ConstantExpr {
-                    kind: ConstantExprKind::FnDef(method_shim.clone()),
-                    ty: method_ty.clone(),
-                })));
+                let shim = Rvalue::Use(
+                    Operand::Const(Box::new(ConstantExpr {
+                        kind: ConstantExprKind::FnDef(method_shim.clone()),
+                        ty: method_ty.clone(),
+                    })),
+                    WithRetag::No,
+                );
                 let cast_local = builder.new_var(
                     Some("erased_".to_string() + method_name.as_str()),
                     ty.clone(),

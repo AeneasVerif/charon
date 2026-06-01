@@ -74,7 +74,10 @@ impl UllbcPass for Transform {
             {
                 // Fresh local variable for the temporary assignment
                 let tmp_var = ctx.fresh_var(None, lhs.ty().clone());
-                let tmp_rhs = std::mem::replace(rhs, Rvalue::Use(Operand::Move(tmp_var.clone())));
+                let tmp_rhs = std::mem::replace(
+                    rhs,
+                    Rvalue::Use(Operand::Move(tmp_var.clone()), WithRetag::No),
+                );
                 // Introduce the intermediate let-binding
                 ctx.insert_assn_stmt(tmp_var, tmp_rhs)
             }

@@ -375,7 +375,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         span,
                         StatementKind::Assign(
                             locals.place_for_var(local_id),
-                            Rvalue::Use(Operand::Move(nth_field)),
+                            Rvalue::Use(Operand::Move(nth_field), WithRetag::No),
                         ),
                     )
                 });

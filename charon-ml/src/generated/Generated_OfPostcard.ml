@@ -1030,7 +1030,8 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 ->
          let* x_0 = operand_of_postcard ctx st in
-         Ok (Use x_0)
+         let* x_1 = with_retag_of_postcard ctx st in
+         Ok (Use (x_0, x_1))
      | 1 ->
          let* place = place_of_postcard ctx st in
          let* kind = borrow_kind_of_postcard ctx st in
@@ -1388,6 +1389,15 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
 and variant_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (variant_id, string) result =
   combine_error_msgs st __FUNCTION__ (VariantId.id_of_postcard ctx st)
+
+and with_retag_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (with_retag, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok NoRetag
+     | 1 -> Ok YesRetag
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 module Ullbc = struct
   open UllbcAst
