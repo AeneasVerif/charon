@@ -1,7 +1,11 @@
-use crate::hax::prelude::*;
+use std::collections::HashSet;
+
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::{mir, ty};
+use rustc_span::kw;
 use rustc_type_ir::Interner;
+
+use crate::hax::prelude::*;
 
 pub fn inst_binder<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,
@@ -172,15 +176,6 @@ pub fn get_method_sig<'tcx>(
     };
     let declared_sig = tcx.fn_sig(decl_method_id);
 
-    // TODO(Nadrieril): Temporary hack: if the signatures have the same number of bound vars, we
-    // keep the real signature. While the declared signature is more correct, it is also less
-    // normalized and we can't normalize without erasing regions but regions are crucial in
-    // function signatures. Hence we cheat here, until charon gains proper normalization
-    // capabilities.
-    if declared_sig.skip_binder().bound_vars().len() == real_sig.bound_vars().len() {
-        return real_sig;
-    }
-
     let impl_def_id = item.container_id(tcx);
     let method_args =
         method_args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, def_id));
@@ -191,10 +186,27 @@ pub fn get_method_sig<'tcx>(
     // Construct arguments for the declared method generics in the context of the implemented
     // method generics.
     let decl_args = method_args.rebase_onto(tcx, impl_def_id, implemented_trait_ref.args);
-    let sig = declared_sig.instantiate(tcx, decl_args);
-    // Avoids accidentally using the same lifetime name twice in the same scope
-    // (once in impl parameters, second in the method declaration late-bound vars).
-    let sig = tcx.anonymize_bound_vars(sig);
+    let mut sig = declared_sig.instantiate(tcx, decl_args);
+
+    if let container_named_lts = tcx
+        .generics_of(impl_def_id)
+        .own_params
+        .iter()
+        .filter(|p| matches!(p.kind, ty::GenericParamDefKind::Lifetime))
+        .filter(|p| p.name != kw::UnderscoreLifetime)
+        .map(|p| p.name)
+        .collect::<HashSet<_>>()
+        && sig
+            .bound_vars()
+            .iter()
+            .map(|v| v.expect_region())
+            .filter_map(|v| v.get_name(tcx))
+            .any(|lt| container_named_lts.contains(&lt))
+    {
+        // Avoids using the same lifetime name twice in the same scope (once in impl parameters,
+        // second in the method declaration late-bound vars).
+        sig = tcx.anonymize_bound_vars(sig);
+    }
     normalize(tcx, typing_env, sig)
 }
 

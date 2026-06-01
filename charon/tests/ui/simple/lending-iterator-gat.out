@@ -131,7 +131,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next
-pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>(self_1: &'b mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
+pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, '_1, T>(self_1: &'_1 mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'_1 T>[{built_in impl Sized for &'_1 T}]
 where
     TraitClause0: (T: Sized),
 {
@@ -177,7 +177,7 @@ where
     where
         TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'b,
         proof ImpliedClause0: (&'_ T: Sized) = {built_in impl Sized for &'_ T};
-    fn next<'b> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>[TraitClause0]
+    fn next<'_0_1> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, '_0_1, T>[TraitClause0]
     non-dyn-compatible
 }
 

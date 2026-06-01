@@ -239,7 +239,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::foo
-fn {impl Foo for ()}::foo<'a, 'b>(x_1: &'b (), y_2: &'a ()) -> &'b ()
+fn {impl Foo for ()}::foo<'a, 'b>(x_1: &'a (), y_2: &'b ()) -> &'a ()
 {
     let _0: &'1 (); // return
     let x_1: &'2 (); // arg #1
