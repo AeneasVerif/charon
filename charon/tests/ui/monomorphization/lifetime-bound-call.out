@@ -1,0 +1,38 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::callee::<'_>
+fn callee::<'_>()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::caller::<'_>
+fn caller::<'_>()
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    _1 = callee::<'_>()
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::f
+pub fn f()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = caller::<'_>()
+    return
+}
+
+
+

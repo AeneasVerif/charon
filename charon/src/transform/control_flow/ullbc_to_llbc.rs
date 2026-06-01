@@ -24,7 +24,6 @@ use std::collections::{HashMap, HashSet};
 use std::mem;
 
 use crate::common::ensure_sufficient_stack;
-use crate::errors::sanity_check;
 use crate::ids::IndexVec;
 use crate::llbc_ast::{self as tgt, StatementId};
 use crate::meta::{Span, combine_span};
@@ -623,7 +622,7 @@ impl ExitInfo {
     ///     s
     /// }
     /// ```
-    fn compute_loop_exits(ctx: &TransformCtx, cfg: &mut CfgInfo) {
+    fn compute_loop_exits(_ctx: &TransformCtx, cfg: &mut CfgInfo) {
         for &loop_id in &cfg.loop_entries {
             // Compute the candidates.
             let loop_exits: SeqHashMap<BlockId, LoopExitRank> =
@@ -668,15 +667,10 @@ impl ExitInfo {
                     //     }
                     // }
                     // ```
+                    // The `exactly_one` can fail, see `tests/ui/control-flow/ambiguous-loop-exit.rs`
                     best_exits
                         .filter(|&bid| !cfg.block_data[bid].only_reach_error)
                         .exactly_one()
-                        .map_err(|mut candidates| {
-                            // Adding this sanity check so that we can see when there are several
-                            // candidates.
-                            let span = cfg.block_data[loop_id].span;
-                            sanity_check!(ctx, span, candidates.next().is_none());
-                        })
                         .ok()
                 }
             };

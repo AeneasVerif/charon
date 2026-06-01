@@ -289,7 +289,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
     fn prepare_vtable_fields(
         &mut self,
-        trait_def: &hax::FullDef<'tcx>,
+        poly_trait_def: &hax::FullDef<'tcx>,
         trait_id: TraitDeclId,
         implied_predicates: &hax::GenericPredicates,
     ) -> Result<VTableData, Error> {
@@ -305,17 +305,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         fields.push(TrVTableField::Drop);
 
         // Method fields.
-        if let hax::FullDefKind::Trait { items, .. } = trait_def.kind() {
+        if let hax::FullDefKind::Trait { items, .. } = poly_trait_def.kind() {
             for item in items {
                 let item_def_id = &item.def_id;
                 // This is ok because dyn-compatible methods don't have generics.
-                let item_def =
-                    self.hax_def(&trait_def.this().with_def_id(self.hax_state(), item_def_id))?;
+                let poly_item_def = self.poly_hax_def(item_def_id)?;
                 if let hax::FullDefKind::AssocFn {
                     sig,
                     vtable_sig: Some(_),
                     ..
-                } = item_def.kind()
+                } = poly_item_def.kind()
                 {
                     let id = self.translate_trait_method_id_no_enqueue(trait_id, item_def_id)?;
                     fields.push(TrVTableField::Method(id, sig.clone()));
@@ -808,10 +807,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     // and restore the orginal one after computing `method_ty`.
                     assert!(self.binding_levels.len() == 1);
                     let orginal_binding = self.binding_levels.pop();
-                    let def = self.poly_hax_def(&item_ref.def_id)?;
-                    self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
-
                     let assoc_fun_def = self.hax_def(item_ref)?;
+                    self.translate_item_generics(
+                        span,
+                        &assoc_fun_def,
+                        &TransItemSourceKind::VTableMethod,
+                    )?;
                     let vtable_sig = match assoc_fun_def.kind() {
                         hax::FullDefKind::AssocFn {
                             vtable_sig: Some(vtable_sig),
@@ -892,7 +893,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
         let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
 
-        let vtable_data = self.prepare_vtable_fields(&trait_def, trait_id, implied_preds)?;
+        let vtable_data = self.prepare_vtable_fields(&poly_trait_def, trait_id, implied_preds)?;
         // Retrieve the expected field types from the struct definition. This avoids complicated
         // substitutions.
         let field_tys = {
