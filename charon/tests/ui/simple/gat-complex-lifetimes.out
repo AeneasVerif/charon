@@ -45,13 +45,13 @@ pub trait Bar<'a, Self>
     proof ImpliedClause0: (Self: MetaSized)
     type Type<'b>
     where
-        proof ImpliedClause0: (Self::Type<'_>: Sized),
-        proof ImpliedClause1: for<'c> (Self::Type<'_>: Foo<&'a &'b &'c ()>);
+        proof ImpliedClause0: (Self::Type<'b>: Sized),
+        proof ImpliedClause1: for<'c> (Self::Type<'b>: Foo<&'a &'b &'c ()>);
     non-dyn-compatible
 }
 
 // Full name: test_crate::bar
-pub fn bar<'x, 'y, 'z, T>(x_1: TraitClause1::Type<'_>) -> &'x &'y &'z ()
+pub fn bar<'x, 'y, 'z, T>(x_1: TraitClause1::Type<'y>) -> &'x &'y &'z ()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Bar<'x>),

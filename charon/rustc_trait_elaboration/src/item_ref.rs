@@ -42,6 +42,16 @@ impl<'tcx> ItemRefContents<'tcx> {
     }
 }
 
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+pub enum AssocItemResolution {
+    /// Leave trait associated items as plain item references.
+    None,
+    /// Resolve the trait proof of a trait associated item, but keep the trait item id.
+    TraitProof,
+    /// Resolve the trait proof and, when possible, point to the concrete impl item.
+    ImplItem,
+}
+
 impl<'tcx> PredicateSearcher<'tcx> {
     /// Construct an `ItemRef` by filling in the trait proofs required to mention said item.
     ///
@@ -56,10 +66,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
         &mut self,
         mut def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
-        // If this is an associated item, resolve the trait reference it is based on.
-        resolve_assoc_item_trait_ref: bool,
+        assoc_item_resolution: AssocItemResolution,
     ) -> ItemRef<'tcx> {
-        let key = (def_id, generics, resolve_assoc_item_trait_ref);
+        let key = (def_id, generics, assoc_item_resolution);
         if let Some(item_ref) = self.item_refs_cache.get(&key).cloned() {
             return item_ref;
         }
@@ -76,23 +85,25 @@ impl<'tcx> PredicateSearcher<'tcx> {
         }
 
         // If this is an associated item, resolve the trait reference.
-        let mut trait_info =
-            if resolve_assoc_item_trait_ref && let Some(tr_def_id) = tcx.trait_of_assoc(def_id) {
-                // The "self" predicate in the context of the trait.
-                let self_pred = self_predicate(tcx, tr_def_id);
-                // Substitute to be in the context of the current item.
-                let generics = generics.truncate_to(tcx, tcx.generics_of(tr_def_id));
-                let self_pred = ty::EarlyBinder::bind(self_pred).instantiate(tcx, generics);
-                let num_trait_req_clauses =
-                    ItemPredicates::required_recursively(elab_ctx, tr_def_id).len();
-                Some((self.resolve(&self_pred), num_trait_req_clauses))
-            } else {
-                None
-            };
+        let mut trait_info = if assoc_item_resolution != AssocItemResolution::None
+            && let Some(tr_def_id) = tcx.trait_of_assoc(def_id)
+        {
+            // The "self" predicate in the context of the trait.
+            let self_pred = self_predicate(tcx, tr_def_id);
+            // Substitute to be in the context of the current item.
+            let generics = generics.truncate_to(tcx, tcx.generics_of(tr_def_id));
+            let self_pred = ty::EarlyBinder::bind(self_pred).instantiate(tcx, generics);
+            let num_trait_req_clauses =
+                ItemPredicates::required_recursively(elab_ctx, tr_def_id).len();
+            Some((self.resolve(&self_pred), num_trait_req_clauses))
+        } else {
+            None
+        };
 
         // If the reference is a known trait impl and the impl implements the target item, we can
         // point directly to the implemented item.
-        if let Some((tinfo, _)) = &trait_info
+        if assoc_item_resolution == AssocItemResolution::ImplItem
+            && let Some((tinfo, _)) = &trait_info
             && let TraitProofKind::Concrete(impl_item_ref) = &tinfo.kind
             && let Some(implemented_item) = tcx
                 .associated_items(impl_item_ref.def_id)

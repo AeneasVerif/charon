@@ -45,7 +45,7 @@ pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}
 impl<'_0, T> Clone for &'_0 T {
-    proof ImpliedClause0: (&'_ T: Sized) = {built_in impl Sized for &'_ T}
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
     fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
     non-dyn-compatible
 }

@@ -122,7 +122,7 @@ where
     size_1 = size_of<T>
     storage_live(align_2)
     align_2 = align_of<T>
-    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[TraitClause0], method_broken: const {vtable_method}<'1, T>[TraitClause0], super_trait_0: const &vtable_of(TraitClause0::ImpliedClause0) }
+    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[TraitClause0], method_broken: const {vtable_method}<'1, T>[TraitClause0, {impl Foo for ()}], super_trait_0: const &vtable_of(TraitClause0::ImpliedClause0) }
     return
 }
 
@@ -140,7 +140,7 @@ where
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     type Assoc = ()
-    fn broken<'_0_1, TraitClause0_1: ((): Foo)> = {impl Broken for T}::broken<'_0_1, T>[TraitClause0, TraitClause0_1]
+    fn broken<'_0_1> = {impl Broken for T}::broken<'_0_1, T>[TraitClause0, {impl Foo for ()}]
     vtable: {impl Broken for T}::{vtable}<T>[TraitClause0]
 }
 

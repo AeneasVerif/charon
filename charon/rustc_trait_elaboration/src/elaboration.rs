@@ -108,7 +108,8 @@ pub struct PredicateSearcher<'tcx> {
     /// accessible.
     implicit_self_clause: bool,
     /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
-    pub(crate) item_refs_cache: HashMap<(DefId, ty::GenericArgsRef<'tcx>, bool), ItemRef<'tcx>>,
+    pub(crate) item_refs_cache:
+        HashMap<(DefId, ty::GenericArgsRef<'tcx>, AssocItemResolution), ItemRef<'tcx>>,
     /// Cache of trait refs to resolved trait proofs.
     trait_proofs_cache: HashMap<ty::PolyTraitRef<'tcx>, TraitProof<'tcx>>,
 }
@@ -234,7 +235,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         if matches!(proof.kind, TraitProofKind::Error(_)) {
             return;
         }
-        let item_ref = self.resolve_item_reference(*def_id, args, true);
+        let item_ref = self.resolve_item_reference(*def_id, args, AssocItemResolution::ImplItem);
 
         // The bounds that hold on the associated type.
         let item_bounds = ItemPredicates::implied(self.elab_ctx, *def_id);
@@ -322,9 +323,11 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 impl_def_id,
                 args: generics,
                 ..
-            }) => {
-                TraitProofKind::Concrete(self.resolve_item_reference(impl_def_id, generics, true))
-            }
+            }) => TraitProofKind::Concrete(self.resolve_item_reference(
+                impl_def_id,
+                generics,
+                AssocItemResolution::ImplItem,
+            )),
             ImplSource::Param(_) => match self.resolve_local(erased_tref.upcast(tcx)) {
                 Some(candidate) => candidate.proof.kind.clone(),
                 None => {

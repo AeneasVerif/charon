@@ -1,0 +1,116 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::HasAssoc1
+pub trait HasAssoc1<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Assoc1: Sized)
+    type Assoc1
+    vtable: test_crate::HasAssoc1::{vtable}<Self::Assoc1>
+}
+
+// Full name: test_crate::HasAssoc2
+pub trait HasAssoc2<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Assoc2: Sized)
+    type Assoc2
+    vtable: test_crate::HasAssoc2::{vtable}<Self::Assoc2>
+}
+
+// Full name: test_crate::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
+    type Item
+    fn defaulted<'_0_1, TraitClause0_1: (Self::Item: HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = test_crate::Trait::defaulted<'_0_1, Self>[Self, TraitClause0_1, TraitClause1_1]
+    vtable: test_crate::Trait::{vtable}<Self::Item>
+}
+
+pub fn test_crate::Trait::defaulted<'_0, Self>(self_1: &'_0 Self) -> TraitClause2::Assoc2
+where
+    TraitClause0: (Self: Trait),
+    TraitClause1: (TraitClause0::Item: HasAssoc1),
+    TraitClause2: (TraitClause1::Assoc1: HasAssoc2),
+{
+    let _0: TraitClause2::Assoc2; // return
+    let self_1: &'1 Self; // arg #1
+
+    loop {
+        continue 0
+    }
+}
+
+// Full name: test_crate::Empty
+pub struct Empty<T>
+where
+    TraitClause0: (T: Sized),
+{
+  T,
+}
+
+// Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}::defaulted
+pub fn {impl Trait for Empty<T>[TraitClause0]}::defaulted<'_0, T>(self_1: &'_0 Empty<T>[TraitClause0]) -> TraitClause2::Assoc2
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HasAssoc1),
+    TraitClause2: (TraitClause1::Assoc1: HasAssoc2),
+{
+    let _0: TraitClause2::Assoc2; // return
+    let self_1: &'1 Empty<T>[TraitClause0]; // arg #1
+
+    loop {
+        continue 0
+    }
+}
+
+// Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}
+impl<T> Trait for Empty<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (Empty<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Empty<T>[TraitClause0]}
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    type Item = T
+    fn defaulted<'_0_1, TraitClause0_1: (T: HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = {impl Trait for Empty<T>[TraitClause0]}::defaulted<'_0_1, T>[TraitClause0, TraitClause0_1, TraitClause1_1]
+    vtable: {impl Trait for Empty<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+}
+
+// Full name: test_crate::{impl Trait for ()}::defaulted
+pub fn {impl Trait for ()}::defaulted<'_0>(self_1: &'_0 ()) -> TraitClause1::Assoc2
+where
+    TraitClause0: ((): HasAssoc1),
+    TraitClause1: (TraitClause0::Assoc1: HasAssoc2),
+{
+    let _0: TraitClause1::Assoc2; // return
+    let self_1: &'1 (); // arg #1
+
+    loop {
+        continue 0
+    }
+}
+
+// Full name: test_crate::{impl Trait for ()}
+impl Trait for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    type Item = ()
+    fn defaulted<'_0_1, TraitClause0_1: ((): HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = {impl Trait for ()}::defaulted<'_0_1>[TraitClause0_1, TraitClause1_1]
+    vtable: {impl Trait for ()}::{vtable}
+}
+
+
+

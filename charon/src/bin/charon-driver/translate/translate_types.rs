@@ -3,8 +3,8 @@ use rustc_middle::ty;
 use rustc_span::sym;
 
 use super::translate_ctx::*;
-use crate::hax;
-use crate::hax::{HasOwner, HasParamEnv, Visibility};
+use crate::hax::{self, UnderOwnerState};
+use crate::hax::{HasOwner, Visibility};
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
 
@@ -437,18 +437,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
-        let rdefid = item.def_id.real_rust_def_id();
         let hax_state = &self.hax_state;
         let ty_env = hax_state.typing_env();
-        let ty = tcx
-            .type_of(rdefid)
+        let ty = item
+            .def_id
+            .type_of(hax_state)
             .instantiate(tcx, item.rustc_args(hax_state));
 
         // Get the tail type, which determines the metadata of `ty`.
         let tail_ty = tcx.struct_tail_raw(
             ty,
             &rustc_middle::traits::ObligationCause::dummy(),
-            |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
+            |ty| hax::normalize(tcx, ty_env, ty),
             || {},
         );
         let hax_ty: hax::Ty = self.t_ctx.catch_sinto(hax_state, span, &tail_ty)?;
@@ -542,12 +542,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         let tcx = self.t_ctx.tcx;
-        let rdefid = item.def_id.real_rust_def_id();
         let hax_state = self.hax_state_with_id();
         assert_eq!(hax_state.owner(), item.def_id);
         let ty_env = hax_state.typing_env();
-        let ty = tcx
-            .type_of(rdefid)
+        let ty = item
+            .def_id
+            .type_of(hax_state)
             .instantiate(tcx, item.rustc_args(hax_state));
         let pseudo_input = ty_env.as_query_input(ty);
         let ptr_size = self.translated.the_target_information().target_pointer_size;

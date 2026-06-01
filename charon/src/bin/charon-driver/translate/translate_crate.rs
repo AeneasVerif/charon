@@ -577,9 +577,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
-        enqueue: bool,
         hax_item: &hax::ItemRef,
         kind: TransItemSourceKind,
+        enqueue: bool,
     ) -> Result<T, Error> {
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
         // In mono mode, we keep trait decls generic.
@@ -682,18 +682,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
-        self.translate_item_maybe_enqueue(span, true, item, kind)
-    }
-
-    /// Register this item and don't enqueue it for translation.
-    #[expect(dead_code)]
-    pub(crate) fn translate_item_no_enqueue<T: TryFrom<DeclRef<ItemId>>>(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef,
-        kind: TransItemSourceKind,
-    ) -> Result<T, Error> {
-        self.translate_item_maybe_enqueue(span, false, item, kind)
+        self.translate_item_maybe_enqueue(span, item, kind, true)
     }
 
     /// Translate a type def id
@@ -715,12 +704,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Translate a function def id
-    pub(crate) fn translate_fun_item(
+    pub(crate) fn translate_fun_item_maybe_enqueue(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
+        enqueue: bool,
     ) -> Result<MaybeBuiltinFunDeclRef, Error> {
         match self.recognize_builtin_fun(item)? {
             Some(id) => {
@@ -732,20 +721,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     trait_ref: None,
                 })
             }
-            None => self.translate_item(span, item, kind),
+            None => self.translate_item_maybe_enqueue(span, item, kind, enqueue),
         }
     }
 
-    /// Auxiliary function to translate function calls and references to functions.
-    /// Translate a function id applied with some substitutions.
+    /// Translate a function reference in a context where late bound regions for its signature are
+    /// in scope.
     #[tracing::instrument(skip(self, span))]
-    pub(crate) fn translate_bound_fn_ptr(
+    pub(crate) fn translate_unbound_fn_ptr_maybe_enqueue(
         &mut self,
         span: Span,
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
-    ) -> Result<RegionBinder<FnPtr>, Error> {
-        let fun_item = self.translate_fun_item(span, item, kind)?;
+        enqueue: bool,
+    ) -> Result<FnPtr, Error> {
+        let fun_item = self.translate_fun_item_maybe_enqueue(span, item, kind, enqueue)?;
         let fun_id = match fun_item.trait_ref {
             // Direct function call
             None => FnPtrKind::Fun(fun_item.id),
@@ -757,36 +747,61 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .expect("methods are not builtin functions");
                 let trait_decl_id = trait_ref.trait_id();
                 let method_id = self.translate_trait_method_id(trait_decl_id, &item.def_id)?;
-                FnPtrKind::Trait(trait_ref.move_under_binder(), method_id, method_decl_id)
+                FnPtrKind::Trait(trait_ref, method_id, method_decl_id)
             }
         };
-        let late_bound = match self.hax_def(item)?.kind() {
-            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
-                sig.as_ref().rebind(())
-            }
-            _ => hax::Binder {
-                value: (),
-                bound_vars: vec![],
-            },
-        };
+        let mut generics = fun_item.generics;
+        // The last n regions are the late-bound ones and were provided as erased regions by
+        // `translate_item`.
+        for (a, b) in generics.regions.iter_mut().rev().zip(
+            self.innermost_binder()
+                .params
+                .identity_args()
+                .regions
+                .into_iter()
+                .rev(),
+        ) {
+            *a = b;
+        }
+        Ok(FnPtr::new(fun_id, generics))
+    }
+
+    #[tracing::instrument(skip(self, span))]
+    pub(crate) fn translate_bound_fn_ptr_maybe_enqueue(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+        enqueue: bool,
+    ) -> Result<RegionBinder<FnPtr>, Error> {
+        let late_bound = self.hax_def(item)?.late_bound();
         self.translate_region_binder(span, &late_bound, |ctx, _| {
-            let mut generics = fun_item.generics.move_under_binder();
-            // The last n regions are the late-bound ones and were provided as erased regions by
-            // `translate_item`.
-            for (a, b) in generics.regions.iter_mut().rev().zip(
-                ctx.innermost_binder()
-                    .params
-                    .identity_args()
-                    .regions
-                    .into_iter()
-                    .rev(),
-            ) {
-                *a = b;
-            }
-            Ok(FnPtr::new(fun_id, generics))
+            ctx.translate_unbound_fn_ptr_maybe_enqueue(span, item, kind, enqueue)
         })
     }
 
+    /// Translate a reference to a function or trait method.
+    #[tracing::instrument(skip(self, span))]
+    pub(crate) fn translate_bound_fn_ptr(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+    ) -> Result<RegionBinder<FnPtr>, Error> {
+        self.translate_bound_fn_ptr_maybe_enqueue(span, item, kind, true)
+    }
+
+    pub(crate) fn translate_bound_fn_ptr_no_enqueue(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+    ) -> Result<RegionBinder<FnPtr>, Error> {
+        self.translate_bound_fn_ptr_maybe_enqueue(span, item, kind, false)
+    }
+
+    /// Translate a reference to a function or trait method, erasing or inferring its late-bound
+    /// lifetimes.
     pub(crate) fn translate_fn_ptr(
         &mut self,
         span: Span,

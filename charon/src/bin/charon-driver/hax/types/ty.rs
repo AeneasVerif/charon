@@ -312,11 +312,10 @@ impl VariantDef {
         discr_val: ty::util::Discr<'tcx>,
         instantiate: Option<ty::GenericArgsRef<'tcx>>,
     ) -> Self {
-        let tcx = s.base().tcx;
-        let instantiate =
-            instantiate.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, def.def_id));
+        let def_id = def.def_id.sinto(s);
+        let instantiate = instantiate.unwrap_or_else(|| def_id.identity_args(s));
         VariantDef {
-            def_id: def.def_id.sinto(s),
+            def_id,
             ctor: def.ctor.sinto(s),
             name: def.name.sinto(s),
             discr_def: def.discr.sinto(s),
@@ -596,12 +595,6 @@ pub struct TyGenerics {
     pub has_late_bound_regions: Option<Span>,
 }
 
-impl TyGenerics {
-    pub(crate) fn count_total_params(&self) -> usize {
-        self.parent_count + self.params.len()
-    }
-}
-
 /// This type merges the information from
 /// [`ty::AliasTyKind`] and [`ty::AliasTy`].
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -644,21 +637,7 @@ impl Alias {
 
         let kind = match alias_ty.kind {
             RustAliasKind::Projection { def_id } => {
-                // FIXME: In a case like:
-                // ```
-                // impl<T, U> Trait for Result<T, U>
-                // where
-                //     for<'a> &'a Result<T, U>: IntoIterator,
-                //     for<'a> <&'a Result<T, U> as IntoIterator>::Item: Copy,
-                // {}
-                // ```
-                // the `&'a Result<T, U> as IntoIterator` trait ref has escaping bound variables
-                // yet we dont have a binder around (could even be several). Binding this correctly
-                // is therefore difficult. Since our trait resolution ignores lifetimes anyway, we
-                // just erase them. See also https://github.com/hacspec/hax/issues/747.
-                // FIXME: at least only erase the trait regions
-                let args = crate::hax::traits::erase_free_regions(tcx, alias_ty.args);
-                AliasKind::Projection(ItemRef::translate(s, def_id, args))
+                AliasKind::Projection(ItemRef::translate_projection(s, def_id, alias_ty.args))
             }
             RustAliasKind::Inherent { .. } => AliasKind::Inherent,
             RustAliasKind::Opaque { def_id } => {
@@ -836,28 +815,19 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
         // Populate a predicate searcher that knows about the `dyn` clauses.
         let mut predicate_searcher = s.with_predicate_searcher(|ps| ps.clone());
         predicate_searcher.insert_bound_predicates(preds.iter());
-        predicate_searcher.set_param_env(
-            rustc_trait_selection::traits::normalize_param_env_or_error(
-                tcx,
-                ty::ParamEnv::new(
-                    tcx.mk_clauses_from_iter(
-                        s.param_env()
-                            .caller_bounds()
-                            .iter()
-                            .chain(preds.iter().map(|pred| pred.clause)),
-                    ),
-                ),
-                rustc_trait_selection::traits::ObligationCause::dummy(),
-            ),
-        );
+        predicate_searcher.set_param_env(param_env_from_clauses(
+            tcx,
+            s.param_env()
+                .caller_bounds()
+                .iter()
+                .chain(preds.iter().map(|pred| pred.clause)),
+        ));
         predicate_searcher
     }
 
     fn fresh_param_ty<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ty::ParamTy {
-        let tcx = s.base().tcx;
-        let def_id = s.owner_id();
-        let generics = tcx.generics_of(def_id);
-        let param_count = generics.parent_count + generics.own_params.len();
+        let generics = s.owner().generics_of(s);
+        let param_count = generics.count();
         ty::ParamTy::new(param_count as u32 + 1, rustc_span::Symbol::intern("_dyn"))
     }
 
@@ -1279,6 +1249,15 @@ pub struct Binder<T> {
     pub bound_vars: Vec<BoundVariableKind>,
 }
 
+impl Binder<()> {
+    pub fn empty() -> Self {
+        Binder {
+            value: (),
+            bound_vars: vec![],
+        }
+    }
+}
+
 impl<T> Binder<T> {
     pub fn as_ref(&self) -> Binder<&T> {
         Binder {
@@ -1571,9 +1550,9 @@ impl AssocItem {
     ) -> AssocItem {
         let tcx = s.base().tcx;
         // We want to solve traits in the context of this item.
-        let s = &s.with_rustc_owner(item.def_id);
-        let item_args =
-            item_args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, item.def_id));
+        let item_def_id = item.def_id.sinto(s);
+        let s = &s.with_hax_owner(&item_def_id);
+        let item_args = item_args.unwrap_or_else(|| item_def_id.identity_args(s));
         let container_id = item.container_id(tcx);
         let container_args = item_args.truncate_to(tcx, tcx.generics_of(container_id));
         let container = match item.container {
@@ -1597,7 +1576,7 @@ impl AssocItem {
                         s,
                         implemented_item_id,
                         generics,
-                        false,
+                        AssocItemResolution::None,
                     )
                 };
                 AssocItemContainer::TraitImplContainer {

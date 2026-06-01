@@ -1,0 +1,95 @@
+# Final LLBC before serialization:
+
+// Full name: core::cmp::PartialEq
+#[lang_item("eq")]
+pub trait PartialEq<Self, Rhs>
+{
+    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
+}
+
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
+where
+    TraitClause0: (Self: PartialEq<Rhs>),
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
+pub fn {impl PartialEq<u32> for u32}::eq<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> bool
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
+impl PartialEq<u32> for u32 {
+    fn eq<'_0_1, '_1_1> = {impl PartialEq<u32> for u32}::eq<'_0_1, '_1_1>
+    vtable: {impl PartialEq<u32> for u32}::{vtable}
+}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::HasAssoc
+trait HasAssoc<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Assoc: Sized)
+    type Assoc
+    vtable: test_crate::HasAssoc::{vtable}<Self::Assoc>
+}
+
+// Full name: test_crate::AlsoHasAssoc
+trait AlsoHasAssoc<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: HasAssoc)
+    vtable: test_crate::AlsoHasAssoc::{vtable}<Self::ImpliedClause1::Assoc>
+}
+
+// Full name: test_crate::{impl HasAssoc for ()}
+impl HasAssoc for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
+    type Assoc = u32
+    vtable: {impl HasAssoc for ()}::{vtable}
+}
+
+// Full name: test_crate::{impl AlsoHasAssoc for ()}
+impl AlsoHasAssoc for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: ((): HasAssoc) = {impl HasAssoc for ()}
+    vtable: {impl AlsoHasAssoc for ()}::{vtable}
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    type Type
+    where
+        TraitClause0_1: (Self: HasAssoc),
+        proof ImpliedClause0: (Self::Type[TraitClause0_1]: Sized),
+        proof ImpliedClause1: (Self::Type[TraitClause0_1]: PartialEq<TraitClause0_1::Assoc>);
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Trait for ()}
+impl Trait for () {
+    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
+    type Type = u32
+    where
+        TraitClause0_1: ((): HasAssoc),
+        proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32},
+        proof ImpliedClause1: (u32: PartialEq<u32>) = {impl PartialEq<u32> for u32};
+    non-dyn-compatible
+}
+
+
+

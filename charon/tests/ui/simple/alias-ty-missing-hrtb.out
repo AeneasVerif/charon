@@ -24,8 +24,7 @@ pub trait HasLifetimeAssoc<'a, Self>
 // Full name: test_crate::FnAlias
 pub type FnAlias<B>
 where
-    TraitClause0: (B: Sized),
-    TraitClause1: (B: HasLifetimeAssoc<'_>), = fn<'a>(TraitClause1::Assoc)
+    TraitClause0: (B: Sized), = fn<'a>(UNKNOWN(Could not find a clause for `Binder { value: <B as HasLifetimeAssoc<'a>>, bound_vars: [] }` in the current context: `Unimplemented`)::Assoc)
 
 
 

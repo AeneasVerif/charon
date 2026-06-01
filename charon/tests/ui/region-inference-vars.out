@@ -57,10 +57,10 @@ pub fn {impl MyTryFrom<&'_0 bool> for bool}::from<'_0>(v_1: &'_0 bool) -> Result
 // Full name: test_crate::{impl MyTryFrom<&'_0 bool> for bool}
 impl<'_0> MyTryFrom<&'_0 bool> for bool {
     proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
-    proof ImpliedClause1: (&'_ bool: Sized) = {built_in impl Sized for &'_ bool}
+    proof ImpliedClause1: (&'_0 bool: Sized) = {built_in impl Sized for &'_0 bool}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     type Error = ()
-    fn from = {impl MyTryFrom<&'_0 bool> for bool}::from<'_0>
+    fn from<TraitClause0_1: (bool: Sized)> = {impl MyTryFrom<&'_0 bool> for bool}::from<'_0>
     vtable: {impl MyTryFrom<&'_0 bool> for bool}::{vtable}<'_0>
 }
 

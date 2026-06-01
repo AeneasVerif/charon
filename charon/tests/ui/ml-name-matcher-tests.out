@@ -248,7 +248,7 @@ where
 {
     proof ImpliedClause0: (Option<U>[TraitClause1]: MetaSized) = {built_in impl MetaSized for Option<U>[TraitClause1]}
     proof ImpliedClause1: (alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}
-    fn method<V, TraitClause0_1: (V: Sized)> = {impl Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]}::method<T, U, V>[TraitClause0, TraitClause1, TraitClause0_1]
+    fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]> for Option<U>[TraitClause1]}::method<T, U, U>[TraitClause0, TraitClause1, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -393,7 +393,7 @@ fn mono_usage()
     storage_live(_container1_1)
     _container1_1 = create<i32>[{built_in impl Sized for i32}](const 42 : i32)
     storage_live(_container2_2)
-    _container2_2 = create<&'9 str>[{built_in impl Sized for &'9 str}](const "test")
+    _container2_2 = create<&'10 str>[{built_in impl Sized for &'10 str}](const "test")
     _0 = ()
     storage_dead(_container2_2)
     storage_dead(_container1_1)
@@ -435,7 +435,7 @@ impl<'a, T> Get<'a, T> for &'a MonoContainer<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (&'_ MonoContainer<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for &'_ MonoContainer<T>[TraitClause0]}
+    proof ImpliedClause0: (&'a MonoContainer<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for &'a MonoContainer<T>[TraitClause0]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     fn get = {impl Get<'a, T> for &'a MonoContainer<T>[TraitClause0]}::get<'a, T>[TraitClause0]
     vtable: {impl Get<'a, T> for &'a MonoContainer<T>[TraitClause0]}::{vtable}<'a, T>[TraitClause0]

@@ -71,11 +71,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // safe we don't translate drop glue for poly types unless explicitly opted-in.
         let translate_glue = self.options.translate_poly_drop_glue
             || self.monomorphize()
-            || def
-                .this
-                .def_id
-                .underlying_rust_def_id()
-                .is_none_or(|def_id| self.tcx.generics_of(def_id).is_empty());
+            || def.this.def_id.as_synthetic(self.hax_state()).is_some()
+            || def.this.def_id.generics_of(self.hax_state()).is_empty();
         if !translate_glue {
             return Ok(Body::Missing);
         }

@@ -43,7 +43,7 @@ where
 {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
-    proof ImpliedClause2: (&'_ (): Sized) = {built_in impl Sized for &'_ ()}
+    proof ImpliedClause2: (&'a (): Sized) = {built_in impl Sized for &'a ()}
     proof ImpliedClause3: (&'a (Option<T>[TraitClause0], &'a ()): Sized) = {impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}<'a, T>[TraitClause0]::ImpliedClause3
     vtable: {impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}::{vtable}<'a, T>[TraitClause0]
 }

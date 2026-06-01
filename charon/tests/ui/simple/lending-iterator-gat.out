@@ -100,7 +100,7 @@ pub trait LendingIterator<Self>
     type Item<'a>
     where
         TypeOutlives0: Self: 'a,
-        proof ImpliedClause0: (Self::Item<'_>: Sized);
+        proof ImpliedClause0: (Self::Item<'a>: Sized);
     fn next<'a> = test_crate::LendingIterator::next<'a, Self>[Self]
     non-dyn-compatible
 }
@@ -125,13 +125,13 @@ impl<A> Destruct for (A,) {
     non-dyn-compatible
 }
 
-pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<TraitClause0::Item<'_>>[TraitClause0::Item::ImpliedClause0]
+pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<TraitClause0::Item<'a>>[TraitClause0::Item::ImpliedClause0]
 where
     TraitClause0: (Self: LendingIterator),
 = <method_without_default_body>
 
 // Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next
-pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>(self_1: &'b mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'b T>[{built_in impl Sized for &'b T}]
+pub fn {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, '_1, T>(self_1: &'_1 mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'_1 T>[{built_in impl Sized for &'_1 T}]
 where
     TraitClause0: (T: Sized),
 {
@@ -172,12 +172,12 @@ impl<'a, T> LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (Option<&'_ T>[{built_in impl Sized for &'_ T}]: MetaSized) = {built_in impl MetaSized for Option<&'_ T>[{built_in impl Sized for &'_ T}]}
-    type Item<'b> = &'b T
+    proof ImpliedClause0: (Option<&'a T>[{built_in impl Sized for &'a T}]: MetaSized) = {built_in impl MetaSized for Option<&'a T>[{built_in impl Sized for &'a T}]}
+    type Item<'a> = &'a T
     where
-        TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'b,
-        proof ImpliedClause0: (&'_ T: Sized) = {built_in impl Sized for &'_ T};
-    fn next<'b> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, 'b, T>[TraitClause0]
+        TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'a,
+        proof ImpliedClause0: (&'a T: Sized) = {built_in impl Sized for &'a T};
+    fn next<'_0_1> = {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next<'a, '_0_1, T>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -187,7 +187,7 @@ where
     TraitClause0: (I: Sized),
     TraitClause1: (T1: Sized),
     TraitClause2: (I: LendingIterator),
-    TraitClause3: for<'a> (T1: FnMut<(TraitClause2::Item<'_>,)>),
+    TraitClause3: for<'a> (T1: FnMut<(TraitClause2::Item<'a>,)>),
     TypeConstraint0: for<'a> TraitClause3::ImpliedClause1::Output = (),
 {
     let _0: (); // return
@@ -342,10 +342,10 @@ pub fn main()
     let _24: &'38 i32; // anonymous local
     let _25: &'39 i32; // anonymous local
     let _26: &'40 i32; // anonymous local
-    let _27: &'88 i32; // anonymous local
-    let _28: &'96 i32; // anonymous local
+    let _27: &'95 i32; // anonymous local
+    let _28: &'103 i32; // anonymous local
     let _29: i32; // anonymous local
-    let _30: &'97 i32; // anonymous local
+    let _30: &'104 i32; // anonymous local
     let _31: i32; // anonymous local
 
     storage_live(_26)
@@ -375,7 +375,7 @@ pub fn main()
     _8 = &mut sum_4
     _7 = closure { 0: move _8 }
     storage_dead(_8)
-    _5 = for_each<Option<&'49 i32>[{built_in impl Sized for &'49 i32}], closure<'50>>[{built_in impl Sized for Option<&'49 i32>[{built_in impl Sized for &'49 i32}]}, {built_in impl Sized for closure<'50>}, {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}<'49, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ i32,)> for closure<'_0>}<'50, '86>](move _6, move _7)
+    _5 = for_each<Option<&'55 i32>[{built_in impl Sized for &'55 i32}], closure<'57>>[{built_in impl Sized for Option<&'55 i32>[{built_in impl Sized for &'55 i32}]}, {built_in impl Sized for closure<'57>}, {impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}<'55, i32>[{built_in impl Sized for i32}], {impl FnMut<(&'_ i32,)> for closure<'_0>}<'57, '93>](move _6, move _7)
     storage_live(_27)
     storage_live(_30)
     storage_live(_31)

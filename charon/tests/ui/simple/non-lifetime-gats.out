@@ -112,11 +112,11 @@ where
 // Full name: test_crate::{impl PointerFamily for BoxFamily}
 impl PointerFamily for BoxFamily {
     proof ImpliedClause0: (BoxFamily: MetaSized) = {built_in impl MetaSized for BoxFamily}
-    type Pointer<U> = alloc::boxed::Box<U>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]
+    type Pointer<T> = alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]
     where
-        TraitClause0_1: (U: Sized),
-        proof ImpliedClause0: (alloc::boxed::Box<U>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for alloc::boxed::Box<U>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]},
-        proof ImpliedClause1: (alloc::boxed::Box<U>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Deref) = {impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}<U, Global>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}];
+        TraitClause0_1: (T: Sized),
+        proof ImpliedClause0: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]},
+        proof ImpliedClause1: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Deref) = {impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}<T, Global>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}];
     fn new<T, TraitClause0_1: (T: Sized)> = {impl PointerFamily for BoxFamily}::new<T>[TraitClause0_1]
     non-dyn-compatible
 }

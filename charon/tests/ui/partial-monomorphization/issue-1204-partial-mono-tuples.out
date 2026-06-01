@@ -81,7 +81,7 @@ where
 
     storage_live(_2)
     _2 = move x_1
-    _0 = test_crate::id::<(&_ mut _, &_ mut _)><'10, '11, T, U>[{built_in impl core::marker::Sized::<(&_ mut _, &_ mut _)><'10, '11, U> for T}](move _2)
+    _0 = test_crate::id::<(&_ mut _, &_ mut _)><'14, '15, T, U>[{built_in impl core::marker::Sized::<(&_ mut _, &_ mut _)><'14, '15, U> for T}](move _2)
     storage_dead(_2)
     return
 }

@@ -144,7 +144,7 @@ where
     let _18: &'43 [Argument<'44>; 1 : usize]; // anonymous local
     let _19: &'45 [Argument<'46>; 1 : usize]; // anonymous local
     let _20: [u8; 7 : usize]; // anonymous local
-    let _21: &'71 [u8; 7 : usize]; // anonymous local
+    let _21: &'72 [u8; 7 : usize]; // anonymous local
 
     _0 = ()
     storage_live(_2)
@@ -182,7 +182,7 @@ where
         storage_live(_14)
         storage_live(_15)
         _15 = &(*args_11.0)
-        _14 = new_debug<'59, '69, &'60 T>[{built_in impl Sized for &'60 T}, {impl Debug for &'_0 T}<'60, T>[TraitClause1]](move _15)
+        _14 = new_debug<'59, '70, &'61 T>[{built_in impl Sized for &'61 T}, {impl Debug for &'_0 T}<'61, T>[TraitClause1]](move _15)
         storage_dead(_15)
         args_13 = [move _14]
         storage_dead(_14)
@@ -198,12 +198,12 @@ where
         storage_live(_19)
         _19 = &args_13
         _18 = &(*_19)
-        _10 = new<'73, 7 : usize, 1 : usize>(move _16, move _18)
+        _10 = new<'74, 7 : usize, 1 : usize>(move _16, move _18)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_16)
-        _9 = _eprint<'75>(move _10)
+        _9 = _eprint<'76>(move _10)
         storage_dead(_10)
         storage_dead(args_13)
         storage_dead(args_11)

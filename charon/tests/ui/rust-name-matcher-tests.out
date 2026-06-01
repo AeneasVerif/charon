@@ -129,7 +129,7 @@ impl<'_0, T> Trait<T> for &'_0 [T]
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (&'_ [T]: MetaSized) = {built_in impl MetaSized for &'_ [T]}
+    proof ImpliedClause0: (&'_0 [T]: MetaSized) = {built_in impl MetaSized for &'_0 [T]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     fn method<U, TraitClause0_1: (U: Sized)> = {impl Trait<T> for &'_0 [T]}::method<'_0, T, U>[TraitClause0, TraitClause0_1]
     non-dyn-compatible
@@ -190,11 +190,11 @@ fn use_generic()
     storage_live(_int_generic_1)
     _int_generic_1 = new<i32>[{built_in impl Sized for i32}](const 42 : i32)
     storage_live(_str_generic_2)
-    _str_generic_2 = new<&'13 str>[{built_in impl Sized for &'13 str}](const "hello")
+    _str_generic_2 = new<&'14 str>[{built_in impl Sized for &'14 str}](const "hello")
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic_1
-    _3 = get<'20, i32>[{built_in impl Sized for i32}](move _4)
+    _3 = get<'21, i32>[{built_in impl Sized for i32}](move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

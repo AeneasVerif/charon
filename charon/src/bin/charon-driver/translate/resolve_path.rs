@@ -154,12 +154,12 @@ pub fn def_path_def_ids<'a, 'tcx>(
                 PatElem::Ident { name: elem, .. } => {
                     items = nameable_children
                         .filter(|(child_name, _)| child_name.as_str() == elem)
-                        .filter_map(|(_, def_id)| def_id.as_rust_def_id())
+                        .filter_map(|(_, def_id)| def_id.as_real_def_id())
                         .collect();
                 }
                 PatElem::Glob => {
                     items = nameable_children
-                        .filter_map(|(_, def_id)| def_id.as_rust_def_id())
+                        .filter_map(|(_, def_id)| def_id.as_real_def_id())
                         .collect();
                 }
                 PatElem::Impl(_) => bail!(

@@ -100,7 +100,7 @@ fn {impl Trait for ()}::method1(self_1: (), _other_2: &'static u32) -> bool
 impl Trait for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     fn method1 = {impl Trait for ()}::method1
-    fn method2<T, TraitClause0_1: (T: Sized)> = {impl Trait for ()}::method2<T>[TraitClause0_1]
+    fn method2<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = {impl Trait for ()}::method2<T>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -131,8 +131,8 @@ fn {impl MyCompare<&'a ()> for &'a ()}::compare<'a>(self_1: &'a (), _other_2: &'
 
 // Full name: test_crate::{impl MyCompare<&'a ()> for &'a ()}
 impl<'a> MyCompare<&'a ()> for &'a () {
-    proof ImpliedClause0: (&'_ (): Sized) = {built_in impl Sized for &'_ ()}
-    proof ImpliedClause1: (&'_ (): Sized) = {built_in impl Sized for &'_ ()}
+    proof ImpliedClause0: (&'a (): Sized) = {built_in impl Sized for &'a ()}
+    proof ImpliedClause1: (&'a (): Sized) = {built_in impl Sized for &'a ()}
     fn compare = {impl MyCompare<&'a ()> for &'a ()}::compare<'a>
     non-dyn-compatible
 }
@@ -239,7 +239,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::foo
-fn {impl Foo for ()}::foo<'a, 'b>(x_1: &'b (), y_2: &'a ()) -> &'b ()
+fn {impl Foo for ()}::foo<'a, 'b>(x_1: &'a (), y_2: &'b ()) -> &'a ()
 {
     let _0: &'1 (); // return
     let x_1: &'2 (); // arg #1

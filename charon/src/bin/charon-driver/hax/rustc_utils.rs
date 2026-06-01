@@ -1,7 +1,11 @@
-use crate::hax::prelude::*;
+use std::collections::HashSet;
+
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::{mir, ty};
+use rustc_span::kw;
 use rustc_type_ir::Interner;
+
+use crate::hax::prelude::*;
 
 pub fn inst_binder<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,
@@ -28,6 +32,16 @@ where
     T: ty::TypeFoldable<ty::TyCtxt<'tcx>>,
 {
     inst_binder(tcx, typing_env, args, ty::EarlyBinder::bind(x))
+}
+
+/// Make a new `ParamEnv` from a list of clauses.
+pub fn param_env_from_clauses<'tcx>(
+    tcx: ty::TyCtxt<'tcx>,
+    predicates: impl Iterator<Item = ty::Clause<'tcx>>,
+) -> ty::ParamEnv<'tcx> {
+    let cause = rustc_trait_selection::traits::ObligationCause::dummy();
+    let param_env = ty::ParamEnv::new(tcx.mk_clauses_from_iter(predicates));
+    rustc_trait_selection::traits::normalize_param_env_or_error(tcx, param_env, cause)
 }
 
 #[extension_traits::extension(pub trait SubstBinder)]
@@ -70,26 +84,6 @@ pub(crate) fn get_variant_kind<'s, S: UnderOwnerState<'s>>(
     } else {
         let index = variant_index;
         VariantKind::Enum { index }
-    }
-}
-
-pub trait HasParamEnv<'tcx> {
-    fn param_env(&self) -> ty::ParamEnv<'tcx>;
-    fn typing_env(&self) -> ty::TypingEnv<'tcx>;
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> HasParamEnv<'tcx> for S {
-    fn param_env(&self) -> ty::ParamEnv<'tcx> {
-        let tcx = self.base().tcx;
-        let def_id = self.owner_id();
-        if can_have_generics(tcx, def_id) {
-            tcx.param_env(def_id)
-        } else {
-            ty::ParamEnv::empty()
-        }
-    }
-    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
-        ty::TypingEnv::new(self.param_env(), ty::TypingMode::PostAnalysis)
     }
 }
 
@@ -172,15 +166,6 @@ pub fn get_method_sig<'tcx>(
     };
     let declared_sig = tcx.fn_sig(decl_method_id);
 
-    // TODO(Nadrieril): Temporary hack: if the signatures have the same number of bound vars, we
-    // keep the real signature. While the declared signature is more correct, it is also less
-    // normalized and we can't normalize without erasing regions but regions are crucial in
-    // function signatures. Hence we cheat here, until charon gains proper normalization
-    // capabilities.
-    if declared_sig.skip_binder().bound_vars().len() == real_sig.bound_vars().len() {
-        return real_sig;
-    }
-
     let impl_def_id = item.container_id(tcx);
     let method_args =
         method_args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, def_id));
@@ -191,10 +176,27 @@ pub fn get_method_sig<'tcx>(
     // Construct arguments for the declared method generics in the context of the implemented
     // method generics.
     let decl_args = method_args.rebase_onto(tcx, impl_def_id, implemented_trait_ref.args);
-    let sig = declared_sig.instantiate(tcx, decl_args);
-    // Avoids accidentally using the same lifetime name twice in the same scope
-    // (once in impl parameters, second in the method declaration late-bound vars).
-    let sig = tcx.anonymize_bound_vars(sig);
+    let mut sig = declared_sig.instantiate(tcx, decl_args);
+
+    if let container_named_lts = tcx
+        .generics_of(impl_def_id)
+        .own_params
+        .iter()
+        .filter(|p| matches!(p.kind, ty::GenericParamDefKind::Lifetime))
+        .filter(|p| p.name != kw::UnderscoreLifetime)
+        .map(|p| p.name)
+        .collect::<HashSet<_>>()
+        && sig
+            .bound_vars()
+            .iter()
+            .map(|v| v.expect_region())
+            .filter_map(|v| v.get_name(tcx))
+            .any(|lt| container_named_lts.contains(&lt))
+    {
+        // Avoids using the same lifetime name twice in the same scope (once in impl parameters,
+        // second in the method declaration late-bound vars).
+        sig = tcx.anonymize_bound_vars(sig);
+    }
     normalize(tcx, typing_env, sig)
 }
 
@@ -299,13 +301,14 @@ pub fn closure_once_shim<'tcx>(
 }
 
 pub fn drop_glue_shim<'tcx>(
-    tcx: ty::TyCtxt<'tcx>,
-    def_id: RDefId,
+    s: &impl BaseState<'tcx>,
+    def_id: &DefId,
     instantiate: Option<ty::GenericArgsRef<'tcx>>,
 ) -> mir::Body<'tcx> {
+    let tcx = s.base().tcx;
     let drop_in_place =
         tcx.require_lang_item(rustc_hir::LangItem::DropInPlace, rustc_span::DUMMY_SP);
-    let ty = tcx.type_of(def_id);
+    let ty = def_id.type_of(s);
     let ty = match instantiate {
         None => ty.instantiate_identity(),
         Some(args) => ty.instantiate(tcx, args),
