@@ -87,7 +87,7 @@ version number to `CharonVersoin.ml` which is how `charon-ml` gets informed of i
 #### Tests
 
 Any non-trivial change to the project must add relevant tests. Tests reside in `charon/tests` (the `tests/` folder is legacy and will soon be moved). There are a few kinds:
-- UI tests in `tests/ui`: this is the most common kind. Just add a `<file>.rs` file in the folder and it will be tested by `cargo test`. Tests support special comments, for instance to specify negative tests; look at other tests for examples or at `ui.rs` for documentation. Most tests generate a `<file>.out` file which must also be committed;
+- UI tests in `tests/ui`: this is the most common kind. Just add a `<file>.rs` file in the folder and it will be tested by `cargo test`. Tests support special comments, for instance to specify negative tests; look at other tests for examples. To reproduce one test with the same pragma handling as the test suite, run `charon ui_test tests/ui/<file>.rs`. Most tests generate a `<file>.out` file which must also be committed;
 - Cargo tests in `tests/cargo`: tests that require running Charon via `cargo`, e.g. because they require dependencies or multiple crates. Note that ui tests support a limited form of multi-crate tests using the `//@ aux-crate` comment.
 - Crate data tests in `tests/crate_data.rs`: these verify details of the llbc output that don't show up in the ui output.
 

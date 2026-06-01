@@ -1,4 +1,4 @@
-//@ skip
+//@ ignore
 #[inline(always)]
 pub fn inline_always() -> u32 {
     42

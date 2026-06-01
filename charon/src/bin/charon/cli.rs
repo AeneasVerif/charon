@@ -16,6 +16,10 @@ pub enum Charon {
     /// Runs charon on a cargo project. If a `[package.metadata.charon]` section is present in
     /// `Cargo.toml`, options are also read from it.
     Cargo(CargoArgs),
+    /// Run charon on a single ui test, which is mostly like `charon rustc` but parses special
+    /// `//@` comments at the top.
+    #[command(name = "ui_test", alias = "ui-test")]
+    UiTest(UiTestArgs),
     /// Print the path to the rustc toolchain used by charon.
     ToolchainPath(ToolchainPathArgs),
     /// Pretty-print the given llbc file.
@@ -54,6 +58,17 @@ pub struct CargoArgs {
     /// Args that `cargo build` accepts.
     #[arg(last = true)]
     pub cargo: Vec<String>,
+}
+
+/// Usage: `charon ui_test <file.rs> [charon args]...`
+#[derive(clap::Args, Debug)]
+pub struct UiTestArgs {
+    /// Rust UI test file to run.
+    pub file: PathBuf,
+
+    /// Extra Charon arguments to add to the generated `charon rustc` invocation.
+    #[arg(allow_hyphen_values = true, trailing_var_arg = true)]
+    pub args: Vec<String>,
 }
 
 /// Usage: `charon toolchain-path`
