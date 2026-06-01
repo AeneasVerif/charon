@@ -1,0 +1,17 @@
+
+thread 'rustc' panicked at /rustc-dev/f8a08b688cbe60acc386ed1fbd1b7cbaaf5576b1/compiler/rustc_middle/src/ty/generic_args.rs:595:26:
+range end index 2 out of range for slice of length 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Hax panicked when translating `test_crate::Trait::method`.
+ --> tests/ui/monomorphization/vtable-ref-impl.rs:5:5
+  |
+5 |     fn method(&self);
+  |     ^^^^^^^^^^^^^^^^^
+
+error: Item `test_crate::{impl#0}` caused errors; ignoring.
+ --> tests/ui/monomorphization/vtable-ref-impl.rs:8:1
+  |
+8 | impl<T> Trait for &T {
+  | ^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

@@ -1,0 +1,25 @@
+error: Unexpected error: could not find the trait clause variable Required(test_crate::caller, 0)
+  --> tests/ui/monomorphization/lifetime-bound-call.rs:8:1
+   |
+ 8 | / fn callee<'a>()
+ 9 | | where
+10 | |     (): Bound<'a>,
+   | |__________________^
+
+error: Unexpected error: could not find the trait clause variable Required(test_crate::caller, 0)
+  --> tests/ui/monomorphization/lifetime-bound-call.rs:8:1
+   |
+ 8 | / fn callee<'a>()
+ 9 | | where
+10 | |     (): Bound<'a>,
+   | |__________________^
+
+error: Unexpected error: could not find the trait clause variable Required(test_crate::caller, 0)
+  --> tests/ui/monomorphization/lifetime-bound-call.rs:8:1
+   |
+ 8 | / fn callee<'a>()
+ 9 | | where
+10 | |     (): Bound<'a>,
+   | |__________________^
+
+ERROR Charon failed to translate this code (3 errors)

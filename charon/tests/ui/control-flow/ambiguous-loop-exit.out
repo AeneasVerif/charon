@@ -1,0 +1,7 @@
+error: assertion failure: "candidates.next().is_none()"
+ --> tests/ui/control-flow/ambiguous-loop-exit.rs:9:22
+  |
+9 |             match if x == 0 {
+  |                      ^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)

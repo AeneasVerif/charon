@@ -1,0 +1,13 @@
+error: Item is not monomorphic: Mono(ItemRef { contents: HashConsed(ItemRefContents { def_id: test_crate::{impl#0}, generic_args: [Type(Ty { kind: HashConsed(Param(ParamTy { index: 0, name: "T" })) })], trait_proofs: [HashConsed(TraitProofContents { pred: Binder { value: ItemRef { contents: HashConsed(ItemRefContents { def_id: core::marker::Sized, generic_args: [Type(Ty { kind: HashConsed(Param(ParamTy { index: 0, name: "T" })) })], trait_proofs: [], in_trait: None, has_param: true, has_non_lt_param: true }) }, bound_vars: [] }, kind: LocalBound(Required(test_crate::{impl#0}, 0)) })], in_trait: None, has_param: true, has_non_lt_param: true }) })
+ --> tests/ui/monomorphization/vtable-blanket-impl.rs:8:1
+  |
+8 | impl<T> Trait for T {
+  | ^^^^^^^^^^^^^^^^^^^
+
+error: Item `test_crate::{impl#0}` caused errors; ignoring.
+ --> tests/ui/monomorphization/vtable-blanket-impl.rs:8:1
+  |
+8 | impl<T> Trait for T {
+  | ^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

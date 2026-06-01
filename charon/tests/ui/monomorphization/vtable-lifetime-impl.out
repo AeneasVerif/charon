@@ -1,0 +1,17 @@
+
+thread 'rustc' panicked at /rustc-dev/f8a08b688cbe60acc386ed1fbd1b7cbaaf5576b1/compiler/rustc_type_ir/src/binder.rs:856:9:
+expected region for `'_/#0` ('_/#0/0) but found Type(Pattern<'{erased}>) when instantiating args=[Pattern<'{erased}>]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Hax panicked when translating `test_crate::Trait::method`.
+ --> tests/ui/monomorphization/vtable-lifetime-impl.rs:5:5
+  |
+5 |     fn method(&self);
+  |     ^^^^^^^^^^^^^^^^^
+
+error: Item `test_crate::{impl#0}` caused errors; ignoring.
+  --> tests/ui/monomorphization/vtable-lifetime-impl.rs:10:1
+   |
+10 | impl Trait for Pattern<'_> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)
