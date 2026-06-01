@@ -444,12 +444,15 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* x_0 = fn_ptr_of_postcard ctx st in
          Ok (CFnPtr x_0)
      | 11 ->
+         let* x_0 = ty_of_postcard ctx st in
+         Ok (CTypeId x_0)
+     | 12 ->
          let* x_0 = big_uint_of_postcard ctx st in
          Ok (CPtrNoProvenance x_0)
-     | 12 ->
+     | 13 ->
          let* x_0 = list_of_postcard byte_of_postcard ctx st in
          Ok (CRawMemory x_0)
-     | 13 ->
+     | 14 ->
          let* x_0 = string_of_postcard ctx st in
          Ok (COpaque x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

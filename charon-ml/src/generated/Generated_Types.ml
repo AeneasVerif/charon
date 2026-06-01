@@ -433,6 +433,7 @@ and constant_expr_kind =
           that function item.
 
           We eliminate this case in a micro-pass. *)
+  | CTypeId of ty  (** The [TypeId] value for a type. *)
   | CPtrNoProvenance of big_int
       (** A pointer with no provenance (e.g. 0 for the null pointer)
 

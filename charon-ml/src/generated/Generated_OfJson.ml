@@ -473,6 +473,9 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
         Ok (CFnPtr fn_ptr)
+    | `Assoc [ ("TypeId", type_id) ] ->
+        let* type_id = ty_of_json ctx type_id in
+        Ok (CTypeId type_id)
     | `Assoc [ ("PtrNoProvenance", ptr_no_provenance) ] ->
         let* ptr_no_provenance = big_int_of_json ctx ptr_no_provenance in
         Ok (CPtrNoProvenance ptr_no_provenance)

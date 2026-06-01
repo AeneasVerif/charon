@@ -554,7 +554,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let is_global_initializer = is_global_initializer
             .then(|| self.register_item(span, def.this(), TransItemSourceKind::Global));
 
-        let body = if let Some(name) = intrinsic_name {
+        let body = if intrinsic_name.as_deref() == Some("type_id") {
+            self.build_type_id_body(span, def, &signature)?
+        } else if let Some(name) = intrinsic_name {
             let arg_names = self.translate_argument_names(span, def, signature.inputs.len());
             Body::Intrinsic { name, arg_names }
         } else if let Some(name) = self.t_ctx.extern_item_symbol_name(def) {

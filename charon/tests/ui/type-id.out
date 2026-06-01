@@ -1,0 +1,72 @@
+# Final LLBC before serialization:
+
+// Full name: core::any::TypeId
+#[lang_item("type_id")]
+pub struct TypeId {
+  data: [*const (); 2 : usize],
+}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::intrinsics::type_id
+pub fn type_id<T>() -> TypeId
+where
+    TraitClause0: (T: MetaSized),
+{
+    let ret_0: TypeId; // return
+
+    ret_0 = const TypeId(T)
+    return
+}
+
+// Full name: core::any::{TypeId}::of
+pub fn of<T>() -> TypeId
+where
+    TraitClause0: (T: MetaSized),
+    TypeOutlives0: T: 'static,
+{
+    let _0: TypeId; // return
+    let _1: TypeId; // anonymous local
+    let _2: TypeId; // anonymous local
+
+    storage_live(_1)
+    storage_live(_2)
+    _2 = type_id<T>[TraitClause0]()
+    _1 = move _2
+    _0 = move _1
+    return
+}
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::type_id_u32
+fn type_id_u32() -> TypeId
+{
+    let _0: TypeId; // return
+
+    _0 = of<u32>[{built_in impl MetaSized for u32}]()
+    return
+}
+
+// Full name: test_crate::type_id_generic
+fn type_id_generic<T>() -> TypeId
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'static,
+{
+    let _0: TypeId; // return
+
+    _0 = of<T>[TraitClause0::ImpliedClause0]()
+    return
+}
+
+
+
