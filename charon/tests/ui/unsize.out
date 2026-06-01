@@ -108,16 +108,16 @@ impl "impl_Display_for_String" Display for String {
 fn foo()
 {
     let _0: (); // return
-    let array_1: [i32; 2 : usize]; // local
+    let array_1: [i32; 2usize]; // local
     let _2: &'1 [i32]; // anonymous local
-    let _3: &'3 [i32; 2 : usize]; // anonymous local
-    let _4: &'4 [i32; 2 : usize]; // anonymous local
+    let _3: &'3 [i32; 2usize]; // anonymous local
+    let _4: &'4 [i32; 2usize]; // anonymous local
     let _5: alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
-    let _6: alloc::boxed::Box<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]; // anonymous local
-    let _7: [i32; 2 : usize]; // anonymous local
+    let _6: alloc::boxed::Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _7: [i32; 2usize]; // anonymous local
     let _8: Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
-    let _9: Rc<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]; // anonymous local
-    let _10: [i32; 2 : usize]; // anonymous local
+    let _9: Rc<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _10: [i32; 2usize]; // anonymous local
     let string_11: String; // local
     let _12: &'8 (dyn Display + '9); // anonymous local
     let _13: &'11 String; // anonymous local
@@ -133,13 +133,13 @@ fn foo()
 
     _0 = ()
     storage_live(array_1)
-    array_1 = @ArrayRepeat<i32, 2 : usize>(const 0 : i32)
+    array_1 = @ArrayRepeat<i32, 2usize>(const 0i32)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = &array_1
     _3 = &(*_4)
-    _2 = @ArrayToSliceShared<'_, i32, 2 : usize>(move _3)
+    _2 = @ArrayToSliceShared<'_, i32, 2usize>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -147,9 +147,9 @@ fn foo()
     storage_live(_6)
     storage_live(_7)
     _7 = copy array_1
-    _6 = @BoxNew<[i32; 2 : usize]>[{built_in impl Sized for [i32; 2 : usize]}](move _7)
-    _5 = unsize_cast<alloc::boxed::Box<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2 : usize>(move _6)
-    conditional_drop[impl_Destruct_for_Box::drop_in_place<[i32; 2 : usize], Global>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]] _6
+    _6 = @BoxNew<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _7)
+    _5 = unsize_cast<alloc::boxed::Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2usize>(move _6)
+    conditional_drop[impl_Destruct_for_Box::drop_in_place<[i32; 2usize], Global>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]] _6
     storage_dead(_7)
     storage_dead(_6)
     conditional_drop[impl_Destruct_for_Box::drop_in_place<[i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] _5
@@ -158,9 +158,9 @@ fn foo()
     storage_live(_9)
     storage_live(_10)
     _10 = copy array_1
-    _9 = alloc::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2 : usize]>[{built_in impl Sized for [i32; 2 : usize]}](move _10)
-    _8 = unsize_cast<Rc<[i32; 2 : usize]>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}], Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], ?>(move _9)
-    conditional_drop[impl_Destruct_for_Rc::drop_in_place<[i32; 2 : usize], Global>[{built_in impl MetaSized for [i32; 2 : usize]}, {built_in impl Sized for Global}]] _9
+    _9 = alloc::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _10)
+    _8 = unsize_cast<Rc<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}], Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], ?>(move _9)
+    conditional_drop[impl_Destruct_for_Rc::drop_in_place<[i32; 2usize], Global>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]] _9
     storage_dead(_10)
     storage_dead(_9)
     conditional_drop[impl_Destruct_for_Rc::drop_in_place<[i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] _8

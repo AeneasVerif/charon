@@ -184,17 +184,17 @@ where
 }
 
 // Full name: test_crate::test
-fn test<T, const K : usize>() -> [T; 1 : usize]
+fn test<T, const K : usize>() -> [T; 1usize]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {
-    let _0: [T; 1 : usize]; // return
+    let _0: [T; 1usize]; // return
     let _1: closure<T, K>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<T, closure<T, K>[TraitClause0, TraitClause1], 1 : usize>[TraitClause0, {built_in impl Sized for closure<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, impl_FnMut_tuple_for_closure<T, K>[TraitClause0, TraitClause1], impl_Destruct_for_closure<T, K>[TraitClause0, TraitClause1]](move _1)
+    _0 = from_fn<T, closure<T, K>[TraitClause0, TraitClause1], 1usize>[TraitClause0, {built_in impl Sized for closure<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, impl_FnMut_tuple_for_closure<T, K>[TraitClause0, TraitClause1], impl_Destruct_for_closure<T, K>[TraitClause0, TraitClause1]](move _1)
     storage_dead(_1)
     return
 }

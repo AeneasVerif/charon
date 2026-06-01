@@ -188,7 +188,7 @@ fn use_generic()
 
     _0 = ()
     storage_live(_int_generic_1)
-    _int_generic_1 = new<i32>[{built_in impl Sized for i32}](const 42 : i32)
+    _int_generic_1 = new<i32>[{built_in impl Sized for i32}](const 42i32)
     storage_live(_str_generic_2)
     _str_generic_2 = new<&'14 str>[{built_in impl Sized for &'14 str}](const "hello")
     storage_live(_3)

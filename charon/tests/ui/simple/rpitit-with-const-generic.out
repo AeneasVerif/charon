@@ -36,7 +36,7 @@ pub fn impl_Foo_for_S::bar<const N : usize>() -> [u8; N]
 {
     let _0: [u8; N]; // return
 
-    _0 = @ArrayRepeat<u8, N>(const 0 : u8)
+    _0 = @ArrayRepeat<u8, N>(const 0u8)
     return
 }
 

@@ -348,14 +348,14 @@ pub fn main()
     storage_live(_26)
     storage_live(_28)
     storage_live(_29)
-    _29 = const 42 : i32
+    _29 = const 42i32
     _28 = &_29
     _26 = move _28
     storage_live(_24)
     storage_live(_25)
     _0 = ()
     storage_live(x_1)
-    x_1 = const 42 : i32
+    x_1 = const 42i32
     storage_live(iter_2)
     storage_live(_3)
     _25 = move _26
@@ -363,7 +363,7 @@ pub fn main()
     iter_2 = Option::Some { 0: move _3 }
     storage_dead(_3)
     storage_live(sum_4)
-    sum_4 = const 0 : i32
+    sum_4 = const 0i32
     storage_live(_5)
     storage_live(_6)
     _6 = copy iter_2
@@ -376,7 +376,7 @@ pub fn main()
     storage_live(_27)
     storage_live(_30)
     storage_live(_31)
-    _31 = const 42 : i32
+    _31 = const 42i32
     _30 = &_31
     _27 = move _30
     storage_dead(_7)

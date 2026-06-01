@@ -100,7 +100,7 @@ fn impl_Fn_unit_for_closure::call<'_0>(_1: &'_0 closure, tupled_args_2: ())
 
     _0 = ()
     storage_live(_3)
-    _3 = const 1 : i32 panic./ const 0 : i32
+    _3 = const 1i32 panic./ const 0i32
     storage_dead(_3)
     _0 = ()
     return

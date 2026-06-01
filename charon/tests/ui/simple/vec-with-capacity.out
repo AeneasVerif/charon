@@ -210,7 +210,7 @@ where
     _4 = PhantomData {  }
     _2 = RawVec { 0: move _3, 1: move _4 }
     storage_dead(_3)
-    _0 = Vec { buf: move _2, len: const 0 : usize }
+    _0 = Vec { buf: move _2, len: const 0usize }
     storage_dead(_2)
     return
 }
@@ -223,7 +223,7 @@ fn vec()
 
     _0 = ()
     storage_live(_1)
-    _1 = with_capacity<u32>[{built_in impl Sized for u32}](const 42 : usize)
+    _1 = with_capacity<u32>[{built_in impl Sized for u32}](const 42usize)
     conditional_drop[impl_Destruct_for_Vec::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
     _0 = ()

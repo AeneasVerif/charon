@@ -136,15 +136,15 @@ where
     let _10: Arguments<'23>; // anonymous local
     let args_11: (&'28 &'29 T,); // local
     let _12: &'30 &'31 T; // anonymous local
-    let args_13: [Argument<'34>; 1 : usize]; // local
+    let args_13: [Argument<'34>; 1usize]; // local
     let _14: Argument<'35>; // anonymous local
     let _15: &'36 &'37 T; // anonymous local
-    let _16: &'39 [u8; 7 : usize]; // anonymous local
-    let _17: &'40 [u8; 7 : usize]; // anonymous local
-    let _18: &'43 [Argument<'44>; 1 : usize]; // anonymous local
-    let _19: &'45 [Argument<'46>; 1 : usize]; // anonymous local
-    let _20: [u8; 7 : usize]; // anonymous local
-    let _21: &'72 [u8; 7 : usize]; // anonymous local
+    let _16: &'39 [u8; 7usize]; // anonymous local
+    let _17: &'40 [u8; 7usize]; // anonymous local
+    let _18: &'43 [Argument<'44>; 1usize]; // anonymous local
+    let _19: &'45 [Argument<'46>; 1usize]; // anonymous local
+    let _20: [u8; 7usize]; // anonymous local
+    let _21: &'72 [u8; 7usize]; // anonymous local
 
     _0 = ()
     storage_live(_2)
@@ -189,7 +189,7 @@ where
         storage_live(_16)
         storage_live(_17)
         storage_live(_20)
-        _20 = [const 2 : u8, const 45 : u8, const 32 : u8, const 192 : u8, const 1 : u8, const 10 : u8, const 0 : u8]
+        _20 = [const 2u8, const 45u8, const 32u8, const 192u8, const 1u8, const 10u8, const 0u8]
         storage_live(_21)
         _21 = &_20
         _17 = move _21
@@ -198,7 +198,7 @@ where
         storage_live(_19)
         _19 = &args_13
         _18 = &(*_19)
-        _10 = new<'74, 7 : usize, 1 : usize>(move _16, move _18)
+        _10 = new<'74, 7usize, 1usize>(move _16, move _18)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
@@ -227,17 +227,17 @@ fn main()
     let _0: (); // return
     let _1: (); // anonymous local
     let _2: &'1 [i32]; // anonymous local
-    let _3: &'3 [i32; 3 : usize]; // anonymous local
-    let _4: &'4 [i32; 3 : usize]; // anonymous local
-    let _5: &'5 [i32; 3 : usize]; // anonymous local
-    let _6: &'6 [i32; 3 : usize]; // anonymous local
-    let _7: &'10 [i32; 3 : usize]; // anonymous local
-    let _8: [i32; 3 : usize]; // anonymous local
+    let _3: &'3 [i32; 3usize]; // anonymous local
+    let _4: &'4 [i32; 3usize]; // anonymous local
+    let _5: &'5 [i32; 3usize]; // anonymous local
+    let _6: &'6 [i32; 3usize]; // anonymous local
+    let _7: &'10 [i32; 3usize]; // anonymous local
+    let _8: [i32; 3usize]; // anonymous local
 
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = [const 0 : i32, const 1 : i32, const 2 : i32]
+    _8 = [const 0i32, const 1i32, const 2i32]
     _7 = &_8
     _6 = move _7
     storage_live(_5)
@@ -249,7 +249,7 @@ fn main()
     _5 = move _6
     _4 = &(*_5)
     _3 = &(*_4)
-    _2 = @ArrayToSliceShared<'_, i32, 3 : usize>(move _3)
+    _2 = @ArrayToSliceShared<'_, i32, 3usize>(move _3)
     storage_dead(_3)
     _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, impl_Debug_for_i32](move _2)
     storage_dead(_2)

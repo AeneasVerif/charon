@@ -12,7 +12,7 @@ pub fn test_crate::mod_reduce(a_1: u32) -> u32
     storage_live(_2)
     storage_live(_3)
     _3 = copy a_1
-    _2 = move _3 < const 100 : u32
+    _2 = move _3 < const 100u32
     if move _2 {
     } else {
         storage_dead(_3)
@@ -22,7 +22,7 @@ pub fn test_crate::mod_reduce(a_1: u32) -> u32
     storage_dead(_2)
     storage_live(_4)
     _4 = copy a_1
-    _0 = core::num::{u32}::wrapping_add(move _4, const 1 : u32)
+    _0 = core::num::{u32}::wrapping_add(move _4, const 1u32)
     storage_dead(_4)
     return
 }

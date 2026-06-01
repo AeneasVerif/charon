@@ -173,13 +173,13 @@ where
         size_3 = copy self_1.metadata;
         storage_live(_4);
         _4 = copy size_3;
-        switch copy _4 -> 0 : usize: bb1, otherwise: bb2;
+        switch copy _4 -> 0usize: bb1, otherwise: bb2;
     }
 
     bb1: {
         storage_dead(_4);
         storage_live(_46);
-        _46 = Result::Err { 0: const 0 : usize };
+        _46 = Result::Err { 0: const 0usize };
         _0 = move _46;
         storage_dead(size_3);
         drop[{built_in impl Destruct for F}::drop_in_place] f_2 -> bb31 (unwind: bb3);
@@ -187,7 +187,7 @@ where
 
     bb2: {
         storage_dead(_4);
-        base_5 = const 0 : usize;
+        base_5 = const 0usize;
         goto bb4;
     }
 
@@ -199,7 +199,7 @@ where
         storage_live(_6);
         storage_live(_7);
         _7 = copy size_3;
-        _6 = move _7 > const 1 : usize;
+        _6 = move _7 > const 1usize;
         if move _6 -> bb5 else -> bb6;
     }
 
@@ -208,7 +208,7 @@ where
         storage_live(half_8);
         storage_live(_9);
         _9 = copy size_3;
-        half_8 = move _9 ub./ const 2 : usize;
+        half_8 = move _9 ub./ const 2usize;
         storage_dead(_9);
         storage_live(mid_10);
         storage_live(_11);
@@ -297,7 +297,7 @@ where
         storage_live(_17);
         storage_live(_34);
         _34 = @discriminant(cmp_12);
-        _17 = copy _34 == const 1 : i8;
+        _17 = copy _34 == const 1i8;
         storage_dead(_34);
         _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base_5, move mid_10) -> bb20 (unwind: bb13);
     }
@@ -315,7 +315,7 @@ where
         storage_dead(_20);
         storage_dead(_19);
         _39 = @discriminant(cmp_18);
-        switch copy _39 -> 0 : i8: bb21, otherwise: bb22;
+        switch copy _39 -> 0i8: bb21, otherwise: bb22;
     }
 
     bb18: {
@@ -353,7 +353,7 @@ where
         storage_live(result_25);
         storage_live(_26);
         storage_live(_27);
-        _27 = copy _39 == const -1 : i8;
+        _27 = copy _39 == const -1i8;
         _26 = cast<bool, usize>(move _27);
         storage_dead(_27);
         result_25 = move base_5 wrap.+ move _26;
@@ -437,7 +437,7 @@ fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled
         storage_live(_8);
         storage_live(_9);
         storage_live(_10);
-        _10 = const 3 : u32;
+        _10 = const 3u32;
         _9 = &_10;
         _8 = move _9;
         storage_live(x_3);
@@ -533,32 +533,32 @@ impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_ u32,)> for closure {
 fn main()
 {
     let _0: (); // return
-    let a_1: [u32; 5 : usize]; // local
+    let a_1: [u32; 5usize]; // local
     let b_2: &'1 [u32]; // local
-    let _3: &'3 [u32; 5 : usize]; // anonymous local
-    let _4: &'4 [u32; 5 : usize]; // anonymous local
+    let _3: &'3 [u32; 5usize]; // anonymous local
+    let _4: &'4 [u32; 5usize]; // anonymous local
     let res_5: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
     let _6: &'5 [u32]; // anonymous local
-    let _7: &'6 [u32; 5 : usize]; // anonymous local
+    let _7: &'6 [u32; 5usize]; // anonymous local
     let _8: closure; // anonymous local
 
     bb0: {
         _0 = ();
         storage_live(a_1);
-        a_1 = [const 1 : u32, const 2 : u32, const 3 : u32, const 4 : u32, const 5 : u32];
+        a_1 = [const 1u32, const 2u32, const 3u32, const 4u32, const 5u32];
         storage_live(b_2);
         storage_live(_3);
         storage_live(_4);
         _4 = &a_1;
         _3 = &(*_4);
-        b_2 = unsize_cast<&'3 [u32; 5 : usize], &'7 [u32], 5 : usize>(move _3);
+        b_2 = unsize_cast<&'3 [u32; 5usize], &'7 [u32], 5usize>(move _3);
         storage_dead(_3);
         storage_dead(_4);
         storage_live(res_5);
         storage_live(_6);
         storage_live(_7);
         _7 = &a_1;
-        _6 = unsize_cast<&'6 [u32; 5 : usize], &'8 [u32], 5 : usize>(move _7);
+        _6 = unsize_cast<&'6 [u32; 5usize], &'8 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
         _8 = closure {  };

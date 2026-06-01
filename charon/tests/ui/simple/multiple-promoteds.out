@@ -30,24 +30,24 @@ fn six() -> u32
     storage_live(_7)
     storage_live(_8)
     storage_live(x_1)
-    _2 = const 0 : u32 panic.+ const 1 : u32
+    _2 = const 0u32 panic.+ const 1u32
     storage_live(_9)
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
-    _13 = const 0 : u32 wrap.+ const 1 : u32
+    _13 = const 0u32 wrap.+ const 1u32
     _12 = move _13
     _11 = &_12
     _9 = move _11
     _8 = move _9
     x_1 = &(*_8)
     storage_live(y_3)
-    _4 = const 2 : u32 panic.+ const 3 : u32
+    _4 = const 2u32 panic.+ const 3u32
     storage_live(_10)
     storage_live(_14)
     storage_live(_15)
     storage_live(_16)
-    _16 = const 2 : u32 wrap.+ const 3 : u32
+    _16 = const 2u32 wrap.+ const 3u32
     _15 = move _16
     _14 = &_15
     _10 = move _14

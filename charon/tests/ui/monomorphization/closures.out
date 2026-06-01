@@ -142,7 +142,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(f_1: test_crate::main::closure
     storage_live(_2)
     _2 = &f_1
     storage_live(_3)
-    _3 = (const 0 : u8,)
+    _3 = (const 0u8,)
     _0 = impl_Fn_tuple_for_closure<'8>::call<'9>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -183,7 +183,7 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(f_1: test_crate::main::c
     storage_live(_2)
     _2 = &mut f_1
     storage_live(_3)
-    _3 = (const 0 : u8,)
+    _3 = (const 0u8,)
     _0 = {impl FnMut<(u8,)> for test_crate::main::closure#1<'_0>}<'8>::call_mut<'9>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -215,7 +215,7 @@ fn apply_to_zero_once::<test_crate::main::closure#2>(f_1: test_crate::main::clos
     storage_live(_2)
     _2 = move f_1
     storage_live(_3)
-    _3 = (const 0 : u8,)
+    _3 = (const 0u8,)
     _0 = {impl FnOnce<(u8,)> for test_crate::main::closure#2}::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -241,7 +241,7 @@ fn main()
 
     _0 = ()
     storage_live(z_1)
-    z_1 = const 1 : u8
+    z_1 = const 1u8
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -252,7 +252,7 @@ fn main()
     storage_dead(_3)
     storage_dead(_2)
     storage_live(z_5)
-    z_5 = const 3 : u8
+    z_5 = const 3u8
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)

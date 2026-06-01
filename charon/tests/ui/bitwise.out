@@ -12,7 +12,7 @@ pub fn shift_u32(a_1: u32) -> u32
     let _6: usize; // anonymous local
 
     storage_live(i_2)
-    i_2 = const 16 : usize
+    i_2 = const 16usize
     storage_live(t_3)
     storage_live(_4)
     _4 = copy a_1
@@ -43,7 +43,7 @@ pub fn shift_i32(a_1: i32) -> i32
     let _6: isize; // anonymous local
 
     storage_live(i_2)
-    i_2 = const 16 : isize
+    i_2 = const 16isize
     storage_live(t_3)
     storage_live(_4)
     _4 = copy a_1

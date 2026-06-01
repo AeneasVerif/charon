@@ -18,7 +18,7 @@ fn test_crate::platform_specific::x86_64-pc-windows-msvc() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 42 : u32
+    _0 = const 42u32
     return
 }
 
@@ -26,7 +26,7 @@ fn test_crate::platform_specific::i686-unknown-linux-gnu() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 44 : u32
+    _0 = const 44u32
     return
 }
 
@@ -34,7 +34,7 @@ fn test_crate::platform_specific::aarch64-apple-darwin() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 43 : u32
+    _0 = const 43u32
     return
 }
 

@@ -15,7 +15,7 @@ fn FooInt() -> Foo::<i32>
 {
     let _0: Foo::<i32>; // return
 
-    _0 = Foo::<i32> { value: const 0 : i32 }
+    _0 = Foo::<i32> { value: const 0i32 }
     return
 }
 

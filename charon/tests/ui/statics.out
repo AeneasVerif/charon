@@ -5,7 +5,7 @@ fn CONST() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 
@@ -55,7 +55,7 @@ fn SHARED_STATIC() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 
@@ -110,7 +110,7 @@ fn MUT_STATIC() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 

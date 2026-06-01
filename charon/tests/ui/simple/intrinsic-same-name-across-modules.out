@@ -70,7 +70,7 @@ pub fn test_crate::first::nested::call() -> u8
 {
     let _0: u8; // return
 
-    _0 = test_crate::first::nested::wrapping_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 1 : u8, const 2 : u8)
+    _0 = test_crate::first::nested::wrapping_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 1u8, const 2u8)
     return
 }
 
@@ -78,7 +78,7 @@ fn test_crate::call() -> u8
 {
     let _0: u8; // return
 
-    _0 = core::intrinsics::wrapping_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 3 : u8, const 4 : u8)
+    _0 = core::intrinsics::wrapping_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 3u8, const 4u8)
     return
 }
 

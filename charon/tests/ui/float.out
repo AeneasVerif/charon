@@ -39,9 +39,9 @@ fn literal_float() -> f64
     let _4: f64; // anonymous local
 
     storage_live(x_1)
-    x_1 = const 1 : f64
+    x_1 = const 1f64
     storage_live(y_2)
-    y_2 = const 1.5 : f64
+    y_2 = const 1.5f64
     storage_live(_3)
     _3 = copy x_1
     storage_live(_4)

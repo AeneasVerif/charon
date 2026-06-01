@@ -4,17 +4,17 @@
 pub fn foo() -> &'static [u32]
 {
     let _0: &'1 [u32]; // return
-    let _1: &'3 [u32; 4 : usize]; // anonymous local
-    let _2: &'4 [u32; 4 : usize]; // anonymous local
-    let _3: &'5 [u32; 4 : usize]; // anonymous local
-    let _4: &'6 [u32; 4 : usize]; // anonymous local
-    let _5: &'8 [u32; 4 : usize]; // anonymous local
-    let _6: [u32; 4 : usize]; // anonymous local
+    let _1: &'3 [u32; 4usize]; // anonymous local
+    let _2: &'4 [u32; 4usize]; // anonymous local
+    let _3: &'5 [u32; 4usize]; // anonymous local
+    let _4: &'6 [u32; 4usize]; // anonymous local
+    let _5: &'8 [u32; 4usize]; // anonymous local
+    let _6: [u32; 4usize]; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = [const 0 : u32, const 1 : u32, const 2 : u32, const 3 : u32]
+    _6 = [const 0u32, const 1u32, const 2u32, const 3u32]
     _5 = &_6
     _4 = move _5
     storage_live(_3)
@@ -23,7 +23,7 @@ pub fn foo() -> &'static [u32]
     _3 = move _4
     _2 = &(*_3)
     _1 = &(*_2)
-    _0 = @ArrayToSliceShared<'_, u32, 4 : usize>(move _1)
+    _0 = @ArrayToSliceShared<'_, u32, 4usize>(move _1)
     storage_dead(_1)
     storage_dead(_2)
     return

@@ -11,7 +11,7 @@ pub fn b() -> Foo
 {
     let _0: Foo; // return
 
-    _0 = Foo::B { 0: const 0 : usize }
+    _0 = Foo::B { 0: const 0usize }
     return
 }
 

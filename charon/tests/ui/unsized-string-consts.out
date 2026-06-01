@@ -68,8 +68,8 @@ where
 fn FOO() -> &'static str
 {
     let _0: &'1 str; // return
-    let _1: [u8; 5 : usize]; // anonymous local
-    let _2: &'_ [u8; 5 : usize]; // anonymous local
+    let _1: [u8; 5usize]; // anonymous local
+    let _2: &'_ [u8; 5usize]; // anonymous local
     let _3: &'2 str; // anonymous local
 
     storage_live(_1)
@@ -77,7 +77,7 @@ fn FOO() -> &'static str
     storage_live(_2)
     _2 = &_1
     storage_live(_3)
-    _3 = unsize_cast<&'_ [u8; 5 : usize], &'2 str, 5 : usize>(move _2)
+    _3 = unsize_cast<&'_ [u8; 5usize], &'2 str, 5usize>(move _2)
     _0 = move _3
     return
 }
@@ -89,20 +89,20 @@ static FOO: &'static str = FOO()
 fn BAR() -> &'static [u8]
 {
     let _0: &'1 [u8]; // return
-    let _1: &'3 [u8; 5 : usize]; // anonymous local
-    let _2: &'4 [u8; 5 : usize]; // anonymous local
-    let _3: [u8; 5 : usize]; // anonymous local
-    let _4: &'5 [u8; 5 : usize]; // anonymous local
+    let _1: &'3 [u8; 5usize]; // anonymous local
+    let _2: &'4 [u8; 5usize]; // anonymous local
+    let _3: [u8; 5usize]; // anonymous local
+    let _4: &'5 [u8; 5usize]; // anonymous local
 
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
-    _3 = [const 104 : u8, const 101 : u8, const 108 : u8, const 108 : u8, const 111 : u8]
+    _3 = [const 104u8, const 101u8, const 108u8, const 108u8, const 111u8]
     storage_live(_4)
     _4 = &_3
     _2 = move _4
     _1 = &(*_2)
-    _0 = @ArrayToSliceShared<'_, u8, 5 : usize>(move _1)
+    _0 = @ArrayToSliceShared<'_, u8, 5usize>(move _1)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -118,8 +118,8 @@ fn main()
     let _s_1: String; // local
     let _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local
-    let _4: [u8; 5 : usize]; // anonymous local
-    let _5: &'_ [u8; 5 : usize]; // anonymous local
+    let _4: [u8; 5usize]; // anonymous local
+    let _5: &'_ [u8; 5usize]; // anonymous local
     let _6: &'3 str; // anonymous local
 
     _0 = ()
@@ -131,7 +131,7 @@ fn main()
     storage_live(_5)
     _5 = &_4
     storage_live(_6)
-    _6 = unsize_cast<&'_ [u8; 5 : usize], &'3 str, 5 : usize>(move _5)
+    _6 = unsize_cast<&'_ [u8; 5usize], &'3 str, 5usize>(move _5)
     _3 = move _6
     _2 = &(*_3) with_metadata(copy _3.metadata)
     _s_1 = impl_ToString_for_T::to_string<'5, str>[{built_in impl MetaSized for str}, impl_Display_for_str](move _2)

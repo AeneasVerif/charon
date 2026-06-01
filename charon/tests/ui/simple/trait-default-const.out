@@ -27,7 +27,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const 42 : usize
+    _0 = const 42usize
     return
 }
 

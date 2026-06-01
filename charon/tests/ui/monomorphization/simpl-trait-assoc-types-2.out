@@ -203,7 +203,7 @@ fn main()
     storage_live(_15)
     storage_live(_17)
     storage_live(_18)
-    _18 = const 42 : i32
+    _18 = const 42i32
     _17 = &_18
     _15 = move _17
     storage_live(_11)
@@ -227,7 +227,7 @@ fn main()
     storage_live(_16)
     storage_live(_19)
     storage_live(_20)
-    _20 = const 42 : usize
+    _20 = const 42usize
     _19 = &_20
     _16 = move _19
     storage_dead(_5)

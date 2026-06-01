@@ -131,7 +131,7 @@ pub fn use_tuple_struct<'_0>(x_1: &'_0 mut Tuple<u32, u32>[{built_in impl Sized 
     let x_1: &'1 mut Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
 
     _0 = ()
-    ((*x_1)).0 = const 1 : u32
+    ((*x_1)).0 = const 1u32
     _0 = ()
     return
 }
@@ -288,9 +288,9 @@ pub fn test2()
     storage_live(_6)
     _0 = ()
     storage_live(x_1)
-    x_1 = const 23 : u32
+    x_1 = const 23u32
     storage_live(y_2)
-    y_2 = const 44 : u32
+    y_2 = const 44u32
     storage_live(z_3)
     storage_live(_4)
     _4 = copy x_1
@@ -311,7 +311,7 @@ pub fn test2()
     storage_live(s_10)
     s_10 = Sum::Right { 0: const true }
     storage_live(o_11)
-    o_11 = One::One { 0: const 3 : u64 }
+    o_11 = One::One { 0: const 3u64 }
     storage_live(e0_12)
     e0_12 = EmptyEnum::Empty {  }
     storage_live(e1_13)
@@ -375,7 +375,7 @@ pub fn test_list1()
     _3 = List::Nil {  }
     _2 = @BoxNew<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move _3)
     storage_dead(_3)
-    l_1 = List::Cons { 0: const 0 : i32, 1: move _2 }
+    l_1 = List::Cons { 0: const 0i32, 1: move _2 }
     conditional_drop[impl_Destruct_for_Box::drop_in_place<List<i32>[{built_in impl Sized for i32}], Global>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]] _2
     storage_dead(_2)
     _0 = ()
@@ -398,13 +398,13 @@ pub fn test_box1()
 
     _0 = ()
     storage_live(b_1)
-    b_1 = @BoxNew<i32>[{built_in impl Sized for i32}](const 0 : i32)
+    b_1 = @BoxNew<i32>[{built_in impl Sized for i32}](const 0i32)
     storage_live(x_2)
     storage_live(_3)
     _3 = &two-phase-mut b_1
     x_2 = impl_DerefMut_for_Box::deref_mut<'9, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
     storage_dead(_3)
-    (*x_2) = const 1 : i32
+    (*x_2) = const 1i32
     storage_live(x_4)
     storage_live(_5)
     _5 = &b_1
@@ -413,7 +413,7 @@ pub fn test_box1()
     storage_live(_6)
     storage_live(_7)
     _7 = copy (*x_4)
-    _6 = move _7 == const 1 : i32
+    _6 = move _7 == const 1i32
     if move _6 {
     } else {
         storage_dead(_7)
@@ -557,7 +557,7 @@ pub fn even(x_1: u32) -> bool
     storage_live(_2)
     storage_live(_3)
     _3 = copy x_1
-    _2 = move _3 == const 0 : u32
+    _2 = move _3 == const 0u32
     if move _2 {
         storage_dead(_3)
         _0 = const true
@@ -566,7 +566,7 @@ pub fn even(x_1: u32) -> bool
         storage_live(_4)
         storage_live(_5)
         _5 = copy x_1
-        _6 = copy _5 panic.- const 1 : u32
+        _6 = copy _5 panic.- const 1u32
         _4 = move _6
         storage_dead(_5)
         _0 = odd(move _4)
@@ -591,7 +591,7 @@ pub fn odd(x_1: u32) -> bool
     storage_live(_2)
     storage_live(_3)
     _3 = copy x_1
-    _2 = move _3 == const 0 : u32
+    _2 = move _3 == const 0u32
     if move _2 {
         storage_dead(_3)
         _0 = const false
@@ -600,7 +600,7 @@ pub fn odd(x_1: u32) -> bool
         storage_live(_4)
         storage_live(_5)
         _5 = copy x_1
-        _6 = copy _5 panic.- const 1 : u32
+        _6 = copy _5 panic.- const 1u32
         _4 = move _6
         storage_dead(_5)
         _0 = even(move _4)
@@ -621,19 +621,19 @@ pub fn test_even_odd()
 
     _0 = ()
     storage_live(_1)
-    _1 = even(const 0 : u32)
+    _1 = even(const 0u32)
     assert(move _1 == true) else panic(core::panicking::panic)
     storage_dead(_1)
     storage_live(_2)
-    _2 = even(const 4 : u32)
+    _2 = even(const 4u32)
     assert(move _2 == true) else panic(core::panicking::panic)
     storage_dead(_2)
     storage_live(_3)
-    _3 = odd(const 1 : u32)
+    _3 = odd(const 1u32)
     assert(move _3 == true) else panic(core::panicking::panic)
     storage_dead(_3)
     storage_live(_4)
-    _4 = odd(const 5 : u32)
+    _4 = odd(const 5u32)
     assert(move _4 == true) else panic(core::panicking::panic)
     storage_dead(_4)
     _0 = ()
@@ -656,7 +656,7 @@ pub fn new_tuple1() -> StructWithTuple<u32, u32>[{built_in impl Sized for u32}, 
     let _1: (u32, u32); // anonymous local
 
     storage_live(_1)
-    _1 = (const 1 : u32, const 2 : u32)
+    _1 = (const 1u32, const 2u32)
     _0 = StructWithTuple { p: move _1 }
     storage_dead(_1)
     return
@@ -669,7 +669,7 @@ pub fn new_tuple2() -> StructWithTuple<i16, i16>[{built_in impl Sized for i16}, 
     let _1: (i16, i16); // anonymous local
 
     storage_live(_1)
-    _1 = (const 1 : i16, const 2 : i16)
+    _1 = (const 1i16, const 2i16)
     _0 = StructWithTuple { p: move _1 }
     storage_dead(_1)
     return
@@ -682,7 +682,7 @@ pub fn new_tuple3() -> StructWithTuple<u64, i64>[{built_in impl Sized for u64}, 
     let _1: (u64, i64); // anonymous local
 
     storage_live(_1)
-    _1 = (const 1 : u64, const 2 : i64)
+    _1 = (const 1u64, const 2i64)
     _0 = StructWithTuple { p: move _1 }
     storage_dead(_1)
     return
@@ -706,7 +706,7 @@ pub fn new_pair1() -> StructWithPair<u32, u32>[{built_in impl Sized for u32}, {b
     storage_live(_1)
     // This actually doesn't make rustc generate a constant...
     // I guess it only happens for tuples.
-    _1 = Pair { x: const 1 : u32, y: const 2 : u32 }
+    _1 = Pair { x: const 1u32, y: const 2u32 }
     _0 = StructWithPair { p: move _1 }
     storage_dead(_1)
     return
@@ -721,7 +721,7 @@ pub fn incr<'_0>(x_1: &'_0 mut u32)
 
     storage_live(_2)
     _0 = ()
-    _2 = copy (*x_1) panic.+ const 1 : u32
+    _2 = copy (*x_1) panic.+ const 1u32
     (*x_1) = move _2
     _0 = ()
     return
@@ -738,7 +738,7 @@ pub fn read_then_incr<'_0>(x_1: &'_0 mut u32) -> u32
     storage_live(_3)
     storage_live(r_2)
     r_2 = copy (*x_1)
-    _3 = copy (*x_1) panic.+ const 1 : u32
+    _3 = copy (*x_1) panic.+ const 1u32
     (*x_1) = move _3
     _0 = copy r_2
     storage_dead(r_2)

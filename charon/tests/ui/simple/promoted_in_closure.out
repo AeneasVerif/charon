@@ -119,7 +119,7 @@ fn impl_Fn_unit_for_closure::call<'_0>(_1: &'_0 closure, tupled_args_2: ())
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = const 42 : i32
+    _7 = const 42i32
     _6 = &_7
     _5 = move _6
     storage_live(_4)

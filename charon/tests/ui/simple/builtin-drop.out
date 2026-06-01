@@ -89,7 +89,7 @@ where
     storage_live(_5)
     _0 = ()
     _2 = copy _1.metadata
-    _3 = const 0 : usize
+    _3 = const 0usize
     loop {
         _5 = copy _3 == copy _2
         if move _5 {
@@ -100,7 +100,7 @@ where
             storage_live(_7)
             _7 = @SliceIndexMut<'_, T>(move _6, copy _3)
             _4 = &raw mut (*_7)
-            _3 = move _3 wrap.+ const 1 : usize
+            _3 = move _3 wrap.+ const 1usize
             drop[TraitClause1::drop_in_place] (*_4)
             continue 0
         }
@@ -173,14 +173,14 @@ where
 }
 
 // Full name: test_crate::drop_array
-fn drop_array(_1: [String; 4 : usize])
+fn drop_array(_1: [String; 4usize])
 {
     let _0: (); // return
-    let _1: [String; 4 : usize]; // arg #1
+    let _1: [String; 4usize]; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[impl_Destruct_for_array::drop_in_place<String, 4 : usize>[{built_in impl Sized for String}, impl_Destruct_for_String]] _1
+    drop[impl_Destruct_for_array::drop_in_place<String, 4usize>[{built_in impl Sized for String}, impl_Destruct_for_String]] _1
     return
 }
 

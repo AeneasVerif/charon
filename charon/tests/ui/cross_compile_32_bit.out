@@ -38,7 +38,7 @@ fn main()
     storage_live(_6)
     _0 = ()
     storage_live(x_1)
-    x_1 = const 52 : usize
+    x_1 = const 52usize
     storage_live(y_2)
     y_2 = copy MAX
     storage_live(z_3)

@@ -199,7 +199,7 @@ fn iter(n_1: usize)
     storage_live(_3)
     storage_live(_4)
     _4 = copy n_1
-    _3 = Range { start: const 0 : usize, end: move _4 }
+    _3 = Range { start: const 0usize, end: move _4 }
     storage_dead(_4)
     _2 = impl_IntoIterator_for_T::into_iter<Range<usize>, usize>[impl_Iterator_for_Range<usize>[impl_Step_for_usize]](move _3)
     storage_dead(_3)

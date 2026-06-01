@@ -30,7 +30,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 
@@ -45,7 +45,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 
@@ -60,7 +60,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 
@@ -116,7 +116,7 @@ fn impl_Trait_for_unit::CONST3() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 1 : usize
+    _0 = const 1usize
     return
 }
 
@@ -128,7 +128,7 @@ fn impl_Trait_for_unit::CONST2() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 1 : usize
+    _0 = const 1usize
     return
 }
 
@@ -140,7 +140,7 @@ fn impl_Trait_for_unit::CONST1() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 1 : usize
+    _0 = const 1usize
     return
 }
 
@@ -173,7 +173,7 @@ fn impl_Trait_for_u8::CONST2() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 2 : usize
+    _0 = const 2usize
     return
 }
 

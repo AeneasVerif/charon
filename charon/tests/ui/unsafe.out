@@ -340,7 +340,7 @@ fn COUNTER() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 
@@ -361,7 +361,7 @@ fn access_mutable_static()
     storage_live(_3)
     _3 = &raw mut COUNTER
     _1 = move _3
-    _2 = copy (*_1) panic.+ const 1 : usize
+    _2 = copy (*_1) panic.+ const 1usize
     (*_1) = move _2
     storage_dead(_1)
     _0 = ()
@@ -371,7 +371,7 @@ fn access_mutable_static()
 // Full name: test_crate::Foo
 union Foo {
   one: u64,
-  two: [u32; 2 : usize],
+  two: [u32; 2usize],
 }
 
 // Full name: test_crate::access_union_field
@@ -379,11 +379,11 @@ fn access_union_field()
 {
     let _0: (); // return
     let one_1: Foo; // local
-    let _two_2: [u32; 2 : usize]; // local
+    let _two_2: [u32; 2usize]; // local
 
     _0 = ()
     storage_live(one_1)
-    one_1 = Foo { one: const 42 : u64 }
+    one_1 = Foo { one: const 42u64 }
     storage_live(_two_2)
     _two_2 = copy (one_1).two
     _0 = ()

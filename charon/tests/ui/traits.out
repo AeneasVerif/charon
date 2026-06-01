@@ -538,7 +538,7 @@ pub fn impl_ToType_bool_for_u64::to_type(self_1: u64) -> bool
 
     storage_live(_2)
     _2 = copy self_1
-    _0 = move _2 > const 0 : u64
+    _0 = move _2 > const 0u64
     storage_dead(_2)
     return
 }
@@ -646,7 +646,7 @@ fn impl_TestTrait_for_TestType1::test<'_0>(self_1: &'_0 TestType1) -> bool
 
     storage_live(_2)
     _2 = copy ((*self_1)).0
-    _0 = move _2 > const 1 : u64
+    _0 = move _2 > const 1u64
     storage_dead(_2)
     return
 }
@@ -677,11 +677,11 @@ where
     x_3 = TraitClause1::to_u64(move _4)
     storage_dead(_4)
     storage_live(y_5)
-    y_5 = TestType1 { 0: const 0 : u64 }
+    y_5 = TestType1 { 0: const 0u64 }
     storage_live(_6)
     storage_live(_7)
     _7 = copy x_3
-    _6 = move _7 > const 0 : u64
+    _6 = move _7 > const 0u64
     if move _6 {
         storage_dead(_7)
         storage_live(_8)
@@ -775,7 +775,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const 32 : usize
+    _0 = const 32usize
     return
 }
 
@@ -790,38 +790,38 @@ where
     TraitClause0: (Self: WithConstTy<LEN>),
 = <method_without_default_body>
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::f
-pub fn impl_WithConstTy_for_bool::f<'_0, '_1>(_1: &'_0 mut u64, _2: &'_1 [u8; 32 : usize])
+// Full name: test_crate::{impl WithConstTy<32usize> for bool}::f
+pub fn impl_WithConstTy_for_bool::f<'_0, '_1>(_1: &'_0 mut u64, _2: &'_1 [u8; 32usize])
 {
     let _0: (); // return
     let _1: &'1 mut u64; // arg #1
-    let _2: &'3 [u8; 32 : usize]; // arg #2
+    let _2: &'3 [u8; 32usize]; // arg #2
 
     _0 = ()
     _0 = ()
     return
 }
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
+// Full name: test_crate::{impl WithConstTy<32usize> for bool}::LEN1
 pub fn LEN1() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 12 : usize
+    _0 = const 12usize
     return
 }
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}::LEN1
+// Full name: test_crate::{impl WithConstTy<32usize> for bool}::LEN1
 pub const LEN1: usize = LEN1()
 
-// Full name: test_crate::{impl WithConstTy<32 : usize> for bool}
-impl "impl_WithConstTy_for_bool" WithConstTy<32 : usize> for bool {
+// Full name: test_crate::{impl WithConstTy<32usize> for bool}
+impl "impl_WithConstTy_for_bool" WithConstTy<32usize> for bool {
     proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
     proof ImpliedClause1: (u8: Sized) = {built_in impl Sized for u8}
     proof ImpliedClause2: (u64: Sized) = {built_in impl Sized for u64}
     proof ImpliedClause3: (u64: ToU64) = impl_ToU64_for_u64
     const LEN1 = LEN1
-    const LEN2 = LEN2<bool, 32 : usize>[impl_WithConstTy_for_bool]
+    const LEN2 = LEN2<bool, 32usize>[impl_WithConstTy_for_bool]
     type V = u8
     type W = u64
     fn f<'_0_1, '_1_1> = impl_WithConstTy_for_bool::f<'_0_1, '_1_1>
@@ -891,7 +891,7 @@ where
 pub fn test_where2<T>(_x_1: u32)
 where
     TraitClause0: (T: Sized),
-    TraitClause1: (T: WithConstTy<32 : usize>),
+    TraitClause1: (T: WithConstTy<32usize>),
     TypeConstraint0: TraitClause1::V = u32,
 {
     let _0: (); // return
@@ -1248,7 +1248,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const 0 : usize
+    _0 = const 0usize
     return
 }
 
@@ -1301,7 +1301,7 @@ where
 {
     let _0: Result<T, i32>[TraitClause0, {built_in impl Sized for i32}]; // return
 
-    _0 = Result::Err { 0: const 0 : i32 }
+    _0 = Result::Err { 0: const 0i32 }
     return
 }
 

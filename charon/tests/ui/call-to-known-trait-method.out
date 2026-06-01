@@ -197,7 +197,7 @@ fn main()
 
     _0 = ()
     storage_live(_x_1)
-    _x_1 = (const 0 : u8, const false)
+    _x_1 = (const 0u8, const false)
     storage_live(_y_2)
     _y_2 = impl_Default_for_Struct::default<bool>[{built_in impl Sized for bool}, impl_Default_for_bool]()
     storage_live(_3)

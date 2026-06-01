@@ -33,7 +33,7 @@ where
 
     storage_live(_2)
     _2 = @discriminant((*self_1))
-    _0 = copy _2 == const 1 : isize
+    _0 = copy _2 == const 1isize
     return
 }
 

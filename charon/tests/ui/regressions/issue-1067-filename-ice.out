@@ -98,10 +98,10 @@ fn main()
     let _3: Result<(), std::io::error::Error>[{built_in impl Sized for ()}, {built_in impl Sized for std::io::error::Error}]; // anonymous local
     let _4: &'1 mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
     let _5: &'3 [u8]; // anonymous local
-    let _6: &'5 [u8; 5 : usize]; // anonymous local
-    let _7: &'6 [u8; 5 : usize]; // anonymous local
-    let _8: [u8; 5 : usize]; // anonymous local
-    let _9: &'7 [u8; 5 : usize]; // anonymous local
+    let _6: &'5 [u8; 5usize]; // anonymous local
+    let _7: &'6 [u8; 5usize]; // anonymous local
+    let _8: [u8; 5usize]; // anonymous local
+    let _9: &'7 [u8; 5usize]; // anonymous local
 
     _0 = ()
     storage_live(buf_1)
@@ -114,12 +114,12 @@ fn main()
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = [const 104 : u8, const 101 : u8, const 108 : u8, const 108 : u8, const 111 : u8]
+    _8 = [const 104u8, const 101u8, const 108u8, const 108u8, const 111u8]
     storage_live(_9)
     _9 = &_8
     _7 = move _9
     _6 = &(*_7)
-    _5 = @ArrayToSliceShared<'_, u8, 5 : usize>(move _6)
+    _5 = @ArrayToSliceShared<'_, u8, 5usize>(move _6)
     storage_dead(_6)
     _3 = impl_Write_for_Vec_u8::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)
     storage_dead(_5)

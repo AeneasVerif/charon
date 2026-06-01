@@ -45,20 +45,20 @@ where
     TraitClause0: (Self: Convert<T>),
 = <method_without_default_body>
 
-// Full name: test_crate::{impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method
-fn {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>(self_1: &'a u32) -> &'a [u8; 4 : usize]
+// Full name: test_crate::{impl Convert<&'a [u8; 4usize]> for &'a u32}::method
+fn {impl Convert<&'a [u8; 4usize]> for &'a u32}::method<'a>(self_1: &'a u32) -> &'a [u8; 4usize]
 {
-    let _0: &'1 [u8; 4 : usize]; // return
+    let _0: &'1 [u8; 4usize]; // return
     let self_1: &'3 u32; // arg #1
-    let _2: &'4 [u8; 4 : usize]; // anonymous local
-    let _3: *const [u8; 4 : usize]; // anonymous local
+    let _2: &'4 [u8; 4usize]; // anonymous local
+    let _3: *const [u8; 4usize]; // anonymous local
     let _4: *const u32; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = &raw const (*self_1)
-    _3 = cast<u32, [u8; 4 : usize]>[{built_in impl Sized for [u8; 4 : usize]}](move _4)
+    _3 = cast<u32, [u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}](move _4)
     storage_dead(_4)
     _2 = &(*_3)
     _0 = &(*_2)
@@ -67,11 +67,11 @@ fn {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>(self_1: &'a u32) 
     return
 }
 
-// Full name: test_crate::{impl Convert<&'a [u8; 4 : usize]> for &'a u32}
-impl<'a> Convert<&'a [u8; 4 : usize]> for &'a u32 {
+// Full name: test_crate::{impl Convert<&'a [u8; 4usize]> for &'a u32}
+impl<'a> Convert<&'a [u8; 4usize]> for &'a u32 {
     proof ImpliedClause0: (&'a u32: Sized) = {built_in impl Sized for &'a u32}
-    proof ImpliedClause1: (&'a [u8; 4 : usize]: Sized) = {built_in impl Sized for &'a [u8; 4 : usize]}
-    fn method = {impl Convert<&'a [u8; 4 : usize]> for &'a u32}::method<'a>
+    proof ImpliedClause1: (&'a [u8; 4usize]: Sized) = {built_in impl Sized for &'a [u8; 4usize]}
+    fn method = {impl Convert<&'a [u8; 4usize]> for &'a u32}::method<'a>
     non-dyn-compatible
 }
 
@@ -95,11 +95,11 @@ where
 }
 
 // Full name: test_crate::to_bytes_by_ref
-pub fn to_bytes_by_ref<'b>(s_1: &'b u32) -> &'b [u8; 4 : usize]
+pub fn to_bytes_by_ref<'b>(s_1: &'b u32) -> &'b [u8; 4usize]
 {
-    let _0: &'1 [u8; 4 : usize]; // return
+    let _0: &'1 [u8; 4usize]; // return
     let s_1: &'3 u32; // arg #1
-    let _2: &'4 [u8; 4 : usize]; // anonymous local
+    let _2: &'4 [u8; 4usize]; // anonymous local
     let _3: &'5 u32; // anonymous local
 
     storage_live(_2)
@@ -107,7 +107,7 @@ pub fn to_bytes_by_ref<'b>(s_1: &'b u32) -> &'b [u8; 4 : usize]
     // Here `convert` is given generics `<&'_ u32, &'_ [u8; 4]>`, which loses the information
     // that the lifetime is the same by virtue of the trait impl.
     _3 = copy s_1
-    _2 = convert<&'9 u32, &'9 [u8; 4 : usize]>[{built_in impl Sized for &'9 u32}, {built_in impl Sized for &'9 [u8; 4 : usize]}, {impl Convert<&'a [u8; 4 : usize]> for &'a u32}<'9>](move _3)
+    _2 = convert<&'9 u32, &'9 [u8; 4usize]>[{built_in impl Sized for &'9 u32}, {built_in impl Sized for &'9 [u8; 4usize]}, {impl Convert<&'a [u8; 4usize]> for &'a u32}<'9>](move _3)
     _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)

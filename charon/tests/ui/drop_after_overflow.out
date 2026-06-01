@@ -128,7 +128,7 @@ fn main()
         storage_live(f_1);
         f_1 = Foo {  };
         storage_live(_2);
-        _3 = const 255 : u8 checked.+ const 1 : u8;
+        _3 = const 255u8 checked.+ const 1u8;
         assert assert(move _3.1 == false) (overflow) -> bb2 (unwind: bb1);
     }
 

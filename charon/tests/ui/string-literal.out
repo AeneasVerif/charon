@@ -80,20 +80,20 @@ static FOO: &'static str = FOO()
 fn BAR() -> &'static [u8]
 {
     let _0: &'1 [u8]; // return
-    let _1: &'3 [u8; 5 : usize]; // anonymous local
-    let _2: &'4 [u8; 5 : usize]; // anonymous local
-    let _3: [u8; 5 : usize]; // anonymous local
-    let _4: &'5 [u8; 5 : usize]; // anonymous local
+    let _1: &'3 [u8; 5usize]; // anonymous local
+    let _2: &'4 [u8; 5usize]; // anonymous local
+    let _3: [u8; 5usize]; // anonymous local
+    let _4: &'5 [u8; 5usize]; // anonymous local
 
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
-    _3 = [const 104 : u8, const 101 : u8, const 108 : u8, const 108 : u8, const 111 : u8]
+    _3 = [const 104u8, const 101u8, const 108u8, const 108u8, const 111u8]
     storage_live(_4)
     _4 = &_3
     _2 = move _4
     _1 = &(*_2)
-    _0 = @ArrayToSliceShared<'_, u8, 5 : usize>(move _1)
+    _0 = @ArrayToSliceShared<'_, u8, 5usize>(move _1)
     storage_dead(_2)
     storage_dead(_1)
     return

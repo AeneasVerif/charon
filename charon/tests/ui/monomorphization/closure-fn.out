@@ -122,7 +122,7 @@ fn apply_to::<closure<'_, '_>><'_0>(f_1: &'_0 closure<'_, '_>) -> u8
     storage_live(_2)
     _2 = &(*f_1)
     storage_live(_3)
-    _3 = (const 10 : u8, const 20 : u8)
+    _3 = (const 10u8, const 20u8)
     _0 = impl_Fn_tuple_for_closure<'16, '17>::call<'18>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -140,7 +140,7 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(f_1: &'_0 mut closure<'_, '_>) -> u8
     storage_live(_2)
     _2 = &mut (*f_1)
     storage_live(_3)
-    _3 = (const 10 : u8, const 20 : u8)
+    _3 = (const 10u8, const 20u8)
     _0 = impl_FnMut_tuple_for_closure<'16, '17>::call_mut<'18>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -163,7 +163,7 @@ fn apply_to_once::<closure<'_, '_>>(f_1: closure<'_, '_>) -> u8
     storage_live(_2)
     _2 = move f_1
     storage_live(_3)
-    _3 = (const 10 : u8, const 20 : u8)
+    _3 = (const 10u8, const 20u8)
     _0 = impl_FnOnce_tuple_for_closure<'8, '9>::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -194,9 +194,9 @@ fn main()
 
     _0 = ()
     storage_live(v_1)
-    v_1 = const 5 : u8
+    v_1 = const 5u8
     storage_live(z_2)
-    z_2 = const 1 : u8
+    z_2 = const 1u8
     storage_live(f_3)
     storage_live(_4)
     _4 = &v_1
@@ -209,7 +209,7 @@ fn main()
     storage_live(_7)
     _7 = &f_3
     storage_live(_8)
-    _8 = (const 10 : u8, const 20 : u8)
+    _8 = (const 10u8, const 20u8)
     _6 = impl_Fn_tuple_for_closure<'37, '38>::call<'39>(move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)

@@ -45,7 +45,7 @@ pub fn incr<'_0>(x_1: &'_0 mut u32)
 
     storage_live(_2)
     _0 = ()
-    _2 = copy (*x_1) panic.+ const 1 : u32
+    _2 = copy (*x_1) panic.+ const 1u32
     (*x_1) = move _2
     _0 = ()
     return
@@ -101,7 +101,7 @@ pub fn div_u32_const(x_1: u32) -> u32
 
     storage_live(_2)
     _2 = copy x_1
-    _0 = move _2 panic./ const 2 : u32
+    _0 = move _2 panic./ const 2u32
     storage_dead(_2)
     return
 }
@@ -219,7 +219,7 @@ pub fn div_i32_const(x_1: i32) -> i32
 
     storage_live(_2)
     _2 = copy x_1
-    _0 = move _2 panic./ const 2 : i32
+    _0 = move _2 panic./ const 2i32
     storage_dead(_2)
     return
 }
@@ -524,7 +524,7 @@ fn shr_add_u32(x_1: u32, y_2: u32) -> u32
     storage_live(_4)
     storage_live(_5)
     _5 = copy y_2
-    _6 = copy _5 panic.+ const 1 : u32
+    _6 = copy _5 panic.+ const 1u32
     _4 = move _6
     storage_dead(_5)
     _0 = move _3 panic.>> move _4
@@ -607,7 +607,7 @@ fn index_slice_ignore_value<'_0>(x_1: &'_0 [u32])
     storage_live(_2)
     // FIXME: Bug: the bound check is removed but the place is not mentioned, so the translated
     // function doesn't panic on empty slices anymore.
-    _2 = const 0 : usize
+    _2 = const 0usize
     storage_live(_3)
     _3 = &(*x_1) with_metadata(copy x_1.metadata)
     storage_live(_4)
@@ -624,7 +624,7 @@ pub fn test_crate::_() -> isize
     let _1: isize; // anonymous local
 
     storage_live(_1)
-    _1 = const 1 : isize panic.+ const 1 : isize
+    _1 = const 1isize panic.+ const 1isize
     _0 = move _1
     return
 }
@@ -637,7 +637,7 @@ pub fn test_crate::_#1() -> isize
     let _1: isize; // anonymous local
 
     storage_live(_1)
-    _1 = const 1 : isize panic.- const 1 : isize
+    _1 = const 1isize panic.- const 1isize
     _0 = move _1
     return
 }
@@ -648,7 +648,7 @@ pub fn test_crate::_#2() -> isize
 {
     let _0: isize; // return
 
-    _0 = const -1 : isize
+    _0 = const -1isize
     return
 }
 
@@ -660,7 +660,7 @@ pub fn test_crate::_#3() -> isize
     let _1: isize; // anonymous local
 
     storage_live(_1)
-    _1 = const 2 : isize panic.* const 2 : isize
+    _1 = const 2isize panic.* const 2isize
     _0 = move _1
     return
 }
@@ -671,7 +671,7 @@ pub fn test_crate::_#4() -> isize
 {
     let _0: isize; // return
 
-    _0 = const 2 : isize panic.>> const 2 : i32
+    _0 = const 2isize panic.>> const 2i32
     return
 }
 
@@ -681,7 +681,7 @@ pub fn test_crate::_#5() -> isize
 {
     let _0: isize; // return
 
-    _0 = const 2 : isize panic.<< const 2 : i32
+    _0 = const 2isize panic.<< const 2i32
     return
 }
 
@@ -691,7 +691,7 @@ pub fn test_crate::_#6() -> isize
 {
     let _0: isize; // return
 
-    _0 = const 2 : isize panic.% const 2 : isize
+    _0 = const 2isize panic.% const 2isize
     return
 }
 
@@ -701,7 +701,7 @@ pub fn test_crate::_#7() -> isize
 {
     let _0: isize; // return
 
-    _0 = const 2 : isize panic./ const 2 : isize
+    _0 = const 2isize panic./ const 2isize
     return
 }
 
@@ -711,7 +711,7 @@ pub fn test_crate::FOO() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 10 : u32
+    _0 = const 10u32
     return
 }
 
@@ -723,7 +723,7 @@ pub fn test_crate::_#8() -> u32
     let _1: u32; // anonymous local
 
     storage_live(_1)
-    _1 = const 1 : u32 panic.+ copy test_crate::FOO
+    _1 = const 1u32 panic.+ copy test_crate::FOO
     _0 = move _1
     return
 }
@@ -736,7 +736,7 @@ pub fn test_crate::_#9() -> u32
     let _1: u32; // anonymous local
 
     storage_live(_1)
-    _1 = const 10 : u32 panic.- copy test_crate::FOO
+    _1 = const 10u32 panic.- copy test_crate::FOO
     _0 = move _1
     return
 }
@@ -749,7 +749,7 @@ pub fn test_crate::_#10() -> u32
     let _1: u32; // anonymous local
 
     storage_live(_1)
-    _1 = const 2 : u32 panic.* copy test_crate::FOO
+    _1 = const 2u32 panic.* copy test_crate::FOO
     _0 = move _1
     return
 }
@@ -760,7 +760,7 @@ pub fn test_crate::_#11() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 2 : u32 panic.>> copy test_crate::FOO
+    _0 = const 2u32 panic.>> copy test_crate::FOO
     return
 }
 
@@ -770,7 +770,7 @@ pub fn test_crate::_#12() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 2 : u32 panic.<< copy test_crate::FOO
+    _0 = const 2u32 panic.<< copy test_crate::FOO
     return
 }
 
@@ -780,7 +780,7 @@ pub fn test_crate::_#13() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 2 : u32 panic.% copy test_crate::FOO
+    _0 = const 2u32 panic.% copy test_crate::FOO
     return
 }
 
@@ -790,7 +790,7 @@ pub fn test_crate::_#14() -> u32
 {
     let _0: u32; // return
 
-    _0 = const 2 : u32 panic./ copy test_crate::FOO
+    _0 = const 2u32 panic./ copy test_crate::FOO
     return
 }
 
@@ -800,7 +800,7 @@ fn test_crate::div_signed_with_constant::FOO() -> i32
 {
     let _0: i32; // return
 
-    _0 = const 42 : i32
+    _0 = const 42i32
     return
 }
 
@@ -811,7 +811,7 @@ fn div_signed_with_constant() -> i32
 {
     let _0: i32; // return
 
-    _0 = copy test_crate::div_signed_with_constant::FOO panic./ const 2 : i32
+    _0 = copy test_crate::div_signed_with_constant::FOO panic./ const 2i32
     return
 }
 
@@ -830,12 +830,12 @@ fn div_unsigned_to_slice<'_0>(result_1: &'_0 mut [u32], x_2: u32)
     storage_live(_3)
     _3 = copy x_2
     storage_live(_4)
-    _4 = const 0 : usize
+    _4 = const 0usize
     storage_live(_5)
     _5 = &mut (*result_1) with_metadata(copy result_1.metadata)
     storage_live(_6)
     _6 = @SliceIndexMut<'_, u32>(move _5, copy _4)
-    (*_6) = move _3 panic./ const 3329 : u32
+    (*_6) = move _3 panic./ const 3329u32
     storage_dead(_3)
     storage_dead(_4)
     _0 = ()
@@ -857,12 +857,12 @@ fn div_signed_to_slice<'_0>(result_1: &'_0 mut [i32], x_2: i32)
     storage_live(_3)
     _3 = copy x_2
     storage_live(_4)
-    _4 = const 0 : usize
+    _4 = const 0usize
     storage_live(_5)
     _5 = &mut (*result_1) with_metadata(copy result_1.metadata)
     storage_live(_6)
     _6 = @SliceIndexMut<'_, i32>(move _5, copy _4)
-    (*_6) = move _3 panic./ const 3329 : i32
+    (*_6) = move _3 panic./ const 3329i32
     storage_dead(_3)
     storage_dead(_4)
     _0 = ()
@@ -885,9 +885,9 @@ fn add_to_slice<'_0>(result_1: &'_0 mut [u32], x_2: u32)
     _0 = ()
     storage_live(_3)
     _3 = copy x_2
-    _4 = copy _3 panic.+ const 1 : u32
+    _4 = copy _3 panic.+ const 1u32
     storage_live(_5)
-    _5 = const 0 : usize
+    _5 = const 0usize
     storage_live(_6)
     _6 = &mut (*result_1) with_metadata(copy result_1.metadata)
     storage_live(_7)
@@ -919,11 +919,11 @@ fn add_to_slice2<'_0>(result_1: &'_0 mut [u8], i_2: usize, x_3: u8)
     _0 = ()
     storage_live(_4)
     _4 = copy x_3
-    _5 = copy _4 panic.* const 7 : u8
+    _5 = copy _4 panic.* const 7u8
     storage_live(_6)
     storage_live(_7)
     _7 = copy i_2
-    _8 = copy _7 panic.+ const 1 : usize
+    _8 = copy _7 panic.+ const 1usize
     _6 = move _8
     storage_dead(_7)
     storage_live(_9)

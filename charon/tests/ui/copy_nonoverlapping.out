@@ -309,7 +309,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
     storage_live(_5)
     _5 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](move align_1)
     switch copy _5 {
-        1 : u32 => {
+        1u32 => {
         },
         _ => {
             storage_dead(_5)
@@ -331,9 +331,9 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
             _13 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
             _11 = copy _13.metadata
             storage_dead(_13)
-            _10 = move _11 wrap.<< const 1 : i32
+            _10 = move _11 wrap.<< const 1i32
             storage_dead(_11)
-            _9 = move _10 | const 1 : usize
+            _9 = move _10 | const 1usize
             storage_dead(_10)
             _8 = transmute<usize, NonNull<Argument<'12>>>(move _9)
             storage_dead(_9)
@@ -372,7 +372,7 @@ pub fn new(align_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignme
     storage_live(_3)
     _3 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](copy align_1)
     switch copy _3 {
-        1 : u32 => {
+        1u32 => {
         },
         _ => {
             storage_dead(_3)
@@ -505,7 +505,7 @@ where
 {
     let _0: bool; // return
 
-    _0 = const TraitClause0::SIZE == const 0 : usize
+    _0 = const TraitClause0::SIZE == const 0usize
     return
 }
 
@@ -536,7 +536,7 @@ pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
 
-    _0 = ~(const 0 : usize)
+    _0 = ~(const 0usize)
     return
 }
 
@@ -548,7 +548,7 @@ pub fn core::num::{isize}::MAX() -> isize
     let _1: usize; // anonymous local
 
     storage_live(_1)
-    _1 = copy core::num::{usize}::MAX panic.>> const 1 : i32
+    _1 = copy core::num::{usize}::MAX panic.>> const 1i32
     _0 = cast<usize, isize>(move _1)
     storage_dead(_1)
     return
@@ -570,7 +570,7 @@ where
     storage_live(_1)
     _1 = const TraitClause0::SIZE
     switch copy _1 {
-        0 : usize => {
+        0usize => {
             _0 = copy core::num::{usize}::MAX
         },
         _ => {
@@ -665,7 +665,7 @@ where
     _4 = &raw const (*y_2)
     storage_live(_5)
     _5 = &raw mut (*x_1)
-    _3 = copy_nonoverlapping<T>[TraitClause0](move _4, move _5, const 1 : usize)
+    _3 = copy_nonoverlapping<T>[TraitClause0](move _4, move _5, const 1usize)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)

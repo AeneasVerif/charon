@@ -41,7 +41,7 @@ pub fn LEN2<Self, Clause0_W, const LEN : usize>() -> usize
 {
     let _0: usize; // return
 
-    _0 = const 32 : usize
+    _0 = const 32usize
     return
 }
 

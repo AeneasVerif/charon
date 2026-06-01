@@ -228,7 +228,7 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
         storage_dead(_21)
         storage_dead(_17)
         storage_live(_19)
-        _19 = copy byte_offset_15 < const 0 : isize
+        _19 = copy byte_offset_15 < const 0isize
         overflow_18 = copy _20 ^ move _19
         storage_dead(_19)
         storage_dead(_20)
@@ -259,9 +259,9 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     _31 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
     _29 = copy _31.metadata
     storage_dead(_31)
-    _28 = move _29 wrap.<< const 1 : i32
+    _28 = move _29 wrap.<< const 1i32
     storage_dead(_29)
-    _27 = move _28 | const 1 : usize
+    _27 = move _28 | const 1usize
     storage_dead(_28)
     _26 = transmute<usize, NonNull<Argument<'12>>>(move _27)
     storage_dead(_27)
@@ -307,10 +307,10 @@ where
 fn main()
 {
     let _0: (); // return
-    let s_1: [i32; 2 : usize]; // local
+    let s_1: [i32; 2usize]; // local
     let ptr_2: *const i32; // local
     let _3: &'1 [i32]; // anonymous local
-    let _4: &'3 [i32; 2 : usize]; // anonymous local
+    let _4: &'3 [i32; 2usize]; // anonymous local
     let _5: bool; // anonymous local
     let _6: i32; // anonymous local
     let _7: *const i32; // anonymous local
@@ -318,12 +318,12 @@ fn main()
 
     _0 = ()
     storage_live(s_1)
-    s_1 = [const 11 : i32, const 42 : i32]
+    s_1 = [const 11i32, const 42i32]
     storage_live(ptr_2)
     storage_live(_3)
     storage_live(_4)
     _4 = &s_1
-    _3 = @ArrayToSliceShared<'_, i32, 2 : usize>(move _4)
+    _3 = @ArrayToSliceShared<'_, i32, 2usize>(move _4)
     storage_dead(_4)
     ptr_2 = as_ptr<'6, i32>[{built_in impl Sized for i32}](move _3)
     storage_dead(_3)
@@ -332,10 +332,10 @@ fn main()
     storage_live(_7)
     storage_live(_8)
     _8 = copy ptr_2
-    _7 = offset<i32>[{built_in impl Sized for i32}](move _8, const 1 : isize)
+    _7 = offset<i32>[{built_in impl Sized for i32}](move _8, const 1isize)
     storage_dead(_8)
     _6 = copy (*_7)
-    _5 = move _6 == const 42 : i32
+    _5 = move _6 == const 42i32
     if move _5 {
     } else {
         storage_dead(_6)
