@@ -798,7 +798,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Some(value) => {
                 let item_ref = &value.skip_binder.item;
                 let shim_ref =
-                    self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
+                    self.translate_fn_ptr(span, item_ref, TransItemSourceKind::VTableMethod)?;
                 // In mono mode, we cannot get real types of shim functions by looking up the ones in `struct vtable`
                 // because they are erased function pointers.
                 // Therefore, below we compute real types that are used for casting.
@@ -811,7 +811,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let def = self.poly_hax_def(&item_ref.def_id)?;
                     self.translate_item_generics(span, &def, &TransItemSourceKind::VTableMethod)?;
 
-                    let assoc_fun_def = self.hax_def(&item_ref)?;
+                    let assoc_fun_def = self.hax_def(item_ref)?;
                     let vtable_sig = match assoc_fun_def.kind() {
                         hax::FullDefKind::AssocFn {
                             vtable_sig: Some(vtable_sig),

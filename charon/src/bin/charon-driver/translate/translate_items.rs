@@ -1155,7 +1155,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         Some(impl_value) => self.translate_item_binder(
                             item_span,
                             binder_kind,
-                            &impl_value,
+                            impl_value,
                             PredicateOrigin::WhereClauseOnType,
                             |ctx, impl_value| {
                                 let ty = ctx.translate_ty(

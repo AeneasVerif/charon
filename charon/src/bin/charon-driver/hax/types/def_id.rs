@@ -125,10 +125,6 @@ impl VirtualImplAssocItem {
         }
     }
 
-    pub fn item_impl_id<'tcx>(&self) -> RDefId {
-        self.item_impl_id
-    }
-
     /// Arguments just for the item itself (works for both decl and impl), valid in the virtual
     /// item context.
     fn own_args<'tcx>(&self, s: &impl BaseState<'tcx>) -> Vec<ty::GenericArg<'tcx>> {
@@ -137,7 +133,7 @@ impl VirtualImplAssocItem {
             .generics_of(s)
             .own_params
             .iter()
-            .map(|param| tcx.mk_param_from_def(&param))
+            .map(|param| tcx.mk_param_from_def(param))
             .collect()
     }
 
@@ -427,7 +423,7 @@ impl DefId {
                     return generics;
                 }
                 // We build a custom environment here.
-                let item_id = id.item_impl_id();
+                let item_id = id.item_impl_id;
                 let decl_generics = tcx.generics_of(item_id);
                 let parent_count = tcx.generics_of(id.trait_impl_id).count();
                 let own_params = tcx
