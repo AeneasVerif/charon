@@ -1,4 +1,3 @@
-//@ known-failure
 pub fn f(x: u32) -> u32 {
     'outer: loop {
         if x == 3 {
