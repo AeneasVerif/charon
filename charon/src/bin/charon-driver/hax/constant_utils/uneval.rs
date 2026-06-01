@@ -109,6 +109,7 @@ pub fn eval_ty_constant<'tcx, S: UnderOwnerState<'tcx>>(
         .ok()?
         .ok()?;
     let ty = tcx.type_of(uv.def).instantiate(tcx, uv.args);
+    let ty = normalize(tcx, typing_env, ty);
     Some(ty::Const::new_value(tcx, val, ty))
 }
 
@@ -172,7 +173,7 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
     ty: rustc_middle::ty::Ty<'tcx>,
     span: rustc_span::Span,
 ) -> ConstantExpr {
-    let ty = normalize(s.base().tcx, s.typing_env(), ty);
+    let ty = normalize(s.base().tcx, s.typing_env(), ty::Unnormalized::new_wip(ty));
 
     let kind = match (&*valtree, ty.kind()) {
         (_, ty::Ref(_, inner_ty, _)) => {

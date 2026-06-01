@@ -177,7 +177,7 @@ fn find_next_move_of(
         let block = &body.body[cursor.block];
         while cursor.statement < block.statements.len() {
             let st = &body[cursor];
-            if let Some((dst_place, Rvalue::Use(Operand::Move(src_place)))) = st.kind.as_assign()
+            if let Some((dst_place, Rvalue::Use(Operand::Move(src_place), _))) = st.kind.as_assign()
                 && src_place == src
             {
                 return Some((cursor, dst_place.clone()));
@@ -220,7 +220,7 @@ fn find_move_in_block(
 ) -> Option<StmtLoc> {
     let mut out = None;
     for (statement, st) in body.body[block].statements.iter().enumerate() {
-        if let Some((dst_place, Rvalue::Use(Operand::Move(src_place)))) = st.kind.as_assign()
+        if let Some((dst_place, Rvalue::Use(Operand::Move(src_place), _))) = st.kind.as_assign()
             && dst_place == dst
             && src_place == src
         {
@@ -437,7 +437,10 @@ impl UllbcPass for Transform {
             ));
             target_block.statements.push(Statement::new(
                 rw.span,
-                StatementKind::Assign(rw.box_array, Rvalue::Use(Operand::Move(box_array_local))),
+                StatementKind::Assign(
+                    rw.box_array,
+                    Rvalue::Use(Operand::Move(box_array_local), WithRetag::No),
+                ),
             ));
             target_block.statements.push(Statement::new(
                 rw.span,

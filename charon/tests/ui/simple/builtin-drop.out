@@ -23,6 +23,14 @@ pub trait Destruct<Self>
 unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
+// Full name: core::ptr::drop_glue
+#[lang_item("drop_glue")]
+unsafe fn drop_glue<'_0, T>(_1: &'_0 mut T)
+where
+    TraitClause0: (T: Destruct),
+    TraitClause1: (T: Destruct),
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -60,65 +68,6 @@ impl Destruct for String {
     non-dyn-compatible
 }
 
-// Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_in_place
-unsafe fn {impl Destruct for [T; N]}::drop_in_place<T, const N : usize>(_1: *mut [T; N])
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Destruct),
-{
-    let _0: (); // return
-    let _1: *mut [T; N]; // arg #1
-    let _2: &'1 mut [T; N]; // anonymous local
-    let _3: *mut [T; N]; // anonymous local
-    let _4: *mut [T]; // anonymous local
-    let _5: usize; // anonymous local
-    let _6: usize; // anonymous local
-    let _7: *mut T; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: &'_ mut [T]; // anonymous local
-    let _10: &'_ mut T; // anonymous local
-
-    storage_live(_2)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
-    _0 = ()
-    _2 = &mut (*_1)
-    _3 = &raw mut (*_2)
-    _4 = unsize_cast<*mut [T; N], *mut [T], N>(move _3)
-    _5 = copy _4.metadata
-    _6 = const 0 : usize
-    loop {
-        _8 = copy _6 == copy _5
-        if move _8 {
-            break 0
-        } else {
-            storage_live(_9)
-            _9 = &mut (*_4) with_metadata(copy _4.metadata)
-            storage_live(_10)
-            _10 = @SliceIndexMut<'_, T>(move _9, copy _6)
-            _7 = &raw mut (*_10)
-            _6 = move _6 wrap.+ const 1 : usize
-            drop[TraitClause1::drop_in_place] (*_7)
-            continue 0
-        }
-    }
-    return
-}
-
-// Full name: test_crate::<array>::{impl Destruct for [T; N]}
-impl<T, const N : usize> Destruct for [T; N]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Destruct),
-{
-    fn drop_in_place = {impl Destruct for [T; N]}::drop_in_place<T, N>[TraitClause0, TraitClause1]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_in_place
 unsafe fn {impl Destruct for [T]}::drop_in_place<T>(_1: *mut [T])
 where
@@ -126,36 +75,33 @@ where
     TraitClause1: (T: Destruct),
 {
     let _0: (); // return
-    let _1: *mut [T]; // arg #1
-    let _2: &'1 mut [T]; // anonymous local
+    let _1: &'1 mut [T]; // arg #1
+    let _2: usize; // anonymous local
     let _3: usize; // anonymous local
-    let _4: usize; // anonymous local
-    let _5: *mut T; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: &'_ mut [T]; // anonymous local
-    let _8: &'_ mut T; // anonymous local
+    let _4: *mut T; // anonymous local
+    let _5: bool; // anonymous local
+    let _6: &'_ mut [T]; // anonymous local
+    let _7: &'_ mut T; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    storage_live(_6)
     _0 = ()
-    _2 = &mut (*_1) with_metadata(copy _1.metadata)
-    _3 = copy _2.metadata
-    _4 = const 0 : usize
+    _2 = copy _1.metadata
+    _3 = const 0 : usize
     loop {
-        _6 = copy _4 == copy _3
-        if move _6 {
+        _5 = copy _3 == copy _2
+        if move _5 {
             break 0
         } else {
+            storage_live(_6)
+            _6 = &mut (*_1) with_metadata(copy _1.metadata)
             storage_live(_7)
-            _7 = &mut (*_2) with_metadata(copy _2.metadata)
-            storage_live(_8)
-            _8 = @SliceIndexMut<'_, T>(move _7, copy _4)
-            _5 = &raw mut (*_8)
-            _4 = move _4 wrap.+ const 1 : usize
-            drop[TraitClause1::drop_in_place] (*_5)
+            _7 = @SliceIndexMut<'_, T>(move _6, copy _3)
+            _4 = &raw mut (*_7)
+            _3 = move _3 wrap.+ const 1 : usize
+            drop[TraitClause1::drop_in_place] (*_4)
             continue 0
         }
     }
@@ -172,6 +118,33 @@ where
     non-dyn-compatible
 }
 
+// Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_in_place
+unsafe fn {impl Destruct for [T; N]}::drop_in_place<T, const N : usize>(_1: *mut [T; N])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+{
+    let _0: (); // return
+    let _1: &'1 mut [T; N]; // arg #1
+    let _2: &'3 mut [T]; // anonymous local
+
+    storage_live(_2)
+    _0 = ()
+    _2 = @ArrayToSliceMut<'_, T, N>(move _1)
+    _0 = drop_glue<'6, [T]>[{impl Destruct for [T]}<T>[TraitClause0, TraitClause1], {impl Destruct for [T]}<T>[TraitClause0, TraitClause1]](move _2)
+    return
+}
+
+// Full name: test_crate::<array>::{impl Destruct for [T; N]}
+impl<T, const N : usize> Destruct for [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+{
+    fn drop_in_place = {impl Destruct for [T; N]}::drop_in_place<T, N>[TraitClause0, TraitClause1]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_in_place
 unsafe fn {impl Destruct for (A, B)}::drop_in_place<A, B>(_1: *mut (A, B))
 where
@@ -180,14 +153,11 @@ where
     TraitClause2: (B: Destruct),
 {
     let _0: (); // return
-    let _1: *mut (A, B); // arg #1
-    let _2: &'1 mut (A, B); // anonymous local
+    let _1: &'1 mut (A, B); // arg #1
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1) with_metadata(copy _1.metadata)
-    drop[TraitClause1::drop_in_place] (*_2).0
-    drop[TraitClause2::drop_in_place] (*_2).1
+    drop[TraitClause1::drop_in_place] (*_1).0
+    drop[TraitClause2::drop_in_place] (*_1).1
     return
 }
 

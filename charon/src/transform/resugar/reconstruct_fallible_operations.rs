@@ -160,7 +160,7 @@ fn remove_dynamic_checks(
         //   assert(move b == true)
         [
             Statement {
-                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op))),
+                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op), _)),
                 ..
             },
             Statement {
@@ -209,7 +209,7 @@ fn remove_dynamic_checks(
                 ..
             },
             Statement {
-                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op))),
+                kind: StatementKind::Assign(len, Rvalue::Use(Operand::Copy(len_op), _)),
                 ..
             },
             Statement {

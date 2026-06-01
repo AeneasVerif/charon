@@ -1,5 +1,5 @@
 error: trying to access the allocator field from Box, but it is being treated as a builtin (without allocator)
- --> /rustc/library/alloc/src/boxed.rs:2259:51
+ --> /rustc/library/alloc/src/boxed.rs:2277:51
 
 note: the error occurred when translating `alloc::boxed::{impl core::ops::function::FnOnce<Args> for alloc::boxed::Box<F, A>[TraitClause1, TraitClause2]}::call_once`, which is (transitively) used at the following location(s):
  --> tests/ui/simple/box-dyn-fnonce.rs:4:5
@@ -7,7 +7,7 @@ note: the error occurred when translating `alloc::boxed::{impl core::ops::functi
 4 |     f();
   |     ---
 error: trying to access the allocator field from Box, but it is being treated as a builtin (without allocator)
- --> /rustc/library/alloc/src/boxed.rs:1940:17
+ --> /rustc/library/alloc/src/boxed.rs:1958:17
 
 note: the error occurred when translating `alloc::boxed::{impl core::ops::drop::Drop for alloc::boxed::Box<T, A>[TraitClause0, TraitClause1]}::drop`, which is (transitively) used at the following location(s):
  --> tests/ui/simple/box-dyn-fnonce.rs:4:5

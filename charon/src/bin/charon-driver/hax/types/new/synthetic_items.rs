@@ -1,7 +1,7 @@
 use crate::hax::prelude::*;
 
 use {
-    rustc_hir::definitions::DisambiguatorState,
+    rustc_hir::definitions::PerParentDisambiguatorState,
     rustc_middle::ty,
     rustc_span::{DUMMY_SP, Symbol, def_id::DefId as RDefId},
     rustc_type_ir::Upcast,
@@ -42,8 +42,7 @@ impl<'tcx> GlobalCache<'tcx> {
             return *def_id;
         }
         let tcx = s.base().tcx;
-        let mut disambiguator_state = DisambiguatorState::new();
-
+        let mut disambiguator_state = PerParentDisambiguatorState::default();
         let name = &item.name();
         // Create a fake item, to which we'll assign generics and a param_env, which we can
         // then use to generate the `FullDefKind` we want.

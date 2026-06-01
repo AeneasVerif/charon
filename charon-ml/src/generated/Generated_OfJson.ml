@@ -1108,9 +1108,10 @@ and region_param_of_json (ctx : of_json_ctx) (js : json) :
 and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Use", use) ] ->
-        let* use = operand_of_json ctx use in
-        Ok (Use use)
+    | `Assoc [ ("Use", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = operand_of_json ctx x_0 in
+        let* x_1 = with_retag_of_json ctx x_1 in
+        Ok (Use (x_0, x_1))
     | `Assoc
         [
           ( "Ref",
@@ -1544,6 +1545,14 @@ and variant_id_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> VariantId.id_of_json ctx x
+    | _ -> Error "")
+
+and with_retag_of_json (ctx : of_json_ctx) (js : json) :
+    (with_retag, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "No" -> Ok NoRetag
+    | `String "Yes" -> Ok YesRetag
     | _ -> Error "")
 
 module Ullbc = struct

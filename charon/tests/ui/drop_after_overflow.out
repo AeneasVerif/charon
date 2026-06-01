@@ -79,19 +79,16 @@ pub fn {impl Drop for Foo}::drop<'_0>(self_1: &'_0 mut Foo)
 unsafe fn {impl Destruct for Foo}::drop_in_place(_1: *mut Foo)
 {
     let _0: (); // return
-    let _1: *mut Foo; // arg #1
-    let _2: &'1 mut Foo; // anonymous local
-    let _3: &'2 mut Foo; // anonymous local
-    let _4: (); // anonymous local
+    let _1: &'1 mut Foo; // arg #1
+    let _2: &'2 mut Foo; // anonymous local
+    let _3: (); // anonymous local
 
     bb0: {
         storage_live(_2);
         storage_live(_3);
-        storage_live(_4);
         _0 = ();
         _2 = &mut (*_1);
-        _3 = &mut (*_2);
-        _4 = {impl Drop for Foo}::drop<'4>(move _3) -> bb2 (unwind: bb1);
+        _3 = {impl Drop for Foo}::drop<'4>(move _2) -> bb2 (unwind: bb1);
     }
 
     bb1: {

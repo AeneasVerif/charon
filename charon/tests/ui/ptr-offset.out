@@ -189,7 +189,6 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     storage_live(rhs_8)
     rhs_8 = cast<usize, isize>(copy size_3)
     storage_live(b_11)
-    storage_live(_10)
     storage_live(_12)
     storage_live(_13)
     _13 = cast<isize, i64>(copy count_2)
@@ -198,6 +197,7 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     _12 = move _13 checked.* move _14
     storage_dead(_14)
     storage_dead(_13)
+    storage_live(_10)
     _10 = copy _12.0
     b_11 = copy _12.1
     storage_dead(_12)

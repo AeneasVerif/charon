@@ -245,7 +245,7 @@ and projection_elem =
     the aggregate kind to operands TODO: we should prefix the type variants with
     "R" or "Rv", this would avoid collisions *)
 and rvalue =
-  | Use of operand  (** Lifts an operand as an rvalue. *)
+  | Use of operand * with_retag  (** Lifts an operand as an rvalue. *)
   | RvRef of place * borrow_kind * operand
       (** Takes a reference to the given place. The [Operand] refers to the init
           value of the metadata, it is [()] if no metadata
@@ -317,6 +317,10 @@ and unop =
   | Neg of overflow_mode  (** This can overflow, for [-i::MIN]. *)
   | Cast of cast_kind
       (** Casts are rvalues in MIR, but we treat them as unops. *)
+
+(** Used for [[Rvalue::Use]] to indicate whether the operand should be retagged
+    (this is used for Rust's aliasing model). *)
+and with_retag = NoRetag | YesRetag
 [@@deriving
   show,
   eq,

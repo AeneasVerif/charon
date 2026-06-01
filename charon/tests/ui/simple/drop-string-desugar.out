@@ -65,18 +65,15 @@ where
 unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
 {
     let _0: (); // return
-    let _1: *mut String; // arg #1
-    let _2: &'1 mut String; // anonymous local
-    let drop_arg_3: *mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}]; // local
-    let drop_ret_4: (); // local
+    let _1: &'1 mut String; // arg #1
+    let drop_arg_2: *mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}]; // local
+    let drop_ret_3: (); // local
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1)
-    storage_live(drop_arg_3)
-    drop_arg_3 = &raw mut ((*_2)).vec
-    storage_live(drop_ret_4)
-    drop_ret_4 = {impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}](move drop_arg_3)
+    storage_live(drop_arg_2)
+    drop_arg_2 = &raw mut ((*_1)).vec
+    storage_live(drop_ret_3)
+    drop_ret_3 = {impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {impl Destruct for Global}](move drop_arg_2)
     return
 }
 

@@ -29,20 +29,25 @@
 use rustc_middle::ty::*;
 
 /// Normalize a value.
-pub fn normalize<'tcx, T>(tcx: TyCtxt<'tcx>, typing_env: TypingEnv<'tcx>, value: T) -> T
+pub fn normalize<'tcx, T>(
+    tcx: TyCtxt<'tcx>,
+    typing_env: TypingEnv<'tcx>,
+    unnormalized: Unnormalized<'tcx, T>,
+) -> T
 where
     T: TypeFoldable<TyCtxt<'tcx>> + Clone,
 {
     use rustc_infer::infer::TyCtxtInferExt;
     use rustc_middle::traits::ObligationCause;
     use rustc_trait_selection::traits::query::normalize::QueryNormalizeExt;
+    let value = unnormalized.clone().skip_normalization();
     let (infcx, param_env) = tcx.infer_ctxt().build_with_typing_env(typing_env);
     infcx
         .at(&ObligationCause::dummy(), param_env)
-        .query_normalize(value.clone())
+        .query_normalize(value)
         // We ignore the generated outlives relations. Unsure what we should do with them.
         .map(|x| x.value)
-        .unwrap_or(value)
+        .unwrap_or(unnormalized.skip_normalization())
 }
 
 /// Erase free regions from the given value. Largely copied from `tcx.erase_and_anonymize_regions`, but also
@@ -92,14 +97,19 @@ where
 
 // Normalize and erase lifetimes, erasing more lifetimes than normal because we might be already
 // inside a binder and rustc doesn't like that.
-pub fn erase_and_norm<'tcx, T>(tcx: TyCtxt<'tcx>, typing_env: TypingEnv<'tcx>, x: T) -> T
+pub fn erase_and_norm<'tcx, T>(
+    tcx: TyCtxt<'tcx>,
+    typing_env: TypingEnv<'tcx>,
+    x: Unnormalized<'tcx, T>,
+) -> T
 where
     T: TypeFoldable<TyCtxt<'tcx>> + Copy,
 {
+    let fallback = x.skip_normalization();
     erase_free_regions(
         tcx,
         tcx.try_normalize_erasing_regions(typing_env, x)
-            .unwrap_or(x),
+            .unwrap_or(fallback),
     )
 }
 
@@ -115,7 +125,11 @@ pub fn normalize_bound_val<'tcx, T>(
 where
     T: TypeFoldable<TyCtxt<'tcx>> + Copy,
 {
-    Binder::dummy(erase_and_norm(tcx, typing_env, x.skip_binder()))
+    Binder::dummy(erase_and_norm(
+        tcx,
+        typing_env,
+        Unnormalized::new_wip(x.skip_binder()),
+    ))
 }
 
 pub trait ToPolyTraitRef<'tcx> {

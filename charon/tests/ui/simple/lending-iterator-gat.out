@@ -109,13 +109,10 @@ pub trait LendingIterator<Self>
 unsafe fn {impl Destruct for (A,)}::drop_in_place<A>(_1: *mut (A,))
 {
     let _0: (); // return
-    let _1: *mut (A,); // arg #1
-    let _2: &'1 mut (A,); // anonymous local
+    let _1: &'1 mut (A,); // arg #1
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1) with_metadata(copy _1.metadata)
-    drop[{built_in impl Destruct for A}::drop_in_place] (*_2).0
+    drop[{built_in impl Destruct for A}::drop_in_place] (*_1).0
     return
 }
 

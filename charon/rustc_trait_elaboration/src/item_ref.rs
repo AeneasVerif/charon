@@ -77,7 +77,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
         let tcx = self.elab_ctx.tcx;
         let typing_env = self.typing_env;
         // Normalize the generics.
-        let mut generics = normalize(tcx, typing_env, generics);
+        let mut generics = normalize(tcx, typing_env, ty::Unnormalized::new_wip(generics));
 
         if tcx.is_typeck_child(def_id) {
             // Rustc gives closures/inline consts extra generic for inference that we don't care about.
@@ -92,7 +92,9 @@ impl<'tcx> PredicateSearcher<'tcx> {
             let self_pred = self_predicate(tcx, tr_def_id);
             // Substitute to be in the context of the current item.
             let generics = generics.truncate_to(tcx, tcx.generics_of(tr_def_id));
-            let self_pred = ty::EarlyBinder::bind(self_pred).instantiate(tcx, generics);
+            let self_pred = ty::EarlyBinder::bind(self_pred)
+                .instantiate(tcx, generics)
+                .skip_norm_wip();
             let num_trait_req_clauses =
                 ItemPredicates::required_recursively(elab_ctx, tr_def_id).len();
             Some((self.resolve(&self_pred), num_trait_req_clauses))

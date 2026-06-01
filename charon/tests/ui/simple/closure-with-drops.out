@@ -114,13 +114,10 @@ where
     TraitClause1: (T: Destruct),
 {
     let _0: (); // return
-    let _1: *mut test_crate::foo::closure<T>[TraitClause0, TraitClause1]; // arg #1
-    let _2: &'1 mut test_crate::foo::closure<T>[TraitClause0, TraitClause1]; // anonymous local
+    let _1: &'1 mut test_crate::foo::closure<T>[TraitClause0, TraitClause1]; // arg #1
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1)
-    drop[TraitClause1::drop_in_place] ((*_2)).0
+    drop[TraitClause1::drop_in_place] ((*_1)).0
     return
 }
 
@@ -210,12 +207,9 @@ fn bar()
 unsafe fn {impl Destruct for test_crate::bar::closure}::drop_in_place(_1: *mut test_crate::bar::closure)
 {
     let _0: (); // return
-    let _1: *mut test_crate::bar::closure; // arg #1
-    let _2: &'1 mut test_crate::bar::closure; // anonymous local
+    let _1: &'1 mut test_crate::bar::closure; // arg #1
 
-    storage_live(_2)
     _0 = ()
-    _2 = &mut (*_1)
     return
 }
 

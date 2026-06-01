@@ -13,7 +13,7 @@ impl UllbcPass for Transform {
         // other `Rvalue`s as they might have side-effects (e.g. reading through a pointer).
         body.visit_statements(|st| {
             if let StatementKind::Assign(_, rvalue) = &mut st.kind
-                && let Rvalue::Use(Operand::Move(from) | Operand::Copy(from)) = rvalue
+                && let Rvalue::Use(Operand::Move(from) | Operand::Copy(from), _) = rvalue
                 && from.is_local()
                 && from.ty().is_unit()
             {

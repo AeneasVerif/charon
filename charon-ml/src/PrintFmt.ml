@@ -1355,7 +1355,7 @@ and pp_aggregate (env : fmt_env) (agg : aggregate_kind) (fmt : Format.formatter)
 
 and pp_rvalue (env : fmt_env) (fmt : Format.formatter) (rv : rvalue) : unit =
   match rv with
-  | Use op -> pp_operand env fmt op
+  | Use (op, _) -> pp_operand env fmt op
   | RvRef (p, bk, op) -> begin
       let p = place_to_string env p in
       let borrow_kind =

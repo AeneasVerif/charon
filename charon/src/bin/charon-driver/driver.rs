@@ -28,7 +28,6 @@ fn run_compiler_with_callbacks(
 fn set_mir_options(config: &mut Config) {
     config.opts.unstable_opts.always_encode_mir = true;
     config.opts.unstable_opts.mir_opt_level = Some(0);
-    config.opts.unstable_opts.mir_emit_retag = true;
     config.opts.unstable_opts.mir_preserve_ub = true;
     let disabled_mir_passes = ["CheckAlignment"];
     for pass in disabled_mir_passes {
@@ -42,12 +41,14 @@ fn set_mir_options(config: &mut Config) {
 
 /// Enable rustc's parallel front-end.
 fn set_parallel_frontend(config: &mut Config) {
-    if config.opts.unstable_opts.threads <= 1 {
+    if config.opts.unstable_opts.threads.is_none_or(|t| t <= 1) {
         // Match rustc's `-Zthreads=0` behavior.
         const RUSTC_MAX_THREADS_CAP: usize = 256;
-        config.opts.unstable_opts.threads = std::thread::available_parallelism()
-            .map_or(1, |n| n.get())
-            .min(RUSTC_MAX_THREADS_CAP);
+        config.opts.unstable_opts.threads = Some(
+            std::thread::available_parallelism()
+                .map_or(1, |n| n.get())
+                .min(RUSTC_MAX_THREADS_CAP),
+        );
     }
 }
 

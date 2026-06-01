@@ -219,7 +219,7 @@ impl ItemRef {
         rustc_utils::assoc_tys_for_trait(tcx, typing_env, tref)
             .into_iter()
             .map(|alias_ty| ty::Ty::new_alias(tcx, alias_ty))
-            .map(|ty| normalize(tcx, typing_env, ty))
+            .map(|ty| normalize(tcx, typing_env, ty::Unnormalized::new(ty)))
             .map(|ty| ty.sinto(s))
             .collect()
     }
@@ -227,7 +227,11 @@ impl ItemRef {
     /// Erase lifetimes from the generic arguments of this item.
     pub fn erase<'tcx, S: UnderOwnerState<'tcx>>(&self, s: &S) -> Self {
         let args = self.rustc_args(s);
-        let args = erase_and_norm(s.base().tcx, s.typing_env(), args);
+        let args = erase_and_norm(
+            s.base().tcx,
+            s.typing_env(),
+            ty::Unnormalized::new_wip(args),
+        );
         Self::translate_from_hax_def_id(s, self.def_id.clone(), args)
     }
 
