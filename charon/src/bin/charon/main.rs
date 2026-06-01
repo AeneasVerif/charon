@@ -48,6 +48,7 @@ extern crate charon_lib;
 mod cli;
 mod toml_config;
 mod toolchain;
+mod ui_test;
 
 pub fn main() -> Result<()> {
     // Initialize the logger
@@ -89,6 +90,7 @@ pub fn main() -> Result<()> {
                 })?
             }
         }
+        Charon::UiTest(args) => ui_test::run(args)?,
         Charon::ToolchainPath(_) => {
             let path = toolchain_path()?;
             println!("{}", path.display());
