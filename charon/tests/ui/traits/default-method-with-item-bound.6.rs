@@ -1,5 +1,3 @@
-//@ known-failure
-
 trait Takes<T> {}
 
 impl Takes<bool> for () {}
