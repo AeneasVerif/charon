@@ -596,12 +596,6 @@ pub struct TyGenerics {
     pub has_late_bound_regions: Option<Span>,
 }
 
-impl TyGenerics {
-    pub(crate) fn count_total_params(&self) -> usize {
-        self.parent_count + self.params.len()
-    }
-}
-
 /// This type merges the information from
 /// [`ty::AliasTyKind`] and [`ty::AliasTy`].
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1263,6 +1257,15 @@ pub enum BoundVariableKind {
 pub struct Binder<T> {
     pub value: T,
     pub bound_vars: Vec<BoundVariableKind>,
+}
+
+impl Binder<()> {
+    pub fn empty() -> Self {
+        Binder {
+            value: (),
+            bound_vars: vec![],
+        }
+    }
 }
 
 impl<T> Binder<T> {

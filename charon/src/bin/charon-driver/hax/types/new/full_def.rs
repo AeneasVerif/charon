@@ -43,6 +43,15 @@ where
     S: UnderOwnerState<'tcx>,
 {
     let tcx = s.base().tcx;
+    let rust_def_id = def_id.as_def_id_even_synthetic();
+    let this = if can_have_generics(tcx, rust_def_id) {
+        let args_or_default =
+            args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, rust_def_id));
+        ItemRef::translate_from_hax_def_id(s, def_id.clone(), args_or_default)
+    } else {
+        ItemRef::dummy_without_generics(s, def_id.clone())
+    };
+
     let source_span;
     let lang_item;
     let diagnostic_item;
@@ -85,18 +94,7 @@ where
         DefIdBase::Promoted(rust_def_id, promoted_id) => {
             let parent_def_id = rust_def_id.sinto(s);
             let parent_def = parent_def_id.full_def_maybe_instantiated(s, args);
-            let parent_param_env = parent_def.param_env().unwrap();
-            let param_env = ParamEnv {
-                generics: TyGenerics {
-                    parent: Some(parent_def_id),
-                    parent_count: parent_param_env.generics.count_total_params(),
-                    params: vec![],
-                    has_self: false,
-                    has_late_bound_regions: None,
-                },
-                predicates: GenericPredicates { predicates: vec![] },
-                parent: Some(parent_def.this().clone()),
-            };
+            let param_env = ParamEnv::empty(s, Some(parent_def.this()));
             let body = get_promoted_mir(tcx, rust_def_id, promoted_id);
             source_span = Some(body.span);
 
@@ -112,7 +110,7 @@ where
             diagnostic_item = Default::default();
         }
         DefIdBase::Real(rust_def_id) => {
-            kind = translate_full_def_kind(s, def_id, args);
+            kind = translate_full_def_kind(s, &this, args);
 
             source_span = rust_def_id.as_local().map(|ldid| tcx.source_span(ldid));
             lang_item = s
@@ -127,17 +125,9 @@ where
 
     let attributes = def_id.attrs(tcx).to_vec();
     let visibility = def_id.visibility(tcx);
-    let rust_def_id = def_id.as_def_id_even_synthetic();
     let source_text = source_span
         .filter(|source_span| source_span.ctxt().is_root())
         .and_then(|source_span| tcx.sess.source_map().span_to_snippet(source_span).ok());
-    let this = if can_have_generics(tcx, rust_def_id) {
-        let args_or_default =
-            args.unwrap_or_else(|| ty::GenericArgs::identity_for_item(tcx, rust_def_id));
-        ItemRef::translate_from_hax_def_id(s, def_id.clone(), args_or_default)
-    } else {
-        ItemRef::dummy_without_generics(s, def_id.clone())
-    };
     FullDef {
         this,
         span: def_id.def_span(s),
@@ -268,6 +258,27 @@ impl ParamEnv {
         }
         for param in &self.generics.params {
             f(param)
+        }
+    }
+
+    pub fn empty<'tcx>(s: &impl BaseState<'tcx>, parent: Option<&ItemRef>) -> ParamEnv {
+        ParamEnv {
+            generics: TyGenerics {
+                parent: parent.map(|p| p.def_id.clone()),
+                parent_count: parent
+                    .map(|parent| {
+                        s.base()
+                            .tcx
+                            .generics_of(parent.def_id.underlying_rust_def_id().unwrap())
+                            .count()
+                    })
+                    .unwrap_or(0),
+                params: vec![],
+                has_self: false,
+                has_late_bound_regions: None,
+            },
+            predicates: GenericPredicates { predicates: vec![] },
+            parent: parent.cloned(),
         }
     }
 }
@@ -619,12 +630,13 @@ fn gen_closure_sig<'tcx>(
 // may contain a type/const/trait reference.
 fn translate_full_def_kind<'tcx, S>(
     s: &S,
-    def_id: &DefId,
+    this: &ItemRef,
     args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> FullDefKind<'tcx>
 where
     S: BaseState<'tcx>,
 {
+    let def_id = &this.def_id;
     let s = &s.with_hax_owner(def_id);
     let def_id = def_id.real_rust_def_id();
     let tcx = s.base().tcx;
@@ -757,26 +769,36 @@ where
                     .in_definition_order()
                     .map(|decl_assoc| {
                         let decl_def_id = decl_assoc.def_id;
-                        // Trait proofs required by the item.
-                        let required_trait_proofs;
                         let value = match item_map.remove(&decl_def_id) {
                             Some(impl_assoc) => {
-                                required_trait_proofs = {
+                                let s = &s.with_rustc_owner(impl_assoc.def_id);
+                                let item_decl_args = {
                                     let item_args =
                                         ty::GenericArgs::identity_for_item(tcx, impl_assoc.def_id);
-                                    // Subtlety: we have to add the GAT arguments (if any) to the trait ref arguments.
-                                    let args = item_args.rebase_onto(tcx, def_id, trait_ref.args);
-                                    let state_with_id = s.with_rustc_owner(impl_assoc.def_id);
-                                    solve_item_implied_traits(&state_with_id, decl_def_id, args)
+                                    item_args.rebase_onto(tcx, def_id, trait_ref.args)
                                 };
-
-                                ImplAssocItemValue::Provided {
+                                let item_impl_args = {
+                                    let item_args =
+                                        ty::GenericArgs::identity_for_item(tcx, impl_assoc.def_id);
+                                    item_args.rebase_onto(tcx, def_id, args_or_default())
+                                };
+                                let required_trait_proofs =
+                                    solve_item_implied_traits(s, decl_def_id, item_decl_args);
+                                let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
+                                let value = ImplAssocItemValue::Provided {
+                                    item,
+                                    assoc_ty_value: None,
+                                    implied_trait_proofs: required_trait_proofs,
+                                };
+                                TraitItemBinder {
                                     def_id: impl_assoc.def_id.sinto(s),
-                                    is_override: decl_assoc.defaultness(tcx).has_value(),
+                                    param_env: get_param_env(s, None),
+                                    late_bound: late_bound_for_def(s, impl_assoc.def_id),
+                                    skip_binder: value,
                                 }
                             }
                             None => {
-                                required_trait_proofs =
+                                let required_trait_proofs =
                                     if tcx.generics_of(decl_def_id).is_own_empty() {
                                         // Non-GAT case.
                                         let item_args =
@@ -792,7 +814,7 @@ where
                                         // def_id with that param_env.
                                         vec![]
                                     };
-                                match decl_assoc.kind {
+                                let value = match decl_assoc.kind {
                                     ty::AssocKind::Type { .. } => {
                                         let ty = if tcx.generics_of(decl_def_id).is_own_empty() {
                                             let ty = tcx
@@ -803,7 +825,10 @@ where
                                         } else {
                                             None
                                         };
-                                        ImplAssocItemValue::DefaultedTy { ty }
+                                        ImplAssocItemValue::DefaultedTy {
+                                            ty,
+                                            implied_trait_proofs: required_trait_proofs,
+                                        }
                                     }
                                     ty::AssocKind::Fn { .. } => {
                                         let sig = if tcx.generics_of(decl_def_id).is_own_empty() {
@@ -823,6 +848,13 @@ where
                                     ty::AssocKind::Const { .. } => {
                                         ImplAssocItemValue::DefaultedConst {}
                                     }
+                                };
+                                // TODO: it's all wrong
+                                TraitItemBinder {
+                                    def_id: s.owner().clone(),
+                                    param_env: ParamEnv::empty(s, Some(this)),
+                                    late_bound: Binder::empty(),
+                                    skip_binder: value,
                                 }
                             }
                         };
@@ -830,7 +862,6 @@ where
                         ImplAssocItem {
                             name: decl_assoc.opt_name().sinto(s),
                             value,
-                            required_trait_proofs,
                             decl_def_id: decl_def_id.sinto(s),
                         }
                     })
@@ -993,9 +1024,21 @@ where
     }
 }
 
+fn late_bound_for_def<'tcx, S: UnderOwnerState<'tcx>>(s: &S, def_id: RDefId) -> Binder<()> {
+    if matches!(
+        s.base().tcx.def_kind(def_id),
+        RDefKind::Fn { .. } | RDefKind::AssocFn { .. }
+    ) {
+        get_method_sig(s.base().tcx, s.typing_env(), def_id, None)
+            .sinto(s)
+            .map(|_| ())
+    } else {
+        Binder::empty()
+    }
+}
+
 /// An associated item in a trait impl. This can be an item provided by the trait impl, or an item
 /// that reuses the trait decl default value.
-
 #[derive(Clone, Debug)]
 pub struct ImplAssocItem {
     /// This is `None` for RPTITs.
@@ -1003,19 +1046,19 @@ pub struct ImplAssocItem {
     /// The definition of the item from the trait declaration. This is an `AssocTy`, `AssocFn` or
     /// `AssocConst`.
     pub decl_def_id: DefId,
-    /// The trait proofs required to satisfy the predicates on the associated type. E.g.:
-    /// ```ignore
-    /// trait Foo {
-    ///     type Type<T>: Clone,
-    /// }
-    /// impl Foo for () {
-    ///     type Type<T>: Arc<T>; // would supply a proof for `Arc<T>: Clone`.
-    /// }
-    /// ```
-    /// Empty if this item is an associated const or fn.
-    pub required_trait_proofs: Vec<TraitProof>,
     /// The value of the implemented item.
-    pub value: ImplAssocItemValue,
+    pub value: TraitItemBinder<ImplAssocItemValue>,
+}
+
+/// The binding context to use when translating a trait impl associated item.
+#[derive(Clone, Debug)]
+pub struct TraitItemBinder<T> {
+    pub def_id: DefId,
+    /// Parameters bound by the item.
+    pub param_env: ParamEnv,
+    /// Late-bound parameters, if any.
+    pub late_bound: Binder<()>,
+    pub skip_binder: T,
 }
 
 #[derive(Clone, Debug)]
@@ -1024,9 +1067,20 @@ pub enum ImplAssocItemValue {
     Provided {
         /// The definition of the item in the trait impl. This is an `AssocTy`, `AssocFn` or
         /// `AssocConst`.
-        def_id: DefId,
-        /// Whether the trait had a default value for this item (which is therefore overriden).
-        is_override: bool,
+        item: ItemRef,
+        /// Value of the associated type, if carried directly. `None` for methods and consts.
+        assoc_ty_value: Option<Ty>,
+        /// Trait proofs for the implied associated type bounds. E.g.:
+        /// ```ignore
+        /// trait Foo {
+        ///     type Type<T>: Clone,
+        /// }
+        /// impl Foo for () {
+        ///     type Type<T>: Arc<T>; // would supply a proof for `Arc<T>: Clone`.
+        /// }
+        /// ```
+        /// Empty for methods and consts.
+        implied_trait_proofs: Vec<TraitProof>,
     },
     /// This is an associated type that reuses the trait declaration default.
     DefaultedTy {
@@ -1034,6 +1088,16 @@ pub enum ImplAssocItemValue {
         /// of its own, because then we'd need to resolve traits but the type doesn't have its own
         /// `DefId`.
         ty: Option<Ty>,
+        /// Trait proofs for the implied associated type bounds. E.g.:
+        /// ```ignore
+        /// trait Foo {
+        ///     type Type<T>: Clone,
+        /// }
+        /// impl Foo for () {
+        ///     type Type<T>: Arc<T>; // would supply a proof for `Arc<T>: Clone`.
+        /// }
+        /// ```
+        implied_trait_proofs: Vec<TraitProof>,
     },
     /// This is a non-overriden default method.
     /// FIXME: provide properly instantiated generics.
@@ -1173,6 +1237,17 @@ impl<'tcx> FullDef<'tcx> {
         }
     }
 
+    /// Returns the late bound parameters of this item, if any. Returns an empty binder if there a
+    /// are none.
+    pub fn late_bound(&self) -> Binder<()> {
+        match self.kind() {
+            FullDefKind::Fn { sig, .. } | FullDefKind::AssocFn { sig, .. } => {
+                sig.as_ref().rebind(())
+            }
+            _ => Binder::empty(),
+        }
+    }
+
     /// Lists the children of this item that can be named, in the way of normal rust paths. For
     /// types, this includes inherent items.
     pub fn nameable_children(&self, s: &impl BaseState<'tcx>) -> Vec<(Symbol, DefId)> {
@@ -1218,8 +1293,8 @@ impl ImplAssocItem {
     /// The relevant definition: the provided implementation if any, otherwise the default
     /// declaration from the trait declaration.
     pub fn def_id(&self) -> &DefId {
-        match &self.value {
-            ImplAssocItemValue::Provided { def_id, .. } => def_id,
+        match &self.value.skip_binder {
+            ImplAssocItemValue::Provided { item, .. } => &item.def_id,
             _ => &self.decl_def_id,
         }
     }

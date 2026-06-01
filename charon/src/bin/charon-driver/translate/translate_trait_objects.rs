@@ -269,7 +269,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
         let mut vtable_ref: TypeDeclRef =
-            self.translate_item_maybe_enqueue(span, enqueue, tref, TransItemSourceKind::VTable)?;
+            self.translate_item_maybe_enqueue(span, tref, TransItemSourceKind::VTable, enqueue)?;
         // Remove the `Self` type variable from the generic parameters.
         vtable_ref
             .generics
@@ -697,9 +697,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // ends up used in a vtable cast.
         let vtable_ref: GlobalDeclRef = self.translate_item_maybe_enqueue(
             span,
-            enqueue,
             impl_ref,
             TransItemSourceKind::VTableInstance(TraitImplSource::Normal),
+            enqueue,
         )?;
         Ok(Some(vtable_ref))
     }
@@ -780,7 +780,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     fn add_method_to_vtable_value(
         &mut self,
         span: Span,
-        impl_def: &hax::FullDef<'tcx>,
         trait_id: TraitDeclId,
         item: &hax::ImplAssocItem,
     ) -> Result<Option<VtableMethodValue>, Error> {
@@ -794,14 +793,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return Ok(None);
         };
 
-        let vtable_value = match &item.value {
-            hax::ImplAssocItemValue::Provided {
-                def_id: item_def_id,
-                ..
-            } => {
-                // The method is vtable safe so it has no generics, hence we can reuse the impl
-                // generics -- the lifetime binder will be added as `Erased` in `translate_fn_ptr`.
-                let item_ref = impl_def.this().with_def_id(self.hax_state(), item_def_id);
+        // The method is vtable safe so it has no generics, hence we can skip the binder.
+        let vtable_value = match &item.value.skip_binder {
+            hax::ImplAssocItemValue::Provided { item: item_ref, .. } => {
                 let shim_ref =
                     self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
                 // In mono mode, we cannot get real types of shim functions by looking up the ones in `struct vtable`
@@ -1031,9 +1025,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     // Bit of a hack: we know the methods are in the right order. This is easier
                     // than trying to index into the items list by name.
                     for item in items_iter.by_ref() {
-                        if let Some(kind) =
-                            self.add_method_to_vtable_value(span, impl_def, trait_id, item)?
-                        {
+                        if let Some(kind) = self.add_method_to_vtable_value(span, trait_id, item)? {
                             match kind {
                                 VtableMethodValue::Const(const_kind) => {
                                     break 'a mk_const(const_kind);
