@@ -1,0 +1,22 @@
+error: Type error after transformations:
+       Incoherent trait reference:
+            got: {impl Takes<bool> for ()}: Takes<(), u32>
+       Visitor stack:
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::StatementKind
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, TraitClause0: ((): @TraitDecl1), TypeConstraint0: @TraitImpl1::@AssocType0 = bool>
+  --> tests/ui/traits/default-method-with-item-bound.6.rs:16:9
+   |
+16 |         self.consume::<()>();
+   |         ^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
