@@ -56,7 +56,7 @@ pub struct Arguments<'a> {
 }
 
 // Full name: core::fmt::num::imp::{impl Display for usize}::fmt
-pub fn {impl Display for usize}::fmt<'_0, '_1, '_2>(_1: &'_0 usize, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn impl_Display_for_usize::fmt<'_0, '_1, '_2>(_1: &'_0 usize, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 = <missing>
 
 fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2: usize) -> !
@@ -102,7 +102,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
     storage_live(_13)
-    _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
     storage_dead(_13)
     storage_live(_22)
@@ -121,7 +121,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
     storage_live(_18)
-    _18 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
+    _18 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
     storage_dead(_18)
     storage_live(_23)
@@ -195,7 +195,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
     storage_live(_13)
-    _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
     storage_dead(_13)
     storage_live(_22)
@@ -214,7 +214,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
     storage_live(_18)
-    _18 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
+    _18 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
     storage_dead(_18)
     storage_live(_23)
@@ -288,7 +288,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
     storage_live(_13)
-    _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
     storage_dead(_13)
     storage_live(_22)
@@ -307,7 +307,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
     storage_live(_18)
-    _18 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
+    _18 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
     storage_dead(_18)
     storage_live(_23)
@@ -381,7 +381,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
     storage_live(_13)
-    _13 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'25, '26, '27>)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
     storage_dead(_13)
     storage_live(_22)
@@ -400,7 +400,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
     storage_live(_18)
-    _18 = cast<for<'_0_1, '_1_1, '_2_1> {impl Display for usize}::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const {impl Display for usize}::fmt<'36, '37, '38>)
+    _18 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
     storage_dead(_18)
     storage_live(_23)
@@ -564,7 +564,7 @@ where
 = <method_without_default_body>
 
 // Full name: core::slice::index::{impl Index<I> for [T]}::index
-pub fn {impl Index<I> for [T]}::index<'_0, T, I>(self_1: &'_0 [T], index_2: I) -> &'_0 TraitClause2::Output
+pub fn impl_Index_for_slice::index<'_0, T, I>(self_1: &'_0 [T], index_2: I) -> &'_0 TraitClause2::Output
 where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
@@ -674,9 +674,9 @@ fn slice_index_fail(start_1: usize, end_2: usize, len_3: usize) -> !
 }
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for RangeInclusive<usize>[{built_in impl Sized for usize}]}
-impl Sealed for RangeInclusive<usize>[{built_in impl Sized for usize}] {
+impl "impl_Sealed_for_RangeInclusive_usize" Sealed for RangeInclusive<usize>[{built_in impl Sized for usize}] {
     proof ImpliedClause0: (RangeInclusive<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for RangeInclusive<usize>[{built_in impl Sized for usize}]}
-    vtable: {impl Sealed for RangeInclusive<usize>[{built_in impl Sized for usize}]}::{vtable}
+    vtable: impl_Sealed_for_RangeInclusive_usize::{vtable}
 }
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(_1: Self, _2: &'_0 T) -> Option<&'_0 TraitClause0::Output>[{built_in impl Sized for &'_0 TraitClause0::Output}]
@@ -705,7 +705,7 @@ where
 = <method_without_default_body>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::index_mut
-pub fn {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::index_mut<'_0, T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: &'_0 mut [T]) -> &'_0 mut [T]
+pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::index_mut<'_0, T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
 {
@@ -804,7 +804,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::index
-pub fn {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::index<'_0, T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: &'_0 [T]) -> &'_0 [T]
+pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::index<'_0, T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: &'_0 [T]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
 {
@@ -903,7 +903,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check
-fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(start_1: usize, end_2: usize, len_3: usize)
+fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(start_1: usize, end_2: usize, len_3: usize)
 {
     let _0: (); // return
     let start_1: usize; // arg #1
@@ -970,7 +970,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
-pub unsafe fn {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: *mut [T]) -> *mut [T]
+pub unsafe fn impl_SliceIndex_slice_for_RangeInclusive_usize::get_unchecked_mut<T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: *mut [T]) -> *mut [T]
 where
     TraitClause0: (T: Sized),
 {
@@ -1008,7 +1008,7 @@ where
     if move _12 {
         storage_live(_5)
         _5 = copy slice_2.metadata
-        _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check(copy self_9, copy exclusive_end_3, move _5)
+        _4 = impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(copy self_9, copy exclusive_end_3, move _5)
         storage_dead(_5)
     } else {
     }
@@ -1026,7 +1026,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check
-fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(start_1: usize, end_2: usize, len_3: usize)
+fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(start_1: usize, end_2: usize, len_3: usize)
 {
     let _0: (); // return
     let start_1: usize; // arg #1
@@ -1093,7 +1093,7 @@ fn {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_unchecked
-pub unsafe fn {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: *const [T]) -> *const [T]
+pub unsafe fn impl_SliceIndex_slice_for_RangeInclusive_usize::get_unchecked<T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: *const [T]) -> *const [T]
 where
     TraitClause0: (T: Sized),
 {
@@ -1131,7 +1131,7 @@ where
     if move _12 {
         storage_live(_5)
         _5 = copy slice_2.metadata
-        _4 = {impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check(copy self_9, copy exclusive_end_3, move _5)
+        _4 = impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(copy self_9, copy exclusive_end_3, move _5)
         storage_dead(_5)
     } else {
     }
@@ -1149,7 +1149,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_mut
-pub fn {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_mut<'_0, T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::get_mut<'_0, T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
 {
@@ -1238,7 +1238,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get
-pub fn {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get<'_0, T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
+pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::get<'_0, T>(self_1: RangeInclusive<usize>[{built_in impl Sized for usize}], slice_2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     TraitClause0: (T: Sized),
 {
@@ -1327,22 +1327,22 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}
-impl<T> SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]
+impl<T> "impl_SliceIndex_slice_for_RangeInclusive_usize" SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (RangeInclusive<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for RangeInclusive<usize>[{built_in impl Sized for usize}]}
-    proof ImpliedClause1: (RangeInclusive<usize>[{built_in impl Sized for usize}]: Sealed) = {impl Sealed for RangeInclusive<usize>[{built_in impl Sized for usize}]}
+    proof ImpliedClause1: (RangeInclusive<usize>[{built_in impl Sized for usize}]: Sealed) = impl_Sealed_for_RangeInclusive_usize
     proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause3: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     type Output = [T]
-    fn get<'_0_1> = {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get<'_0_1, T>[TraitClause0]
-    fn get_mut<'_0_1> = {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_mut<'_0_1, T>[TraitClause0]
-    fn get_unchecked = {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_unchecked<T>[TraitClause0]
-    fn get_unchecked_mut = {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut<T>[TraitClause0]
-    fn index<'_0_1> = {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::index<'_0_1, T>[TraitClause0]
-    fn index_mut<'_0_1> = {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::index_mut<'_0_1, T>[TraitClause0]
-    vtable: {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::{vtable}<T>[TraitClause0]
+    fn get<'_0_1> = impl_SliceIndex_slice_for_RangeInclusive_usize::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = impl_SliceIndex_slice_for_RangeInclusive_usize::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = impl_SliceIndex_slice_for_RangeInclusive_usize::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = impl_SliceIndex_slice_for_RangeInclusive_usize::get_unchecked_mut<T>[TraitClause0]
+    fn index<'_0_1> = impl_SliceIndex_slice_for_RangeInclusive_usize::index<'_0_1, T>[TraitClause0]
+    fn index_mut<'_0_1> = impl_SliceIndex_slice_for_RangeInclusive_usize::index_mut<'_0_1, T>[TraitClause0]
+    vtable: impl_SliceIndex_slice_for_RangeInclusive_usize::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::slice_index_range
@@ -1361,7 +1361,7 @@ pub fn slice_index_range<'_0>(slice_1: &'_0 [u8]) -> &'_0 [u8]
     _4 = &(*slice_1) with_metadata(copy slice_1.metadata)
     storage_live(_5)
     _5 = new<usize>[{built_in impl Sized for usize}](const 0 : usize, const 10 : usize)
-    _3 = {impl Index<I> for [T]}::index<'7, u8, RangeInclusive<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for u8}, {built_in impl Sized for RangeInclusive<usize>[{built_in impl Sized for usize}]}, {impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}<u8>[{built_in impl Sized for u8}]](move _4, move _5)
+    _3 = impl_Index_for_slice::index<'7, u8, RangeInclusive<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for u8}, {built_in impl Sized for RangeInclusive<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_RangeInclusive_usize<u8>[{built_in impl Sized for u8}]](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)

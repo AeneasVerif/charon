@@ -28,7 +28,7 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Box::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -40,7 +40,7 @@ pub enum Thing {
 }
 
 // Full name: test_crate::Thing::{impl Destruct for Thing}::drop_in_place
-unsafe fn {impl Destruct for Thing}::drop_in_place(_1: *mut Thing)
+unsafe fn impl_Destruct_for_Thing::drop_in_place(_1: *mut Thing)
 {
     let _0: (); // return
     let _1: &'1 mut Thing; // arg #1
@@ -50,13 +50,13 @@ unsafe fn {impl Destruct for Thing}::drop_in_place(_1: *mut Thing)
         _ => {
         },
     }
-    drop[{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_in_place<(), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_1) as variant Thing::A).0
+    drop[impl_Destruct_for_Box::drop_in_place<(), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_1) as variant Thing::A).0
     return
 }
 
 // Full name: test_crate::Thing::{impl Destruct for Thing}
-impl Destruct for Thing {
-    fn drop_in_place = {impl Destruct for Thing}::drop_in_place
+impl "impl_Destruct_for_Thing" Destruct for Thing {
+    fn drop_in_place = impl_Destruct_for_Thing::drop_in_place
     non-dyn-compatible
 }
 
@@ -68,7 +68,7 @@ fn foo(_1: Thing)
 
     _0 = ()
     _0 = ()
-    conditional_drop[{impl Destruct for Thing}::drop_in_place] _1
+    conditional_drop[impl_Destruct_for_Thing::drop_in_place] _1
     return
 }
 

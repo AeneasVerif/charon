@@ -81,7 +81,7 @@ where
 }
 
 // Full name: test_crate::make_closure::{impl FnOnce<()> for closure<T>[TraitClause0, TraitClause1]}::call_once
-fn {impl FnOnce<()> for closure<T>[TraitClause0, TraitClause1]}::call_once<T>(_1: closure<T>[TraitClause0, TraitClause1], tupled_args_2: ())
+fn impl_FnOnce_unit_for_closure::call_once<T>(_1: closure<T>[TraitClause0, TraitClause1], tupled_args_2: ())
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),
@@ -96,7 +96,7 @@ where
 }
 
 // Full name: test_crate::make_closure::{impl FnOnce<()> for closure<T>[TraitClause0, TraitClause1]}
-impl<T> FnOnce<()> for closure<T>[TraitClause0, TraitClause1]
+impl<T> "impl_FnOnce_unit_for_closure" FnOnce<()> for closure<T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),
@@ -106,7 +106,7 @@ where
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
-    fn call_once = {impl FnOnce<()> for closure<T>[TraitClause0, TraitClause1]}::call_once<T>[TraitClause0, TraitClause1]
+    fn call_once = impl_FnOnce_unit_for_closure::call_once<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 

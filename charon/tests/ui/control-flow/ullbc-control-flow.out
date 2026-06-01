@@ -28,24 +28,24 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn {impl Clone for i32}::clone<'_0>(_1: &'_0 i32) -> i32
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
-impl Clone for i32 {
+impl "impl_Clone_for_i32" Clone for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
-    fn clone<'_0_1> = {impl Clone for i32}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn {impl Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
+pub fn impl_Clone_for_usize::clone<'_0>(_1: &'_0 usize) -> usize
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for usize}
-impl Clone for usize {
+impl "impl_Clone_for_usize" Clone for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -97,45 +97,45 @@ where
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
-pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> bool
+pub fn impl_PartialEq_i32_for_i32::eq<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
-impl PartialEq<i32> for i32 {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<i32> for i32}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<i32> for i32}::{vtable}
+impl "impl_PartialEq_i32_for_i32" PartialEq<i32> for i32 {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_i32_for_i32::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_i32_for_i32::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
-pub fn {impl PartialEq<usize> for usize}::eq<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> bool
+pub fn impl_PartialEq_usize_for_usize::eq<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
-impl PartialEq<usize> for usize {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<usize> for usize}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<usize> for usize}::{vtable}
+impl "impl_PartialEq_usize_for_usize" PartialEq<usize> for usize {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_usize_for_usize::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_usize_for_usize::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
-pub fn {impl PartialOrd<i32> for i32}::partial_cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn impl_PartialOrd_i32_for_i32::partial_cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
-impl PartialOrd<i32> for i32 {
-    proof ImpliedClause0: (i32: PartialEq<i32>) = {impl PartialEq<i32> for i32}
-    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<i32> for i32}::partial_cmp<'_0_1, '_1_1>
-    vtable: {impl PartialOrd<i32> for i32}::{vtable}
+impl "impl_PartialOrd_i32_for_i32" PartialOrd<i32> for i32 {
+    proof ImpliedClause0: (i32: PartialEq<i32>) = impl_PartialEq_i32_for_i32
+    fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_i32_for_i32::partial_cmp<'_0_1, '_1_1>
+    vtable: impl_PartialOrd_i32_for_i32::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
-pub fn {impl PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn impl_PartialOrd_usize_for_usize::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}
-impl PartialOrd<usize> for usize {
-    proof ImpliedClause0: (usize: PartialEq<usize>) = {impl PartialEq<usize> for usize}
-    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
-    vtable: {impl PartialOrd<usize> for usize}::{vtable}
+impl "impl_PartialOrd_usize_for_usize" PartialOrd<usize> for usize {
+    proof ImpliedClause0: (usize: PartialEq<usize>) = impl_PartialEq_usize_for_usize
+    fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_usize_for_usize::partial_cmp<'_0_1, '_1_1>
+    vtable: impl_PartialOrd_usize_for_usize::{vtable}
 }
 
 // Full name: core::iter::range::Step
@@ -167,48 +167,48 @@ where
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
-pub fn {impl Step for usize}::backward_checked(_1: usize, _2: usize) -> Option<usize>[{built_in impl Sized for usize}]
+pub fn impl_Step_for_usize::backward_checked(_1: usize, _2: usize) -> Option<usize>[{built_in impl Sized for usize}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::forward_checked
-pub fn {impl Step for usize}::forward_checked(_1: usize, _2: usize) -> Option<usize>[{built_in impl Sized for usize}]
+pub fn impl_Step_for_usize::forward_checked(_1: usize, _2: usize) -> Option<usize>[{built_in impl Sized for usize}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::steps_between
-pub fn {impl Step for usize}::steps_between<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+pub fn impl_Step_for_usize::steps_between<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}
-impl Step for usize {
+impl "impl_Step_for_usize" Step for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    proof ImpliedClause1: (usize: Clone) = {impl Clone for usize}
-    proof ImpliedClause2: (usize: PartialOrd<usize>) = {impl PartialOrd<usize> for usize}
-    fn steps_between<'_0_1, '_1_1> = {impl Step for usize}::steps_between<'_0_1, '_1_1>
-    fn forward_checked = {impl Step for usize}::forward_checked
-    fn backward_checked = {impl Step for usize}::backward_checked
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
+    proof ImpliedClause2: (usize: PartialOrd<usize>) = impl_PartialOrd_usize_for_usize
+    fn steps_between<'_0_1, '_1_1> = impl_Step_for_usize::steps_between<'_0_1, '_1_1>
+    fn forward_checked = impl_Step_for_usize::forward_checked
+    fn backward_checked = impl_Step_for_usize::backward_checked
     non-dyn-compatible
 }
 
 // Full name: core::iter::range::{impl Step for i32}::backward_checked
-pub fn {impl Step for i32}::backward_checked(_1: i32, _2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+pub fn impl_Step_for_i32::backward_checked(_1: i32, _2: usize) -> Option<i32>[{built_in impl Sized for i32}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::forward_checked
-pub fn {impl Step for i32}::forward_checked(_1: i32, _2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+pub fn impl_Step_for_i32::forward_checked(_1: i32, _2: usize) -> Option<i32>[{built_in impl Sized for i32}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::steps_between
-pub fn {impl Step for i32}::steps_between<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+pub fn impl_Step_for_i32::steps_between<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}
-impl Step for i32 {
+impl "impl_Step_for_i32" Step for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
-    proof ImpliedClause1: (i32: Clone) = {impl Clone for i32}
-    proof ImpliedClause2: (i32: PartialOrd<i32>) = {impl PartialOrd<i32> for i32}
-    fn steps_between<'_0_1, '_1_1> = {impl Step for i32}::steps_between<'_0_1, '_1_1>
-    fn forward_checked = {impl Step for i32}::forward_checked
-    fn backward_checked = {impl Step for i32}::backward_checked
+    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
+    proof ImpliedClause2: (i32: PartialOrd<i32>) = impl_PartialOrd_i32_for_i32
+    fn steps_between<'_0_1, '_1_1> = impl_Step_for_i32::steps_between<'_0_1, '_1_1>
+    fn forward_checked = impl_Step_for_i32::forward_checked
+    fn backward_checked = impl_Step_for_i32::backward_checked
     non-dyn-compatible
 }
 
@@ -234,14 +234,14 @@ pub trait Iterator<Self>
 }
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}::next
-pub fn {impl Iterator for Range<A>[TraitClause0]}::next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClause0]
+pub fn impl_Iterator_for_Range::next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClause0]
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}
-impl<A> Iterator for Range<A>[TraitClause0]
+impl<A> "impl_Iterator_for_Range" Iterator for Range<A>[TraitClause0]
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
@@ -249,12 +249,12 @@ where
     proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
-    fn next<'_0_1> = {impl Iterator for Range<A>[TraitClause0]}::next<'_0_1, A>[TraitClause0, TraitClause1]
-    vtable: {impl Iterator for Range<A>[TraitClause0]}::{vtable}<A>[TraitClause0, TraitClause1]
+    fn next<'_0_1> = impl_Iterator_for_Range::next<'_0_1, A>[TraitClause0, TraitClause1]
+    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0, TraitClause1]
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
-pub fn {impl IntoIterator for I}::into_iter<I>(_1: I) -> I
+pub fn impl_IntoIterator_for_T::into_iter<I>(_1: I) -> I
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: Iterator),
@@ -312,7 +312,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_4);
         storage_live(_5);
         _5 = Range { start: const 0 : i32, end: const 128 : i32 };
-        _4 = {impl IntoIterator for I}::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, {impl Iterator for Range<A>[TraitClause0]}<i32>[{built_in impl Sized for i32}, {impl Step for i32}]](move _5) -> bb2 (unwind: bb1);
+        _4 = impl_IntoIterator_for_T::into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32]](move _5) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -332,7 +332,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_9);
         _9 = &mut iter_6;
         _8 = &two-phase-mut (*_9);
-        _7 = {impl Iterator for Range<A>[TraitClause0]}::next<'9, i32>[{built_in impl Sized for i32}, {impl Step for i32}](move _8) -> bb4 (unwind: bb1);
+        _7 = impl_Iterator_for_Range::next<'9, i32>[{built_in impl Sized for i32}, impl_Step_for_i32](move _8) -> bb4 (unwind: bb1);
     }
 
     bb4: {
@@ -352,7 +352,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         _14 = copy step_out_1;
         _13 = Range { start: const 0 : usize, end: move _14 };
         storage_dead(_14);
-        _12 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _13) -> bb8 (unwind: bb1);
+        _12 = impl_IntoIterator_for_T::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _13) -> bb8 (unwind: bb1);
     }
 
     bb6: {
@@ -380,7 +380,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_18);
         _18 = &mut iter_15;
         _17 = &two-phase-mut (*_18);
-        _16 = {impl Iterator for Range<A>[TraitClause0]}::next<'11, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _17) -> bb10 (unwind: bb1);
+        _16 = impl_Iterator_for_Range::next<'11, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _17) -> bb10 (unwind: bb1);
     }
 
     bb10: {
@@ -407,7 +407,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         _22 = copy step_in_2;
         _21 = Range { start: const 0 : usize, end: move _22 };
         storage_dead(_22);
-        _20 = {impl IntoIterator for I}::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, {impl Iterator for Range<A>[TraitClause0]}<usize>[{built_in impl Sized for usize}, {impl Step for usize}]](move _21) -> bb14 (unwind: bb1);
+        _20 = impl_IntoIterator_for_T::into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _21) -> bb14 (unwind: bb1);
     }
 
     bb13: {
@@ -427,7 +427,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_26);
         _26 = &mut iter_23;
         _25 = &two-phase-mut (*_26);
-        _24 = {impl Iterator for Range<A>[TraitClause0]}::next<'13, usize>[{built_in impl Sized for usize}, {impl Step for usize}](move _25) -> bb16 (unwind: bb1);
+        _24 = impl_Iterator_for_Range::next<'13, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _25) -> bb16 (unwind: bb1);
     }
 
     bb16: {

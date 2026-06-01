@@ -32,10 +32,10 @@ pub trait Trait<Self, Self_Type>
 }
 
 // Full name: test_crate::{impl Trait<()> for ()}
-impl Trait<()> for () {
+impl "impl_Trait_for_unit" Trait<()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    vtable: {impl Trait<()> for ()}::{vtable}
+    vtable: impl_Trait_for_unit::{vtable}
 }
 
 // Full name: test_crate::HashMap
@@ -47,17 +47,17 @@ where
 }
 
 // Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place<S>(_1: *mut HashMap<S>[TraitClause0])
+unsafe fn impl_Destruct_for_HashMap::drop_in_place<S>(_1: *mut HashMap<S>[TraitClause0])
 where
     TraitClause0: (S: Sized),
 = <missing>
 
 // Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[TraitClause0]}
-impl<S> Destruct for HashMap<S>[TraitClause0]
+impl<S> "impl_Destruct_for_HashMap" Destruct for HashMap<S>[TraitClause0]
 where
     TraitClause0: (S: Sized),
 {
-    fn drop_in_place = {impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place<S>[TraitClause0]
+    fn drop_in_place = impl_Destruct_for_HashMap::drop_in_place<S>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -75,7 +75,7 @@ where
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for Q}::drop_in_place] _k_2
-    conditional_drop[{impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place<S>[TraitClause0]] _x_1
+    conditional_drop[impl_Destruct_for_HashMap::drop_in_place<S>[TraitClause0]] _x_1
     return
 }
 
@@ -93,7 +93,7 @@ where
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for Q}::drop_in_place] _k_2
-    conditional_drop[{impl Destruct for HashMap<S>[TraitClause0]}::drop_in_place<S>[TraitClause0]] _x_1
+    conditional_drop[impl_Destruct_for_HashMap::drop_in_place<S>[TraitClause0]] _x_1
     return
 }
 
@@ -112,7 +112,7 @@ pub fn test1(map_1: HashMap<()>[{built_in impl Sized for ()}])
     _3 = move map_1
     storage_live(_4)
     _4 = ()
-    _2 = top_level_get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {impl Trait<()> for ()}](move _3, move _4)
+    _2 = top_level_get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, impl_Trait_for_unit](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
@@ -135,7 +135,7 @@ pub fn test2(map_1: HashMap<()>[{built_in impl Sized for ()}])
     _3 = move map_1
     storage_live(_4)
     _4 = ()
-    _2 = get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {impl Trait<()> for ()}](move _3, move _4)
+    _2 = get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, impl_Trait_for_unit](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)

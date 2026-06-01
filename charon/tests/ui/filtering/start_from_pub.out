@@ -51,7 +51,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::module2::{impl Trait1 for Type1}::method
-pub fn {impl Trait1 for Type1}::method()
+pub fn impl_Trait1_for_Type1::method()
 {
     let _0: (); // return
 
@@ -61,7 +61,7 @@ pub fn {impl Trait1 for Type1}::method()
 }
 
 // Full name: test_crate::module2::{impl Trait1 for Type2}::method
-pub fn {impl Trait1 for Type2}::method()
+pub fn impl_Trait1_for_Type2::method()
 {
     let _0: (); // return
     let _1: (); // anonymous local

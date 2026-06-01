@@ -60,7 +60,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn {impl Clone for u8}::clone<'_0>(self_1: &'_0 u8) -> u8
+pub fn impl_Clone_for_u8::clone<'_0>(self_1: &'_0 u8) -> u8
 {
     let _0: u8; // return
     let self_1: &'1 u8; // arg #1
@@ -70,7 +70,7 @@ pub fn {impl Clone for u8}::clone<'_0>(self_1: &'_0 u8) -> u8
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone_from
-pub fn {impl Clone for u8}::clone_from<'_0, '_1>(self_1: &'_0 mut u8, source_2: &'_1 u8)
+pub fn impl_Clone_for_u8::clone_from<'_0, '_1>(self_1: &'_0 mut u8, source_2: &'_1 u8)
 where
     TraitClause0: (u8: Destruct),
 {
@@ -81,7 +81,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = {impl Clone for u8}::clone<'5>(move source_2)
+    _3 = impl_Clone_for_u8::clone<'5>(move source_2)
     drop[TraitClause0::drop_in_place] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -89,10 +89,10 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}
-impl Clone for u8 {
+impl "impl_Clone_for_u8" Clone for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u8: Destruct)> = {impl Clone for u8}::clone_from<'_0_1, '_1_1>[TraitClause0_1]
+    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u8: Destruct)> = impl_Clone_for_u8::clone_from<'_0_1, '_1_1>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -112,9 +112,9 @@ where
 = <intrinsic:saturating_add>
 
 // Full name: core::marker::{impl Copy for u8}
-impl Copy for u8 {
+impl "impl_Copy_for_u8" Copy for u8 {
     proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
-    proof ImpliedClause1: (u8: Clone) = {impl Clone for u8}
+    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
     non-dyn-compatible
 }
 
@@ -124,7 +124,7 @@ pub fn core::num::{u8}::saturating_add(self_1: u8, rhs_2: u8) -> u8
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
 
-    _0 = core::intrinsics::saturating_add<u8>[{built_in impl Sized for u8}, {impl Copy for u8}](move self_1, move rhs_2)
+    _0 = core::intrinsics::saturating_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](move self_1, move rhs_2)
     return
 }
 

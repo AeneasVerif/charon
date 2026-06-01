@@ -25,7 +25,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for T}::default_method
-fn {impl Trait for T}::default_method<T, T>() -> TraitClause0::Assoc
+fn impl_Trait_for_T::default_method<T, T>() -> TraitClause0::Assoc
 where
     TraitClause0: (T: HasAssoc),
 {
@@ -35,8 +35,8 @@ where
 }
 
 // Full name: test_crate::{impl Trait for T}
-impl<T> Trait for T {
-    fn default_method<T, TraitClause0_1: (T: HasAssoc)> = {impl Trait for T}::default_method<T, T>[TraitClause0_1]
+impl<T> "impl_Trait_for_T" Trait for T {
+    fn default_method<T, TraitClause0_1: (T: HasAssoc)> = impl_Trait_for_T::default_method<T, T>[TraitClause0_1]
     non-dyn-compatible
 }
 

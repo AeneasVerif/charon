@@ -12,7 +12,7 @@ unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
+impl "impl_Destruct_for_String" Destruct for String {
     non-dyn-compatible
 }
 
@@ -38,7 +38,7 @@ fn main()
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[{impl Destruct for String}::drop_in_place] a_1
+    conditional_drop[impl_Destruct_for_String::drop_in_place] a_1
     storage_dead(a_1)
     return
 }

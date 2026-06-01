@@ -28,13 +28,13 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
-pub fn {impl Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}
-impl Clone for u32 {
+impl "impl_Clone_for_u32" Clone for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -104,7 +104,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Foo for ()}::get_ty
-pub fn {impl Foo for ()}::get_ty<'_0>(self_1: &'_0 ()) -> &'_0 u32
+pub fn impl_Foo_for_unit::get_ty<'_0>(self_1: &'_0 ()) -> &'_0 u32
 {
     let _0: &'1 u32; // return
     let self_1: &'3 (); // arg #1
@@ -130,13 +130,13 @@ pub fn {impl Foo for ()}::get_ty<'_0>(self_1: &'_0 ()) -> &'_0 u32
 }
 
 // Full name: test_crate::{impl Foo for ()}
-impl Foo for () {
+impl "impl_Foo_for_unit" Foo for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
-    proof ImpliedClause2: (u32: Clone) = {impl Clone for u32}
+    proof ImpliedClause2: (u32: Clone) = impl_Clone_for_u32
     type Type = u32
-    fn get_ty<'_0_1> = {impl Foo for ()}::get_ty<'_0_1>
-    vtable: {impl Foo for ()}::{vtable}
+    fn get_ty<'_0_1> = impl_Foo_for_unit::get_ty<'_0_1>
+    vtable: impl_Foo_for_unit::{vtable}
 }
 
 // Full name: test_crate::mk_foo
@@ -167,10 +167,10 @@ fn use_foo()
     storage_live(_4)
     storage_live(_5)
     _5 = &foo_1
-    _4 = {impl Foo for ()}::get_ty<'6>(move _5)
+    _4 = impl_Foo_for_unit::get_ty<'6>(move _5)
     _3 = &(*_4)
     storage_dead(_5)
-    _2 = {impl Clone for u32}::clone<'8>(move _3)
+    _2 = impl_Clone_for_u32::clone<'8>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -202,7 +202,7 @@ where
 }
 
 // Full name: test_crate::{impl RPITIT for ()}::make_foo
-pub fn {impl RPITIT for ()}::make_foo()
+pub fn impl_RPITIT_for_unit::make_foo()
 {
     let _0: (); // return
 
@@ -212,12 +212,12 @@ pub fn {impl RPITIT for ()}::make_foo()
 }
 
 // Full name: test_crate::{impl RPITIT for ()}
-impl RPITIT for () {
+impl "impl_RPITIT_for_unit" RPITIT for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause2: ((): Foo) = {impl Foo for ()}
+    proof ImpliedClause2: ((): Foo) = impl_Foo_for_unit
     type make_foo_ty = ()
-    fn make_foo = {impl RPITIT for ()}::make_foo
+    fn make_foo = impl_RPITIT_for_unit::make_foo
     non-dyn-compatible
 }
 
@@ -283,7 +283,7 @@ where
 }
 
 // Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for closure<U>[TraitClause0]}::call_once
-fn {impl FnOnce<(&'_ U,)> for closure<U>[TraitClause0]}::call_once<'_0, U>(_1: closure<U>[TraitClause0], tupled_args_2: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
+fn impl_FnOnce_tuple_for_closure::call_once<'_0, U>(_1: closure<U>[TraitClause0], tupled_args_2: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
 where
     TraitClause0: (U: Sized),
 {
@@ -303,7 +303,7 @@ where
 }
 
 // Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for closure<U>[TraitClause0]}
-impl<'_0, U> FnOnce<(&'_ U,)> for closure<U>[TraitClause0]
+impl<'_0, U> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ U,)> for closure<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
 {
@@ -312,22 +312,22 @@ where
     proof ImpliedClause2: ((&'_ U,): Tuple) = {built_in impl Tuple for (&'_ U,)}
     proof ImpliedClause3: (WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]: Sized) = {built_in impl Sized for WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]}
     type Output = WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]
-    fn call_once = {impl FnOnce<(&'_ U,)> for closure<U>[TraitClause0]}::call_once<'_0, U>[TraitClause0]
+    fn call_once = impl_FnOnce_tuple_for_closure::call_once<'_0, U>[TraitClause0]
     non-dyn-compatible
 }
 
 // Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for closure<U>[TraitClause0]}::drop_in_place<U>(_1: *mut closure<U>[TraitClause0])
+unsafe fn impl_Destruct_for_closure::drop_in_place<U>(_1: *mut closure<U>[TraitClause0])
 where
     TraitClause0: (U: Sized),
 = <missing>
 
 // Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}
-impl<U> Destruct for closure<U>[TraitClause0]
+impl<U> "impl_Destruct_for_closure" Destruct for closure<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
 {
-    fn drop_in_place = {impl Destruct for closure<U>[TraitClause0]}::drop_in_place<U>[TraitClause0]
+    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<U>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -366,14 +366,14 @@ pub fn use_wrap()
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = (move _5,)
-    _2 = {impl FnOnce<(&'_ U,)> for closure<U>[TraitClause0]}::call_once<'23, u32>[{built_in impl Sized for u32}](move _3, move _4)
+    _2 = impl_FnOnce_tuple_for_closure::call_once<'23, u32>[{built_in impl Sized for u32}](move _3, move _4)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{impl Destruct for closure<U>[TraitClause0]}::drop_in_place<u32>[{built_in impl Sized for u32}]] f_1
+    conditional_drop[impl_Destruct_for_closure::drop_in_place<u32>[{built_in impl Sized for u32}]] f_1
     storage_dead(f_1)
     return
 }

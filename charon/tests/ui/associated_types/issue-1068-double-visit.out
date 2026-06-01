@@ -27,10 +27,10 @@ pub trait HasType1<Self, Self_Type1>
 }
 
 // Full name: test_crate::{impl HasType1<()> for Witness1}
-impl HasType1<()> for Witness1 {
+impl "impl_HasType1_for_Witness1" HasType1<()> for Witness1 {
     proof ImpliedClause0: (Witness1: MetaSized) = {built_in impl MetaSized for Witness1}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    vtable: {impl HasType1<()> for Witness1}::{vtable}
+    vtable: impl_HasType1_for_Witness1::{vtable}
 }
 
 // Full name: test_crate::HasType2
@@ -50,11 +50,11 @@ where
   A,
 }
 
-// Full name: test_crate::{impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]> for Witness2}
-impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]> for Witness2 {
+// Full name: test_crate::{impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]> for Witness2}
+impl "impl_HasType2_for_Witness2" HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]> for Witness2 {
     proof ImpliedClause0: (Witness2: MetaSized) = {built_in impl MetaSized for Witness2}
-    proof ImpliedClause1: (Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]: Sized) = {built_in impl Sized for Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]}
-    vtable: {impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]> for Witness2}::{vtable}
+    proof ImpliedClause1: (Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]: Sized) = {built_in impl Sized for Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]}
+    vtable: impl_HasType2_for_Witness2::{vtable}
 }
 
 // Full name: test_crate::HasType3
@@ -66,14 +66,14 @@ pub trait HasType3<Self, Self_Type3>
 }
 
 // Full name: test_crate::{impl HasType3<Clause1_Type2> for T}
-impl<T, Clause1_Type2> HasType3<Clause1_Type2> for T
+impl<T, Clause1_Type2> "impl_HasType3_for_T" HasType3<Clause1_Type2> for T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasType2<Clause1_Type2>),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (Clause1_Type2: Sized) = TraitClause1::ImpliedClause1
-    vtable: {impl HasType3<Clause1_Type2> for T}::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: impl_HasType3_for_T::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::check
@@ -95,7 +95,7 @@ fn main()
     let _0: (); // return
 
     _0 = ()
-    _0 = check<Witness2, Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]>[{built_in impl Sized for Witness2}, {impl HasType3<Clause1_Type2> for T}<Witness2, Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]>[{built_in impl Sized for Witness2}, {impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, {impl HasType1<()> for Witness1}]> for Witness2}]]()
+    _0 = check<Witness2, Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]>[{built_in impl Sized for Witness2}, impl_HasType3_for_T<Witness2, Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]>[{built_in impl Sized for Witness2}, impl_HasType2_for_Witness2]]()
     return
 }
 

@@ -18,24 +18,24 @@ unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
-impl Destruct for String {
+impl "impl_Destruct_for_String" Destruct for String {
     non-dyn-compatible
 }
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
-fn {impl Display for String}::{vtable}() -> core::fmt::Display::{vtable}
+fn impl_Display_for_String::{vtable}() -> core::fmt::Display::{vtable}
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
-static {impl Display for String}::{vtable}: core::fmt::Display::{vtable} = {impl Display for String}::{vtable}()
+static impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = impl_Display_for_String::{vtable}()
 
 // Full name: alloc::string::{impl Display for String}
-impl Display for String {
-    vtable: {impl Display for String}::{vtable}
+impl "impl_Display_for_String" Display for String {
+    vtable: impl_Display_for_String::{vtable}
 }
 
 // Full name: alloc::string::{impl ToString for str}::to_string::<str>
-pub fn {impl ToString for str}::to_string::<str><'_0>(_1: &'_0 str) -> String
+pub fn impl_ToString_for_str::to_string::<str><'_0>(_1: &'_0 str) -> String
 = <opaque>
 
 // Full name: alloc::string::{impl ToString for (dyn Display)}::to_string::<(dyn Display)>
@@ -74,7 +74,7 @@ fn main()
     storage_live(_3)
     _3 = const "hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    str_1 = {impl ToString for str}::to_string::<str><'13>(move _2)
+    str_1 = impl_ToString_for_str::to_string::<str><'13>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)
@@ -83,15 +83,15 @@ fn main()
     storage_live(_7)
     _7 = &str_1
     _6 = &(*_7)
-    _5 = unsize_cast<&'9 String, &'14 (dyn Display + '15), &{impl Display for String}::{vtable}>(move _6)
+    _5 = unsize_cast<&'9 String, &'14 (dyn Display + '15), &impl_Display_for_String::{vtable}>(move _6)
     storage_dead(_6)
     _4 = dyn_to_string<'17>(move _5)
     storage_dead(_5)
-    conditional_drop[{impl Destruct for String}::drop_in_place] _4
+    conditional_drop[impl_Destruct_for_String::drop_in_place] _4
     storage_dead(_7)
     storage_dead(_4)
     _0 = ()
-    conditional_drop[{impl Destruct for String}::drop_in_place] str_1
+    conditional_drop[impl_Destruct_for_String::drop_in_place] str_1
     storage_dead(str_1)
     return
 }

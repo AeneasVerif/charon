@@ -34,9 +34,9 @@ pub trait Foo<Self>
 }
 
 // Full name: test_crate::{impl Foo for ()}
-impl Foo for () {
+impl "impl_Foo_for_unit" Foo for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    vtable: {impl Foo for ()}::{vtable}
+    vtable: impl_Foo_for_unit::{vtable}
 }
 
 struct test_crate::Broken::{vtable}<Ty0> {
@@ -63,7 +63,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Broken for T}::broken
-pub fn {impl Broken for T}::broken<'_0, T>(self_1: &'_0 T)
+pub fn impl_Broken_for_T::broken<'_0, T>(self_1: &'_0 T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: ((): Foo),
@@ -89,7 +89,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Broken<Assoc = ()> + '1), &'_0 T>(move _1)
-    _0 = {impl Broken for T}::broken<'_0, T>[TraitClause0, TraitClause1](move _2)
+    _0 = impl_Broken_for_T::broken<'_0, T>[TraitClause0, TraitClause1](move _2)
     return
 }
 
@@ -110,7 +110,7 @@ where
 }
 
 // Full name: test_crate::{impl Broken for T}::{vtable}
-fn {impl Broken for T}::{vtable}<T>() -> test_crate::Broken::{vtable}<()>
+fn impl_Broken_for_T::{vtable}<T>() -> test_crate::Broken::{vtable}<()>
 where
     TraitClause0: (T: Sized),
 {
@@ -122,26 +122,26 @@ where
     size_1 = size_of<T>
     storage_live(align_2)
     align_2 = align_of<T>
-    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[TraitClause0], method_broken: const {vtable_method}<'1, T>[TraitClause0, {impl Foo for ()}], super_trait_0: const &vtable_of(TraitClause0::ImpliedClause0) }
+    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[TraitClause0], method_broken: const {vtable_method}<'1, T>[TraitClause0, impl_Foo_for_unit], super_trait_0: const &vtable_of(TraitClause0::ImpliedClause0) }
     return
 }
 
 // Full name: test_crate::{impl Broken for T}::{vtable}
-static {impl Broken for T}::{vtable}<T>: test_crate::Broken::{vtable}<()>
+static impl_Broken_for_T::{vtable}<T>: test_crate::Broken::{vtable}<()>
 where
     TraitClause0: (T: Sized),
- = {impl Broken for T}::{vtable}()
+ = impl_Broken_for_T::{vtable}()
 
 // Full name: test_crate::{impl Broken for T}
-impl<T> Broken for T
+impl<T> "impl_Broken_for_T" Broken for T
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     type Assoc = ()
-    fn broken<'_0_1> = {impl Broken for T}::broken<'_0_1, T>[TraitClause0, {impl Foo for ()}]
-    vtable: {impl Broken for T}::{vtable}<T>[TraitClause0]
+    fn broken<'_0_1> = impl_Broken_for_T::broken<'_0_1, T>[TraitClause0, impl_Foo_for_unit]
+    vtable: impl_Broken_for_T::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::main
@@ -170,7 +170,7 @@ fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _m_1 = unsize_cast<&'6 (), &'10 (dyn Broken<Assoc = ()> + '11), &{impl Broken for T}::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
+    _m_1 = unsize_cast<&'6 (), &'10 (dyn Broken<Assoc = ()> + '11), &impl_Broken_for_T::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

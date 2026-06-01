@@ -35,12 +35,12 @@ trait Collection<Self>
 }
 
 // Full name: test_crate::{impl Collection for ()}
-impl Collection for () {
+impl "impl_Collection_for_unit" Collection for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     type Sibling<U> = Vec<U>[TraitClause0_1, {built_in impl Sized for Global}]
     where
         TraitClause0_1: (U: Sized),
-        proof ImpliedClause0: ({impl Collection for ()}::Sibling<U>[TraitClause0_1]: Sized) = {impl Collection for ()}::Sibling::ImpliedClause0;
+        proof ImpliedClause0: (impl_Collection_for_unit::Sibling<U>[TraitClause0_1]: Sized) = impl_Collection_for_unit::Sibling::ImpliedClause0;
     non-dyn-compatible
 }
 

@@ -21,10 +21,10 @@ pub trait HasOutput<Self, Self_Output>
 }
 
 // Full name: test_crate::{impl HasOutput<()> for ()}
-impl HasOutput<()> for () {
+impl "impl_HasOutput_for_unit" HasOutput<()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    vtable: {impl HasOutput<()> for ()}::{vtable}
+    vtable: impl_HasOutput_for_unit::{vtable}
 }
 
 // Full name: test_crate::HasOutput2
@@ -36,10 +36,10 @@ pub trait HasOutput2<Self, Self_Clause1_Output>
 }
 
 // Full name: test_crate::{impl HasOutput2<()> for ()}
-impl HasOutput2<()> for () {
+impl "impl_HasOutput2_for_unit" HasOutput2<()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    proof ImpliedClause1: ((): HasOutput<()>) = {impl HasOutput<()> for ()}
-    vtable: {impl HasOutput2<()> for ()}::{vtable}
+    proof ImpliedClause1: ((): HasOutput<()>) = impl_HasOutput_for_unit
+    vtable: impl_HasOutput2_for_unit::{vtable}
 }
 
 // Full name: test_crate::Wrapper
@@ -51,25 +51,25 @@ where
 }
 
 // Full name: test_crate::{impl HasOutput<Clause1_Output> for Wrapper<T>[TraitClause0]}
-impl<T, Clause1_Output> HasOutput<Clause1_Output> for Wrapper<T>[TraitClause0]
+impl<T, Clause1_Output> "impl_HasOutput_for_Wrapper" HasOutput<Clause1_Output> for Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasOutput<Clause1_Output>),
 {
     proof ImpliedClause0: (Wrapper<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrapper<T>[TraitClause0]}
     proof ImpliedClause1: (Clause1_Output: Sized) = TraitClause1::ImpliedClause1
-    vtable: {impl HasOutput<Clause1_Output> for Wrapper<T>[TraitClause0]}::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: impl_HasOutput_for_Wrapper::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::{impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[TraitClause0]}
-impl<T, Clause1_Clause1_Output> HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[TraitClause0]
+impl<T, Clause1_Clause1_Output> "impl_HasOutput2_for_Wrapper" HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasOutput2<Clause1_Clause1_Output>),
 {
     proof ImpliedClause0: (Wrapper<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrapper<T>[TraitClause0]}
-    proof ImpliedClause1: (Wrapper<T>[TraitClause0]: HasOutput<Clause1_Clause1_Output>) = {impl HasOutput<Clause1_Output> for Wrapper<T>[TraitClause0]}<T, Clause1_Clause1_Output>[TraitClause0, TraitClause1::ImpliedClause1]
-    vtable: {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[TraitClause0]}::{vtable}<T>[TraitClause0, TraitClause1]
+    proof ImpliedClause1: (Wrapper<T>[TraitClause0]: HasOutput<Clause1_Clause1_Output>) = impl_HasOutput_for_Wrapper<T, Clause1_Clause1_Output>[TraitClause0, TraitClause1::ImpliedClause1]
+    vtable: impl_HasOutput2_for_Wrapper::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::take
@@ -91,7 +91,7 @@ fn main()
     let _0: (); // return
 
     _0 = ()
-    _0 = take<Wrapper<()>[{built_in impl Sized for ()}], ()>[{built_in impl Sized for Wrapper<()>[{built_in impl Sized for ()}]}, {impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[TraitClause0]}<(), ()>[{built_in impl Sized for ()}, {impl HasOutput2<()> for ()}]]()
+    _0 = take<Wrapper<()>[{built_in impl Sized for ()}], ()>[{built_in impl Sized for Wrapper<()>[{built_in impl Sized for ()}]}, impl_HasOutput2_for_Wrapper<(), ()>[{built_in impl Sized for ()}, impl_HasOutput2_for_unit]]()
     return
 }
 

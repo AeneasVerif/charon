@@ -60,17 +60,17 @@ where
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
-pub fn {impl PartialEq<i32> for i32}::eq<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> bool
+pub fn impl_PartialEq_i32_for_i32::eq<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
-impl PartialEq<i32> for i32 {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<i32> for i32}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<i32> for i32}::{vtable}
+impl "impl_PartialEq_i32_for_i32" PartialEq<i32> for i32 {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_i32_for_i32::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_i32_for_i32::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
-pub fn {impl PartialOrd<u32> for u32}::partial_cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn impl_PartialOrd_u32_for_u32::partial_cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::marker::StructuralPartialEq
@@ -82,7 +82,7 @@ pub trait StructuralPartialEq<Self>
 }
 
 // Full name: core::option::{impl PartialEq<Option<T>[TraitClause0]> for Option<T>[TraitClause0]}::eq
-pub fn {impl PartialEq<Option<T>[TraitClause0]> for Option<T>[TraitClause0]}::eq<'_0, '_1, T>(_1: &'_0 Option<T>[TraitClause0], _2: &'_1 Option<T>[TraitClause0]) -> bool
+pub fn impl_PartialEq_Option_for_Option::eq<'_0, '_1, T>(_1: &'_0 Option<T>[TraitClause0], _2: &'_1 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: PartialEq<T>),
@@ -126,7 +126,7 @@ fn main()
     storage_live(_3)
     _4 = move _7
     _3 = &(*_4)
-    _1 = {impl PartialEq<Option<T>[TraitClause0]> for Option<T>[TraitClause0]}::eq<'9, '10, i32>[{built_in impl Sized for i32}, {impl PartialEq<i32> for i32}](move _2, move _3)
+    _1 = impl_PartialEq_Option_for_Option::eq<'9, '10, i32>[{built_in impl Sized for i32}, impl_PartialEq_i32_for_i32](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
@@ -140,13 +140,13 @@ struct Foo {
 }
 
 // Full name: test_crate::{impl StructuralPartialEq for Foo}
-impl StructuralPartialEq for Foo {
+impl "impl_StructuralPartialEq_for_Foo" StructuralPartialEq for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
-    vtable: {impl StructuralPartialEq for Foo}::{vtable}
+    vtable: impl_StructuralPartialEq_for_Foo::{vtable}
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
-pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
+pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 Foo; // arg #1
@@ -165,13 +165,13 @@ pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}
-impl PartialEq<Foo> for Foo {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<Foo> for Foo}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<Foo> for Foo}::{vtable}
+impl "impl_PartialEq_Foo_for_Foo" PartialEq<Foo> for Foo {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_Foo_for_Foo::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_Foo_for_Foo::{vtable}
 }
 
 // Full name: test_crate::{impl PartialOrd<Foo> for Foo}::partial_cmp
-pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
     let _0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
     let self_1: &'1 Foo; // arg #1
@@ -189,7 +189,7 @@ pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(self_1: &'_0 Foo, o
     storage_live(_6)
     _6 = &((*other_2)).0
     _5 = &(*_6)
-    _0 = {impl PartialOrd<u32> for u32}::partial_cmp<'10, '11>(move _3, move _5)
+    _0 = impl_PartialOrd_u32_for_u32::partial_cmp<'10, '11>(move _3, move _5)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -198,10 +198,10 @@ pub fn {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0, '_1>(self_1: &'_0 Foo, o
 }
 
 // Full name: test_crate::{impl PartialOrd<Foo> for Foo}
-impl PartialOrd<Foo> for Foo {
-    proof ImpliedClause0: (Foo: PartialEq<Foo>) = {impl PartialEq<Foo> for Foo}
-    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<Foo> for Foo}::partial_cmp<'_0_1, '_1_1>
-    vtable: {impl PartialOrd<Foo> for Foo}::{vtable}
+impl "impl_PartialOrd_Foo_for_Foo" PartialOrd<Foo> for Foo {
+    proof ImpliedClause0: (Foo: PartialEq<Foo>) = impl_PartialEq_Foo_for_Foo
+    fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0_1, '_1_1>
+    vtable: impl_PartialOrd_Foo_for_Foo::{vtable}
 }
 
 

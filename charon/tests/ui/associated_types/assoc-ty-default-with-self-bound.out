@@ -27,13 +27,13 @@ pub trait MyTrait<Self>
 pub struct S {}
 
 // Full name: test_crate::{impl MyTrait for S}
-impl MyTrait for S {
+impl "impl_MyTrait_for_S" MyTrait for S {
     proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
     type Ret = ()
     where
         TraitClause0_1: (S: Sized),
-        proof ImpliedClause0: ({impl MyTrait for S}::Ret[TraitClause0_1]: Sized) = {impl MyTrait for S}::Ret::ImpliedClause0;
-    vtable: {impl MyTrait for S}::{vtable}
+        proof ImpliedClause0: (impl_MyTrait_for_S::Ret[TraitClause0_1]: Sized) = impl_MyTrait_for_S::Ret::ImpliedClause0;
+    vtable: impl_MyTrait_for_S::{vtable}
 }
 
 

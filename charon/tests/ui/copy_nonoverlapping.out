@@ -68,7 +68,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn {impl Clone for usize}::clone<'_0>(self_1: &'_0 usize) -> usize
+pub fn impl_Clone_for_usize::clone<'_0>(self_1: &'_0 usize) -> usize
 {
     let _0: usize; // return
     let self_1: &'1 usize; // arg #1
@@ -78,7 +78,7 @@ pub fn {impl Clone for usize}::clone<'_0>(self_1: &'_0 usize) -> usize
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone_from
-pub fn {impl Clone for usize}::clone_from<'_0, '_1>(self_1: &'_0 mut usize, source_2: &'_1 usize)
+pub fn impl_Clone_for_usize::clone_from<'_0, '_1>(self_1: &'_0 mut usize, source_2: &'_1 usize)
 where
     TraitClause0: (usize: Destruct),
 {
@@ -89,7 +89,7 @@ where
 
     _0 = ()
     storage_live(_3)
-    _3 = {impl Clone for usize}::clone<'5>(move source_2)
+    _3 = impl_Clone_for_usize::clone<'5>(move source_2)
     drop[TraitClause0::drop_in_place] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
@@ -97,10 +97,10 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}
-impl Clone for usize {
+impl "impl_Clone_for_usize" Clone for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = {impl Clone for usize}::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = {impl Clone for usize}::clone_from<'_0_1, '_1_1>[TraitClause0_1]
+    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = impl_Clone_for_usize::clone_from<'_0_1, '_1_1>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -186,9 +186,9 @@ where
 = <intrinsic:align_of>
 
 // Full name: core::marker::{impl Copy for usize}
-impl Copy for usize {
+impl "impl_Copy_for_usize" Copy for usize {
     proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: Clone) = {impl Clone for usize}
+    proof ImpliedClause1: (usize: Clone) = impl_Clone_for_usize
     non-dyn-compatible
 }
 
@@ -307,7 +307,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
     storage_live(_3)
     _0 = ()
     storage_live(_5)
-    _5 = ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](move align_1)
+    _5 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](move align_1)
     switch copy _5 {
         1 : u32 => {
         },
@@ -370,7 +370,7 @@ pub fn new(align_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignme
 
     storage_live(_4)
     storage_live(_3)
-    _3 = ctpop<usize>[{built_in impl Sized for usize}, {impl Copy for usize}](copy align_1)
+    _3 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](copy align_1)
     switch copy _3 {
         1 : u32 => {
         },
@@ -597,17 +597,17 @@ where
  = MAX_SLICE_LEN()
 
 // Full name: core::mem::{impl SizedTypeProperties for T}
-impl<T> SizedTypeProperties for T
+impl<T> "impl_SizedTypeProperties_for_T" SizedTypeProperties for T
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (T: Sized) = TraitClause0
-    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const SIZE = SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const ALIGN = ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const ALIGNMENT = ALIGNMENT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const IS_ZST = IS_ZST<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const LAYOUT = LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     non-dyn-compatible
 }
 
@@ -638,7 +638,7 @@ where
         _5 = cast<*const T, *const ()>(copy src_1)
         storage_live(_6)
         _6 = cast<*mut T, *mut ()>(copy dst_2)
-        _4 = core::ptr::copy_nonoverlapping::precondition_check(move _5, move _6, const {impl SizedTypeProperties for T}<T>[TraitClause0]::SIZE, const {impl SizedTypeProperties for T}<T>[TraitClause0]::ALIGN, copy count_3)
+        _4 = core::ptr::copy_nonoverlapping::precondition_check(move _5, move _6, const impl_SizedTypeProperties_for_T<T>[TraitClause0]::SIZE, const impl_SizedTypeProperties_for_T<T>[TraitClause0]::ALIGN, copy count_3)
         storage_dead(_6)
         storage_dead(_5)
     } else {

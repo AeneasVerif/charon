@@ -27,7 +27,7 @@ where
 struct Portable {}
 
 // Full name: test_crate::{impl Ops for Portable}::ZERO
-fn {impl Ops for Portable}::ZERO() -> Portable
+fn impl_Ops_for_Portable::ZERO() -> Portable
 {
     let _0: Portable; // return
 
@@ -39,12 +39,12 @@ fn test_crate::ntt_multiply() -> Portable
 {
     let _0: Portable; // return
 
-    _0 = {impl Ops for Portable}::ZERO()
+    _0 = impl_Ops_for_Portable::ZERO()
     return
 }
 
 // Full name: test_crate::{impl Ops for Portable}::ntt_multiply
-fn {impl Ops for Portable}::ntt_multiply() -> Portable
+fn impl_Ops_for_Portable::ntt_multiply() -> Portable
 {
     let _0: Portable; // return
 
@@ -53,10 +53,10 @@ fn {impl Ops for Portable}::ntt_multiply() -> Portable
 }
 
 // Full name: test_crate::{impl Ops for Portable}
-impl Ops for Portable {
+impl "impl_Ops_for_Portable" Ops for Portable {
     proof ImpliedClause0: (Portable: MetaSized) = {built_in impl MetaSized for Portable}
-    fn ZERO = {impl Ops for Portable}::ZERO
-    fn ntt_multiply = {impl Ops for Portable}::ntt_multiply
+    fn ZERO = impl_Ops_for_Portable::ZERO
+    fn ntt_multiply = impl_Ops_for_Portable::ntt_multiply
     non-dyn-compatible
 }
 

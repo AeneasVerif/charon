@@ -1071,6 +1071,12 @@ impl Display for IntegerTy {
     }
 }
 
+fn trait_impl_short_name<C: AstFormatter>(ctx: &C, impl_id: TraitImplId) -> Option<&Name> {
+    ctx.get_crate()
+        .and_then(|tr| tr.short_names.get(&ItemId::TraitImpl(impl_id)))
+        .filter(|name| matches!(name.name.first(), Some(PathElem::Ident(..))))
+}
+
 impl ItemMeta {
     /// Format the start of an item definition, up to the name.
     pub fn fmt_item_intro<C: AstFormatter>(
@@ -1081,15 +1087,27 @@ impl ItemMeta {
         id: impl Into<ItemId>,
     ) -> fmt::Result {
         let tab = ctx.indent();
-        let full_name = self.name.with_ctx(ctx);
-        let name = if let Some(tr) = ctx.get_crate()
-            && let Some(short_name) = tr.short_names.get(&id.into())
+        let id = id.into();
+        let mut name = &self.name;
+        let mut name_is_full = true;
+        if let Some(tr) = ctx.get_crate()
+            && let Some(short_name) = tr.short_names.get(&id)
         {
-            writeln!(f, "// Full name: {full_name}")?;
-            short_name.with_ctx(ctx)
-        } else {
-            full_name
+            name = short_name;
+            name_is_full = false;
+        } else if self
+            .name
+            .name
+            .iter()
+            .filter_map(|ne| ne.as_impl()?.as_trait())
+            .any(|impl_id| trait_impl_short_name(ctx, *impl_id).is_some())
+        {
+            name_is_full = false;
         };
+        if !name_is_full {
+            writeln!(f, "// Full name: {}", self.name.full_name(ctx))?;
+        }
+
         if let Some(id) = &self.lang_item {
             writeln!(f, "{tab}#[lang_item(\"{id}\")]")?;
         }
@@ -1097,7 +1115,7 @@ impl ItemMeta {
         if self.attr_info.public {
             write!(f, "pub ")?;
         }
-        write!(f, "{keyword} {name}")
+        write!(f, "{keyword} {}", name.with_ctx(ctx))
     }
 }
 
@@ -1160,6 +1178,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for Name {
     }
 }
 
+impl Name {
+    /// Print the full name, which is different from printing a `Name` since that will use the
+    /// short name for impls.
+    fn full_name<'a, C: AstFormatter + 'a>(&'a self, ctx: &'a C) -> impl Display + 'a {
+        std::fmt::from_fn(move |f| {
+            let ctx = &ctx.no_generics();
+            let name = self
+                .name
+                .iter()
+                .map(|elem| match elem {
+                    PathElem::Impl(impl_elem) => Either::Left(impl_elem.with_ctx(ctx)),
+                    _ => Either::Right(elem.with_ctx(ctx)),
+                })
+                .format("::");
+            write!(f, "{name}")
+        })
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let op = match self {
@@ -1216,6 +1253,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                 Ok(())
             }
             PathElem::Impl(impl_elem) => {
+                if let ImplElem::Trait(impl_id) = impl_elem
+                    && let Some(short_name) = trait_impl_short_name(ctx, *impl_id)
+                {
+                    return write!(f, "{}", short_name.with_ctx(ctx));
+                }
                 write!(f, "{}", impl_elem.with_ctx(ctx))
             }
             PathElem::Instantiated(binder) => {
@@ -2102,7 +2144,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
 impl TraitDeclRef {
     /// Split off the `Self` type. The returned `TraitDeclRef` has incorrect generics. The returned
     /// `Self` is `None` for monomorphized traits.
-    fn split_self(&self) -> (Option<Ty>, Self) {
+    pub fn split_self(&self) -> (Option<Ty>, Self) {
         let mut pred = self.clone();
         let self_ty = pred.generics.types.remove_and_shift_ids(TypeVarId::ZERO);
         (self_ty, pred)
@@ -2134,15 +2176,18 @@ impl TraitDeclRef {
 impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let trait_id = self.impl_trait.id;
-        let full_name = self.item_meta.name.with_ctx(ctx);
-        writeln!(f, "// Full name: {full_name}")?;
+        writeln!(f, "// Full name: {}", self.item_meta.name.full_name(ctx))?;
 
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let impl_trait = self.impl_trait.format_as_impl(ctx);
-        write!(f, "impl{generics} {impl_trait}{clauses}",)?;
+        write!(f, "impl{generics}")?;
+        if let Some(short_name) = trait_impl_short_name(ctx, self.def_id) {
+            write!(f, " \"{}\"", short_name.with_ctx(ctx))?;
+        }
+        write!(f, " {impl_trait}{clauses}",)?;
 
         let newline = if clauses.is_empty() {
             " ".to_string()

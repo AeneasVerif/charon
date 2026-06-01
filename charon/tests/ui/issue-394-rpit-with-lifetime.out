@@ -94,7 +94,7 @@ where
 struct closure<'a> {}
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'a>}::call_mut
-fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, tupled_args_2: ()) -> Option<u8>[{built_in impl Sized for u8}]
+fn impl_FnMut_unit_for_closure::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, tupled_args_2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: &'1 mut closure<'a>; // arg #1
@@ -105,11 +105,11 @@ fn {impl FnMut<()> for closure<'a>}::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>,
 }
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}::drop_in_place
-unsafe fn {impl Destruct for closure<'a>}::drop_in_place<'a>(_1: *mut closure<'a>)
+unsafe fn impl_Destruct_for_closure::drop_in_place<'a>(_1: *mut closure<'a>)
 = <missing>
 
 // Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'a>}::call_once
-fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(_1: closure<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
+fn impl_FnOnce_unit_for_closure::call_once<'a>(_1: closure<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: closure<'a>; // arg #1
@@ -118,29 +118,29 @@ fn {impl FnOnce<()> for closure<'a>}::call_once<'a>(_1: closure<'a>, _2: ()) -> 
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for closure<'a>}::call_mut<'a, '5>(move _3, move _2)
-    drop[{impl Destruct for closure<'a>}::drop_in_place<'a>] _1
+    _0 = impl_FnMut_unit_for_closure::call_mut<'a, '5>(move _3, move _2)
+    drop[impl_Destruct_for_closure::drop_in_place<'a>] _1
     return
 }
 
 // Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'a>}
-impl<'a> FnOnce<()> for closure<'a> {
+impl<'a> "impl_FnOnce_unit_for_closure" FnOnce<()> for closure<'a> {
     proof ImpliedClause0: (closure<'a>: MetaSized) = {built_in impl MetaSized for closure<'a>}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (Option<u8>[{built_in impl Sized for u8}]: Sized) = {built_in impl Sized for Option<u8>[{built_in impl Sized for u8}]}
     type Output = Option<u8>[{built_in impl Sized for u8}]
-    fn call_once = {impl FnOnce<()> for closure<'a>}::call_once<'a>
+    fn call_once = impl_FnOnce_unit_for_closure::call_once<'a>
     non-dyn-compatible
 }
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'a>}
-impl<'a> FnMut<()> for closure<'a> {
+impl<'a> "impl_FnMut_unit_for_closure" FnMut<()> for closure<'a> {
     proof ImpliedClause0: (closure<'a>: MetaSized) = {built_in impl MetaSized for closure<'a>}
-    proof ImpliedClause1: (closure<'a>: FnOnce<()>) = {impl FnOnce<()> for closure<'a>}<'a>
+    proof ImpliedClause1: (closure<'a>: FnOnce<()>) = impl_FnOnce_unit_for_closure<'a>
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call_mut<'_0_1> = {impl FnMut<()> for closure<'a>}::call_mut<'a, '_0_1>
+    fn call_mut<'_0_1> = impl_FnMut_unit_for_closure::call_mut<'a, '_0_1>
     non-dyn-compatible
 }
 
@@ -152,14 +152,14 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for clos
 
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<u8, closure<'12>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'12>}, {impl FnMut<()> for closure<'a>}<'12>](move _1)
+    _0 = from_fn<u8, closure<'12>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'12>}, impl_FnMut_unit_for_closure<'12>](move _1)
     storage_dead(_1)
     return
 }
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}
-impl<'a> Destruct for closure<'a> {
-    fn drop_in_place = {impl Destruct for closure<'a>}::drop_in_place<'a>
+impl<'a> "impl_Destruct_for_closure" Destruct for closure<'a> {
+    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<'a>
     non-dyn-compatible
 }
 

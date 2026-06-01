@@ -65,7 +65,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method
-fn {impl Trait for ()}::method<T>(self_1: (), _other_2: T)
+fn impl_Trait_for_unit::method<T>(self_1: (), _other_2: T)
 where
     TraitClause0: (T: Sized),
 {
@@ -80,9 +80,9 @@ where
 }
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
-    fn method<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = {impl Trait for ()}::method<T>[TraitClause0_1]
+    fn method<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = impl_Trait_for_unit::method<T>[TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -97,7 +97,7 @@ fn main()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
-    _1 = {impl Trait for ()}::method<bool>[{built_in impl Sized for bool}](move _2, const false)
+    _1 = impl_Trait_for_unit::method<bool>[{built_in impl Sized for bool}](move _2, const false)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

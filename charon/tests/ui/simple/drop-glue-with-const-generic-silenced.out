@@ -28,12 +28,12 @@ unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
+unsafe fn impl_Destruct_for_Global::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl Destruct for Global {
-    fn drop_in_place = {impl Destruct for Global}::drop_in_place
+impl "impl_Destruct_for_Global" Destruct for Global {
+    fn drop_in_place = impl_Destruct_for_Global::drop_in_place
     non-dyn-compatible
 }
 
@@ -43,16 +43,16 @@ struct KeccakState {}
 // Full name: test_crate::PortableHash
 struct PortableHash<const K : usize> {
   shake128_state: [KeccakState; K],
-  make_non_trivial: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {impl Destruct for Global}],
+  make_non_trivial: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global],
 }
 
 // Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}::drop_in_place
-unsafe fn {impl Destruct for PortableHash<K>}::drop_in_place<const K : usize>(_1: *mut PortableHash<K>)
+unsafe fn impl_Destruct_for_PortableHash::drop_in_place<const K : usize>(_1: *mut PortableHash<K>)
 = <opaque>
 
 // Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}
-impl<const K : usize> Destruct for PortableHash<K> {
-    fn drop_in_place = {impl Destruct for PortableHash<K>}::drop_in_place<K>
+impl<const K : usize> "impl_Destruct_for_PortableHash" Destruct for PortableHash<K> {
+    fn drop_in_place = impl_Destruct_for_PortableHash::drop_in_place<K>
     non-dyn-compatible
 }
 
@@ -64,7 +64,7 @@ fn foo(_1: PortableHash<42 : usize>)
 
     _0 = ()
     _0 = ()
-    drop[{impl Destruct for PortableHash<K>}::drop_in_place<42 : usize>] _1
+    drop[impl_Destruct_for_PortableHash::drop_in_place<42 : usize>] _1
     return
 }
 

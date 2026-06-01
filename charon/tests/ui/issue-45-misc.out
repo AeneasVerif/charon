@@ -81,13 +81,13 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn {impl Clone for u8}::clone<'_0>(_1: &'_0 u8) -> u8
+pub fn impl_Clone_for_u8::clone<'_0>(_1: &'_0 u8) -> u8
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}
-impl Clone for u8 {
+impl "impl_Clone_for_u8" Clone for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    fn clone<'_0_1> = {impl Clone for u8}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -139,24 +139,24 @@ where
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}::eq
-pub fn {impl PartialEq<u8> for u8}::eq<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8) -> bool
+pub fn impl_PartialEq_u8_for_u8::eq<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
-impl PartialEq<u8> for u8 {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<u8> for u8}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<u8> for u8}::{vtable}
+impl "impl_PartialEq_u8_for_u8" PartialEq<u8> for u8 {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_u8_for_u8::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_u8_for_u8::{vtable}
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u8> for u8}::partial_cmp
-pub fn {impl PartialOrd<u8> for u8}::partial_cmp<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn impl_PartialOrd_u8_for_u8::partial_cmp<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialOrd<u8> for u8}
-impl PartialOrd<u8> for u8 {
-    proof ImpliedClause0: (u8: PartialEq<u8>) = {impl PartialEq<u8> for u8}
-    fn partial_cmp<'_0_1, '_1_1> = {impl PartialOrd<u8> for u8}::partial_cmp<'_0_1, '_1_1>
-    vtable: {impl PartialOrd<u8> for u8}::{vtable}
+impl "impl_PartialOrd_u8_for_u8" PartialOrd<u8> for u8 {
+    proof ImpliedClause0: (u8: PartialEq<u8>) = impl_PartialEq_u8_for_u8
+    fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_u8_for_u8::partial_cmp<'_0_1, '_1_1>
+    vtable: impl_PartialOrd_u8_for_u8::{vtable}
 }
 
 // Full name: core::fmt::Arguments
@@ -192,25 +192,25 @@ where
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}::backward_checked
-pub fn {impl Step for u8}::backward_checked(_1: u8, _2: usize) -> Option<u8>[{built_in impl Sized for u8}]
+pub fn impl_Step_for_u8::backward_checked(_1: u8, _2: usize) -> Option<u8>[{built_in impl Sized for u8}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}::forward_checked
-pub fn {impl Step for u8}::forward_checked(_1: u8, _2: usize) -> Option<u8>[{built_in impl Sized for u8}]
+pub fn impl_Step_for_u8::forward_checked(_1: u8, _2: usize) -> Option<u8>[{built_in impl Sized for u8}]
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}::steps_between
-pub fn {impl Step for u8}::steps_between<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+pub fn impl_Step_for_u8::steps_between<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}
-impl Step for u8 {
+impl "impl_Step_for_u8" Step for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    proof ImpliedClause1: (u8: Clone) = {impl Clone for u8}
-    proof ImpliedClause2: (u8: PartialOrd<u8>) = {impl PartialOrd<u8> for u8}
-    fn steps_between<'_0_1, '_1_1> = {impl Step for u8}::steps_between<'_0_1, '_1_1>
-    fn forward_checked = {impl Step for u8}::forward_checked
-    fn backward_checked = {impl Step for u8}::backward_checked
+    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
+    proof ImpliedClause2: (u8: PartialOrd<u8>) = impl_PartialOrd_u8_for_u8
+    fn steps_between<'_0_1, '_1_1> = impl_Step_for_u8::steps_between<'_0_1, '_1_1>
+    fn forward_checked = impl_Step_for_u8::forward_checked
+    fn backward_checked = impl_Step_for_u8::backward_checked
     non-dyn-compatible
 }
 
@@ -236,14 +236,14 @@ pub trait Iterator<Self>
 }
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}::next
-pub fn {impl Iterator for Range<A>[TraitClause0]}::next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClause0]
+pub fn impl_Iterator_for_Range::next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClause0]
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}
-impl<A> Iterator for Range<A>[TraitClause0]
+impl<A> "impl_Iterator_for_Range" Iterator for Range<A>[TraitClause0]
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
@@ -251,12 +251,12 @@ where
     proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
-    fn next<'_0_1> = {impl Iterator for Range<A>[TraitClause0]}::next<'_0_1, A>[TraitClause0, TraitClause1]
-    vtable: {impl Iterator for Range<A>[TraitClause0]}::{vtable}<A>[TraitClause0, TraitClause1]
+    fn next<'_0_1> = impl_Iterator_for_Range::next<'_0_1, A>[TraitClause0, TraitClause1]
+    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0, TraitClause1]
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
-pub fn {impl IntoIterator for I}::into_iter<I>(_1: I) -> I
+pub fn impl_IntoIterator_for_T::into_iter<I>(_1: I) -> I
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: Iterator),
@@ -298,17 +298,17 @@ where
 struct closure {}
 
 // Full name: test_crate::map::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn {impl Destruct for closure}::drop_in_place(_1: *mut closure)
+unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
 = <missing>
 
 // Full name: test_crate::map::closure::{impl Destruct for closure}
-impl Destruct for closure {
-    fn drop_in_place = {impl Destruct for closure}::drop_in_place
+impl "impl_Destruct_for_closure" Destruct for closure {
+    fn drop_in_place = impl_Destruct_for_closure::drop_in_place
     non-dyn-compatible
 }
 
 // Full name: test_crate::map::{impl FnMut<(i32,)> for closure}::call_mut
-fn {impl FnMut<(i32,)> for closure}::call_mut<'_0>(_1: &'_0 mut closure, tupled_args_2: (i32,)) -> i32
+fn impl_FnMut_tuple_for_closure::call_mut<'_0>(_1: &'_0 mut closure, tupled_args_2: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: &'1 mut closure; // arg #1
@@ -322,7 +322,7 @@ fn {impl FnMut<(i32,)> for closure}::call_mut<'_0>(_1: &'_0 mut closure, tupled_
 }
 
 // Full name: test_crate::map::{impl FnOnce<(i32,)> for closure}::call_once
-fn {impl FnOnce<(i32,)> for closure}::call_once(_1: closure, _2: (i32,)) -> i32
+fn impl_FnOnce_tuple_for_closure::call_once(_1: closure, _2: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: closure; // arg #1
@@ -331,29 +331,29 @@ fn {impl FnOnce<(i32,)> for closure}::call_once(_1: closure, _2: (i32,)) -> i32
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(i32,)> for closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for closure}::drop_in_place] _1
+    _0 = impl_FnMut_tuple_for_closure::call_mut<'3>(move _3, move _2)
+    drop[impl_Destruct_for_closure::drop_in_place] _1
     return
 }
 
 // Full name: test_crate::map::{impl FnOnce<(i32,)> for closure}
-impl FnOnce<(i32,)> for closure {
+impl "impl_FnOnce_tuple_for_closure" FnOnce<(i32,)> for closure {
     proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
     proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
     proof ImpliedClause3: (i32: Sized) = {built_in impl Sized for i32}
     type Output = i32
-    fn call_once = {impl FnOnce<(i32,)> for closure}::call_once
+    fn call_once = impl_FnOnce_tuple_for_closure::call_once
     non-dyn-compatible
 }
 
 // Full name: test_crate::map::{impl FnMut<(i32,)> for closure}
-impl FnMut<(i32,)> for closure {
+impl "impl_FnMut_tuple_for_closure" FnMut<(i32,)> for closure {
     proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
-    proof ImpliedClause1: (closure: FnOnce<(i32,)>) = {impl FnOnce<(i32,)> for closure}
+    proof ImpliedClause1: (closure: FnOnce<(i32,)>) = impl_FnOnce_tuple_for_closure
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    fn call_mut<'_0_1> = {impl FnMut<(i32,)> for closure}::call_mut<'_0_1>
+    fn call_mut<'_0_1> = impl_FnMut_tuple_for_closure::call_mut<'_0_1>
     non-dyn-compatible
 }
 
@@ -368,7 +368,7 @@ pub fn test_crate::map(x_1: [i32; 256 : usize]) -> [i32; 256 : usize]
     _2 = copy x_1
     storage_live(_3)
     _3 = closure {  }
-    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,)> for closure}, {impl Destruct for closure}, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
+    _0 = core::array::{[T; N]}::map<i32, closure, i32, 256 : usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, impl_FnMut_tuple_for_closure, impl_Destruct_for_closure, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -404,7 +404,7 @@ fn cbd(prf_input_1: [u8; 33 : usize])
     storage_live(_2)
     storage_live(_3)
     _3 = Range { start: const 0 : u8, end: const 3 : u8 }
-    _2 = {impl IntoIterator for I}::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, {impl Iterator for Range<A>[TraitClause0]}<u8>[{built_in impl Sized for u8}, {impl Step for u8}]](move _3)
+    _2 = impl_IntoIterator_for_T::into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Range<u8>[{built_in impl Sized for u8}, impl_Step_for_u8]](move _3)
     storage_dead(_3)
     storage_live(iter_4)
     iter_4 = move _2
@@ -414,7 +414,7 @@ fn cbd(prf_input_1: [u8; 33 : usize])
         storage_live(_7)
         _7 = &mut iter_4
         _6 = &two-phase-mut (*_7)
-        _5 = {impl Iterator for Range<A>[TraitClause0]}::next<'4, u8>[{built_in impl Sized for u8}, {impl Step for u8}](move _6)
+        _5 = impl_Iterator_for_Range::next<'4, u8>[{built_in impl Sized for u8}, impl_Step_for_u8](move _6)
         storage_dead(_6)
         match _5 {
             Option::None => {

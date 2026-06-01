@@ -10,8 +10,8 @@ struct Foo {
 }
 
 // Full name: test_crate::{impl Send for Foo}
-impl Send for Foo {
-    vtable: {impl Send for Foo}::{vtable}
+impl "impl_Send_for_Foo" Send for Foo {
+    vtable: impl_Send_for_Foo::{vtable}
 }
 
 

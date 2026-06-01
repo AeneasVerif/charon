@@ -65,7 +65,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}::defaulted
-fn {impl Trait for Empty<T>[TraitClause0]}::defaulted<'_0, T, P>(self_1: &'_0 Empty<T>[TraitClause0])
+fn impl_Trait_for_Empty::defaulted<'_0, T, P>(self_1: &'_0 Empty<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (P: Sized),
@@ -82,14 +82,14 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}
-impl<T> Trait for Empty<T>[TraitClause0]
+impl<T> "impl_Trait_for_Empty" Trait for Empty<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Empty<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Empty<T>[TraitClause0]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     type Item = T
-    fn defaulted<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: HasAssoc<T>), TraitClause2_1: (Empty<T>[TraitClause0]: Exact), TypeConstraint0: TraitClause1_1::Assoc = bool> = {impl Trait for Empty<T>[TraitClause0]}::defaulted<'_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn defaulted<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: HasAssoc<T>), TraitClause2_1: (Empty<T>[TraitClause0]: Exact), TypeConstraint0: TraitClause1_1::Assoc = bool> = impl_Trait_for_Empty::defaulted<'_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     non-dyn-compatible
 }
 

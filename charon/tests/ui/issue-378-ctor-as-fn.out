@@ -44,7 +44,7 @@ where
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn {impl Destruct for String}::drop_in_place(_1: *mut String)
+unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::{String}::new
@@ -71,19 +71,19 @@ struct Foo {
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo}::drop_in_place
-unsafe fn {impl Destruct for Foo}::drop_in_place(_1: *mut Foo)
+unsafe fn impl_Destruct_for_Foo::drop_in_place(_1: *mut Foo)
 {
     let _0: (); // return
     let _1: &'1 mut Foo; // arg #1
 
     _0 = ()
-    drop[{impl Destruct for String}::drop_in_place] ((*_1)).1
+    drop[impl_Destruct_for_String::drop_in_place] ((*_1)).1
     return
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo}
-impl Destruct for Foo {
-    fn drop_in_place = {impl Destruct for Foo}::drop_in_place
+impl "impl_Destruct_for_Foo" Destruct for Foo {
+    fn drop_in_place = impl_Destruct_for_Foo::drop_in_place
     non-dyn-compatible
 }
 
@@ -176,7 +176,7 @@ fn main()
     _9 = Foo(const 42 : u32, move _11)
     storage_dead(_11)
     storage_dead(_10)
-    conditional_drop[{impl Destruct for Foo}::drop_in_place] _9
+    conditional_drop[impl_Destruct_for_Foo::drop_in_place] _9
     storage_live(_18)
     storage_live(_19)
     storage_live(_20)

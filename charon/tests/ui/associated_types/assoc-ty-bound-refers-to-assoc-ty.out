@@ -40,13 +40,13 @@ pub trait IsIterator<Self>
 }
 
 // Full name: test_crate::{impl IsIterator for I}
-impl<I, Clause1_Item> IsIterator for I
+impl<I, Clause1_Item> "impl_IsIterator_for_T" IsIterator for I
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: Iterator<Clause1_Item>),
 {
     proof ImpliedClause0: (I: MetaSized) = TraitClause0::ImpliedClause0
-    vtable: {impl IsIterator for I}::{vtable}<I>[TraitClause0, TraitClause1]
+    vtable: impl_IsIterator_for_T::{vtable}<I>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::assert_is_iterator
@@ -89,7 +89,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = move it_1
-    _2 = assert_is_iterator<Clause1_IntoIter>[TraitClause1::ImpliedClause2, {impl IsIterator for I}<Clause1_IntoIter, Clause1_Item>[TraitClause1::ImpliedClause2, TraitClause1::ImpliedClause3]](move _3)
+    _2 = assert_is_iterator<Clause1_IntoIter>[TraitClause1::ImpliedClause2, impl_IsIterator_for_T<Clause1_IntoIter, Clause1_Item>[TraitClause1::ImpliedClause2, TraitClause1::ImpliedClause3]](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

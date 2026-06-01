@@ -78,30 +78,30 @@ where
 }
 
 // Full name: test_crate::{impl MyTrait<T> for ()}::rows
-pub fn {impl MyTrait<T> for ()}::rows<'_0, T>(self_1: &'_0 ()) -> Empty<T>[{impl MyTrait<T> for ()}<T>[TraitClause0]::ImpliedClause1]
+pub fn impl_MyTrait_for_unit::rows<'_0, T>(self_1: &'_0 ()) -> Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Empty<T>[{impl MyTrait<T> for ()}<T>[TraitClause0]::ImpliedClause1]; // return
+    let _0: Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]; // return
     let self_1: &'1 (); // arg #1
 
-    _0 = empty<T>[{impl MyTrait<T> for ()}<T>[TraitClause0]::ImpliedClause1]()
+    _0 = empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]()
     return
 }
 
 // Full name: test_crate::{impl MyTrait<T> for ()}
-impl<T> MyTrait<T> for ()
+impl<T> "impl_MyTrait_for_unit" MyTrait<T> for ()
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    type rows_ty<'_0_1> = Empty<T>[{impl MyTrait<T> for ()}<T>[TraitClause0]::ImpliedClause1]
+    type rows_ty<'_0_1> = Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]
     where
-        TypeConstraint0: {impl MyTrait<T> for ()}<T>[TraitClause0]::rows_ty::ImpliedClause1::Item = T,
-        proof ImpliedClause0: ({impl MyTrait<T> for ()}<T>[TraitClause0]::rows_ty<'_0_1>: Sized) = {impl MyTrait<T> for ()}<T>[TraitClause0]::rows_ty::ImpliedClause0,
-        proof ImpliedClause1: ({impl MyTrait<T> for ()}<T>[TraitClause0]::rows_ty<'_0_1>: Iterator) = {impl MyTrait<T> for ()}<T>[TraitClause0]::rows_ty::ImpliedClause1;
-    fn rows<'_0_1> = {impl MyTrait<T> for ()}::rows<'_0_1, T>[TraitClause0]
+        TypeConstraint0: impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty::ImpliedClause1::Item = T,
+        proof ImpliedClause0: (impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_0_1>: Sized) = impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty::ImpliedClause0,
+        proof ImpliedClause1: (impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_0_1>: Iterator) = impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty::ImpliedClause1;
+    fn rows<'_0_1> = impl_MyTrait_for_unit::rows<'_0_1, T>[TraitClause0]
     non-dyn-compatible
 }
 

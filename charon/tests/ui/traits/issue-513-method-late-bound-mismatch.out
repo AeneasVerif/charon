@@ -26,7 +26,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method
-fn {impl Trait for ()}::method(self_1: (), _other_2: &'static u32)
+fn impl_Trait_for_unit::method(self_1: (), _other_2: &'static u32)
 {
     let _0: (); // return
     let self_1: (); // arg #1
@@ -38,9 +38,9 @@ fn {impl Trait for ()}::method(self_1: (), _other_2: &'static u32)
 }
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
-    fn method = {impl Trait for ()}::method
+    fn method = impl_Trait_for_unit::method
     non-dyn-compatible
 }
 
@@ -73,7 +73,7 @@ fn main()
     _5 = move _6
     _4 = &(*_5)
     _3 = &(*_4)
-    _1 = {impl Trait for ()}::method(move _2, move _3)
+    _1 = impl_Trait_for_unit::method(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_4)

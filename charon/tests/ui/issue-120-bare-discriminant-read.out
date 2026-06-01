@@ -23,7 +23,7 @@ where
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for Option<T>[TraitClause0]}::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
+unsafe fn impl_Destruct_for_Option::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <missing>
@@ -65,7 +65,7 @@ where
     _0 = move _2 != const 0 : isize
     storage_dead(_2)
     storage_dead(_4)
-    drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] opt_1
+    drop[impl_Destruct_for_Option::drop_in_place<T>[TraitClause0]] opt_1
     return
 }
 
@@ -85,7 +85,7 @@ where
             _0 = const 1 : isize
         },
     }
-    drop[{impl Destruct for Option<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] opt_1
+    drop[impl_Destruct_for_Option::drop_in_place<T>[TraitClause0]] opt_1
     return
 }
 

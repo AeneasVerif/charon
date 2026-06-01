@@ -53,7 +53,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl Trait for ()}::method
-fn {impl Trait for ()}::method<T>()
+fn impl_Trait_for_unit::method<T>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -66,9 +66,9 @@ where
 }
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn method<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = {impl Trait for ()}::method<T>[TraitClause0_1, TraitClause1_1::ImpliedClause1]
+    fn method<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy)> = impl_Trait_for_unit::method<T>[TraitClause0_1, TraitClause1_1::ImpliedClause1]
     non-dyn-compatible
 }
 
@@ -78,7 +78,7 @@ fn main()
     let _0: (); // return
 
     _0 = ()
-    _0 = {impl Trait for ()}::method<()>[{built_in impl Sized for ()}, {built_in impl Clone for ()}]()
+    _0 = impl_Trait_for_unit::method<()>[{built_in impl Sized for ()}, {built_in impl Clone for ()}]()
     return
 }
 

@@ -38,12 +38,12 @@ where
  = FOO()
 
 // Full name: test_crate::{impl Trait for T}
-impl<T> Trait for T
+impl<T> "impl_Trait_for_T" Trait for T
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
-    const FOO = FOO<T>[{impl Trait for T}<T>[TraitClause0]]
+    const FOO = FOO<T>[impl_Trait_for_T<T>[TraitClause0]]
     non-dyn-compatible
 }
 
@@ -54,7 +54,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const {impl Trait for T}<T>[TraitClause0]::FOO
+    _0 = const impl_Trait_for_T<T>[TraitClause0]::FOO
     return
 }
 

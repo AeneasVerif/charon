@@ -70,7 +70,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for ()}::fold
-fn {impl Trait for ()}::fold<'_0>(self_1: &'_0 ())
+fn impl_Trait_for_unit::fold<'_0>(self_1: &'_0 ())
 {
     let _0: (); // return
     let self_1: &'1 (); // arg #1
@@ -81,7 +81,7 @@ fn {impl Trait for ()}::fold<'_0>(self_1: &'_0 ())
 }
 
 // Full name: test_crate::{impl Trait for ()}::method
-fn {impl Trait for ()}::method<'_0>(self_1: &'_0 ())
+fn impl_Trait_for_unit::method<'_0>(self_1: &'_0 ())
 where
     TraitClause0: ((): Copy),
 {
@@ -92,17 +92,17 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*self_1)
-    _0 = {impl Trait for ()}::fold<'4>(move _2)
+    _0 = impl_Trait_for_unit::fold<'4>(move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn fold<'_0_1, TraitClause0_1: ((): Copy)> = {impl Trait for ()}::fold<'_0_1>
-    fn method<'_0_1, TraitClause0_1: ((): Copy)> = {impl Trait for ()}::method<'_0_1>[TraitClause0_1]
-    vtable: {impl Trait for ()}::{vtable}
+    fn fold<'_0_1, TraitClause0_1: ((): Copy)> = impl_Trait_for_unit::fold<'_0_1>
+    fn method<'_0_1, TraitClause0_1: ((): Copy)> = impl_Trait_for_unit::method<'_0_1>[TraitClause0_1]
+    vtable: impl_Trait_for_unit::{vtable}
 }
 
 

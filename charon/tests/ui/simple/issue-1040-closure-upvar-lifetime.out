@@ -108,11 +108,11 @@ pub fn foo<'_0>(s_1: &'_0 u8)
 }
 
 // Full name: test_crate::foo::closure::{impl Destruct for closure<'_0>}::drop_in_place
-unsafe fn {impl Destruct for closure<'_0>}::drop_in_place<'_0>(_1: *mut closure<'_0>)
+unsafe fn impl_Destruct_for_closure::drop_in_place<'_0>(_1: *mut closure<'_0>)
 = <missing>
 
 // Full name: test_crate::foo::{impl Fn<()> for closure<'_0>}::call
-fn {impl Fn<()> for closure<'_0>}::call<'_0, '_1, '_2>(_1: &'_2 closure<'_0>, tupled_args_2: ()) -> &'_1 u8
+fn impl_Fn_unit_for_closure::call<'_0, '_1, '_2>(_1: &'_2 closure<'_0>, tupled_args_2: ()) -> &'_1 u8
 {
     let _0: &'0 u8; // return
     let _1: &'2 closure<'_0>; // arg #1
@@ -123,7 +123,7 @@ fn {impl Fn<()> for closure<'_0>}::call<'_0, '_1, '_2>(_1: &'_2 closure<'_0>, tu
 }
 
 // Full name: test_crate::foo::{impl FnMut<()> for closure<'_0>}::call_mut
-fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1, '_2>(state_1: &'_2 mut closure<'_0>, args_2: ()) -> &'_1 u8
+fn impl_FnMut_unit_for_closure::call_mut<'_0, '_1, '_2>(state_1: &'_2 mut closure<'_0>, args_2: ()) -> &'_1 u8
 {
     let _0: &'_1 u8; // return
     let state_1: &'_2 mut closure<'_0>; // arg #1
@@ -132,12 +132,12 @@ fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1, '_2>(state_1: &'_2 mut 
 
     storage_live(_3)
     _3 = &(*state_1)
-    _0 = {impl Fn<()> for closure<'_0>}::call<'_0, '_1, '2>(move _3, move args_2)
+    _0 = impl_Fn_unit_for_closure::call<'_0, '_1, '2>(move _3, move args_2)
     return
 }
 
 // Full name: test_crate::foo::{impl FnOnce<()> for closure<'_0>}::call_once
-fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0, '_1>(_1: closure<'_0>, _2: ()) -> &'_1 u8
+fn impl_FnOnce_unit_for_closure::call_once<'_0, '_1>(_1: closure<'_0>, _2: ()) -> &'_1 u8
 {
     let _0: &'0 u8; // return
     let _1: closure<'_0>; // arg #1
@@ -146,45 +146,45 @@ fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0, '_1>(_1: closure<'_0>, _2:
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1, '7>(move _3, move _2)
-    drop[{impl Destruct for closure<'_0>}::drop_in_place<'_0>] _1
+    _0 = impl_FnMut_unit_for_closure::call_mut<'_0, '_1, '7>(move _3, move _2)
+    drop[impl_Destruct_for_closure::drop_in_place<'_0>] _1
     return
 }
 
 // Full name: test_crate::foo::{impl FnOnce<()> for closure<'_0>}
-impl<'_0, '_1> FnOnce<()> for closure<'_0> {
+impl<'_0, '_1> "impl_FnOnce_unit_for_closure" FnOnce<()> for closure<'_0> {
     proof ImpliedClause0: (closure<'_0>: MetaSized) = {built_in impl MetaSized for closure<'_0>}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (&'_ u8: Sized) = {built_in impl Sized for &'_ u8}
     type Output = &'_ u8
-    fn call_once = {impl FnOnce<()> for closure<'_0>}::call_once<'_0, '_1>
+    fn call_once = impl_FnOnce_unit_for_closure::call_once<'_0, '_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::foo::{impl FnMut<()> for closure<'_0>}
-impl<'_0, '_1> FnMut<()> for closure<'_0> {
+impl<'_0, '_1> "impl_FnMut_unit_for_closure" FnMut<()> for closure<'_0> {
     proof ImpliedClause0: (closure<'_0>: MetaSized) = {built_in impl MetaSized for closure<'_0>}
-    proof ImpliedClause1: (closure<'_0>: FnOnce<()>) = {impl FnOnce<()> for closure<'_0>}<'_0, '_1>
+    proof ImpliedClause1: (closure<'_0>: FnOnce<()>) = impl_FnOnce_unit_for_closure<'_0, '_1>
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call_mut<'_0_1> = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1, '_0_1>
+    fn call_mut<'_0_1> = impl_FnMut_unit_for_closure::call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::foo::{impl Fn<()> for closure<'_0>}
-impl<'_0, '_1> Fn<()> for closure<'_0> {
+impl<'_0, '_1> "impl_Fn_unit_for_closure" Fn<()> for closure<'_0> {
     proof ImpliedClause0: (closure<'_0>: MetaSized) = {built_in impl MetaSized for closure<'_0>}
-    proof ImpliedClause1: (closure<'_0>: FnMut<()>) = {impl FnMut<()> for closure<'_0>}<'_0, '_1>
+    proof ImpliedClause1: (closure<'_0>: FnMut<()>) = impl_FnMut_unit_for_closure<'_0, '_1>
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call<'_0_1> = {impl Fn<()> for closure<'_0>}::call<'_0, '_1, '_0_1>
+    fn call<'_0_1> = impl_Fn_unit_for_closure::call<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::foo::closure::{impl Destruct for closure<'_0>}
-impl<'_0> Destruct for closure<'_0> {
-    fn drop_in_place = {impl Destruct for closure<'_0>}::drop_in_place<'_0>
+impl<'_0> "impl_Destruct_for_closure" Destruct for closure<'_0> {
+    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<'_0>
     non-dyn-compatible
 }
 

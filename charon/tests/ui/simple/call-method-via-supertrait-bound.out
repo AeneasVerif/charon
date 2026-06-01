@@ -53,7 +53,7 @@ where
 = <method_without_default_body>
 
 // Full name: test_crate::{impl HasMethod for T}::method
-fn {impl HasMethod for T}::method<'_0, T>(self_1: &'_0 T)
+fn impl_HasMethod_for_T::method<'_0, T>(self_1: &'_0 T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: OtherTrait),
@@ -67,14 +67,14 @@ where
 }
 
 // Full name: test_crate::{impl HasMethod for T}
-impl<T> HasMethod for T
+impl<T> "impl_HasMethod_for_T" HasMethod for T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: OtherTrait),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
-    fn method<'_0_1> = {impl HasMethod for T}::method<'_0_1, T>[TraitClause0, TraitClause1]
-    vtable: {impl HasMethod for T}::{vtable}<T>[TraitClause0, TraitClause1]
+    fn method<'_0_1> = impl_HasMethod_for_T::method<'_0_1, T>[TraitClause0, TraitClause1]
+    vtable: impl_HasMethod_for_T::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::call_method
@@ -92,7 +92,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = {impl HasMethod for T}::method<'3, T>[TraitClause0, TraitClause1::ImpliedClause1](move _3)
+    _2 = impl_HasMethod_for_T::method<'3, T>[TraitClause0, TraitClause1::ImpliedClause1](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

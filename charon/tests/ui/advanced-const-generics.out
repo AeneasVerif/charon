@@ -95,7 +95,7 @@ enum Foo {
 }
 
 // Full name: test_crate::{impl Eq for Foo}::assert_fields_are_eq
-pub fn {impl Eq for Foo}::assert_fields_are_eq<'_0>(self_1: &'_0 Foo)
+pub fn impl_Eq_for_Foo::assert_fields_are_eq<'_0>(self_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -106,7 +106,7 @@ pub fn {impl Eq for Foo}::assert_fields_are_eq<'_0>(self_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
-pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
+pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 Foo; // arg #1
@@ -141,34 +141,34 @@ pub fn {impl PartialEq<Foo> for Foo}::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}
-impl PartialEq<Foo> for Foo {
-    fn eq<'_0_1, '_1_1> = {impl PartialEq<Foo> for Foo}::eq<'_0_1, '_1_1>
-    vtable: {impl PartialEq<Foo> for Foo}::{vtable}
+impl "impl_PartialEq_Foo_for_Foo" PartialEq<Foo> for Foo {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_Foo_for_Foo::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_Foo_for_Foo::{vtable}
 }
 
 // Full name: test_crate::{impl Eq for Foo}
-impl Eq for Foo {
-    proof ImpliedClause0: (Foo: PartialEq<Foo>) = {impl PartialEq<Foo> for Foo}
-    fn assert_fields_are_eq<'_0_1> = {impl Eq for Foo}::assert_fields_are_eq<'_0_1>
+impl "impl_Eq_for_Foo" Eq for Foo {
+    proof ImpliedClause0: (Foo: PartialEq<Foo>) = impl_PartialEq_Foo_for_Foo
+    fn assert_fields_are_eq<'_0_1> = impl_Eq_for_Foo::assert_fields_are_eq<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl StructuralPartialEq for Foo}
-impl StructuralPartialEq for Foo {
+impl "impl_StructuralPartialEq_for_Foo" StructuralPartialEq for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
-    vtable: {impl StructuralPartialEq for Foo}::{vtable}
+    vtable: impl_StructuralPartialEq_for_Foo::{vtable}
 }
 
 // Full name: test_crate::{impl ConstParamTy_ for Foo}
-impl ConstParamTy_ for Foo {
+impl "impl_ConstParamTy__for_Foo" ConstParamTy_ for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
-    proof ImpliedClause1: (Foo: StructuralPartialEq) = {impl StructuralPartialEq for Foo}
-    proof ImpliedClause2: (Foo: Eq) = {impl Eq for Foo}
+    proof ImpliedClause1: (Foo: StructuralPartialEq) = impl_StructuralPartialEq_for_Foo
+    proof ImpliedClause2: (Foo: Eq) = impl_Eq_for_Foo
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Debug for Foo}::fmt
-pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(self_1: &'_0 Foo, f_2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn impl_Debug_for_Foo::fmt<'_0, '_1, '_2>(self_1: &'_0 Foo, f_2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 {
     let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
     let self_1: &'1 Foo; // arg #1
@@ -202,9 +202,9 @@ pub fn {impl Debug for Foo}::fmt<'_0, '_1, '_2>(self_1: &'_0 Foo, f_2: &'_1 mut 
 }
 
 // Full name: test_crate::{impl Debug for Foo}
-impl Debug for Foo {
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Debug for Foo}::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: {impl Debug for Foo}::{vtable}
+impl "impl_Debug_for_Foo" Debug for Foo {
+    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_Foo::fmt<'_0_1, '_1_1, '_2_1>
+    vtable: impl_Debug_for_Foo::{vtable}
 }
 
 // Full name: test_crate::foo

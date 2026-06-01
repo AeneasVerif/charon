@@ -56,20 +56,20 @@ where
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}::clone
-pub fn {impl Clone for u32}::clone<'_0>(_1: &'_0 u32) -> u32
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}
-impl Clone for u32 {
+impl "impl_Clone_for_u32" Clone for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    fn clone<'_0_1> = {impl Clone for u32}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: core::marker::{impl Copy for u32}
-impl Copy for u32 {
+impl "impl_Copy_for_u32" Copy for u32 {
     proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: Clone) = {impl Clone for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
     non-dyn-compatible
 }
 
@@ -94,20 +94,20 @@ where
 pub opaque type NonZeroU32Inner
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}::clone
-pub fn {impl Clone for NonZeroU32Inner}::clone<'_0>(_1: &'_0 NonZeroU32Inner) -> NonZeroU32Inner
+pub fn impl_Clone_for_NonZeroU32Inner::clone<'_0>(_1: &'_0 NonZeroU32Inner) -> NonZeroU32Inner
 = <opaque>
 
 // Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}
-impl Clone for NonZeroU32Inner {
+impl "impl_Clone_for_NonZeroU32Inner" Clone for NonZeroU32Inner {
     proof ImpliedClause0: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
-    fn clone<'_0_1> = {impl Clone for NonZeroU32Inner}::clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_NonZeroU32Inner::clone<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: core::num::niche_types::{impl Copy for NonZeroU32Inner}
-impl Copy for NonZeroU32Inner {
+impl "impl_Copy_for_NonZeroU32Inner" Copy for NonZeroU32Inner {
     proof ImpliedClause0: (NonZeroU32Inner: MetaSized) = {built_in impl MetaSized for NonZeroU32Inner}
-    proof ImpliedClause1: (NonZeroU32Inner: Clone) = {impl Clone for NonZeroU32Inner}
+    proof ImpliedClause1: (NonZeroU32Inner: Clone) = impl_Clone_for_NonZeroU32Inner
     non-dyn-compatible
 }
 
@@ -131,18 +131,18 @@ pub trait ZeroablePrimitive<Self>
 }
 
 // Full name: core::num::nonzero::{impl Sealed for u32}
-impl Sealed for u32 {
+impl "impl_Sealed_for_u32" Sealed for u32 {
     proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    vtable: {impl Sealed for u32}::{vtable}
+    vtable: impl_Sealed_for_u32::{vtable}
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
-impl ZeroablePrimitive for u32 {
+impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    proof ImpliedClause1: (u32: Copy) = {impl Copy for u32}
-    proof ImpliedClause2: (u32: Sealed) = {impl Sealed for u32}
+    proof ImpliedClause1: (u32: Copy) = impl_Copy_for_u32
+    proof ImpliedClause2: (u32: Sealed) = impl_Sealed_for_u32
     proof ImpliedClause3: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
-    proof ImpliedClause4: (NonZeroU32Inner: Copy) = {impl Copy for NonZeroU32Inner}
+    proof ImpliedClause4: (NonZeroU32Inner: Copy) = impl_Copy_for_NonZeroU32Inner
     type NonZeroInner = NonZeroU32Inner
     non-dyn-compatible
 }
@@ -182,12 +182,12 @@ where
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
+unsafe fn impl_Destruct_for_Global::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl Destruct for Global {
-    fn drop_in_place = {impl Destruct for Global}::drop_in_place
+impl "impl_Destruct_for_Global" Destruct for Global {
+    fn drop_in_place = impl_Destruct_for_Global::drop_in_place
     non-dyn-compatible
 }
 
@@ -199,7 +199,7 @@ where
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -241,19 +241,19 @@ where
 }
 
 // Full name: test_crate::test_new_non_zero_u32
-pub fn test_new_non_zero_u32(x_1: u32) -> NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]
+pub fn test_new_non_zero_u32(x_1: u32) -> NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]
 {
-    let _0: NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]; // return
+    let _0: NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]; // return
     let x_1: u32; // arg #1
-    let _2: Option<NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]>[{built_in impl Sized for NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]}]; // anonymous local
+    let _2: Option<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>[{built_in impl Sized for NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]}]; // anonymous local
     let _3: u32; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
     _3 = copy x_1
-    _2 = core::num::nonzero::{NonZero<T>[TraitClause0, TraitClause1]}::new<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}](move _3)
+    _2 = core::num::nonzero::{NonZero<T>[TraitClause0, TraitClause1]}::new<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32](move _3)
     storage_dead(_3)
-    _0 = unwrap<NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]>[{built_in impl Sized for NonZero<u32>[{built_in impl Sized for u32}, {impl ZeroablePrimitive for u32}]}](move _2)
+    _0 = unwrap<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>[{built_in impl Sized for NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]}](move _2)
     storage_dead(_2)
     return
 }
@@ -272,11 +272,11 @@ pub fn test_vec_push()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut v_1
-    _2 = push<'3, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, {impl Destruct for Global}](move _3, const 0 : u32)
+    _2 = push<'3, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _3, const 0 : u32)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v_1
+    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v_1
     storage_dead(v_1)
     return
 }
@@ -290,7 +290,7 @@ pub fn use_get<'_0>(rc_1: &'_0 Cell<u32>[{built_in impl MetaSized for u32}]) -> 
 
     storage_live(_2)
     _2 = &(*rc_1)
-    _0 = get<'4, u32>[{built_in impl Sized for u32}, {impl Copy for u32}](move _2)
+    _0 = get<'4, u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](move _2)
     storage_dead(_2)
     return
 }

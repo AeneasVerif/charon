@@ -203,7 +203,7 @@ pub trait Trait<Self>
 }
 
 // Full name: test_crate::{impl Trait for Result<T, U>[TraitClause0, TraitClause1]}
-impl<T, U> Trait for Result<T, U>[TraitClause0, TraitClause1]
+impl<T, U> "impl_Trait_for_Result" Trait for Result<T, U>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -211,7 +211,7 @@ where
     TraitClause3: for<'a> (TraitClause2::Item: Copy),
 {
     proof ImpliedClause0: (Result<T, U>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for Result<T, U>[TraitClause0, TraitClause1]}
-    vtable: {impl Trait for Result<T, U>[TraitClause0, TraitClause1]}::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    vtable: impl_Trait_for_Result::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
 }
 
 

@@ -92,7 +92,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for ()}::method2
-fn {impl Trait for ()}::method2()
+fn impl_Trait_for_unit::method2()
 {
     let _0: (); // return
 
@@ -102,7 +102,7 @@ fn {impl Trait for ()}::method2()
 }
 
 // Full name: test_crate::{impl Trait for ()}::method1
-fn {impl Trait for ()}::method1()
+fn impl_Trait_for_unit::method1()
 {
     let _0: (); // return
 
@@ -112,7 +112,7 @@ fn {impl Trait for ()}::method1()
 }
 
 // Full name: test_crate::{impl Trait for ()}::CONST3
-fn {impl Trait for ()}::CONST3() -> usize
+fn impl_Trait_for_unit::CONST3() -> usize
 {
     let _0: usize; // return
 
@@ -121,10 +121,10 @@ fn {impl Trait for ()}::CONST3() -> usize
 }
 
 // Full name: test_crate::{impl Trait for ()}::CONST3
-const {impl Trait for ()}::CONST3: usize = {impl Trait for ()}::CONST3()
+const impl_Trait_for_unit::CONST3: usize = impl_Trait_for_unit::CONST3()
 
 // Full name: test_crate::{impl Trait for ()}::CONST2
-fn {impl Trait for ()}::CONST2() -> usize
+fn impl_Trait_for_unit::CONST2() -> usize
 {
     let _0: usize; // return
 
@@ -133,10 +133,10 @@ fn {impl Trait for ()}::CONST2() -> usize
 }
 
 // Full name: test_crate::{impl Trait for ()}::CONST2
-const {impl Trait for ()}::CONST2: usize = {impl Trait for ()}::CONST2()
+const impl_Trait_for_unit::CONST2: usize = impl_Trait_for_unit::CONST2()
 
 // Full name: test_crate::{impl Trait for ()}::CONST1
-fn {impl Trait for ()}::CONST1() -> usize
+fn impl_Trait_for_unit::CONST1() -> usize
 {
     let _0: usize; // return
 
@@ -145,21 +145,21 @@ fn {impl Trait for ()}::CONST1() -> usize
 }
 
 // Full name: test_crate::{impl Trait for ()}::CONST1
-const {impl Trait for ()}::CONST1: usize = {impl Trait for ()}::CONST1()
+const impl_Trait_for_unit::CONST1: usize = impl_Trait_for_unit::CONST1()
 
 // Full name: test_crate::{impl Trait for ()}
-impl Trait for () {
+impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    const CONST1 = {impl Trait for ()}::CONST1
-    const CONST2 = {impl Trait for ()}::CONST2
-    const CONST3 = {impl Trait for ()}::CONST3
-    fn method1 = {impl Trait for ()}::method1
-    fn method2 = {impl Trait for ()}::method2
+    const CONST1 = impl_Trait_for_unit::CONST1
+    const CONST2 = impl_Trait_for_unit::CONST2
+    const CONST3 = impl_Trait_for_unit::CONST3
+    fn method1 = impl_Trait_for_unit::method1
+    fn method2 = impl_Trait_for_unit::method2
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait for u8}::method2
-fn {impl Trait for u8}::method2()
+fn impl_Trait_for_u8::method2()
 {
     let _0: (); // return
 
@@ -169,7 +169,7 @@ fn {impl Trait for u8}::method2()
 }
 
 // Full name: test_crate::{impl Trait for u8}::CONST2
-fn {impl Trait for u8}::CONST2() -> usize
+fn impl_Trait_for_u8::CONST2() -> usize
 {
     let _0: usize; // return
 
@@ -178,10 +178,10 @@ fn {impl Trait for u8}::CONST2() -> usize
 }
 
 // Full name: test_crate::{impl Trait for u8}::CONST2
-const {impl Trait for u8}::CONST2: usize = {impl Trait for u8}::CONST2()
+const impl_Trait_for_u8::CONST2: usize = impl_Trait_for_u8::CONST2()
 
 // Full name: test_crate::{impl Trait for u8}::method1
-fn {impl Trait for u8}::method1()
+fn impl_Trait_for_u8::method1()
 {
     let _0: (); // return
 
@@ -191,13 +191,13 @@ fn {impl Trait for u8}::method1()
 }
 
 // Full name: test_crate::{impl Trait for u8}
-impl Trait for u8 {
+impl "impl_Trait_for_u8" Trait for u8 {
     proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
-    const CONST1 = test_crate::Trait::CONST1<u8>[{impl Trait for u8}]
-    const CONST2 = {impl Trait for u8}::CONST2
-    const CONST3 = test_crate::Trait::CONST3<u8>[{impl Trait for u8}]
-    fn method1 = {impl Trait for u8}::method1
-    fn method2 = {impl Trait for u8}::method2
+    const CONST1 = test_crate::Trait::CONST1<u8>[impl_Trait_for_u8]
+    const CONST2 = impl_Trait_for_u8::CONST2
+    const CONST3 = test_crate::Trait::CONST3<u8>[impl_Trait_for_u8]
+    fn method1 = impl_Trait_for_u8::method1
+    fn method2 = impl_Trait_for_u8::method2
     non-dyn-compatible
 }
 

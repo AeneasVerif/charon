@@ -120,17 +120,17 @@ where
  = MAX_SLICE_LEN()
 
 // Full name: core::mem::{impl SizedTypeProperties for T}
-impl<T> SizedTypeProperties for T
+impl<T> "impl_SizedTypeProperties_for_T" SizedTypeProperties for T
 where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (T: Sized) = TraitClause0
-    const SIZE = SIZE<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const ALIGN = ALIGN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const ALIGNMENT = ALIGNMENT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const IS_ZST = IS_ZST<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const LAYOUT = LAYOUT<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}<T>[TraitClause0]]
+    const SIZE = SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const ALIGN = ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const ALIGNMENT = ALIGNMENT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const IS_ZST = IS_ZST<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const LAYOUT = LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
+    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     non-dyn-compatible
 }
 
@@ -149,12 +149,12 @@ pub opaque type Unique<T>
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn {impl Destruct for Global}::drop_in_place(_1: *mut Global)
+unsafe fn impl_Destruct_for_Global::drop_in_place(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl Destruct for Global {
-    fn drop_in_place = {impl Destruct for Global}::drop_in_place
+impl "impl_Destruct_for_Global" Destruct for Global {
+    fn drop_in_place = impl_Destruct_for_Global::drop_in_place
     non-dyn-compatible
 }
 
@@ -215,7 +215,7 @@ where
     len_3 = copy ((*self_1)).len
     storage_live(_4)
     storage_live(_5)
-    switch const {impl SizedTypeProperties for T}<T>[TraitClause0]::SIZE {
+    switch const impl_SizedTypeProperties_for_T<T>[TraitClause0]::SIZE {
         0 : usize => {
             _5 = const 18446744073709551615 : usize
         },
@@ -283,7 +283,7 @@ fn vec<'_0>(x_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl
     _0 = ()
     storage_live(_2)
     _2 = &two-phase-mut (*x_1)
-    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, {impl Destruct for Global}](move _2, const 42 : u32)
+    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, const 42 : u32)
     storage_dead(_2)
     return
 }

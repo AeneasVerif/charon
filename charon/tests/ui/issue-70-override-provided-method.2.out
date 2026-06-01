@@ -79,7 +79,7 @@ where
 struct Foo {}
 
 // Full name: test_crate::{impl Trait for Foo}::provided1
-fn {impl Trait for Foo}::provided1<'_0>(self_1: &'_0 Foo)
+fn impl_Trait_for_Foo::provided1<'_0>(self_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -92,13 +92,13 @@ fn {impl Trait for Foo}::provided1<'_0>(self_1: &'_0 Foo)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = {impl Trait for Foo}::required<'5>(move _3)
+    _2 = impl_Trait_for_Foo::required<'5>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self_1)
-    _4 = {impl Trait for Foo}::provided2<'7>(move _5)
+    _4 = impl_Trait_for_Foo::provided2<'7>(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
@@ -106,7 +106,7 @@ fn {impl Trait for Foo}::provided1<'_0>(self_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl Trait for Foo}::provided2
-fn {impl Trait for Foo}::provided2<'_0>(self_1: &'_0 Foo)
+fn impl_Trait_for_Foo::provided2<'_0>(self_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -119,13 +119,13 @@ fn {impl Trait for Foo}::provided2<'_0>(self_1: &'_0 Foo)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = {impl Trait for Foo}::required<'5>(move _3)
+    _2 = impl_Trait_for_Foo::required<'5>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self_1)
-    _4 = {impl Trait for Foo}::provided1<'7>(move _5)
+    _4 = impl_Trait_for_Foo::provided1<'7>(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
@@ -133,7 +133,7 @@ fn {impl Trait for Foo}::provided2<'_0>(self_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl Trait for Foo}::required
-fn {impl Trait for Foo}::required<'_0>(self_1: &'_0 Foo)
+fn impl_Trait_for_Foo::required<'_0>(self_1: &'_0 Foo)
 {
     let _0: (); // return
     let self_1: &'1 Foo; // arg #1
@@ -144,7 +144,7 @@ fn {impl Trait for Foo}::required<'_0>(self_1: &'_0 Foo)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = {impl Trait for Foo}::provided1<'4>(move _3)
+    _2 = impl_Trait_for_Foo::provided1<'4>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -152,19 +152,19 @@ fn {impl Trait for Foo}::required<'_0>(self_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl Trait for Foo}
-impl Trait for Foo {
+impl "impl_Trait_for_Foo" Trait for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
-    fn required<'_0_1> = {impl Trait for Foo}::required<'_0_1>
-    fn provided1<'_0_1> = {impl Trait for Foo}::provided1<'_0_1>
-    fn provided2<'_0_1> = {impl Trait for Foo}::provided2<'_0_1>
-    vtable: {impl Trait for Foo}::{vtable}
+    fn required<'_0_1> = impl_Trait_for_Foo::required<'_0_1>
+    fn provided1<'_0_1> = impl_Trait_for_Foo::provided1<'_0_1>
+    fn provided2<'_0_1> = impl_Trait_for_Foo::provided2<'_0_1>
+    vtable: impl_Trait_for_Foo::{vtable}
 }
 
 // Full name: test_crate::Bar
 struct Bar {}
 
 // Full name: test_crate::{impl Trait for Bar}::provided2
-fn {impl Trait for Bar}::provided2<'_0>(self_1: &'_0 Bar)
+fn impl_Trait_for_Bar::provided2<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1
@@ -177,13 +177,13 @@ fn {impl Trait for Bar}::provided2<'_0>(self_1: &'_0 Bar)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = {impl Trait for Bar}::required<'5>(move _3)
+    _2 = impl_Trait_for_Bar::required<'5>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self_1)
-    _4 = {impl Trait for Bar}::provided1<'7>(move _5)
+    _4 = impl_Trait_for_Bar::provided1<'7>(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
@@ -191,7 +191,7 @@ fn {impl Trait for Bar}::provided2<'_0>(self_1: &'_0 Bar)
 }
 
 // Full name: test_crate::{impl Trait for Bar}::required
-fn {impl Trait for Bar}::required<'_0>(self_1: &'_0 Bar)
+fn impl_Trait_for_Bar::required<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1
@@ -202,7 +202,7 @@ fn {impl Trait for Bar}::required<'_0>(self_1: &'_0 Bar)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = {impl Trait for Bar}::provided2<'4>(move _3)
+    _2 = impl_Trait_for_Bar::provided2<'4>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -210,7 +210,7 @@ fn {impl Trait for Bar}::required<'_0>(self_1: &'_0 Bar)
 }
 
 // Full name: test_crate::{impl Trait for Bar}::provided1
-fn {impl Trait for Bar}::provided1<'_0>(self_1: &'_0 Bar)
+fn impl_Trait_for_Bar::provided1<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1
@@ -221,7 +221,7 @@ fn {impl Trait for Bar}::provided1<'_0>(self_1: &'_0 Bar)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = {impl Trait for Bar}::provided2<'4>(move _3)
+    _2 = impl_Trait_for_Bar::provided2<'4>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -229,12 +229,12 @@ fn {impl Trait for Bar}::provided1<'_0>(self_1: &'_0 Bar)
 }
 
 // Full name: test_crate::{impl Trait for Bar}
-impl Trait for Bar {
+impl "impl_Trait_for_Bar" Trait for Bar {
     proof ImpliedClause0: (Bar: MetaSized) = {built_in impl MetaSized for Bar}
-    fn required<'_0_1> = {impl Trait for Bar}::required<'_0_1>
-    fn provided1<'_0_1> = {impl Trait for Bar}::provided1<'_0_1>
-    fn provided2<'_0_1> = {impl Trait for Bar}::provided2<'_0_1>
-    vtable: {impl Trait for Bar}::{vtable}
+    fn required<'_0_1> = impl_Trait_for_Bar::required<'_0_1>
+    fn provided1<'_0_1> = impl_Trait_for_Bar::provided1<'_0_1>
+    fn provided2<'_0_1> = impl_Trait_for_Bar::provided2<'_0_1>
+    vtable: impl_Trait_for_Bar::{vtable}
 }
 
 

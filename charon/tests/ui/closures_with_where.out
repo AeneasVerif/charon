@@ -99,24 +99,24 @@ where
 {}
 
 // Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}::drop_in_place<T, const K : usize>(_1: *mut closure<T, K>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_closure::drop_in_place<T, const K : usize>(_1: *mut closure<T, K>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 = <missing>
 
 // Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}
-impl<T, const K : usize> Destruct for closure<T, K>[TraitClause0, TraitClause1]
+impl<T, const K : usize> "impl_Destruct_for_closure" Destruct for closure<T, K>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {
-    fn drop_in_place = {impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}::drop_in_place<T, K>[TraitClause0, TraitClause1]
+    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<T, K>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_mut
-fn {impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[TraitClause0, TraitClause1], tupled_args_2: (usize,)) -> T
+fn impl_FnMut_tuple_for_closure::call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[TraitClause0, TraitClause1], tupled_args_2: (usize,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
@@ -137,7 +137,7 @@ where
 }
 
 // Full name: test_crate::test::{impl FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_once
-fn {impl FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_once<T, const K : usize>(_1: closure<T, K>[TraitClause0, TraitClause1], _2: (usize,)) -> T
+fn impl_FnOnce_tuple_for_closure::call_once<T, const K : usize>(_1: closure<T, K>[TraitClause0, TraitClause1], _2: (usize,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
@@ -149,13 +149,13 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_mut<'3, T, K>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}::drop_in_place<T, K>[TraitClause0, TraitClause1]] _1
+    _0 = impl_FnMut_tuple_for_closure::call_mut<'3, T, K>[TraitClause0, TraitClause1](move _3, move _2)
+    drop[impl_Destruct_for_closure::drop_in_place<T, K>[TraitClause0, TraitClause1]] _1
     return
 }
 
 // Full name: test_crate::test::{impl FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}
-impl<T, const K : usize> FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]
+impl<T, const K : usize> "impl_FnOnce_tuple_for_closure" FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
@@ -165,21 +165,21 @@ where
     proof ImpliedClause2: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
     proof ImpliedClause3: (T: Sized) = TraitClause0
     type Output = T
-    fn call_once = {impl FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_once<T, K>[TraitClause0, TraitClause1]
+    fn call_once = impl_FnOnce_tuple_for_closure::call_once<T, K>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}
-impl<T, const K : usize> FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]
+impl<T, const K : usize> "impl_FnMut_tuple_for_closure" FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {
     proof ImpliedClause0: (closure<T, K>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<T, K>[TraitClause0, TraitClause1]}
-    proof ImpliedClause1: (closure<T, K>[TraitClause0, TraitClause1]: FnOnce<(usize,)>) = {impl FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}<T, K>[TraitClause0, TraitClause1]
+    proof ImpliedClause1: (closure<T, K>[TraitClause0, TraitClause1]: FnOnce<(usize,)>) = impl_FnOnce_tuple_for_closure<T, K>[TraitClause0, TraitClause1]
     proof ImpliedClause2: ((usize,): Sized) = {built_in impl Sized for (usize,)}
     proof ImpliedClause3: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
-    fn call_mut<'_0_1> = {impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_mut<'_0_1, T, K>[TraitClause0, TraitClause1]
+    fn call_mut<'_0_1> = impl_FnMut_tuple_for_closure::call_mut<'_0_1, T, K>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -194,7 +194,7 @@ where
 
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<T, closure<T, K>[TraitClause0, TraitClause1], 1 : usize>[TraitClause0, {built_in impl Sized for closure<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, {impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}<T, K>[TraitClause0, TraitClause1], {impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}<T, K>[TraitClause0, TraitClause1]](move _1)
+    _0 = from_fn<T, closure<T, K>[TraitClause0, TraitClause1], 1 : usize>[TraitClause0, {built_in impl Sized for closure<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, impl_FnMut_tuple_for_closure<T, K>[TraitClause0, TraitClause1], impl_Destruct_for_closure<T, K>[TraitClause0, TraitClause1]](move _1)
     storage_dead(_1)
     return
 }

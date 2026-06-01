@@ -68,7 +68,7 @@ trait IntoIterator<Self, Self_Item, Self_IntoIter>
 }
 
 // Full name: test_crate::{impl IntoIterator<Clause1_Item, I> for I}
-impl<I, Clause1_Item> IntoIterator<Clause1_Item, I> for I
+impl<I, Clause1_Item> "impl_IntoIterator_for_T" IntoIterator<Clause1_Item, I> for I
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: Iterator<Clause1_Item>),
@@ -77,7 +77,7 @@ where
     proof ImpliedClause1: (Clause1_Item: Sized) = TraitClause1::ImpliedClause1
     proof ImpliedClause2: (I: Sized) = TraitClause0
     proof ImpliedClause3: (I: Iterator<Clause1_Item>) = TraitClause1
-    vtable: {impl IntoIterator<Clause1_Item, I> for I}::{vtable}<I>[TraitClause0, TraitClause1]
+    vtable: impl_IntoIterator_for_T::{vtable}<I>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::callee
