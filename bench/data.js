@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780403552297,
+  "lastUpdate": 1780409762913,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -4749,6 +4749,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 40.63,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 592,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 5.1,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07b6fbf3af0c5da02ed987517f13140d543545fe",
+          "message": "Merge pull request #1247 from Nadrieril/hrtb-type-alias-clauses\n\nAdd missing clauses for all type aliases",
+          "timestamp": "2026-06-02T14:11:44Z",
+          "tree_id": "7bbf6bf966d477d7a1cba4bc32ce838a1700a8da",
+          "url": "https://github.com/AeneasVerif/charon/commit/07b6fbf3af0c5da02ed987517f13140d543545fe"
+        },
+        "date": 1780409761820,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 102798311499,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 15.11,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 445,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24.8,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 355758078584,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 43.54,
             "unit": "wall-clock(s)"
           },
           {
