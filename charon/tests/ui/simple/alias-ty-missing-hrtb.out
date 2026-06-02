@@ -24,7 +24,38 @@ pub trait HasLifetimeAssoc<'a, Self>
 // Full name: test_crate::FnAlias
 pub type FnAlias<B>
 where
-    TraitClause0: (B: Sized), = fn<'a>(UNKNOWN(Could not find a clause for `Binder { value: <B as HasLifetimeAssoc<'a>>, bound_vars: [] }` in the current context: `Unimplemented`)::Assoc)
+    TraitClause0: (B: Sized),
+    TraitClause1: for<'a> (B: HasLifetimeAssoc<'a>), = fn<'a>(TraitClause1::Assoc)
+
+// Full name: test_crate::HasTwoLifetimeAssoc
+pub trait HasTwoLifetimeAssoc<'a, 'b, Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Assoc: Sized)
+    type Assoc
+    vtable: test_crate::HasTwoLifetimeAssoc::{vtable}<'a, 'b, Self::Assoc>
+}
+
+// Full name: test_crate::NestedFnAlias
+pub type NestedFnAlias<B>
+where
+    TraitClause0: (B: Sized),
+    TraitClause1: for<'a, 'b> (B: HasTwoLifetimeAssoc<'a, 'b>), = fn<'a>(fn<'b>(TraitClause1::Assoc))
+
+// Full name: test_crate::HasMixedLifetimeAssoc
+pub trait HasMixedLifetimeAssoc<'outer, 'late, Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Assoc: Sized)
+    type Assoc
+    vtable: test_crate::HasMixedLifetimeAssoc::{vtable}<'outer, 'late, Self::Assoc>
+}
+
+// Full name: test_crate::MixedFnAlias
+pub type MixedFnAlias<'outer, B>
+where
+    TraitClause0: (B: Sized),
+    TraitClause1: for<'late> (B: HasMixedLifetimeAssoc<'outer, 'late>), = fn<'late>(TraitClause1::Assoc)
 
 
 

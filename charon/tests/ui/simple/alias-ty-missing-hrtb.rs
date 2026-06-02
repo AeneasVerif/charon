@@ -2,5 +2,17 @@ pub trait HasLifetimeAssoc<'a> {
     type Assoc;
 }
 
-// We don't lift such a clause today; see https://github.com/AeneasVerif/charon/issues/1143.
 pub type FnAlias<B> = for<'a> fn(<B as HasLifetimeAssoc<'a>>::Assoc);
+
+pub trait HasTwoLifetimeAssoc<'a, 'b> {
+    type Assoc;
+}
+
+pub type NestedFnAlias<B> = for<'a> fn(for<'b> fn(<B as HasTwoLifetimeAssoc<'a, 'b>>::Assoc));
+
+pub trait HasMixedLifetimeAssoc<'outer, 'late> {
+    type Assoc;
+}
+
+pub type MixedFnAlias<'outer, B> =
+    for<'late> fn(<B as HasMixedLifetimeAssoc<'outer, 'late>>::Assoc);
