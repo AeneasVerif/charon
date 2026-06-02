@@ -66,7 +66,6 @@
 //!
 //! Limitations:
 //! - we don't track bound lifetimes in quantified clauses properly (<https://github.com/AeneasVerif/charon/issues/534>).
-//! - type aliases don't have the correct clauses in scope (<https://github.com/AeneasVerif/charon/issues/531>).
 //! - we don't take into account unicity of trait implementations. This means we won't detect type
 //!   equalities due to the same trait predicate appearing twice, or a trait predicate coinciding
 //!   with an existing trait impl. See the `dictionary_passing_style_woes.rs` test file.
