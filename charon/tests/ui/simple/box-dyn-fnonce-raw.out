@@ -525,12 +525,18 @@ where
     let ret_0: core::ops::function::FnOnce::{vtable}<Args, TraitClause4::Output>; // return
     let size_1: usize; // local
     let align_2: usize; // local
+    let _3: unsafe fn(*mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '0)); // anonymous local
+    let _4: extern "rust-call" fn((dyn FnOnce<Args, Output = TraitClause4::Output> + '1), Args) -> TraitClause4::Output; // anonymous local
 
     storage_live(size_1)
     size_1 = size_of<Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>
     storage_live(align_2)
     align_2 = align_of<Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>
-    ret_0 = core::ops::function::FnOnce::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], method_call_once: const {vtable_method}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], super_trait_0: const &vtable_of({built_in impl MetaSized for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}) }
+    storage_live(_3)
+    _3 = cast<{vtable_drop_shim}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], unsafe fn(*mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '0))>(const {vtable_drop_shim}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5])
+    storage_live(_4)
+    _4 = cast<{vtable_method}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], extern "rust-call" fn((dyn FnOnce<Args, Output = TraitClause4::Output> + '1), Args) -> TraitClause4::Output>(const {vtable_method}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5])
+    ret_0 = core::ops::function::FnOnce::{vtable} { size: move size_1, align: move align_2, drop: move _3, method_call_once: move _4, super_trait_0: const &vtable_of({built_in impl MetaSized for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}) }
     return
 }
 

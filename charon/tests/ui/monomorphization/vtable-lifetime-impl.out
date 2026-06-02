@@ -97,6 +97,8 @@ fn {impl Trait for Pattern::<'_>}::{vtable}::<'_>() -> test_crate::Trait::{vtabl
     let erased_drop_4: *const (); // local
     let method_5: fn<'_0_1>(&'_0_1 (dyn Trait + '1)); // local
     let erased_method_6: *const (); // local
+    let _7: unsafe fn(*mut (dyn Trait + '3)); // anonymous local
+    let _8: fn<'_0_1>(&'_0_1 (dyn Trait + '8)); // anonymous local
 
     storage_live(size_1)
     size_1 = size_of<Pattern::<'_>>
@@ -104,11 +106,15 @@ fn {impl Trait for Pattern::<'_>}::{vtable}::<'_>() -> test_crate::Trait::{vtabl
     align_2 = align_of<Pattern::<'_>>
     storage_live(drop_3)
     storage_live(erased_drop_4)
-    drop_3 = const {vtable_drop_shim}::<'_>
+    storage_live(_7)
+    _7 = cast<{vtable_drop_shim}::<'_>, unsafe fn(*mut (dyn Trait + '3))>(const {vtable_drop_shim}::<'_>)
+    drop_3 = move _7
     erased_drop_4 = cast<unsafe fn(*mut (dyn Trait + '4)), *const ()>(move drop_3)
     storage_live(method_5)
     storage_live(erased_method_6)
-    method_5 = const {vtable_method}::<'_><'7>
+    storage_live(_8)
+    _8 = cast<for<'_0_1> {vtable_method}::<'_><'7>, fn<'_0_1>(&'_0_1 (dyn Trait + '8))>(const {vtable_method}::<'_><'7>)
+    method_5 = move _8
     erased_method_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '9)), *const ()>(move method_5)
     ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_method: move erased_method_6, super_trait_0: const &vtable_of({built_in impl MetaSized for Pattern::<'_>}) }
     return

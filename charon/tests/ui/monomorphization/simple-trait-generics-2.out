@@ -82,6 +82,8 @@ fn impl_Trait_bool_for_i32::{vtable}() -> test_crate::Trait::{vtable}
     let erased_drop_4: *const (); // local
     let comsume_5: fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '1)) -> bool; // local
     let erased_comsume_6: *const (); // local
+    let _7: unsafe fn(*mut (dyn Trait<bool> + '3)); // anonymous local
+    let _8: fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '8)) -> bool; // anonymous local
 
     storage_live(size_1)
     size_1 = size_of<i32>
@@ -89,11 +91,15 @@ fn impl_Trait_bool_for_i32::{vtable}() -> test_crate::Trait::{vtable}
     align_2 = align_of<i32>
     storage_live(drop_3)
     storage_live(erased_drop_4)
-    drop_3 = const impl_Trait_bool_for_i32::{vtable_drop_shim}
+    storage_live(_7)
+    _7 = cast<impl_Trait_bool_for_i32::{vtable_drop_shim}, unsafe fn(*mut (dyn Trait<bool> + '3))>(const impl_Trait_bool_for_i32::{vtable_drop_shim})
+    drop_3 = move _7
     erased_drop_4 = cast<unsafe fn(*mut (dyn Trait<bool> + '4)), *const ()>(move drop_3)
     storage_live(comsume_5)
     storage_live(erased_comsume_6)
-    comsume_5 = const impl_Trait_bool_for_i32::comsume::{vtable_method}<'7>
+    storage_live(_8)
+    _8 = cast<for<'_0_1> impl_Trait_bool_for_i32::comsume::{vtable_method}<'7>, fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '8)) -> bool>(const impl_Trait_bool_for_i32::comsume::{vtable_method}<'7>)
+    comsume_5 = move _8
     erased_comsume_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '9)) -> bool, *const ()>(move comsume_5)
     ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_comsume: move erased_comsume_6, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
     return
@@ -155,6 +161,8 @@ fn impl_Trait_usize_for_u32::{vtable}() -> test_crate::Trait::{vtable}
     let erased_drop_4: *const (); // local
     let comsume_5: fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '1)) -> usize; // local
     let erased_comsume_6: *const (); // local
+    let _7: unsafe fn(*mut (dyn Trait<usize> + '3)); // anonymous local
+    let _8: fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '8)) -> usize; // anonymous local
 
     storage_live(size_1)
     size_1 = size_of<u32>
@@ -162,11 +170,15 @@ fn impl_Trait_usize_for_u32::{vtable}() -> test_crate::Trait::{vtable}
     align_2 = align_of<u32>
     storage_live(drop_3)
     storage_live(erased_drop_4)
-    drop_3 = const impl_Trait_usize_for_u32::{vtable_drop_shim}
+    storage_live(_7)
+    _7 = cast<impl_Trait_usize_for_u32::{vtable_drop_shim}, unsafe fn(*mut (dyn Trait<usize> + '3))>(const impl_Trait_usize_for_u32::{vtable_drop_shim})
+    drop_3 = move _7
     erased_drop_4 = cast<unsafe fn(*mut (dyn Trait<usize> + '4)), *const ()>(move drop_3)
     storage_live(comsume_5)
     storage_live(erased_comsume_6)
-    comsume_5 = const impl_Trait_usize_for_u32::comsume::{vtable_method}<'7>
+    storage_live(_8)
+    _8 = cast<for<'_0_1> impl_Trait_usize_for_u32::comsume::{vtable_method}<'7>, fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '8)) -> usize>(const impl_Trait_usize_for_u32::comsume::{vtable_method}<'7>)
+    comsume_5 = move _8
     erased_comsume_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '9)) -> usize, *const ()>(move comsume_5)
     ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_comsume: move erased_comsume_6, super_trait_0: const &vtable_of({built_in impl MetaSized for u32}) }
     return

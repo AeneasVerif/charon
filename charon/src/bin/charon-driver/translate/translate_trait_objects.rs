@@ -839,7 +839,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
                     VtableMethodValue::Cast((method_name.to_string(), method_ty, shim_ref))
                 } else {
-                    VtableMethodValue::Const(ConstantExprKind::FnDef(shim_ref))
+                    VtableMethodValue::Const(ConstantExprKind::FnPtr(shim_ref))
                 }
             }
             None => VtableMethodValue::Const(ConstantExprKind::Opaque(
@@ -954,7 +954,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
                 let shim = Rvalue::Use(
                     Operand::Const(Box::new(ConstantExpr {
-                        kind: ConstantExprKind::FnDef(method_shim.clone()),
+                        kind: ConstantExprKind::FnPtr(method_shim.clone()),
                         ty: method_ty.clone(),
                     })),
                     WithRetag::No,
@@ -1022,7 +1022,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
                         mk_cast(("drop".to_string(), drop_ty.clone(), drop_shim))
                     } else {
-                        mk_const(ConstantExprKind::FnDef(drop_shim))
+                        mk_const(ConstantExprKind::FnPtr(drop_shim))
                     }
                 }
                 TrVTableField::Method(..) => 'a: {
