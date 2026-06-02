@@ -1,0 +1,24 @@
+error[E0275]: overflow evaluating the requirement `<Source as FilterDsl<Predicate>>::Output == _`
+
+error: Hax panicked when translating `test_crate::Filter`.
+  --> tests/ui/traits/recursive-projection-overflow.rs:19:1
+   |
+19 | pub type Filter<Source, Predicate> = <Source as FilterDsl<Predicate>>::Output;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Hax panicked when translating `test_crate::Filter`.
+  --> tests/ui/traits/recursive-projection-overflow.rs:19:1
+   |
+19 | pub type Filter<Source, Predicate> = <Source as FilterDsl<Predicate>>::Output;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Item `test_crate::Filter` caused errors; ignoring.
+  --> tests/ui/traits/recursive-projection-overflow.rs:19:1
+   |
+19 | pub type Filter<Source, Predicate> = <Source as FilterDsl<Predicate>>::Output;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0275`.
+ERROR Code failed to compile

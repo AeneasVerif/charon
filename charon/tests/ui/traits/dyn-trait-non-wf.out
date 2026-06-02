@@ -1,0 +1,6 @@
+error[E0277]: the trait bound `P: WithAssoc` is not satisfied
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+ERROR Code failed to compile

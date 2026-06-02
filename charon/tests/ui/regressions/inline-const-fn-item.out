@@ -1,0 +1,23 @@
+disabled backtrace
+error[E9999]: Supposely unreachable place in the Rust AST. The label is "valtree_to_expr".
+              This error report happend because some assumption about the Rust AST was broken.
+              
+              Context:
+               - valtree: Branch(
+                  [],
+              )
+               - ty: FnDef(
+                  test_crate::main,
+                  [],
+              )
+              
+
+error: Hax panicked when translating `main::{constant#0}`.
+ --> tests/ui/regressions/inline-const-fn-item.rs:4:5
+  |
+4 |     const { main };
+  |     ^^^^^^^^^^^^^^
+
+error: aborting due to 1 previous error
+
+ERROR Code failed to compile

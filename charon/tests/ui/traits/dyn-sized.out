@@ -1,0 +1,11 @@
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:233:14:
+trait should be dyn-compatible
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::DynSized`.
+ --> tests/ui/traits/dyn-sized.rs:3:1
+  |
+3 | pub type DynSized = dyn Sized;
+  | ^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)

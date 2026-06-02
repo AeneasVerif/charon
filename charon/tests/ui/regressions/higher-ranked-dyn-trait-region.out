@@ -1,0 +1,19 @@
+error: Unexpected error: could not find region '1_0
+ --> tests/ui/regressions/higher-ranked-dyn-trait-region.rs:1:1
+  |
+1 | //@ known-failure
+  | ^
+
+error: Unexpected error: could not find region '1_0
+ --> tests/ui/regressions/higher-ranked-dyn-trait-region.rs:1:1
+  |
+1 | //@ known-failure
+  | ^
+
+error: Unexpected error: could not find region '1_0
+ --> tests/ui/regressions/higher-ranked-dyn-trait-region.rs:1:1
+  |
+1 | //@ known-failure
+  | ^
+
+ERROR Charon failed to translate this code (3 errors)
