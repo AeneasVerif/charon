@@ -12,6 +12,17 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+= <missing>
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -26,7 +37,21 @@ where
 unsafe fn impl_Destruct_for_Option::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut Option<T>[TraitClause0]; // arg #1
+
+    _0 = ()
+    match (*_1) {
+        Option::None => {
+        },
+        _ => {
+            drop[{built_in impl Destruct for T}::drop_in_place] ((*_1) as variant Option::Some).0
+            return
+        },
+    }
+    return
+}
 
 // Full name: test_crate::discriminant_value
 fn discriminant_value<'_0, T>(opt_1: &'_0 Option<T>[TraitClause0]) -> isize

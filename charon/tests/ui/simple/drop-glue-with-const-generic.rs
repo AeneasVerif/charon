@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--precise-drops
 struct KeccakState;
 

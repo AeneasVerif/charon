@@ -103,7 +103,13 @@ unsafe fn impl_Destruct_for_closure::drop_in_place<T, const K : usize>(_1: *mut 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}
 impl<T, const K : usize> "impl_Destruct_for_closure" Destruct for closure<T, K>[TraitClause0, TraitClause1]

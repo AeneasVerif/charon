@@ -127,7 +127,13 @@ unsafe fn impl_Destruct_for_closure::drop_in_place<F, Clause1_Repr>(_1: *mut clo
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl Fn<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call
 fn impl_Fn_tuple_for_closure::call<'_0, F, Clause1_Repr>(_1: &'_0 closure<F, Clause1_Repr>[TraitClause0, TraitClause1], tupled_args_2: ((),))

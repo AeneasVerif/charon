@@ -320,7 +320,13 @@ where
 unsafe fn impl_Destruct_for_closure::drop_in_place<U>(_1: *mut closure<U>[TraitClause0])
 where
     TraitClause0: (U: Sized),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<U>[TraitClause0]; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}
 impl<U> "impl_Destruct_for_closure" Destruct for closure<U>[TraitClause0]

@@ -50,7 +50,14 @@ where
 unsafe fn impl_Destruct_for_HashMap::drop_in_place<S>(_1: *mut HashMap<S>[TraitClause0])
 where
     TraitClause0: (S: Sized),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut HashMap<S>[TraitClause0]; // arg #1
+
+    _0 = ()
+    drop[{built_in impl Destruct for S}::drop_in_place] ((*_1)).0
+    return
+}
 
 // Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[TraitClause0]}
 impl<S> "impl_Destruct_for_HashMap" Destruct for HashMap<S>[TraitClause0]

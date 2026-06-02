@@ -48,27 +48,19 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+= <opaque>
+
 // Full name: test_crate::Foo
 struct Foo<T>
 where
     TraitClause0: (T: Sized),
 {
   vec: Vec<T>[TraitClause0, {built_in impl Sized for Global}],
-}
-
-// Full name: test_crate::Foo::{impl Destruct for Foo<T>[TraitClause0]}::drop_in_place
-unsafe fn impl_Destruct_for_Foo::drop_in_place<T>(_1: *mut Foo<T>[TraitClause0])
-where
-    TraitClause0: (T: Sized),
-= <missing>
-
-// Full name: test_crate::Foo::{impl Destruct for Foo<T>[TraitClause0]}
-impl<T> "impl_Destruct_for_Foo" Destruct for Foo<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-{
-    fn drop_in_place = impl_Destruct_for_Foo::drop_in_place<T>[TraitClause0]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Drop for Foo<T>[TraitClause0]}::drop
@@ -82,6 +74,34 @@ where
     _0 = ()
     _0 = ()
     return
+}
+
+// Full name: test_crate::Foo::{impl Destruct for Foo<T>[TraitClause0]}::drop_in_place
+unsafe fn impl_Destruct_for_Foo::drop_in_place<T>(_1: *mut Foo<T>[TraitClause0])
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: &'1 mut Foo<T>[TraitClause0]; // arg #1
+    let _2: &'2 mut Foo<T>[TraitClause0]; // anonymous local
+    let _3: (); // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Foo::drop<'4, T>[TraitClause0](move _2)
+    drop[impl_Destruct_for_Vec::drop_in_place<T, Global>[TraitClause0, {built_in impl Sized for Global}]] ((*_1)).vec
+    return
+}
+
+// Full name: test_crate::Foo::{impl Destruct for Foo<T>[TraitClause0]}
+impl<T> "impl_Destruct_for_Foo" Destruct for Foo<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    fn drop_in_place = impl_Destruct_for_Foo::drop_in_place<T>[TraitClause0]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Drop for Foo<T>[TraitClause0]}

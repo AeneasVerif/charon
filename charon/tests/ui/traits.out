@@ -443,7 +443,14 @@ where
 unsafe fn impl_Destruct_for_Wrapper::drop_in_place<T>(_1: *mut Wrapper<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut Wrapper<T>[TraitClause0]; // arg #1
+
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).x
+    return
+}
 
 // Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[TraitClause0]}
 impl<T> "impl_Destruct_for_Wrapper" Destruct for Wrapper<T>[TraitClause0]

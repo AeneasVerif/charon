@@ -100,7 +100,13 @@ struct test_crate::main::closure#1 {}
 
 // Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1}::drop_in_place
 unsafe fn {impl Destruct for test_crate::main::closure#1}::drop_in_place(_1: *mut test_crate::main::closure#1)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::main::closure#1; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::main::{impl Fn<(&'_ u16,)> for test_crate::main::closure#1}::call
 fn {impl Fn<(&'_ u16,)> for test_crate::main::closure#1}::call<'_0, '_1>(_1: &'_1 test_crate::main::closure#1, tupled_args_2: (&'_0 u16,))
@@ -195,7 +201,13 @@ fn main()
 
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure}::drop_in_place
 unsafe fn {impl Destruct for test_crate::main::closure}::drop_in_place(_1: *mut test_crate::main::closure)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::main::closure; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::main::{impl Fn<(&'_ u8,)> for test_crate::main::closure}::call
 fn {impl Fn<(&'_ u8,)> for test_crate::main::closure}::call<'_0, '_1>(_1: &'_1 test_crate::main::closure, tupled_args_2: (&'_0 u8,))

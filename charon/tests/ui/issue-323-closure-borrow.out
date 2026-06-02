@@ -106,7 +106,13 @@ fn new<'_0>(rng_1: &'_0 mut Rng)
 
 // Full name: test_crate::new::closure::{impl Destruct for closure<'_0>}::drop_in_place
 unsafe fn impl_Destruct_for_closure::drop_in_place<'_0>(_1: *mut closure<'_0>)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<'_0>; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::new::{impl FnMut<()> for closure<'_0>}::call_mut
 fn impl_FnMut_unit_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, tupled_args_2: ())

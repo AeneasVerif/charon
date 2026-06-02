@@ -183,9 +183,7 @@ impl ItemRef {
         self.def_id.full_def_maybe_instantiated(s, Some(args))
     }
 
-    /// Get the drop glue shim for this. Panics if the `DefKind` isn't appropriate. Drop glue shims
-    /// are normally translated by hax when safe to do so (i.e. for mono types). This method can be
-    /// used if you know what you're doing and want drop glue for a poly type. This may cause ICEs.
+    /// Get the drop glue shim for this. Panics if the `DefKind` isn't appropriate.
     pub fn drop_glue_shim<'tcx, S>(&self, s: &S) -> mir::Body<'tcx>
     where
         S: BaseState<'tcx>,

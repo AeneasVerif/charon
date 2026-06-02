@@ -4,7 +4,7 @@ use super::translate_ctx::*;
 use crate::hax;
 use crate::hax::FullDefKind;
 use crate::translate::translate_crate::TransItemSourceKind;
-use charon_lib::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
+use charon_lib::ast::*;
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_drop_in_place_method_id(
@@ -61,50 +61,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         def: &hax::FullDef<'tcx>,
-        self_ty: &Ty,
     ) -> Result<Body, Error> {
         let (hax::FullDefKind::Adt { .. } | hax::FullDefKind::Closure { .. }) = def.kind() else {
             return Ok(Body::Missing);
         };
 
-        // Drop elaboration does not handle generics correctly, so it can ICE on some types. To be
-        // safe we don't translate drop glue for poly types unless explicitly opted-in.
-        let translate_glue = self.options.translate_poly_drop_glue
-            || self.monomorphize()
-            || def.this.def_id.as_synthetic(self.hax_state()).is_some()
-            || def.this.def_id.generics_of(self.hax_state()).is_empty();
-        if !translate_glue {
-            return Ok(Body::Missing);
-        }
-
-        let body = {
-            let ctx = std::panic::AssertUnwindSafe(&mut *self);
-            let def = std::panic::AssertUnwindSafe(def);
-            // This is likely to panic, see the docs of `--precise-drops`.
-            let Ok(body) =
-                std::panic::catch_unwind(move || def.this().drop_glue_shim(ctx.hax_state()))
-            else {
-                let self_ty_name = if let TyKind::Adt(TypeDeclRef {
-                    id: TypeId::Adt(type_id),
-                    ..
-                }) = self_ty.kind()
-                {
-                    (*type_id).to_string_with_ctx(&self.into_fmt())
-                } else {
-                    "crate::the::Type".to_string()
-                };
-                raise_error!(
-                    self,
-                    span,
-                    "rustc panicked while retrieving drop glue. \
-                        This is known to happen with `--precise-drops`; to silence this warning, \
-                        pass `--opaque '{{impl core::marker::Destruct for {}}}'` to charon",
-                    self_ty_name
-                )
-            };
-            body
-        };
-
+        let body = def.this().drop_glue_shim(self.hax_state());
         Ok(self.translate_body(span, body, &def.source_text))
     }
 
@@ -169,7 +131,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else {
-            self.translate_drop_in_place_method_body(span, def, &self_ty)?
+            self.translate_drop_in_place_method_body(span, def)?
         };
 
         Ok(FunDecl {

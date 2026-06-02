@@ -117,7 +117,13 @@ pub fn foo() -> &'static closure
 
 // Full name: test_crate::foo::closure::{impl Destruct for closure}::drop_in_place
 unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::foo::{impl Fn<(u32,)> for closure}::call
 fn impl_Fn_tuple_for_closure::call<'_0>(_1: &'_0 closure, tupled_args_2: (u32,)) -> u32

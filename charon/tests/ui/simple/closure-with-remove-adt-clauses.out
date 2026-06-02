@@ -138,7 +138,13 @@ unsafe fn {impl Destruct for test_crate::f::closure<'_0, T>}::drop_in_place<'_0,
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::f::closure<'_0, T>; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::f::{impl Fn<(), T> for test_crate::f::closure<'_0, T>}::call
 fn {impl Fn<(), T> for test_crate::f::closure<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::f::closure<'_0, T>, tupled_args_2: ()) -> T
@@ -272,7 +278,13 @@ unsafe fn {impl Destruct for test_crate::g::closure<'_0, T>}::drop_in_place<'_0,
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::g::closure<'_0, T>; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::g::{impl Fn<(), T> for test_crate::g::closure<'_0, T>}::call
 fn {impl Fn<(), T> for test_crate::g::closure<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::g::closure<'_0, T>, tupled_args_2: ()) -> T

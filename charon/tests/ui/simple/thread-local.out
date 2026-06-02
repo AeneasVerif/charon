@@ -235,7 +235,13 @@ struct test_crate::FOO::{const}::closure {}
 
 // Full name: test_crate::FOO::{const}::closure::{impl Destruct for test_crate::FOO::{const}::closure}::drop_in_place
 unsafe fn {impl Destruct for test_crate::FOO::{const}::closure}::drop_in_place(_1: *mut test_crate::FOO::{const}::closure)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::FOO::{const}::closure; // arg #1
+
+    _0 = ()
+    return
+}
 
 fn test_crate::FOO::{const}::closure::__RUST_STD_INTERNAL_VAL() -> Storage<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}]
 {
@@ -358,7 +364,13 @@ struct test_crate::FOO::{const}::closure#1 {}
 
 // Full name: test_crate::FOO::{const}::closure#1::{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_in_place
 unsafe fn {impl Destruct for test_crate::FOO::{const}::closure#1}::drop_in_place(_1: *mut test_crate::FOO::{const}::closure#1)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::FOO::{const}::closure#1; // arg #1
+
+    _0 = ()
+    return
+}
 
 fn test_crate::FOO::{const}::closure#1::__RUST_STD_INTERNAL_VAL() -> Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]
 {

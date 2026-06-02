@@ -272,73 +272,6 @@ where
   A,
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place
-unsafe fn impl_Destruct_for_Box::drop_in_place<T, A>(_1: *mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
-where
-    TraitClause0: (T: MetaSized),
-    TraitClause1: (A: Sized),
-    TraitClause2: (A: Allocator),
-= <missing>
-
-// Full name: alloc::boxed::box_new_uninit
-fn box_new_uninit(layout_1: Layout) -> *mut u8
-{
-    let _0: *mut u8; // return
-    let layout_1: Layout; // arg #1
-    let _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let ptr_3: NonNull<[u8]>; // local
-    let _4: !; // anonymous local
-    let _5: NonNull<u8>; // anonymous local
-    let _6: *mut u8; // anonymous local
-    let _7: *mut [u8]; // anonymous local
-
-    storage_live(_4)
-    storage_live(_2)
-    _2 = alloc_impl_runtime(copy layout_1, const false)
-    match _2 {
-        Result::Ok => {
-        },
-        Result::Err => {
-            _4 = handle_alloc_error(move layout_1)
-        },
-    }
-    storage_live(ptr_3)
-    ptr_3 = copy (_2 as variant Result::Ok).0
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    _7 = transmute<NonNull<[u8]>, *mut [u8]>(copy ptr_3)
-    _6 = cast<*mut [u8], *mut u8>(copy _7)
-    storage_dead(_7)
-    _5 = transmute<*mut u8, NonNull<u8>>(copy _6)
-    storage_dead(_6)
-    _0 = transmute<NonNull<u8>, *mut u8>(copy _5)
-    storage_dead(_5)
-    storage_dead(ptr_3)
-    storage_dead(_2)
-    return
-}
-
-// Full name: alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new
-#[lang_item("box_new")]
-pub fn new<T>(x_1: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]
-where
-    TraitClause0: (T: Sized),
-{
-    let _0: Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // return
-    let x_1: T; // arg #1
-    let ptr_2: *mut T; // local
-    let _3: *mut u8; // anonymous local
-
-    storage_live(ptr_2)
-    storage_live(_3)
-    _3 = box_new_uninit(const impl_SizedTypeProperties_for_T<T>[TraitClause0]::LAYOUT)
-    ptr_2 = cast<*mut u8, *mut T>(copy _3)
-    (*ptr_2) = move x_1
-    _0 = transmute<*mut u8, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>(copy _3)
-    return
-}
-
 // Full name: alloc::boxed::{impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
 pub fn impl_Drop_for_Box::drop<'_0, T, A>(self_1: &'_0 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
 where
@@ -418,6 +351,90 @@ where
     storage_dead(layout_2)
     storage_dead(ptr_14)
     storage_dead(ptr_15)
+    return
+}
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place
+unsafe fn impl_Destruct_for_Box::drop_in_place<T, A>(_1: *mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+{
+    let _0: (); // return
+    let _1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
+    let _2: &'2 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let _3: (); // anonymous local
+    let _4: *const T; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _0 = ()
+    _4 = transmute<NonNull<T>, *const T>(copy (((*_1)).0).0)
+    drop[{built_in impl Destruct for T}::drop_in_place] (*_4)
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Box::drop<'5, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
+    drop[{built_in impl Destruct for A}::drop_in_place] ((*_1)).1
+    return
+}
+
+// Full name: alloc::boxed::box_new_uninit
+fn box_new_uninit(layout_1: Layout) -> *mut u8
+{
+    let _0: *mut u8; // return
+    let layout_1: Layout; // arg #1
+    let _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
+    let ptr_3: NonNull<[u8]>; // local
+    let _4: !; // anonymous local
+    let _5: NonNull<u8>; // anonymous local
+    let _6: *mut u8; // anonymous local
+    let _7: *mut [u8]; // anonymous local
+
+    storage_live(_4)
+    storage_live(_2)
+    _2 = alloc_impl_runtime(copy layout_1, const false)
+    match _2 {
+        Result::Ok => {
+        },
+        Result::Err => {
+            _4 = handle_alloc_error(move layout_1)
+        },
+    }
+    storage_live(ptr_3)
+    ptr_3 = copy (_2 as variant Result::Ok).0
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = transmute<NonNull<[u8]>, *mut [u8]>(copy ptr_3)
+    _6 = cast<*mut [u8], *mut u8>(copy _7)
+    storage_dead(_7)
+    _5 = transmute<*mut u8, NonNull<u8>>(copy _6)
+    storage_dead(_6)
+    _0 = transmute<NonNull<u8>, *mut u8>(copy _5)
+    storage_dead(_5)
+    storage_dead(ptr_3)
+    storage_dead(_2)
+    return
+}
+
+// Full name: alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new
+#[lang_item("box_new")]
+pub fn new<T>(x_1: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // return
+    let x_1: T; // arg #1
+    let ptr_2: *mut T; // local
+    let _3: *mut u8; // anonymous local
+
+    storage_live(ptr_2)
+    storage_live(_3)
+    _3 = box_new_uninit(const impl_SizedTypeProperties_for_T<T>[TraitClause0]::LAYOUT)
+    ptr_2 = cast<*mut u8, *mut T>(copy _3)
+    (*ptr_2) = move x_1
+    _0 = transmute<*mut u8, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>(copy _3)
     return
 }
 

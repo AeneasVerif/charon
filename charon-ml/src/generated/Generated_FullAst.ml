@@ -65,14 +65,8 @@ and cli_options = {
           control-flow) *)
   precise_drops : bool;
       (** Whether to precisely translate drops and drop-related code. For this,
-          we add explicit [Destruct] bounds to all generic parameters, set the
-          MIR level to at least [elaborated], and attempt to retrieve drop glue
-          for all types.
-
-          This option is known to cause panics inside rustc, because their drop
-          handling is not design to work on polymorphic types. To silence the
-          warning, pass appropriate
-          [--opaque '{impl core::marker::Destruct for some::Type}'] options.
+          we add explicit [Destruct] bounds to all generic parameters and set
+          the MIR level to at least [elaborated].
 
           Without this option, drops may be "conditional" and we may lack
           information about what code is run on drop in a given polymorphic

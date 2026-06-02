@@ -106,7 +106,13 @@ fn impl_FnMut_unit_for_closure::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, tupl
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}::drop_in_place
 unsafe fn impl_Destruct_for_closure::drop_in_place<'a>(_1: *mut closure<'a>)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<'a>; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'a>}::call_once
 fn impl_FnOnce_unit_for_closure::call_once<'a>(_1: closure<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]

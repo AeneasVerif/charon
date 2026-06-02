@@ -1414,6 +1414,18 @@ where
     TraitClause0: (T: Sized),
 = <intrinsic:align_of>
 
+// Full name: core::intrinsics::size_of_val
+pub unsafe fn size_of_val<T>(ptr_1: *const T) -> usize
+where
+    TraitClause0: (T: MetaSized),
+= <intrinsic:size_of_val>
+
+// Full name: core::intrinsics::align_of_val
+pub unsafe fn align_of_val<T>(ptr_1: *const T) -> usize
+where
+    TraitClause0: (T: MetaSized),
+= <intrinsic:align_of_val>
+
 pub fn core::mem::alignment::{Alignment}::new(align_1: usize) -> Option<Alignment>[{built_in impl Sized for Alignment}]
 {
     let _0: Option<Alignment>[{built_in impl Sized for Alignment}]; // return
@@ -1798,6 +1810,72 @@ fn core::hint::assert_unchecked::precondition_check(cond_1: bool)
     return
 }
 
+fn core::alloc::layout::{Layout}::from_size_alignment_unchecked::precondition_check(size_1: usize, alignment_2: Alignment)
+{
+    let _0: (); // return
+    let size_1: usize; // arg #1
+    let alignment_2: Alignment; // arg #2
+    let _3: bool; // anonymous local
+    let msg_4: &'1 str; // local
+    let _5: !; // anonymous local
+    let _6: Arguments<'3>; // anonymous local
+    let _7: usize; // anonymous local
+    let _8: usize; // anonymous local
+    let _9: NonNull<u8>; // anonymous local
+    let _10: *const u8; // anonymous local
+    let _11: NonNull<Argument<'6>>; // anonymous local
+    let _12: usize; // anonymous local
+    let _13: usize; // anonymous local
+    let _14: usize; // anonymous local
+    let _15: *const str; // anonymous local
+    let _16: &'8 [u8]; // anonymous local
+
+    storage_live(msg_4)
+    storage_live(_5)
+    _0 = ()
+    storage_live(_3)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = transmute<Alignment, usize>(copy alignment_2)
+    _7 = const 9223372036854775808usize ub.- move _8
+    storage_dead(_8)
+    _3 = copy size_1 <= move _7
+    storage_dead(_7)
+    if move _3 {
+    } else {
+        msg_4 = const "unsafe precondition(s) violated: Layout::from_size_alignment_unchecked requires that the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        storage_live(_6)
+        storage_live(_9)
+        storage_live(_10)
+        storage_live(_15)
+        _15 = &raw const (*msg_4) with_metadata(copy msg_4.metadata)
+        _10 = cast<*const str, *const u8>(copy _15)
+        storage_dead(_15)
+        _9 = transmute<*const u8, NonNull<u8>>(copy _10)
+        storage_dead(_10)
+        storage_live(_11)
+        storage_live(_12)
+        storage_live(_13)
+        storage_live(_14)
+        storage_live(_16)
+        _16 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: Layout::from_size_alignment_unchecked requires that the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
+        _14 = copy _16.metadata
+        storage_dead(_16)
+        _13 = move _14 wrap.<< const 1i32
+        storage_dead(_14)
+        _12 = move _13 | const 1usize
+        storage_dead(_13)
+        _11 = transmute<usize, NonNull<Argument<'12>>>(move _12)
+        storage_dead(_12)
+        _6 = Arguments { template: move _9, args: move _11 }
+        storage_dead(_11)
+        storage_dead(_9)
+        _5 = panic_nounwind_fmt<'15>(move _6, const false)
+    }
+    storage_dead(_3)
+    return
+}
+
 // Full name: alloc::alloc::__rust_alloc
 unsafe fn __rust_alloc(_1: usize, _2: Alignment) -> *mut u8
 = <extern:__rust_alloc>
@@ -1830,7 +1908,7 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
     let zeroed_2: bool; // arg #2
     let size_3: usize; // local
     let _4: NonNull<[u8]>; // anonymous local
-    let data_5: NonNull<u8>; // local
+    let self_5: NonNull<u8>; // local
     let raw_ptr_6: *mut u8; // local
     let _7: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<u8>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<u8>}]; // anonymous local
     let self_8: Result<NonNull<u8>, AllocError>[{built_in impl Sized for NonNull<u8>}, {built_in impl Sized for AllocError}]; // local
@@ -1840,7 +1918,7 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
     let _12: NonNull<[u8]>; // anonymous local
     let _13: Alignment; // anonymous local
     let ptr_14: *mut [u8]; // local
-    let data_15: *mut u8; // local
+    let self_15: *mut u8; // local
     let _16: (); // anonymous local
     let _17: *mut (); // anonymous local
     let _18: (); // anonymous local
@@ -1854,7 +1932,7 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
     let v_26: NonNull<u8>; // local
     let v_27: NonNull<u8>; // local
     let ptr_28: *mut [u8]; // local
-    let data_29: *mut u8; // local
+    let self_29: *mut u8; // local
     let _30: (); // anonymous local
     let _31: *mut (); // anonymous local
     let _32: isize; // anonymous local
@@ -1882,14 +1960,14 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
     switch copy size_3 {
         0usize => {
             storage_live(_4)
-            storage_live(data_5)
+            storage_live(self_5)
             _13 = copy (layout_1).align
-            data_5 = transmute<Alignment, NonNull<u8>>(copy _13)
+            self_5 = transmute<Alignment, NonNull<u8>>(copy _13)
             storage_live(ptr_14)
-            storage_live(data_15)
-            data_15 = transmute<Alignment, *mut u8>(copy _13)
-            ptr_14 = *mut  (copy data_15, const 0usize)
-            storage_dead(data_15)
+            storage_live(self_15)
+            self_15 = transmute<Alignment, *mut u8>(copy _13)
+            ptr_14 = *mut  (copy self_15, const 0usize)
+            storage_dead(self_15)
             storage_live(_34)
             _34 = ub_checks<bool>
             if move _34 {
@@ -1901,7 +1979,7 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
             }
             _4 = transmute<*mut [u8], NonNull<[u8]>>(copy ptr_14)
             storage_dead(ptr_14)
-            storage_dead(data_5)
+            storage_dead(self_5)
             _0 = Result::Ok { 0: move _4 }
             storage_dead(_4)
         },
@@ -1982,10 +2060,10 @@ fn alloc_impl_runtime(layout_1: Layout, zeroed_2: bool) -> Result<NonNull<[u8]>,
                     storage_dead(_7)
                     storage_live(_12)
                     storage_live(ptr_28)
-                    storage_live(data_29)
-                    data_29 = transmute<NonNull<u8>, *mut u8>(copy ptr_11)
-                    ptr_28 = *mut  (copy data_29, copy size_3)
-                    storage_dead(data_29)
+                    storage_live(self_29)
+                    self_29 = transmute<NonNull<u8>, *mut u8>(copy ptr_11)
+                    ptr_28 = *mut  (copy self_29, copy size_3)
+                    storage_dead(self_29)
                     storage_live(_36)
                     _36 = ub_checks<bool>
                     if move _36 {
@@ -2054,7 +2132,7 @@ fn grow_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_3:
     let _41: *const (); // anonymous local
     let _42: bool; // anonymous local
     let ptr_43: *mut [u8]; // local
-    let data_44: *mut u8; // local
+    let self_44: *mut u8; // local
     let _45: (); // anonymous local
     let _46: *mut (); // anonymous local
     let v_47: NonNull<[u8]>; // local
@@ -2214,10 +2292,10 @@ fn grow_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_3:
                         }
                         storage_live(_21)
                         storage_live(ptr_43)
-                        storage_live(data_44)
-                        data_44 = transmute<NonNull<u8>, *mut u8>(copy ptr_17)
-                        ptr_43 = *mut  (copy data_44, copy new_size_10)
-                        storage_dead(data_44)
+                        storage_live(self_44)
+                        self_44 = transmute<NonNull<u8>, *mut u8>(copy ptr_17)
+                        ptr_43 = *mut  (copy self_44, copy new_size_10)
+                        storage_dead(self_44)
                         storage_live(_60)
                         _60 = ub_checks<bool>
                         if move _60 {
@@ -2318,7 +2396,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
     let new_size_6: usize; // local
     let _7: (); // anonymous local
     let _8: NonNull<[u8]>; // anonymous local
-    let data_9: NonNull<u8>; // local
+    let self_9: NonNull<u8>; // local
     let _10: bool; // anonymous local
     let _11: usize; // anonymous local
     let _12: usize; // anonymous local
@@ -2343,7 +2421,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
     let _31: Alignment; // anonymous local
     let _32: Alignment; // anonymous local
     let ptr_33: *mut [u8]; // local
-    let data_34: *mut u8; // local
+    let self_34: *mut u8; // local
     let _35: (); // anonymous local
     let _36: *mut (); // anonymous local
     let _37: Alignment; // anonymous local
@@ -2355,7 +2433,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
     let v_43: NonNull<u8>; // local
     let v_44: NonNull<u8>; // local
     let ptr_45: *mut [u8]; // local
-    let data_46: *mut u8; // local
+    let self_46: *mut u8; // local
     let _47: (); // anonymous local
     let _48: *mut (); // anonymous local
     let _49: isize; // anonymous local
@@ -2416,14 +2494,14 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
             }
             storage_dead(_30)
             storage_live(_8)
-            storage_live(data_9)
+            storage_live(self_9)
             _32 = copy (new_layout_4).align
-            data_9 = transmute<Alignment, NonNull<u8>>(copy _32)
+            self_9 = transmute<Alignment, NonNull<u8>>(copy _32)
             storage_live(ptr_33)
-            storage_live(data_34)
-            data_34 = transmute<Alignment, *mut u8>(copy _32)
-            ptr_33 = *mut  (copy data_34, const 0usize)
-            storage_dead(data_34)
+            storage_live(self_34)
+            self_34 = transmute<Alignment, *mut u8>(copy _32)
+            ptr_33 = *mut  (copy self_34, const 0usize)
+            storage_dead(self_34)
             storage_live(_61)
             _61 = ub_checks<bool>
             if move _61 {
@@ -2435,7 +2513,7 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
             }
             _8 = transmute<*mut [u8], NonNull<[u8]>>(copy ptr_33)
             storage_dead(ptr_33)
-            storage_dead(data_9)
+            storage_dead(self_9)
             _0 = Result::Ok { 0: move _8 }
             storage_dead(_8)
         },
@@ -2531,10 +2609,10 @@ fn shrink_impl_runtime<'_0>(self_1: &'_0 Global, ptr_2: NonNull<u8>, old_layout_
                         storage_dead(_16)
                         storage_live(_21)
                         storage_live(ptr_45)
-                        storage_live(data_46)
-                        data_46 = transmute<NonNull<u8>, *mut u8>(copy ptr_20)
-                        ptr_45 = *mut  (copy data_46, copy new_size_6)
-                        storage_dead(data_46)
+                        storage_live(self_46)
+                        self_46 = transmute<NonNull<u8>, *mut u8>(copy ptr_20)
+                        ptr_45 = *mut  (copy self_46, copy new_size_6)
+                        storage_dead(self_46)
                         storage_live(_65)
                         _65 = ub_checks<bool>
                         if move _65 {
@@ -2784,13 +2862,112 @@ where
   A,
 }
 
+// Full name: alloc::boxed::{impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
+pub fn impl_Drop_for_Box::drop<'_0, T, A>(self_1: &'_0 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+{
+    let _0: (); // return
+    let self_1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
+    let layout_2: Layout; // local
+    let t_3: *const T; // local
+    let _4: *mut T; // anonymous local
+    let _5: (); // anonymous local
+    let _6: &'5 A; // anonymous local
+    let size_7: usize; // local
+    let alignment_8: Alignment; // local
+    let align_9: usize; // local
+    let _10: (); // anonymous local
+    let _11: (); // anonymous local
+    let unique_12: NonNull<u8>; // local
+    let _13: *mut u8; // anonymous local
+    let ptr_14: NonNull<T>; // local
+    let ptr_15: PhantomData<T>; // local
+    let _16: bool; // anonymous local
+    let _17: bool; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(size_7)
+    storage_live(_10)
+    storage_live(_11)
+    storage_live(unique_12)
+    _0 = ()
+    storage_live(ptr_14)
+    storage_live(ptr_15)
+    ptr_14 = copy (((*self_1)).0).pointer
+    ptr_15 = copy (((*self_1)).0)._marker
+    storage_live(layout_2)
+    storage_live(t_3)
+    _4 = transmute<NonNull<T>, *mut T>(copy ptr_14)
+    t_3 = transmute<NonNull<T>, *const T>(copy ptr_14)
+    storage_live(alignment_8)
+    size_7 = size_of_val<T>[TraitClause0](copy t_3)
+    storage_live(align_9)
+    align_9 = align_of_val<T>[TraitClause0](move t_3)
+    storage_live(_16)
+    _16 = ub_checks<bool>
+    if move _16 {
+        _10 = core::mem::alignment::{Alignment}::new_unchecked::precondition_check(copy align_9)
+    } else {
+    }
+    alignment_8 = transmute<usize, Alignment>(copy align_9)
+    storage_dead(align_9)
+    storage_live(_17)
+    _17 = ub_checks<bool>
+    if move _17 {
+        _11 = core::alloc::layout::{Layout}::from_size_alignment_unchecked::precondition_check(copy size_7, copy alignment_8)
+    } else {
+    }
+    layout_2 = Layout { size: copy size_7, align: copy alignment_8 }
+    storage_dead(alignment_8)
+    storage_dead(t_3)
+    switch copy size_7 {
+        0usize => {
+        },
+        _ => {
+            storage_live(_6)
+            _6 = &((*self_1)).1
+            storage_live(_13)
+            _13 = cast<*mut T, *mut u8>(copy _4)
+            unique_12 = transmute<*mut u8, NonNull<u8>>(copy _13)
+            storage_dead(_13)
+            _5 = TraitClause2::deallocate<'7>(move _6, move unique_12, move layout_2)
+            storage_dead(_6)
+        },
+    }
+    storage_dead(layout_2)
+    storage_dead(ptr_14)
+    storage_dead(ptr_15)
+    return
+}
+
 // Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place
 unsafe fn impl_Destruct_for_Box::drop_in_place<T, A>(_1: *mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
+    let _2: &'2 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let _3: (); // anonymous local
+    let _4: *const T; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _0 = ()
+    _4 = transmute<NonNull<T>, *const T>(copy (((*_1)).0).pointer)
+    drop[{built_in impl Destruct for T}::drop_in_place] (*_4)
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Box::drop<'5, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
+    drop[{built_in impl Destruct for A}::drop_in_place] ((*_1)).1
+    return
+}
 
 // Full name: alloc::boxed::box_new_uninit
 fn box_new_uninit(layout_1: Layout) -> *mut u8

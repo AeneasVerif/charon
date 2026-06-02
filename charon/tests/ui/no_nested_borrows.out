@@ -71,7 +71,22 @@ where
 unsafe fn impl_Destruct_for_List::drop_in_place<T>(_1: *mut List<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut List<T>[TraitClause0]; // arg #1
+
+    _0 = ()
+    match (*_1) {
+        List::Cons => {
+        },
+        _ => {
+            return
+        },
+    }
+    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1) as variant List::Cons).0
+    drop[impl_Destruct_for_Box::drop_in_place<List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons).1
+    return
+}
 
 // Full name: test_crate::List::{impl Destruct for List<T>[TraitClause0]}
 impl<T> "impl_Destruct_for_List" Destruct for List<T>[TraitClause0]
@@ -186,7 +201,14 @@ where
 unsafe fn impl_Destruct_for_IdType::drop_in_place<T>(_1: *mut IdType<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut IdType<T>[TraitClause0]; // arg #1
+
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    return
+}
 
 // Full name: test_crate::IdType::{impl Destruct for IdType<T>[TraitClause0]}
 impl<T> "impl_Destruct_for_IdType" Destruct for IdType<T>[TraitClause0]

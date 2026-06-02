@@ -120,7 +120,14 @@ unsafe fn {impl Destruct for test_crate::foo::closure<T>[TraitClause0, TraitClau
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::foo::closure<T>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    return
+}
 
 // Full name: test_crate::foo::{impl FnOnce<()> for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::call_once
 fn {impl FnOnce<()> for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::call_once<T>(_1: test_crate::foo::closure<T>[TraitClause0, TraitClause1], tupled_args_2: ()) -> test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1]
@@ -194,7 +201,14 @@ unsafe fn {impl Destruct for test_crate::foo::closure::closure<T>[TraitClause0, 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    return
+}
 
 // Full name: test_crate::foo::closure::{impl Fn<()> for test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1]}::call
 fn impl_Fn_unit_for_closure::call<'_0, T>(_1: &'_0 test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1], tupled_args_2: ()) -> T

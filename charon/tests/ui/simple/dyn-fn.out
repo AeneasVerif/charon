@@ -176,7 +176,13 @@ fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1>(state_1: &'_1 mut closure, a
 
 // Full name: test_crate::gives_fn::closure::{impl Destruct for closure}::drop_in_place
 unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::gives_fn::{impl FnOnce<(&'_ mut u32,)> for closure}::call_once
 fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: closure, _2: (&'_0 mut u32,)) -> bool
