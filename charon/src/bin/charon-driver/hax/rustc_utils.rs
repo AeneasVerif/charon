@@ -308,17 +308,16 @@ pub fn closure_once_shim<'tcx>(
 }
 
 pub fn drop_glue_shim<'tcx>(
-    s: &impl BaseState<'tcx>,
+    s: &impl UnderOwnerState<'tcx>,
     def_id: &DefId,
     instantiate: Option<ty::GenericArgsRef<'tcx>>,
 ) -> mir::Body<'tcx> {
     let tcx = s.base().tcx;
     let drop_in_place = tcx.require_lang_item(rustc_hir::LangItem::DropGlue, rustc_span::DUMMY_SP);
-    let ty = def_id.type_of(s);
-    let ty = match instantiate {
-        None => ty.instantiate_identity().skip_normalization(),
-        Some(args) => ty.instantiate(tcx, args).skip_normalization(),
-    };
-    let instance_kind = ty::InstanceKind::DropGlue(drop_in_place, Some(ty));
-    tcx.instance_mir(instance_kind).clone()
+    let ty = inst_binder(tcx, s.typing_env(), instantiate, def_id.type_of(s));
+    let mut body =
+        rustc_mir_transform::build_drop_shim(tcx, drop_in_place, Some(ty), s.typing_env());
+    // Set the mir phase so that charon knows the contained drops are precise.
+    body.phase = mir::MirPhase::Runtime(mir::RuntimePhase::Optimized);
+    body
 }

@@ -46,7 +46,14 @@ unsafe fn impl_Destruct_for_Direct::drop_in_place<T>(_1: *mut Direct<T>[TraitCla
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut Direct<T>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    return
+}
 
 // Full name: test_crate::Direct::{impl Destruct for Direct<T>[TraitClause0, TraitClause1]}
 impl<T> "impl_Destruct_for_Direct" Destruct for Direct<T>[TraitClause0, TraitClause1]
@@ -89,7 +96,14 @@ unsafe fn impl_Destruct_for_Transitive::drop_in_place<T>(_1: *mut Transitive<T>[
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: DerivedNoAssoc),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut Transitive<T>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    return
+}
 
 // Full name: test_crate::Transitive::{impl Destruct for Transitive<T>[TraitClause0, TraitClause1]}
 impl<T> "impl_Destruct_for_Transitive" Destruct for Transitive<T>[TraitClause0, TraitClause1]
@@ -126,7 +140,14 @@ unsafe fn impl_Destruct_for_Marker::drop_in_place<T>(_1: *mut Marker<T>)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: MarkerChild),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut Marker<T>; // arg #1
+
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    return
+}
 
 // Full name: test_crate::Marker::{impl Destruct for Marker<T>}
 impl<T> "impl_Destruct_for_Marker" Destruct for Marker<T>

@@ -177,7 +177,13 @@ where
 unsafe fn impl_Destruct_for_closure::drop_in_place<Self>(_1: *mut closure<Self>[TraitClause0])
 where
     TraitClause0: (Self: Thing),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<Self>[TraitClause0]; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::Thing::foo::{impl FnMut<(TraitClause0::Item,)> for closure<Self>[TraitClause0]}::call_mut
 fn impl_FnMut_tuple_for_closure::call_mut<'_0, Self>(state_1: &'_0 mut closure<Self>[TraitClause0], args_2: (TraitClause0::Item,))

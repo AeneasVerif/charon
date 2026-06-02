@@ -13,7 +13,14 @@ pub struct test_crate::State<H> {
 }
 
 unsafe fn test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_in_place<H>(_1: *mut test_crate::State<H>)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::State<H>; // arg #1
+
+    _0 = ()
+    drop[{built_in impl core::marker::Destruct for H}::drop_in_place] ((*_1))._h
+    return
+}
 
 // Full name: test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}
 impl<H> core::marker::Destruct for test_crate::State<H> {

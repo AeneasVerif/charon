@@ -138,6 +138,20 @@ where
     non-dyn-compatible
 }
 
+// Full name: core::ptr::drop_glue
+#[lang_item("drop_glue")]
+unsafe fn drop_glue<'_0, T>(_1: &'_0 mut T)
+where
+    TraitClause0: (T: Destruct),
+= <opaque>
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub opaque type NonNull<T>
+
+// Full name: core::ptr::unique::Unique
+pub opaque type Unique<T>
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -157,6 +171,13 @@ opaque type RawVec<T, A>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
+
+// Full name: alloc::raw_vec::RawVec::{impl Destruct for RawVec<T, A>[TraitClause0, TraitClause1]}::drop_in_place
+unsafe fn impl_Destruct_for_RawVec::drop_in_place<T, A>(_1: *mut RawVec<T, A>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+= <opaque>
 
 // Full name: alloc::raw_vec::RawVecInner
 opaque type RawVecInner<A>
@@ -181,12 +202,107 @@ where
   len: usize,
 }
 
+// Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_in_place
+unsafe fn impl_Destruct_for_slice::drop_in_place<T>(_1: *mut [T])
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: &'1 mut [T]; // arg #1
+    let _2: usize; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: *mut T; // anonymous local
+    let _5: bool; // anonymous local
+    let _6: &'_ mut [T]; // anonymous local
+    let _7: &'_ mut T; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _0 = ()
+    _2 = copy _1.metadata
+    _3 = const 0usize
+    loop {
+        _5 = copy _3 == copy _2
+        if move _5 {
+            break 0
+        } else {
+            storage_live(_6)
+            _6 = &mut (*_1) with_metadata(copy _1.metadata)
+            storage_live(_7)
+            _7 = @SliceIndexMut<'_, T>(move _6, copy _3)
+            _4 = &raw mut (*_7)
+            _3 = move _3 wrap.+ const 1usize
+            drop[{built_in impl Destruct for T}::drop_in_place] (*_4)
+            continue 0
+        }
+    }
+    return
+}
+
+// Full name: test_crate::<slice>::{impl Destruct for [T]}
+impl<T> "impl_Destruct_for_slice" Destruct for [T]
+where
+    TraitClause0: (T: Sized),
+{
+    fn drop_in_place = impl_Destruct_for_slice::drop_in_place<T>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: alloc::vec::{impl Drop for Vec<T>[TraitClause0, TraitClause1]}::drop
+pub fn impl_Drop_for_Vec::drop<'_0, T, A>(self_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+{
+    let _0: (); // return
+    let self_1: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
+    let self_2: *mut [T]; // local
+    let self_3: *mut T; // local
+    let len_4: usize; // local
+    let _5: NonNull<u8>; // anonymous local
+    let _6: &'3 mut [T]; // anonymous local
+
+    _0 = ()
+    storage_live(self_2)
+    storage_live(self_3)
+    storage_live(_5)
+    _5 = copy (((((*self_1)).buf).0).0).0
+    self_3 = transmute<NonNull<u8>, *mut T>(copy _5)
+    storage_dead(_5)
+    storage_live(len_4)
+    len_4 = copy ((*self_1)).len
+    self_2 = @PtrFromPartsMut<'_, [T]>(copy self_3, copy len_4)
+    storage_dead(len_4)
+    storage_dead(self_3)
+    storage_live(_6)
+    _6 = &mut (*self_2) with_metadata(copy self_2.metadata)
+    _0 = drop_glue<'5, [T]>[impl_Destruct_for_slice<T>[TraitClause0]](move _6)
+    storage_dead(_6)
+    storage_dead(self_2)
+    return
+}
+
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
 unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
+    let _2: &'2 mut Vec<T>[TraitClause0, TraitClause1]; // anonymous local
+    let _3: (); // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Vec::drop<'4, T, A>[TraitClause0, TraitClause1](move _2)
+    drop[impl_Destruct_for_RawVec::drop_in_place<T, A>[TraitClause0, TraitClause1]] ((*_1)).buf
+    return
+}
 
 // Full name: alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::with_capacity
 #[lang_item("vec_with_capacity")]

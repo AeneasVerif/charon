@@ -123,7 +123,13 @@ fn foo()
 
 // Full name: test_crate::foo::closure::{impl Destruct for closure<'_0>}::drop_in_place
 unsafe fn impl_Destruct_for_closure::drop_in_place<'_0>(_1: *mut closure<'_0>)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<'_0>; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::foo::{impl FnOnce<()> for closure<'_0>}::call_once
 fn impl_FnOnce_unit_for_closure::call_once<'_0>(_1: closure<'_0>, _2: ())

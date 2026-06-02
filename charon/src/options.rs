@@ -35,12 +35,7 @@ pub struct CliOpts {
     #[serde(default)]
     pub ullbc: bool,
     /// Whether to precisely translate drops and drop-related code. For this, we add explicit
-    /// `Destruct` bounds to all generic parameters, set the MIR level to at least `elaborated`,
-    /// and attempt to retrieve drop glue for all types.
-    ///
-    /// This option is known to cause panics inside rustc, because their drop handling is not
-    /// design to work on polymorphic types. To silence the warning, pass appropriate `--opaque
-    /// '{impl core::marker::Destruct for some::Type}'` options.
+    /// `Destruct` bounds to all generic parameters and set the MIR level to at least `elaborated`.
     ///
     /// Without this option, drops may be "conditional" and we may lack information about what code
     /// is run on drop in a given polymorphic function body.
@@ -620,8 +615,6 @@ pub struct TranslateOptions {
     pub desugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
     pub add_destruct_bounds: bool,
-    /// Translate drop glue for poly types, knowing that this may cause ICEs.
-    pub translate_poly_drop_glue: bool,
 }
 
 impl TranslateOptions {
@@ -766,7 +759,6 @@ impl TranslateOptions {
             no_normalize: options.no_normalize,
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
-            translate_poly_drop_glue: options.precise_drops,
         }
     }
 

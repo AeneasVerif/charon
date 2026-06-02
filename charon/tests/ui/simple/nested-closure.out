@@ -290,7 +290,13 @@ unsafe fn {impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{impl FnMut<()> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut
 fn impl_FnMut_unit_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>(state_1: &'_6 mut test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[TraitClause0, TraitClause1], args_2: ()) -> test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'_2, '_, T>[TraitClause0, TraitClause1]
@@ -385,7 +391,13 @@ unsafe fn {impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::{impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut
 fn {impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, '_3, '_4, '_5, T>(state_1: &'_5 mut test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1], args_2: (&'_2 u32,)) -> test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'_3, '_, T>[TraitClause0, TraitClause1]
@@ -480,7 +492,13 @@ unsafe fn {impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::{impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut
 fn {impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, '_3, T>(state_1: &'_3 mut test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1], args_2: (&'_2 u32,)) -> T

@@ -36,6 +36,7 @@ extern crate rustc_interface;
 extern crate rustc_lexer;
 extern crate rustc_middle;
 extern crate rustc_mir_build;
+extern crate rustc_mir_transform;
 extern crate rustc_session;
 extern crate rustc_span;
 extern crate rustc_target;

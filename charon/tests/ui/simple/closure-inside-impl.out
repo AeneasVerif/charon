@@ -120,7 +120,13 @@ unsafe fn impl_Destruct_for_closure::drop_in_place<F, T>(_1: *mut closure<F, T>[
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<F, T>[TraitClause0, TraitClause1]; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl Fn<((),)> for closure<F, T>[TraitClause0, TraitClause1]}::call
 fn impl_Fn_tuple_for_closure::call<'_0, F, T>(_1: &'_0 closure<F, T>[TraitClause0, TraitClause1], tupled_args_2: ((),))

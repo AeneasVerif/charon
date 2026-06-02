@@ -149,7 +149,13 @@ fn call_fn<'_0>(a_1: &'_0 [u8], i_2: usize) -> u8
 
 // Full name: test_crate::call_fn::closure::{impl Destruct for closure<'_0, '_1>}::drop_in_place
 unsafe fn impl_Destruct_for_closure::drop_in_place<'_0, '_1>(_1: *mut closure<'_0, '_1>)
-= <missing>
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<'_0, '_1>; // arg #1
+
+    _0 = ()
+    return
+}
 
 // Full name: test_crate::call_fn::{impl FnMut<(usize,)> for closure<'_0, '_1>}::call_mut
 fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1, '_2>(state_1: &'_2 mut closure<'_0, '_1>, args_2: (usize,)) -> u8
