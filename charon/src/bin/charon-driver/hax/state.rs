@@ -94,10 +94,8 @@ mod types {
         pub def_ids: HashMap<RDefId, DefId>,
         /// Map that recovers rustc args for a given `ItemRef`.
         pub reverse_item_refs_map: HashMap<ItemRef, ty::GenericArgsRef<'tcx>>,
-        /// We create some artificial items; their def_ids are stored here. See the
-        /// `synthetic_items` module.
-        pub synthetic_def_ids: HashMap<SyntheticItem, RDefId>,
-        pub reverse_synthetic_map: HashMap<RDefId, SyntheticItem>,
+        /// Data for synthetic items. See the `synthetic_items` module.
+        pub synthetic_item_data: HashMap<SyntheticItem, SyntheticItemData<'tcx>>,
         /// Cached names and disambiguators for crate names.
         pub disambiguated_crate_names: Option<FxHashMap<CrateNum, (Symbol, u32)>>,
     }

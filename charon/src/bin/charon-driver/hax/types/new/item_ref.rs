@@ -70,12 +70,6 @@ pub struct ItemRefContents {
     pub has_non_lt_param: bool,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef> for rustc_trait_elaboration::ItemRef<'tcx> {
-    fn sinto(&self, s: &S) -> ItemRef {
-        self.map_item_id(|def_id| def_id.sinto(s)).sinto(s)
-    }
-}
-
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef>
     for rustc_trait_elaboration::ItemRef<'tcx, DefId>
 {

@@ -93,18 +93,6 @@ pub enum AssertKind {
   Match,
 }
 
-// Full name: test_crate::LendingIterator
-pub trait LendingIterator<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    type Item<'a>
-    where
-        TypeOutlives0: Self: 'a,
-        proof ImpliedClause0: (Self::Item<'a>: Sized);
-    fn next<'a> = test_crate::LendingIterator::next<'a, Self>[Self]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
 {
@@ -119,6 +107,18 @@ unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}
 impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
     fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::LendingIterator
+pub trait LendingIterator<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    type Item<'a>
+    where
+        TypeOutlives0: Self: 'a,
+        proof ImpliedClause0: (Self::Item<'a>: Sized);
+    fn next<'a> = test_crate::LendingIterator::next<'a, Self>[Self]
     non-dyn-compatible
 }
 

@@ -55,7 +55,7 @@ where
     let diagnostic_item;
     let kind;
     match def_id.base {
-        DefIdBase::Synthetic(item, ..) => {
+        DefIdBase::Synthetic(item) => {
             let adt_kind = match item {
                 SyntheticItem::Array => AdtKind::Array,
                 SyntheticItem::Slice => AdtKind::Slice,
@@ -1358,9 +1358,10 @@ fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> GenericPredicates {
     let tcx = s.base().tcx;
-    let def_id = s.owner().as_real_def_id().unwrap();
+    let owner = s.owner();
     let typing_env = s.typing_env();
-    let mut implied_predicates = ItemPredicates::implied(s.base().elab_ctx, def_id);
+    let mut implied_predicates =
+        ItemPredicates::implied(s.base().elab_ctx, &s.base_state(), owner.clone());
     if args.is_some() {
         for pred in implied_predicates.iter_mut() {
             pred.clause = substitute(tcx, typing_env, args, pred.clause);

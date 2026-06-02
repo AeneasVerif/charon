@@ -13,7 +13,6 @@ use charon_lib::ast::HashConsed;
 use itertools::Itertools;
 pub use rustc_middle::mir::Promoted as PromotedId;
 use rustc_span::DUMMY_SP;
-use rustc_trait_elaboration::inherits_parent_clauses;
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
 sinto_reexport!(hir::Safety);
@@ -101,10 +100,8 @@ pub enum DefIdBase {
     /// declared method generics to implemented method generics.
     ImplAssocItem(VirtualImplAssocItem),
     /// A completely fictitious item, we use this for arrays, slices and tuples to make
-    /// monomorphization and other shenanigans easier. The contained DefId is created using
-    /// `create_def`.
-    /// FIXME: remove that DefId, it causes ICEs if we try to go to codegen/rlib generation.
-    Synthetic(SyntheticItem, RDefId),
+    /// monomorphization and other shenanigans easier.
+    Synthetic(SyntheticItem),
 }
 
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
@@ -186,10 +183,6 @@ impl rustc_trait_elaboration::ItemId for DefId {
         def_id.sinto(s)
     }
 
-    fn to_rust_def_id<'tcx>(&self, _s: &Self::State<'tcx>) -> Option<RDefId> {
-        self.as_real_def_id()
-    }
-
     fn generics_of<'tcx>(&self, s: &Self::State<'tcx>) -> &'tcx ty::Generics {
         DefId::generics_of(self, s)
     }
@@ -198,18 +191,38 @@ impl rustc_trait_elaboration::ItemId for DefId {
         DefId::param_env(self, s)
     }
 
-    fn required_predicates<'tcx>(&self, s: &Self::State<'tcx>) -> ItemPredicates<'tcx> {
-        DefId::required_predicates(self, s)
+    fn predicates_defined_on<'tcx>(
+        &self,
+        s: &Self::State<'tcx>,
+        direction: PredicateDirection,
+    ) -> ItemPredicates<'tcx, Self> {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id) => ItemPredicates::defined_on(tcx, s, def_id, direction),
+            DefIdBase::ImplAssocItem(id) => {
+                let item_args = id.identity_args_for_item_decl(s);
+                ItemPredicates::defined_on(tcx, s, id.item_decl_id, direction)
+                    .instantiate(tcx, item_args)
+            }
+            DefIdBase::Synthetic(synthetic) => {
+                synthetic.predicates_defined_on(s, self.clone(), direction)
+            }
+            DefIdBase::Promoted(..) => ItemPredicates::new_unmapped(DUMMY_SP, []),
+        }
     }
 
     fn self_pred<'tcx>(&self, s: &Self::State<'tcx>) -> Option<ty::PolyTraitRef<'tcx>> {
         let tcx = s.base().tcx;
         match self.base {
-            DefIdBase::Real(def_id)
-                if matches!(self.kind, DefKind::Trait | DefKind::TraitAlias) =>
-            {
-                Some(self_predicate(tcx, def_id))
-            }
+            DefIdBase::Real(def_id) => def_id.self_pred(&tcx),
+            _ => None,
+        }
+    }
+
+    fn as_identity_assoc_ty<'tcx>(&self, s: &Self::State<'tcx>) -> Option<ty::Ty<'tcx>> {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id) => def_id.as_identity_assoc_ty(&tcx),
             _ => None,
         }
     }
@@ -217,9 +230,7 @@ impl rustc_trait_elaboration::ItemId for DefId {
     fn typeck_parent<'tcx>(&self, s: &Self::State<'tcx>) -> Option<Self> {
         let tcx = s.base().tcx;
         match self.base {
-            DefIdBase::Real(def_id) => tcx
-                .is_typeck_child(def_id)
-                .then(|| tcx.typeck_root_def_id(def_id).sinto(s)),
+            DefIdBase::Real(def_id) => def_id.typeck_parent(&tcx).map(|def_id| def_id.sinto(s)),
             DefIdBase::Promoted(def_id, ..) => Some(tcx.typeck_root_def_id(def_id).sinto(s)),
             DefIdBase::ImplAssocItem(..) | DefIdBase::Synthetic(..) => None,
         }
@@ -228,15 +239,8 @@ impl rustc_trait_elaboration::ItemId for DefId {
     fn parent_of_assoc<'tcx>(&self, s: &Self::State<'tcx>) -> Option<Self> {
         let tcx = s.base().tcx;
         match self.base {
-            DefIdBase::Real(def_id)
-                if matches!(
-                    self.kind,
-                    DefKind::AssocTy | DefKind::AssocFn | DefKind::AssocConst { .. }
-                ) =>
-            {
-                Some(tcx.parent(def_id).sinto(s))
-            }
-            DefIdBase::ImplAssocItem(id) => Some(tcx.parent(id.item_decl_id).sinto(s)),
+            DefIdBase::Real(def_id) => def_id.parent_of_assoc(&tcx).map(|def_id| def_id.sinto(s)),
+            DefIdBase::ImplAssocItem(id) => Some(id.trait_impl_id.sinto(s)),
             _ => None,
         }
     }
@@ -244,9 +248,9 @@ impl rustc_trait_elaboration::ItemId for DefId {
     fn parent_for_clauses<'tcx>(&self, s: &Self::State<'tcx>) -> Option<Self> {
         let tcx = s.base().tcx;
         match self.base {
-            DefIdBase::Real(def_id) => {
-                inherits_parent_clauses(tcx, def_id).then(|| self.parent(s).unwrap())
-            }
+            DefIdBase::Real(def_id) => def_id
+                .parent_for_clauses(&tcx)
+                .map(|def_id| def_id.sinto(s)),
             DefIdBase::ImplAssocItem(id) => Some(id.trait_impl_id.sinto(s)),
             DefIdBase::Promoted(def_id, _) => Some(def_id.sinto(s)),
             DefIdBase::Synthetic(..) => None,
@@ -256,22 +260,21 @@ impl rustc_trait_elaboration::ItemId for DefId {
     fn takes_explicit_self_clause<'tcx>(&self, s: &Self::State<'tcx>) -> bool {
         let tcx = s.base().tcx;
         match self.base {
-            DefIdBase::Promoted(def_id, ..) => matches!(
-                tcx.def_kind(def_id),
-                hir::def::DefKind::AssocFn | hir::def::DefKind::AssocConst { .. }
-            ),
-            _ => matches!(self.kind, DefKind::AssocFn | DefKind::AssocConst { .. }),
+            DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => {
+                def_id.takes_explicit_self_clause(&tcx)
+            }
+            DefIdBase::ImplAssocItem(id) => id.item_decl_id.takes_explicit_self_clause(&tcx),
+            DefIdBase::Synthetic(..) => false,
         }
     }
 
-    fn find_in_impl<'tcx>(&self, s: &Self::State<'tcx>, trait_impl: RDefId) -> Option<Self> {
+    fn find_in_impl<'tcx>(&self, s: &Self::State<'tcx>, trait_impl: &Self) -> Option<Self> {
         let tcx = s.base().tcx;
+        let trait_impl = trait_impl.as_real_def_id()?;
         match self.base {
-            DefIdBase::Real(def_id) => tcx
-                .associated_items(trait_impl)
-                .in_definition_order()
-                .find(|item| item.trait_item_def_id() == Some(def_id))
-                .map(|item| item.def_id.sinto(s)),
+            DefIdBase::Real(def_id) => def_id
+                .find_in_impl(&tcx, &trait_impl)
+                .map(|def_id| def_id.sinto(s)),
             _ => None,
         }
     }
@@ -303,14 +306,10 @@ impl DefId {
             _ => None,
         }
     }
-    /// Returns the [`SyntheticItem`] encoded by a [rustc `DefId`](RDefId), if
-    /// any.
-    ///
-    /// Note that this method relies on rustc indexes, which are session
-    /// specific. See [`Self`] documentation.
+    /// Returns the [`SyntheticItem`] encoded by this hax [`DefId`], if any.
     pub fn as_synthetic<'tcx>(&self, _s: &impl BaseState<'tcx>) -> Option<SyntheticItem> {
         match self.base {
-            DefIdBase::Synthetic(v, _) => Some(v),
+            DefIdBase::Synthetic(v) => Some(v),
             _ => None,
         }
     }
@@ -330,10 +329,7 @@ impl DefId {
     }
 
     fn make<'tcx, S: BaseState<'tcx>>(s: &S, def_id: RDefId) -> Self {
-        let base = match s.with_global_cache(|c| c.reverse_synthetic_map.get(&def_id).copied()) {
-            None => DefIdBase::Real(def_id),
-            Some(synthetic) => return Self::make_synthetic(s, synthetic, def_id),
-        };
+        let base = DefIdBase::Real(def_id);
         let tcx = s.base().tcx;
         let contents = DefIdContents {
             base,
@@ -342,13 +338,9 @@ impl DefId {
         contents.make_def_id(s)
     }
 
-    pub fn make_synthetic<'tcx, S: BaseState<'tcx>>(
-        s: &S,
-        synthetic: SyntheticItem,
-        def_id: RDefId,
-    ) -> Self {
+    pub fn make_synthetic<'tcx, S: BaseState<'tcx>>(s: &S, synthetic: SyntheticItem) -> Self {
         let contents = DefIdContents {
-            base: DefIdBase::Synthetic(synthetic, def_id),
+            base: DefIdBase::Synthetic(synthetic),
             kind: DefKind::Struct,
         };
         contents.make_def_id(s)
@@ -459,7 +451,7 @@ impl DefId {
                     .map(|x| x.sinto(s))
                     .unwrap()
             }
-            DefIdBase::Synthetic(synthetic, ..) => DisambiguatedDefPathItem {
+            DefIdBase::Synthetic(synthetic) => DisambiguatedDefPathItem {
                 disambiguator: 0,
                 data: DefPathItem::TypeNs(Symbol::intern(&synthetic.name())),
             },
@@ -486,15 +478,16 @@ impl DefId {
             | DefIdBase::ImplAssocItem(VirtualImplAssocItem {
                 item_decl_id: def_id,
                 ..
-            })
-            | DefIdBase::Synthetic(.., def_id) => can_have_generics(tcx, def_id),
+            }) => can_have_generics(tcx, def_id),
+            DefIdBase::Synthetic(synthetic) => synthetic.can_have_generics(s),
         }
     }
 
     pub fn generics_of<'tcx>(&self, s: &impl BaseState<'tcx>) -> &'tcx ty::Generics {
         let tcx = s.base().tcx;
         match self.base {
-            DefIdBase::Real(def_id) | DefIdBase::Synthetic(.., def_id) => tcx.generics_of(def_id),
+            DefIdBase::Real(def_id) => tcx.generics_of(def_id),
+            DefIdBase::Synthetic(synthetic) => synthetic.generics_of(s),
             DefIdBase::Promoted(def_id, ..) => s.with_item_cache(self, |cache| {
                 if let Some(generics) = cache.virtual_generics {
                     return generics;
@@ -550,15 +543,14 @@ impl DefId {
     pub fn identity_args<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::GenericArgsRef<'tcx> {
         let tcx = s.base().tcx;
         match self.base {
-            DefIdBase::Real(def_id)
-            | DefIdBase::Promoted(def_id, ..)
-            | DefIdBase::Synthetic(.., def_id) => {
+            DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => {
                 if can_have_generics(tcx, def_id) {
                     ty::GenericArgs::identity_for_item(tcx, def_id)
                 } else {
                     ty::GenericArgsRef::default()
                 }
             }
+            DefIdBase::Synthetic(synthetic) => synthetic.identity_args(s),
             DefIdBase::ImplAssocItem(_) => panic!(
                 "virtual trait impl associated items do not have a \
                 sensible `identity_args`. consider `identity_args_for_item_decl`"
@@ -578,15 +570,14 @@ impl DefId {
                     .map(|(predicate, _)| predicate.skip_normalization());
                 param_env_from_clauses(tcx, impl_predicates.chain(item_predicates))
             }
-            DefIdBase::Real(def_id)
-            | DefIdBase::Promoted(def_id, ..)
-            | DefIdBase::Synthetic(.., def_id) => {
+            DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => {
                 if can_have_generics(tcx, def_id) {
                     tcx.param_env(def_id)
                 } else {
                     ty::ParamEnv::empty()
                 }
             }
+            DefIdBase::Synthetic(synthetic) => synthetic.param_env(s),
         }
     }
 
@@ -594,32 +585,19 @@ impl DefId {
         ty::TypingEnv::new(self.param_env(s), ty::TypingMode::PostAnalysis)
     }
 
-    pub fn required_predicates<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> ItemPredicates<'tcx> {
-        match self.base {
-            DefIdBase::ImplAssocItem(id) => {
-                let tcx = s.base().tcx;
-                let item_args = id.identity_args_for_item_decl(s);
-                let mut predicates = ItemPredicates::required(s.base().elab_ctx, id.item_decl_id);
-                if matches!(self.kind, DefKind::AssocFn) {
-                    predicates
-                        .predicates
-                        .retain(|predicate| !matches!(predicate.id, ItemPredicateId::TraitSelf));
-                }
-                predicates.instantiate(tcx, item_args)
-            }
-            DefIdBase::Real(def_id) | DefIdBase::Synthetic(.., def_id) => {
-                ItemPredicates::required(s.base().elab_ctx, def_id)
-            }
-            DefIdBase::Promoted(..) => ItemPredicates::new_unmapped(DUMMY_SP, []),
-        }
+    pub fn required_predicates<'tcx, S: BaseState<'tcx>>(
+        &self,
+        s: &S,
+    ) -> ItemPredicates<'tcx, Self> {
+        let state = s.base_state();
+        ItemPredicates::required(s.base().elab_ctx, &state, self.clone())
     }
 
     pub fn type_of<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> ty::EarlyBinder<'tcx, ty::Ty<'tcx>> {
         let tcx: ty::TyCtxt<'tcx> = s.base().tcx;
         match self.base {
-            DefIdBase::Real(def_id)
-            | DefIdBase::Promoted(def_id, ..)
-            | DefIdBase::Synthetic(.., def_id) => tcx.type_of(def_id),
+            DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => tcx.type_of(def_id),
+            DefIdBase::Synthetic(synthetic) => synthetic.type_of(s),
             DefIdBase::ImplAssocItem(id) => tcx.type_of(id.item_decl_id),
         }
     }
@@ -705,7 +683,7 @@ impl std::fmt::Debug for DefId {
             DefIdBase::Promoted(def_id, promoted) => {
                 write!(f, "{def_id:?}::promoted#{}", promoted.as_u32())
             }
-            DefIdBase::Synthetic(item, _) => write!(f, "{}", item.name()),
+            DefIdBase::Synthetic(item) => write!(f, "{}", item.name()),
             DefIdBase::ImplAssocItem(id) => {
                 write!(f, "{:?}::{:?}", id.trait_impl_id, id.item_decl_id)
             }
@@ -740,6 +718,12 @@ impl<'s, S: BaseState<'s>> SInto<S, DefId> for RDefId {
             cache.def_ids.insert(*self, def_id.clone());
         });
         def_id
+    }
+}
+
+impl<S> SInto<S, DefId> for DefId {
+    fn sinto(&self, _s: &S) -> DefId {
+        self.clone()
     }
 }
 

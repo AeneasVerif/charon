@@ -811,12 +811,12 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
 ) -> DynBinder<R> {
     fn searcher_for_traits<'tcx, S: UnderOwnerState<'tcx>>(
         s: &S,
-        preds: &ItemPredicates<'tcx>,
+        preds: &ItemPredicates<'tcx, DefId>,
     ) -> PredicateSearcher<'tcx> {
         let tcx = s.base().tcx;
         // Populate a predicate searcher that knows about the `dyn` clauses.
         let mut predicate_searcher = s.with_predicate_searcher(|ps, _| ps.clone());
-        predicate_searcher.insert_bound_predicates(preds.iter());
+        predicate_searcher.insert_bound_predicates(&s.base_state(), preds.iter());
         predicate_searcher.set_param_env(param_env_from_clauses(
             tcx,
             s.param_env()
@@ -842,7 +842,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
 
     // Set the new type as the `Self` parameter of our predicates.
     let predicates = epreds.iter().map(|epred| epred.with_self_ty(tcx, new_ty));
-    let predicates: ItemPredicates<'_> = ItemPredicates::new_unmapped(span, predicates);
+    let predicates: ItemPredicates<'_, DefId> = ItemPredicates::new_unmapped(span, predicates);
 
     // Populate a predicate searcher that knows about the `dyn` clauses.
     let mut predicate_searcher = searcher_for_traits(s, &predicates);
@@ -1310,7 +1310,7 @@ impl<T> Binder<T> {
 
 /// Uniquely identifies a predicate.
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicateId, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicateId<DefId>, state: S as s)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum GenericPredicateId {
     /// A predicate that counts as "input" for an item, e.g. `where` clauses on a function or impl.
@@ -1328,7 +1328,7 @@ pub enum GenericPredicateId {
 }
 
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicate<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicate<'tcx, DefId>, state: S as s)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct GenericPredicate {
     pub id: GenericPredicateId,
@@ -1338,7 +1338,7 @@ pub struct GenericPredicate {
 
 /// Reflects [`ty::GenericPredicates`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicates<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicates<'tcx, DefId>, state: S as s)]
 #[derive(Clone, Debug, Default, Hash, PartialEq, Eq)]
 pub struct GenericPredicates {
     pub predicates: Vec<GenericPredicate>,
