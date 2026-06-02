@@ -1,0 +1,13 @@
+
+thread 'rustc' panicked at src/bin/charon-driver/hax/types/ty.rs:1037:52:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting body.
+ --> tests/ui/traits/issue-1242-dyn-send-supertrait.rs:6:1
+  |
+6 | / fn foo(x: &dyn Trait) -> &dyn Send {
+7 | |     x
+8 | | }
+  | |_^
+
+ERROR Charon failed to translate this code (1 errors)

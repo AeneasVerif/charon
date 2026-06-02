@@ -2,6 +2,21 @@
 
 Guidance for AI agents working on Charon.
 
+## Collaboration Style
+
+- I like to work together in the same workspace. You make edits as I request them, and I amend the
+  code you produced until it meets my standards.
+- This does mean the code may change under you while you're editing something else. That's how
+  I work, I do my best to not break what you're working on. Do not revert my changes even if you
+  preferred your way. If you think I missed why you did things a certain way, tell me! I can often
+  be shortsighted.
+
+- I will carefully review all your changes. I am in charge of commits and PRs etc.
+- Treat the git state as my domain: I will stage the bits I have reviewed. I may sometimes ask you
+  to make commits but otherwise don't touch the git state.
+- Always try to keep git diffs small to make my job easier. I particularly dislike small helpers
+  used only once; I prefer a well-placed comment to make the code easy to follow.
+
 ## Working Style
 
 - Charon is written with the following values in mind: correctness, robustness, maintainability, and
