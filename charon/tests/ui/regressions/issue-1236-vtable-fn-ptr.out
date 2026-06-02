@@ -35,12 +35,12 @@ fn test_crate::Foo::foo<'_0>(_1: &'_0 (dyn Foo))
 = <method_without_default_body>
 
 // Full name: test_crate::Bar::{impl Destruct for Bar}
-impl Destruct for Bar {
+impl "impl_Destruct_for_Bar" Destruct for Bar {
     non-dyn-compatible
 }
 
 // Full name: test_crate::Bar::{impl Destruct for Bar}::drop_in_place
-unsafe fn {impl Destruct for Bar}::drop_in_place(_1: *mut Bar)
+unsafe fn impl_Destruct_for_Bar::drop_in_place(_1: *mut Bar)
 {
     let _0: (); // return
     let _1: &'1 mut Bar; // arg #1
@@ -52,7 +52,7 @@ unsafe fn {impl Destruct for Bar}::drop_in_place(_1: *mut Bar)
 }
 
 // Full name: test_crate::{impl Foo for Bar}::foo
-fn {impl Foo for Bar}::foo<'_0>(self_1: &'_0 Bar)
+fn impl_Foo_for_Bar::foo<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1
@@ -75,7 +75,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
         _0 = ();
         storage_live(_2);
         _2 = concretize<&'_0 (dyn Foo + '1), &'_0 Bar>(move _1);
-        _0 = {impl Foo for Bar}::foo<'_0>(move _2) -> bb2 (unwind: bb1);
+        _0 = impl_Foo_for_Bar::foo<'_0>(move _2) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -98,7 +98,7 @@ unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn Foo))
         ret_0 = ();
         storage_live(target_self_2);
         target_self_2 = concretize<*mut (dyn Foo + '1), *mut Bar>(move dyn_self_1);
-        drop[{impl Destruct for Bar}::drop_in_place] (*target_self_2) -> bb2 (unwind: bb1);
+        drop[impl_Destruct_for_Bar::drop_in_place] (*target_self_2) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -111,7 +111,7 @@ unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn Foo))
 }
 
 // Full name: test_crate::{impl Foo for Bar}::{vtable}
-fn {impl Foo for Bar}::{vtable}() -> test_crate::Foo::{vtable}
+fn impl_Foo_for_Bar::{vtable}() -> test_crate::Foo::{vtable}
 {
     let ret_0: test_crate::Foo::{vtable}; // return
     let size_1: usize; // local
@@ -120,6 +120,8 @@ fn {impl Foo for Bar}::{vtable}() -> test_crate::Foo::{vtable}
     let erased_drop_4: *const (); // local
     let foo_5: fn<'_0_1>(&'_0_1 (dyn Foo + '1)); // local
     let erased_foo_6: *const (); // local
+    let _7: unsafe fn(*mut (dyn Foo + '3)); // anonymous local
+    let _8: fn<'_0_1>(&'_0_1 (dyn Foo + '8)); // anonymous local
 
     bb0: {
         storage_live(size_1);
@@ -128,11 +130,15 @@ fn {impl Foo for Bar}::{vtable}() -> test_crate::Foo::{vtable}
         align_2 = align_of<Bar>;
         storage_live(drop_3);
         storage_live(erased_drop_4);
-        drop_3 = const {vtable_drop_shim};
+        storage_live(_7);
+        _7 = cast<{vtable_drop_shim}, unsafe fn(*mut (dyn Foo + '3))>(const {vtable_drop_shim});
+        drop_3 = move _7;
         erased_drop_4 = cast<unsafe fn(*mut (dyn Foo + '4)), *const ()>(move drop_3);
         storage_live(foo_5);
         storage_live(erased_foo_6);
-        foo_5 = const {vtable_method}<'7>;
+        storage_live(_8);
+        _8 = cast<for<'_0_1> {vtable_method}<'7>, fn<'_0_1>(&'_0_1 (dyn Foo + '8))>(const {vtable_method}<'7>);
+        foo_5 = move _8;
         erased_foo_6 = cast<fn<'_0_1>(&'_0_1 (dyn Foo + '9)), *const ()>(move foo_5);
         ret_0 = test_crate::Foo::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_foo: move erased_foo_6, super_trait_0: const &vtable_of({built_in impl MetaSized for Bar}) };
         return;
@@ -140,12 +146,12 @@ fn {impl Foo for Bar}::{vtable}() -> test_crate::Foo::{vtable}
 }
 
 // Full name: test_crate::{impl Foo for Bar}::{vtable}
-static {impl Foo for Bar}::{vtable}: test_crate::Foo::{vtable} = {impl Foo for Bar}::{vtable}()
+static impl_Foo_for_Bar::{vtable}: test_crate::Foo::{vtable} = impl_Foo_for_Bar::{vtable}()
 
 // Full name: test_crate::{impl Foo for Bar}
-impl Foo for Bar {
+impl "impl_Foo_for_Bar" Foo for Bar {
     proof ImpliedClause0: (Bar: MetaSized) = {built_in impl MetaSized for Bar}
-    vtable: {impl Foo for Bar}::{vtable}
+    vtable: impl_Foo_for_Bar::{vtable}
 }
 
 // Full name: test_crate::main
@@ -169,7 +175,7 @@ fn main()
         storage_live(_4);
         _4 = &bar_1;
         _3 = &(*_4);
-        some_foo_2 = unsize_cast<&'6 Bar, &'10 (dyn Foo + '11), &{impl Foo for Bar}::{vtable}>(move _3);
+        some_foo_2 = unsize_cast<&'6 Bar, &'10 (dyn Foo + '11), &impl_Foo_for_Bar::{vtable}>(move _3);
         storage_dead(_3);
         storage_dead(_4);
         storage_live(_5);

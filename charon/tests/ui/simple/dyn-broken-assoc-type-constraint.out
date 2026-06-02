@@ -117,12 +117,18 @@ where
     let ret_0: test_crate::Broken::{vtable}<()>; // return
     let size_1: usize; // local
     let align_2: usize; // local
+    let _3: unsafe fn(*mut (dyn Broken<Assoc = ()> + '0)); // anonymous local
+    let _4: fn<'_0_1>(&'_0_1 (dyn Broken<Assoc = ()> + '2)); // anonymous local
 
     storage_live(size_1)
     size_1 = size_of<T>
     storage_live(align_2)
     align_2 = align_of<T>
-    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: const {vtable_drop_shim}<T>[TraitClause0], method_broken: const {vtable_method}<'1, T>[TraitClause0, impl_Foo_for_unit], super_trait_0: const &vtable_of(TraitClause0::ImpliedClause0) }
+    storage_live(_3)
+    _3 = cast<{vtable_drop_shim}<T>[TraitClause0], unsafe fn(*mut (dyn Broken<Assoc = ()> + '0))>(const {vtable_drop_shim}<T>[TraitClause0])
+    storage_live(_4)
+    _4 = cast<for<'_0_1> {vtable_method}<'1, T>[TraitClause0, impl_Foo_for_unit], fn<'_0_1>(&'_0_1 (dyn Broken<Assoc = ()> + '2))>(const {vtable_method}<'1, T>[TraitClause0, impl_Foo_for_unit])
+    ret_0 = test_crate::Broken::{vtable} { size: move size_1, align: move align_2, drop: move _3, method_broken: move _4, super_trait_0: const &vtable_of(TraitClause0::ImpliedClause0) }
     return
 }
 
