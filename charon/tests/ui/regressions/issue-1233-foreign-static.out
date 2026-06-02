@@ -1,0 +1,11 @@
+# Final ULLBC before serialization:
+
+// Full name: core::fmt::num::DECIMAL_PAIRS
+fn DECIMAL_PAIRS() -> &'static [u8; 200usize]
+= <missing>
+
+// Full name: core::fmt::num::DECIMAL_PAIRS
+static DECIMAL_PAIRS: &'static [u8; 200usize] = DECIMAL_PAIRS()
+
+
+
