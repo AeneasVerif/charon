@@ -64,6 +64,21 @@ fn charon_version() -> Result<()> {
 }
 
 #[test]
+fn charon_toolchain_version() -> Result<()> {
+    charon(&["toolchain-version"], ".", |stdout, cmd| {
+        let toolchain: toml::Value = toml::from_str(include_str!("../rust-toolchain"))?;
+        let version = toolchain["toolchain"]["channel"]
+            .as_str()
+            .context("missing toolchain.channel in rust-toolchain")?;
+        ensure!(
+            stdout.trim() == version,
+            "Output of `{cmd}` is:\n{stdout:?}\nIt should be {version}."
+        );
+        Ok(())
+    })
+}
+
+#[test]
 fn charon_help_output() -> Result<()> {
     charon(&["help", "rustc"], ".", |stdout, _| {
         compare_or_overwrite(stdout, &PathBuf::from("./tests/help-output.txt"))?;

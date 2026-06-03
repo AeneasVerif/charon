@@ -40,7 +40,7 @@ use clap::Parser;
 use cli::{Charon, Cli};
 use itertools::Itertools;
 use std::{env, process::ExitStatus};
-use toolchain::toolchain_path;
+use toolchain::{toolchain_path, toolchain_version};
 
 #[macro_use]
 extern crate charon_lib;
@@ -94,6 +94,10 @@ pub fn main() -> Result<()> {
         Charon::ToolchainPath(_) => {
             let path = toolchain_path()?;
             println!("{}", path.display());
+            ExitStatus::default()
+        }
+        Charon::ToolchainVersion => {
+            println!("{}", toolchain_version());
             ExitStatus::default()
         }
         Charon::Version => {
