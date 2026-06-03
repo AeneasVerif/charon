@@ -204,8 +204,6 @@ impl<'tcx> TranslateCtx<'tcx> {
         // Match over the key data
         let path_elem = match path_elem.data {
             DefPathItem::CrateRoot { name, .. } => {
-                // Sanity check
-                error_assert!(self, span, path_elem.disambiguator == 0);
                 Some(PathElem::Ident(name.to_string(), disambiguator))
             }
             // We map the three namespaces onto a single one. We can always disambiguate by looking

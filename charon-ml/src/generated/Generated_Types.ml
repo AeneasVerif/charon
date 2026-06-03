@@ -1139,9 +1139,9 @@ and layout = {
 
     On our side, we want to stay high-level and simple: we use string
     identifiers as much as possible, insert disambiguators only when necessary
-    (whenever we find an "impl" block, typically) and check that the
-    disambiguator is useless in the other situations (i.e., the disambiguator is
-    always equal to 0).
+    (for instance when we find an "impl" block or when two loaded crates have
+    the same name) and check that the disambiguator is useless in the other
+    situations (i.e., the disambiguator is always equal to 0).
 
     Moreover, the items are uniquely disambiguated by their (integer) ids
     ([TypeDeclId], etc.), and when extracting the code we have to deal with name

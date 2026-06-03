@@ -33,8 +33,7 @@ pub enum AssertKind {
   Match,
 }
 
-// Full name: mydup::hello
-pub fn hello() -> u32
+pub fn mydup::hello() -> u32
 {
     let _0: u32; // return
 
@@ -42,8 +41,7 @@ pub fn hello() -> u32
     return
 }
 
-// Full name: mydup::hello
-pub fn hello() -> u32
+pub fn mydup#1::hello() -> u32
 {
     let _0: u32; // return
 
@@ -85,9 +83,9 @@ fn main()
     storage_live(_22)
     _0 = ()
     storage_live(a_1)
-    a_1 = hello()
+    a_1 = mydup::hello()
     storage_live(b_2)
-    b_2 = hello()
+    b_2 = mydup#1::hello()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
