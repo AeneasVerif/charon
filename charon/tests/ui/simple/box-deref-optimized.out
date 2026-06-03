@@ -164,13 +164,12 @@ fn into_inner(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String
     let _2: &'1 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let _3: (); // anonymous local
     let _4: *const String; // anonymous local
-    let _5: *const String; // anonymous local
-    let _6: *const (); // anonymous local
-    let _7: usize; // anonymous local
+    let _5: *const (); // anonymous local
+    let _6: usize; // anonymous local
+    let _7: bool; // anonymous local
     let _8: bool; // anonymous local
     let _9: bool; // anonymous local
     let _10: bool; // anonymous local
-    let _11: bool; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
@@ -181,17 +180,15 @@ fn into_inner(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
-    storage_live(_11)
-    _5 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    _6 = cast<*const String, *const ()>(copy _5)
-    _7 = transmute<*const (), usize>(copy _6)
-    _8 = copy SIZE<String>[impl_SizedTypeProperties_for_T<String>[{built_in impl Sized for String}]] != const 0usize
-    _9 = copy _7 == const 0usize
-    _10 = copy _9 & copy _8
-    _11 = ~(copy _10)
-    assert(copy _11 == true) (null_pointer_dereference) else undefined_behavior
-    _0 = move (*_5)
     _4 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
+    _5 = cast<*const String, *const ()>(copy _4)
+    _6 = transmute<*const (), usize>(copy _5)
+    _7 = copy SIZE<String>[impl_SizedTypeProperties_for_T<String>[{built_in impl Sized for String}]] != const 0usize
+    _8 = copy _6 == const 0usize
+    _9 = copy _8 & copy _7
+    _10 = ~(copy _9)
+    assert(copy _10 == true) (null_pointer_dereference) else undefined_behavior
+    _0 = move (*_4)
     _2 = &mut b_1
     _3 = impl_Drop_for_Box::drop<'4, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _2)
     return
@@ -205,13 +202,12 @@ fn write(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {b
     let s_2: String; // arg #2
     let _3: String; // anonymous local
     let _4: *const String; // anonymous local
-    let _5: *const String; // anonymous local
-    let _6: *const (); // anonymous local
-    let _7: usize; // anonymous local
+    let _5: *const (); // anonymous local
+    let _6: usize; // anonymous local
+    let _7: bool; // anonymous local
     let _8: bool; // anonymous local
     let _9: bool; // anonymous local
     let _10: bool; // anonymous local
-    let _11: bool; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
@@ -220,21 +216,19 @@ fn write(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {b
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
-    storage_live(_11)
     _0 = ()
     storage_live(_3)
     _3 = move s_2
+    drop[impl_Destruct_for_String::drop_in_place] (*b_1)
     _4 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    drop[impl_Destruct_for_String::drop_in_place] (*_4)
-    _5 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    _6 = cast<*const String, *const ()>(copy _5)
-    _7 = transmute<*const (), usize>(copy _6)
-    _8 = copy SIZE<String>[impl_SizedTypeProperties_for_T<String>[{built_in impl Sized for String}]] != const 0usize
-    _9 = copy _7 == const 0usize
-    _10 = copy _9 & copy _8
-    _11 = ~(copy _10)
-    assert(copy _11 == true) (null_pointer_dereference) else undefined_behavior
-    (*_5) = move _3
+    _5 = cast<*const String, *const ()>(copy _4)
+    _6 = transmute<*const (), usize>(copy _5)
+    _7 = copy SIZE<String>[impl_SizedTypeProperties_for_T<String>[{built_in impl Sized for String}]] != const 0usize
+    _8 = copy _6 == const 0usize
+    _9 = copy _8 & copy _7
+    _10 = ~(copy _9)
+    assert(copy _10 == true) (null_pointer_dereference) else undefined_behavior
+    (*_4) = move _3
     storage_dead(_3)
     _0 = ()
     drop[impl_Destruct_for_Box::drop_in_place<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
@@ -330,13 +324,12 @@ fn field(b_1: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {b
     let _2: &'1 mut alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // anonymous local
     let _3: (); // anonymous local
     let _4: *const Struct; // anonymous local
-    let _5: *const Struct; // anonymous local
-    let _6: *const (); // anonymous local
-    let _7: usize; // anonymous local
+    let _5: *const (); // anonymous local
+    let _6: usize; // anonymous local
+    let _7: bool; // anonymous local
     let _8: bool; // anonymous local
     let _9: bool; // anonymous local
     let _10: bool; // anonymous local
-    let _11: bool; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
@@ -347,17 +340,15 @@ fn field(b_1: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {b
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
-    storage_live(_11)
-    _5 = transmute<NonNull<Struct>, *const Struct>(copy ((*b_1)).0)
-    _6 = cast<*const Struct, *const ()>(copy _5)
-    _7 = transmute<*const (), usize>(copy _6)
-    _8 = copy SIZE<Struct>[impl_SizedTypeProperties_for_T<Struct>[{built_in impl Sized for Struct}]] != const 0usize
-    _9 = copy _7 == const 0usize
-    _10 = copy _9 & copy _8
-    _11 = ~(copy _10)
-    assert(copy _11 == true) (null_pointer_dereference) else undefined_behavior
-    _0 = move ((*_5)).b
     _4 = transmute<NonNull<Struct>, *const Struct>(copy ((*b_1)).0)
+    _5 = cast<*const Struct, *const ()>(copy _4)
+    _6 = transmute<*const (), usize>(copy _5)
+    _7 = copy SIZE<Struct>[impl_SizedTypeProperties_for_T<Struct>[{built_in impl Sized for Struct}]] != const 0usize
+    _8 = copy _6 == const 0usize
+    _9 = copy _8 & copy _7
+    _10 = ~(copy _9)
+    assert(copy _10 == true) (null_pointer_dereference) else undefined_behavior
+    _0 = move ((*_4)).b
     _2 = &mut b_1
     _3 = impl_Drop_for_Box::drop<'4, Struct, Global>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}](move _2)
     return

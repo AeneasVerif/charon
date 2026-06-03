@@ -12,13 +12,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub opaque type NonNull<T>
-
-// Full name: core::ptr::unique::Unique
-pub opaque type Unique<T>
-
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -52,16 +45,10 @@ fn into_inner(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String
     let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let _3: (); // anonymous local
-    let _4: *const String; // anonymous local
-    let _5: *const String; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    _5 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    _0 = move (*_5)
-    _4 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
+    _0 = move (*b_1)
     _2 = &mut b_1
     _3 = impl_Drop_for_Box::drop<'4, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _2)
     return
@@ -74,18 +61,12 @@ fn write(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {b
     let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let s_2: String; // arg #2
     let _3: String; // anonymous local
-    let _4: *const String; // anonymous local
-    let _5: *const String; // anonymous local
 
-    storage_live(_4)
-    storage_live(_5)
     _0 = ()
     storage_live(_3)
     _3 = move s_2
-    _4 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    drop[impl_Destruct_for_String::drop_in_place] (*_4)
-    _5 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    (*_5) = move _3
+    drop[impl_Destruct_for_String::drop_in_place] (*b_1)
+    (*b_1) = move _3
     storage_dead(_3)
     _0 = ()
     drop[impl_Destruct_for_Box::drop_in_place<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
@@ -98,13 +79,10 @@ fn borrow(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {
     let _0: (); // return
     let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut String; // anonymous local
-    let _3: *const String; // anonymous local
 
-    storage_live(_3)
     _0 = ()
     storage_live(_2)
-    _3 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    _2 = &mut (*_3)
+    _2 = &mut (*b_1)
     storage_dead(_2)
     _0 = ()
     drop[impl_Destruct_for_Box::drop_in_place<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
@@ -119,16 +97,13 @@ fn reborrow<'_0>(b_1: &'_0 mut alloc::boxed::Box<String>[{built_in impl MetaSize
     let _2: &'4 mut String; // anonymous local
     let _3: &'5 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let _4: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
-    let _5: *const String; // anonymous local
 
     storage_live(_4)
-    storage_live(_5)
     storage_live(_2)
     storage_live(_3)
     _3 = &mut (*b_1)
     _4 = copy (*_3)
-    _5 = transmute<NonNull<String>, *const String>(copy ((*_4)).0)
-    _2 = &mut (*_5)
+    _2 = &mut (*_4)
     _0 = &mut (*_2)
     storage_dead(_3)
     storage_dead(_2)
@@ -148,16 +123,10 @@ fn field(b_1: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {b
     let b_1: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // anonymous local
     let _3: (); // anonymous local
-    let _4: *const Struct; // anonymous local
-    let _5: *const Struct; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    _5 = transmute<NonNull<Struct>, *const Struct>(copy ((*b_1)).0)
-    _0 = move ((*_5)).b
-    _4 = transmute<NonNull<Struct>, *const Struct>(copy ((*b_1)).0)
+    _0 = move ((*b_1)).b
     _2 = &mut b_1
     _3 = impl_Drop_for_Box::drop<'4, Struct, Global>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}](move _2)
     return
