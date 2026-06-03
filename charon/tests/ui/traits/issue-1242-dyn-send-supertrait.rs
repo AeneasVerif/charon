@@ -1,5 +1,4 @@
-//@ known-failure
-//@ charon-args=--extract-opaque-bodies --desugar-drops --precise-drops --monomorphize
+//@ charon-args=--monomorphize
 
 trait Trait: Send {}
 

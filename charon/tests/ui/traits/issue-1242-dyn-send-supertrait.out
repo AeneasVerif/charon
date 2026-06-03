@@ -1,13 +1,54 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at src/bin/charon-driver/hax/types/ty.rs:1037:52:
-called `Option::unwrap()` on a `None` value
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting body.
- --> tests/ui/traits/issue-1242-dyn-send-supertrait.rs:6:1
-  |
-6 | / fn foo(x: &dyn Trait) -> &dyn Send {
-7 | |     x
-8 | | }
-  | |_^
+opaque type core::marker::Send::{vtable}
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::marker::Send
+#[lang_item("Send")]
+pub trait Send<Self>
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static core::marker::Send::{vtable},
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Send)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::foo
+fn foo<'_0>(x_1: &'_0 (dyn Trait + '_0)) -> &'_0 (dyn Send + '_0)
+{
+    let _0: &'3 (dyn Send + '4); // return
+    let x_1: &'8 (dyn Trait + '9); // arg #1
+    let _2: &'10 (dyn Send + '11); // anonymous local
+    let _3: &'12 (dyn Send + '13); // anonymous local
+    let _4: &'14 (dyn Trait + '15); // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*x_1) with_metadata(copy x_1.metadata)
+    _3 = unsize_cast<&'14 (dyn Trait + '15), &'17 (dyn Send + '18),  at [4]>(move _4)
+    storage_dead(_4)
+    _2 = &(*_3) with_metadata(copy _3.metadata)
+    _0 = unsize_cast<&'10 (dyn Send + '11), &'20 (dyn Send + '21),  at []>(move _2)
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
+
+
