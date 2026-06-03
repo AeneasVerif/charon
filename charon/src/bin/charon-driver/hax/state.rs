@@ -59,7 +59,11 @@ macro_rules! mk {
 
 mod types {
     use crate::hax::prelude::*;
+    use itertools::Itertools;
+    use rustc_hash::FxHashMap;
+    use rustc_hir::def_id::{CrateNum, LOCAL_CRATE};
     use rustc_middle::ty;
+    use rustc_span::symbol::Symbol;
     use rustc_trait_elaboration::ElaborationCtx;
     use std::{cell::RefCell, sync::Arc};
 
@@ -94,6 +98,55 @@ mod types {
         /// `synthetic_items` module.
         pub synthetic_def_ids: HashMap<SyntheticItem, RDefId>,
         pub reverse_synthetic_map: HashMap<RDefId, SyntheticItem>,
+        /// Cached names and disambiguators for crate names.
+        pub disambiguated_crate_names: Option<FxHashMap<CrateNum, (Symbol, u32)>>,
+    }
+
+    impl<'tcx> GlobalCache<'tcx> {
+        pub fn crate_name(&mut self, tcx: ty::TyCtxt<'tcx>, krate: CrateNum) -> (Symbol, u32) {
+            self.disambiguated_crate_names
+                .get_or_insert_with(|| {
+                    std::iter::once(LOCAL_CRATE)
+                        .chain(tcx.crates(()).iter().copied())
+                        .into_group_map_by(|&cnum| tcx.crate_name(cnum))
+                        .into_iter()
+                        .filter(|(_, crates_by_this_name)| crates_by_this_name.len() > 1)
+                        .flat_map(|(name, mut crates_by_this_name)| {
+                            crates_by_this_name.sort_by_key(|&cnum| {
+                                // `tcx.stable_crate_id` isn't actually so stable across machines.
+                                // We try our own stability here based on paths.
+                                let source_file = tcx
+                                    .sess
+                                    .source_map()
+                                    .span_to_filename(tcx.def_span(cnum.as_def_id()))
+                                    .prefer_remapped_unconditionally()
+                                    .to_string_lossy()
+                                    .into_owned();
+                                let extern_paths = if cnum == LOCAL_CRATE {
+                                    Vec::new()
+                                } else {
+                                    tcx.crate_extern_paths(cnum)
+                                        .iter()
+                                        .map(|path| path.display().to_string())
+                                        .collect_vec()
+                                };
+                                (
+                                    cnum != LOCAL_CRATE,
+                                    source_file,
+                                    extern_paths,
+                                    cnum.as_u32(),
+                                )
+                            });
+                            crates_by_this_name.into_iter().enumerate().map(
+                                move |(disambiguator, cnum)| (cnum, (name, disambiguator as u32)),
+                            )
+                        })
+                        .collect()
+                })
+                .get(&krate)
+                .copied()
+                .unwrap_or_else(|| (tcx.crate_name(krate), 0))
+        }
     }
 
     /// Per-item cache

@@ -296,7 +296,7 @@ impl DefId {
 }
 
 impl DefId {
-    pub fn crate_name<'tcx>(&self, s: &impl BaseState<'tcx>) -> Symbol {
+    fn crate_name_and_disambig<'tcx>(&self, s: &impl BaseState<'tcx>) -> (Symbol, u32) {
         let tcx = s.base().tcx;
         match self.base {
             DefIdBase::Real(def_id)
@@ -304,9 +304,13 @@ impl DefId {
             | DefIdBase::ImplAssocItem(VirtualImplAssocItem {
                 trait_impl_id: def_id,
                 ..
-            }) => tcx.crate_name(def_id.krate),
-            DefIdBase::Synthetic(..) => Symbol::intern(SYNTHETIC_CRATE_NAME),
+            }) => s.with_global_cache(|cache| cache.crate_name(tcx, def_id.krate)),
+            DefIdBase::Synthetic(..) => (Symbol::intern(SYNTHETIC_CRATE_NAME), 0),
         }
+    }
+
+    pub fn crate_name<'tcx>(&self, s: &impl BaseState<'tcx>) -> Symbol {
+        self.crate_name_and_disambig(s).0
     }
 
     /// Get the span of the definition of this item. This is the span used in diagnostics when
@@ -346,11 +350,12 @@ impl DefId {
                     .data
                     .last()
                     .map(|x| x.sinto(s))
-                    .unwrap_or_else(|| DisambiguatedDefPathItem {
-                        disambiguator: 0,
-                        data: DefPathItem::CrateRoot {
-                            name: self.crate_name(s),
-                        },
+                    .unwrap_or_else(|| {
+                        let (name, disambiguator) = self.crate_name_and_disambig(s);
+                        DisambiguatedDefPathItem {
+                            disambiguator,
+                            data: DefPathItem::CrateRoot { name },
+                        }
                     })
             }
             DefIdBase::Promoted(_, id) => DisambiguatedDefPathItem {
