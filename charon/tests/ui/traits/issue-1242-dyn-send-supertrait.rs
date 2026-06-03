@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--monomorphize
 
 trait Trait: Send {}

@@ -1034,7 +1034,18 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
         }
         (ty::Dynamic(from_preds, _), ty::Dynamic(to_preds, ..)) => {
             let trait_proof = resolve_for_dyn(s, from_preds, |searcher, fresh_ty| {
-                let to_pred = to_preds.principal().unwrap().with_self_ty(tcx, fresh_ty);
+                let to_pred = if let Some(to_principal) = to_preds.principal() {
+                    to_principal.with_self_ty(tcx, fresh_ty)
+                } else {
+                    let def_id = to_preds
+                        .iter()
+                        .find_map(|pred| match pred.skip_binder() {
+                            ty::ExistentialPredicate::AutoTrait(def_id) => Some(def_id),
+                            _ => None,
+                        })
+                        .expect("expected a trait predicate in dyn upcast target");
+                    ty::Binder::dummy(ty::TraitRef::new(tcx, def_id, [fresh_ty]))
+                };
                 searcher.resolve(&to_pred).sinto(s)
             });
             UnsizingMetadata::NestedVTable(trait_proof)
