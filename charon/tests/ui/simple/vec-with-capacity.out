@@ -321,7 +321,7 @@ where
     storage_live(_3)
     storage_live(_5)
     _5 = Global {  }
-    _3 = with_capacity_in<Global>[{built_in impl Sized for Global}, impl_Destruct_for_Global](move capacity_1, move _5, const impl_SizedTypeProperties_for_T<T>[TraitClause0]::LAYOUT)
+    _3 = with_capacity_in<Global>[{built_in impl Sized for Global}, impl_Destruct_for_Global](move capacity_1, move _5, copy LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
     storage_live(_4)
     _4 = PhantomData {  }
     _2 = RawVec { 0: move _3, 1: move _4 }

@@ -15,6 +15,11 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::mem::size_of::<()>
+#[lang_item("mem_size_of")]
+pub fn size_of::<()>() -> usize
+= <opaque>
+
 // Full name: test_crate::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {
@@ -22,11 +27,21 @@ pub trait SizedTypeProperties<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::{impl SizedTypeProperties for ()}
-impl "impl_SizedTypeProperties_for_unit" SizedTypeProperties for () {
-    proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
-    non-dyn-compatible
+// Full name: test_crate::SizedTypeProperties::IS_ZST::<()>
+pub fn IS_ZST::<()>() -> bool
+{
+    let _0: bool; // return
+    let _1: usize; // anonymous local
+
+    storage_live(_1)
+    _1 = size_of::<()>()
+    _0 = move _1 == const 0usize
+    storage_dead(_1)
+    return
 }
+
+// Full name: test_crate::SizedTypeProperties::IS_ZST::<()>
+pub const IS_ZST::<()>: bool = IS_ZST::<()>()
 
 // Full name: test_crate::main
 fn main()
@@ -36,7 +51,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = const impl_SizedTypeProperties_for_unit::IS_ZST
+    _1 = copy IS_ZST::<()>
     storage_dead(_1)
     _0 = ()
     return

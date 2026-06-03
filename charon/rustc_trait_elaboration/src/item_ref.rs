@@ -107,15 +107,29 @@ impl<'tcx> PredicateSearcher<'tcx> {
         if assoc_item_resolution == AssocItemResolution::ImplItem
             && let Some((tinfo, _)) = &trait_info
             && let TraitProofKind::Concrete(impl_item_ref) = &tinfo.kind
-            && let Some(implemented_item) = tcx
+        {
+            let implemented_item = tcx
                 .associated_items(impl_item_ref.def_id)
                 .in_definition_order()
-                .find(|item| item.trait_item_def_id() == Some(def_id))
-        {
-            let trait_def_id = tcx.parent(def_id);
-            def_id = implemented_item.def_id;
-            generics = generics.rebase_onto(tcx, trait_def_id, impl_item_ref.generics());
-            trait_info = None;
+                .find(|item| item.trait_item_def_id() == Some(def_id));
+            if let Some(implemented_item) = implemented_item {
+                let trait_def_id = tcx.parent(def_id);
+                def_id = implemented_item.def_id;
+                generics = generics.rebase_onto(tcx, trait_def_id, impl_item_ref.generics());
+                trait_info = None;
+            } else if let assoc_item = tcx.associated_item(def_id)
+                && matches!(
+                    assoc_item.kind,
+                    ty::AssocKind::Const { .. } | ty::AssocKind::Type { .. }
+                )
+            {
+                // If the item is not found in the impl, it's a default item. In this case the item
+                // we want to point to is the declaration item, which is already what we have.
+                // For defaulted methods we have a special path, see also
+                // https://github.com/AeneasVerif/charon/issues/1032
+                assert!(assoc_item.defaultness(tcx).has_value());
+                trait_info = None;
+            }
         }
 
         let trait_proofs = self.resolve_item_required_predicates(def_id, generics);

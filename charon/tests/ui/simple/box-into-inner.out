@@ -181,7 +181,7 @@ fn into_inner(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String
     _6 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
     _7 = cast<*const String, *const ()>(copy _6)
     _8 = transmute<*const (), usize>(copy _7)
-    _9 = const impl_SizedTypeProperties_for_T<String>[{built_in impl Sized for String}]::SIZE != const 0usize
+    _9 = copy SIZE<String>[impl_SizedTypeProperties_for_T<String>[{built_in impl Sized for String}]] != const 0usize
     _10 = copy _8 == const 0usize
     _11 = copy _10 & copy _9
     _12 = ~(copy _11)
