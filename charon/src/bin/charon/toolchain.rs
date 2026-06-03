@@ -64,6 +64,10 @@ fn get_pinned_toolchain() -> Toolchain {
     file_contents.toolchain
 }
 
+pub fn toolchain_version() -> String {
+    get_pinned_toolchain().channel
+}
+
 pub fn driver_path() -> PathBuf {
     let mut path = env::current_exe()
         .expect("current executable path invalid")

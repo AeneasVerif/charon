@@ -22,6 +22,8 @@ pub enum Charon {
     UiTest(UiTestArgs),
     /// Print the path to the rustc toolchain used by charon.
     ToolchainPath(ToolchainPathArgs),
+    /// Print the rustc toolchain version used by charon.
+    ToolchainVersion,
     /// Pretty-print the given llbc file.
     PrettyPrint(PrettyPrintArgs),
     /// Print the version.
