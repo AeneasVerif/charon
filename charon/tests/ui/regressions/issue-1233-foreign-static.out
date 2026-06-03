@@ -1,0 +1,24 @@
+# Final ULLBC before serialization:
+
+// Full name: core::fmt::num::DECIMAL_PAIRS
+fn DECIMAL_PAIRS() -> &'static [u8; 200usize]
+{
+    let _0: &'0 [u8; 200usize]; // return
+    let _1: [u8; 200usize]; // anonymous local
+    let _2: &'2 [u8; 200usize]; // anonymous local
+
+    bb0: {
+        storage_live(_1);
+        _1 = [const 48u8, const 48u8, const 48u8, const 49u8, const 48u8, const 50u8, const 48u8, const 51u8, const 48u8, const 52u8, const 48u8, const 53u8, const 48u8, const 54u8, const 48u8, const 55u8, const 48u8, const 56u8, const 48u8, const 57u8, const 49u8, const 48u8, const 49u8, const 49u8, const 49u8, const 50u8, const 49u8, const 51u8, const 49u8, const 52u8, const 49u8, const 53u8, const 49u8, const 54u8, const 49u8, const 55u8, const 49u8, const 56u8, const 49u8, const 57u8, const 50u8, const 48u8, const 50u8, const 49u8, const 50u8, const 50u8, const 50u8, const 51u8, const 50u8, const 52u8, const 50u8, const 53u8, const 50u8, const 54u8, const 50u8, const 55u8, const 50u8, const 56u8, const 50u8, const 57u8, const 51u8, const 48u8, const 51u8, const 49u8, const 51u8, const 50u8, const 51u8, const 51u8, const 51u8, const 52u8, const 51u8, const 53u8, const 51u8, const 54u8, const 51u8, const 55u8, const 51u8, const 56u8, const 51u8, const 57u8, const 52u8, const 48u8, const 52u8, const 49u8, const 52u8, const 50u8, const 52u8, const 51u8, const 52u8, const 52u8, const 52u8, const 53u8, const 52u8, const 54u8, const 52u8, const 55u8, const 52u8, const 56u8, const 52u8, const 57u8, const 53u8, const 48u8, const 53u8, const 49u8, const 53u8, const 50u8, const 53u8, const 51u8, const 53u8, const 52u8, const 53u8, const 53u8, const 53u8, const 54u8, const 53u8, const 55u8, const 53u8, const 56u8, const 53u8, const 57u8, const 54u8, const 48u8, const 54u8, const 49u8, const 54u8, const 50u8, const 54u8, const 51u8, const 54u8, const 52u8, const 54u8, const 53u8, const 54u8, const 54u8, const 54u8, const 55u8, const 54u8, const 56u8, const 54u8, const 57u8, const 55u8, const 48u8, const 55u8, const 49u8, const 55u8, const 50u8, const 55u8, const 51u8, const 55u8, const 52u8, const 55u8, const 53u8, const 55u8, const 54u8, const 55u8, const 55u8, const 55u8, const 56u8, const 55u8, const 57u8, const 56u8, const 48u8, const 56u8, const 49u8, const 56u8, const 50u8, const 56u8, const 51u8, const 56u8, const 52u8, const 56u8, const 53u8, const 56u8, const 54u8, const 56u8, const 55u8, const 56u8, const 56u8, const 56u8, const 57u8, const 57u8, const 48u8, const 57u8, const 49u8, const 57u8, const 50u8, const 57u8, const 51u8, const 57u8, const 52u8, const 57u8, const 53u8, const 57u8, const 54u8, const 57u8, const 55u8, const 57u8, const 56u8, const 57u8, const 57u8];
+        storage_live(_2);
+        _2 = &_1;
+        _0 = move _2;
+        return;
+    }
+}
+
+// Full name: core::fmt::num::DECIMAL_PAIRS
+static DECIMAL_PAIRS: &'static [u8; 200usize] = DECIMAL_PAIRS()
+
+
+

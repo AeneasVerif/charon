@@ -17,11 +17,20 @@ pub trait Sized<Self>
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
 
-// Full name: test_crate::foo::{const}::closure::<()>
-struct closure::<()> {}
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
 
-unsafe fn core::marker::Destruct::drop_in_place::<closure::<()>>(_1: *mut closure::<()>)
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -70,13 +79,21 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}
 }
 
+// Full name: test_crate::foo::{const}::closure::<()>
+struct closure::<()> {}
+
 // Full name: core::ops::function::FnMut::call_mut
 pub extern "rust-call" fn call_mut<'_0>(_1: &'_0 mut closure::<()>, _2: ((),))
 = <opaque>
 
-// Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}
-impl Destruct for closure::<()> {
-    non-dyn-compatible
+// Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}::drop_in_place::<()>
+unsafe fn {impl Destruct for closure::<()>}::drop_in_place::<()>(_1: *mut closure::<()>)
+{
+    let _0: (); // return
+    let _1: &'1 mut closure::<()>; // arg #1
+
+    _0 = ()
+    return
 }
 
 // Full name: test_crate::foo::{const}::{impl FnOnce<((),)> for closure::<()>}
@@ -108,7 +125,7 @@ fn call_once::<()>(_1: closure::<()>, _2: ((),))
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<((),)> for closure::<()>}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for closure::<()>}::drop_in_place] _1
+    drop[{impl Destruct for closure::<()>}::drop_in_place::<()>] _1
     return
 }
 
@@ -171,14 +188,10 @@ impl Fn<((),)> for closure::<()> {
     non-dyn-compatible
 }
 
-// Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}::drop_in_place::<()>
-unsafe fn {impl Destruct for closure::<()>}::drop_in_place::<()>(_1: *mut closure::<()>)
-{
-    let _0: (); // return
-    let _1: &'1 mut closure::<()>; // arg #1
-
-    _0 = ()
-    return
+// Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}
+impl Destruct for closure::<()> {
+    fn drop_in_place = {impl Destruct for closure::<()>}::drop_in_place::<()>
+    non-dyn-compatible
 }
 
 // Full name: test_crate::main

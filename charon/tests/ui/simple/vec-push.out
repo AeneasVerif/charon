@@ -215,7 +215,7 @@ where
     len_3 = copy ((*self_1)).len
     storage_live(_4)
     storage_live(_5)
-    switch const impl_SizedTypeProperties_for_T<T>[TraitClause0]::SIZE {
+    switch copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]] {
         0usize => {
             _5 = const 18446744073709551615usize
         },

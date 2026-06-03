@@ -431,7 +431,7 @@ where
 
     storage_live(ptr_2)
     storage_live(_3)
-    _3 = box_new_uninit(const impl_SizedTypeProperties_for_T<T>[TraitClause0]::LAYOUT)
+    _3 = box_new_uninit(copy LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
     ptr_2 = cast<*mut u8, *mut T>(copy _3)
     (*ptr_2) = move x_1
     _0 = transmute<*mut u8, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>(copy _3)

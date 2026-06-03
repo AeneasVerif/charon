@@ -289,7 +289,7 @@ where
     if move _5 {
         storage_live(_4)
         _4 = cast<*const T, *const ()>(copy self_1)
-        _3 = precondition_check(move _4, copy count_2, const impl_SizedTypeProperties_for_T<T>[TraitClause0]::SIZE)
+        _3 = precondition_check(move _4, copy count_2, copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
         storage_dead(_4)
     } else {
     }

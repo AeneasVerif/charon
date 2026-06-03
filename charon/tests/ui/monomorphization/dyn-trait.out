@@ -6,21 +6,13 @@ opaque type core::fmt::Display::{vtable}
 #[lang_item("Display")]
 pub trait Display<Self>
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
 
-unsafe fn core::marker::Destruct::drop_in_place::<String>(_1: *mut String)
+// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
+unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
 = <opaque>
-
-// Full name: alloc::string::String::{impl Destruct for String}
-impl "impl_Destruct_for_String" Destruct for String {
-    non-dyn-compatible
-}
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 fn impl_Display_for_String::{vtable}() -> core::fmt::Display::{vtable}

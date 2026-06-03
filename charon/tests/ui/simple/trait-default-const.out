@@ -54,7 +54,7 @@ where
 {
     let _0: usize; // return
 
-    _0 = const impl_Trait_for_T<T>[TraitClause0]::FOO
+    _0 = copy FOO<T>[impl_Trait_for_T<T>[TraitClause0]]
     return
 }
 

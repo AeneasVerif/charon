@@ -1,0 +1,25 @@
+fn test_crate::ARCH_TAG::x86_64-unknown-linux-gnu() -> u32
+{
+    let _0: u32; // return
+
+    _0 = const 64u32
+    return
+}
+
+fn test_crate::ARCH_TAG::i686-unknown-linux-gnu() -> u32
+{
+    let _0: u32; // return
+
+    _0 = const 32u32
+    return
+}
+
+fn test_crate::ARCH_TAG() -> u32
+= target_dispatch {
+    x86_64-unknown-linux-gnu => test_crate::ARCH_TAG::x86_64-unknown-linux-gnu,
+    i686-unknown-linux-gnu => test_crate::ARCH_TAG::i686-unknown-linux-gnu,
+}
+
+const test_crate::ARCH_TAG: u32 = test_crate::ARCH_TAG()
+
+

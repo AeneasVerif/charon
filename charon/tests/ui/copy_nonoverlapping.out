@@ -638,7 +638,7 @@ where
         _5 = cast<*const T, *const ()>(copy src_1)
         storage_live(_6)
         _6 = cast<*mut T, *mut ()>(copy dst_2)
-        _4 = core::ptr::copy_nonoverlapping::precondition_check(move _5, move _6, const impl_SizedTypeProperties_for_T<T>[TraitClause0]::SIZE, const impl_SizedTypeProperties_for_T<T>[TraitClause0]::ALIGN, copy count_3)
+        _4 = core::ptr::copy_nonoverlapping::precondition_check(move _5, move _6, copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]], copy ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]], copy count_3)
         storage_dead(_6)
         storage_dead(_5)
     } else {

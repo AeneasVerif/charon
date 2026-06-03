@@ -156,12 +156,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         if let Some(body) = self.get_mir(def.this(), span)? {
             Ok(self.translate_body(span, body, &def.source_text))
         } else {
-            if matches!(
-                def.kind(),
-                hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. }
-            ) && let Some(value) = def.const_value(self.hax_state_with_id())
-            {
-                // For globals we can generate a body by evaluating the global.
+            let evaluated_global = match def.kind() {
+                hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. } => {
+                    def.const_value(self.hax_state_with_id())
+                }
+                hax::FullDefKind::Static { .. } => def.static_value(self.hax_state_with_id()),
+                _ => None,
+            };
+            if let Some(value) = evaluated_global {
+                // For globals without MIR, generate a body by evaluating the global.
                 // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
                 // default value no longer has a cross-crate MIR so it's unclear how to retreive
                 // the value. See the `trait-default-const-cross-crate` test.
