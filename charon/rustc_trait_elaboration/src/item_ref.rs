@@ -1,23 +1,113 @@
-use std::{ops::Deref, sync::Arc};
+use std::{fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
 use rustc_hir::{def::DefKind, def_id::DefId};
-use rustc_middle::ty::{self, GenericArg, GenericArgsRef};
+use rustc_middle::ty::{self, GenericArg, GenericArgsRef, TyCtxt};
 
 use crate::{
-    ItemPredicates, PredicateSearcher, TraitProof, TraitProofKind, normalize, self_predicate,
+    ElaborationCtx, ItemPredicates, PredicateSearcher, TraitProof, TraitProofKind, normalize,
+    self_predicate,
 };
+
+/// The identifier of an item; generalizes over rustc's `DefId` to allow for virtual items.
+pub trait ItemId: Clone + Debug + Hash + PartialEq + Eq {
+    /// An identifier that refers to a real Rust item.
+    fn from_rust_def_id(def_id: DefId) -> Self;
+
+    /// If this item corresponds to a real Rust item, return its DefId. Only used to avoid caching
+    /// the same `ItemRef` as both `Id` and `DefId`.
+    fn to_rust_def_id(&self) -> Option<DefId>;
+
+    /// The generics of this item.
+    fn generics_of<'tcx>(&self, tcx: TyCtxt<'tcx>) -> &'tcx ty::Generics;
+
+    /// The clauses that can be assumed when inside this item.
+    fn param_env<'tcx>(&self, tcx: TyCtxt<'tcx>) -> ty::ParamEnv<'tcx>;
+
+    /// The set of predicates required to mention this item.
+    fn required_predicates<'tcx>(&self, elab_ctx: ElaborationCtx<'tcx>) -> ItemPredicates<'tcx>;
+
+    /// If this item is a trait, return its Self predicate.
+    fn self_pred<'tcx>(&self, tcx: TyCtxt<'tcx>) -> Option<ty::PolyTraitRef<'tcx>>;
+
+    /// If this item is typechecked together with its parent (e.g. inline consts and closures),
+    /// return that parent.
+    fn typeck_parent<'tcx>(&self, tcx: TyCtxt<'tcx>) -> Option<Self>;
+
+    /// If this item is an associated item, return its parent.
+    fn parent_of_assoc<'tcx>(&self, tcx: TyCtxt<'tcx>) -> Option<Self>;
+
+    /// Whether this item takes an explicit `Self: Trait` clause or whether it is allowed to refer
+    /// to the ambiant one. Only relevant for associated items.
+    fn takes_explicit_self_clause(&self, tcx: TyCtxt<'_>) -> bool;
+
+    /// If this item is an associated item definition, and the given impl implements it, returns
+    /// the implemented associated item.
+    fn find_in_impl<'tcx>(&self, tcx: TyCtxt<'tcx>, trait_impl: DefId) -> Option<Self>;
+}
+
+impl ItemId for DefId {
+    fn from_rust_def_id(def_id: DefId) -> Self {
+        def_id
+    }
+
+    fn to_rust_def_id(&self) -> Option<DefId> {
+        Some(*self)
+    }
+
+    fn generics_of<'tcx>(&self, tcx: TyCtxt<'tcx>) -> &'tcx ty::Generics {
+        tcx.generics_of(*self)
+    }
+
+    fn param_env<'tcx>(&self, tcx: TyCtxt<'tcx>) -> ty::ParamEnv<'tcx> {
+        tcx.param_env(*self)
+    }
+
+    fn required_predicates<'tcx>(&self, elab_ctx: ElaborationCtx<'tcx>) -> ItemPredicates<'tcx> {
+        ItemPredicates::required_recursively(elab_ctx, *self)
+    }
+
+    fn self_pred<'tcx>(&self, tcx: TyCtxt<'tcx>) -> Option<ty::PolyTraitRef<'tcx>> {
+        match tcx.def_kind(*self) {
+            DefKind::Trait | DefKind::TraitAlias => Some(self_predicate(tcx, *self)),
+            _ => None,
+        }
+    }
+
+    fn typeck_parent<'tcx>(&self, tcx: TyCtxt<'tcx>) -> Option<Self> {
+        tcx.is_typeck_child(*self)
+            .then(|| tcx.typeck_root_def_id(*self))
+    }
+
+    fn parent_of_assoc<'tcx>(&self, tcx: TyCtxt<'tcx>) -> Option<Self> {
+        tcx.def_kind(*self).is_assoc().then(|| tcx.parent(*self))
+    }
+
+    fn takes_explicit_self_clause(&self, tcx: TyCtxt<'_>) -> bool {
+        matches!(
+            tcx.def_kind(*self),
+            DefKind::AssocFn | DefKind::AssocConst { .. }
+        )
+    }
+
+    fn find_in_impl<'tcx>(&self, tcx: TyCtxt<'tcx>, trait_impl: DefId) -> Option<Self> {
+        tcx.associated_items(trait_impl)
+            .in_definition_order()
+            .find(|item| item.trait_item_def_id() == Some(*self))
+            .map(|item| item.def_id)
+    }
+}
 
 /// Reference to an item, with generics as well as trait proofs for the required predicates.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct ItemRef<'tcx> {
+pub struct ItemRef<'tcx, Id: ItemId = DefId> {
     // TODO: intern?
-    contents: Arc<ItemRefContents<'tcx>>,
+    contents: Arc<ItemRefContents<'tcx, Id>>,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct ItemRefContents<'tcx> {
+pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     /// The item being refered to.
-    pub def_id: DefId,
+    pub def_id: Id,
     /// The arguments provided to this item.
     pub generic_args: ty::GenericArgsRef<'tcx>,
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
@@ -26,16 +116,16 @@ pub struct ItemRefContents<'tcx> {
     /// referring to, as well as the number of clauses required to mention the trait (cached for
     /// easy access).
     pub in_trait: Option<(TraitProof<'tcx>, usize)>,
-    /// Whether this item is an associated type.
-    pub is_assoc_ty: bool,
+    /// Whether this item is an associated item that takes an explicit `Self: Trait` clause.
+    pub needs_explicit_self_clause: bool,
     /// Whether this contains any reference to a type/lifetime/const parameter.
     pub has_param: bool,
     /// Whether this contains any reference to a type/const parameter.
     pub has_non_lt_param: bool,
 }
 
-impl<'tcx> ItemRefContents<'tcx> {
-    fn intern(self) -> ItemRef<'tcx> {
+impl<'tcx, Id: ItemId> ItemRefContents<'tcx, Id> {
+    fn intern(self) -> ItemRef<'tcx, Id> {
         ItemRef {
             contents: Arc::new(self),
         }
@@ -52,7 +142,7 @@ pub enum AssocItemResolution {
     ImplItem,
 }
 
-impl<'tcx> PredicateSearcher<'tcx> {
+impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
     /// Construct an `ItemRef` by filling in the trait proofs required to mention said item.
     ///
     /// If `resolve_assoc_item_trait_ref == true` and `(def_id, generics)` points to a trait
@@ -64,14 +154,40 @@ impl<'tcx> PredicateSearcher<'tcx> {
     /// `DefId` of the trait item definition: `core::convert::From::from`.
     pub fn resolve_item_reference(
         &mut self,
-        mut def_id: DefId,
+        def_id: Id,
+        generics: ty::GenericArgsRef<'tcx>,
+        assoc_item_resolution: AssocItemResolution,
+    ) -> ItemRef<'tcx, Id> {
+        let key = (def_id.clone(), generics, assoc_item_resolution);
+        if let Some(entry) = self.item_refs_cache.get(&key) {
+            return entry.clone();
+        }
+        let item_ref =
+            self.resolve_item_reference_uncached(def_id, generics, assoc_item_resolution);
+        self.item_refs_cache.insert(key, item_ref.clone());
+        item_ref
+    }
+
+    pub(crate) fn resolve_rust_item_reference(
+        &mut self,
+        def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
         assoc_item_resolution: AssocItemResolution,
     ) -> ItemRef<'tcx> {
-        let key = (def_id, generics, assoc_item_resolution);
-        if let Some(item_ref) = self.item_refs_cache.get(&key).cloned() {
-            return item_ref;
-        }
+        let id = Id::from_rust_def_id(def_id);
+        let item_ref = self.resolve_item_reference(id, generics, assoc_item_resolution);
+        item_ref.map_item_id(|id| {
+            id.to_rust_def_id()
+                .expect("got a virtual DefId from resolving a real one")
+        })
+    }
+
+    fn resolve_item_reference_uncached<OutId: ItemId>(
+        &mut self,
+        mut def_id: OutId,
+        generics: ty::GenericArgsRef<'tcx>,
+        assoc_item_resolution: AssocItemResolution,
+    ) -> ItemRef<'tcx, OutId> {
         use rustc_infer::infer::canonical::ir::TypeVisitableExt;
         let elab_ctx = self.elab_ctx;
         let tcx = self.elab_ctx.tcx;
@@ -79,24 +195,22 @@ impl<'tcx> PredicateSearcher<'tcx> {
         // Normalize the generics.
         let mut generics = normalize(tcx, typing_env, ty::Unnormalized::new_wip(generics));
 
-        if tcx.is_typeck_child(def_id) {
-            // Rustc gives closures/inline consts extra generic for inference that we don't care about.
-            generics = generics.truncate_to(tcx, tcx.generics_of(tcx.typeck_root_def_id(def_id)));
+        // Rustc gives closures/inline consts extra generic for inference that we don't care about.
+        if let Some(parent) = def_id.typeck_parent(tcx) {
+            generics = generics.truncate_to(tcx, parent.generics_of(tcx));
         }
 
         // If this is an associated item, resolve the trait reference.
         let mut trait_info = if assoc_item_resolution != AssocItemResolution::None
-            && let Some(tr_def_id) = tcx.trait_of_assoc(def_id)
+            && let Some(tr_def_id) = def_id.parent_of_assoc(tcx)
+            && let Some(self_pred) = tr_def_id.self_pred(tcx)
         {
-            // The "self" predicate in the context of the trait.
-            let self_pred = self_predicate(tcx, tr_def_id);
             // Substitute to be in the context of the current item.
-            let generics = generics.truncate_to(tcx, tcx.generics_of(tr_def_id));
+            let generics = generics.truncate_to(tcx, tr_def_id.generics_of(tcx));
             let self_pred = ty::EarlyBinder::bind(self_pred)
                 .instantiate(tcx, generics)
                 .skip_norm_wip();
-            let num_trait_req_clauses =
-                ItemPredicates::required_recursively(elab_ctx, tr_def_id).len();
+            let num_trait_req_clauses = tr_def_id.required_predicates(elab_ctx).len();
             Some((self.resolve(&self_pred), num_trait_req_clauses))
         } else {
             None
@@ -108,47 +222,42 @@ impl<'tcx> PredicateSearcher<'tcx> {
             && let Some((tinfo, _)) = &trait_info
             && let TraitProofKind::Concrete(impl_item_ref) = &tinfo.kind
         {
-            let implemented_item = tcx
-                .associated_items(impl_item_ref.def_id)
-                .in_definition_order()
-                .find(|item| item.trait_item_def_id() == Some(def_id));
             // If the item is implemented, point to it; otherwise the item has a default and we're
             // already pointing to it.
-            if let Some(implemented_item) = implemented_item {
-                def_id = implemented_item.def_id;
+            if let Some(implemented_item) = def_id.find_in_impl(tcx, impl_item_ref.def_id) {
+                def_id = implemented_item;
                 generics = generics.rebase_onto(tcx, tinfo.pred.def_id(), impl_item_ref.generics());
             }
             trait_info = None;
         }
 
-        let trait_proofs = self.resolve_item_required_predicates(def_id, generics);
+        let trait_proofs = self.resolve_item_required_predicates(def_id.clone(), generics);
+        let needs_explicit_self_clause = def_id.takes_explicit_self_clause(tcx);
 
         let content = ItemRefContents {
             def_id,
             generic_args: generics,
             trait_proofs,
             in_trait: trait_info,
-            is_assoc_ty: matches!(tcx.def_kind(def_id), DefKind::AssocTy),
+            needs_explicit_self_clause,
             has_param: generics.has_param()
                 || generics.has_escaping_bound_vars()
                 || generics.has_free_regions(),
             has_non_lt_param: generics.has_param(),
         };
-        let item_ref = content.intern();
-        self.item_refs_cache.insert(key, item_ref.clone());
-        item_ref
+        content.intern()
     }
 }
 
-impl<'tcx> ItemRef<'tcx> {
+impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
     /// Construct an `ItemRef` for items that can't have generics (e.g. modules).
-    pub fn dummy_without_generics(def_id: DefId) -> ItemRef<'tcx> {
+    pub fn dummy_without_generics(def_id: Id) -> ItemRef<'tcx, Id> {
         let content = ItemRefContents {
             def_id,
             generic_args: Default::default(),
             trait_proofs: Default::default(),
             in_trait: Default::default(),
-            is_assoc_ty: false,
+            needs_explicit_self_clause: false,
             has_param: false,
             has_non_lt_param: false,
         };
@@ -180,7 +289,12 @@ impl<'tcx> ItemRef<'tcx> {
         let start = if let Some((_, num_trait_req_clauses)) = self.in_trait {
             // Assoc consts and methods get an extra `Self: Trait` clause as the first clause, we
             // skip that one too. Note: that clause is the same as `self.in_trait`.
-            num_trait_req_clauses + if self.is_assoc_ty { 0 } else { 1 }
+            num_trait_req_clauses
+                + if self.needs_explicit_self_clause {
+                    1
+                } else {
+                    0
+                }
         } else {
             0
         };
@@ -188,8 +302,26 @@ impl<'tcx> ItemRef<'tcx> {
     }
 }
 
-impl<'tcx> Deref for ItemRef<'tcx> {
-    type Target = ItemRefContents<'tcx>;
+impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
+    fn map_item_id<OtherId: ItemId>(
+        &self,
+        f: impl FnOnce(&Id) -> OtherId,
+    ) -> ItemRef<'tcx, OtherId> {
+        ItemRefContents {
+            def_id: f(&self.def_id),
+            generic_args: self.generic_args,
+            trait_proofs: self.trait_proofs.clone(),
+            in_trait: self.in_trait,
+            needs_explicit_self_clause: self.needs_explicit_self_clause,
+            has_param: self.has_param,
+            has_non_lt_param: self.has_non_lt_param,
+        }
+        .intern()
+    }
+}
+
+impl<'tcx, Id: ItemId> Deref for ItemRef<'tcx, Id> {
+    type Target = ItemRefContents<'tcx, Id>;
     fn deref(&self) -> &Self::Target {
         &self.contents
     }

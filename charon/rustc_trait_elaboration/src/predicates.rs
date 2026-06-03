@@ -35,7 +35,7 @@ use rustc_middle::ty::{self, *};
 use rustc_span::def_id::DefId;
 use rustc_span::{DUMMY_SP, Span};
 
-use crate::{ElaborationCtx, ToPolyTraitRef};
+use crate::{ElaborationCtx, ItemId, ToPolyTraitRef};
 
 #[derive(Debug, Default, Clone)]
 pub struct BoundsOptions {
@@ -232,8 +232,8 @@ impl<'tcx> ItemPredicates<'tcx> {
             };
             // For methods and assoc consts in trait definitions, we add an explicit `Self: Trait` clause.
             // Associated types get to use the implicit `Self: Trait` clause instead.
-            if !matches!(def_kind, AssocTy)
-                && let Some(trait_def_id) = tcx.trait_of_assoc(def_id)
+            if let Some(trait_def_id) = tcx.trait_of_assoc(def_id)
+                && def_id.takes_explicit_self_clause(tcx)
             {
                 let self_clause = self_predicate(tcx, trait_def_id).upcast(tcx);
                 predicates.predicates.insert(

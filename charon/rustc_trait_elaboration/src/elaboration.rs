@@ -4,7 +4,6 @@ use crate::*;
 use itertools::{Either, Itertools};
 use std::collections::{HashMap, hash_map::Entry};
 
-use rustc_hir::def::DefKind;
 use rustc_hir::def_id::DefId;
 use rustc_middle::traits::CodegenObligationError;
 use rustc_middle::ty::{self, *};
@@ -18,21 +17,19 @@ struct ItemClause<'tcx> {
 
 /// Returns the predicate to resolve as `Self`, if that makes sense in the current item.
 /// Currently this predicate is only used inside trait declarations and their asosciated types.
-fn initial_self_pred<'tcx>(
+fn initial_self_pred<'tcx, Id: ItemId>(
     tcx: TyCtxt<'tcx>,
-    def_id: rustc_span::def_id::DefId,
+    def_id: &Id,
 ) -> Option<PolyTraitRef<'tcx>> {
-    use DefKind::*;
-    let trait_def_id = match tcx.def_kind(def_id) {
-        Trait | TraitAlias => def_id,
-        // Associated types can refer to the implicit `Self` clause. For methods and associated
-        // consts we pass an explicit `Self: Trait` clause to make the corresponding item
-        // reuseable.
-        AssocTy => tcx.parent(def_id),
-        _ => return None,
-    };
-    let self_pred = self_predicate(tcx, trait_def_id).upcast(tcx);
-    Some(self_pred)
+    if let Some(parent) = def_id.parent_of_assoc(tcx) {
+        if def_id.takes_explicit_self_clause(tcx) {
+            None
+        } else {
+            parent.self_pred(tcx)
+        }
+    } else {
+        def_id.self_pred(tcx)
+    }
 }
 
 #[tracing::instrument(level = "trace", skip(elab_ctx))]
@@ -99,7 +96,7 @@ impl<'tcx> Candidate<'tcx> {
 
 /// Stores a set of predicates along with where they came from.
 #[derive(Clone)]
-pub struct PredicateSearcher<'tcx> {
+pub struct PredicateSearcher<'tcx, Id: ItemId = DefId> {
     pub(crate) elab_ctx: ElaborationCtx<'tcx>,
     pub(crate) typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
@@ -109,19 +106,19 @@ pub struct PredicateSearcher<'tcx> {
     implicit_self_clause: bool,
     /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
     pub(crate) item_refs_cache:
-        HashMap<(DefId, ty::GenericArgsRef<'tcx>, AssocItemResolution), ItemRef<'tcx>>,
+        HashMap<(Id, ty::GenericArgsRef<'tcx>, AssocItemResolution), ItemRef<'tcx, Id>>,
     /// Cache of trait refs to resolved trait proofs.
     trait_proofs_cache: HashMap<ty::PolyTraitRef<'tcx>, TraitProof<'tcx>>,
 }
 
-impl<'tcx> PredicateSearcher<'tcx> {
+impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
     /// Initialize the elaborator with the predicates accessible within this item.
-    pub(crate) fn new_for_owner(elab_ctx: ElaborationCtx<'tcx>, owner_id: DefId) -> Self {
+    pub(crate) fn new_for_owner(elab_ctx: ElaborationCtx<'tcx>, owner_id: Id) -> Self {
         let tcx = elab_ctx.tcx;
-        let initial_self_pred = initial_self_pred(tcx, owner_id);
+        let initial_self_pred = initial_self_pred(tcx, &owner_id);
         let mut out = Self {
             elab_ctx,
-            typing_env: TypingEnv::new(tcx.param_env(owner_id), TypingMode::PostAnalysis),
+            typing_env: TypingEnv::new(owner_id.param_env(tcx), TypingMode::PostAnalysis),
             candidates: Default::default(),
             implicit_self_clause: initial_self_pred.is_some(),
             item_refs_cache: Default::default(),
@@ -131,9 +128,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
             id: ItemPredicateId::TraitSelf,
             clause,
         }));
-        out.insert_bound_predicates(
-            ItemPredicates::required_recursively(elab_ctx, owner_id).predicates,
-        );
+        out.insert_bound_predicates(owner_id.required_predicates(elab_ctx).predicates);
         out
     }
 
@@ -235,7 +230,8 @@ impl<'tcx> PredicateSearcher<'tcx> {
         if matches!(proof.kind, TraitProofKind::Error(_)) {
             return;
         }
-        let item_ref = self.resolve_item_reference(*def_id, args, AssocItemResolution::ImplItem);
+        let item_ref =
+            self.resolve_rust_item_reference(*def_id, args, AssocItemResolution::ImplItem);
 
         // The bounds that hold on the associated type.
         let item_bounds = ItemPredicates::implied(self.elab_ctx, *def_id);
@@ -327,7 +323,7 @@ impl<'tcx> PredicateSearcher<'tcx> {
                 impl_def_id,
                 args: generics,
                 ..
-            }) => TraitProofKind::Concrete(self.resolve_item_reference(
+            }) => TraitProofKind::Concrete(self.resolve_rust_item_reference(
                 impl_def_id,
                 generics,
                 AssocItemResolution::ImplItem,
@@ -462,15 +458,12 @@ impl<'tcx> PredicateSearcher<'tcx> {
     }
 
     /// Resolve the predicates required by the given item.
-    pub fn resolve_item_required_predicates(
+    pub fn resolve_item_required_predicates<OutId: ItemId>(
         &mut self,
-        def_id: DefId,
+        def_id: OutId,
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<TraitProof<'tcx>> {
-        self.resolve_predicates(
-            ItemPredicates::required_recursively(self.elab_ctx, def_id),
-            generics,
-        )
+        self.resolve_predicates(def_id.required_predicates(self.elab_ctx), generics)
     }
 
     /// Resolve the predicates implied by the given item.
