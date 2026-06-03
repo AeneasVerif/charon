@@ -17,16 +17,20 @@ pub trait Sized<Self>
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
-
-// Full name: test_crate::NotCopy
-struct NotCopy {}
-
-// Full name: test_crate::main::closure
-struct closure {
-  NotCopy,
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place::<closure>(_1: *mut closure)
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    non-dyn-compatible
+}
+
+unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -49,13 +53,26 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}
 }
 
+// Full name: test_crate::NotCopy
+struct NotCopy {}
+
+// Full name: test_crate::main::closure
+struct closure {
+  NotCopy,
+}
+
 // Full name: core::ops::function::FnOnce::call_once
 pub extern "rust-call" fn call_once(_1: closure, _2: (u8,)) -> u8
 = <opaque>
 
-// Full name: test_crate::main::closure::{impl Destruct for closure}
-impl "impl_Destruct_for_closure" Destruct for closure {
-    non-dyn-compatible
+// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
+unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
+{
+    let _0: (); // return
+    let _1: &'1 mut closure; // arg #1
+
+    _0 = ()
+    return
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}
@@ -107,14 +124,10 @@ fn main()
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
-{
-    let _0: (); // return
-    let _1: &'1 mut closure; // arg #1
-
-    _0 = ()
-    return
+// Full name: test_crate::main::closure::{impl Destruct for closure}
+impl "impl_Destruct_for_closure" Destruct for closure {
+    fn drop_in_place = impl_Destruct_for_closure::drop_in_place
+    non-dyn-compatible
 }
 
 

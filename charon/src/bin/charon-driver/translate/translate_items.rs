@@ -699,6 +699,31 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut types: IndexMap<AssocTypeId, _> = IndexMap::new();
         let mut methods: IndexMap<TraitMethodId, _> = IndexMap::new();
 
+        if def.lang_item == Some(sym::destruct) {
+            // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
+            let (method_id, method_binder) =
+                self.prepare_drop_in_place_method(def, span, def.def_id(), trait_decl_id, None)?;
+            let method_name = self.translated.assoc_item_name(trait_decl_id, method_id);
+            self.mark_method_as_used(trait_decl_id, method_id);
+            let method = method_binder.map(|fn_ref| {
+                let self_ty = if self.monomorphize() {
+                    // FIXME: put something real here
+                    Ty::mk_unit()
+                } else {
+                    TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::one(), TypeVarId::ZERO))
+                        .into_ty()
+                };
+                let signature = self.drop_in_place_method_sig(self_ty);
+                TraitMethod {
+                    name: method_name,
+                    item: fn_ref,
+                    attr_info: AttrInfo::dummy_public(),
+                    signature,
+                }
+            });
+            methods.set_slot_extend(method_id, method);
+        }
+
         // skip all associated items of trait decl in mono mode
         // question: what if the associated methods (or consts) has default implmentation?
         // TODO: support default methods and default consts
@@ -903,31 +928,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
-        }
-
-        if def.lang_item == Some(sym::destruct) {
-            // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
-            let (method_id, method_binder) =
-                self.prepare_drop_in_place_method(def, span, def.def_id(), trait_decl_id, None)?;
-            let method_name = self.translated.assoc_item_name(trait_decl_id, method_id);
-            self.mark_method_as_used(trait_decl_id, method_id);
-            let method = method_binder.map(|fn_ref| {
-                let self_ty = if self.monomorphize() {
-                    // FIXME: put something real here
-                    Ty::mk_unit()
-                } else {
-                    TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::one(), TypeVarId::ZERO))
-                        .into_ty()
-                };
-                let signature = self.drop_in_place_method_sig(self_ty);
-                TraitMethod {
-                    name: method_name,
-                    item: fn_ref,
-                    attr_info: AttrInfo::dummy_public(),
-                    signature,
-                }
-            });
-            methods.set_slot_extend(method_id, method);
         }
 
         // In case of a trait implementation, some values may not have been
