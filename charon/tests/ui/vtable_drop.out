@@ -53,17 +53,6 @@ impl "impl_Clone_for_i32" Clone for i32 {
 unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
 = <opaque>
 
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub opaque type NonNull<T>
-where
-    TraitClause0: (T: Destruct),
-
-// Full name: core::ptr::unique::Unique
-pub opaque type Unique<T>
-where
-    TraitClause0: (T: Destruct),
-
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -138,26 +127,17 @@ where
     let _5: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
     let _6: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
     let _7: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
-    let _8: *const i32; // anonymous local
-    let _9: *const i32; // anonymous local
-    let _10: *const i32; // anonymous local
 
     storage_live(_3)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    storage_live(_8)
-    storage_live(_9)
-    storage_live(_10)
     _5 = copy (*self_1)
-    _8 = transmute<NonNull<i32>[{built_in impl Destruct for i32}], *const i32>(copy ((*_5)).0)
-    _3 = copy (*_8) checked.+ const 1i32
+    _3 = copy (*_5) checked.+ const 1i32
     _6 = copy (*self_1)
-    _9 = transmute<NonNull<i32>[{built_in impl Destruct for i32}], *const i32>(copy ((*_6)).0)
     assert(move _3.1 == false) (overflow) else panic
     _7 = copy (*self_1)
-    _10 = transmute<NonNull<i32>[{built_in impl Destruct for i32}], *const i32>(copy ((*_7)).0)
-    (*_10) = move _3.0
+    (*_7) = move _3.0
     storage_live(_4)
     _4 = &(*arg_2)
     _0 = TraitClause1::clone<'6>(move _4)

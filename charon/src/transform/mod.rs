@@ -34,6 +34,7 @@ pub mod normalize {
 pub mod resugar {
     pub mod move_asserts_to_statements;
     pub mod reconstruct_asserts;
+    pub mod reconstruct_box_derefs;
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
@@ -158,6 +159,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // this, it must happen before passes that insert statements like [simplify_constants].
         // This must also happen after `inline_selected_functions`, and `merge_goto_chains`.
         resugar::reconstruct_vec_boxes::Transform::new(ctx),
+        // Resugar the box derefs that got desugared in elaborated MIR.
+        CowBox::Borrowed(&resugar::reconstruct_box_derefs::Transform),
         // Recognize calls to the `offset_of` intrinsics and replace them with the
         // corresponding `NullOp`.
         CowBox::Borrowed(&resugar::reconstruct_intrinsics::Transform),
