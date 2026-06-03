@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780522170282,
+  "lastUpdate": 1780529381369,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -5138,6 +5138,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 560.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 5.1,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "02c65dccae51eb88d3d2b98e5e9d689a59344e7b",
+          "message": "Merge pull request #1256 from Nadrieril/duplicate-dependencies\n\nDisambiguate identically-named crates",
+          "timestamp": "2026-06-03T23:26:10Z",
+          "tree_id": "828c32f52f1e32c6615e83ebd9966cdfb753f08f",
+          "url": "https://github.com/AeneasVerif/charon/commit/02c65dccae51eb88d3d2b98e5e9d689a59344e7b"
+        },
+        "date": 1780529380214,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 102322737113,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 14.28,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 420.2,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24.8,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 356818152645,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 40.2,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 561.8,
             "unit": "max-rss(MB)"
           },
           {
