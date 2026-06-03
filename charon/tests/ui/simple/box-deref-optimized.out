@@ -1,9 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::alloc::layout::Layout
-#[lang_item("alloc_layout")]
-pub opaque type Layout
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -15,120 +11,6 @@ pub trait Sized<Self>
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
-
-// Full name: core::mem::alignment::Alignment
-pub opaque type Alignment
-
-// Full name: core::mem::SizedTypeProperties
-pub trait SizedTypeProperties<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    const SIZE : usize
-    const ALIGN : usize
-    const ALIGNMENT : Alignment
-    const IS_ZST : bool
-    const LAYOUT : Layout
-    const MAX_SLICE_LEN : usize
-    non-dyn-compatible
-}
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub fn SIZE<Self>() -> usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub const SIZE<Self>: usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = SIZE()
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub fn ALIGN<Self>() -> usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub const ALIGN<Self>: usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = ALIGN()
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub fn ALIGNMENT<Self>() -> Alignment
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub const ALIGNMENT<Self>: Alignment
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = ALIGNMENT()
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub fn IS_ZST<Self>() -> bool
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub const IS_ZST<Self>: bool
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = IS_ZST()
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub fn LAYOUT<Self>() -> Layout
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub const LAYOUT<Self>: Layout
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = LAYOUT()
-
-// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
-pub fn MAX_SLICE_LEN<Self>() -> usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
-pub const MAX_SLICE_LEN<Self>: usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = MAX_SLICE_LEN()
-
-// Full name: core::mem::{impl SizedTypeProperties for T}
-impl<T> "impl_SizedTypeProperties_for_T" SizedTypeProperties for T
-where
-    TraitClause0: (T: Sized),
-{
-    proof ImpliedClause0: (T: Sized) = TraitClause0
-    const SIZE = SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const ALIGN = ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const ALIGNMENT = ALIGNMENT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const IS_ZST = IS_ZST<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const LAYOUT = LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub opaque type NonNull<T>
-
-// Full name: core::ptr::unique::Unique
-pub opaque type Unique<T>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -163,32 +45,10 @@ fn into_inner(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String
     let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let _3: (); // anonymous local
-    let _4: *const String; // anonymous local
-    let _5: *const (); // anonymous local
-    let _6: usize; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: bool; // anonymous local
-    let _10: bool; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
-    storage_live(_9)
-    storage_live(_10)
-    _4 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    _5 = cast<*const String, *const ()>(copy _4)
-    _6 = transmute<*const (), usize>(copy _5)
-    _7 = copy SIZE<String>[impl_SizedTypeProperties_for_T<String>[{built_in impl Sized for String}]] != const 0usize
-    _8 = copy _6 == const 0usize
-    _9 = copy _8 & copy _7
-    _10 = ~(copy _9)
-    assert(copy _10 == true) (null_pointer_dereference) else undefined_behavior
-    _0 = move (*_4)
+    _0 = move (*b_1)
     _2 = &mut b_1
     _3 = impl_Drop_for_Box::drop<'4, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _2)
     return
@@ -201,34 +61,12 @@ fn write(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {b
     let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let s_2: String; // arg #2
     let _3: String; // anonymous local
-    let _4: *const String; // anonymous local
-    let _5: *const (); // anonymous local
-    let _6: usize; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: bool; // anonymous local
-    let _10: bool; // anonymous local
 
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
-    storage_live(_9)
-    storage_live(_10)
     _0 = ()
     storage_live(_3)
     _3 = move s_2
     drop[impl_Destruct_for_String::drop_in_place] (*b_1)
-    _4 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    _5 = cast<*const String, *const ()>(copy _4)
-    _6 = transmute<*const (), usize>(copy _5)
-    _7 = copy SIZE<String>[impl_SizedTypeProperties_for_T<String>[{built_in impl Sized for String}]] != const 0usize
-    _8 = copy _6 == const 0usize
-    _9 = copy _8 & copy _7
-    _10 = ~(copy _9)
-    assert(copy _10 == true) (null_pointer_dereference) else undefined_behavior
-    (*_4) = move _3
+    (*b_1) = move _3
     storage_dead(_3)
     _0 = ()
     drop[impl_Destruct_for_Box::drop_in_place<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
@@ -241,29 +79,10 @@ fn borrow(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {
     let _0: (); // return
     let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut String; // anonymous local
-    let _3: *const String; // anonymous local
-    let _4: *const (); // anonymous local
-    let _5: usize; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: bool; // anonymous local
 
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
     _0 = ()
     storage_live(_2)
-    _3 = transmute<NonNull<String>, *const String>(copy ((*b_1)).0)
-    _4 = cast<*const String, *const ()>(copy _3)
-    _5 = transmute<*const (), usize>(copy _4)
-    _6 = copy _5 == const 0usize
-    _7 = copy _6 & const true
-    _8 = ~(copy _7)
-    assert(copy _8 == true) (null_pointer_dereference) else undefined_behavior
-    _2 = &mut (*_3)
+    _2 = &mut (*b_1)
     storage_dead(_2)
     _0 = ()
     drop[impl_Destruct_for_Box::drop_in_place<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
@@ -278,32 +97,13 @@ fn reborrow<'_0>(b_1: &'_0 mut alloc::boxed::Box<String>[{built_in impl MetaSize
     let _2: &'4 mut String; // anonymous local
     let _3: &'5 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let _4: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
-    let _5: *const String; // anonymous local
-    let _6: *const (); // anonymous local
-    let _7: usize; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: bool; // anonymous local
-    let _10: bool; // anonymous local
 
     storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
-    storage_live(_9)
-    storage_live(_10)
     storage_live(_2)
     storage_live(_3)
     _3 = &mut (*b_1)
     _4 = copy (*_3)
-    _5 = transmute<NonNull<String>, *const String>(copy ((*_4)).0)
-    _6 = cast<*const String, *const ()>(copy _5)
-    _7 = transmute<*const (), usize>(copy _6)
-    _8 = copy _7 == const 0usize
-    _9 = copy _8 & const true
-    _10 = ~(copy _9)
-    assert(copy _10 == true) (null_pointer_dereference) else undefined_behavior
-    _2 = &mut (*_5)
+    _2 = &mut (*_4)
     _0 = &mut (*_2)
     storage_dead(_3)
     storage_dead(_2)
@@ -323,32 +123,10 @@ fn field(b_1: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {b
     let b_1: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // anonymous local
     let _3: (); // anonymous local
-    let _4: *const Struct; // anonymous local
-    let _5: *const (); // anonymous local
-    let _6: usize; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: bool; // anonymous local
-    let _9: bool; // anonymous local
-    let _10: bool; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
-    storage_live(_9)
-    storage_live(_10)
-    _4 = transmute<NonNull<Struct>, *const Struct>(copy ((*b_1)).0)
-    _5 = cast<*const Struct, *const ()>(copy _4)
-    _6 = transmute<*const (), usize>(copy _5)
-    _7 = copy SIZE<Struct>[impl_SizedTypeProperties_for_T<Struct>[{built_in impl Sized for Struct}]] != const 0usize
-    _8 = copy _6 == const 0usize
-    _9 = copy _8 & copy _7
-    _10 = ~(copy _9)
-    assert(copy _10 == true) (null_pointer_dereference) else undefined_behavior
-    _0 = move ((*_4)).b
+    _0 = move ((*b_1)).b
     _2 = &mut b_1
     _3 = impl_Drop_for_Box::drop<'4, Struct, Global>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}](move _2)
     return
