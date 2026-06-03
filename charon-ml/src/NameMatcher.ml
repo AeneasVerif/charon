@@ -1078,7 +1078,6 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
         else Some (ty_to_pattern_aux ctx c m output)
       in
       EArrow (inputs, output)
-  | TError _ -> EVar None
   | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
   | TArray (ty, len) ->
@@ -1098,11 +1097,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           { types = [ ty ]; const_generics = []; regions = []; trait_refs = [] }
       in
       EPrimAdt (TSlice, generics)
-  | _ ->
-      let fmt_env = ctx_to_fmt_env ctx in
-      raise
-        (Failure
-           ("Can't convert type to pattern: " ^ Print.ty_to_string fmt_env ty))
+  | _ -> EVar None
 
 and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     (m : constraints) (trait_ref : T.trait_ref) (item_name : string)
