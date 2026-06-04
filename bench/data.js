@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780534442756,
+  "lastUpdate": 1780570057182,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -5330,6 +5330,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 573.4,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 5.1,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d57d60fb7b36ba733568a284d01642b58e4ad182",
+          "message": "Merge pull request #1259 from Nadrieril/drop-glue\n\nRename `drop_in_place`  to `drop_glue` and fix its signature",
+          "timestamp": "2026-06-04T10:43:42Z",
+          "tree_id": "4c183873bd2eb0d6791b85e035a1ef7a17f0273c",
+          "url": "https://github.com/AeneasVerif/charon/commit/d57d60fb7b36ba733568a284d01642b58e4ad182"
+        },
+        "date": 1780570056008,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 102637148678,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 15.48,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 417.2,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24.8,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 356824444714,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 40.9,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 573.8,
             "unit": "max-rss(MB)"
           },
           {
