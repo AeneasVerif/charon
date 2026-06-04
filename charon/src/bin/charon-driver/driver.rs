@@ -12,6 +12,7 @@ use rustc_interface::interface::Compiler;
 use rustc_middle::ty::TyCtxt;
 use rustc_middle::util::Providers;
 use rustc_session::config::{OutputType, OutputTypes};
+use rustc_span::ErrorGuaranteed;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{env, fmt};
 
@@ -97,6 +98,34 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
         set_parallel_frontend(config);
     }
     set_mir_options(config);
+}
+
+/// Run a couple of rustc queries that don't involve MIR (so that they don't steal it). Returns
+/// whether rustc reported errors. This lets us avoid running Charon translation on crates rustc
+/// already rejects.
+fn precheck_rustc_errors(tcx: TyCtxt<'_>) -> bool {
+    type QueryResult = Result<(), ErrorGuaranteed>;
+
+    tcx.par_hir_for_each_module(|module| {
+        tcx.ensure_ok().check_mod_attrs(module);
+        tcx.ensure_ok().check_mod_unstable_api_usage(module);
+    });
+
+    let _: QueryResult = tcx.ensure_result().check_type_wf(());
+    for &trait_def_id in tcx.all_local_trait_impls(()).keys() {
+        let _: QueryResult = tcx.ensure_result().coherent_trait(trait_def_id);
+    }
+    let _: QueryResult = tcx.ensure_result().crate_inherent_impls_validity_check(());
+    let _: QueryResult = tcx.ensure_result().crate_inherent_impls_overlap_check(());
+
+    tcx.par_hir_body_owners(|def_id| {
+        let def_kind = tcx.def_kind(def_id);
+        if !matches!(def_kind, rustc_hir::def::DefKind::AnonConst) && !def_kind.is_typeck_child() {
+            tcx.ensure_ok().typeck(def_id);
+        }
+    });
+
+    tcx.dcx().has_errors().is_some()
 }
 
 /// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
@@ -196,6 +225,10 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
         // Set up our own `DefId` debug routine.
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
+
+        if precheck_rustc_errors(tcx) {
+            return Compilation::Continue;
+        }
 
         self.transform_ctx = translate_crate::translate(
             tcx,
