@@ -13,6 +13,7 @@ use charon_lib::ast::HashConsed;
 use itertools::Itertools;
 pub use rustc_middle::mir::Promoted as PromotedId;
 use rustc_span::DUMMY_SP;
+use rustc_trait_elaboration::inherits_parent_clauses;
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
 sinto_reexport!(hir::Safety);
@@ -175,6 +176,104 @@ impl DefIdContents {
     pub fn make_def_id<'tcx, S: BaseState<'tcx>>(self, _s: &S) -> DefId {
         let contents = HashConsed::new(self);
         DefId { contents }
+    }
+}
+
+impl rustc_trait_elaboration::ItemId for DefId {
+    type State<'tcx> = StateWithBase<'tcx>;
+
+    fn from_rust_def_id<'tcx>(s: &Self::State<'tcx>, def_id: RDefId) -> Self {
+        def_id.sinto(s)
+    }
+
+    fn to_rust_def_id<'tcx>(&self, _s: &Self::State<'tcx>) -> Option<RDefId> {
+        self.as_real_def_id()
+    }
+
+    fn generics_of<'tcx>(&self, s: &Self::State<'tcx>) -> &'tcx ty::Generics {
+        DefId::generics_of(self, s)
+    }
+
+    fn param_env<'tcx>(&self, s: &Self::State<'tcx>) -> ty::ParamEnv<'tcx> {
+        DefId::param_env(self, s)
+    }
+
+    fn required_predicates<'tcx>(&self, s: &Self::State<'tcx>) -> ItemPredicates<'tcx> {
+        DefId::required_predicates(self, s)
+    }
+
+    fn self_pred<'tcx>(&self, s: &Self::State<'tcx>) -> Option<ty::PolyTraitRef<'tcx>> {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id)
+                if matches!(self.kind, DefKind::Trait | DefKind::TraitAlias) =>
+            {
+                Some(self_predicate(tcx, def_id))
+            }
+            _ => None,
+        }
+    }
+
+    fn typeck_parent<'tcx>(&self, s: &Self::State<'tcx>) -> Option<Self> {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id) => tcx
+                .is_typeck_child(def_id)
+                .then(|| tcx.typeck_root_def_id(def_id).sinto(s)),
+            DefIdBase::Promoted(def_id, ..) => Some(tcx.typeck_root_def_id(def_id).sinto(s)),
+            DefIdBase::ImplAssocItem(..) | DefIdBase::Synthetic(..) => None,
+        }
+    }
+
+    fn parent_of_assoc<'tcx>(&self, s: &Self::State<'tcx>) -> Option<Self> {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id)
+                if matches!(
+                    self.kind,
+                    DefKind::AssocTy | DefKind::AssocFn | DefKind::AssocConst { .. }
+                ) =>
+            {
+                Some(tcx.parent(def_id).sinto(s))
+            }
+            DefIdBase::ImplAssocItem(id) => Some(tcx.parent(id.item_decl_id).sinto(s)),
+            _ => None,
+        }
+    }
+
+    fn parent_for_clauses<'tcx>(&self, s: &Self::State<'tcx>) -> Option<Self> {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id) => {
+                inherits_parent_clauses(tcx, def_id).then(|| self.parent(s).unwrap())
+            }
+            DefIdBase::ImplAssocItem(id) => Some(id.trait_impl_id.sinto(s)),
+            DefIdBase::Promoted(def_id, _) => Some(def_id.sinto(s)),
+            DefIdBase::Synthetic(..) => None,
+        }
+    }
+
+    fn takes_explicit_self_clause<'tcx>(&self, s: &Self::State<'tcx>) -> bool {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Promoted(def_id, ..) => matches!(
+                tcx.def_kind(def_id),
+                hir::def::DefKind::AssocFn | hir::def::DefKind::AssocConst { .. }
+            ),
+            _ => matches!(self.kind, DefKind::AssocFn | DefKind::AssocConst { .. }),
+        }
+    }
+
+    fn find_in_impl<'tcx>(&self, s: &Self::State<'tcx>, trait_impl: RDefId) -> Option<Self> {
+        let tcx = s.base().tcx;
+        match self.base {
+            DefIdBase::Real(def_id) => tcx
+                .associated_items(trait_impl)
+                .in_definition_order()
+                .find(|item| item.trait_item_def_id() == Some(def_id))
+                .map(|item| item.def_id.sinto(s)),
+            _ => None,
+        }
     }
 }
 

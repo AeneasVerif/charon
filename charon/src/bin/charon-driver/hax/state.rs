@@ -166,8 +166,6 @@ mod types {
         pub trait_proofs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::TraitProof>,
         /// Generics for this item, if it is virtual.
         pub virtual_generics: Option<&'tcx ty::Generics>,
-        /// Predicate searcher for this item, if it is virtual.
-        pub virtual_predicate_searcher: Option<PredicateSearcher<'tcx>>,
     }
 
     #[derive(Clone)]
@@ -176,7 +174,7 @@ mod types {
         pub local_ctx: Rc<RefCell<LocalContextS>>,
         pub opt_def_id: Option<rustc_hir::def_id::DefId>,
         pub cache: Rc<RefCell<GlobalCache<'tcx>>>,
-        pub elab_ctx: crate::hax::traits::ElaborationCtx<'tcx>,
+        pub elab_ctx: crate::hax::traits::ElaborationCtx<'tcx, DefId>,
         pub tcx: ty::TyCtxt<'tcx>,
     }
 
@@ -250,6 +248,15 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
         let owner = &owner_id.sinto(self);
         Self::with_hax_owner(self, owner)
     }
+
+    /// State with only access to the global state.
+    fn base_state(&self) -> StateWithBase<'tcx> {
+        State {
+            base: self.base(),
+            owner: (),
+            binder: (),
+        }
+    }
 }
 impl<'tcx, T: HasBase<'tcx> + Clone> BaseState<'tcx> for T {}
 
@@ -308,33 +315,14 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
     }
     fn with_predicate_searcher<T>(
         &self,
-        f: impl FnOnce(&mut PredicateSearcher<'tcx>, &ElaborationCtx<'tcx>) -> T,
+        f: impl FnOnce(&mut PredicateSearcher<'tcx>, &StateWithBase<'tcx>) -> T,
     ) -> T {
         let s = self;
         let base = s.base();
         let owner = s.owner();
-        if let DefIdBase::ImplAssocItem(id) = owner.base {
-            let param_env = owner.param_env(s);
-            let predicates = owner.required_predicates(s);
-            s.with_cache(|cache| {
-                let predicate_searcher =
-                    cache.virtual_predicate_searcher.get_or_insert_with(|| {
-                        let mut predicate_searcher = base
-                            .elab_ctx
-                            .predicate_searcher_for(&base.elab_ctx, id.trait_impl_id)
-                            .clone();
-                        predicate_searcher.set_param_env(param_env);
-                        predicate_searcher.insert_bound_predicates(predicates.iter());
-                        predicate_searcher
-                    });
-                f(predicate_searcher, &base.elab_ctx)
-            })
-        } else {
-            let mut predicate_searcher = base
-                .elab_ctx
-                .predicate_searcher_for(&base.elab_ctx, s.owner_id());
-            f(&mut predicate_searcher, &base.elab_ctx)
-        }
+        let base_state = s.base_state();
+        let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(&base_state, owner);
+        f(&mut predicate_searcher, &base_state)
     }
 }
 impl<'tcx, S: UnderOwnerState<'tcx>> WithItemCacheExt<'tcx> for S {}

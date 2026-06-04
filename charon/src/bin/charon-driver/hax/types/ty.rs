@@ -866,7 +866,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         let trait_proof = {
                             let poly_trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
                             predicate_searcher
-                                .resolve(&s.base().elab_ctx, &poly_trait_ref)
+                                .resolve(&s.base_state(), &poly_trait_ref)
                                 .sinto(s)
                         };
                         let Term::Ty(ty) = proj.skip_binder().term.sinto(s) else {
@@ -1048,7 +1048,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
                         .expect("expected a trait predicate in dyn upcast target");
                     ty::Binder::dummy(ty::TraitRef::new(tcx, def_id, [fresh_ty]))
                 };
-                searcher.resolve(&s.base().elab_ctx, &to_pred).sinto(s)
+                searcher.resolve(&s.base_state(), &to_pred).sinto(s)
             });
             UnsizingMetadata::NestedVTable(trait_proof)
         }

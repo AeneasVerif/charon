@@ -266,23 +266,22 @@ impl<'tcx> ItemPredicates<'tcx> {
     ///     type Type<T: Clone>;
     /// }
     /// ```
-    pub fn required_recursively(
-        elab_ctx: ElaborationCtx<'tcx, impl ItemId>,
-        def_id: rustc_span::def_id::DefId,
+    pub fn required_recursively<Id: ItemId>(
+        elab_ctx: ElaborationCtx<'tcx, Id>,
+        state: &Id::State<'tcx>,
+        def_id: Id,
     ) -> ItemPredicates<'tcx> {
-        elab_ctx.cached_required_recursively_predicates(def_id, || {
+        elab_ctx.cached_required_recursively_predicates(def_id.clone(), || {
             fn acc_predicates<'tcx, Id: ItemId>(
-                elab_ctx: ElaborationCtx<'tcx, Id>,
-                def_id: rustc_span::def_id::DefId,
+                state: &Id::State<'tcx>,
+                def_id: Id,
                 predicates: &mut ItemPredicates<'tcx>,
                 is_parent: bool,
             ) {
-                let tcx = elab_ctx.tcx;
-                if inherits_parent_clauses(tcx, def_id) {
-                    let parent = tcx.parent(def_id);
-                    acc_predicates(elab_ctx, parent, predicates, true);
+                if let Some(parent) = def_id.parent_for_clauses(state) {
+                    acc_predicates(state, parent, predicates, true);
                 }
-                let required = ItemPredicates::required(elab_ctx, def_id);
+                let required = def_id.required_predicates(state);
                 predicates.predicates.extend(required.iter());
                 if !is_parent {
                     // Use the next_id that corresponds to the current item.
@@ -295,7 +294,7 @@ impl<'tcx> ItemPredicates<'tcx> {
                 next_id: 0,
                 predicates: vec![],
             };
-            acc_predicates(elab_ctx, def_id, &mut predicates, false);
+            acc_predicates(state, def_id, &mut predicates, false);
             predicates
         })
     }
@@ -410,7 +409,7 @@ pub fn self_predicate<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> PolyTraitRef<'t
     Binder::dummy(TraitRef::identity(tcx, def_id))
 }
 
-fn inherits_parent_clauses<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
+pub fn inherits_parent_clauses<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
     use DefKind::*;
     matches!(
         tcx.def_kind(def_id),

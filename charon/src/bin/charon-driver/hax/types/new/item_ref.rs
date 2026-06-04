@@ -42,11 +42,11 @@ pub struct ItemRef {
 
 /// Contents of `ItemRef`.
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_trait_elaboration::ItemRef<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_trait_elaboration::ItemRef<'tcx, DefId>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ItemRefContents {
     /// The item being refered to.
-    #[value(self.def_id.sinto(s))]
+    #[value(self.def_id.clone())]
     pub def_id: DefId,
     /// The generics passed to the item. If `in_trait` is `Some`, these are only the generics of
     /// the method/type/const itself; generics for the traits are available in
@@ -71,6 +71,14 @@ pub struct ItemRefContents {
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef> for rustc_trait_elaboration::ItemRef<'tcx> {
+    fn sinto(&self, s: &S) -> ItemRef {
+        self.map_item_id(|def_id| def_id.sinto(s)).sinto(s)
+    }
+}
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef>
+    for rustc_trait_elaboration::ItemRef<'tcx, DefId>
+{
     fn sinto(&self, s: &S) -> ItemRef {
         let content: ItemRefContents = self.sinto(s);
         let item = content.intern(s);
@@ -155,25 +163,16 @@ impl ItemRef {
         } else {
             AssocItemResolution::None
         };
-        let def_id = hax_def_id.as_real_promoted_or_synthetic();
-        let item_ref = s.with_predicate_searcher(|pred_searcher, elab_ctx| {
-            pred_searcher.resolve_item_reference(elab_ctx, def_id, generics, assoc_item_resolution)
+        let item_ref = s.with_predicate_searcher(|pred_searcher, state| {
+            pred_searcher.resolve_item_reference(
+                state,
+                hax_def_id.clone(),
+                generics,
+                assoc_item_resolution,
+            )
         });
 
-        let def_id = if is_real_def_id {
-            // This can have changed if the item was normalized to a direct referent to an impl
-            // item.
-            item_ref.def_id.sinto(s)
-        } else {
-            // If the original `DefId` was not real, make sure we keep that around.
-            assert_eq!(item_ref.def_id, def_id);
-            hax_def_id
-        };
-        let content = ItemRefContents {
-            def_id,
-            ..item_ref.sinto(s)
-        };
-
+        let content: ItemRefContents = item_ref.sinto(s);
         let item = content.intern(s);
         s.with_cache(|cache| {
             cache.item_refs.insert(key, item.clone());

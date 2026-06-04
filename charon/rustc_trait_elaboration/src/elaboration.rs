@@ -131,7 +131,9 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             id: ItemPredicateId::TraitSelf,
             clause,
         }));
-        out.insert_bound_predicates(owner_id.required_predicates(state).predicates);
+        out.insert_bound_predicates(
+            ItemPredicates::required_recursively(elab_ctx, state, owner_id).predicates,
+        );
         out
     }
 
@@ -480,7 +482,11 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         def_id: Id,
         generics: GenericArgsRef<'tcx>,
     ) -> Vec<TraitProof<'tcx>> {
-        self.resolve_predicates(state, def_id.required_predicates(state), generics)
+        self.resolve_predicates(
+            state,
+            ItemPredicates::required_recursively(self.elab_ctx, state, def_id),
+            generics,
+        )
     }
 
     /// Resolve the predicates implied by the given item.

@@ -4,8 +4,8 @@ use rustc_hir::{def::DefKind, def_id::DefId};
 use rustc_middle::ty::{self, GenericArg, GenericArgsRef};
 
 use crate::{
-    ElaborationCtx, ItemPredicates, PredicateSearcher, TraitProof, TraitProofKind, normalize,
-    self_predicate,
+    ElaborationCtx, ItemPredicates, PredicateSearcher, TraitProof, TraitProofKind,
+    inherits_parent_clauses, normalize, self_predicate,
 };
 
 /// The identifier of an item; generalizes over rustc's `DefId` to allow for virtual items.
@@ -26,7 +26,8 @@ pub trait ItemId: Clone + Debug + Hash + PartialEq + Eq {
     /// The clauses that can be assumed when inside this item.
     fn param_env<'tcx>(&self, state: &Self::State<'tcx>) -> ty::ParamEnv<'tcx>;
 
-    /// The set of predicates required to mention this item.
+    /// The set of predicates required to mention just this item (without the predicates for its
+    /// parents).
     fn required_predicates<'tcx>(&self, state: &Self::State<'tcx>) -> ItemPredicates<'tcx>;
 
     /// If this item is a trait, return its Self predicate.
@@ -35,6 +36,9 @@ pub trait ItemId: Clone + Debug + Hash + PartialEq + Eq {
     /// If this item is typechecked together with its parent (e.g. inline consts and closures),
     /// return that parent.
     fn typeck_parent<'tcx>(&self, state: &Self::State<'tcx>) -> Option<Self>;
+
+    /// If this item inherits the clauses of its parent, return the parent.
+    fn parent_for_clauses<'tcx>(&self, state: &Self::State<'tcx>) -> Option<Self>;
 
     /// If this item is an associated item, return its parent.
     fn parent_of_assoc<'tcx>(&self, state: &Self::State<'tcx>) -> Option<Self>;
@@ -70,7 +74,7 @@ impl ItemId for DefId {
     }
 
     fn required_predicates<'tcx>(&self, state: &Self::State<'tcx>) -> ItemPredicates<'tcx> {
-        ItemPredicates::required_recursively(*state, *self)
+        ItemPredicates::required(*state, *self)
     }
 
     fn self_pred<'tcx>(&self, state: &Self::State<'tcx>) -> Option<ty::PolyTraitRef<'tcx>> {
@@ -90,6 +94,11 @@ impl ItemId for DefId {
     fn parent_of_assoc<'tcx>(&self, state: &Self::State<'tcx>) -> Option<Self> {
         let tcx = state.tcx;
         tcx.def_kind(*self).is_assoc().then(|| tcx.parent(*self))
+    }
+
+    fn parent_for_clauses<'tcx>(&self, state: &Self::State<'tcx>) -> Option<Self> {
+        let tcx = state.tcx;
+        inherits_parent_clauses(tcx, *self).then(|| tcx.parent(*self))
     }
 
     fn takes_explicit_self_clause<'tcx>(&self, state: &Self::State<'tcx>) -> bool {
@@ -224,7 +233,8 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             let self_pred = ty::EarlyBinder::bind(self_pred)
                 .instantiate(tcx, generics)
                 .skip_norm_wip();
-            let num_trait_req_clauses = tr_def_id.required_predicates(state).len();
+            let num_trait_req_clauses =
+                ItemPredicates::required_recursively(self.elab_ctx, state, tr_def_id).len();
             Some((self.resolve(state, &self_pred), num_trait_req_clauses))
         } else {
             None
@@ -317,7 +327,7 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
 }
 
 impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
-    fn map_item_id<OtherId: ItemId>(
+    pub fn map_item_id<OtherId: ItemId>(
         &self,
         f: impl FnOnce(&Id) -> OtherId,
     ) -> ItemRef<'tcx, OtherId> {

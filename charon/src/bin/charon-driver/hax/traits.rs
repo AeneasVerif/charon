@@ -3,13 +3,14 @@ use rustc_span::def_id::DefId as RDefId;
 
 pub use rustc_trait_elaboration as elaboration;
 pub use rustc_trait_elaboration::{
-    AssocItemResolution, ElaborationCtx, ItemPredicate, ItemPredicateId, ItemPredicates,
-    PredicateSearcher, ToPolyTraitRef, erase_and_norm, erase_free_regions, normalize,
-    self_predicate,
+    AssocItemResolution, ElaborationCtx, ItemId, ItemPredicate, ItemPredicateId, ItemPredicates,
+    ToPolyTraitRef, erase_and_norm, erase_free_regions, normalize, self_predicate,
 };
 
 use crate::hax::prelude::*;
 use charon_lib::ast::HashConsed;
+
+pub type PredicateSearcher<'tcx> = elaboration::PredicateSearcher<'tcx, DefId>;
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImpliedPredicate<'tcx>, state: S as s)]

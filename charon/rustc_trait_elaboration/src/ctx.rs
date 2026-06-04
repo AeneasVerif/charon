@@ -91,9 +91,9 @@ struct ElaborationData<'tcx, Id: ItemId = DefId> {
     trait_proofs: intern::TraitProofInterner<'tcx>,
     trait_proofs_arena: TypedArena<TraitProofContents<'tcx>>,
     predicate_searchers: RefCell<FxHashMap<Id, PredicateSearcher<'tcx, Id>>>,
-    required_predicates: PredicateCache<'tcx>,
-    required_recursively_predicates: PredicateCache<'tcx>,
-    implied_predicates: PredicateCache<'tcx>,
+    required_predicates: PredicateCache<'tcx, DefId>,
+    required_recursively_predicates: PredicateCache<'tcx, Id>,
+    implied_predicates: PredicateCache<'tcx, DefId>,
 }
 
 impl<'tcx, Id: ItemId> Default for ElaborationData<'tcx, Id> {
@@ -110,15 +110,22 @@ impl<'tcx, Id: ItemId> Default for ElaborationData<'tcx, Id> {
     }
 }
 
-#[derive(Default)]
-struct PredicateCache<'tcx> {
-    values: ShardedHashMap<DefId, ItemPredicates<'tcx>>,
+struct PredicateCache<'tcx, Id: ItemId> {
+    values: ShardedHashMap<Id, ItemPredicates<'tcx>>,
 }
 
-impl<'tcx> PredicateCache<'tcx> {
+impl<'tcx, Id: ItemId> Default for PredicateCache<'tcx, Id> {
+    fn default() -> Self {
+        Self {
+            values: Default::default(),
+        }
+    }
+}
+
+impl<'tcx, Id: ItemId> PredicateCache<'tcx, Id> {
     fn get_or_insert_with(
         &'tcx self,
-        def_id: DefId,
+        def_id: Id,
         compute: impl FnOnce() -> ItemPredicates<'tcx>,
     ) -> ItemPredicates<'tcx> {
         if let Some(predicates) = self.values.get(&def_id) {
@@ -196,7 +203,7 @@ impl<'tcx, Id: ItemId> ElaborationCtx<'tcx, Id> {
 
     pub(crate) fn cached_required_recursively_predicates(
         &self,
-        def_id: DefId,
+        def_id: Id,
         compute: impl FnOnce() -> ItemPredicates<'tcx>,
     ) -> ItemPredicates<'tcx> {
         self.data
