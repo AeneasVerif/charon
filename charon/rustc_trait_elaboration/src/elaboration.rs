@@ -34,7 +34,7 @@ fn initial_self_pred<'tcx, Id: ItemId>(
 
 #[tracing::instrument(level = "trace", skip(elab_ctx))]
 fn parents_trait_predicates<'tcx>(
-    elab_ctx: ElaborationCtx<'tcx>,
+    elab_ctx: ElaborationCtx<'tcx, impl ItemId>,
     self_trait_ref: PolyTraitRef<'tcx>,
 ) -> Vec<PolyTraitRef<'tcx>> {
     let tcx = elab_ctx.tcx;
@@ -57,9 +57,9 @@ struct Candidate<'tcx> {
 }
 
 impl<'tcx> TraitProof<'tcx> {
-    fn push(
+    fn push<Id: ItemId>(
         self,
-        elab_ctx: ElaborationCtx<'tcx>,
+        elab_ctx: ElaborationCtx<'tcx, Id>,
         new_pred: PolyTraitRef<'tcx>,
         path_chunk: ImpliedPredicate<'tcx>,
     ) -> Self {
@@ -81,9 +81,9 @@ impl<'tcx> Candidate<'tcx> {
         }
     }
 
-    fn push(
+    fn push<Id: ItemId>(
         &self,
-        elab_ctx: ElaborationCtx<'tcx>,
+        elab_ctx: ElaborationCtx<'tcx, Id>,
         new_pred: PolyTraitRef<'tcx>,
         path_chunk: ImpliedPredicate<'tcx>,
     ) -> Self {
@@ -97,7 +97,7 @@ impl<'tcx> Candidate<'tcx> {
 /// Stores a set of predicates along with where they came from.
 #[derive(Clone)]
 pub struct PredicateSearcher<'tcx, Id: ItemId = DefId> {
-    pub(crate) elab_ctx: ElaborationCtx<'tcx>,
+    pub(crate) elab_ctx: ElaborationCtx<'tcx, Id>,
     pub(crate) typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
     candidates: HashMap<PolyTraitRef<'tcx>, Candidate<'tcx>>,
@@ -114,7 +114,7 @@ pub struct PredicateSearcher<'tcx, Id: ItemId = DefId> {
 impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
     /// Initialize the elaborator with the predicates accessible within this item.
     pub fn new_for_owner(
-        elab_ctx: ElaborationCtx<'tcx>,
+        elab_ctx: ElaborationCtx<'tcx, Id>,
         state: &Id::State<'tcx>,
         owner_id: Id,
     ) -> Self {

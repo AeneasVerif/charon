@@ -5,7 +5,9 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::ty;
 use std::cell::{RefCell, RefMut};
 
-use crate::{BoundsOptions, ItemPredicates, PredicateSearcher, TraitProof, TraitProofContents};
+use crate::{
+    BoundsOptions, ItemId, ItemPredicates, PredicateSearcher, TraitProof, TraitProofContents,
+};
 
 mod intern {
     use rustc_data_structures::intern::Interned;
@@ -71,21 +73,41 @@ mod intern {
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct ElaborationCtx<'tcx> {
+pub struct ElaborationCtx<'tcx, Id: ItemId = DefId> {
     pub tcx: ty::TyCtxt<'tcx>,
-    data: &'tcx ElaborationData<'tcx>,
+    data: &'tcx ElaborationData<'tcx, Id>,
 }
 
-#[derive(Default)]
-struct ElaborationData<'tcx> {
+impl<'tcx, Id: ItemId> Clone for ElaborationCtx<'tcx, Id> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'tcx, Id: ItemId> Copy for ElaborationCtx<'tcx, Id> {}
+
+struct ElaborationData<'tcx, Id: ItemId = DefId> {
     bounds_options: BoundsOptions,
     trait_proofs: intern::TraitProofInterner<'tcx>,
     trait_proofs_arena: TypedArena<TraitProofContents<'tcx>>,
-    predicate_searchers: RefCell<FxHashMap<DefId, PredicateSearcher<'tcx>>>,
+    predicate_searchers: RefCell<FxHashMap<Id, PredicateSearcher<'tcx, Id>>>,
     required_predicates: PredicateCache<'tcx>,
     required_recursively_predicates: PredicateCache<'tcx>,
     implied_predicates: PredicateCache<'tcx>,
+}
+
+impl<'tcx, Id: ItemId> Default for ElaborationData<'tcx, Id> {
+    fn default() -> Self {
+        Self {
+            bounds_options: Default::default(),
+            trait_proofs: Default::default(),
+            trait_proofs_arena: Default::default(),
+            predicate_searchers: Default::default(),
+            required_predicates: Default::default(),
+            required_recursively_predicates: Default::default(),
+            implied_predicates: Default::default(),
+        }
+    }
 }
 
 #[derive(Default)]
@@ -108,7 +130,7 @@ impl<'tcx> PredicateCache<'tcx> {
     }
 }
 
-impl<'tcx> ElaborationData<'tcx> {
+impl<'tcx, Id: ItemId> ElaborationData<'tcx, Id> {
     fn intern_trait_proof(&'tcx self, contents: TraitProofContents<'tcx>) -> TraitProof<'tcx> {
         let interned = self
             .trait_proofs
@@ -117,7 +139,7 @@ impl<'tcx> ElaborationData<'tcx> {
     }
 }
 
-impl<'tcx> ElaborationCtx<'tcx> {
+impl<'tcx, Id: ItemId> ElaborationCtx<'tcx, Id> {
     /// Warning: only create a single one.
     pub fn new(tcx: ty::TyCtxt<'tcx>, bounds_options: BoundsOptions) -> Self {
         // `TraitProof` is a copyable `Interned<'tcx, _>` and may outlive the `PredicateSearcher`
@@ -138,11 +160,25 @@ impl<'tcx> ElaborationCtx<'tcx> {
         self.data.intern_trait_proof(contents)
     }
 
-    pub fn predicate_searcher_for(&self, def_id: DefId) -> RefMut<'_, PredicateSearcher<'tcx>> {
+    pub fn predicate_searcher_for(
+        &self,
+        state: &Id::State<'tcx>,
+        def_id: Id,
+    ) -> RefMut<'_, PredicateSearcher<'tcx, Id>> {
+        self.predicate_searcher_for_with(def_id.clone(), || {
+            PredicateSearcher::new_for_owner(*self, state, def_id)
+        })
+    }
+
+    pub fn predicate_searcher_for_with(
+        &self,
+        def_id: Id,
+        make: impl FnOnce() -> PredicateSearcher<'tcx, Id>,
+    ) -> RefMut<'_, PredicateSearcher<'tcx, Id>> {
         let mut predicate_searchers = self.data.predicate_searchers.borrow_mut();
         predicate_searchers
-            .entry(def_id)
-            .or_insert_with(|| PredicateSearcher::new_for_owner(*self, self, def_id));
+            .entry(def_id.clone())
+            .or_insert_with(make);
         RefMut::map(predicate_searchers, |predicate_searchers| {
             predicate_searchers.get_mut(&def_id).unwrap()
         })

@@ -205,7 +205,10 @@ impl<'tcx> ItemPredicates<'tcx> {
     /// ```
     ///
     /// If `add_drop` is true, we add a `T: Drop` bound for every type generic.
-    pub fn required(elab_ctx: ElaborationCtx<'tcx>, def_id: DefId) -> ItemPredicates<'tcx> {
+    pub fn required<Id: ItemId>(
+        elab_ctx: ElaborationCtx<'tcx, Id>,
+        def_id: DefId,
+    ) -> ItemPredicates<'tcx> {
         elab_ctx.cached_required_predicates(def_id, || {
             use DefKind::*;
             let tcx = elab_ctx.tcx;
@@ -233,7 +236,7 @@ impl<'tcx> ItemPredicates<'tcx> {
             // For methods and assoc consts in trait definitions, we add an explicit `Self: Trait` clause.
             // Associated types get to use the implicit `Self: Trait` clause instead.
             if let Some(trait_def_id) = tcx.trait_of_assoc(def_id)
-                && def_id.takes_explicit_self_clause(&elab_ctx)
+                && matches!(def_kind, AssocFn | AssocConst { .. })
             {
                 let self_clause = self_predicate(tcx, trait_def_id).upcast(tcx);
                 predicates.predicates.insert(
@@ -264,12 +267,12 @@ impl<'tcx> ItemPredicates<'tcx> {
     /// }
     /// ```
     pub fn required_recursively(
-        elab_ctx: ElaborationCtx<'tcx>,
+        elab_ctx: ElaborationCtx<'tcx, impl ItemId>,
         def_id: rustc_span::def_id::DefId,
     ) -> ItemPredicates<'tcx> {
         elab_ctx.cached_required_recursively_predicates(def_id, || {
-            fn acc_predicates<'tcx>(
-                elab_ctx: ElaborationCtx<'tcx>,
+            fn acc_predicates<'tcx, Id: ItemId>(
+                elab_ctx: ElaborationCtx<'tcx, Id>,
                 def_id: rustc_span::def_id::DefId,
                 predicates: &mut ItemPredicates<'tcx>,
                 is_parent: bool,
@@ -309,7 +312,10 @@ impl<'tcx> ItemPredicates<'tcx> {
     /// ```
     ///
     /// If `add_drop` is true, we add a `T: Drop` bound for every type generic and associated type.
-    pub fn implied(elab_ctx: ElaborationCtx<'tcx>, def_id: DefId) -> ItemPredicates<'tcx> {
+    pub fn implied(
+        elab_ctx: ElaborationCtx<'tcx, impl ItemId>,
+        def_id: DefId,
+    ) -> ItemPredicates<'tcx> {
         elab_ctx.cached_implied_predicates(def_id, || {
             use DefKind::*;
             let tcx = elab_ctx.tcx;

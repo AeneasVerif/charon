@@ -321,7 +321,7 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
                     cache.virtual_predicate_searcher.get_or_insert_with(|| {
                         let mut predicate_searcher = base
                             .elab_ctx
-                            .predicate_searcher_for(id.trait_impl_id)
+                            .predicate_searcher_for(&base.elab_ctx, id.trait_impl_id)
                             .clone();
                         predicate_searcher.set_param_env(param_env);
                         predicate_searcher.insert_bound_predicates(predicates.iter());
@@ -330,7 +330,9 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
                 f(predicate_searcher, &base.elab_ctx)
             })
         } else {
-            let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(s.owner_id());
+            let mut predicate_searcher = base
+                .elab_ctx
+                .predicate_searcher_for(&base.elab_ctx, s.owner_id());
             f(&mut predicate_searcher, &base.elab_ctx)
         }
     }
