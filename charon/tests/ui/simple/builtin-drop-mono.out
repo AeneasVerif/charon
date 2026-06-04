@@ -38,24 +38,6 @@ unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 #[lang_item("String")]
 pub opaque type String
 
-#[lang_item("drop_glue")]
-unsafe fn core::ptr::drop_glue::<[String]><'_0>(_1: &'_0 mut [String])
-= <opaque>
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue(_1: *mut Global)
-= <opaque>
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue = impl_Destruct_for_Global::drop_glue
-    non-dyn-compatible
-}
-
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
 unsafe fn impl_Destruct_for_String::drop_glue(_1: *mut String)
 = <opaque>
@@ -95,6 +77,31 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String>(_1: *mut [String])
         }
     }
     return
+}
+
+#[lang_item("drop_glue")]
+unsafe fn core::ptr::drop_glue::<[String]><'_0>(_1: &'_0 mut [String])
+{
+    let ret_0: (); // return
+    let _1: &'_0 mut [String]; // arg #1
+
+    ret_0 = ()
+    drop[impl_Destruct_for_slice::drop_glue::<String>] (*_1)
+    return
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
+unsafe fn impl_Destruct_for_Global::drop_glue(_1: *mut Global)
+= <opaque>
+
+// Full name: alloc::alloc::Global::{impl Destruct for Global}
+impl "impl_Destruct_for_Global" Destruct for Global {
+    fn drop_glue = impl_Destruct_for_Global::drop_glue
+    non-dyn-compatible
 }
 
 // Full name: test_crate::<slice>::{impl Destruct for [String]}

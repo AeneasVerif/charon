@@ -566,6 +566,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             // FIXME(#865): the MIR we get is unusably optimized. Instead we build our own body
             // here.
             self.build_box_assume_init_into_vec_unsafe(span, def)?
+        } else if item_meta.lang_item.as_deref() == Some("drop_glue") {
+            self.build_drop_glue_body(span, def, &signature)?
         } else if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else if is_trait_method_decl_without_default {

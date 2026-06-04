@@ -28,7 +28,14 @@ unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
 where
     TraitClause0: (T: Destruct),
     TraitClause1: (T: Destruct),
-= <opaque>
+{
+    let ret_0: (); // return
+    let _1: &'_0 mut T; // arg #1
+
+    ret_0 = ()
+    drop[TraitClause0::drop_glue] (*_1)
+    return
+}
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]

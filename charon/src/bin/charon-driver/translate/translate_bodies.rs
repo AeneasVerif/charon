@@ -14,7 +14,6 @@ use std::rc::Rc;
 use crate::hax;
 use rustc_middle::mir;
 use rustc_middle::ty;
-use rustc_span::sym;
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
@@ -487,6 +486,33 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return_place,
             Rvalue::Use(Operand::Const(Box::new(type_id)), WithRetag::No),
         ));
+        Ok(Body::Unstructured(builder.build()))
+    }
+
+    /// Generate a function body for `core::ptr::drop_glue`.
+    pub(crate) fn build_drop_glue_body(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef<'tcx>,
+        signature: &FunSig,
+    ) -> Result<Body, Error> {
+        let hax::FullDefKind::Fn { .. } = def.kind() else {
+            unreachable!()
+        };
+        let def_id = def.def_id().as_real_def_id().unwrap();
+        let rustc_args = def.this().rustc_args(self.hax_state_with_id());
+        let rustc_sig = self.tcx.fn_sig(def_id).instantiate(self.tcx, rustc_args);
+        // `skip_binder` is ok because we have that lifetime in scope.
+        let input_ty = rustc_sig.skip_binder().inputs()[0];
+        let pointee_ty = input_ty
+            .builtin_deref(true)
+            .expect("`drop_glue` argument is not a pointer");
+        let fn_ptr = self.translate_drop_glue_method_call(span, pointee_ty)?;
+
+        let mut builder = BodyBuilder::new(span, signature.inputs.len());
+        let _return_place = builder.new_var(Some("ret".to_string()), signature.output.clone());
+        let input = builder.new_var(None, signature.inputs[0].clone());
+        builder.insert_drop(input.deref(), fn_ptr);
         Ok(Body::Unstructured(builder.build()))
     }
 }
