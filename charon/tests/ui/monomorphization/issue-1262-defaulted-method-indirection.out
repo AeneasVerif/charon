@@ -1,0 +1,48 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized::{vtable}
+opaque type {vtable}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: test_crate::Foo
+pub trait Foo<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Foo::bar::<u8>
+pub fn bar::<u8>()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Foo for u8}
+impl "impl_Foo_for_u8" Foo for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    _1 = bar::<u8>()
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+

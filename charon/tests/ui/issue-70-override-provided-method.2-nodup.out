@@ -1,0 +1,161 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn required<'_0_1> = test_crate::Trait::required<'_0_1, Self>[Self]
+    fn provided1<'_0_1> = test_crate::Trait::provided1<'_0_1, Self>[Self]
+    fn provided2<'_0_1> = provided2<'_0_1, Self>[Self]
+    vtable: test_crate::Trait::{vtable}
+}
+
+fn test_crate::Trait::required<'_0, Self>(_1: &'_0 Self)
+where
+    TraitClause0: (Self: Trait),
+= <method_without_default_body>
+
+fn test_crate::Trait::provided1<'_0, Self>(self_1: &'_0 Self)
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+    let self_1: &'1 Self; // arg #1
+    let _2: (); // anonymous local
+    let _3: &'2 Self; // anonymous local
+    let _4: (); // anonymous local
+    let _5: &'3 Self; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &(*self_1) with_metadata(copy self_1.metadata)
+    _2 = TraitClause0::required<'5>(move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &(*self_1) with_metadata(copy self_1.metadata)
+    _4 = TraitClause0::provided2<'7>(move _5)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::Trait::provided2
+fn provided2<'_0, Self>(self_1: &'_0 Self)
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+    let self_1: &'1 Self; // arg #1
+    let _2: (); // anonymous local
+    let _3: &'2 Self; // anonymous local
+    let _4: (); // anonymous local
+    let _5: &'3 Self; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &(*self_1) with_metadata(copy self_1.metadata)
+    _2 = TraitClause0::required<'5>(move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &(*self_1) with_metadata(copy self_1.metadata)
+    _4 = TraitClause0::provided1<'7>(move _5)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::Foo
+struct Foo {}
+
+// Full name: test_crate::{impl Trait for Foo}::required
+fn impl_Trait_for_Foo::required<'_0>(self_1: &'_0 Foo)
+{
+    let _0: (); // return
+    let self_1: &'1 Foo; // arg #1
+    let _2: (); // anonymous local
+    let _3: &'2 Foo; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &(*self_1)
+    _2 = test_crate::Trait::provided1<'4, Foo>[impl_Trait_for_Foo](move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for Foo}
+impl "impl_Trait_for_Foo" Trait for Foo {
+    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
+    fn required<'_0_1> = impl_Trait_for_Foo::required<'_0_1>
+    fn provided1<'_0_1> = test_crate::Trait::provided1<'_0_1, Foo>[impl_Trait_for_Foo]
+    fn provided2<'_0_1> = provided2<'_0_1, Foo>[impl_Trait_for_Foo]
+    vtable: impl_Trait_for_Foo::{vtable}
+}
+
+// Full name: test_crate::Bar
+struct Bar {}
+
+// Full name: test_crate::{impl Trait for Bar}::provided1
+fn impl_Trait_for_Bar::provided1<'_0>(self_1: &'_0 Bar)
+{
+    let _0: (); // return
+    let self_1: &'1 Bar; // arg #1
+    let _2: (); // anonymous local
+    let _3: &'2 Bar; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &(*self_1)
+    _2 = provided2<'4, Bar>[impl_Trait_for_Bar](move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for Bar}::required
+fn impl_Trait_for_Bar::required<'_0>(self_1: &'_0 Bar)
+{
+    let _0: (); // return
+    let self_1: &'1 Bar; // arg #1
+    let _2: (); // anonymous local
+    let _3: &'2 Bar; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &(*self_1)
+    _2 = provided2<'4, Bar>[impl_Trait_for_Bar](move _3)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for Bar}
+impl "impl_Trait_for_Bar" Trait for Bar {
+    proof ImpliedClause0: (Bar: MetaSized) = {built_in impl MetaSized for Bar}
+    fn required<'_0_1> = impl_Trait_for_Bar::required<'_0_1>
+    fn provided1<'_0_1> = impl_Trait_for_Bar::provided1<'_0_1>
+    fn provided2<'_0_1> = provided2<'_0_1, Bar>[impl_Trait_for_Bar]
+    vtable: impl_Trait_for_Bar::{vtable}
+}
+
+
+

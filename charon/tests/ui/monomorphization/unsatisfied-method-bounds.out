@@ -24,8 +24,8 @@ trait MyIterator<Self>
 // Full name: test_crate::A
 struct A {}
 
-// Full name: test_crate::MyIterator::method
-fn method<'_0>(self_1: &'_0 A)
+// Full name: test_crate::MyIterator::method::<A>
+fn method::<A><'_0>(self_1: &'_0 A)
 {
     let _0: (); // return
     let self_1: &'1 A; // arg #1
@@ -38,8 +38,8 @@ fn method<'_0>(self_1: &'_0 A)
 // Full name: test_crate::B
 struct B {}
 
-// Full name: test_crate::MyIterator::method
-fn method<'_0>(self_1: &'_0 B)
+// Full name: test_crate::MyIterator::method::<B>
+fn method::<B><'_0>(self_1: &'_0 B)
 {
     let _0: (); // return
     let self_1: &'1 B; // arg #1
@@ -47,18 +47,6 @@ fn method<'_0>(self_1: &'_0 B)
     _0 = ()
     _0 = ()
     return
-}
-
-// Full name: test_crate::{impl MyIterator for A}
-impl "impl_MyIterator_for_A" MyIterator for A {
-    proof ImpliedClause0: (A: MetaSized) = {built_in impl MetaSized for A}
-    vtable: impl_MyIterator_for_A::{vtable}
-}
-
-// Full name: test_crate::{impl MyIterator for B}
-impl "impl_MyIterator_for_B" MyIterator for B {
-    proof ImpliedClause0: (B: MetaSized) = {built_in impl MetaSized for B}
-    vtable: impl_MyIterator_for_B::{vtable}
 }
 
 // Full name: test_crate::main
@@ -91,7 +79,7 @@ fn main()
     storage_live(_2)
     _6 = move _7
     _2 = &(*_6)
-    _1 = impl_MyIterator_for_A::method<'8>(move _2)
+    _1 = method::<A><'8>(move _2)
     storage_live(_8)
     storage_live(_11)
     storage_live(_12)
@@ -104,7 +92,7 @@ fn main()
     storage_live(_4)
     _5 = move _8
     _4 = &(*_5)
-    _3 = impl_MyIterator_for_B::method<'11>(move _4)
+    _3 = method::<B><'11>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

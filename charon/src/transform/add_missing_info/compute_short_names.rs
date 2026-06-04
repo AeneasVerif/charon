@@ -44,6 +44,7 @@ fn register_short_name_candidate<'a>(
 pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
+        ctx.translated.short_names.clear();
         let mut short_names: HashMap<String, FoundName> = Default::default();
         for (&id, name) in &ctx.translated.item_names {
             let mut name_slice = name.name.as_slice();

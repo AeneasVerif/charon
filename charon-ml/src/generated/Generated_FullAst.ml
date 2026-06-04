@@ -122,6 +122,11 @@ and cli_options = {
   translate_all_methods : bool;
       (** Usually we skip the provided methods that aren't used. When this flag
           is on, we translate them all. *)
+  duplicate_defaulted_methods : bool;
+      (** Whenever an impl doesn't implement a method (because it has a default
+          body), this creates a duplicate method as if it had been implemented.
+          This can simplify the call-graphs as otherwise calls within the
+          default body would be indirected through trait proofs. *)
   lift_associated_types : string list;
       (** Transform the associate types of traits to be type parameters instead.
           This takes a list of name patterns of the traits to transform, using

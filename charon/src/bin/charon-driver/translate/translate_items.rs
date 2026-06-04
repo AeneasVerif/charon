@@ -162,14 +162,6 @@ impl<'tcx> TranslateCtx<'tcx> {
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            &TransItemSourceKind::DefaultedMethod(impl_kind, _, method_id) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
-                let fun_decl =
-                    bt_ctx.translate_defaulted_method(id, item_meta, &def, impl_kind, method_id)?;
-                self.translated.fun_decls.set_slot(id, fun_decl);
-            }
             &TransItemSourceKind::ClosureMethod(kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
@@ -409,6 +401,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // don't have associated items.
                 let trait_ref = self.translate_trait_ref(span, trait_ref)?;
                 let item_id = self.translate_assoc_item_id(trait_ref.id, def.def_id())?;
+                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
+                    // If the method fundecl is getting translated, that means the method is
+                    // getting used.
+                    let method_id = *item_id.as_method().unwrap();
+                    self.mark_method_as_used(trait_ref.id, method_id);
+                }
                 ItemSource::TraitDecl {
                     trait_ref,
                     item_id,
@@ -1082,44 +1080,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             )?
                         }
                         None => {
-                            // This will generate a copy of the default method. Note that the base
-                            // item for `DefaultedMethod` is the trait impl.
-                            let fun_id: FunDeclId = self.register_no_enqueue(
-                                item_span,
-                                &TransItemSource::from_item(
-                                    def.this(),
-                                    TransItemSourceKind::DefaultedMethod(
-                                        TraitImplSource::Normal,
-                                        trait_id,
-                                        trait_method_id,
-                                    ),
-                                    self.monomorphize(),
-                                ),
-                            );
-
-                            // Retrieve the method generics from the trait decl.
-                            let bound_method =
-                                match self.get_or_translate(implemented_trait.id.into()) {
-                                    Ok(ItemRef::TraitDecl(tdecl)) => {
-                                        tdecl.methods.get(trait_method_id).cloned()
-                                    }
-                                    _ => None,
-                                };
+                            // Reuse the default method from the trait declaration.
+                            let bound_method = match self.get_or_translate(trait_id.into()) {
+                                Ok(ItemRef::TraitDecl(tdecl)) => {
+                                    tdecl.methods.get(trait_method_id).cloned()
+                                }
+                                _ => None,
+                            };
                             let Some(bound_method) = bound_method else {
                                 continue;
                             };
-                            let method_params =
-                                bound_method.substitute_with_tref(&self_predicate).params;
-
-                            let generics = self
-                                .outermost_generics()
-                                .identity_args_at_depth(DeBruijnId::one())
-                                .concat(&method_params.identity_args_at_depth(DeBruijnId::zero()));
-                            let fn_ref = FunDeclRef {
-                                id: fun_id,
-                                generics: Box::new(generics),
-                            };
-                            Binder::new(binder_kind, method_params, fn_ref)
+                            bound_method
+                                .substitute_with_tref(&self_predicate)
+                                .map(|method| method.item)
                         }
                     };
 
@@ -1379,101 +1352,5 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             // TODO(dyn): generate vtable instances for builtin traits
             vtable: None,
         })
-    }
-
-    /// In case an impl does not override a trait method, this duplicates the original trait method
-    /// and adjusts its generics to make the corresponding impl method.
-    #[tracing::instrument(skip(self, item_meta, def))]
-    pub fn translate_defaulted_method(
-        &mut self,
-        def_id: FunDeclId,
-        item_meta: ItemMeta,
-        def: &hax::FullDef<'tcx>,
-        impl_kind: TraitImplSource,
-        method_id: TraitMethodId,
-    ) -> Result<FunDecl, Error> {
-        let span = item_meta.span;
-
-        let hax::FullDefKind::TraitImpl { trait_pred, .. } = &def.kind else {
-            unreachable!()
-        };
-
-        // Retrieve the information about the implemented trait.
-        let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
-        // A `TraitRef` that points to this impl with the correct generics.
-        let self_impl_ref = self.translate_trait_impl_ref(span, def.this(), impl_kind)?;
-        let self_predicate_kind = TraitRefKind::TraitImpl(self_impl_ref.clone());
-
-        // Build a reference to the original declared method.
-        let ItemRef::TraitDecl(tdecl) = self.get_or_translate(implemented_trait.id.into())? else {
-            panic!()
-        };
-        let Some(bound_method) = tdecl.methods.get(method_id) else {
-            let method_name = self
-                .translated
-                .assoc_item_name(implemented_trait.id, method_id);
-            raise_error!(
-                self,
-                span,
-                "Could not find a method with name \
-                `{method_name}` in trait `{:?}`",
-                trait_pred.trait_ref.def_id,
-            )
-        };
-        let bound_fn_ref: Binder<FunDeclRef> = bound_method
-            .clone()
-            .substitute_with_self(&implemented_trait.generics, &self_predicate_kind)
-            .map(|m| m.item);
-
-        // Now we need to create the generic params for the new method. These are the concatenation
-        // of the impl params and the method params. We obtain that by making the two existing
-        // binders explicit and using `binder.flatten()`.
-        let bound_fn_ref: Binder<Binder<FunDeclRef>> = Binder {
-            params: self.outermost_generics().clone(),
-            skip_binder: bound_fn_ref,
-            kind: BinderKind::Other,
-        };
-        let bound_fn_ref: Binder<FunDeclRef> = bound_fn_ref.flatten();
-
-        // Create a copy of the provided method with the new generics.
-        let original_method_id = bound_fn_ref.skip_binder.id;
-        let ItemRef::Fun(fun_decl) = self.get_or_translate(original_method_id.into())? else {
-            panic!()
-        };
-        let mut fun_decl = fun_decl
-            .clone()
-            .substitute_params(bound_fn_ref.map(|x| *x.generics));
-
-        // Update the rest of the data.
-        fun_decl.def_id = def_id;
-        // We use the span of the *impl*, not the span of the default method in the
-        // original trait declaration.
-        fun_decl.item_meta = ItemMeta {
-            name: item_meta.name,
-            opacity: item_meta.opacity,
-            is_local: item_meta.is_local,
-            span: item_meta.span,
-            source_text: fun_decl.item_meta.source_text,
-            attr_info: fun_decl.item_meta.attr_info,
-            lang_item: fun_decl.item_meta.lang_item,
-        };
-        fun_decl.src = if let ItemSource::TraitDecl {
-            trait_ref, item_id, ..
-        } = fun_decl.src
-        {
-            ItemSource::TraitImpl {
-                impl_ref: self_impl_ref.clone(),
-                trait_ref,
-                item_id,
-                reuses_default: true,
-            }
-        } else {
-            unreachable!()
-        };
-        if !item_meta.opacity.is_transparent() {
-            fun_decl.body = Body::Opaque;
-        }
-
-        Ok(fun_decl)
     }
 }
