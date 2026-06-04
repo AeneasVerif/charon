@@ -297,18 +297,6 @@ impl DefId {
             _ => None,
         }
     }
-    /// The def_id of this item, or its parent if this is a promoted constant, or a made-up `DefId`
-    /// for synthetic items.
-    pub fn as_real_promoted_or_synthetic(&self) -> RDefId {
-        match self.base {
-            DefIdBase::Real(did) | DefIdBase::Promoted(did, ..) | DefIdBase::Synthetic(.., did) => {
-                did
-            }
-            DefIdBase::ImplAssocItem(_) => {
-                panic!("expected real, promoted, or synthetic def id, got {self:?}")
-            }
-        }
-    }
     pub fn promoted_id(&self) -> Option<PromotedId> {
         match self.base {
             DefIdBase::Promoted(_, promoted) => Some(promoted),
@@ -329,10 +317,9 @@ impl DefId {
 
     pub fn is_local(&self) -> bool {
         match self.base {
-            DefIdBase::Real(did) | DefIdBase::Promoted(did, ..) | DefIdBase::Synthetic(.., did) => {
-                did.is_local()
-            }
+            DefIdBase::Real(did) | DefIdBase::Promoted(did, ..) => did.is_local(),
             DefIdBase::ImplAssocItem(id) => id.trait_impl_id.is_local(),
+            DefIdBase::Synthetic(..) => false,
         }
     }
     pub fn is_typeck_child<'tcx>(&self, s: &impl BaseState<'tcx>) -> bool {
@@ -762,7 +749,7 @@ impl<'s, S: BaseState<'s>> SInto<S, DefId> for RDefId {
 #[args(<'ctx, S: UnderOwnerState<'ctx>>, from: rustc_hir::definitions::DefPathData, state: S as s)]
 pub enum DefPathItem {
     CrateRoot {
-        #[value(s.base().tcx.crate_name(s.owner_id().krate).sinto(s))]
+        #[value(s.owner().crate_name(s))]
         name: Symbol,
     },
     Impl,

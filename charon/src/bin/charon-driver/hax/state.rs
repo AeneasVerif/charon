@@ -262,9 +262,6 @@ impl<'tcx, T: HasBase<'tcx> + Clone> BaseState<'tcx> for T {}
 
 /// State of anything below an `owner`.
 pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwner {
-    fn owner_id(&self) -> RDefId {
-        self.owner().as_real_promoted_or_synthetic()
-    }
     fn param_env(&self) -> ty::ParamEnv<'tcx> {
         self.owner().param_env(self)
     }
