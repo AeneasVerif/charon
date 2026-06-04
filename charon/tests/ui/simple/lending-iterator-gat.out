@@ -20,11 +20,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -80,8 +80,8 @@ where
   Some(T),
 }
 
-// Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_in_place
-unsafe fn impl_Destruct_for_Option::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
+// Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_Option::drop_glue<T>(_1: *mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -105,20 +105,20 @@ pub trait LendingIterator<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_in_place
-unsafe fn impl_Destruct_for_tuple::drop_in_place<A>(_1: *mut (A,))
+// Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_glue
+unsafe fn impl_Destruct_for_tuple::drop_glue<A>(_1: *mut (A,))
 {
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
 
     _0 = ()
-    drop[{built_in impl Destruct for A}::drop_in_place] (*_1).0
+    drop[{built_in impl Destruct for A}::drop_glue] (*_1).0
     return
 }
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}
 impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
-    fn drop_in_place = impl_Destruct_for_tuple::drop_in_place<A>
+    fn drop_glue = impl_Destruct_for_tuple::drop_glue<A>
     non-dyn-compatible
 }
 
@@ -222,21 +222,21 @@ where
         _9 = move item_6
         _8 = (move _9,)
         _3 = TraitClause3::call_mut<'32>(move _7, move _8)
-        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'38>}::drop_in_place] _9
+        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'38>}::drop_glue] _9
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
-        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'42>}::drop_in_place] item_6
+        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'42>}::drop_glue] item_6
         storage_dead(item_6)
-        conditional_drop[impl_Destruct_for_Option::drop_in_place<TraitClause2::Item<'51>>[TraitClause2::Item::ImpliedClause0]] _4
+        conditional_drop[impl_Destruct_for_Option::drop_glue<TraitClause2::Item<'51>>[TraitClause2::Item::ImpliedClause0]] _4
         storage_dead(_4)
         continue 0
     }
     _0 = ()
-    conditional_drop[impl_Destruct_for_Option::drop_in_place<TraitClause2::Item<'22>>[TraitClause2::Item::ImpliedClause0]] _4
+    conditional_drop[impl_Destruct_for_Option::drop_glue<TraitClause2::Item<'22>>[TraitClause2::Item::ImpliedClause0]] _4
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T1}::drop_in_place] f_2
-    conditional_drop[{built_in impl Destruct for I}::drop_in_place] iter_1
+    conditional_drop[{built_in impl Destruct for T1}::drop_glue] f_2
+    conditional_drop[{built_in impl Destruct for I}::drop_glue] iter_1
     return
 }
 
@@ -268,8 +268,8 @@ fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place<'_0>(_1: *mut closure<'_0>)
+// Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue<'_0>(_1: *mut closure<'_0>)
 {
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1
@@ -290,7 +290,7 @@ fn impl_FnOnce_tuple_for_closure::call_once<'_0, '_1>(_1: closure<'_0>, _2: (&'_
     _0 = ()
     _3 = &mut _1
     _0 = impl_FnMut_tuple_for_closure::call_mut<'_0, '_1, '10>(move _3, move _2)
-    drop[impl_Destruct_for_closure::drop_in_place<'_0>] _1
+    drop[impl_Destruct_for_closure::drop_glue<'_0>] _1
     return
 }
 
@@ -442,7 +442,7 @@ pub fn main()
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0>}
 impl<'_0> "impl_Destruct_for_closure" Destruct for closure<'_0> {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<'_0>
+    fn drop_glue = impl_Destruct_for_closure::drop_glue<'_0>
     non-dyn-compatible
 }
 

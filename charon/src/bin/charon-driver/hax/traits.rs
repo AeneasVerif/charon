@@ -81,8 +81,8 @@ pub enum TraitProofKind {
 pub enum BuiltinTraitData {
     /// A virtual `Destruct` implementation.
     /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
-    /// the information about `drop_in_place` to that trait. This data tells us what kind of
-    /// `drop_in_place` the target type has.
+    /// the information about `drop_glue` to that trait. This data tells us what kind of
+    /// `drop_glue` the target type has.
     Destruct(DestructData),
     /// An auto-trait.
     Auto,
@@ -101,7 +101,7 @@ pub enum DestructData {
     /// resolve `Destruct` impls of generics. If it's `false`, we use this variant to indicate that
     /// the clause comes from a generic or associated type.
     Implicit,
-    /// The `drop_in_place` is known and non-trivial.
+    /// The `drop_glue` is known and non-trivial.
     Glue {
         /// The type we're generating glue for.
         ty: Ty,

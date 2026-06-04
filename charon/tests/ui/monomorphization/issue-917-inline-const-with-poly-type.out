@@ -18,7 +18,7 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
@@ -26,11 +26,11 @@ pub trait Destruct<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -86,8 +86,8 @@ struct closure::<()> {}
 pub extern "rust-call" fn call_mut<'_0>(_1: &'_0 mut closure::<()>, _2: ((),))
 = <opaque>
 
-// Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}::drop_in_place::<()>
-unsafe fn {impl Destruct for closure::<()>}::drop_in_place::<()>(_1: *mut closure::<()>)
+// Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}::drop_glue::<()>
+unsafe fn {impl Destruct for closure::<()>}::drop_glue::<()>(_1: *mut closure::<()>)
 {
     let _0: (); // return
     let _1: &'1 mut closure::<()>; // arg #1
@@ -125,7 +125,7 @@ fn call_once::<()>(_1: closure::<()>, _2: ((),))
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<((),)> for closure::<()>}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for closure::<()>}::drop_in_place::<()>] _1
+    drop[{impl Destruct for closure::<()>}::drop_glue::<()>] _1
     return
 }
 
@@ -190,7 +190,7 @@ impl Fn<((),)> for closure::<()> {
 
 // Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}
 impl Destruct for closure::<()> {
-    fn drop_in_place = {impl Destruct for closure::<()>}::drop_in_place::<()>
+    fn drop_glue = {impl Destruct for closure::<()>}::drop_glue::<()>
     non-dyn-compatible
 }
 

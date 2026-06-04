@@ -18,8 +18,8 @@ pub opaque type IntoIter<T, const N : usize>
 where
     TraitClause0: (T: Sized),
 
-// Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[TraitClause0]}::drop_in_place
-unsafe fn impl_Destruct_for_IntoIter::drop_in_place<T, const N : usize>(_1: *mut IntoIter<T, N>[TraitClause0])
+// Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_IntoIter::drop_glue<T, const N : usize>(_1: *mut IntoIter<T, N>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -128,7 +128,7 @@ pub trait FnMut<Self, Args>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
@@ -2484,7 +2484,7 @@ where
     TraitClause1: (Self: TrustedRandomAccessNoCoerce),
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -5239,9 +5239,9 @@ fn main()
     }
     storage_dead(_9)
     storage_dead(_7)
-    conditional_drop[impl_Destruct_for_IntoIter::drop_in_place<i32, 7usize>[{built_in impl Sized for i32}]] iter_6
+    conditional_drop[impl_Destruct_for_IntoIter::drop_glue<i32, 7usize>[{built_in impl Sized for i32}]] iter_6
     storage_dead(iter_6)
-    conditional_drop[impl_Destruct_for_IntoIter::drop_in_place<i32, 7usize>[{built_in impl Sized for i32}]] _3
+    conditional_drop[impl_Destruct_for_IntoIter::drop_glue<i32, 7usize>[{built_in impl Sized for i32}]] _3
     storage_dead(_3)
     storage_live(_13)
     storage_live(_14)

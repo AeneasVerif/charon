@@ -73,11 +73,11 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
@@ -104,8 +104,8 @@ fn impl_FnMut_unit_for_closure::call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, tupl
     return
 }
 
-// Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place<'a>(_1: *mut closure<'a>)
+// Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue<'a>(_1: *mut closure<'a>)
 {
     let _0: (); // return
     let _1: &'1 mut closure<'a>; // arg #1
@@ -125,7 +125,7 @@ fn impl_FnOnce_unit_for_closure::call_once<'a>(_1: closure<'a>, _2: ()) -> Optio
     storage_live(_3)
     _3 = &mut _1
     _0 = impl_FnMut_unit_for_closure::call_mut<'a, '5>(move _3, move _2)
-    drop[impl_Destruct_for_closure::drop_in_place<'a>] _1
+    drop[impl_Destruct_for_closure::drop_glue<'a>] _1
     return
 }
 
@@ -165,7 +165,7 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for clos
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}
 impl<'a> "impl_Destruct_for_closure" Destruct for closure<'a> {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<'a>
+    fn drop_glue = impl_Destruct_for_closure::drop_glue<'a>
     non-dyn-compatible
 }
 

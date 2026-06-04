@@ -54,11 +54,11 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx, Clause0_Output>(_1: &'_0 Self, _2: Idx) -> &'_0 Clause0_Output
@@ -91,9 +91,8 @@ where
   Some(T),
 }
 
-// Full name: core::ptr::drop_glue
 #[lang_item("drop_glue")]
-unsafe fn drop_glue<'_0, T>(_1: &'_0 mut T)
+unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
 where
     TraitClause0: (T: Destruct),
 = <opaque>
@@ -263,8 +262,8 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
-// Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_in_place
-unsafe fn impl_Destruct_for_slice::drop_in_place<T>(_1: *mut [T])
+// Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_glue
+unsafe fn impl_Destruct_for_slice::drop_glue<T>(_1: *mut [T])
 where
     TraitClause0: (T: Sized),
 {
@@ -295,7 +294,7 @@ where
             _7 = @SliceIndexMut<'_, T>(move _6, copy _3)
             _4 = &raw mut (*_7)
             _3 = move _3 wrap.+ const 1usize
-            drop[{built_in impl Destruct for T}::drop_in_place] (*_4)
+            drop[{built_in impl Destruct for T}::drop_glue] (*_4)
             continue 0
         }
     }
@@ -307,12 +306,12 @@ impl<T> "impl_Destruct_for_slice" Destruct for [T]
 where
     TraitClause0: (T: Sized),
 {
-    fn drop_in_place = impl_Destruct_for_slice::drop_in_place<T>[TraitClause0]
+    fn drop_glue = impl_Destruct_for_slice::drop_glue<T>[TraitClause0]
     non-dyn-compatible
 }
 
-// Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_in_place
-unsafe fn impl_Destruct_for_array::drop_in_place<T, const N : usize>(_1: *mut [T; N])
+// Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_glue
+unsafe fn impl_Destruct_for_array::drop_glue<T, const N : usize>(_1: *mut [T; N])
 where
     TraitClause0: (T: Sized),
 {
@@ -323,7 +322,7 @@ where
     storage_live(_2)
     _0 = ()
     _2 = @ArrayToSliceMut<'_, T, N>(move _1)
-    _0 = drop_glue<'6, [T]>[impl_Destruct_for_slice<T>[TraitClause0]](move _2)
+    _0 = core::ptr::drop_glue<'6, [T]>[impl_Destruct_for_slice<T>[TraitClause0]](move _2)
     return
 }
 
@@ -332,7 +331,7 @@ impl<T, const N : usize> "impl_Destruct_for_array" Destruct for [T; N]
 where
     TraitClause0: (T: Sized),
 {
-    fn drop_in_place = impl_Destruct_for_array::drop_in_place<T, N>[TraitClause0]
+    fn drop_glue = impl_Destruct_for_array::drop_glue<T, N>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -410,7 +409,7 @@ where
     storage_dead(_3)
     _0 = len<'6, T>[TraitClause0](move _2)
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_array::drop_in_place<T, 32usize>[TraitClause0]] s_1
+    conditional_drop[impl_Destruct_for_array::drop_glue<T, 32usize>[TraitClause0]] s_1
     return
 }
 

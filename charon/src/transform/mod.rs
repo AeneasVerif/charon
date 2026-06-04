@@ -122,7 +122,7 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&finish_translation::insert_assign_return_unit::Transform),
         // Insert `StorageLive` for locals that don't have one (that's allowed in MIR).
         CowBox::Borrowed(&finish_translation::insert_storage_lives::Transform),
-        // Transform Drops into Calls to drop_in_place.
+        // Transform Drops into Calls to drop_glue.
         CowBox::Borrowed(&normalize::desugar_drops::Transform),
         // Whenever we reference a trait method on a known type, refer to the method `FunDecl`
         // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to

@@ -46,14 +46,14 @@ pub trait core::marker::Sized::<Option<Option<&_ mut _>>><'_0, T0>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_glue = drop_glue<Self>
     non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>
+    fn drop_glue = core::marker::Destruct::drop_glue::<&_ mut _><'_0, T0>
     non-dyn-compatible
 }
 
@@ -67,28 +67,28 @@ pub enum Option<T> {
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<Option<&_ mut _>><'_0, T0>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<Option<&_ mut _>><'_0, T0>
+    fn drop_glue = core::marker::Destruct::drop_glue::<Option<&_ mut _>><'_0, T0>
     non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<Option<Option<&_ mut _>>><'_0, T0>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<Option<Option<&_ mut _>>><'_0, T0>
+    fn drop_glue = core::marker::Destruct::drop_glue::<Option<Option<&_ mut _>>><'_0, T0>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(_1: *mut Self)
+// Full name: core::marker::Destruct::drop_glue
+unsafe fn drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>(_1: *mut &'_0 mut T0)
+unsafe fn core::marker::Destruct::drop_glue::<&_ mut _><'_0, T0>(_1: *mut &'_0 mut T0)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<Option<&_ mut _>><'_0, T0>(_1: *mut Option<&'_0 mut T0>)
+unsafe fn core::marker::Destruct::drop_glue::<Option<&_ mut _>><'_0, T0>(_1: *mut Option<&'_0 mut T0>)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<Option<Option<&_ mut _>>><'_0, T0>(_1: *mut Option<Option<&'_0 mut T0>>)
+unsafe fn core::marker::Destruct::drop_glue::<Option<Option<&_ mut _>>><'_0, T0>(_1: *mut Option<Option<&'_0 mut T0>>)
 = <opaque>
 
 // Full name: test_crate::identity
@@ -100,7 +100,7 @@ where
     let x_1: T; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue] x_1
     return
 }
 
@@ -112,7 +112,7 @@ where
     let x_1: &'_0 mut T0; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue] x_1
     return
 }
 
@@ -124,7 +124,7 @@ where
     let x_1: Option<&'_0 mut T0>; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}::drop_glue] x_1
     return
 }
 
@@ -136,7 +136,7 @@ where
     let x_1: Option<Option<&'_0 mut T0>>; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut _>>><'_0> for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut _>>><'_0> for T0}::drop_glue] x_1
     return
 }
 
@@ -215,7 +215,7 @@ where
     storage_dead(_12)
     storage_dead(_11)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for A}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for A}::drop_glue] x_1
     return
 }
 

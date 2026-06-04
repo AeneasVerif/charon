@@ -20,7 +20,7 @@ fn is_noop_destruct(glue: &FnPtr) -> bool {
 }
 
 impl<'a> UllbcStatementTransformCtx<'a> {
-    /// Transform a Drop to a Call that calls the drop_in_place method.
+    /// Transform a Drop to a Call that calls the drop_glue method.
     /// If we cannot desugar this drop, we just leave it unchanged.
     fn transform_drop_to_call(&mut self, term: &mut Terminator) {
         if let TerminatorKind::Drop {

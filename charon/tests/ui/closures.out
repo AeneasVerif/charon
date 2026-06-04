@@ -48,7 +48,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
@@ -90,7 +90,7 @@ impl "impl_Clone_for_u32" Clone for u32 {
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::function::Fn
@@ -130,26 +130,26 @@ where
   Some(T),
 }
 
-// Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_in_place
-unsafe fn impl_Destruct_for_Option::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
+// Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_Option::drop_glue<T>(_1: *mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
-// Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_in_place
-unsafe fn impl_Destruct_for_tuple::drop_in_place<A>(_1: *mut (A,))
+// Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_glue
+unsafe fn impl_Destruct_for_tuple::drop_glue<A>(_1: *mut (A,))
 {
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
 
     _0 = ()
-    drop[{built_in impl Destruct for A}::drop_in_place] (*_1).0
+    drop[{built_in impl Destruct for A}::drop_glue] (*_1).0
     return
 }
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}
 impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
-    fn drop_in_place = impl_Destruct_for_tuple::drop_in_place<A>
+    fn drop_glue = impl_Destruct_for_tuple::drop_glue<A>
     non-dyn-compatible
 }
 
@@ -201,19 +201,19 @@ where
             _7 = move x_3
             _6 = (move _7,)
             _4 = TraitClause2::call<'3>(move _5, move _6)
-            conditional_drop[{built_in impl Destruct for T}::drop_in_place] _7
+            conditional_drop[{built_in impl Destruct for T}::drop_glue] _7
             storage_dead(_7)
             storage_dead(_6)
             storage_dead(_5)
             _0 = Option::Some { 0: move _4 }
-            conditional_drop[{built_in impl Destruct for T}::drop_in_place] _4
+            conditional_drop[{built_in impl Destruct for T}::drop_glue] _4
             storage_dead(_4)
-            conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_3
+            conditional_drop[{built_in impl Destruct for T}::drop_glue] x_3
             storage_dead(x_3)
         },
     }
-    conditional_drop[{built_in impl Destruct for F}::drop_in_place] f_2
-    conditional_drop[impl_Destruct_for_Option::drop_in_place<T>[TraitClause0]] x_1
+    conditional_drop[{built_in impl Destruct for F}::drop_glue] f_2
+    conditional_drop[impl_Destruct_for_Option::drop_glue<T>[TraitClause0]] x_1
     return
 }
 
@@ -246,7 +246,7 @@ where
             storage_dead(_6)
             storage_dead(_5)
             _0 = Option::Some { 0: move _4 }
-            conditional_drop[{built_in impl Destruct for T}::drop_in_place] _4
+            conditional_drop[{built_in impl Destruct for T}::drop_glue] _4
             storage_dead(_4)
             storage_dead(x_3)
             return
@@ -272,8 +272,8 @@ pub fn test_map_option1(x_1: Option<u32>[{built_in impl Sized for u32}]) -> Opti
 
 struct test_crate::test_closure_u32::closure {}
 
-// Full name: test_crate::test_closure_u32::closure::{impl Destruct for test_crate::test_closure_u32::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_closure_u32::closure}::drop_in_place(_1: *mut test_crate::test_closure_u32::closure)
+// Full name: test_crate::test_closure_u32::closure::{impl Destruct for test_crate::test_closure_u32::closure}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_closure_u32::closure}::drop_glue(_1: *mut test_crate::test_closure_u32::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_closure_u32::closure; // arg #1
@@ -321,7 +321,7 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::closure}::call_on
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_u32::closure}::drop_in_place] _1
+    drop[{impl Destruct for test_crate::test_closure_u32::closure}::drop_glue] _1
     return
 }
 
@@ -398,14 +398,14 @@ impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure {
 
 // Full name: test_crate::test_closure_u32::closure::{impl Destruct for test_crate::test_closure_u32::closure}
 impl Destruct for test_crate::test_closure_u32::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_closure_u32::closure}::drop_in_place
+    fn drop_glue = {impl Destruct for test_crate::test_closure_u32::closure}::drop_glue
     non-dyn-compatible
 }
 
 struct test_crate::test_closure_u32s::closure {}
 
-// Full name: test_crate::test_closure_u32s::closure::{impl Destruct for test_crate::test_closure_u32s::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_closure_u32s::closure}::drop_in_place(_1: *mut test_crate::test_closure_u32s::closure)
+// Full name: test_crate::test_closure_u32s::closure::{impl Destruct for test_crate::test_closure_u32s::closure}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_closure_u32s::closure}::drop_glue(_1: *mut test_crate::test_closure_u32s::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_closure_u32s::closure; // arg #1
@@ -467,7 +467,7 @@ fn {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::ca
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_u32s::closure}::drop_in_place] _1
+    drop[{impl Destruct for test_crate::test_closure_u32s::closure}::drop_glue] _1
     return
 }
 
@@ -549,14 +549,14 @@ impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
 
 // Full name: test_crate::test_closure_u32s::closure::{impl Destruct for test_crate::test_closure_u32s::closure}
 impl Destruct for test_crate::test_closure_u32s::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_closure_u32s::closure}::drop_in_place
+    fn drop_glue = {impl Destruct for test_crate::test_closure_u32s::closure}::drop_glue
     non-dyn-compatible
 }
 
 struct test_crate::test_closure_ref_u32::closure {}
 
-// Full name: test_crate::test_closure_ref_u32::closure::{impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_in_place(_1: *mut test_crate::test_closure_ref_u32::closure)
+// Full name: test_crate::test_closure_ref_u32::closure::{impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_glue(_1: *mut test_crate::test_closure_ref_u32::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_closure_ref_u32::closure; // arg #1
@@ -604,7 +604,7 @@ fn {impl FnOnce<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closu
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_mut<'_0, '9>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_in_place] _1
+    drop[{impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_glue] _1
     return
 }
 
@@ -685,7 +685,7 @@ impl<'_0> Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure 
 
 // Full name: test_crate::test_closure_ref_u32::closure::{impl Destruct for test_crate::test_closure_ref_u32::closure}
 impl Destruct for test_crate::test_closure_ref_u32::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_in_place
+    fn drop_glue = {impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_glue
     non-dyn-compatible
 }
 
@@ -694,8 +694,8 @@ where
     TraitClause0: (T: Sized),
 {}
 
-// Full name: test_crate::test_closure_ref_param::closure::{impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_in_place<T>(_1: *mut test_crate::test_closure_ref_param::closure<T>[TraitClause0])
+// Full name: test_crate::test_closure_ref_param::closure::{impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_glue<T>(_1: *mut test_crate::test_closure_ref_param::closure<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 {
@@ -751,7 +751,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_mut<'_0, '9, T>[TraitClause0](move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]] _1
+    drop[{impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_glue<T>[TraitClause0]] _1
     return
 }
 
@@ -848,7 +848,7 @@ impl<T> Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0
 where
     TraitClause0: (T: Sized),
 {
-    fn drop_in_place = {impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_in_place<T>[TraitClause0]
+    fn drop_glue = {impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_glue<T>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -865,8 +865,8 @@ where
     TraitClause1: (T: Trait<'a>),
 {}
 
-// Full name: test_crate::test_closure_ref_early_bound::closure::{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_in_place<'a, T>(_1: *mut test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1])
+// Full name: test_crate::test_closure_ref_early_bound::closure::{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_glue<'a, T>(_1: *mut test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
@@ -926,7 +926,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '17, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_in_place<'a, T>[TraitClause0, TraitClause1]] _1
+    drop[{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_glue<'a, T>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -1029,14 +1029,14 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
 {
-    fn drop_in_place = {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_in_place<'a, T>[TraitClause0, TraitClause1]
+    fn drop_glue = {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_glue<'a, T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 struct test_crate::test_map_option2::closure {}
 
-// Full name: test_crate::test_map_option2::closure::{impl Destruct for test_crate::test_map_option2::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_map_option2::closure}::drop_in_place(_1: *mut test_crate::test_map_option2::closure)
+// Full name: test_crate::test_map_option2::closure::{impl Destruct for test_crate::test_map_option2::closure}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_map_option2::closure}::drop_glue(_1: *mut test_crate::test_map_option2::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_map_option2::closure; // arg #1
@@ -1091,7 +1091,7 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::closure}::call_on
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_map_option2::closure}::drop_in_place] _1
+    drop[{impl Destruct for test_crate::test_map_option2::closure}::drop_glue] _1
     return
 }
 
@@ -1168,7 +1168,7 @@ impl Fn<(u32,), u32> for test_crate::test_map_option2::closure {
 
 // Full name: test_crate::test_map_option2::closure::{impl Destruct for test_crate::test_map_option2::closure}
 impl Destruct for test_crate::test_map_option2::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_map_option2::closure}::drop_in_place
+    fn drop_glue = {impl Destruct for test_crate::test_map_option2::closure}::drop_glue
     non-dyn-compatible
 }
 
@@ -1181,7 +1181,7 @@ where
     let x_1: T; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue] x_1
     return
 }
 
@@ -1235,7 +1235,7 @@ where
     _2 = &x_1
     _0 = TraitClause1::clone<'3>(move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue] x_1
     return
 }
 
@@ -1283,7 +1283,7 @@ where
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(f_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue] x_1
     return
 }
 
@@ -1338,8 +1338,8 @@ fn {impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::call_mut
     return
 }
 
-// Full name: test_crate::test_map_option3::closure::{impl Destruct for test_crate::test_map_option3::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_map_option3::closure}::drop_in_place(_1: *mut test_crate::test_map_option3::closure)
+// Full name: test_crate::test_map_option3::closure::{impl Destruct for test_crate::test_map_option3::closure}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_map_option3::closure}::drop_glue(_1: *mut test_crate::test_map_option3::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_map_option3::closure; // arg #1
@@ -1359,7 +1359,7 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option3::closure}::call_on
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_map_option3::closure}::drop_in_place] _1
+    drop[{impl Destruct for test_crate::test_map_option3::closure}::drop_glue] _1
     return
 }
 
@@ -1413,7 +1413,7 @@ pub fn test_map_option3(x_1: Option<u32>[{built_in impl Sized for u32}]) -> Opti
 
 // Full name: test_crate::test_map_option3::closure::{impl Destruct for test_crate::test_map_option3::closure}
 impl Destruct for test_crate::test_map_option3::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_map_option3::closure}::drop_in_place
+    fn drop_glue = {impl Destruct for test_crate::test_map_option3::closure}::drop_glue
     non-dyn-compatible
 }
 
@@ -1463,8 +1463,8 @@ pub fn test_regions<'a>(x_1: &'a u32) -> u32
     return
 }
 
-// Full name: test_crate::test_regions::closure::{impl Destruct for test_crate::test_regions::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_regions::closure}::drop_in_place(_1: *mut test_crate::test_regions::closure)
+// Full name: test_crate::test_regions::closure::{impl Destruct for test_crate::test_regions::closure}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_regions::closure}::drop_glue(_1: *mut test_crate::test_regions::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_regions::closure; // arg #1
@@ -1498,7 +1498,7 @@ fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::cal
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '14>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_regions::closure}::drop_in_place] _1
+    drop[{impl Destruct for test_crate::test_regions::closure}::drop_glue] _1
     return
 }
 
@@ -1534,14 +1534,14 @@ impl<'_0, '_1> Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure {
 
 // Full name: test_crate::test_regions::closure::{impl Destruct for test_crate::test_regions::closure}
 impl Destruct for test_crate::test_regions::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_regions::closure}::drop_in_place
+    fn drop_glue = {impl Destruct for test_crate::test_regions::closure}::drop_glue
     non-dyn-compatible
 }
 
 struct test_crate::test_regions_casted::closure {}
 
-// Full name: test_crate::test_regions_casted::closure::{impl Destruct for test_crate::test_regions_casted::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_regions_casted::closure}::drop_in_place(_1: *mut test_crate::test_regions_casted::closure)
+// Full name: test_crate::test_regions_casted::closure::{impl Destruct for test_crate::test_regions_casted::closure}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_regions_casted::closure}::drop_glue(_1: *mut test_crate::test_regions_casted::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_regions_casted::closure; // arg #1
@@ -1589,7 +1589,7 @@ fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closur
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '14>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_regions_casted::closure}::drop_in_place] _1
+    drop[{impl Destruct for test_crate::test_regions_casted::closure}::drop_glue] _1
     return
 }
 
@@ -1670,7 +1670,7 @@ impl<'_0, '_1> Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::clos
 
 // Full name: test_crate::test_regions_casted::closure::{impl Destruct for test_crate::test_regions_casted::closure}
 impl Destruct for test_crate::test_regions_casted::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_regions_casted::closure}::drop_in_place
+    fn drop_glue = {impl Destruct for test_crate::test_regions_casted::closure}::drop_glue
     non-dyn-compatible
 }
 
@@ -1750,8 +1750,8 @@ pub fn test_closure_capture(x_1: u32, y_2: u32) -> u32
     return
 }
 
-// Full name: test_crate::test_closure_capture::closure::{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_in_place<'_0, '_1>(_1: *mut test_crate::test_closure_capture::closure<'_0, '_1>)
+// Full name: test_crate::test_closure_capture::closure::{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_glue<'_0, '_1>(_1: *mut test_crate::test_closure_capture::closure<'_0, '_1>)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
@@ -1785,7 +1785,7 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, 
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '7>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_in_place<'_0, '_1>] _1
+    drop[{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_glue<'_0, '_1>] _1
     return
 }
 
@@ -1821,7 +1821,7 @@ impl<'_0, '_1> Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0
 
 // Full name: test_crate::test_closure_capture::closure::{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}
 impl<'_0, '_1> Destruct for test_crate::test_closure_capture::closure<'_0, '_1> {
-    fn drop_in_place = {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_in_place<'_0, '_1>
+    fn drop_glue = {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_glue<'_0, '_1>
     non-dyn-compatible
 }
 
@@ -1849,7 +1849,7 @@ where
     _4 = &x_3
     _0 = TraitClause1::clone<'5>(move _4)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_3
+    conditional_drop[{built_in impl Destruct for T}::drop_glue] x_3
     return
 }
 
@@ -1878,18 +1878,18 @@ where
     _6 = move x_1
     _5 = (move _6,)
     _0 = {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'4, T>[TraitClause0, TraitClause1](move _3, move _5)
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] _6
+    conditional_drop[{built_in impl Destruct for T}::drop_glue] _6
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_3)
     storage_dead(f_2)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue] x_1
     return
 }
 
-// Full name: test_crate::test_closure_clone::closure::{impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_in_place<T>(_1: *mut test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1])
+// Full name: test_crate::test_closure_clone::closure::{impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_glue<T>(_1: *mut test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -1932,7 +1932,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call_mut<'3, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_in_place<T>[TraitClause0, TraitClause1]] _1
+    drop[{impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_glue<T>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -1984,14 +1984,14 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
-    fn drop_in_place = {impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_in_place<T>[TraitClause0, TraitClause1]
+    fn drop_glue = {impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_glue<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 struct test_crate::test_array_map::closure {}
 
-// Full name: test_crate::test_array_map::closure::{impl Destruct for test_crate::test_array_map::closure}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_array_map::closure}::drop_in_place(_1: *mut test_crate::test_array_map::closure)
+// Full name: test_crate::test_array_map::closure::{impl Destruct for test_crate::test_array_map::closure}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_array_map::closure}::drop_glue(_1: *mut test_crate::test_array_map::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_array_map::closure; // arg #1
@@ -2002,7 +2002,7 @@ unsafe fn {impl Destruct for test_crate::test_array_map::closure}::drop_in_place
 
 // Full name: test_crate::test_array_map::closure::{impl Destruct for test_crate::test_array_map::closure}
 impl Destruct for test_crate::test_array_map::closure {
-    fn drop_in_place = {impl Destruct for test_crate::test_array_map::closure}::drop_in_place
+    fn drop_glue = {impl Destruct for test_crate::test_array_map::closure}::drop_glue
     non-dyn-compatible
 }
 
@@ -2031,7 +2031,7 @@ fn {impl FnOnce<(i32,), i32> for test_crate::test_array_map::closure}::call_once
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_array_map::closure}::drop_in_place] _1
+    drop[{impl Destruct for test_crate::test_array_map::closure}::drop_glue] _1
     return
 }
 
@@ -2154,8 +2154,8 @@ fn test_fnmut_with_ref()
     return
 }
 
-// Full name: test_crate::test_fnmut_with_ref::closure::{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_in_place
-unsafe fn {impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_in_place<'_0>(_1: *mut test_crate::test_fnmut_with_ref::closure<'_0>)
+// Full name: test_crate::test_fnmut_with_ref::closure::{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_glue
+unsafe fn {impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_glue<'_0>(_1: *mut test_crate::test_fnmut_with_ref::closure<'_0>)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_fnmut_with_ref::closure<'_0>; // arg #1
@@ -2176,7 +2176,7 @@ fn {impl FnOnce<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '10>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_in_place<'_0>] _1
+    drop[{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_glue<'_0>] _1
     return
 }
 
@@ -2202,7 +2202,7 @@ impl<'_0, '_1> FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::clos
 
 // Full name: test_crate::test_fnmut_with_ref::closure::{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}
 impl<'_0> Destruct for test_crate::test_fnmut_with_ref::closure<'_0> {
-    fn drop_in_place = {impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_in_place<'_0>
+    fn drop_glue = {impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_glue<'_0>
     non-dyn-compatible
 }
 

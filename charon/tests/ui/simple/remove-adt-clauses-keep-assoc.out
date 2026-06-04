@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: test_crate::HasAssoc
@@ -41,8 +41,8 @@ where
   T,
 }
 
-// Full name: test_crate::Direct::{impl Destruct for Direct<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn impl_Destruct_for_Direct::drop_in_place<T>(_1: *mut Direct<T>[TraitClause0, TraitClause1])
+// Full name: test_crate::Direct::{impl Destruct for Direct<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Direct::drop_glue<T>(_1: *mut Direct<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),
@@ -51,7 +51,7 @@ where
     let _1: &'1 mut Direct<T>[TraitClause0, TraitClause1]; // arg #1
 
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue] ((*_1)).0
     return
 }
 
@@ -61,7 +61,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),
 {
-    fn drop_in_place = impl_Destruct_for_Direct::drop_in_place<T>[TraitClause0, TraitClause1]
+    fn drop_glue = impl_Destruct_for_Direct::drop_glue<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -91,8 +91,8 @@ where
   T,
 }
 
-// Full name: test_crate::Transitive::{impl Destruct for Transitive<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn impl_Destruct_for_Transitive::drop_in_place<T>(_1: *mut Transitive<T>[TraitClause0, TraitClause1])
+// Full name: test_crate::Transitive::{impl Destruct for Transitive<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Transitive::drop_glue<T>(_1: *mut Transitive<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: DerivedNoAssoc),
@@ -101,7 +101,7 @@ where
     let _1: &'1 mut Transitive<T>[TraitClause0, TraitClause1]; // arg #1
 
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue] ((*_1)).0
     return
 }
 
@@ -111,7 +111,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: DerivedNoAssoc),
 {
-    fn drop_in_place = impl_Destruct_for_Transitive::drop_in_place<T>[TraitClause0, TraitClause1]
+    fn drop_glue = impl_Destruct_for_Transitive::drop_glue<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -135,8 +135,8 @@ struct Marker<T> {
   T,
 }
 
-// Full name: test_crate::Marker::{impl Destruct for Marker<T>}::drop_in_place
-unsafe fn impl_Destruct_for_Marker::drop_in_place<T>(_1: *mut Marker<T>)
+// Full name: test_crate::Marker::{impl Destruct for Marker<T>}::drop_glue
+unsafe fn impl_Destruct_for_Marker::drop_glue<T>(_1: *mut Marker<T>)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: MarkerChild),
@@ -145,7 +145,7 @@ where
     let _1: &'1 mut Marker<T>; // arg #1
 
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue] ((*_1)).0
     return
 }
 
@@ -155,7 +155,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: MarkerChild),
 {
-    fn drop_in_place = impl_Destruct_for_Marker::drop_in_place<T>[TraitClause0, TraitClause1]
+    fn drop_glue = impl_Destruct_for_Marker::drop_glue<T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -176,9 +176,9 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[impl_Destruct_for_Marker::drop_in_place<V>[TraitClause2, TraitClause5]] _z_3
-    conditional_drop[impl_Destruct_for_Transitive::drop_in_place<U>[TraitClause1, TraitClause4]] _y_2
-    conditional_drop[impl_Destruct_for_Direct::drop_in_place<T>[TraitClause0, TraitClause3]] _x_1
+    conditional_drop[impl_Destruct_for_Marker::drop_glue<V>[TraitClause2, TraitClause5]] _z_3
+    conditional_drop[impl_Destruct_for_Transitive::drop_glue<U>[TraitClause1, TraitClause4]] _y_2
+    conditional_drop[impl_Destruct_for_Direct::drop_glue<T>[TraitClause0, TraitClause3]] _x_1
     return
 }
 

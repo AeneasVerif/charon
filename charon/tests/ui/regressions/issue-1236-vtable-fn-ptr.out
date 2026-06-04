@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
@@ -18,11 +18,11 @@ pub trait Destruct<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 struct test_crate::Foo::{vtable} {
@@ -46,8 +46,8 @@ fn test_crate::Foo::foo<'_0>(_1: &'_0 (dyn Foo))
 // Full name: test_crate::Bar
 struct Bar {}
 
-// Full name: test_crate::Bar::{impl Destruct for Bar}::drop_in_place
-unsafe fn impl_Destruct_for_Bar::drop_in_place(_1: *mut Bar)
+// Full name: test_crate::Bar::{impl Destruct for Bar}::drop_glue
+unsafe fn impl_Destruct_for_Bar::drop_glue(_1: *mut Bar)
 {
     let _0: (); // return
     let _1: &'1 mut Bar; // arg #1
@@ -60,7 +60,7 @@ unsafe fn impl_Destruct_for_Bar::drop_in_place(_1: *mut Bar)
 
 // Full name: test_crate::Bar::{impl Destruct for Bar}
 impl "impl_Destruct_for_Bar" Destruct for Bar {
-    fn drop_in_place = impl_Destruct_for_Bar::drop_in_place
+    fn drop_glue = impl_Destruct_for_Bar::drop_glue
     non-dyn-compatible
 }
 
@@ -111,7 +111,7 @@ unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn Foo))
         ret_0 = ();
         storage_live(target_self_2);
         target_self_2 = concretize<*mut (dyn Foo + '1), *mut Bar>(move dyn_self_1);
-        drop[impl_Destruct_for_Bar::drop_in_place] (*target_self_2) -> bb2 (unwind: bb1);
+        drop[impl_Destruct_for_Bar::drop_glue] (*target_self_2) -> bb2 (unwind: bb1);
     }
 
     bb1: {

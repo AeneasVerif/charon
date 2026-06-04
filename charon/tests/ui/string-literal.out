@@ -53,8 +53,8 @@ impl "impl_Display_for_str" Display for str {
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
+// Full name: alloc::string::String::{impl Destruct for String}::drop_glue
+unsafe fn impl_Destruct_for_String::drop_glue(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::string::{impl ToString for T}::to_string
@@ -120,7 +120,7 @@ fn main()
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[impl_Destruct_for_String::drop_in_place] _s_1
+    conditional_drop[impl_Destruct_for_String::drop_glue] _s_1
     storage_dead(_s_1)
     return
 }

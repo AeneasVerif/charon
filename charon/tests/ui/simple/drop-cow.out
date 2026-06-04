@@ -4,7 +4,7 @@
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
@@ -38,7 +38,7 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::borrow::ToOwned
@@ -75,8 +75,8 @@ where
   Owned(TraitClause1::Owned),
 }
 
-// Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}::drop_in_place
-unsafe fn impl_Destruct_for_Cow::drop_in_place<'a, B>(_1: *mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2])
+// Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
+unsafe fn impl_Destruct_for_Cow::drop_glue<'a, B>(_1: *mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2])
 where
     TraitClause0: (B: MetaSized),
     TraitClause1: (B: ToOwned),
@@ -92,7 +92,7 @@ where
         Cow::Borrowed => {
         },
         _ => {
-            drop[TraitClause1::ImpliedClause4::drop_in_place] ((*_1) as variant Cow::Owned).0
+            drop[TraitClause1::ImpliedClause4::drop_glue] ((*_1) as variant Cow::Owned).0
             return
         },
     }
@@ -108,7 +108,7 @@ where
     TypeOutlives0: B: 'a,
     TypeOutlives1: B: 'a,
 {
-    fn drop_in_place = impl_Destruct_for_Cow::drop_in_place<'a, B>[TraitClause0, TraitClause1, TraitClause2]
+    fn drop_glue = impl_Destruct_for_Cow::drop_glue<'a, B>[TraitClause0, TraitClause1, TraitClause2]
     non-dyn-compatible
 }
 
@@ -125,7 +125,7 @@ where
 
     _0 = ()
     _0 = ()
-    drop[impl_Destruct_for_Cow::drop_in_place<'4, B>[TraitClause0, TraitClause1, TraitClause2]] _1
+    drop[impl_Destruct_for_Cow::drop_glue<'4, B>[TraitClause0, TraitClause1, TraitClause2]] _1
     return
 }
 

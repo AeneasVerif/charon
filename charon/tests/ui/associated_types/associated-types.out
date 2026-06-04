@@ -75,12 +75,12 @@ impl<'_0, T> Copy for &'_0 T {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_glue = drop_glue<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(_1: *mut Self)
+// Full name: core::marker::Destruct::drop_glue
+unsafe fn drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -312,7 +312,7 @@ where
     let x_1: Clause2_Item; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl Destruct for Clause2_Item}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for Clause2_Item}::drop_glue] x_1
     return
 }
 

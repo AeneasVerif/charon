@@ -72,12 +72,12 @@ pub enum TransItemSourceKind {
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
-    /// The `drop_in_place` method of a `Destruct` impl or decl. It contains the drop glue that
+    /// The `drop_glue` method of a `Destruct` impl or decl. It contains the drop glue that
     /// calls `Drop::drop` for the type and then drops its fields. If the `TraitImplSource` is
     /// `None` this is the method declaration (and the DefId is that of the `Destruct` trait),
     /// otherwise this is a method implementation (and the DefId is that of the ADT or closure for
     /// which to generate the drop glue).
-    DropInPlaceMethod(Option<TraitImplSource>),
+    DropGlueMethod(Option<TraitImplSource>),
     /// The virtual table struct definition for a trait. The `DefId` is that of the trait.
     VTable,
     /// The static vtable value for a specific impl.
@@ -168,12 +168,12 @@ impl TransItemSource {
                 TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
             }
             TransItemSourceKind::DefaultedMethod(impl_kind, ..)
-            | TransItemSourceKind::DropInPlaceMethod(Some(impl_kind))
+            | TransItemSourceKind::DropGlueMethod(Some(impl_kind))
             | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
                 TransItemSourceKind::TraitImpl(impl_kind)
             }
-            TransItemSourceKind::DropInPlaceMethod(None) => TransItemSourceKind::TraitDecl,
+            TransItemSourceKind::DropGlueMethod(None) => TransItemSourceKind::TraitDecl,
             _ => return None,
         };
         Some(self.with_kind(parent_kind))
@@ -305,7 +305,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     | DefaultedMethod(..)
                     | ClosureMethod(..)
                     | ClosureAsFnCast
-                    | DropInPlaceMethod(..)
+                    | DropGlueMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod
                     | VTableDropShim => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
@@ -380,7 +380,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
         // Add a virtual method to the `Destruct` trait.
         if trait_def.lang_item == Some(sym::destruct) {
-            let method_name = TraitItemName("drop_in_place".into());
+            let method_name = TraitItemName("drop_glue".into());
             names.methods.push(method_name);
         }
         self.method_status.get_or_extend_and_insert(trait_id, || {

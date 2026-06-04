@@ -56,8 +56,8 @@ where
     TraitClause1: (A: Sized),
 = <opaque>
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Vec::drop_glue<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -138,11 +138,11 @@ fn multiple_adjacent()
     ret_10 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_12)
     _c_3 = move ret_10
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _c_3
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _c_3
     storage_dead(_c_3)
-    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _b_2
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _b_2
     storage_dead(_b_2)
-    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
     storage_dead(_a_1)
     return
 }
@@ -174,7 +174,7 @@ fn multiple_values()
     ret_2 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_4)
     _a_1 = move ret_2
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
     storage_dead(_a_1)
     return
 }
@@ -223,7 +223,7 @@ fn with_fn_calls()
     ret_4 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_6)
     _a_1 = move ret_4
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
     storage_dead(_a_1)
     return
 }
@@ -238,7 +238,7 @@ fn repeated()
     storage_live(_a_1)
     _a_1 = from_elem<u8>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 1u8, const 3usize)
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a_1
     storage_dead(_a_1)
     return
 }

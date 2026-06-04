@@ -14,6 +14,7 @@ use std::rc::Rc;
 use crate::hax;
 use rustc_middle::mir;
 use rustc_middle::ty;
+use rustc_span::sym;
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
@@ -1566,7 +1567,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         unwind: &mir::UnwindAction,
     ) -> Result<TerminatorKind, Error> {
         let place_ty = place.ty(self.local_decls, self.tcx).ty;
-        let fn_ptr = self.translate_drop_in_place_method_call(span, place_ty)?;
+        let fn_ptr = self.translate_drop_glue_method_call(span, place_ty)?;
         let place = self.translate_place(span, place)?;
         let target = self.translate_basic_block_id(*target);
         let on_unwind = self.translate_unwind_action(span, unwind);

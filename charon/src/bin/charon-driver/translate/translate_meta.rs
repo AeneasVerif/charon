@@ -398,9 +398,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                 name.name
                     .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
             }
-            TransItemSourceKind::DropInPlaceMethod(..) => {
+            TransItemSourceKind::DropGlueMethod(..) => {
                 name.name.push(PathElem::Ident(
-                    "drop_in_place".to_string(),
+                    "drop_glue".to_string(),
                     Disambiguator::ZERO,
                 ));
             }

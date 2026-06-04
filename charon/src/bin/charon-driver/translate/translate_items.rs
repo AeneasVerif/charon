@@ -184,12 +184,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            &TransItemSourceKind::DropInPlaceMethod(impl_kind) => {
+            &TransItemSourceKind::DropGlueMethod(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl =
-                    bt_ctx.translate_drop_in_place_method(id, item_meta, &def, impl_kind)?;
+                let fun_decl = bt_ctx.translate_drop_glue_method(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::VTable => {
@@ -700,9 +699,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut methods: IndexMap<TraitMethodId, _> = IndexMap::new();
 
         if def.lang_item == Some(sym::destruct) {
-            // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
+            // Add a `drop_glue(*mut self)` method that contains the drop glue for this type.
             let (method_id, method_binder) =
-                self.prepare_drop_in_place_method(def, span, def.def_id(), trait_decl_id, None)?;
+                self.prepare_drop_glue_method(def, span, def.def_id(), trait_decl_id, None)?;
             let method_name = self.translated.assoc_item_name(trait_decl_id, method_id);
             self.mark_method_as_used(trait_decl_id, method_id);
             let method = method_binder.map(|fn_ref| {
@@ -713,7 +712,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::one(), TypeVarId::ZERO))
                         .into_ty()
                 };
-                let signature = self.drop_in_place_method_sig(self_ty);
+                let signature = self.drop_glue_method_sig(self_ty);
                 TraitMethod {
                     name: method_name,
                     item: fn_ref,

@@ -50,9 +50,9 @@ and statement_kind =
   | Drop of place * fn_ptr * drop_kind
       (** Drop the value at the given place.
 
-          Depending on [DropKind], this may be a real call to [drop_in_place],
-          or a conditional call that should only happen if the place has not
-          been moved out of. See the docs of [DropKind] for more details; to get
+          Depending on [DropKind], this may be a real call to [drop_glue], or a
+          conditional call that should only happen if the place has not been
+          moved out of. See the docs of [DropKind] for more details; to get
           precise drops use [--precise-drops]. *)
   | Assert of assertion * abort_kind
       (** Fields:

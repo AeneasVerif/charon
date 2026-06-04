@@ -85,15 +85,15 @@ and terminator_kind =
   | Drop of drop_kind * place * fn_ptr * block_id * block_id
       (** Drop the value at the given place.
 
-          Depending on [DropKind], this may be a real call to [drop_in_place],
-          or a conditional call that should only happen if the place has not
-          been moved out of. See the docs of [DropKind] for more details; to get
+          Depending on [DropKind], this may be a real call to [drop_glue], or a
+          conditional call that should only happen if the place has not been
+          moved out of. See the docs of [DropKind] for more details; to get
           precise drops use [--precise-drops].
 
           Fields:
           - [kind]
           - [place]
-          - [fn_ptr]: Reference to the [drop_in_place] code to call on drop.
+          - [fn_ptr]: Reference to the [drop_glue] code to call on drop.
           - [target]
           - [on_unwind] *)
   | TAssert of assertion * block_id * block_id

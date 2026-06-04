@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -115,8 +115,8 @@ pub fn foo() -> &'static closure
     return
 }
 
-// Full name: test_crate::foo::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
+// Full name: test_crate::foo::closure::{impl Destruct for closure}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue(_1: *mut closure)
 {
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
@@ -164,7 +164,7 @@ fn impl_FnOnce_tuple_for_closure::call_once(_1: closure, _2: (u32,)) -> u32
     storage_live(_3)
     _3 = &mut _1
     _0 = impl_FnMut_tuple_for_closure::call_mut<'3>(move _3, move _2)
-    drop[impl_Destruct_for_closure::drop_in_place] _1
+    drop[impl_Destruct_for_closure::drop_glue] _1
     return
 }
 
@@ -201,7 +201,7 @@ impl "impl_Fn_tuple_for_closure" Fn<(u32,)> for closure {
 
 // Full name: test_crate::foo::closure::{impl Destruct for closure}
 impl "impl_Destruct_for_closure" Destruct for closure {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place
+    fn drop_glue = impl_Destruct_for_closure::drop_glue
     non-dyn-compatible
 }
 

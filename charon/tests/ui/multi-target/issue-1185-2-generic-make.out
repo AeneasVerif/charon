@@ -1,30 +1,30 @@
 #[lang_item("destruct")]
 pub trait core::marker::Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 pub struct test_crate::State<H> {
   _h: H,
 }
 
-unsafe fn test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_in_place<H>(_1: *mut test_crate::State<H>)
+unsafe fn test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<H>(_1: *mut test_crate::State<H>)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::State<H>; // arg #1
 
     _0 = ()
-    drop[{built_in impl core::marker::Destruct for H}::drop_in_place] ((*_1))._h
+    drop[{built_in impl core::marker::Destruct for H}::drop_glue] ((*_1))._h
     return
 }
 
 // Full name: test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}
 impl<H> core::marker::Destruct for test_crate::State<H> {
-    fn drop_in_place = test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_in_place<H>
+    fn drop_glue = test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<H>
     non-dyn-compatible
 }
 
@@ -40,12 +40,12 @@ pub fn test_crate::caller<H>(h_1: H)
     storage_live(_3)
     _3 = move h_1
     _2 = test_crate::State { _h: move _3 }
-    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_in_place] _3
+    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue] _3
     storage_dead(_3)
-    conditional_drop[test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_in_place<H>] _2
+    conditional_drop[test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<H>] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_in_place] h_1
+    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue] h_1
     return
 }
 

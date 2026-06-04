@@ -126,14 +126,14 @@ pub enum TerminatorKind {
     },
     /// Drop the value at the given place.
     ///
-    /// Depending on `DropKind`, this may be a real call to `drop_in_place`, or a conditional call
+    /// Depending on `DropKind`, this may be a real call to `drop_glue`, or a conditional call
     /// that should only happen if the place has not been moved out of. See the docs of `DropKind`
     /// for more details; to get precise drops use `--precise-drops`.
     Drop {
         #[drive(skip)]
         kind: DropKind,
         place: Place,
-        /// Reference to the `drop_in_place` code to call on drop.
+        /// Reference to the `drop_glue` code to call on drop.
         fn_ptr: FnPtr,
         target: BlockId,
         on_unwind: BlockId,

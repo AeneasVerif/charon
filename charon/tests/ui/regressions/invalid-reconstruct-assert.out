@@ -16,7 +16,7 @@ pub fn impl_Ord_for_u32::cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Ordering
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
@@ -39,7 +39,7 @@ where
     TraitClause1: (T: Destruct),
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -182,7 +182,7 @@ where
         _46 = Result::Err { 0: const 0usize };
         _0 = move _46;
         storage_dead(size_3);
-        drop[{built_in impl Destruct for F}::drop_in_place] f_2 -> bb31 (unwind: bb3);
+        drop[{built_in impl Destruct for F}::drop_glue] f_2 -> bb31 (unwind: bb3);
     }
 
     bb2: {
@@ -287,7 +287,7 @@ where
     }
 
     bb13: {
-        drop[{built_in impl Destruct for F}::drop_in_place] f_2 -> bb18 (unwind: bb19);
+        drop[{built_in impl Destruct for F}::drop_glue] f_2 -> bb18 (unwind: bb19);
     }
 
     bb14: {
@@ -395,7 +395,7 @@ where
     bb28: {
         storage_dead(cmp_18);
         storage_dead(size_3);
-        drop[{built_in impl Destruct for F}::drop_in_place] f_2 -> bb32 (unwind: bb30);
+        drop[{built_in impl Destruct for F}::drop_glue] f_2 -> bb32 (unwind: bb30);
     }
 
     bb29: {
@@ -465,8 +465,8 @@ fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled
     }
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place(_1: *mut closure)
+// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue(_1: *mut closure)
 {
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
@@ -492,11 +492,11 @@ fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -
     }
 
     bb1: {
-        drop[impl_Destruct_for_closure::drop_in_place] _1 -> bb3 (unwind: bb4);
+        drop[impl_Destruct_for_closure::drop_glue] _1 -> bb3 (unwind: bb4);
     }
 
     bb2: {
-        drop[impl_Destruct_for_closure::drop_in_place] _1 -> bb6 (unwind: bb5);
+        drop[impl_Destruct_for_closure::drop_glue] _1 -> bb6 (unwind: bb5);
     }
 
     bb3: {
@@ -590,7 +590,7 @@ fn main()
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}
 impl "impl_Destruct_for_closure" Destruct for closure {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place
+    fn drop_glue = impl_Destruct_for_closure::drop_glue
     non-dyn-compatible
 }
 

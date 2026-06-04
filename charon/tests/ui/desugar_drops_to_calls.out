@@ -24,11 +24,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::ops::drop::Drop
@@ -54,18 +54,18 @@ pub fn _print<'_0>(_1: Arguments<'_0>)
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn impl_Destruct_for_Global::drop_in_place(_1: *mut Global)
+// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
+unsafe fn impl_Destruct_for_Global::drop_glue(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
 impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_in_place = impl_Destruct_for_Global::drop_in_place
+    fn drop_glue = impl_Destruct_for_Global::drop_glue
     non-dyn-compatible
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
-unsafe fn impl_Destruct_for_Box::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_glue
+unsafe fn impl_Destruct_for_Box::drop_glue<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -77,8 +77,8 @@ where
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
+// Full name: alloc::string::String::{impl Destruct for String}::drop_glue
+unsafe fn impl_Destruct_for_String::drop_glue(_1: *mut String)
 = <opaque>
 
 // Full name: alloc::vec::Vec
@@ -90,8 +90,8 @@ where
     TraitClause2: (T: Destruct),
     TraitClause3: (type_error("removed allocator parameter"): Destruct),
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
-unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_glue
+unsafe fn impl_Destruct_for_Vec::drop_glue<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -112,7 +112,7 @@ fn use_string(_1: String)
     storage_live(drop_arg_2)
     drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 = impl_Destruct_for_String::drop_in_place(move drop_arg_2)
+    drop_ret_3 = impl_Destruct_for_String::drop_glue(move drop_arg_2)
     return
 }
 
@@ -129,7 +129,7 @@ fn use_vec(_1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for 
     storage_live(drop_arg_2)
     drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 = impl_Destruct_for_Vec::drop_in_place<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_2)
+    drop_ret_3 = impl_Destruct_for_Vec::drop_glue<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_2)
     return
 }
 
@@ -149,7 +149,7 @@ where
     storage_live(drop_arg_2)
     drop_arg_2 = &raw mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 = TraitClause1::drop_in_place(move drop_arg_2)
+    drop_ret_3 = TraitClause1::drop_glue(move drop_arg_2)
     return
 }
 
@@ -189,8 +189,8 @@ pub fn impl_Drop_for_Point::drop<'_0>(self_1: &'_0 mut Point)
     return
 }
 
-// Full name: test_crate::Point::{impl Destruct for Point}::drop_in_place
-unsafe fn impl_Destruct_for_Point::drop_in_place(_1: *mut Point)
+// Full name: test_crate::Point::{impl Destruct for Point}::drop_glue
+unsafe fn impl_Destruct_for_Point::drop_glue(_1: *mut Point)
 {
     let _0: (); // return
     let _1: &'1 mut Point; // arg #1
@@ -209,17 +209,17 @@ unsafe fn impl_Destruct_for_Point::drop_in_place(_1: *mut Point)
     storage_live(drop_arg_4)
     drop_arg_4 = &raw mut ((*_1)).x
     storage_live(drop_ret_5)
-    drop_ret_5 = impl_Destruct_for_Box::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_4)
+    drop_ret_5 = impl_Destruct_for_Box::drop_glue<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_4)
     storage_live(drop_arg_6)
     drop_arg_6 = &raw mut ((*_1)).y
     storage_live(drop_ret_7)
-    drop_ret_7 = impl_Destruct_for_Box::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_6)
+    drop_ret_7 = impl_Destruct_for_Box::drop_glue<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_6)
     return
 }
 
 // Full name: test_crate::Point::{impl Destruct for Point}
 impl "impl_Destruct_for_Point" Destruct for Point {
-    fn drop_in_place = impl_Destruct_for_Point::drop_in_place
+    fn drop_glue = impl_Destruct_for_Point::drop_glue
     non-dyn-compatible
 }
 
@@ -254,7 +254,7 @@ fn main()
     storage_live(drop_arg_4)
     drop_arg_4 = &raw mut p_1
     storage_live(drop_ret_5)
-    drop_ret_5 = impl_Destruct_for_Point::drop_in_place(move drop_arg_4)
+    drop_ret_5 = impl_Destruct_for_Point::drop_glue(move drop_arg_4)
     storage_dead(p_1)
     return
 }

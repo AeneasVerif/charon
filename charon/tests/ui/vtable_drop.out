@@ -4,7 +4,7 @@
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
@@ -50,25 +50,25 @@ impl "impl_Clone_for_i32" Clone for i32 {
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn impl_Destruct_for_Global::drop_in_place(_1: *mut Global)
+// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
+unsafe fn impl_Destruct_for_Global::drop_glue(_1: *mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
 impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_in_place = impl_Destruct_for_Global::drop_in_place
+    fn drop_glue = impl_Destruct_for_Global::drop_glue
     non-dyn-compatible
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
-unsafe fn impl_Destruct_for_Box::drop_in_place<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
+// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_glue
+unsafe fn impl_Destruct_for_Box::drop_glue<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -84,7 +84,7 @@ where
     TraitClause2: (T: Destruct),
     TraitClause3: (A: Destruct),
 {
-    fn drop_in_place = impl_Destruct_for_Box::drop_in_place<T, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    fn drop_glue = impl_Destruct_for_Box::drop_glue<T, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
     non-dyn-compatible
 }
 
@@ -177,7 +177,7 @@ where
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn Modifiable<T> + '1), *mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]>(move dyn_self_1)
-    drop[impl_Destruct_for_Box::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]] (*target_self_2)
+    drop[impl_Destruct_for_Box::drop_glue<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]] (*target_self_2)
     return
 }
 
@@ -262,7 +262,7 @@ where
     _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
-    drop[impl_Destruct_for_Box::drop_in_place<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]] _5
+    drop[impl_Destruct_for_Box::drop_glue<i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]] _5
     storage_dead(_5)
     storage_dead(x_2)
     return

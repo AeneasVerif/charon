@@ -49,7 +49,7 @@ pub trait FnMut<Self, Args>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
@@ -64,7 +64,7 @@ where
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = T,
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
@@ -98,8 +98,8 @@ where
     TraitClause1: (T: Ops<K>),
 {}
 
-// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place<T, const K : usize>(_1: *mut closure<T, K>[TraitClause0, TraitClause1])
+// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue<T, const K : usize>(_1: *mut closure<T, K>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
@@ -117,7 +117,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<T, K>[TraitClause0, TraitClause1]
+    fn drop_glue = impl_Destruct_for_closure::drop_glue<T, K>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -156,7 +156,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = impl_FnMut_tuple_for_closure::call_mut<'3, T, K>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[impl_Destruct_for_closure::drop_in_place<T, K>[TraitClause0, TraitClause1]] _1
+    drop[impl_Destruct_for_closure::drop_glue<T, K>[TraitClause0, TraitClause1]] _1
     return
 }
 

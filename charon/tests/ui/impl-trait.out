@@ -54,11 +54,11 @@ impl<'_0, T> Clone for &'_0 T {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -247,11 +247,11 @@ where
     storage_dead(_5)
     _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'8>(move _3)
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_in_place] _2
+    conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_glue] _2
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_in_place] foo_1
+    conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue] foo_1
     storage_dead(foo_1)
     return
 }
@@ -316,8 +316,8 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place<U>(_1: *mut closure<U>[TraitClause0])
+// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue<U>(_1: *mut closure<U>[TraitClause0])
 where
     TraitClause0: (U: Sized),
 {
@@ -333,7 +333,7 @@ impl<U> "impl_Destruct_for_closure" Destruct for closure<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
 {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<U>[TraitClause0]
+    fn drop_glue = impl_Destruct_for_closure::drop_glue<U>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -379,7 +379,7 @@ pub fn use_wrap()
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[impl_Destruct_for_closure::drop_in_place<u32>[{built_in impl Sized for u32}]] f_1
+    conditional_drop[impl_Destruct_for_closure::drop_glue<u32>[{built_in impl Sized for u32}]] f_1
     storage_dead(f_1)
     return
 }

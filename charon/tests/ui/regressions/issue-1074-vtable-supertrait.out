@@ -16,11 +16,11 @@ pub trait MetaSized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 struct test_crate::MyTrait::{vtable} {
@@ -51,8 +51,8 @@ where
 // Full name: test_crate::MyStruct
 pub struct MyStruct {}
 
-// Full name: test_crate::MyStruct::{impl Destruct for MyStruct}::drop_in_place
-unsafe fn impl_Destruct_for_MyStruct::drop_in_place(_1: *mut MyStruct)
+// Full name: test_crate::MyStruct::{impl Destruct for MyStruct}::drop_glue
+unsafe fn impl_Destruct_for_MyStruct::drop_glue(_1: *mut MyStruct)
 {
     let _0: (); // return
     let _1: &'1 mut MyStruct; // arg #1
@@ -63,7 +63,7 @@ unsafe fn impl_Destruct_for_MyStruct::drop_in_place(_1: *mut MyStruct)
 
 // Full name: test_crate::MyStruct::{impl Destruct for MyStruct}
 impl "impl_Destruct_for_MyStruct" Destruct for MyStruct {
-    fn drop_in_place = impl_Destruct_for_MyStruct::drop_in_place
+    fn drop_glue = impl_Destruct_for_MyStruct::drop_glue
     non-dyn-compatible
 }
 
@@ -102,7 +102,7 @@ unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn MyTrait))
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn MyTrait + '1), *mut MyStruct>(move dyn_self_1)
-    drop[impl_Destruct_for_MyStruct::drop_in_place] (*target_self_2)
+    drop[impl_Destruct_for_MyStruct::drop_glue] (*target_self_2)
     return
 }
 

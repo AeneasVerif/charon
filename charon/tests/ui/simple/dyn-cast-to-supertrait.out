@@ -10,11 +10,11 @@ pub trait MetaSized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 struct test_crate::Feline::{vtable} {
@@ -87,8 +87,8 @@ where
 // Full name: test_crate::HouseCat
 struct HouseCat {}
 
-// Full name: test_crate::HouseCat::{impl Destruct for HouseCat}::drop_in_place
-unsafe fn impl_Destruct_for_HouseCat::drop_in_place(_1: *mut HouseCat)
+// Full name: test_crate::HouseCat::{impl Destruct for HouseCat}::drop_glue
+unsafe fn impl_Destruct_for_HouseCat::drop_glue(_1: *mut HouseCat)
 {
     let _0: (); // return
     let _1: &'1 mut HouseCat; // arg #1
@@ -99,7 +99,7 @@ unsafe fn impl_Destruct_for_HouseCat::drop_in_place(_1: *mut HouseCat)
 
 // Full name: test_crate::HouseCat::{impl Destruct for HouseCat}
 impl "impl_Destruct_for_HouseCat" Destruct for HouseCat {
-    fn drop_in_place = impl_Destruct_for_HouseCat::drop_in_place
+    fn drop_glue = impl_Destruct_for_HouseCat::drop_glue
     non-dyn-compatible
 }
 
@@ -138,7 +138,7 @@ unsafe fn impl_Feline_for_HouseCat::{vtable_drop_shim}(dyn_self_1: *mut (dyn Fel
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn Feline + '1), *mut HouseCat>(move dyn_self_1)
-    drop[impl_Destruct_for_HouseCat::drop_in_place] (*target_self_2)
+    drop[impl_Destruct_for_HouseCat::drop_glue] (*target_self_2)
     return
 }
 
@@ -208,7 +208,7 @@ unsafe fn impl_Pettable_for_HouseCat::{vtable_drop_shim}(dyn_self_1: *mut (dyn P
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn Pettable + '1), *mut HouseCat>(move dyn_self_1)
-    drop[impl_Destruct_for_HouseCat::drop_in_place] (*target_self_2)
+    drop[impl_Destruct_for_HouseCat::drop_glue] (*target_self_2)
     return
 }
 
@@ -278,7 +278,7 @@ unsafe fn impl_Cat_for_HouseCat::{vtable_drop_shim}(dyn_self_1: *mut (dyn Cat))
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<*mut (dyn Cat + '1), *mut HouseCat>(move dyn_self_1)
-    drop[impl_Destruct_for_HouseCat::drop_in_place] (*target_self_2)
+    drop[impl_Destruct_for_HouseCat::drop_glue] (*target_self_2)
     return
 }
 

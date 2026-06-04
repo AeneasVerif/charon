@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue = core::marker::Destruct::drop_glue<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -122,8 +122,8 @@ where
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place<F, Clause1_Repr>(_1: *mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1])
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue<F, Clause1_Repr>(_1: *mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1])
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
@@ -186,7 +186,7 @@ where
     _0 = ()
     _3 = &mut _1
     _0 = impl_FnMut_tuple_for_closure::call_mut<'3, F, Clause1_Repr>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[impl_Destruct_for_closure::drop_in_place<F, Clause1_Repr>[TraitClause0, TraitClause1]] _1
+    drop[impl_Destruct_for_closure::drop_glue<F, Clause1_Repr>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -238,7 +238,7 @@ where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
 {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<F, Clause1_Repr>[TraitClause0, TraitClause1]
+    fn drop_glue = impl_Destruct_for_closure::drop_glue<F, Clause1_Repr>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
