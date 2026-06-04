@@ -1,0 +1,141 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct::drop_glue
+unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
+= <opaque>
+
+// Full name: test_crate::Apply
+trait Apply<Self, A, Self_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (A: Sized)
+    proof ImpliedClause2: (Self_Output: Sized)
+    vtable: test_crate::Apply::{vtable}<A, Self_Output>
+}
+
+// Full name: test_crate::F
+struct F {}
+
+// Full name: test_crate::{impl Apply<(), ()> for F}
+impl "impl_Apply_unit_for_F" Apply<(), ()> for F {
+    proof ImpliedClause0: (F: MetaSized) = {built_in impl MetaSized for F}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    vtable: impl_Apply_unit_for_F::{vtable}
+}
+
+// Full name: test_crate::Iter
+trait Iter<Self, Self_Item>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Item: Sized)
+    fn map<'_0_1, B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (F: Apply<Self_Item, B>)> = test_crate::Iter::map<'_0_1, Self, B, F, Self_Item>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    non-dyn-compatible
+}
+
+fn test_crate::Iter::map<'_0, Self, B, F, Clause0_Item>(self_1: &'_0 mut Self, _f_2: F)
+where
+    TraitClause0: (Self: Iter<Clause0_Item>),
+    TraitClause1: (B: Sized),
+    TraitClause2: (F: Sized),
+    TraitClause3: (F: Apply<Clause0_Item, B>),
+{
+    let _0: (); // return
+    let self_1: &'1 mut Self; // arg #1
+    let _f_2: F; // arg #2
+
+    _0 = ()
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f_2
+    return
+}
+
+// Full name: test_crate::Empty
+struct Empty<T>
+where
+    TraitClause0: (T: Sized),
+{
+  [T; 0usize],
+}
+
+// Full name: test_crate::{impl Iter<T> for Empty<T>[TraitClause0]}::map
+fn impl_Iter_for_Empty::map<'_0, T, B, F>(self_1: &'_0 mut Empty<T>[TraitClause0], _f_2: F)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (B: Sized),
+    TraitClause2: (F: Sized),
+    TraitClause3: (F: Apply<T, B>),
+{
+    let _0: (); // return
+    let self_1: &'1 mut Empty<T>[TraitClause0]; // arg #1
+    let _f_2: F; // arg #2
+
+    _0 = ()
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f_2
+    return
+}
+
+// Full name: test_crate::{impl Iter<T> for Empty<T>[TraitClause0]}
+impl<T> "impl_Iter_for_Empty" Iter<T> for Empty<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (Empty<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Empty<T>[TraitClause0]}
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    fn map<'_0_1, B, F, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (F: Apply<T, B>)> = impl_Iter_for_Empty::map<'_0_1, T, B, F>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::g
+fn g()
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+    let _2: &'1 mut Empty<()>[{built_in impl Sized for ()}]; // anonymous local
+    let _3: Empty<()>[{built_in impl Sized for ()}]; // anonymous local
+    let _4: [(); 0usize]; // anonymous local
+    let _5: F; // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = []
+    _3 = Empty { 0: move _4 }
+    _2 = &two-phase-mut _3
+    storage_dead(_4)
+    storage_live(_5)
+    _5 = F {  }
+    _1 = impl_Iter_for_Empty::map<'3, (), (), F>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {built_in impl Sized for F}, impl_Apply_unit_for_F](move _2, move _5)
+    storage_dead(_5)
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+
