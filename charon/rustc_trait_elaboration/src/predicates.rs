@@ -233,7 +233,7 @@ impl<'tcx> ItemPredicates<'tcx> {
             // For methods and assoc consts in trait definitions, we add an explicit `Self: Trait` clause.
             // Associated types get to use the implicit `Self: Trait` clause instead.
             if let Some(trait_def_id) = tcx.trait_of_assoc(def_id)
-                && def_id.takes_explicit_self_clause(tcx)
+                && def_id.takes_explicit_self_clause(&elab_ctx)
             {
                 let self_clause = self_predicate(tcx, trait_def_id).upcast(tcx);
                 predicates.predicates.insert(

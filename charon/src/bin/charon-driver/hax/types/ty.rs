@@ -815,7 +815,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
     ) -> PredicateSearcher<'tcx> {
         let tcx = s.base().tcx;
         // Populate a predicate searcher that knows about the `dyn` clauses.
-        let mut predicate_searcher = s.with_predicate_searcher(|ps| ps.clone());
+        let mut predicate_searcher = s.with_predicate_searcher(|ps, _| ps.clone());
         predicate_searcher.insert_bound_predicates(preds.iter());
         predicate_searcher.set_param_env(param_env_from_clauses(
             tcx,
@@ -865,7 +865,9 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         let alias_ty = &proj.skip_binder().projection_term.expect_ty(tcx);
                         let trait_proof = {
                             let poly_trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
-                            predicate_searcher.resolve(&poly_trait_ref).sinto(s)
+                            predicate_searcher
+                                .resolve(&s.base().elab_ctx, &poly_trait_ref)
+                                .sinto(s)
                         };
                         let Term::Ty(ty) = proj.skip_binder().term.sinto(s) else {
                             unreachable!()
@@ -1046,7 +1048,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
                         .expect("expected a trait predicate in dyn upcast target");
                     ty::Binder::dummy(ty::TraitRef::new(tcx, def_id, [fresh_ty]))
                 };
-                searcher.resolve(&to_pred).sinto(s)
+                searcher.resolve(&s.base().elab_ctx, &to_pred).sinto(s)
             });
             UnsizingMetadata::NestedVTable(trait_proof)
         }

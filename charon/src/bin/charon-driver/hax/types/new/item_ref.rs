@@ -156,8 +156,8 @@ impl ItemRef {
             AssocItemResolution::None
         };
         let def_id = hax_def_id.as_real_promoted_or_synthetic();
-        let item_ref = s.with_predicate_searcher(|pred_searcher| {
-            pred_searcher.resolve_item_reference(def_id, generics, assoc_item_resolution)
+        let item_ref = s.with_predicate_searcher(|pred_searcher, elab_ctx| {
+            pred_searcher.resolve_item_reference(elab_ctx, def_id, generics, assoc_item_resolution)
         });
 
         let def_id = if is_real_def_id {

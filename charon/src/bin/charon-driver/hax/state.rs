@@ -306,7 +306,10 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
     fn with_cache<T>(&self, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
         self.with_item_cache(&self.owner(), f)
     }
-    fn with_predicate_searcher<T>(&self, f: impl FnOnce(&mut PredicateSearcher<'tcx>) -> T) -> T {
+    fn with_predicate_searcher<T>(
+        &self,
+        f: impl FnOnce(&mut PredicateSearcher<'tcx>, &ElaborationCtx<'tcx>) -> T,
+    ) -> T {
         let s = self;
         let base = s.base();
         let owner = s.owner();
@@ -324,11 +327,11 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
                         predicate_searcher.insert_bound_predicates(predicates.iter());
                         predicate_searcher
                     });
-                f(predicate_searcher)
+                f(predicate_searcher, &base.elab_ctx)
             })
         } else {
             let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(s.owner_id());
-            f(&mut predicate_searcher)
+            f(&mut predicate_searcher, &base.elab_ctx)
         }
     }
 }

@@ -142,7 +142,7 @@ impl<'tcx> ElaborationCtx<'tcx> {
         let mut predicate_searchers = self.data.predicate_searchers.borrow_mut();
         predicate_searchers
             .entry(def_id)
-            .or_insert_with(|| PredicateSearcher::new_for_owner(*self, def_id));
+            .or_insert_with(|| PredicateSearcher::new_for_owner(*self, self, def_id));
         RefMut::map(predicate_searchers, |predicate_searchers| {
             predicate_searchers.get_mut(&def_id).unwrap()
         })

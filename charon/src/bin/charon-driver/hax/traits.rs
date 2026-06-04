@@ -170,7 +170,9 @@ pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
     if let Some(trait_proof) = s.with_cache(|cache| cache.trait_proofs.get(&trait_ref).cloned()) {
         return trait_proof;
     }
-    let trait_proof = s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref));
+    let trait_proof = s.with_predicate_searcher(|pred_searcher, elab_ctx| {
+        pred_searcher.resolve(elab_ctx, &trait_ref)
+    });
     let trait_proof: TraitProof = trait_proof.sinto(s);
     s.with_cache(|cache| cache.trait_proofs.insert(trait_ref, trait_proof.clone()));
     trait_proof
