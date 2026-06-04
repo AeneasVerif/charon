@@ -153,6 +153,12 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub translate_all_methods: bool,
+    /// Whenever an impl doesn't implement a method (because it has a default body), this creates a
+    /// duplicate method as if it had been implemented. This can simplify the call-graphs as
+    /// otherwise calls within the default body would be indirected through trait proofs.
+    #[clap(long)]
+    #[serde(default)]
+    pub duplicate_defaulted_methods: bool,
 
     /// Transform the associate types of traits to be type parameters instead. This takes a list
     /// of name patterns of the traits to transform, using the same syntax as `--include`.
@@ -394,6 +400,7 @@ impl CliOpts {
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
                     self.unbind_item_vars = true;
+                    self.duplicate_defaulted_methods = true;
                 }
                 Preset::RawMir => {
                     self.extract_opaque_bodies = true;
@@ -419,6 +426,7 @@ impl CliOpts {
                     self.remove_unused_self_clauses = true;
                     self.remove_adt_clauses = true;
                     self.unbind_item_vars = true;
+                    self.duplicate_defaulted_methods = true;
                 }
                 Preset::Eurydice => {
                     self.hide_allocator = true;
@@ -429,6 +437,7 @@ impl CliOpts {
                     self.reconstruct_asserts = true;
                     self.lift_associated_types.push("*".to_owned());
                     self.unbind_item_vars = true;
+                    self.duplicate_defaulted_methods = true;
                     // Eurydice doesn't support opaque vtables it seems?
                     self.include.push("core::marker::MetaSized".to_owned());
                 }
@@ -450,6 +459,7 @@ impl CliOpts {
                     self.reconstruct_asserts = true;
                     self.ops_to_function_calls = true;
                     self.index_to_function_calls = true;
+                    self.duplicate_defaulted_methods = true;
                     self.rustc_args.push("--edition=2021".to_owned());
                     self.rustc_args
                         .push("-Zcrate-attr=feature(register_tool)".to_owned());
@@ -564,6 +574,8 @@ pub struct TranslateOptions {
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
     /// them all.
     pub translate_all_methods: bool,
+    /// Duplicate trait default methods into impls that use them.
+    pub duplicate_defaulted_methods: bool,
     /// If `Some(_)`, run the partial mutability monomorphization pass. The contained enum
     /// indicates whether to partially monomorphize types.
     pub monomorphize_mut: Option<MonomorphizeMut>,
@@ -755,6 +767,7 @@ impl TranslateOptions {
             lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
+            duplicate_defaulted_methods: options.duplicate_defaulted_methods,
             no_typecheck: options.no_typecheck,
             no_normalize: options.no_normalize,
             desugar_drops: options.desugar_drops,

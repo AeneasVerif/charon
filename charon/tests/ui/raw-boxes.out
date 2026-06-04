@@ -180,7 +180,7 @@ pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -206,20 +206,27 @@ pub fn impl_Clone_for_usize::clone<'_0>(self_1: &'_0 usize) -> usize
 unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <missing>
 
-// Full name: core::clone::impls::{impl Clone for usize}::clone_from
-pub fn impl_Clone_for_usize::clone_from<'_0, '_1>(self_1: &'_0 mut usize, source_2: &'_1 usize)
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
 where
-    TraitClause0: (usize: Destruct),
+    TraitClause0: (Self: Clone),
+= <method_without_default_body>
+
+// Full name: core::clone::Clone::clone_from
+pub fn clone_from<'_0, '_1, Self>(self_1: &'_0 mut Self, source_2: &'_1 Self)
+where
+    TraitClause0: (Self: Clone),
+    TraitClause1: (Self: Destruct),
 {
     let _0: (); // return
-    let self_1: &'1 mut usize; // arg #1
-    let source_2: &'3 usize; // arg #2
-    let _3: usize; // anonymous local
+    let self_1: &'1 mut Self; // arg #1
+    let source_2: &'3 Self; // arg #2
+    let _3: Self; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = impl_Clone_for_usize::clone<'5>(move source_2)
-    drop[TraitClause0::drop_glue<'6>] (*self_1)
+    _3 = TraitClause0::clone<'5>(move source_2)
+    drop[TraitClause1::drop_glue<'6>] (*self_1)
     (*self_1) = move _3
     storage_dead(_3)
     return
@@ -229,7 +236,7 @@ where
 impl "impl_Clone_for_usize" Clone for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
     fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
-    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = impl_Clone_for_usize::clone_from<'_0_1, '_1_1>[TraitClause0_1]
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = clone_from<'_0_1, '_1_1, usize>[impl_Clone_for_usize, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -434,7 +441,7 @@ pub trait Allocator<Self>
     fn grow<'_0_1> = core::alloc::Allocator::grow<'_0_1, Self>[Self]
     fn grow_zeroed<'_0_1> = core::alloc::Allocator::grow_zeroed<'_0_1, Self>[Self]
     fn shrink<'_0_1> = core::alloc::Allocator::shrink<'_0_1, Self>[Self]
-    fn by_ref<'_0_1, TraitClause0_1: (Self: Sized)> = core::alloc::Allocator::by_ref<'_0_1, Self>[Self, TraitClause0_1]
+    fn by_ref<'_0_1, TraitClause0_1: (Self: Sized)> = by_ref<'_0_1, Self>[Self, TraitClause0_1]
     vtable: core::alloc::Allocator::{vtable}
 }
 
@@ -1365,7 +1372,8 @@ where
     return
 }
 
-pub fn core::alloc::Allocator::by_ref<'_0, Self>(self_1: &'_0 Self) -> &'_0 Self
+// Full name: core::alloc::Allocator::by_ref
+pub fn by_ref<'_0, Self>(self_1: &'_0 Self) -> &'_0 Self
 where
     TraitClause0: (Self: Allocator),
     TraitClause1: (Self: Sized),
@@ -1374,31 +1382,6 @@ where
     let self_1: &'2 Self; // arg #1
 
     _0 = copy self_1
-    return
-}
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <method_without_default_body>
-
-pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self_1: &'_0 mut Self, source_2: &'_1 Self)
-where
-    TraitClause0: (Self: Clone),
-    TraitClause1: (Self: Destruct),
-{
-    let _0: (); // return
-    let self_1: &'1 mut Self; // arg #1
-    let source_2: &'3 Self; // arg #2
-    let _3: Self; // anonymous local
-
-    _0 = ()
-    storage_live(_3)
-    _3 = TraitClause0::clone<'5>(move source_2)
-    drop[TraitClause1::drop_glue<'6>] (*self_1)
-    (*self_1) = move _3
-    storage_dead(_3)
     return
 }
 
@@ -2797,18 +2780,6 @@ pub fn impl_Allocator_for_Global::allocate<'_0>(self_1: &'_0 Global, layout_2: L
     return
 }
 
-// Full name: alloc::alloc::{impl Allocator for Global}::by_ref
-pub fn impl_Allocator_for_Global::by_ref<'_0>(self_1: &'_0 Global) -> &'_0 Global
-where
-    TraitClause0: (Global: Sized),
-{
-    let _0: &'1 Global; // return
-    let self_1: &'2 Global; // arg #1
-
-    _0 = copy self_1
-    return
-}
-
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl "impl_Allocator_for_Global" Allocator for Global {
     proof ImpliedClause0: (Global: MetaSized) = {built_in impl MetaSized for Global}
@@ -2818,7 +2789,7 @@ impl "impl_Allocator_for_Global" Allocator for Global {
     fn grow<'_0_1> = impl_Allocator_for_Global::grow<'_0_1>
     fn grow_zeroed<'_0_1> = impl_Allocator_for_Global::grow_zeroed<'_0_1>
     fn shrink<'_0_1> = impl_Allocator_for_Global::shrink<'_0_1>
-    fn by_ref<'_0_1, TraitClause0_1: (Global: Sized)> = impl_Allocator_for_Global::by_ref<'_0_1>[TraitClause0_1]
+    fn by_ref<'_0_1, TraitClause0_1: (Global: Sized)> = by_ref<'_0_1, Global>[impl_Allocator_for_Global, TraitClause0_1]
     vtable: impl_Allocator_for_Global::{vtable}
 }
 

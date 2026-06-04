@@ -44,6 +44,7 @@ pub mod resugar {
 /// Passes that make the output simpler/easier to consume.
 pub mod simplify_output {
     pub mod anon_const_to_call;
+    pub mod duplicate_defaulted_methods;
     pub mod filter_trivial_drops;
     pub mod hide_allocator_param;
     pub mod index_intermediate_assigns;
@@ -88,6 +89,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
 
     // Item and type cleanup passes.
     ctx.run_passes([
+        // `--duplicate-defaulted-methods`: copy default method bodies into impls that use them.
+        global(&simplify_output::duplicate_defaulted_methods::Transform),
         // Compute short names. We do it early to make pretty-printed output more legible in traces.
         global(&add_missing_info::compute_short_names::Transform),
         // Check that translation emitted consistent types, and unify body lifetimes (best-effort).

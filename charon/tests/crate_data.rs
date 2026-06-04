@@ -511,49 +511,15 @@ fn rename_attribute() -> anyhow::Result<()> {
         Some("getTest")
     );
 
+    let fun_renames = crate_data
+        .fun_decls
+        .iter()
+        .filter_map(|fun| fun.item_meta.attr_info.rename.as_deref())
+        .sorted()
+        .collect_vec();
     assert_eq!(
-        crate_data.fun_decls[0]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
-        Some("BoolFn")
-    );
-
-    assert_eq!(
-        crate_data.fun_decls[1]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
-        Some("getTest")
-    );
-
-    assert_eq!(
-        crate_data.fun_decls[2]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
-        Some("retTest")
-    );
-
-    assert_eq!(
-        crate_data.fun_decls[4]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
-        Some("retTest")
-    );
-
-    assert_eq!(
-        crate_data.fun_decls[5]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
-        Some("Const_Test")
+        fun_renames,
+        ["BoolFn", "Const_Test", "getTest", "konst", "retTest"]
     );
 
     assert_eq!(

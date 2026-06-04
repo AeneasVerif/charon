@@ -386,13 +386,6 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
-            TransItemSourceKind::DefaultedMethod(_, trait_id, method_id) => {
-                let method_name = self.translated.assoc_item_name(*trait_id, *method_id);
-                name.name.push(PathElem::Ident(
-                    method_name.to_string(),
-                    Disambiguator::ZERO,
-                ));
-            }
             TransItemSourceKind::ClosureMethod(kind) => {
                 let fn_name = kind.method_name().to_string();
                 name.name
