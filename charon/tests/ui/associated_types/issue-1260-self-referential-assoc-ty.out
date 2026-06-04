@@ -1,0 +1,17 @@
+error: Could not compute the value of TraitClauseBound(1, 1)::ImpliedClause2::ImpliedClause1::Packing (on TraitClauseBound(1, 1)::ImpliedClause2::ImpliedClause1) needed to update item reference test_crate::Field<TraitClauseBound(1, 1)::PrimeSubfield>.
+       Constraints in scope:
+       
+  --> tests/ui/associated_types/issue-1260-self-referential-assoc-ty.rs:19:5
+   |
+19 |     R::PrimeSubfield::ZERO
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+error: Could not compute the value of Self::Clause1::Packing (on TraitClauseBound(1, 1)::ImpliedClause2) needed to update item reference test_crate::PrimeField<TraitClauseBound(1, 1)::PrimeSubfield>.
+       Constraints in scope:
+       
+  --> tests/ui/associated_types/issue-1260-self-referential-assoc-ty.rs:19:5
+   |
+19 |     R::PrimeSubfield::ZERO
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

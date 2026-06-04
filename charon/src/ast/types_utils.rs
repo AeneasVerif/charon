@@ -1258,6 +1258,11 @@ pub trait TyVisitable: Sized + AstVisitable {
         let pred = tref.trait_decl_ref.clone().erase();
         self.substitute_with_self(&pred.generics, &tref.kind)
     }
+    /// Fallible version of [`Self::substitute_with_tref`].
+    fn try_substitute_with_tref(self, tref: &TraitRef) -> Result<Self, GenericsMismatch> {
+        let pred = tref.trait_decl_ref.clone().erase();
+        self.try_substitute_with_self(&pred.generics, &tref.kind)
+    }
 
     fn try_substitute(self, generics: &GenericArgs) -> Result<Self, GenericsMismatch> {
         SubstVisitor::new(generics, None, false).visit(self)
