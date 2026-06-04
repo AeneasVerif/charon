@@ -1,0 +1,67 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct::drop_glue
+unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
+= <opaque>
+
+// Full name: test_crate::Ring
+trait Ring<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Sub: Sized)
+    proof ImpliedClause2: (Self::Sub: Field<Self::Self_Clause2_Packing>)
+    const ZERO : Self
+    type Sub
+    type Self_Clause2_Packing
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Field
+trait Field<Self, Self_Packing>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Ring)
+    proof ImpliedClause2: (Self_Packing: Sized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::zero
+fn zero<R>()
+where
+    TraitClause0: (R: Sized),
+    TraitClause1: (R: Ring),
+{
+    let _0: (); // return
+    let _1: TraitClause1::Sub; // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    _1 = const TraitClause1::ImpliedClause2::ImpliedClause1::ZERO
+    conditional_drop[{built_in impl Destruct for TraitClause1::Sub}::drop_glue<'0>] _1
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+

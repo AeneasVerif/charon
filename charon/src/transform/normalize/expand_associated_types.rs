@@ -189,7 +189,7 @@ mod trait_ref_path {
                 let tdecl = krate.get_item(tref.trait_id())?;
                 let tdecl = tdecl.as_trait_decl()?;
                 let clause = &tdecl.implied_clauses[parent_id];
-                let pred = clause.trait_.clone().substitute_with_tref(&tref);
+                let pred = clause.trait_.clone().try_substitute_with_tref(&tref).ok()?;
                 tref = TraitRef::new(TraitRefKind::ParentClause(Box::new(tref), parent_id), pred);
             }
             Some(tref)
@@ -259,7 +259,7 @@ mod trait_ref_path {
     }
 
     /// The path to an associated type that depends on a local clause.
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct AssocTypePath {
         /// The trait clause that has the associated type.
         pub tref: TraitRefPath,
@@ -574,6 +574,9 @@ struct ItemModifications {
     /// Associated item paths for which we don't know a type they correspond to, so we will have to
     /// add a new type parameter to the signature of the item.
     required_extra_paths: Vec<AssocTypePath>,
+    /// For self-referential traits, the first id available for the new associated types added to
+    /// replace `required_extra_paths`.
+    next_assoc_type_id: Option<AssocTypeId>,
     /// These constraints refer to now-removed associated types. We have taken them into account,
     /// they should be removed.
     remove_constraints: HashSet<TraitTypeConstraintId>,
@@ -589,6 +592,7 @@ impl ItemModifications {
         Self {
             type_constraints,
             required_extra_paths: Default::default(),
+            next_assoc_type_id: None,
             remove_constraints: Default::default(),
             add_type_params,
         }
@@ -636,6 +640,45 @@ impl ItemModifications {
         }
         .into_iter()
         .flatten()
+    }
+
+    /// Iterate over the paths that require adding new associated types, paired with the ids of
+    /// those new associated types.
+    fn required_extra_assoc_types_with_ids(
+        &self,
+    ) -> impl Iterator<Item = (&AssocTypePath, AssocTypeId)> {
+        if self.add_type_params {
+            None
+        } else {
+            let next_assoc_type_id = self.next_assoc_type_id.unwrap();
+            Some(
+                self.required_extra_paths
+                    .iter()
+                    .enumerate()
+                    .map(move |(offset, path)| (path, next_assoc_type_id + offset)),
+            )
+        }
+        .into_iter()
+        .flatten()
+    }
+
+    /// Iterate over the constraints that a `Self: Trait` clause makes available.
+    fn iter_self_constraints_for_tref<'a>(
+        &'a self,
+        tref: &'a TraitRef,
+    ) -> impl Iterator<Item = (AssocTypePath, Ty)> + use<'a> {
+        let base_path = tref.to_path().unwrap();
+        let assoc_type_constraints =
+            self.required_extra_assoc_types_with_ids()
+                .map(move |(path, type_id)| {
+                    let path = path.on_tref(&base_path);
+                    let ty =
+                        TyKind::TraitType(tref.clone(), type_id, GenericArgs::empty()).into_ty();
+                    (path, ty)
+                });
+        self.type_constraints
+            .iter_self_paths_subst(tref)
+            .chain(assoc_type_constraints)
     }
 
     /// Compute the type replacements needed to update the body of this item. We use the provided
@@ -713,7 +756,7 @@ impl<'a> ComputeItemModifications<'a> {
                 .compute_trait_modifications(tref.trait_id())
                 .as_processed()
             {
-                for (path, ty) in trait_mods.type_constraints.iter_self_paths_subst(&tref) {
+                for (path, ty) in trait_mods.iter_self_constraints_for_tref(&tref) {
                     type_constraints.insert_path(&path, ty);
                 }
             }
@@ -787,6 +830,7 @@ impl<'a> ComputeItemModifications<'a> {
             let type_constraints = self.compute_constraint_set(&tr.generics);
             let mut modifications =
                 ItemModifications::from_constraint_set(type_constraints, remove_assoc_types);
+            modifications.next_assoc_type_id = Some(tr.types.next_id());
             if modifications.add_type_params {
                 // Remove all associated types and turn them into new parameters. We add these
                 // before the paths in `replace` because this gives a better output.
@@ -1114,7 +1158,7 @@ impl UpdateItemBody<'_> {
                 .item_modifications
                 .get(&GenericsSource::item(tref.trait_id()))
             {
-                for (path, ty) in tmods.type_constraints.iter_self_paths_subst(&tref) {
+                for (path, ty) in tmods.iter_self_constraints_for_tref(&tref) {
                     type_constraints.insert_path(&path, ty);
                 }
             }

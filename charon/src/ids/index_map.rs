@@ -68,6 +68,10 @@ where
         self.vector.len()
     }
 
+    /// The next id that would be assigned when pushing an element.
+    pub fn next_id(&self) -> I {
+        self.vector.next_idx()
+    }
     /// Reserve a spot in the vector.
     pub fn reserve_slot(&mut self) -> I {
         // Push a `None` to ensure we don't reuse the id.
