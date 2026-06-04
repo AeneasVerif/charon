@@ -401,6 +401,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // don't have associated items.
                 let trait_ref = self.translate_trait_ref(span, trait_ref)?;
                 let item_id = self.translate_assoc_item_id(trait_ref.id, def.def_id())?;
+                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
+                    // If the method fundecl is getting translated, that means the method is
+                    // getting used.
+                    let method_id = *item_id.as_method().unwrap();
+                    self.mark_method_as_used(trait_ref.id, method_id);
+                }
                 ItemSource::TraitDecl {
                     trait_ref,
                     item_id,

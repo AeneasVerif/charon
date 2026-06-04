@@ -14,8 +14,8 @@ pub trait Foo<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::Foo::bar
-pub fn bar()
+// Full name: test_crate::Foo::bar::<u8>
+pub fn bar::<u8>()
 {
     let _0: (); // return
 
@@ -38,7 +38,7 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = impl_Foo_for_u8::bar()
+    _1 = bar::<u8>()
     storage_dead(_1)
     _0 = ()
     return
