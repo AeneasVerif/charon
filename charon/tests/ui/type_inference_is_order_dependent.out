@@ -98,12 +98,12 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = drop_glue<Self>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<Self>(_1: *mut Self)
+unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: std::io::stdio::_print
@@ -164,7 +164,7 @@ where
     let _11: &'16 [Argument<'17>; 1usize]; // anonymous local
     let _12: &'18 [Argument<'19>; 1usize]; // anonymous local
     let _13: [u8; 4usize]; // anonymous local
-    let _14: &'25 [u8; 4usize]; // anonymous local
+    let _14: &'26 [u8; 4usize]; // anonymous local
 
     _0 = ()
     storage_live(_1)
@@ -196,15 +196,15 @@ where
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'27, 4usize, 1usize>(move _9, move _11)
+    _2 = new<'28, 4usize, 1usize>(move _9, move _11)
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
-    _1 = _print<'29>(move _2)
+    _1 = _print<'30>(move _2)
     storage_dead(_2)
     storage_dead(args_6)
-    conditional_drop[{built_in impl Destruct for U}::drop_glue] _5
+    conditional_drop[{built_in impl Destruct for U}::drop_glue<'31>] _5
     storage_dead(_5)
     storage_dead(args_3)
     storage_dead(_1)

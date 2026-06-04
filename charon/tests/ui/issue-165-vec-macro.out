@@ -57,7 +57,7 @@ where
 = <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Vec::drop_glue<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -101,9 +101,9 @@ fn foo()
     storage_live(_v2_2)
     _v2_2 = from_elem<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 1i32, const 10usize)
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v2_2
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v2_2
     storage_dead(_v2_2)
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v_1
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'4, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v_1
     storage_dead(_v_1)
     return
 }
@@ -141,7 +141,7 @@ pub fn bar()
     y_5 = unsize_cast<alloc::boxed::Box<[Foo; 1usize]>[{built_in impl MetaSized for [Foo; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[Foo]>[{built_in impl MetaSized for [Foo]}, {built_in impl Sized for Global}], 1usize>(move x_4)
     ret_3 = into_vec<Foo, Global>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}](move y_5)
     _1 = move ret_3
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<Foo, Global>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}]] _1
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, Foo, Global>[{built_in impl Sized for Foo}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
     _0 = ()
     return

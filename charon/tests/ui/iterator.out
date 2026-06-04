@@ -19,7 +19,7 @@ where
     TraitClause0: (T: Sized),
 
 // Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[TraitClause0]}::drop_glue
-unsafe fn impl_Destruct_for_IntoIter::drop_glue<T, const N : usize>(_1: *mut IntoIter<T, N>[TraitClause0])
+unsafe fn impl_Destruct_for_IntoIter::drop_glue<'_0, T, const N : usize>(_1: &'_0 mut IntoIter<T, N>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -128,7 +128,7 @@ pub trait FnMut<Self, Args>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
@@ -2484,7 +2484,7 @@ where
     TraitClause1: (Self: TrustedRandomAccessNoCoerce),
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::ops::function::FnMut::call_mut
@@ -5216,7 +5216,7 @@ fn main()
         storage_live(_9)
         _9 = &mut iter_6
         _8 = &two-phase-mut (*_9)
-        _7 = impl_Iterator_for_IntoIter::next<'87, i32, 7usize>[{built_in impl Sized for i32}](move _8)
+        _7 = impl_Iterator_for_IntoIter::next<'88, i32, 7usize>[{built_in impl Sized for i32}](move _8)
         storage_dead(_8)
         match _7 {
             Option::None => {
@@ -5239,9 +5239,9 @@ fn main()
     }
     storage_dead(_9)
     storage_dead(_7)
-    conditional_drop[impl_Destruct_for_IntoIter::drop_glue<i32, 7usize>[{built_in impl Sized for i32}]] iter_6
+    conditional_drop[impl_Destruct_for_IntoIter::drop_glue<'91, i32, 7usize>[{built_in impl Sized for i32}]] iter_6
     storage_dead(iter_6)
-    conditional_drop[impl_Destruct_for_IntoIter::drop_glue<i32, 7usize>[{built_in impl Sized for i32}]] _3
+    conditional_drop[impl_Destruct_for_IntoIter::drop_glue<'92, i32, 7usize>[{built_in impl Sized for i32}]] _3
     storage_dead(_3)
     storage_live(_13)
     storage_live(_14)
@@ -5250,9 +5250,9 @@ fn main()
     _16 = &a_1
     _15 = @ArrayToSliceShared<'_, i32, 7usize>(move _16)
     storage_dead(_16)
-    _14 = iter<'90, i32>[{built_in impl Sized for i32}](move _15)
+    _14 = iter<'95, i32>[{built_in impl Sized for i32}](move _15)
     storage_dead(_15)
-    _13 = impl_IntoIterator_for_T::into_iter<Iter<'92, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'92, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Iter<'92, i32>[{built_in impl Sized for i32}]](move _14)
+    _13 = impl_IntoIterator_for_T::into_iter<Iter<'97, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'97, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Iter<'97, i32>[{built_in impl Sized for i32}]](move _14)
     storage_dead(_14)
     storage_live(iter_17)
     iter_17 = move _13
@@ -5262,7 +5262,7 @@ fn main()
         storage_live(_20)
         _20 = &mut iter_17
         _19 = &two-phase-mut (*_20)
-        _18 = impl_Iterator_for_Iter::next<'101, '103, i32>[{built_in impl Sized for i32}](move _19)
+        _18 = impl_Iterator_for_Iter::next<'106, '108, i32>[{built_in impl Sized for i32}](move _19)
         storage_dead(_19)
         match _18 {
             Option::None => {
@@ -5278,7 +5278,7 @@ fn main()
         _23 = &two-phase-mut i_2
         storage_live(_24)
         _24 = copy v_21
-        _22 = impl_AddAssign_for_i32::add_assign<'108, '110>(move _23, move _24)
+        _22 = impl_AddAssign_for_i32::add_assign<'113, '115>(move _23, move _24)
         storage_dead(_24)
         storage_dead(_23)
         storage_dead(_22)
@@ -5298,9 +5298,9 @@ fn main()
     _28 = &a_1
     _27 = @ArrayToSliceShared<'_, i32, 7usize>(move _28)
     storage_dead(_28)
-    _26 = chunks<'113, i32>[{built_in impl Sized for i32}](move _27, const 2usize)
+    _26 = chunks<'118, i32>[{built_in impl Sized for i32}](move _27, const 2usize)
     storage_dead(_27)
-    _25 = impl_IntoIterator_for_T::into_iter<Chunks<'115, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'115, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Chunks<'115, i32>[{built_in impl Sized for i32}]](move _26)
+    _25 = impl_IntoIterator_for_T::into_iter<Chunks<'120, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'120, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Chunks<'120, i32>[{built_in impl Sized for i32}]](move _26)
     storage_dead(_26)
     storage_live(iter_29)
     iter_29 = move _25
@@ -5310,7 +5310,7 @@ fn main()
         storage_live(_32)
         _32 = &mut iter_29
         _31 = &two-phase-mut (*_32)
-        _30 = impl_Iterator_for_Chunks::next<'124, '126, i32>[{built_in impl Sized for i32}](move _31)
+        _30 = impl_Iterator_for_Chunks::next<'129, '131, i32>[{built_in impl Sized for i32}](move _31)
         storage_dead(_31)
         match _30 {
             Option::None => {
@@ -5336,9 +5336,9 @@ fn main()
     _37 = &a_1
     _36 = @ArrayToSliceShared<'_, i32, 7usize>(move _37)
     storage_dead(_37)
-    _35 = chunks_exact<'129, i32>[{built_in impl Sized for i32}](move _36, const 2usize)
+    _35 = chunks_exact<'134, i32>[{built_in impl Sized for i32}](move _36, const 2usize)
     storage_dead(_36)
-    _34 = impl_IntoIterator_for_T::into_iter<ChunksExact<'131, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'131, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_ChunksExact<'131, i32>[{built_in impl Sized for i32}]](move _35)
+    _34 = impl_IntoIterator_for_T::into_iter<ChunksExact<'136, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'136, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_ChunksExact<'136, i32>[{built_in impl Sized for i32}]](move _35)
     storage_dead(_35)
     storage_live(iter_38)
     iter_38 = move _34
@@ -5348,7 +5348,7 @@ fn main()
         storage_live(_41)
         _41 = &mut iter_38
         _40 = &two-phase-mut (*_41)
-        _39 = impl_Iterator_for_ChunksExact::next<'140, '142, i32>[{built_in impl Sized for i32}](move _40)
+        _39 = impl_Iterator_for_ChunksExact::next<'145, '147, i32>[{built_in impl Sized for i32}](move _40)
         storage_dead(_40)
         match _39 {
             Option::None => {

@@ -657,6 +657,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 _ => {}
             }
         }
+        if matches!(
+            kind,
+            TransItemSourceKind::DropGlueMethod(..) | TransItemSourceKind::VTableDropShim
+        ) {
+            generics = generics.concat(&self.drop_glue_generic_args());
+        }
 
         let trait_ref = hax_item
             .in_trait

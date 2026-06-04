@@ -145,7 +145,7 @@ and cli_options = {
           declarations. This flag removes [Self] clauses that aren't used to
           break this mutual recursion when possible. *)
   desugar_drops : bool;
-      (** Transform precise drops to the equivalent [drop_glue(&raw mut p)] call. *)
+      (** Transform precise drops to the equivalent [drop_glue(&mut p)] call. *)
   ops_to_function_calls : bool;
       (** Transform array-to-slice unsizing, repeat expressions, and raw pointer
           construction into builtin functions in ULLBC. *)

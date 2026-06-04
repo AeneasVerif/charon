@@ -701,7 +701,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut methods: IndexMap<TraitMethodId, _> = IndexMap::new();
 
         if def.lang_item == Some(sym::destruct) {
-            // Add a `drop_glue(*mut self)` method that contains the drop glue for this type.
+            // Add a `drop_glue(&mut self)` method that contains the drop glue for this type.
             let (method_id, method_binder) =
                 self.prepare_drop_glue_method(def, span, def.def_id(), trait_decl_id, None)?;
             let method_name = self.translated.assoc_item_name(trait_decl_id, method_id);
@@ -714,7 +714,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     TyKind::TypeVar(DeBruijnVar::bound(DeBruijnId::one(), TypeVarId::ZERO))
                         .into_ty()
                 };
-                let signature = self.drop_glue_method_sig(self_ty);
+                let signature = self.drop_glue_method_sig(
+                    self_ty,
+                    Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
+                );
                 TraitMethod {
                     name: method_name,
                     item: fn_ref,

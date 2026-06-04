@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -44,7 +44,7 @@ where
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
-unsafe fn impl_Destruct_for_String::drop_glue(_1: *mut String)
+unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: alloc::string::{String}::new
@@ -71,19 +71,19 @@ struct Foo {
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo}::drop_glue
-unsafe fn impl_Destruct_for_Foo::drop_glue(_1: *mut Foo)
+unsafe fn impl_Destruct_for_Foo::drop_glue<'_0>(_1: &'_0 mut Foo)
 {
     let _0: (); // return
     let _1: &'1 mut Foo; // arg #1
 
     _0 = ()
-    drop[impl_Destruct_for_String::drop_glue] ((*_1)).1
+    drop[impl_Destruct_for_String::drop_glue<'2>] ((*_1)).1
     return
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo}
 impl "impl_Destruct_for_Foo" Destruct for Foo {
-    fn drop_glue = impl_Destruct_for_Foo::drop_glue
+    fn drop_glue<'_0_1> = impl_Destruct_for_Foo::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -141,8 +141,8 @@ fn main()
     let _15: &'6 i32; // anonymous local
     let _16: &'7 i32; // anonymous local
     let _17: &'8 i32; // anonymous local
-    let _18: &'11 i32; // anonymous local
-    let _19: &'13 i32; // anonymous local
+    let _18: &'13 i32; // anonymous local
+    let _19: &'15 i32; // anonymous local
     let _20: i32; // anonymous local
 
     storage_live(_17)
@@ -176,7 +176,7 @@ fn main()
     _9 = Foo(const 42u32, move _11)
     storage_dead(_11)
     storage_dead(_10)
-    conditional_drop[impl_Destruct_for_Foo::drop_glue] _9
+    conditional_drop[impl_Destruct_for_Foo::drop_glue<'10>] _9
     storage_live(_18)
     storage_live(_19)
     storage_live(_20)
@@ -185,7 +185,7 @@ fn main()
     _18 = move _19
     storage_dead(_9)
     storage_live(f_12)
-    f_12 = const Variant<'10, i32>[{built_in impl Sized for i32}]
+    f_12 = const Variant<'12, i32>[{built_in impl Sized for i32}]
     storage_live(_13)
     storage_live(_14)
     _14 = copy f_12
@@ -194,7 +194,7 @@ fn main()
     _17 = move _18
     _16 = &(*_17)
     _15 = &(*_16)
-    _13 = Variant<'12, i32>[{built_in impl Sized for i32}](move _15)
+    _13 = Variant<'14, i32>[{built_in impl Sized for i32}](move _15)
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_16)

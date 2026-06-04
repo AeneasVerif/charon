@@ -1,7 +1,7 @@
 #[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global {}
 
-unsafe fn alloc::boxed::Box::{impl core::marker::Destruct for alloc::boxed::Box<T>}::drop_glue<T, A>(_1: *mut alloc::boxed::Box<T>)
+unsafe fn alloc::boxed::Box::{impl core::marker::Destruct for alloc::boxed::Box<T>}::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>)
 = <opaque>
 
 pub fn test_crate::mono() -> u32
@@ -12,7 +12,7 @@ pub fn test_crate::mono() -> u32
     storage_live(_b_1)
     _b_1 = @BoxNew<u32>(const 0u32)
     _0 = const 0u32
-    conditional_drop[alloc::boxed::Box::{impl core::marker::Destruct for alloc::boxed::Box<T>}::drop_glue<u32, alloc::alloc::Global>] _b_1
+    conditional_drop[alloc::boxed::Box::{impl core::marker::Destruct for alloc::boxed::Box<T>}::drop_glue<'0, u32, alloc::alloc::Global>] _b_1
     storage_dead(_b_1)
     return
 }

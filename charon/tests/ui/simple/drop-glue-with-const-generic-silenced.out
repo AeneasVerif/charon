@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -28,12 +28,12 @@ unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue(_1: *mut Global)
+unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
 impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue = impl_Destruct_for_Global::drop_glue
+    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -47,12 +47,12 @@ struct PortableHash<const K : usize> {
 }
 
 // Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}::drop_glue
-unsafe fn impl_Destruct_for_PortableHash::drop_glue<const K : usize>(_1: *mut PortableHash<K>)
+unsafe fn impl_Destruct_for_PortableHash::drop_glue<'_0, const K : usize>(_1: &'_0 mut PortableHash<K>)
 = <opaque>
 
 // Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}
 impl<const K : usize> "impl_Destruct_for_PortableHash" Destruct for PortableHash<K> {
-    fn drop_glue = impl_Destruct_for_PortableHash::drop_glue<K>
+    fn drop_glue<'_0_1> = impl_Destruct_for_PortableHash::drop_glue<'_0_1, K>
     non-dyn-compatible
 }
 
@@ -64,7 +64,7 @@ fn foo(_1: PortableHash<42usize>)
 
     _0 = ()
     _0 = ()
-    drop[impl_Destruct_for_PortableHash::drop_glue<42usize>] _1
+    drop[impl_Destruct_for_PortableHash::drop_glue<'0, 42usize>] _1
     return
 }
 

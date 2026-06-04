@@ -37,9 +37,9 @@ impl<'a> UllbcStatementTransformCtx<'a> {
                 return;
             }
 
-            // assign `&raw mut place` to a new variable
+            // assign `&mut place` to a new variable
             let drop_arg =
-                self.raw_borrow_to_new_var(place.clone(), RefKind::Mut, Some("drop_arg".into()));
+                self.borrow_to_new_var(place.clone(), BorrowKind::Mut, Some("drop_arg".into()));
 
             let drop_ret = self.fresh_var(Some("drop_ret".into()), Ty::mk_unit());
             let call = Call {

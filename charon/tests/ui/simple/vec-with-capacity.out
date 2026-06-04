@@ -24,11 +24,11 @@ pub struct PhantomData<T> {}
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::mem::alignment::Alignment
@@ -147,7 +147,7 @@ where
     let _1: &'_0 mut T; // arg #1
 
     ret_0 = ()
-    drop[TraitClause0::drop_glue] (*_1)
+    drop[TraitClause0::drop_glue<'0>] (*_1)
     return
 }
 
@@ -163,12 +163,12 @@ pub opaque type Unique<T>
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue(_1: *mut Global)
+unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
 impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue = impl_Destruct_for_Global::drop_glue
+    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -179,7 +179,7 @@ where
     TraitClause1: (A: Sized),
 
 // Full name: alloc::raw_vec::RawVec::{impl Destruct for RawVec<T, A>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_RawVec::drop_glue<T, A>(_1: *mut RawVec<T, A>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_RawVec::drop_glue<'_0, T, A>(_1: &'_0 mut RawVec<T, A>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -209,7 +209,7 @@ where
 }
 
 // Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_glue
-unsafe fn impl_Destruct_for_slice::drop_glue<T>(_1: *mut [T])
+unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
     TraitClause0: (T: Sized),
 {
@@ -240,7 +240,7 @@ where
             _7 = @SliceIndexMut<'_, T>(move _6, copy _3)
             _4 = &raw mut (*_7)
             _3 = move _3 wrap.+ const 1usize
-            drop[{built_in impl Destruct for T}::drop_glue] (*_4)
+            drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_4)
             continue 0
         }
     }
@@ -252,7 +252,7 @@ impl<T> "impl_Destruct_for_slice" Destruct for [T]
 where
     TraitClause0: (T: Sized),
 {
-    fn drop_glue = impl_Destruct_for_slice::drop_glue<T>[TraitClause0]
+    fn drop_glue<'_0_1> = impl_Destruct_for_slice::drop_glue<'_0_1, T>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -291,7 +291,7 @@ where
 }
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Vec::drop_glue<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -306,7 +306,7 @@ where
     _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Vec::drop<'4, T, A>[TraitClause0, TraitClause1](move _2)
-    drop[impl_Destruct_for_RawVec::drop_glue<T, A>[TraitClause0, TraitClause1]] ((*_1)).buf
+    drop[impl_Destruct_for_RawVec::drop_glue<'6, T, A>[TraitClause0, TraitClause1]] ((*_1)).buf
     return
 }
 
@@ -346,7 +346,7 @@ fn vec()
     _0 = ()
     storage_live(_1)
     _1 = with_capacity<u32>[{built_in impl Sized for u32}](const 42usize)
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _1
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
     _0 = ()
     return

@@ -58,11 +58,11 @@ impl Copy for ! {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -234,7 +234,7 @@ fn __rust_std_internal_init_fn() -> u32
 struct test_crate::FOO::{const}::closure {}
 
 // Full name: test_crate::FOO::{const}::closure::{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue
-unsafe fn {impl Destruct for test_crate::FOO::{const}::closure}::drop_glue(_1: *mut test_crate::FOO::{const}::closure)
+unsafe fn {impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'_0>(_1: &'_0 mut test_crate::FOO::{const}::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::FOO::{const}::closure; // arg #1
@@ -304,7 +304,7 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure}::call_mut<'_0, '19>(move _3, move _2)
-    drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue] _1
+    drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'21>] _1
     return
 }
 
@@ -341,7 +341,7 @@ impl<'_0> Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_
 
 // Full name: test_crate::FOO::{const}::closure::{impl Destruct for test_crate::FOO::{const}::closure}
 impl Destruct for test_crate::FOO::{const}::closure {
-    fn drop_glue = {impl Destruct for test_crate::FOO::{const}::closure}::drop_glue
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -363,7 +363,7 @@ fn test_crate::FOO::{const}::closure::as_fn<'_0>(arg1_1: Option<&'_0 mut Option<
 struct test_crate::FOO::{const}::closure#1 {}
 
 // Full name: test_crate::FOO::{const}::closure#1::{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue
-unsafe fn {impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue(_1: *mut test_crate::FOO::{const}::closure#1)
+unsafe fn {impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'_0>(_1: &'_0 mut test_crate::FOO::{const}::closure#1)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::FOO::{const}::closure#1; // arg #1
@@ -433,7 +433,7 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure#1}::call_mut<'_0, '19>(move _3, move _2)
-    drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue] _1
+    drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'21>] _1
     return
 }
 
@@ -470,7 +470,7 @@ impl<'_0> Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_
 
 // Full name: test_crate::FOO::{const}::closure#1::{impl Destruct for test_crate::FOO::{const}::closure#1}
 impl Destruct for test_crate::FOO::{const}::closure#1 {
-    fn drop_glue = {impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'_0_1>
     non-dyn-compatible
 }
 

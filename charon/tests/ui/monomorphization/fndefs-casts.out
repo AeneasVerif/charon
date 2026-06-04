@@ -108,7 +108,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c_1: for<'a> foo::<u32><'a>)
     let _5: &'6 u32; // anonymous local
     let _6: &'7 u32; // anonymous local
     let _7: &'8 u32; // anonymous local
-    let _8: &'64 u32; // anonymous local
+    let _8: &'66 u32; // anonymous local
     let _9: u32; // anonymous local
 
     storage_live(_7)

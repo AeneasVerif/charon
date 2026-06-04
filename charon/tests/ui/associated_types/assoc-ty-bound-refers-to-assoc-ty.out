@@ -16,12 +16,12 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = drop_glue<Self>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<Self>(_1: *mut Self)
+unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: test_crate::Iterator
@@ -60,7 +60,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for I}::drop_glue] it_1
+    conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] it_1
     return
 }
 
@@ -93,7 +93,7 @@ where
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue] it_1
+    conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'1>] it_1
     return
 }
 

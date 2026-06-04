@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::ops::drop::Drop
@@ -49,7 +49,7 @@ where
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Vec::drop_glue<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -77,7 +77,7 @@ where
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo<T>[TraitClause0]}::drop_glue
-unsafe fn impl_Destruct_for_Foo::drop_glue<T>(_1: *mut Foo<T>[TraitClause0])
+unsafe fn impl_Destruct_for_Foo::drop_glue<'_0, T>(_1: &'_0 mut Foo<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 {
@@ -91,7 +91,7 @@ where
     _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Foo::drop<'4, T>[TraitClause0](move _2)
-    drop[impl_Destruct_for_Vec::drop_glue<T, Global>[TraitClause0, {built_in impl Sized for Global}]] ((*_1)).vec
+    drop[impl_Destruct_for_Vec::drop_glue<'6, T, Global>[TraitClause0, {built_in impl Sized for Global}]] ((*_1)).vec
     return
 }
 
@@ -100,7 +100,7 @@ impl<T> "impl_Destruct_for_Foo" Destruct for Foo<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    fn drop_glue = impl_Destruct_for_Foo::drop_glue<T>[TraitClause0]
+    fn drop_glue<'_0_1> = impl_Destruct_for_Foo::drop_glue<'_0_1, T>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -122,7 +122,7 @@ fn drop_foo(_1: Foo<u32>[{built_in impl Sized for u32}])
 
     _0 = ()
     _0 = ()
-    conditional_drop[impl_Destruct_for_Foo::drop_glue<u32>[{built_in impl Sized for u32}]] _1
+    conditional_drop[impl_Destruct_for_Foo::drop_glue<'0, u32>[{built_in impl Sized for u32}]] _1
     return
 }
 

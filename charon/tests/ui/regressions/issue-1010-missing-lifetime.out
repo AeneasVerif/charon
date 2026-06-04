@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -99,7 +99,7 @@ where
 struct test_crate::main::closure#1 {}
 
 // Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1}::drop_glue
-unsafe fn {impl Destruct for test_crate::main::closure#1}::drop_glue(_1: *mut test_crate::main::closure#1)
+unsafe fn {impl Destruct for test_crate::main::closure#1}::drop_glue<'_0>(_1: &'_0 mut test_crate::main::closure#1)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::main::closure#1; // arg #1
@@ -150,7 +150,7 @@ fn {impl FnOnce<(&'_ u16,)> for test_crate::main::closure#1}::call_once<'_0>(_1:
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u16,)> for test_crate::main::closure#1}::call_mut<'_0, '8>(move _3, move _2)
-    drop[{impl Destruct for test_crate::main::closure#1}::drop_glue] _1
+    drop[{impl Destruct for test_crate::main::closure#1}::drop_glue<'10>] _1
     return
 }
 
@@ -200,7 +200,7 @@ fn main()
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure}::drop_glue
-unsafe fn {impl Destruct for test_crate::main::closure}::drop_glue(_1: *mut test_crate::main::closure)
+unsafe fn {impl Destruct for test_crate::main::closure}::drop_glue<'_0>(_1: &'_0 mut test_crate::main::closure)
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::main::closure; // arg #1
@@ -251,7 +251,7 @@ fn {impl FnOnce<(&'_ u8,)> for test_crate::main::closure}::call_once<'_0>(_1: te
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u8,)> for test_crate::main::closure}::call_mut<'_0, '8>(move _3, move _2)
-    drop[{impl Destruct for test_crate::main::closure}::drop_glue] _1
+    drop[{impl Destruct for test_crate::main::closure}::drop_glue<'10>] _1
     return
 }
 
@@ -288,7 +288,7 @@ impl<'_0> Fn<(&'_ u8,)> for test_crate::main::closure {
 
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure}
 impl Destruct for test_crate::main::closure {
-    fn drop_glue = {impl Destruct for test_crate::main::closure}::drop_glue
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::closure}::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -325,7 +325,7 @@ impl<'_0> Fn<(&'_ u16,)> for test_crate::main::closure#1 {
 
 // Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1}
 impl Destruct for test_crate::main::closure#1 {
-    fn drop_glue = {impl Destruct for test_crate::main::closure#1}::drop_glue
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::closure#1}::drop_glue<'_0_1>
     non-dyn-compatible
 }
 

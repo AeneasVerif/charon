@@ -89,7 +89,7 @@ and copy_non_overlapping = { src : operand; dst : operand; count : operand }
     borrow-checker determines a drop is needed. *)
 and drop_kind =
   | Precise
-      (** A real drop. This calls [<T as Destruct>::drop_glue(&raw mut place)] and
+      (** A real drop. This calls [<T as Destruct>::drop_glue(&mut place)] and
           marks the place as moved-out-of. Use [--desugar-drops] to transform
           all such drops to an actual function call.
 

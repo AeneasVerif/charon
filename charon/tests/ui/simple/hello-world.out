@@ -5,7 +5,7 @@
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
-unsafe fn impl_Destruct_for_String::drop_glue(_1: *mut String)
+unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: alloc::string::{impl ToString for str}::to_string::<str>
@@ -30,7 +30,7 @@ fn main()
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[impl_Destruct_for_String::drop_glue] a_1
+    conditional_drop[impl_Destruct_for_String::drop_glue<'6>] a_1
     storage_dead(a_1)
     return
 }

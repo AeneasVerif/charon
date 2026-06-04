@@ -182,7 +182,7 @@ pub struct CliOpts {
     #[serde(default)]
     pub remove_unused_self_clauses: bool,
 
-    /// Transform precise drops to the equivalent `drop_glue(&raw mut p)` call.
+    /// Transform precise drops to the equivalent `drop_glue(&mut p)` call.
     #[clap(long)]
     #[serde(default)]
     pub desugar_drops: bool,

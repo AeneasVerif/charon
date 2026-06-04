@@ -382,9 +382,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     } else {
                         let self_ty =
                             TyKind::TypeVar(DeBruijnVar::new_at_zero(TypeVarId::ZERO)).into_ty();
-                        let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(
-                            self.drop_glue_method_sig(self_ty),
-                        )));
+                        let drop_ty = Ty::new(TyKind::FnPtr(self.drop_glue_fn_ptr_sig(self_ty)));
                         ("drop".into(), drop_ty)
                     }
                 }
@@ -1243,20 +1241,27 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             );
         };
 
-        let dyn_self = self.translate_ty(span, dyn_self)?;
-        // `*mut dyn Trait -> ()`
-        let signature = self.drop_glue_method_sig(dyn_self.clone());
+        let borrow_region = self.drop_glue_region();
 
-        // `*mut T` for `impl Trait for T`
-        let target_self_ptr = {
+        let dyn_self = self.translate_ty(span, dyn_self)?;
+        // `&mut dyn Trait -> ()`
+        let signature = self.drop_glue_method_sig(dyn_self.clone(), borrow_region);
+
+        // `&mut T` for `impl Trait for T`
+        let target_self_ref = {
             let impl_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
-            TyKind::RawPtr(impl_trait.generics.types[0].clone(), RefKind::Mut).into_ty()
+            TyKind::Ref(
+                borrow_region,
+                impl_trait.generics.types[0].clone(),
+                RefKind::Mut,
+            )
+            .into_ty()
         };
 
         let body: Body = self.translate_vtable_drop_shim_body(
             span,
             &signature.inputs[0],
-            &target_self_ptr,
+            &target_self_ref,
             trait_pred,
         )?;
 

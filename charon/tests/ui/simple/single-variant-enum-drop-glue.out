@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -28,7 +28,7 @@ unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Box::drop_glue<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -40,7 +40,7 @@ pub enum Thing {
 }
 
 // Full name: test_crate::Thing::{impl Destruct for Thing}::drop_glue
-unsafe fn impl_Destruct_for_Thing::drop_glue(_1: *mut Thing)
+unsafe fn impl_Destruct_for_Thing::drop_glue<'_0>(_1: &'_0 mut Thing)
 {
     let _0: (); // return
     let _1: &'1 mut Thing; // arg #1
@@ -50,13 +50,13 @@ unsafe fn impl_Destruct_for_Thing::drop_glue(_1: *mut Thing)
         _ => {
         },
     }
-    drop[impl_Destruct_for_Box::drop_glue<(), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_1) as variant Thing::A).0
+    drop[impl_Destruct_for_Box::drop_glue<'2, (), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_1) as variant Thing::A).0
     return
 }
 
 // Full name: test_crate::Thing::{impl Destruct for Thing}
 impl "impl_Destruct_for_Thing" Destruct for Thing {
-    fn drop_glue = impl_Destruct_for_Thing::drop_glue
+    fn drop_glue<'_0_1> = impl_Destruct_for_Thing::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -68,7 +68,7 @@ fn foo(_1: Thing)
 
     _0 = ()
     _0 = ()
-    conditional_drop[impl_Destruct_for_Thing::drop_glue] _1
+    conditional_drop[impl_Destruct_for_Thing::drop_glue<'0>] _1
     return
 }
 

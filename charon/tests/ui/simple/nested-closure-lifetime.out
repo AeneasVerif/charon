@@ -32,11 +32,11 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = core::marker::Destruct::drop_glue<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -155,7 +155,7 @@ where
 }
 
 // Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn {impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, T>(_1: *mut test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1])
+unsafe fn {impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '_1, T>(_1: &'_1 mut test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -198,7 +198,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<()> for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::call_mut<'_0, '_1, '_2, '9, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, T>[TraitClause0, TraitClause1]] _1
+    drop[{impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '15, T>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -251,12 +251,12 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
-    fn drop_glue = {impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, T>[TraitClause0, TraitClause1]
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '_0_1, T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
 // Full name: test_crate::foo::closure::closure::{impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn {impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, T>(_1: *mut test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1])
+unsafe fn {impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '_1, T>(_1: &'_1 mut test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -313,7 +313,7 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<()> for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::call_mut<'_0, '_1, '7, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, T>[TraitClause0, TraitClause1]] _1
+    drop[{impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '13, T>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -366,7 +366,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
-    fn drop_glue = {impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, T>[TraitClause0, TraitClause1]
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '_0_1, T>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 

@@ -39,12 +39,12 @@ pub opaque type Arguments<'a>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue = drop_glue<Self>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
 // Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<Self>(_1: *mut Self)
+unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::option::Option
@@ -287,7 +287,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue] _1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _1
     return
 }
 

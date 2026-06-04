@@ -521,7 +521,7 @@ pub enum AbortKind {
 /// may happen depending on whether the borrow-checker determines a drop is needed.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, SerializeState, DeserializeState, Drive, DriveMut)]
 pub enum DropKind {
-    /// A real drop. This calls `<T as Destruct>::drop_glue(&raw mut place)` and marks the
+    /// A real drop. This calls `<T as Destruct>::drop_glue(&mut place)` and marks the
     /// place as moved-out-of. Use `--desugar-drops` to transform all such drops to an actual
     /// function call.
     ///

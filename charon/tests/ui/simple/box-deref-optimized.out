@@ -17,7 +17,7 @@ pub trait Sized<Self>
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Box::drop_glue<T, A>(_1: *mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
+unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -35,7 +35,7 @@ where
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
-unsafe fn impl_Destruct_for_String::drop_glue(_1: *mut String)
+unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: test_crate::into_inner
@@ -65,11 +65,11 @@ fn write(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {b
     _0 = ()
     storage_live(_3)
     _3 = move s_2
-    drop[impl_Destruct_for_String::drop_glue] (*b_1)
+    drop[impl_Destruct_for_String::drop_glue<'0>] (*b_1)
     (*b_1) = move _3
     storage_dead(_3)
     _0 = ()
-    drop[impl_Destruct_for_Box::drop_glue<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
+    drop[impl_Destruct_for_Box::drop_glue<'1, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
     return
 }
 
@@ -85,7 +85,7 @@ fn borrow(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {
     _2 = &mut (*b_1)
     storage_dead(_2)
     _0 = ()
-    drop[impl_Destruct_for_Box::drop_glue<String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
+    drop[impl_Destruct_for_Box::drop_glue<'2, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
     return
 }
 
