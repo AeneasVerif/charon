@@ -189,9 +189,6 @@ mod trait_ref_path {
                 let tdecl = krate.get_item(tref.trait_id())?;
                 let tdecl = tdecl.as_trait_decl()?;
                 let clause = &tdecl.implied_clauses[parent_id];
-                // Use the fallible substitution: for genuinely un-liftable self-referential
-                // traits the generics won't line up, and we want to return `None` so callers can
-                // emit a diagnostic rather than panic (see issue #1260).
                 let pred = clause.trait_.clone().try_substitute_with_tref(&tref).ok()?;
                 tref = TraitRef::new(TraitRefKind::ParentClause(Box::new(tref), parent_id), pred);
             }
