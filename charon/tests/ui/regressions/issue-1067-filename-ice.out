@@ -75,8 +75,8 @@ where
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_in_place
-unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -129,7 +129,7 @@ fn main()
     storage_dead(_7)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf_1
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'15, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf_1
     storage_dead(buf_1)
     return
 }

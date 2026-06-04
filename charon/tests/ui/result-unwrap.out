@@ -36,7 +36,7 @@ where
 struct core::fmt::Debug::{vtable} {
   size: usize,
   align: usize,
-  drop: unsafe fn(*mut (dyn Debug)),
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Debug)),
   method_fmt: fn<'_0_1, '_1_1, '_2_1>(&'_0_1 (dyn Debug), &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}],
 }
 

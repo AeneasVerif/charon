@@ -37,6 +37,8 @@ pub(crate) struct BindingLevel {
     pub bound_region_vars: Vec<RegionId>,
     /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
     pub closure_call_method_region: Option<RegionId>,
+    /// Region added for the borrow accepted by a drop glue method or vtable drop shim.
+    pub drop_glue_region: Option<RegionId>,
     /// The map from rust type variable indices to translated type variable indices.
     pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The map from rust const generic variables to translated const generic variable indices.
@@ -121,6 +123,15 @@ impl BindingLevel {
             .regions
             .push_with(|index| RegionParam::new(index, None));
         self.closure_upvar_regions.push(region_id);
+        region_id
+    }
+
+    pub fn push_drop_glue_region(&mut self) -> RegionId {
+        let region_id = self
+            .params
+            .regions
+            .push_with(|index| RegionParam::new(index, None));
+        self.drop_glue_region = Some(region_id);
         region_id
     }
 
@@ -476,6 +487,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .push_with(|index| RegionParam::new(index, None));
                 self.the_only_binder_mut().closure_call_method_region = Some(rid);
             }
+        }
+
+        if matches!(
+            kind,
+            TransItemSourceKind::DropGlueMethod(..) | TransItemSourceKind::VTableDropShim
+        ) {
+            self.the_only_binder_mut().push_drop_glue_region();
         }
 
         self.innermost_binder_mut().params.check_consistency();

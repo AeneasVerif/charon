@@ -16,11 +16,11 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -93,8 +93,8 @@ where
   Some(T),
 }
 
-// Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_in_place
-unsafe fn impl_Destruct_for_Option::drop_in_place<T>(_1: *mut Option<T>[TraitClause0])
+// Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_Option::drop_glue<'_0, T>(_1: &'_0 mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -123,8 +123,8 @@ pub trait BoolTrait<Self>
     vtable: test_crate::BoolTrait::{vtable}
 }
 
-// Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_in_place
-unsafe fn impl_Destruct_for_tuple::drop_in_place<A, B>(_1: *mut (A, B))
+// Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_glue
+unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
 where
     TraitClause0: (A: Sized),
 {
@@ -132,8 +132,8 @@ where
     let _1: &'1 mut (A, B); // arg #1
 
     _0 = ()
-    drop[{built_in impl Destruct for A}::drop_in_place] (*_1).0
-    drop[{built_in impl Destruct for B}::drop_in_place] (*_1).1
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1).0
+    drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1).1
     return
 }
 
@@ -142,7 +142,7 @@ impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
 where
     TraitClause0: (A: Sized),
 {
-    fn drop_in_place = impl_Destruct_for_tuple::drop_in_place<A, B>[TraitClause0]
+    fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A, B>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -279,14 +279,14 @@ where
         storage_dead(_3)
         storage_live(_4)
         _4 = &x_1
-        _0 = impl_BoolTrait_for_Option::ret_true<'6, T>[TraitClause0](move _4)
+        _0 = impl_BoolTrait_for_Option::ret_true<'7, T>[TraitClause0](move _4)
         storage_dead(_4)
     } else {
         storage_dead(_3)
         _0 = const false
     }
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_Option::drop_in_place<T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_Option::drop_glue<'8, T>[TraitClause0]] x_1
     return
 }
 
@@ -304,7 +304,7 @@ where
     _2 = &x_1
     _0 = TraitClause1::get_bool<'3>(move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x_1
     return
 }
 
@@ -367,7 +367,7 @@ where
     _0 = move _6
     storage_dead(_4)
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_tuple::drop_in_place<A, A>[TraitClause0]] self_1
+    conditional_drop[impl_Destruct_for_tuple::drop_glue<'3, A, A>[TraitClause0]] self_1
     return
 }
 
@@ -395,7 +395,7 @@ where
     _2 = move x_1
     _0 = impl_ToU64_for_tuple::to_u64<T>[TraitClause0, TraitClause1](move _2)
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_tuple::drop_in_place<T, T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_tuple::drop_glue<'1, T, T>[TraitClause0]] x_1
     return
 }
 
@@ -413,7 +413,7 @@ where
     _2 = move x_1
     _0 = TraitClause1::to_u64(move _2)
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_tuple::drop_in_place<T, T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_tuple::drop_glue<'1, T, T>[TraitClause0]] x_1
     return
 }
 
@@ -439,8 +439,8 @@ where
   x: T,
 }
 
-// Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[TraitClause0]}::drop_in_place
-unsafe fn impl_Destruct_for_Wrapper::drop_in_place<T>(_1: *mut Wrapper<T>[TraitClause0])
+// Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_Wrapper::drop_glue<'_0, T>(_1: &'_0 mut Wrapper<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 {
@@ -448,7 +448,7 @@ where
     let _1: &'1 mut Wrapper<T>[TraitClause0]; // arg #1
 
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_in_place] ((*_1)).x
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).x
     return
 }
 
@@ -457,7 +457,7 @@ impl<T> "impl_Destruct_for_Wrapper" Destruct for Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    fn drop_in_place = impl_Destruct_for_Wrapper::drop_in_place<T>[TraitClause0]
+    fn drop_glue<'_0_1> = impl_Destruct_for_Wrapper::drop_glue<'_0_1, T>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -475,7 +475,7 @@ where
     _2 = move (self_1).x
     _0 = TraitClause1::to_u64(move _2)
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_Wrapper::drop_in_place<T>[TraitClause0]] self_1
+    conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'1, T>[TraitClause0]] self_1
     return
 }
 
@@ -518,7 +518,7 @@ where
     _2 = move x_1
     _0 = impl_ToU64_for_Wrapper::to_u64<T>[TraitClause0, TraitClause1](move _2)
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_Wrapper::drop_in_place<T>[TraitClause0]] x_1
+    conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'1, T>[TraitClause0]] x_1
     return
 }
 
@@ -590,7 +590,7 @@ where
     _2 = move y_1
     _0 = TraitClause2::of_type<T2>[TraitClause1, TraitClause3, TraitClause0](move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T2}::drop_in_place] y_1
+    conditional_drop[{built_in impl Destruct for T2}::drop_glue<'1>] y_1
     return
 }
 
@@ -627,7 +627,7 @@ where
     _2 = move y_1
     _0 = TraitClause2::of_type[TraitClause0](move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T2}::drop_in_place] y_1
+    conditional_drop[{built_in impl Destruct for T2}::drop_glue<'1>] y_1
     return
 }
 
@@ -693,7 +693,7 @@ where
         storage_dead(_7)
         storage_live(_8)
         _8 = &y_5
-        _0 = impl_TestTrait_for_TestType1::test<'5>(move _8)
+        _0 = impl_TestTrait_for_TestType1::test<'7>(move _8)
         storage_dead(_8)
     } else {
         storage_dead(_7)
@@ -702,7 +702,7 @@ where
     storage_dead(_6)
     storage_dead(y_5)
     storage_dead(x_3)
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_2
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] x_2
     return
 }
 
@@ -858,7 +858,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_in_place] _1
+    conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_glue<'0>] _1
     return
 }
 
@@ -876,7 +876,7 @@ where
     _2 = move x_1
     _0 = TraitClause1::ImpliedClause3::to_u64(move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_glue<'1>] x_1
     return
 }
 
@@ -1385,7 +1385,7 @@ where
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for F}::drop_in_place] _1
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
     return
 }
 

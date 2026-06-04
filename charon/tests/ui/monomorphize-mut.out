@@ -121,14 +121,14 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = drop_in_place<Self>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, &_ mut _><'_0_1, '_0, T0>
     non-dyn-compatible
 }
 
@@ -146,7 +146,7 @@ pub trait core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitC
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>[TraitClause0]
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0_1, '_0, T0>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -166,7 +166,7 @@ where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>[TraitClause0, TraitClause1]
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0_1, '_0, T0>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -184,33 +184,33 @@ where
     TypeOutlives0: T0: '_0,
     TypeOutlives1: T0: '_0,
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place::<IterMut<_, _>[TraitClause0]><'_0, T0>[TraitClause0]
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, IterMut<_, _>[TraitClause0]><'_0_1, '_0, T0>[TraitClause0]
     non-dyn-compatible
 }
 
-// Full name: core::marker::Destruct::drop_in_place
-unsafe fn drop_in_place<Self>(_1: *mut Self)
+// Full name: core::marker::Destruct::drop_glue
+unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<&_ mut _><'_0, T0>(_1: *mut &'_0 mut T0)
+unsafe fn core::marker::Destruct::drop_glue::<_, &_ mut _><'_0, '_1, T0>(_1: &'_0 mut &'_1 mut T0)
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>(_1: *mut core::option::Option::<&_ mut _><'_0, T0>[TraitClause0])
+unsafe fn core::marker::Destruct::drop_glue::<_, core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, '_1, T0>(_1: &'_0 mut core::option::Option::<&_ mut _><'_1, T0>[TraitClause0])
 where
-    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_1>),
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>(_1: *mut core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause0, TraitClause1])
+unsafe fn core::marker::Destruct::drop_glue::<_, core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, '_1, T0>(_1: &'_0 mut core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_1, T0>[TraitClause0, TraitClause1])
 where
-    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
-    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
+    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_1>[TraitClause1]),
+    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_1>),
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_in_place::<IterMut<_, _>[TraitClause0]><'_0, T0>(_1: *mut IterMut<'_0, T0>[TraitClause0])
+unsafe fn core::marker::Destruct::drop_glue::<_, IterMut<_, _>[TraitClause0]><'_0, '_1, T0>(_1: &'_0 mut IterMut<'_1, T0>[TraitClause0])
 where
     TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_0,
-    TypeOutlives1: T0: '_0,
+    TypeOutlives0: T0: '_1,
+    TypeOutlives1: T0: '_1,
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -374,7 +374,7 @@ where
     storage_dead(_13)
     storage_dead(_12)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for A}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'125>] x_1
     return
 }
 
@@ -387,7 +387,7 @@ where
     let x_1: T; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x_1
     return
 }
 
@@ -399,7 +399,7 @@ where
     let x_1: &'_0 mut T0; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x_1
     return
 }
 
@@ -412,7 +412,7 @@ where
     let x_1: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x_1
     return
 }
 
@@ -426,7 +426,7 @@ where
     let x_1: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2] for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2] for T0}::drop_glue<'0>] x_1
     return
 }
 
@@ -441,7 +441,7 @@ where
     let x_1: IterMut<'_0, T0>[TraitClause1]; // arg #1
 
     _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_in_place] x_1
+    conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x_1
     return
 }
 
@@ -496,10 +496,10 @@ where
     let _18: &'79 u32; // anonymous local
     let _19: &'80 u32; // anonymous local
     let _20: &'81 u32; // anonymous local
-    let _21: &'260 u32; // anonymous local
-    let _22: &'366 u32; // anonymous local
+    let _21: &'261 u32; // anonymous local
+    let _22: &'368 u32; // anonymous local
     let _23: u32; // anonymous local
-    let _24: &'367 u32; // anonymous local
+    let _24: &'369 u32; // anonymous local
     let _25: u32; // anonymous local
 
     storage_live(_20)
@@ -523,7 +523,7 @@ where
     storage_live(_6)
     _6 = const 0u32
     _5 = &mut _6
-    _4 = test_crate::identity::<&_ mut _><'89, u32>[{built_in impl core::marker::Sized::<&_ mut _><'89> for u32}](move _5)
+    _4 = test_crate::identity::<&_ mut _><'90, u32>[{built_in impl core::marker::Sized::<&_ mut _><'90> for u32}](move _5)
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)
@@ -535,7 +535,7 @@ where
     _9 = &mut _10
     _8 = core::option::Option::<&_ mut _>::Some { 0: move _9 }
     storage_dead(_9)
-    _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'105, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'105>[{built_in impl core::marker::Sized::<&_ mut _><'105> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'105> for u32}](move _8)
+    _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'106, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'106>[{built_in impl core::marker::Sized::<&_ mut _><'106> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'106> for u32}](move _8)
     storage_dead(_8)
     storage_dead(_10)
     storage_dead(_7)
@@ -549,7 +549,7 @@ where
     storage_dead(_14)
     _12 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]>::Some { 0: move _13 }
     storage_dead(_13)
-    _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'179, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'179>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'179>[{built_in impl core::marker::Sized::<&_ mut _><'179> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'179> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'179>[{built_in impl core::marker::Sized::<&_ mut _><'179> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'179> for A}](move _12)
+    _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'180, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'180>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'180>[{built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'180>[{built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'180> for A}](move _12)
     storage_live(_21)
     storage_live(_24)
     storage_live(_25)
@@ -566,14 +566,14 @@ where
     _17 = &(*_18)
     _16 = Option::Some { 0: move _17 }
     storage_dead(_17)
-    _15 = map<&'267 u32, &'268 u32, identity<&'275 u32>[{built_in impl Sized for &'275 u32}]>[{built_in impl Sized for &'267 u32}, {built_in impl Sized for &'268 u32}, {built_in impl Sized for identity<&'292 u32>[{built_in impl Sized for &'292 u32}]}, {built_in impl FnOnce<(&'267 u32,)> for identity<&'310 u32>[{built_in impl Sized for &'310 u32}] where Output  = &'337 u32}, {built_in impl Destruct for identity<&'348 u32>[{built_in impl Sized for &'348 u32}]}](move _16, const identity<&'361 u32>[{built_in impl Sized for &'361 u32}])
+    _15 = map<&'268 u32, &'269 u32, identity<&'276 u32>[{built_in impl Sized for &'276 u32}]>[{built_in impl Sized for &'268 u32}, {built_in impl Sized for &'269 u32}, {built_in impl Sized for identity<&'293 u32>[{built_in impl Sized for &'293 u32}]}, {built_in impl FnOnce<(&'268 u32,)> for identity<&'311 u32>[{built_in impl Sized for &'311 u32}] where Output  = &'338 u32}, {built_in impl Destruct for identity<&'349 u32>[{built_in impl Sized for &'349 u32}]}](move _16, const identity<&'362 u32>[{built_in impl Sized for &'362 u32}])
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
     // These cause errors because of missing normalization :'(
     // let _ = Some(&mut 0u32).map(identity);
     // let _ = Some(&mut 0u32).map(mutable_identity);
-    conditional_drop[{built_in impl Destruct for A}::drop_in_place] x_1
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'367>] x_1
     return
 }
 

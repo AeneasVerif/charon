@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
@@ -18,11 +18,11 @@ pub trait Destruct<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 struct test_crate::Foo::{vtable} {
@@ -46,8 +46,8 @@ fn test_crate::Foo::foo<'_0>(_1: &'_0 (dyn Foo))
 // Full name: test_crate::Bar
 struct Bar {}
 
-// Full name: test_crate::Bar::{impl Destruct for Bar}::drop_in_place
-unsafe fn impl_Destruct_for_Bar::drop_in_place(_1: *mut Bar)
+// Full name: test_crate::Bar::{impl Destruct for Bar}::drop_glue
+unsafe fn impl_Destruct_for_Bar::drop_glue<'_0>(_1: &'_0 mut Bar)
 {
     let _0: (); // return
     let _1: &'1 mut Bar; // arg #1
@@ -60,7 +60,7 @@ unsafe fn impl_Destruct_for_Bar::drop_in_place(_1: *mut Bar)
 
 // Full name: test_crate::Bar::{impl Destruct for Bar}
 impl "impl_Destruct_for_Bar" Destruct for Bar {
-    fn drop_in_place = impl_Destruct_for_Bar::drop_in_place
+    fn drop_glue<'_0_1> = impl_Destruct_for_Bar::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -101,17 +101,17 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
 }
 
 // Full name: test_crate::{impl Foo for Bar}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn Foo))
+unsafe fn {vtable_drop_shim}<'_0>(dyn_self_1: &'_0 mut (dyn Foo))
 {
     let ret_0: (); // return
-    let dyn_self_1: *mut (dyn Foo + '0); // arg #1
-    let target_self_2: *mut Bar; // local
+    let dyn_self_1: &'_0 mut (dyn Foo + '0); // arg #1
+    let target_self_2: &'_0 mut Bar; // local
 
     bb0: {
         ret_0 = ();
         storage_live(target_self_2);
-        target_self_2 = concretize<*mut (dyn Foo + '1), *mut Bar>(move dyn_self_1);
-        drop[impl_Destruct_for_Bar::drop_in_place] (*target_self_2) -> bb2 (unwind: bb1);
+        target_self_2 = concretize<&'_0 mut (dyn Foo + '1), &'_0 mut Bar>(move dyn_self_1);
+        drop[impl_Destruct_for_Bar::drop_glue<'3>] (*target_self_2) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -133,8 +133,8 @@ fn impl_Foo_for_Bar::{vtable}() -> test_crate::Foo::{vtable}
     let erased_drop_4: *const (); // local
     let foo_5: fn<'_0_1>(&'_0_1 (dyn Foo + '1)); // local
     let erased_foo_6: *const (); // local
-    let _7: unsafe fn(*mut (dyn Foo + '3)); // anonymous local
-    let _8: fn<'_0_1>(&'_0_1 (dyn Foo + '8)); // anonymous local
+    let _7: unsafe fn(*mut (dyn Foo + '4)); // anonymous local
+    let _8: fn<'_0_1>(&'_0_1 (dyn Foo + '9)); // anonymous local
 
     bb0: {
         storage_live(size_1);
@@ -144,15 +144,15 @@ fn impl_Foo_for_Bar::{vtable}() -> test_crate::Foo::{vtable}
         storage_live(drop_3);
         storage_live(erased_drop_4);
         storage_live(_7);
-        _7 = cast<{vtable_drop_shim}, unsafe fn(*mut (dyn Foo + '3))>(const {vtable_drop_shim});
+        _7 = cast<{vtable_drop_shim}<'3>, unsafe fn(*mut (dyn Foo + '4))>(const {vtable_drop_shim}<'3>);
         drop_3 = move _7;
-        erased_drop_4 = cast<unsafe fn(*mut (dyn Foo + '4)), *const ()>(move drop_3);
+        erased_drop_4 = cast<unsafe fn(*mut (dyn Foo + '5)), *const ()>(move drop_3);
         storage_live(foo_5);
         storage_live(erased_foo_6);
         storage_live(_8);
-        _8 = cast<for<'_0_1> {vtable_method}<'7>, fn<'_0_1>(&'_0_1 (dyn Foo + '8))>(const {vtable_method}<'7>);
+        _8 = cast<for<'_0_1> {vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Foo + '9))>(const {vtable_method}<'8>);
         foo_5 = move _8;
-        erased_foo_6 = cast<fn<'_0_1>(&'_0_1 (dyn Foo + '9)), *const ()>(move foo_5);
+        erased_foo_6 = cast<fn<'_0_1>(&'_0_1 (dyn Foo + '10)), *const ()>(move foo_5);
         ret_0 = test_crate::Foo::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_foo: move erased_foo_6, super_trait_0: const &vtable_of({built_in impl MetaSized for Bar}) };
         return;
     }

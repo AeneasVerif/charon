@@ -106,7 +106,7 @@ Options:
           Trait method declarations take a `Self: Trait` clause as parameter, so that they can be reused by multiple trait impls. This however causes trait definitions to be mutually recursive with their method declarations. This flag removes `Self` clauses that aren't used to break this mutual recursion when possible
 
       --desugar-drops
-          Transform precise drops to the equivalent `drop_in_place(&raw mut p)` call
+          Transform precise drops to the equivalent `drop_glue(&mut p)` call
 
       --ops-to-function-calls
           Transform array-to-slice unsizing, repeat expressions, and raw pointer construction into builtin functions in ULLBC

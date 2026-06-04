@@ -54,11 +54,11 @@ impl<'_0, T> Clone for &'_0 T {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -170,7 +170,7 @@ fn use_foo()
     _4 = impl_Foo_for_unit::get_ty<'6>(move _5)
     _3 = &(*_4)
     storage_dead(_5)
-    _2 = impl_Clone_for_u32::clone<'8>(move _3)
+    _2 = impl_Clone_for_u32::clone<'9>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -245,13 +245,13 @@ where
     _4 = TraitClause1::ImpliedClause2::get_ty<'6>(move _5)
     _3 = &(*_4) with_metadata(copy _4.metadata)
     storage_dead(_5)
-    _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'8>(move _3)
+    _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'9>(move _3)
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_in_place] _2
+    conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_glue<'10>] _2
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_in_place] foo_1
+    conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'11>] foo_1
     storage_dead(foo_1)
     return
 }
@@ -316,8 +316,8 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place<U>(_1: *mut closure<U>[TraitClause0])
+// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue<'_0, U>(_1: &'_0 mut closure<U>[TraitClause0])
 where
     TraitClause0: (U: Sized),
 {
@@ -333,7 +333,7 @@ impl<U> "impl_Destruct_for_closure" Destruct for closure<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
 {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<U>[TraitClause0]
+    fn drop_glue<'_0_1> = impl_Destruct_for_closure::drop_glue<'_0_1, U>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -349,7 +349,7 @@ pub fn use_wrap()
     let _6: &'17 u32; // anonymous local
     let _7: &'18 u32; // anonymous local
     let _8: &'19 u32; // anonymous local
-    let _9: &'24 u32; // anonymous local
+    let _9: &'27 u32; // anonymous local
     let _10: u32; // anonymous local
 
     storage_live(_7)
@@ -379,7 +379,7 @@ pub fn use_wrap()
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[impl_Destruct_for_closure::drop_in_place<u32>[{built_in impl Sized for u32}]] f_1
+    conditional_drop[impl_Destruct_for_closure::drop_glue<'25, u32>[{built_in impl Sized for u32}]] f_1
     storage_dead(f_1)
     return
 }

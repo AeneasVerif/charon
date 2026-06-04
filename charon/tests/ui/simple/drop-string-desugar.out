@@ -16,24 +16,24 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_in_place
-unsafe fn impl_Destruct_for_Global::drop_in_place(_1: *mut Global)
+// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
+unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
 = <opaque>
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}
 impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_in_place = impl_Destruct_for_Global::drop_in_place
+    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -52,8 +52,8 @@ pub struct String {
   vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global],
 }
 
-// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_in_place
-unsafe fn impl_Destruct_for_Vec::drop_in_place<T, A>(_1: *mut Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
+// Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_glue
+unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -61,19 +61,19 @@ where
     TraitClause3: (A: Destruct),
 = <opaque>
 
-// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
+// Full name: alloc::string::String::{impl Destruct for String}::drop_glue
+unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 {
     let _0: (); // return
     let _1: &'1 mut String; // arg #1
-    let drop_arg_2: *mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global]; // local
+    let drop_arg_2: &'_ mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global]; // local
     let drop_ret_3: (); // local
 
     _0 = ()
     storage_live(drop_arg_2)
-    drop_arg_2 = &raw mut ((*_1)).vec
+    drop_arg_2 = &mut ((*_1)).vec
     storage_live(drop_ret_3)
-    drop_ret_3 = impl_Destruct_for_Vec::drop_in_place<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global](move drop_arg_2)
+    drop_ret_3 = impl_Destruct_for_Vec::drop_glue<'2, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global](move drop_arg_2)
     return
 }
 
@@ -87,15 +87,15 @@ fn use_string(_1: String)
 {
     let _0: (); // return
     let _1: String; // arg #1
-    let drop_arg_2: *mut String; // local
+    let drop_arg_2: &'_ mut String; // local
     let drop_ret_3: (); // local
 
     _0 = ()
     _0 = ()
     storage_live(drop_arg_2)
-    drop_arg_2 = &raw mut _1
+    drop_arg_2 = &mut _1
     storage_live(drop_ret_3)
-    drop_ret_3 = impl_Destruct_for_String::drop_in_place(move drop_arg_2)
+    drop_ret_3 = impl_Destruct_for_String::drop_glue<'0>(move drop_arg_2)
     return
 }
 
@@ -104,7 +104,7 @@ fn main()
 {
     let _0: (); // return
     let _s_1: String; // local
-    let drop_arg_2: *mut String; // local
+    let drop_arg_2: &'_ mut String; // local
     let drop_ret_3: (); // local
 
     _0 = ()
@@ -112,9 +112,9 @@ fn main()
     _s_1 = new()
     _0 = ()
     storage_live(drop_arg_2)
-    drop_arg_2 = &raw mut _s_1
+    drop_arg_2 = &mut _s_1
     storage_live(drop_ret_3)
-    drop_ret_3 = impl_Destruct_for_String::drop_in_place(move drop_arg_2)
+    drop_ret_3 = impl_Destruct_for_String::drop_glue<'0>(move drop_arg_2)
     storage_dead(_s_1)
     return
 }

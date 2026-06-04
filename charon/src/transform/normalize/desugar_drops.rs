@@ -20,7 +20,7 @@ fn is_noop_destruct(glue: &FnPtr) -> bool {
 }
 
 impl<'a> UllbcStatementTransformCtx<'a> {
-    /// Transform a Drop to a Call that calls the drop_in_place method.
+    /// Transform a Drop to a Call that calls the drop_glue method.
     /// If we cannot desugar this drop, we just leave it unchanged.
     fn transform_drop_to_call(&mut self, term: &mut Terminator) {
         if let TerminatorKind::Drop {
@@ -37,9 +37,9 @@ impl<'a> UllbcStatementTransformCtx<'a> {
                 return;
             }
 
-            // assign `&raw mut place` to a new variable
+            // assign `&mut place` to a new variable
             let drop_arg =
-                self.raw_borrow_to_new_var(place.clone(), RefKind::Mut, Some("drop_arg".into()));
+                self.borrow_to_new_var(place.clone(), BorrowKind::Mut, Some("drop_arg".into()));
 
             let drop_ret = self.fresh_var(Some("drop_ret".into()), Ty::mk_unit());
             let call = Call {

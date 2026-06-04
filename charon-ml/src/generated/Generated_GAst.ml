@@ -89,15 +89,13 @@ and copy_non_overlapping = { src : operand; dst : operand; count : operand }
     borrow-checker determines a drop is needed. *)
 and drop_kind =
   | Precise
-      (** A real drop. This calls
-          [<T as Destruct>::drop_in_place(&raw mut place)] and marks the place
-          as moved-out-of. Use [--desugar-drops] to transform all such drops to
-          an actual function call.
+      (** A real drop. This calls [<T as Destruct>::drop_glue(&mut place)] and
+          marks the place as moved-out-of. Use [--desugar-drops] to transform
+          all such drops to an actual function call.
 
-          The [drop_in_place] method is added by Charon to the [Destruct] trait
-          to make it possible to track drop code in polymorphic code. It
-          contains the same code as the [core::ptr::drop_in_place<T>] builtin
-          would.
+          The [drop_glue] method is added by Charon to the [Destruct] trait to
+          make it possible to track drop code in polymorphic code. It contains
+          the same code as the [core::ptr::drop_glue<T>] builtin would.
 
           Drop are precise in MIR [elaborated] and [optimized]. *)
   | Conditional

@@ -18,7 +18,7 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
@@ -26,11 +26,11 @@ pub trait Destruct<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 // Full name: core::marker::Tuple
@@ -159,8 +159,8 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(f_1: &'_0 mut closure<'_, '_>) -> u8
     return
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for closure<'_0, '_1>}::drop_in_place
-unsafe fn impl_Destruct_for_closure::drop_in_place<'_0, '_1>(_1: *mut closure<'_0, '_1>)
+// Full name: test_crate::main::closure::{impl Destruct for closure<'_0, '_1>}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0, '_1>)
 {
     let _0: (); // return
     let _1: &'1 mut closure<'_0, '_1>; // arg #1
@@ -184,7 +184,7 @@ fn apply_to_once::<closure<'_, '_>>(f_1: closure<'_, '_>) -> u8
     _0 = impl_FnOnce_tuple_for_closure<'8, '9>::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_closure::drop_in_place<'20, '21>] f_1
+    conditional_drop[impl_Destruct_for_closure::drop_glue<'21, '22, '23>] f_1
     return
 }
 
@@ -264,7 +264,7 @@ fn main()
 
 // Full name: test_crate::main::closure::{impl Destruct for closure<'_0, '_1>}
 impl<'_0, '_1> "impl_Destruct_for_closure" Destruct for closure<'_0, '_1> {
-    fn drop_in_place = impl_Destruct_for_closure::drop_in_place<'_0, '_1>
+    fn drop_glue<'_0_1> = impl_Destruct_for_closure::drop_glue<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 

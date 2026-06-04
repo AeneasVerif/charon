@@ -10,8 +10,8 @@ pub trait Display<Self>
 #[lang_item("String")]
 pub opaque type String
 
-// Full name: alloc::string::String::{impl Destruct for String}::drop_in_place
-unsafe fn impl_Destruct_for_String::drop_in_place(_1: *mut String)
+// Full name: alloc::string::String::{impl Destruct for String}::drop_glue
+unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
@@ -79,11 +79,11 @@ fn main()
     storage_dead(_6)
     _4 = dyn_to_string<'17>(move _5)
     storage_dead(_5)
-    conditional_drop[impl_Destruct_for_String::drop_in_place] _4
+    conditional_drop[impl_Destruct_for_String::drop_glue<'19>] _4
     storage_dead(_7)
     storage_dead(_4)
     _0 = ()
-    conditional_drop[impl_Destruct_for_String::drop_in_place] str_1
+    conditional_drop[impl_Destruct_for_String::drop_glue<'20>] str_1
     storage_dead(str_1)
     return
 }

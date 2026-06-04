@@ -182,7 +182,7 @@ pub struct CliOpts {
     #[serde(default)]
     pub remove_unused_self_clauses: bool,
 
-    /// Transform precise drops to the equivalent `drop_in_place(&raw mut p)` call.
+    /// Transform precise drops to the equivalent `drop_glue(&mut p)` call.
     #[clap(long)]
     #[serde(default)]
     pub desugar_drops: bool,
@@ -611,7 +611,7 @@ pub struct TranslateOptions {
     pub no_typecheck: bool,
     /// Don't normalize associated types.
     pub no_normalize: bool,
-    /// Transform Drop to Call drop_in_place
+    /// Transform Drop to Call drop_glue
     pub desugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
     pub add_destruct_bounds: bool,

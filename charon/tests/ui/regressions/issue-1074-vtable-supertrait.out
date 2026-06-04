@@ -16,17 +16,17 @@ pub trait MetaSized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_in_place = core::marker::Destruct::drop_in_place<Self>
+    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_in_place<Self>(_1: *mut Self)
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
 = <opaque>
 
 struct test_crate::MyTrait::{vtable} {
   size: usize,
   align: usize,
-  drop: unsafe fn(*mut (dyn MyTrait)),
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait)),
   method_foo: fn<'_0_1>(&'_0_1 (dyn MyTrait)),
   super_trait_0: &'static core::marker::MetaSized::{vtable},
   super_trait_1: &'static core::marker::Send::{vtable},
@@ -51,8 +51,8 @@ where
 // Full name: test_crate::MyStruct
 pub struct MyStruct {}
 
-// Full name: test_crate::MyStruct::{impl Destruct for MyStruct}::drop_in_place
-unsafe fn impl_Destruct_for_MyStruct::drop_in_place(_1: *mut MyStruct)
+// Full name: test_crate::MyStruct::{impl Destruct for MyStruct}::drop_glue
+unsafe fn impl_Destruct_for_MyStruct::drop_glue<'_0>(_1: &'_0 mut MyStruct)
 {
     let _0: (); // return
     let _1: &'1 mut MyStruct; // arg #1
@@ -63,7 +63,7 @@ unsafe fn impl_Destruct_for_MyStruct::drop_in_place(_1: *mut MyStruct)
 
 // Full name: test_crate::MyStruct::{impl Destruct for MyStruct}
 impl "impl_Destruct_for_MyStruct" Destruct for MyStruct {
-    fn drop_in_place = impl_Destruct_for_MyStruct::drop_in_place
+    fn drop_glue<'_0_1> = impl_Destruct_for_MyStruct::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
@@ -93,16 +93,16 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn MyTrait))
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}(dyn_self_1: *mut (dyn MyTrait))
+unsafe fn {vtable_drop_shim}<'_0>(dyn_self_1: &'_0 mut (dyn MyTrait))
 {
     let ret_0: (); // return
-    let dyn_self_1: *mut (dyn MyTrait + '0); // arg #1
-    let target_self_2: *mut MyStruct; // local
+    let dyn_self_1: &'_0 mut (dyn MyTrait + '0); // arg #1
+    let target_self_2: &'_0 mut MyStruct; // local
 
     ret_0 = ()
     storage_live(target_self_2)
-    target_self_2 = concretize<*mut (dyn MyTrait + '1), *mut MyStruct>(move dyn_self_1)
-    drop[impl_Destruct_for_MyStruct::drop_in_place] (*target_self_2)
+    target_self_2 = concretize<&'_0 mut (dyn MyTrait + '1), &'_0 mut MyStruct>(move dyn_self_1)
+    drop[impl_Destruct_for_MyStruct::drop_glue<'3>] (*target_self_2)
     return
 }
 
@@ -112,17 +112,17 @@ fn impl_MyTrait_for_MyStruct::{vtable}() -> test_crate::MyTrait::{vtable}
     let ret_0: test_crate::MyTrait::{vtable}; // return
     let size_1: usize; // local
     let align_2: usize; // local
-    let _3: unsafe fn(*mut (dyn MyTrait + '0)); // anonymous local
-    let _4: fn<'_0_1>(&'_0_1 (dyn MyTrait + '2)); // anonymous local
+    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1)); // anonymous local
+    let _4: fn<'_0_1>(&'_0_1 (dyn MyTrait + '3)); // anonymous local
 
     storage_live(size_1)
     size_1 = size_of<MyStruct>
     storage_live(align_2)
     align_2 = align_of<MyStruct>
     storage_live(_3)
-    _3 = cast<{vtable_drop_shim}, unsafe fn(*mut (dyn MyTrait + '0))>(const {vtable_drop_shim})
+    _3 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1))>(const {vtable_drop_shim}<'0>)
     storage_live(_4)
-    _4 = cast<for<'_0_1> {vtable_method}<'1>, fn<'_0_1>(&'_0_1 (dyn MyTrait + '2))>(const {vtable_method}<'1>)
+    _4 = cast<for<'_0_1> {vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn MyTrait + '3))>(const {vtable_method}<'2>)
     ret_0 = test_crate::MyTrait::{vtable} { size: move size_1, align: move align_2, drop: move _3, method_foo: move _4, super_trait_0: const &vtable_of({built_in impl MetaSized for MyStruct}), super_trait_1: const &vtable_of({built_in impl Send for MyStruct}) }
     return
 }
