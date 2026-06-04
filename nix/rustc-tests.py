@@ -19,6 +19,7 @@ UNSUPPORTED_FEATURES = (
 )
 
 EXPENSIVE_RUSTC_STRESS_TESTS = {
+    "associated-consts/issue-93775.rs",
     "bench/issue-32062.rs",
     "closures/issue-72408-nested-closures-exponential.rs",
     "codegen/no-codegen-blowup-in-deeply-nested-struct.rs",
