@@ -1,5 +1,6 @@
 pub mod get_mir;
 pub mod resolve_path;
+pub mod translate_attrs;
 pub mod translate_bodies;
 pub mod translate_closures;
 pub mod translate_constants;

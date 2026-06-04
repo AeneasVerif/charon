@@ -22,6 +22,12 @@ test-noclippy:
 clippy:
 	cargo clippy --all-targets --fix --allow-dirty
 
+.PHONY: generate-rust
+generate-rust:
+	cargo build --bins
+	cargo run --bin generate-rust
+	cargo fmt
+
 .PHONY: test-popular-crates
 test-popular-crates:
 	cargo test --release --features popular-crates-test --test popular-crates -- --test-threads 8

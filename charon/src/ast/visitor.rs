@@ -40,7 +40,7 @@ use derive_generic_visitor::*;
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
     // Types that we ignore.
-    skip((), String, bool),
+    skip((), Attribute, InlineAttr, String, bool),
     // Types that we unconditionally explore.
     drive(
         Assert, BinderKind, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
@@ -79,7 +79,7 @@ use derive_generic_visitor::*;
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
-        AbortKind, AggregateKind, FnPtr, ItemSource, ItemMeta, Name, Span, ConstantExpr, ProjectionElem,
+        AbortKind, AggregateKind, AttrInfo, FnPtr, ItemSource, ItemMeta, Name, Span, ConstantExpr, ProjectionElem,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )

@@ -1971,6 +1971,9 @@ and attribute_of_json (ctx : of_json_ctx) (js : json) :
         let* variants_suffix = string_of_json ctx variants_suffix in
         Ok (AttrVariantsSuffix variants_suffix)
     | `String "Transparent" -> Ok AttrTransparent
+    | `Assoc [ ("Builtin", builtin) ] ->
+        let* builtin = builtin_attr_of_json ctx builtin in
+        Ok (AttrBuiltin builtin)
     | `Assoc [ ("DocComment", doc_comment) ] ->
         let* doc_comment = string_of_json ctx doc_comment in
         Ok (AttrDocComment doc_comment)
@@ -2017,6 +2020,76 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
     | `Assoc [ ("Error", error) ] ->
         let* error = error_of_json ctx error in
         Ok (ErrorBody error)
+    | _ -> Error "")
+
+and builtin_attr_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_attr, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "AutomaticallyDerived" -> Ok BuiltinAttrAutomaticallyDerived
+    | `String "Cold" -> Ok BuiltinAttrCold
+    | `Assoc [ ("EiiDeclaration", eii_declaration) ] ->
+        let* eii_declaration =
+          builtin_attr_eii_decl_of_json ctx eii_declaration
+        in
+        Ok (BuiltinAttrEiiDeclaration eii_declaration)
+    | `Assoc [ ("EiiImpls", eii_impls) ] ->
+        let* eii_impls =
+          list_of_json builtin_attr_eii_impl_of_json ctx eii_impls
+        in
+        Ok (BuiltinAttrEiiImpls eii_impls)
+    | `String "Fundamental" -> Ok BuiltinAttrFundamental
+    | `Assoc [ ("Ignore", `Assoc [ ("span", span); ("reason", reason) ]) ] ->
+        let* span = span_of_json ctx span in
+        let* reason = option_of_json string_of_json ctx reason in
+        Ok (BuiltinAttrIgnore (span, reason))
+    | `Assoc [ ("Inline", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = builtin_attr_inline_attr_of_json ctx x_0 in
+        let* x_1 = span_of_json ctx x_1 in
+        Ok (BuiltinAttrInline (x_0, x_1))
+    | `Assoc [ ("Lang", lang) ] ->
+        let* lang = builtin_attr_lang_item_of_json ctx lang in
+        Ok (BuiltinAttrLang lang)
+    | `Assoc [ ("MayDangle", may_dangle) ] ->
+        let* may_dangle = span_of_json ctx may_dangle in
+        Ok (BuiltinAttrMayDangle may_dangle)
+    | `Assoc [ ("Naked", naked) ] ->
+        let* naked = span_of_json ctx naked in
+        Ok (BuiltinAttrNaked naked)
+    | `String "NoLink" -> Ok BuiltinAttrNoLink
+    | `Assoc [ ("NoMangle", no_mangle) ] ->
+        let* no_mangle = span_of_json ctx no_mangle in
+        Ok (BuiltinAttrNoMangle no_mangle)
+    | `Assoc [ ("NonExhaustive", non_exhaustive) ] ->
+        let* non_exhaustive = span_of_json ctx non_exhaustive in
+        Ok (BuiltinAttrNonExhaustive non_exhaustive)
+    | `Assoc [ ("Optimize", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = builtin_attr_optimize_attr_of_json ctx x_0 in
+        let* x_1 = span_of_json ctx x_1 in
+        Ok (BuiltinAttrOptimize (x_0, x_1))
+    | `Assoc [ ("RustcDiagnosticItem", rustc_diagnostic_item) ] ->
+        let* rustc_diagnostic_item = string_of_json ctx rustc_diagnostic_item in
+        Ok (BuiltinAttrRustcDiagnosticItem rustc_diagnostic_item)
+    | `String "RustcIntrinsic" -> Ok BuiltinAttrRustcIntrinsic
+    | `Assoc
+        [
+          ( "TargetFeature",
+            `Assoc
+              [
+                ("features", features);
+                ("attr_span", attr_span);
+                ("was_forced", was_forced);
+              ] );
+        ] ->
+        let* features =
+          list_of_json (pair_of_json string_of_json span_of_json) ctx features
+        in
+        let* attr_span = span_of_json ctx attr_span in
+        let* was_forced = bool_of_json ctx was_forced in
+        Ok (BuiltinAttrTargetFeature (features, attr_span, was_forced))
+    | `Assoc [ ("TrackCaller", track_caller) ] ->
+        let* track_caller = span_of_json ctx track_caller in
+        Ok (BuiltinAttrTrackCaller track_caller)
     | _ -> Error "")
 
 and cli_options_of_json (ctx : of_json_ctx) (js : json) :
@@ -2298,6 +2371,61 @@ and discriminator_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Branch (offset, int_ty, children, fallback))
     | _ -> Error "")
 
+and builtin_attr_eii_decl_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_attr_eii_decl, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("foreign_item", foreign_item);
+          ("impl_unsafe", impl_unsafe);
+          ("name", name);
+        ] ->
+        let* foreign_item = string_of_json ctx foreign_item in
+        let* impl_unsafe = bool_of_json ctx impl_unsafe in
+        let* name = builtin_attr_ident_of_json ctx name in
+        Ok ({ foreign_item; impl_unsafe; name } : builtin_attr_eii_decl)
+    | _ -> Error "")
+
+and builtin_attr_eii_impl_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_attr_eii_impl, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("resolution", resolution);
+          ("impl_marked_unsafe", impl_marked_unsafe);
+          ("span", span);
+          ("inner_span", inner_span);
+          ("is_default", is_default);
+        ] ->
+        let* resolution =
+          builtin_attr_eii_impl_resolution_of_json ctx resolution
+        in
+        let* impl_marked_unsafe = bool_of_json ctx impl_marked_unsafe in
+        let* span = span_of_json ctx span in
+        let* inner_span = span_of_json ctx inner_span in
+        let* is_default = bool_of_json ctx is_default in
+        Ok
+          ({ resolution; impl_marked_unsafe; span; inner_span; is_default }
+            : builtin_attr_eii_impl)
+    | _ -> Error "")
+
+and builtin_attr_eii_impl_resolution_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_attr_eii_impl_resolution, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Macro", macro) ] ->
+        let* macro = string_of_json ctx macro in
+        Ok (BuiltinAttrEiiImplResolutionMacro macro)
+    | `Assoc [ ("Known", known) ] ->
+        let* known = builtin_attr_eii_decl_of_json ctx known in
+        Ok (BuiltinAttrEiiImplResolutionKnown known)
+    | `Assoc [ ("Error", error) ] ->
+        let* error = string_of_json ctx error in
+        Ok (BuiltinAttrEiiImplResolutionError error)
+    | _ -> Error "")
+
 and error_of_json (ctx : of_json_ctx) (js : json) : (error, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -2470,6 +2598,16 @@ and global_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "AnonConst" -> Ok AnonConst
     | _ -> Error "")
 
+and builtin_attr_ident_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_attr_ident, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("name", name); ("span", span) ] ->
+        let* name = string_of_json ctx name in
+        let* span = span_of_json ctx span in
+        Ok ({ name; span } : builtin_attr_ident)
+    | _ -> Error "")
+
 and index_map_of_json :
     'a0 'a1 'a2.
     (of_json_ctx -> json -> ('a0, string) result) ->
@@ -2492,6 +2630,22 @@ and inline_attr_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Hint" -> Ok Hint
     | `String "Never" -> Ok Never
     | `String "Always" -> Ok Always
+    | _ -> Error "")
+
+and builtin_attr_inline_attr_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_attr_inline_attr, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "None" -> Ok BuiltinAttrInlineAttrNone
+    | `String "Hint" -> Ok BuiltinAttrInlineAttrHint
+    | `String "Always" -> Ok BuiltinAttrInlineAttrAlways
+    | `String "Never" -> Ok BuiltinAttrInlineAttrNever
+    | `Assoc
+        [ ("Force", `Assoc [ ("attr_span", attr_span); ("reason", reason) ]) ]
+      ->
+        let* attr_span = span_of_json ctx attr_span in
+        let* reason = option_of_json string_of_json ctx reason in
+        Ok (BuiltinAttrInlineAttrForce (attr_span, reason))
     | _ -> Error "")
 
 and integer_type_of_json (ctx : of_json_ctx) (js : json) :
@@ -2630,6 +2784,249 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
     | `String "VTableInstanceMono" -> Ok VTableInstanceMonoItem
     | _ -> Error "")
 
+and builtin_attr_lang_item_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_attr_lang_item, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Sized" -> Ok BuiltinAttrLangItemSized
+    | `String "MetaSized" -> Ok BuiltinAttrLangItemMetaSized
+    | `String "PointeeSized" -> Ok BuiltinAttrLangItemPointeeSized
+    | `String "Unsize" -> Ok BuiltinAttrLangItemUnsize
+    | `String "AlignOf" -> Ok BuiltinAttrLangItemAlignOf
+    | `String "SizeOf" -> Ok BuiltinAttrLangItemSizeOf
+    | `String "OffsetOf" -> Ok BuiltinAttrLangItemOffsetOf
+    | `String "StructuralPeq" -> Ok BuiltinAttrLangItemStructuralPeq
+    | `String "Copy" -> Ok BuiltinAttrLangItemCopy
+    | `String "Clone" -> Ok BuiltinAttrLangItemClone
+    | `String "CloneFn" -> Ok BuiltinAttrLangItemCloneFn
+    | `String "UseCloned" -> Ok BuiltinAttrLangItemUseCloned
+    | `String "TrivialClone" -> Ok BuiltinAttrLangItemTrivialClone
+    | `String "Sync" -> Ok BuiltinAttrLangItemSync
+    | `String "DiscriminantKind" -> Ok BuiltinAttrLangItemDiscriminantKind
+    | `String "Discriminant" -> Ok BuiltinAttrLangItemDiscriminant
+    | `String "PointeeTrait" -> Ok BuiltinAttrLangItemPointeeTrait
+    | `String "Metadata" -> Ok BuiltinAttrLangItemMetadata
+    | `String "DynMetadata" -> Ok BuiltinAttrLangItemDynMetadata
+    | `String "Freeze" -> Ok BuiltinAttrLangItemFreeze
+    | `String "UnsafeUnpin" -> Ok BuiltinAttrLangItemUnsafeUnpin
+    | `String "FnPtrTrait" -> Ok BuiltinAttrLangItemFnPtrTrait
+    | `String "FnPtrAddr" -> Ok BuiltinAttrLangItemFnPtrAddr
+    | `String "Drop" -> Ok BuiltinAttrLangItemDrop
+    | `String "Destruct" -> Ok BuiltinAttrLangItemDestruct
+    | `String "AsyncDrop" -> Ok BuiltinAttrLangItemAsyncDrop
+    | `String "AsyncDropInPlace" -> Ok BuiltinAttrLangItemAsyncDropInPlace
+    | `String "CoerceUnsized" -> Ok BuiltinAttrLangItemCoerceUnsized
+    | `String "DispatchFromDyn" -> Ok BuiltinAttrLangItemDispatchFromDyn
+    | `String "TransmuteOpts" -> Ok BuiltinAttrLangItemTransmuteOpts
+    | `String "TransmuteTrait" -> Ok BuiltinAttrLangItemTransmuteTrait
+    | `String "Add" -> Ok BuiltinAttrLangItemAdd
+    | `String "Sub" -> Ok BuiltinAttrLangItemSub
+    | `String "Mul" -> Ok BuiltinAttrLangItemMul
+    | `String "Div" -> Ok BuiltinAttrLangItemDiv
+    | `String "Rem" -> Ok BuiltinAttrLangItemRem
+    | `String "Neg" -> Ok BuiltinAttrLangItemNeg
+    | `String "Not" -> Ok BuiltinAttrLangItemNot
+    | `String "BitXor" -> Ok BuiltinAttrLangItemBitXor
+    | `String "BitAnd" -> Ok BuiltinAttrLangItemBitAnd
+    | `String "BitOr" -> Ok BuiltinAttrLangItemBitOr
+    | `String "Shl" -> Ok BuiltinAttrLangItemShl
+    | `String "Shr" -> Ok BuiltinAttrLangItemShr
+    | `String "AddAssign" -> Ok BuiltinAttrLangItemAddAssign
+    | `String "SubAssign" -> Ok BuiltinAttrLangItemSubAssign
+    | `String "MulAssign" -> Ok BuiltinAttrLangItemMulAssign
+    | `String "DivAssign" -> Ok BuiltinAttrLangItemDivAssign
+    | `String "RemAssign" -> Ok BuiltinAttrLangItemRemAssign
+    | `String "BitXorAssign" -> Ok BuiltinAttrLangItemBitXorAssign
+    | `String "BitAndAssign" -> Ok BuiltinAttrLangItemBitAndAssign
+    | `String "BitOrAssign" -> Ok BuiltinAttrLangItemBitOrAssign
+    | `String "ShlAssign" -> Ok BuiltinAttrLangItemShlAssign
+    | `String "ShrAssign" -> Ok BuiltinAttrLangItemShrAssign
+    | `String "Index" -> Ok BuiltinAttrLangItemIndex
+    | `String "IndexMut" -> Ok BuiltinAttrLangItemIndexMut
+    | `String "UnsafeCell" -> Ok BuiltinAttrLangItemUnsafeCell
+    | `String "UnsafePinned" -> Ok BuiltinAttrLangItemUnsafePinned
+    | `String "VaArgSafe" -> Ok BuiltinAttrLangItemVaArgSafe
+    | `String "VaList" -> Ok BuiltinAttrLangItemVaList
+    | `String "Deref" -> Ok BuiltinAttrLangItemDeref
+    | `String "DerefMut" -> Ok BuiltinAttrLangItemDerefMut
+    | `String "DerefPure" -> Ok BuiltinAttrLangItemDerefPure
+    | `String "DerefTarget" -> Ok BuiltinAttrLangItemDerefTarget
+    | `String "Receiver" -> Ok BuiltinAttrLangItemReceiver
+    | `String "ReceiverTarget" -> Ok BuiltinAttrLangItemReceiverTarget
+    | `String "LegacyReceiver" -> Ok BuiltinAttrLangItemLegacyReceiver
+    | `String "Fn" -> Ok BuiltinAttrLangItemFn
+    | `String "FnMut" -> Ok BuiltinAttrLangItemFnMut
+    | `String "FnOnce" -> Ok BuiltinAttrLangItemFnOnce
+    | `String "AsyncFn" -> Ok BuiltinAttrLangItemAsyncFn
+    | `String "AsyncFnMut" -> Ok BuiltinAttrLangItemAsyncFnMut
+    | `String "AsyncFnOnce" -> Ok BuiltinAttrLangItemAsyncFnOnce
+    | `String "AsyncFnOnceOutput" -> Ok BuiltinAttrLangItemAsyncFnOnceOutput
+    | `String "CallOnceFuture" -> Ok BuiltinAttrLangItemCallOnceFuture
+    | `String "CallRefFuture" -> Ok BuiltinAttrLangItemCallRefFuture
+    | `String "AsyncFnKindHelper" -> Ok BuiltinAttrLangItemAsyncFnKindHelper
+    | `String "AsyncFnKindUpvars" -> Ok BuiltinAttrLangItemAsyncFnKindUpvars
+    | `String "FnOnceOutput" -> Ok BuiltinAttrLangItemFnOnceOutput
+    | `String "Iterator" -> Ok BuiltinAttrLangItemIterator
+    | `String "FusedIterator" -> Ok BuiltinAttrLangItemFusedIterator
+    | `String "Future" -> Ok BuiltinAttrLangItemFuture
+    | `String "FutureOutput" -> Ok BuiltinAttrLangItemFutureOutput
+    | `String "AsyncIterator" -> Ok BuiltinAttrLangItemAsyncIterator
+    | `String "CoroutineState" -> Ok BuiltinAttrLangItemCoroutineState
+    | `String "Coroutine" -> Ok BuiltinAttrLangItemCoroutine
+    | `String "CoroutineReturn" -> Ok BuiltinAttrLangItemCoroutineReturn
+    | `String "CoroutineYield" -> Ok BuiltinAttrLangItemCoroutineYield
+    | `String "CoroutineResume" -> Ok BuiltinAttrLangItemCoroutineResume
+    | `String "Unpin" -> Ok BuiltinAttrLangItemUnpin
+    | `String "Pin" -> Ok BuiltinAttrLangItemPin
+    | `String "OrderingEnum" -> Ok BuiltinAttrLangItemOrderingEnum
+    | `String "PartialEq" -> Ok BuiltinAttrLangItemPartialEq
+    | `String "PartialOrd" -> Ok BuiltinAttrLangItemPartialOrd
+    | `String "CVoid" -> Ok BuiltinAttrLangItemCVoid
+    | `String "Type" -> Ok BuiltinAttrLangItemType
+    | `String "TypeId" -> Ok BuiltinAttrLangItemTypeId
+    | `String "Panic" -> Ok BuiltinAttrLangItemPanic
+    | `String "PanicNounwind" -> Ok BuiltinAttrLangItemPanicNounwind
+    | `String "PanicFmt" -> Ok BuiltinAttrLangItemPanicFmt
+    | `String "PanicDisplay" -> Ok BuiltinAttrLangItemPanicDisplay
+    | `String "ConstPanicFmt" -> Ok BuiltinAttrLangItemConstPanicFmt
+    | `String "PanicBoundsCheck" -> Ok BuiltinAttrLangItemPanicBoundsCheck
+    | `String "PanicMisalignedPointerDereference" ->
+        Ok BuiltinAttrLangItemPanicMisalignedPointerDereference
+    | `String "PanicInfo" -> Ok BuiltinAttrLangItemPanicInfo
+    | `String "PanicLocation" -> Ok BuiltinAttrLangItemPanicLocation
+    | `String "PanicImpl" -> Ok BuiltinAttrLangItemPanicImpl
+    | `String "PanicCannotUnwind" -> Ok BuiltinAttrLangItemPanicCannotUnwind
+    | `String "PanicInCleanup" -> Ok BuiltinAttrLangItemPanicInCleanup
+    | `String "PanicAddOverflow" -> Ok BuiltinAttrLangItemPanicAddOverflow
+    | `String "PanicSubOverflow" -> Ok BuiltinAttrLangItemPanicSubOverflow
+    | `String "PanicMulOverflow" -> Ok BuiltinAttrLangItemPanicMulOverflow
+    | `String "PanicDivOverflow" -> Ok BuiltinAttrLangItemPanicDivOverflow
+    | `String "PanicRemOverflow" -> Ok BuiltinAttrLangItemPanicRemOverflow
+    | `String "PanicNegOverflow" -> Ok BuiltinAttrLangItemPanicNegOverflow
+    | `String "PanicShrOverflow" -> Ok BuiltinAttrLangItemPanicShrOverflow
+    | `String "PanicShlOverflow" -> Ok BuiltinAttrLangItemPanicShlOverflow
+    | `String "PanicDivZero" -> Ok BuiltinAttrLangItemPanicDivZero
+    | `String "PanicRemZero" -> Ok BuiltinAttrLangItemPanicRemZero
+    | `String "PanicCoroutineResumed" ->
+        Ok BuiltinAttrLangItemPanicCoroutineResumed
+    | `String "PanicAsyncFnResumed" -> Ok BuiltinAttrLangItemPanicAsyncFnResumed
+    | `String "PanicAsyncGenFnResumed" ->
+        Ok BuiltinAttrLangItemPanicAsyncGenFnResumed
+    | `String "PanicGenFnNone" -> Ok BuiltinAttrLangItemPanicGenFnNone
+    | `String "PanicCoroutineResumedPanic" ->
+        Ok BuiltinAttrLangItemPanicCoroutineResumedPanic
+    | `String "PanicAsyncFnResumedPanic" ->
+        Ok BuiltinAttrLangItemPanicAsyncFnResumedPanic
+    | `String "PanicAsyncGenFnResumedPanic" ->
+        Ok BuiltinAttrLangItemPanicAsyncGenFnResumedPanic
+    | `String "PanicGenFnNonePanic" -> Ok BuiltinAttrLangItemPanicGenFnNonePanic
+    | `String "PanicNullPointerDereference" ->
+        Ok BuiltinAttrLangItemPanicNullPointerDereference
+    | `String "PanicInvalidEnumConstruction" ->
+        Ok BuiltinAttrLangItemPanicInvalidEnumConstruction
+    | `String "PanicCoroutineResumedDrop" ->
+        Ok BuiltinAttrLangItemPanicCoroutineResumedDrop
+    | `String "PanicAsyncFnResumedDrop" ->
+        Ok BuiltinAttrLangItemPanicAsyncFnResumedDrop
+    | `String "PanicAsyncGenFnResumedDrop" ->
+        Ok BuiltinAttrLangItemPanicAsyncGenFnResumedDrop
+    | `String "PanicGenFnNoneDrop" -> Ok BuiltinAttrLangItemPanicGenFnNoneDrop
+    | `String "BeginPanic" -> Ok BuiltinAttrLangItemBeginPanic
+    | `String "FormatArgument" -> Ok BuiltinAttrLangItemFormatArgument
+    | `String "FormatArguments" -> Ok BuiltinAttrLangItemFormatArguments
+    | `String "DropGlue" -> Ok BuiltinAttrLangItemDropGlue
+    | `String "AllocLayout" -> Ok BuiltinAttrLangItemAllocLayout
+    | `String "Start" -> Ok BuiltinAttrLangItemStart
+    | `String "EhPersonality" -> Ok BuiltinAttrLangItemEhPersonality
+    | `String "EhCatchTypeinfo" -> Ok BuiltinAttrLangItemEhCatchTypeinfo
+    | `String "CompilerMove" -> Ok BuiltinAttrLangItemCompilerMove
+    | `String "CompilerCopy" -> Ok BuiltinAttrLangItemCompilerCopy
+    | `String "OwnedBox" -> Ok BuiltinAttrLangItemOwnedBox
+    | `String "GlobalAlloc" -> Ok BuiltinAttrLangItemGlobalAlloc
+    | `String "PhantomData" -> Ok BuiltinAttrLangItemPhantomData
+    | `String "ManuallyDrop" -> Ok BuiltinAttrLangItemManuallyDrop
+    | `String "MaybeDangling" -> Ok BuiltinAttrLangItemMaybeDangling
+    | `String "BikeshedGuaranteedNoDrop" ->
+        Ok BuiltinAttrLangItemBikeshedGuaranteedNoDrop
+    | `String "MaybeUninit" -> Ok BuiltinAttrLangItemMaybeUninit
+    | `String "Termination" -> Ok BuiltinAttrLangItemTermination
+    | `String "Try" -> Ok BuiltinAttrLangItemTry
+    | `String "Tuple" -> Ok BuiltinAttrLangItemTuple
+    | `String "SliceLen" -> Ok BuiltinAttrLangItemSliceLen
+    | `String "TryTraitFromResidual" ->
+        Ok BuiltinAttrLangItemTryTraitFromResidual
+    | `String "TryTraitFromOutput" -> Ok BuiltinAttrLangItemTryTraitFromOutput
+    | `String "TryTraitBranch" -> Ok BuiltinAttrLangItemTryTraitBranch
+    | `String "TryTraitFromYeet" -> Ok BuiltinAttrLangItemTryTraitFromYeet
+    | `String "ResidualIntoTryType" -> Ok BuiltinAttrLangItemResidualIntoTryType
+    | `String "CoercePointeeValidated" ->
+        Ok BuiltinAttrLangItemCoercePointeeValidated
+    | `String "ConstParamTy" -> Ok BuiltinAttrLangItemConstParamTy
+    | `String "Poll" -> Ok BuiltinAttrLangItemPoll
+    | `String "PollReady" -> Ok BuiltinAttrLangItemPollReady
+    | `String "PollPending" -> Ok BuiltinAttrLangItemPollPending
+    | `String "AsyncGenReady" -> Ok BuiltinAttrLangItemAsyncGenReady
+    | `String "AsyncGenPending" -> Ok BuiltinAttrLangItemAsyncGenPending
+    | `String "AsyncGenFinished" -> Ok BuiltinAttrLangItemAsyncGenFinished
+    | `String "ResumeTy" -> Ok BuiltinAttrLangItemResumeTy
+    | `String "GetContext" -> Ok BuiltinAttrLangItemGetContext
+    | `String "Context" -> Ok BuiltinAttrLangItemContext
+    | `String "FuturePoll" -> Ok BuiltinAttrLangItemFuturePoll
+    | `String "AsyncIteratorPollNext" ->
+        Ok BuiltinAttrLangItemAsyncIteratorPollNext
+    | `String "IntoAsyncIterIntoIter" ->
+        Ok BuiltinAttrLangItemIntoAsyncIterIntoIter
+    | `String "Option" -> Ok BuiltinAttrLangItemOption
+    | `String "OptionSome" -> Ok BuiltinAttrLangItemOptionSome
+    | `String "OptionNone" -> Ok BuiltinAttrLangItemOptionNone
+    | `String "ResultOk" -> Ok BuiltinAttrLangItemResultOk
+    | `String "ResultErr" -> Ok BuiltinAttrLangItemResultErr
+    | `String "ControlFlowContinue" -> Ok BuiltinAttrLangItemControlFlowContinue
+    | `String "ControlFlowBreak" -> Ok BuiltinAttrLangItemControlFlowBreak
+    | `String "IntoFutureIntoFuture" ->
+        Ok BuiltinAttrLangItemIntoFutureIntoFuture
+    | `String "IntoIterIntoIter" -> Ok BuiltinAttrLangItemIntoIterIntoIter
+    | `String "IteratorNext" -> Ok BuiltinAttrLangItemIteratorNext
+    | `String "PinNewUnchecked" -> Ok BuiltinAttrLangItemPinNewUnchecked
+    | `String "RangeFrom" -> Ok BuiltinAttrLangItemRangeFrom
+    | `String "RangeFull" -> Ok BuiltinAttrLangItemRangeFull
+    | `String "RangeInclusiveStruct" ->
+        Ok BuiltinAttrLangItemRangeInclusiveStruct
+    | `String "RangeInclusiveNew" -> Ok BuiltinAttrLangItemRangeInclusiveNew
+    | `String "Range" -> Ok BuiltinAttrLangItemRange
+    | `String "RangeToInclusive" -> Ok BuiltinAttrLangItemRangeToInclusive
+    | `String "RangeTo" -> Ok BuiltinAttrLangItemRangeTo
+    | `String "RangeMax" -> Ok BuiltinAttrLangItemRangeMax
+    | `String "RangeMin" -> Ok BuiltinAttrLangItemRangeMin
+    | `String "RangeSub" -> Ok BuiltinAttrLangItemRangeSub
+    | `String "RangeFromCopy" -> Ok BuiltinAttrLangItemRangeFromCopy
+    | `String "RangeCopy" -> Ok BuiltinAttrLangItemRangeCopy
+    | `String "RangeInclusiveCopy" -> Ok BuiltinAttrLangItemRangeInclusiveCopy
+    | `String "RangeToInclusiveCopy" ->
+        Ok BuiltinAttrLangItemRangeToInclusiveCopy
+    | `String "String" -> Ok BuiltinAttrLangItemString
+    | `String "CStr" -> Ok BuiltinAttrLangItemCStr
+    | `String "ContractBuildCheckEnsures" ->
+        Ok BuiltinAttrLangItemContractBuildCheckEnsures
+    | `String "ContractCheckRequires" ->
+        Ok BuiltinAttrLangItemContractCheckRequires
+    | `String "DefaultTrait4" -> Ok BuiltinAttrLangItemDefaultTrait4
+    | `String "DefaultTrait3" -> Ok BuiltinAttrLangItemDefaultTrait3
+    | `String "DefaultTrait2" -> Ok BuiltinAttrLangItemDefaultTrait2
+    | `String "DefaultTrait1" -> Ok BuiltinAttrLangItemDefaultTrait1
+    | `String "ContractCheckEnsures" ->
+        Ok BuiltinAttrLangItemContractCheckEnsures
+    | `String "Reborrow" -> Ok BuiltinAttrLangItemReborrow
+    | `String "CoerceShared" -> Ok BuiltinAttrLangItemCoerceShared
+    | `String "FieldRepresentingType" ->
+        Ok BuiltinAttrLangItemFieldRepresentingType
+    | `String "Field" -> Ok BuiltinAttrLangItemField
+    | `String "FieldBase" -> Ok BuiltinAttrLangItemFieldBase
+    | `String "FieldType" -> Ok BuiltinAttrLangItemFieldType
+    | `String "FieldOffset" -> Ok BuiltinAttrLangItemFieldOffset
+    | `String "From" -> Ok BuiltinAttrLangItemFrom
+    | _ -> Error "")
+
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -2697,6 +3094,16 @@ and monomorphize_mut_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "All" -> Ok All
     | `String "ExceptTypes" -> Ok ExceptTypes
+    | _ -> Error "")
+
+and builtin_attr_optimize_attr_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_attr_optimize_attr, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Default" -> Ok BuiltinAttrOptimizeAttrDefault
+    | `String "DoNotOptimize" -> Ok BuiltinAttrOptimizeAttrDoNotOptimize
+    | `String "Speed" -> Ok BuiltinAttrOptimizeAttrSpeed
+    | `String "Size" -> Ok BuiltinAttrOptimizeAttrSize
     | _ -> Error "")
 
 and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =

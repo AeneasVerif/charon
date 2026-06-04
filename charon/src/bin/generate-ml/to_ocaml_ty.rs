@@ -39,8 +39,12 @@ impl<'a> GenerateCtx<'a> {
             is_in_open_inline_escape: bool,
         }
         impl Exchanger {
+            fn escape_comment_text(line: String) -> String {
+                line.replace('"', "'").replace("*)", "* )")
+            }
+
             pub fn exchange_escape_delimiters(&mut self, line: &str) -> String {
-                if line.contains("```") {
+                let line = if line.contains("```") {
                     // Handle multi-line escaped blocks.
                     let (leading, mut rest) = line.split_once("```").unwrap();
 
@@ -49,6 +53,8 @@ impl<'a> GenerateCtx<'a> {
                         rest.strip_prefix("text").unwrap()
                     } else if rest.starts_with("rust,ignore") {
                         rest.strip_prefix("rust,ignore").unwrap()
+                    } else if rest.starts_with("rust") {
+                        rest.strip_prefix("rust").unwrap()
                     } else {
                         rest
                     };
@@ -81,7 +87,8 @@ impl<'a> GenerateCtx<'a> {
                     result
                 } else {
                     line.to_owned()
-                }
+                };
+                Self::escape_comment_text(line)
             }
         }
 

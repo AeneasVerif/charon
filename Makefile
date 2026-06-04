@@ -81,6 +81,10 @@ generate-ml:
 	cd charon && cargo build --release && cargo run --release --bin generate-ml
 	cd charon-ml && $(MAKE) format 2> /dev/null
 
+.PHONY: generate-rust
+generate-rust:
+	cd charon && cargo build --release --bins && cargo run --release --bin generate-rust && cargo fmt
+
 # Same as `generate-ml` but don't re-run charon on itself. Useful when developping.
 .PHONY: generate-ml-keep-llbc
 generate-ml-keep-llbc:

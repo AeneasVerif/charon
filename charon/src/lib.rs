@@ -42,7 +42,9 @@ pub mod pretty;
 pub mod transform;
 
 // Re-export all the ast modules so we can keep the old import structure.
-pub use ast::{builtins, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values};
+pub use ast::{
+    attributes, builtins, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values,
+};
 pub use pretty::formatter;
 
 /// The version of the crate, as defined in `Cargo.toml`.

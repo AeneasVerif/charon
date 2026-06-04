@@ -727,28 +727,15 @@ fn normalize_item(
     item
 }
 
-/// Strip attributes such as `rustc_diagnostic_item` whose arguments can vary across targets in a
-/// way that doesn't matter to us.
+/// Strip attributes whose arguments can vary across targets in a way that doesn't matter to
+/// multi-target comparison.
 fn strip_unstable_attributes(item: &mut ItemByVal) {
-    fn strip_in_vec(attr_info: &mut AttrInfo) {
-        attr_info.attributes.retain(
-            |attr| !matches!(attr, Attribute::Unknown(attr) if attr.path.starts_with("rustc_")),
-        );
-    }
-
-    strip_in_vec(&mut item.as_mut().item_meta().attr_info);
-
-    if let ItemByVal::TraitDecl(d) = item {
-        for method in &mut d.methods {
-            strip_in_vec(&mut method.skip_binder.attr_info);
-        }
-        for cst in &mut d.consts {
-            strip_in_vec(&mut cst.attr_info);
-        }
-        for ty in &mut d.types {
-            strip_in_vec(&mut ty.skip_binder.attr_info);
-        }
-    }
+    item.as_mut().dyn_visit_mut(|attr_info: &mut AttrInfo| {
+        attr_info.attributes.retain(|attr| match attr {
+            Attribute::Unknown(attr) if attr.path.starts_with("rustc_") => false,
+            _ => true,
+        });
+    });
 }
 
 /// Visitor that remaps references to the given items.

@@ -67,7 +67,7 @@ and statement_kind =
           - [targets] *)
   | Call of call
   | Abort of abort_kind
-      (** Panic also handles "unreachable". We keep the name of the panicking
+      (** Panic also handles 'unreachable'. We keep the name of the panicking
           function that was called. *)
   | Return
   | Break of int
