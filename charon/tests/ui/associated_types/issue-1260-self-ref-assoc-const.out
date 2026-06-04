@@ -1,0 +1,9 @@
+error: Could not compute the value of TraitClauseBound(1, 1)::ImpliedClause2::Packing (on TraitClauseBound(1, 1)::ImpliedClause2) needed to update item reference test_crate::Field<TraitClauseBound(1, 1)::Sub>.
+       Constraints in scope:
+       
+  --> tests/ui/associated_types/issue-1260-generics-mismatch.rs:14:13
+   |
+14 |     let _ = R::Sub::ZERO;
+   |             ^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
