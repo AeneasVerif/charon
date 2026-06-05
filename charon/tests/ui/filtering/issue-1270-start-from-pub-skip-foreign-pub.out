@@ -1,0 +1,158 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::convert::From
+#[lang_item("From")]
+pub trait From<Self, T>
+{
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (T: Sized)
+    fn from = core::convert::From::from<Self, T>[Self]
+    non-dyn-compatible
+}
+
+#[lang_item("from_fn")]
+pub fn core::convert::From::from<Self, T>(_1: T) -> Self
+where
+    TraitClause0: (Self: From<T>),
+= <opaque>
+
+// Full name: core::convert::{impl From<T> for T}::from
+pub fn impl_From_for_T::from<T>(_1: T) -> T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::convert::{impl From<T> for T}
+impl<T> "impl_From_for_T" From<T> for T
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (T: Sized) = TraitClause0
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    fn from = impl_From_for_T::from<T>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: core::convert::Infallible
+pub enum Infallible {
+}
+
+// Full name: core::ops::control_flow::ControlFlow
+#[lang_item("ControlFlow")]
+pub enum ControlFlow<B, C>
+where
+    TraitClause0: (B: Sized),
+    TraitClause1: (C: Sized),
+{
+  Continue(C),
+  Break(B),
+}
+
+// Full name: core::ops::control_flow::ControlFlow::{impl Destruct for ControlFlow<B, C>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_ControlFlow::drop_glue<'_0, B, C>(_1: &'_0 mut ControlFlow<B, C>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (B: Sized),
+    TraitClause1: (C: Sized),
+= <opaque>
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Result::drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+= <opaque>
+
+// Full name: core::result::{impl Try for Result<T, E>[TraitClause0, TraitClause1]}::branch
+pub fn impl_Try_for_Result::branch<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> ControlFlow<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1], T>[{built_in impl Sized for Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]}, TraitClause0]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+= <opaque>
+
+// Full name: core::result::{impl FromResidual<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]> for Result<T, F>[TraitClause0, TraitClause2]}::from_residual
+pub fn impl_FromResidual_Result_for_Result::from_residual<T, E, F>(_1: Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]) -> Result<T, F>[TraitClause0, TraitClause2]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (F: Sized),
+    TraitClause3: (F: From<E>),
+= <opaque>
+
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
+
+// Full name: test_crate::example
+pub fn example(x_1: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]) -> Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]
+{
+    let _0: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // return
+    let x_1: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // arg #1
+    let _2: u32; // anonymous local
+    let _3: ControlFlow<Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]; // anonymous local
+    let _4: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // anonymous local
+    let residual_5: Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]; // local
+    let _6: Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]; // anonymous local
+    let val_7: u32; // local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = move x_1
+    _3 = impl_Try_for_Result::branch<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}](move _4)
+    storage_dead(_4)
+    match _3 {
+        ControlFlow::Continue => {
+        },
+        ControlFlow::Break => {
+            storage_live(residual_5)
+            residual_5 = move (_3 as variant ControlFlow::Break).0
+            storage_live(_6)
+            _6 = move residual_5
+            _0 = impl_FromResidual_Result_for_Result::from_residual<u32, String, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}, {built_in impl Sized for String}, impl_From_for_T<String>[{built_in impl Sized for String}]](move _6)
+            storage_dead(_6)
+            conditional_drop[impl_Destruct_for_Result::drop_glue<'5, Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]] residual_5
+            storage_dead(residual_5)
+            storage_dead(_2)
+            conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'7, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+            storage_dead(_3)
+            conditional_drop[impl_Destruct_for_Result::drop_glue<'9, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x_1
+            return
+        },
+    }
+    storage_live(val_7)
+    val_7 = copy (_3 as variant ControlFlow::Continue).0
+    _2 = copy val_7
+    storage_dead(val_7)
+    _0 = Result::Ok { 0: move _2 }
+    storage_dead(_2)
+    conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'2, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+    storage_dead(_3)
+    conditional_drop[impl_Destruct_for_Result::drop_glue<'3, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x_1
+    return
+}
+
+
+
