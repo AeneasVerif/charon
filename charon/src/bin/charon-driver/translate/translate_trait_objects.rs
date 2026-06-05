@@ -761,6 +761,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             impl_def.this(),
             TransItemSourceKind::VTableInstanceInitializer(*impl_kind),
         );
+        let ty = Ty::new(TyKind::Adt(vtable_struct_ref));
+        let value = ConstantExpr {
+            kind: ConstantExprKind::Call(
+                FnPtr::new(
+                    FnPtrKind::Fun(FunId::Regular(init)),
+                    self.outermost_generics().identity_args(),
+                ),
+                vec![],
+            ),
+            ty: ty.clone(),
+        };
 
         Ok(GlobalDecl {
             def_id: global_id,
@@ -769,8 +780,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             src,
             // it should be static to have its own address
             global_kind: GlobalKind::Static,
-            ty: Ty::new(TyKind::Adt(vtable_struct_ref)),
-            init,
+            ty,
+            value,
         })
     }
 

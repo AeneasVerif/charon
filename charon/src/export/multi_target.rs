@@ -807,9 +807,6 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
             _ => {}
         }
     }
-    fn enter_global_decl(&mut self, x: &mut GlobalDecl) {
-        self.map(&mut x.init);
-    }
     fn enter_fun_decl(&mut self, x: &mut FunDecl) {
         if let Some(id) = &mut x.is_global_initializer {
             self.map(id);

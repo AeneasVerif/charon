@@ -46,7 +46,7 @@ pub fn LEN2<Self, Clause0_W, const LEN : usize>() -> usize
 }
 
 // Full name: test_crate::WithConstTy::LEN2
-pub const LEN2<Self, Clause0_W, const LEN : usize>: usize = LEN2()
+pub const LEN2<Self, Clause0_W, const LEN : usize>: usize = LEN2<Self, Clause0_W, LEN>()
 
 
 

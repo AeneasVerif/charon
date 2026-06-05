@@ -272,9 +272,10 @@ pub struct GlobalDecl {
     /// The kind of global (static or const).
     #[drive(skip)]
     pub global_kind: GlobalKind,
-    /// The initializer function used to compute the initial value for this constant/static. It
-    /// uses the same generic parameters as the global.
-    pub init: FunDeclId,
+    /// The value of this constant/static. By default this is a [`ConstantExprKind::Call`] to the
+    /// initializer function that computes the value (the function uses the same generic parameters
+    /// as the global).
+    pub value: ConstantExpr,
 }
 
 /// Reference to a global declaration.

@@ -969,9 +969,9 @@ where
         }
         write!(f, " ")?;
 
-        // Decl name
-        let initializer = self.init.with_ctx(ctx);
-        write!(f, "= {initializer}()")?;
+        // Value
+        let value = self.value.with_ctx(ctx);
+        write!(f, "= {value}")?;
 
         Ok(())
     }
@@ -1497,6 +1497,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
                 }
             }
             ConstantExprKind::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
+            ConstantExprKind::Call(fp, args) => {
+                let args = args.iter().map(|arg| arg.with_ctx(ctx)).format(", ");
+                write!(f, "{}({args})", fp.with_ctx(ctx))
+            }
             ConstantExprKind::FnDef(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))
             }

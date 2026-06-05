@@ -212,7 +212,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     TraitClause2: (T: Destruct),
- = impl_Modifiable_for_Box_i32_Global::{vtable}()
+ = impl_Modifiable_for_Box_i32_Global::{vtable}<T>[TraitClause0, TraitClause1, TraitClause2]()
 
 // Full name: test_crate::{impl Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]}
 impl<T> "impl_Modifiable_for_Box_i32_Global" Modifiable<T> for alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]

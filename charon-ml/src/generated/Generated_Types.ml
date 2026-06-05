@@ -427,6 +427,8 @@ and constant_expr_kind =
 
           We eliminate this case in a micro-pass. *)
   | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
+  | CCall of fn_ptr * constant_expr list
+      (** A call to a [const fn] or a constant's initializer. *)
   | CFnDef of fn_ptr  (** Function definition -- this is a ZST constant *)
   | CFnPtr of fn_ptr
       (** A function pointer to a function item; this is an actual pointer to

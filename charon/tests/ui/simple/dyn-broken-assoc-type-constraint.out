@@ -136,7 +136,7 @@ where
 static impl_Broken_for_T::{vtable}<T>: test_crate::Broken::{vtable}<()>
 where
     TraitClause0: (T: Sized),
- = impl_Broken_for_T::{vtable}()
+ = impl_Broken_for_T::{vtable}<T>[TraitClause0]()
 
 // Full name: test_crate::{impl Broken for T}
 impl<T> "impl_Broken_for_T" Broken for T

@@ -40,11 +40,11 @@ impl VisitAst for UsesClauseVisitor {
 }
 
 #[derive(Visitor)]
-struct RemoveSelfVisitor {
-    remove_in: HashSet<ItemId>,
+struct RemoveSelfVisitor<'a> {
+    remove_in: &'a HashSet<ItemId>,
 }
 
-impl RemoveSelfVisitor {
+impl RemoveSelfVisitor<'_> {
     fn process_item(&self, id: impl Into<ItemId>, args: &mut GenericArgs) {
         if self.remove_in.contains(&id.into()) {
             args.trait_refs
@@ -52,7 +52,7 @@ impl RemoveSelfVisitor {
         }
     }
 }
-impl VisitAstMut for RemoveSelfVisitor {
+impl VisitAstMut for RemoveSelfVisitor<'_> {
     fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
         match x.id {
             TypeId::Adt(id) => self.process_item(id, &mut x.generics),
@@ -97,7 +97,7 @@ impl TransformPass for Transform {
                 .iter()
                 .filter_map(|cst| cst.default.as_ref())
                 .filter_map(|gref| ctx.translated.global_decls.get(gref.id))
-                .map(|gdecl| gdecl.init);
+                .filter_map(|gdecl| gdecl.init_fun_id());
             let funs = methods
                 .chain(consts)
                 .filter_map(|id: FunDeclId| ctx.translated.fun_decls.get(id));
@@ -114,6 +114,16 @@ impl TransformPass for Transform {
             }
         }
 
+        // Remove the now-unused `Self` argument from any `GenericArgs` destined for the items
+        // we're about to change. We do this before renumbering the clauses below: a global's
+        // `value` is a call to its initializer that forwards the global's own generics (including
+        // the `Self` clause as argument 0); removing that argument here keeps the renumbering below
+        // from underflowing on the `Self` clause.
+        RemoveSelfVisitor {
+            remove_in: &doesnt_use_self,
+        }
+        .visit_by_val_infallible(&mut ctx.translated);
+
         // In each item, remove the first clause and renumber the others.
         for &id in &doesnt_use_self {
             let Some(mut item) = ctx.translated.get_item_mut(id) else {
@@ -126,11 +136,5 @@ impl TransformPass for Transform {
                 *clause_id = TraitClauseId::from_usize(clause_id.index() - 1);
             });
         }
-
-        // Update any `GenericArgs` destined for the items we just changed.
-        RemoveSelfVisitor {
-            remove_in: doesnt_use_self,
-        }
-        .visit_by_val_infallible(&mut ctx.translated);
     }
 }

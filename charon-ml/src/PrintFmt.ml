@@ -502,6 +502,10 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
       Format.fprintf fmt "%a::%s" (pp_trait_ref env) trait_ref name
   | CVTableRef trait_ref ->
       Format.fprintf fmt "&vtable_of(%a)" (pp_trait_ref env) trait_ref
+  | CCall (fn_ptr, args) ->
+      Format.fprintf fmt "%a(%a)" (pp_fn_ptr env) fn_ptr
+        (pp_sep_list ", " (pp_constant_expr env))
+        args
   | CFnDef fn_ptr -> pp_fn_ptr env fmt fn_ptr
   | CFnPtr fn_ptr -> Format.fprintf fmt "fnptr(%a)" (pp_fn_ptr env) fn_ptr
   | CTypeId ty -> Format.fprintf fmt "TypeId(%a)" (pp_ty env) ty
@@ -1606,7 +1610,7 @@ let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
         Format.fprintf fmt "%stype %s%s" indent1 bound_ty.binder_value.name
           params;
         Option.iter
-          (fun default ->
+          (fun (default : trait_assoc_ty_impl) ->
             Format.fprintf fmt " = %s" (ty_to_string env default.value))
           bound_ty.binder_value.default;
         let clauses =
@@ -1728,10 +1732,9 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
   let params =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
-  Format.fprintf fmt "%s%s: %a%s%s= %a()" intro params (pp_ty env) def.ty
-    clauses
+  Format.fprintf fmt "%s%s: %a%s%s= %a" intro params (pp_ty env) def.ty clauses
     (if clauses = "" then " " else "\n ")
-    (pp_fun_decl_id env) def.init
+    (pp_constant_expr env) def.value
 
 module Llbc = struct
   (** Pretty-printing for LLBC AST (generic functions) *)

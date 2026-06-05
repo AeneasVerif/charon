@@ -437,7 +437,7 @@ where
 pub const LEN<T, const N : usize>: usize
 where
     TraitClause0: (T: Sized),
- = LEN()
+ = LEN<T, N>[TraitClause0]()
 
 // Full name: test_crate::use_v
 pub fn use_v<T, const N : usize>() -> usize
