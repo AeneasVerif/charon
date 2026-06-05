@@ -560,7 +560,7 @@ impl StartFrom {
                 .iter()
                 .filter_map(|a| a.as_unknown())
                 .any(|raw_attr| raw_attr.path == *attr),
-            StartFrom::Pub => item_meta.attr_info.public,
+            StartFrom::Pub => item_meta.attr_info.public && item_meta.is_local,
         }
     }
 }

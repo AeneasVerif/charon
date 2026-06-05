@@ -49,17 +49,6 @@ where
 pub enum Infallible {
 }
 
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
-
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
 pub enum ControlFlow<B, C>
@@ -78,64 +67,6 @@ where
     TraitClause1: (C: Sized),
 = <opaque>
 
-// Full name: core::ops::try_trait::FromResidual
-#[lang_item("FromResidual")]
-pub trait FromResidual<Self, R>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (R: Sized)
-    fn from_residual = core::ops::try_trait::FromResidual::from_residual<Self, R>[Self]
-    non-dyn-compatible
-}
-
-// Full name: core::ops::try_trait::Try
-#[lang_item("Try")]
-pub trait Try<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: FromResidual<Self::Residual>)
-    proof ImpliedClause2: (Self::Output: Sized)
-    proof ImpliedClause3: (Self::Residual: Sized)
-    proof ImpliedClause4: (Self::Residual: Residual<Self::Output>)
-    type Output
-    type Residual
-    fn from_output = core::ops::try_trait::Try::from_output<Self>[Self]
-    fn branch = core::ops::try_trait::Try::branch<Self>[Self]
-    non-dyn-compatible
-}
-
-// Full name: core::ops::try_trait::Residual
-pub trait Residual<Self, O>
-where
-    TypeConstraint0: Self::ImpliedClause3::Output = O,
-    TypeConstraint1: Self::ImpliedClause3::Residual = Self,
-{
-    proof ImpliedClause0: (Self: Sized)
-    proof ImpliedClause1: (O: Sized)
-    proof ImpliedClause2: (Self::TryType: Sized)
-    proof ImpliedClause3: (Self::TryType: Try)
-    type TryType
-    non-dyn-compatible
-}
-
-#[lang_item("from_output")]
-pub fn core::ops::try_trait::Try::from_output<Self>(_1: TraitClause0::Output) -> Self
-where
-    TraitClause0: (Self: Try),
-= <opaque>
-
-#[lang_item("branch")]
-pub fn core::ops::try_trait::Try::branch<Self>(_1: Self) -> ControlFlow<TraitClause0::Residual, TraitClause0::Output>[TraitClause0::ImpliedClause1::ImpliedClause1, TraitClause0::ImpliedClause2]
-where
-    TraitClause0: (Self: Try),
-= <opaque>
-
-#[lang_item("from_residual")]
-pub fn core::ops::try_trait::FromResidual::from_residual<Self, R>(_1: R) -> Self
-where
-    TraitClause0: (Self: FromResidual<R>),
-= <opaque>
-
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -149,13 +80,6 @@ where
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
 unsafe fn impl_Destruct_for_Result::drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClause1])
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-= <opaque>
-
-// Full name: core::result::{impl Try for Result<T, E>[TraitClause0, TraitClause1]}::from_output
-pub fn impl_Try_for_Result::from_output<T, E>(_1: T) -> Result<T, E>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
