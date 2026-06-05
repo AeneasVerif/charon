@@ -790,7 +790,7 @@ where
 pub const LEN2<Self, const LEN : usize>: usize
 where
     TraitClause0: (Self: WithConstTy<LEN>),
- = LEN2()
+ = LEN2<Self, LEN>[TraitClause0]()
 
 pub fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(_1: &'_0 mut TraitClause0::W, _2: &'_1 [u8; LEN])
 where
@@ -1235,7 +1235,7 @@ where
 pub const impl_Trait_for_array::LEN<T, const N : usize>: usize
 where
     TraitClause0: (T: Sized),
- = impl_Trait_for_array::LEN()
+ = impl_Trait_for_array::LEN<T, N>[TraitClause0]()
 
 // Full name: test_crate::{impl Trait for [T; N]}
 impl<T, const N : usize> "impl_Trait_for_array" Trait for [T; N]
@@ -1264,7 +1264,7 @@ pub const impl_Trait_for_Wrapper::LEN<T>: usize
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
- = impl_Trait_for_Wrapper::LEN()
+ = impl_Trait_for_Wrapper::LEN<T>[TraitClause0, TraitClause1]()
 
 // Full name: test_crate::{impl Trait for Wrapper<T>[TraitClause0]}
 impl<T> "impl_Trait_for_Wrapper" Trait for Wrapper<T>[TraitClause0]
@@ -1318,7 +1318,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
     TraitClause2: (T: Trait),
- = FOO()
+ = FOO<T, U>[TraitClause0, TraitClause1, TraitClause2]()
 
 // Full name: test_crate::use_foo1
 pub fn use_foo1<T, U>() -> Result<T, i32>[TraitClause0, {built_in impl Sized for i32}]

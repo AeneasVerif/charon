@@ -644,6 +644,8 @@ pub enum ConstantExprKind {
     Ptr(RefKind, Box<ConstantExpr>, Option<UnsizingMetadata>),
     /// A const generic var
     Var(ConstGenericDbVar),
+    /// A call to a `const fn` or a constant's initializer.
+    Call(FnPtr, Vec<ConstantExpr>),
     /// Function definition -- this is a ZST constant
     FnDef(FnPtr),
     /// A function pointer to a function item; this is an actual pointer to that function item.

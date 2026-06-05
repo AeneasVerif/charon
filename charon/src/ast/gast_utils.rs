@@ -8,6 +8,19 @@ impl FnPtrKind {
     }
 }
 
+impl GlobalDecl {
+    /// If this global's value is a call to its initializer function, returns the initializer's id.
+    pub fn init_fun_id(&self) -> Option<FunDeclId> {
+        match &self.value.kind {
+            ConstantExprKind::Call(fn_ptr, _) => match &*fn_ptr.kind {
+                FnPtrKind::Fun(FunId::Regular(id)) => Some(*id),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+}
+
 impl Body {
     /// Whether there is an actual body with statements etc, as opposed to the body being missing
     /// for some reason.

@@ -16,7 +16,7 @@ impl Transform {
             .global_decls
             .iter()
             .filter(|gdecl| matches!(gdecl.global_kind, GlobalKind::AnonConst))
-            .map(|gdecl| (gdecl.def_id, gdecl.init))
+            .filter_map(|gdecl| Some((gdecl.def_id, gdecl.init_fun_id()?)))
             .collect();
         CowBox::Owned(Box::new(Transform { anon_consts }))
     }

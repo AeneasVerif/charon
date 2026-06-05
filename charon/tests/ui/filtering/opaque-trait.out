@@ -37,7 +37,7 @@ where
 const test_crate::Trait::CONST1<Self>: usize
 where
     TraitClause0: (Self: Trait),
- = test_crate::Trait::CONST1()
+ = test_crate::Trait::CONST1<Self>[TraitClause0]()
 
 fn test_crate::Trait::CONST2<Self>() -> usize
 where
@@ -52,7 +52,7 @@ where
 const test_crate::Trait::CONST2<Self>: usize
 where
     TraitClause0: (Self: Trait),
- = test_crate::Trait::CONST2()
+ = test_crate::Trait::CONST2<Self>[TraitClause0]()
 
 fn test_crate::Trait::CONST3<Self>() -> usize
 where
@@ -67,7 +67,7 @@ where
 const test_crate::Trait::CONST3<Self>: usize
 where
     TraitClause0: (Self: Trait),
- = test_crate::Trait::CONST3()
+ = test_crate::Trait::CONST3<Self>[TraitClause0]()
 
 fn test_crate::Trait::method1<Self>()
 where

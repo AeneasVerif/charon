@@ -174,9 +174,11 @@ type global_decl = {
       (** The context of the global: distinguishes top-level items from
           trait-associated items. *)
   global_kind : global_kind;  (** The kind of global (static or const). *)
-  init : fun_decl_id;
-      (** The initializer function used to compute the initial value for this
-          constant/static. It uses the same generic parameters as the global. *)
+  value : constant_expr;
+      (** The value of this constant/static. By default this is a
+          [[ConstantExprKind::Call]] to the initializer function that computes
+          the value (the function uses the same generic parameters as the
+          global). *)
 }
 
 and global_kind =

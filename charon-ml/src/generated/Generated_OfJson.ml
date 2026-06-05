@@ -467,6 +467,10 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Var", var) ] ->
         let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
         Ok (CVar var)
+    | `Assoc [ ("Call", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = fn_ptr_of_json ctx x_0 in
+        let* x_1 = list_of_json constant_expr_of_json ctx x_1 in
+        Ok (CCall (x_0, x_1))
     | `Assoc [ ("FnDef", fn_def) ] ->
         let* fn_def = fn_ptr_of_json ctx fn_def in
         Ok (CFnDef fn_def)
@@ -2439,7 +2443,7 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("ty", ty);
           ("src", src);
           ("global_kind", global_kind);
-          ("init", init);
+          ("value", value);
         ] ->
         let* def_id = global_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -2447,9 +2451,9 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* ty = ty_of_json ctx ty in
         let* src = item_source_of_json ctx src in
         let* global_kind = global_kind_of_json ctx global_kind in
-        let* init = fun_decl_id_of_json ctx init in
+        let* value = constant_expr_of_json ctx value in
         Ok
-          ({ def_id; item_meta; generics; ty; src; global_kind; init }
+          ({ def_id; item_meta; generics; ty; src; global_kind; value }
             : global_decl)
     | _ -> Error "")
 

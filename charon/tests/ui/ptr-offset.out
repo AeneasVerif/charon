@@ -56,7 +56,7 @@ where
 pub const SIZE<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
- = SIZE()
+ = SIZE<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
 #[lang_item("mem_align_const")]
@@ -70,7 +70,7 @@ where
 pub const ALIGN<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
- = ALIGN()
+ = ALIGN<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
 pub fn ALIGNMENT<Self>() -> Alignment
@@ -82,7 +82,7 @@ where
 pub const ALIGNMENT<Self>: Alignment
 where
     TraitClause0: (Self: SizedTypeProperties),
- = ALIGNMENT()
+ = ALIGNMENT<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::IS_ZST
 pub fn IS_ZST<Self>() -> bool
@@ -94,7 +94,7 @@ where
 pub const IS_ZST<Self>: bool
 where
     TraitClause0: (Self: SizedTypeProperties),
- = IS_ZST()
+ = IS_ZST<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::LAYOUT
 pub fn LAYOUT<Self>() -> Layout
@@ -106,7 +106,7 @@ where
 pub const LAYOUT<Self>: Layout
 where
     TraitClause0: (Self: SizedTypeProperties),
- = LAYOUT()
+ = LAYOUT<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
 pub fn MAX_SLICE_LEN<Self>() -> usize
@@ -118,7 +118,7 @@ where
 pub const MAX_SLICE_LEN<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
- = MAX_SLICE_LEN()
+ = MAX_SLICE_LEN<Self>[TraitClause0]()
 
 // Full name: core::mem::{impl SizedTypeProperties for T}
 impl<T> "impl_SizedTypeProperties_for_T" SizedTypeProperties for T

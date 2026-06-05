@@ -622,6 +622,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         let initializer = self.register_item(span, def.this(), TransItemSourceKind::Fun);
+        let value = ConstantExpr {
+            kind: ConstantExprKind::Call(
+                FnPtr::new(
+                    FnPtrKind::Fun(FunId::Regular(initializer)),
+                    self.outermost_generics().identity_args(),
+                ),
+                vec![],
+            ),
+            ty: ty.clone(),
+        };
 
         Ok(GlobalDecl {
             def_id,
@@ -630,7 +640,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             ty,
             src: item_source,
             global_kind,
-            init: initializer,
+            value,
         })
     }
 

@@ -146,7 +146,7 @@ static impl_Modifiable_for_i32::{vtable}<T>: test_crate::Modifiable::{vtable}<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
- = impl_Modifiable_for_i32::{vtable}()
+ = impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]()
 
 // Full name: test_crate::{impl Modifiable<T> for i32}
 impl<T> "impl_Modifiable_for_i32" Modifiable<T> for i32

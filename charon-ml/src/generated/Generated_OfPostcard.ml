@@ -439,20 +439,24 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (CVar x_0)
      | 9 ->
          let* x_0 = fn_ptr_of_postcard ctx st in
-         Ok (CFnDef x_0)
+         let* x_1 = list_of_postcard constant_expr_of_postcard ctx st in
+         Ok (CCall (x_0, x_1))
      | 10 ->
          let* x_0 = fn_ptr_of_postcard ctx st in
-         Ok (CFnPtr x_0)
+         Ok (CFnDef x_0)
      | 11 ->
+         let* x_0 = fn_ptr_of_postcard ctx st in
+         Ok (CFnPtr x_0)
+     | 12 ->
          let* x_0 = ty_of_postcard ctx st in
          Ok (CTypeId x_0)
-     | 12 ->
+     | 13 ->
          let* x_0 = big_uint_of_postcard ctx st in
          Ok (CPtrNoProvenance x_0)
-     | 13 ->
+     | 14 ->
          let* x_0 = list_of_postcard byte_of_postcard ctx st in
          Ok (CRawMemory x_0)
-     | 14 ->
+     | 15 ->
          let* x_0 = string_of_postcard ctx st in
          Ok (COpaque x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -2083,9 +2087,9 @@ and global_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* ty = ty_of_postcard ctx st in
      let* src = item_source_of_postcard ctx st in
      let* global_kind = global_kind_of_postcard ctx st in
-     let* init = fun_decl_id_of_postcard ctx st in
+     let* value = constant_expr_of_postcard ctx st in
      Ok
-       ({ def_id; item_meta; generics; ty; src; global_kind; init }
+       ({ def_id; item_meta; generics; ty; src; global_kind; value }
          : global_decl))
 
 and global_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

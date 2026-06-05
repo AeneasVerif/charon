@@ -172,6 +172,13 @@ let has_body : body -> bool = function
   | MissingBody
   | ErrorBody _ -> false
 
+(** Returns the ID of this global's initializer, to mimic the now removed
+    [global_decl.init] field. *)
+let init_fun_id_of_global (global : global_decl) : fun_decl_id option =
+  match global.value.kind with
+  | CCall ({ kind = FunId (FRegular id); _ }, []) -> Some id
+  | _ -> None
+
 (** Split a module's declarations between types, functions and globals *)
 let split_declarations (decls : declaration_group list) :
     type_declaration_group list

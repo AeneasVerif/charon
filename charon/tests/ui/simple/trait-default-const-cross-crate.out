@@ -30,7 +30,7 @@ where
 const FOO<Self>: usize
 where
     TraitClause0: (Self: Trait),
- = FOO()
+ = FOO<Self>[TraitClause0]()
 
 // Full name: trait_default_const::{impl Trait for T}
 impl<T> "impl_Trait_for_T" Trait for T
