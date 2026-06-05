@@ -161,6 +161,11 @@ and cli_options = {
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
+  evaluate_consts : bool;
+      (** Evaluate the value of named constants and statics instead of keeping a
+          call to their initializer function. When evaluation isn't possible
+          (e.g. the constant is generic, or for recursive statics), we fall back
+          to the initializer call. *)
   unsized_strings : bool;
       (** Replace string literal constants with a constant u8 array that gets
           unsized, expliciting the fact a string constant has a hidden

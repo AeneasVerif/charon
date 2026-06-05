@@ -197,4 +197,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let c = self.catch_sinto(span, c)?;
         self.translate_constant_expr(span, &c)
     }
+
+    /// Evaluates a constant definition and returns the result as a [`ConstantExpr`], if one exists.
+    pub(crate) fn evaluate_const_def(
+        &mut self,
+        def: &hax::FullDef<'tcx>,
+    ) -> Option<hax::Decorated<hax::ConstantExprKind>> {
+        match def.kind() {
+            hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. } => {
+                def.const_value(self.hax_state_with_id())
+            }
+            hax::FullDefKind::Static { .. } => def.static_value(self.hax_state_with_id()),
+            _ => None,
+        }
+    }
 }

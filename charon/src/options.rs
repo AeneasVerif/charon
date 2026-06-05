@@ -211,6 +211,12 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub raw_consts: bool,
+    /// Evaluate the value of named constants and statics instead of keeping a call to their
+    /// initializer function. When evaluation isn't possible (e.g. the constant is generic, or for
+    /// recursive statics), we fall back to the initializer call.
+    #[clap(long)]
+    #[serde(default)]
+    pub evaluate_consts: bool,
     /// Replace string literal constants with a constant u8 array that gets unsized,
     /// expliciting the fact a string constant has a hidden reference.
     #[clap(long)]
@@ -448,7 +454,7 @@ impl CliOpts {
                     self.monomorphize = true;
                     self.no_normalize = true;
                     self.precise_drops = true;
-                    self.raw_consts = true;
+                    self.evaluate_consts = true;
                     self.ullbc = true;
                 }
                 Preset::Tests => {
@@ -604,6 +610,9 @@ pub struct TranslateOptions {
     pub treat_box_as_builtin: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
+    /// Evaluate the value of named constants and statics instead of keeping a call to their
+    /// initializer function.
+    pub evaluate_consts: bool,
     /// Replace string literal constants with a constant u8 array that gets unsized,
     /// expliciting the fact a string constant has a hidden reference.
     pub unsized_strings: bool,
@@ -761,6 +770,7 @@ impl TranslateOptions {
             item_opacities,
             treat_box_as_builtin: options.treat_box_as_builtin,
             raw_consts: options.raw_consts,
+            evaluate_consts: options.evaluate_consts,
             unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,

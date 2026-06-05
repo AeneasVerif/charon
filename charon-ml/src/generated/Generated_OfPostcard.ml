@@ -1812,6 +1812,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* index_to_function_calls = bool_of_postcard ctx st in
      let* treat_box_as_builtin = bool_of_postcard ctx st in
      let* raw_consts = bool_of_postcard ctx st in
+     let* evaluate_consts = bool_of_postcard ctx st in
      let* unsized_strings = bool_of_postcard ctx st in
      let* reconstruct_fallible_operations = bool_of_postcard ctx st in
      let* reconstruct_asserts = bool_of_postcard ctx st in
@@ -1862,6 +1863,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           index_to_function_calls;
           treat_box_as_builtin;
           raw_consts;
+          evaluate_consts;
           unsized_strings;
           reconstruct_fallible_operations;
           reconstruct_asserts;
