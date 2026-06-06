@@ -1,7 +1,9 @@
 use crate::hax::prelude::*;
+use crate::translate::resolve_path::def_path_def_ids;
+use charon_lib::name_matcher::NamePattern;
 
+use itertools::Itertools;
 use {
-    rustc_hir::definitions::PerParentDisambiguatorState,
     rustc_middle::ty,
     rustc_span::{DUMMY_SP, Symbol},
     rustc_type_ir::Upcast,
@@ -27,6 +29,43 @@ pub struct SyntheticItemData<'tcx> {
     generics: &'tcx ty::Generics,
     clauses: &'tcx [ty::Clause<'tcx>],
     param_env: ty::ParamEnv<'tcx>,
+}
+
+/// This is a pretty criminal hack: I want to generate `ty::Generics` for my fake items. This
+/// requires `DefId`s for the generic parameters. rustc has an affordance for creating new `DefId`s
+/// (`tcx.create_def()`) but I could not figure out a way to use it that didn't end up ICEing
+/// during metadata encoding. So instead I'm reusing the `DefId`s of the generic parameters of the
+/// `core::array::repeat` function because that function had the right kind of generics.
+#[derive(Clone, Copy)]
+struct GenericParamDefIds {
+    ty: RDefId,
+    ct: RDefId,
+}
+
+impl GenericParamDefIds {
+    fn construct<'tcx>(s: &impl BaseState<'tcx>) -> Self {
+        let tcx = s.base().tcx;
+        let pat = NamePattern::parse("core::array::repeat").unwrap();
+        let repeat = def_path_def_ids(s, &pat, true)
+            .unwrap_or_else(|err| panic!("could not resolve `core::array::repeat`: {err}"))
+            .into_iter()
+            .exactly_one()
+            .unwrap();
+        let generics = tcx.generics_of(repeat);
+        let ty = generics
+            .own_params
+            .iter()
+            .find(|param| matches!(param.kind, ty::GenericParamDefKind::Type { .. }))
+            .unwrap_or_else(|| panic!("`core::array::repeat` has no type parameter"))
+            .def_id;
+        let ct = generics
+            .own_params
+            .iter()
+            .find(|param| matches!(param.kind, ty::GenericParamDefKind::Const { .. }))
+            .unwrap_or_else(|| panic!("`core::array::repeat` has no const parameter"))
+            .def_id;
+        GenericParamDefIds { ty, ct }
+    }
 }
 
 impl SyntheticItem {
@@ -100,7 +139,11 @@ impl SyntheticItem {
     }
 
     fn data<'tcx>(&self, s: &impl BaseState<'tcx>) -> SyntheticItemData<'tcx> {
-        s.with_global_cache(|c| c.synthetic_data(s, *self))
+        if let Some(data) = s.with_global_cache(|c| c.synthetic_item_data.get(self).copied()) {
+            return data;
+        }
+        let borrowed_param_def_ids = GenericParamDefIds::construct(s);
+        s.with_global_cache(|c| c.synthetic_data(s, *self, borrowed_param_def_ids))
     }
 }
 
@@ -109,12 +152,12 @@ impl<'tcx> GlobalCache<'tcx> {
         &mut self,
         s: &impl BaseState<'tcx>,
         item: SyntheticItem,
+        borrowed_param_def_ids: GenericParamDefIds,
     ) -> SyntheticItemData<'tcx> {
         if let Some(data) = self.synthetic_item_data.get(&item) {
             return *data;
         }
         let tcx = s.base().tcx;
-        let mut disambiguator_state = PerParentDisambiguatorState::default();
         let mut generics = ty::Generics {
             parent: None,
             parent_count: 0,
@@ -123,25 +166,17 @@ impl<'tcx> GlobalCache<'tcx> {
             has_self: false,
             has_late_bound_regions: None,
         };
-        // The synthetic item itself is hax-only. We still create rustc defs for its generic
+        // The synthetic item itself is hax-only. We still need rustc defs for its generic
         // parameters because rustc generic params carry a `DefId`, and const params need a
-        // `type_of` entry.
-        let mut mk_param = |name: &str, def_kind, kind| {
+        // `type_of` entry. We do a little compiler crime to get such `DefId`s, see
+        // `GenericParamDefIds`.
+        let mut mk_param = |name: &str, kind: ty::GenericParamDefKind| {
             let name = Symbol::intern(name);
-            let def_name = Symbol::intern(&format!("{}::{name}", item.name()));
-            let param_feed = tcx.create_def(
-                rustc_span::def_id::CRATE_DEF_ID,
-                Some(def_name),
-                def_kind,
-                None,
-                &mut disambiguator_state,
-            );
-            // Avoid ICEs
-            param_feed.def_span(DUMMY_SP);
-            param_feed.feed_hir();
-            param_feed.visibility(ty::Visibility::Public);
-
-            let param_def_id = param_feed.def_id().into();
+            let param_def_id = match kind {
+                ty::GenericParamDefKind::Type { .. } => borrowed_param_def_ids.ty,
+                ty::GenericParamDefKind::Const { .. } => borrowed_param_def_ids.ct,
+                ty::GenericParamDefKind::Lifetime => unreachable!(),
+            };
             let index = generics.own_params.len() as u32;
             let param_def = ty::GenericParamDef {
                 name,
@@ -153,27 +188,21 @@ impl<'tcx> GlobalCache<'tcx> {
             let arg = tcx.mk_param_from_def(&param_def);
             generics.own_params.push(param_def);
             generics.param_def_id_to_index.insert(param_def_id, index);
-            (arg, param_feed)
+            arg
         };
 
         let mut clauses = vec![];
         let sized_trait = tcx.lang_items().sized_trait().unwrap();
         match item {
             SyntheticItem::Array => {
-                let (t_arg, _) = mk_param(
+                let t_arg = mk_param(
                     "T",
-                    rustc_hir::def::DefKind::TyParam,
                     ty::GenericParamDefKind::Type {
                         has_default: false,
                         synthetic: false,
                     },
                 );
-                let (n_arg, n_feed) = mk_param(
-                    "N",
-                    rustc_hir::def::DefKind::ConstParam,
-                    ty::GenericParamDefKind::Const { has_default: false },
-                );
-                n_feed.type_of(ty::EarlyBinder::bind(tcx.types.usize));
+                let n_arg = mk_param("N", ty::GenericParamDefKind::Const { has_default: false });
 
                 let item_ty = t_arg.as_type().unwrap();
                 let len = n_arg.as_const().unwrap();
@@ -184,9 +213,8 @@ impl<'tcx> GlobalCache<'tcx> {
                 clauses.push(len_is_usize.upcast(tcx));
             }
             SyntheticItem::Slice => {
-                let (t_arg, _) = mk_param(
+                let t_arg = mk_param(
                     "T",
-                    rustc_hir::def::DefKind::TyParam,
                     ty::GenericParamDefKind::Type {
                         has_default: false,
                         synthetic: false,
@@ -205,9 +233,8 @@ impl<'tcx> GlobalCache<'tcx> {
                     } else {
                         format!("T{i}")
                     };
-                    let (arg, _) = mk_param(
+                    let arg = mk_param(
                         &name,
-                        rustc_hir::def::DefKind::TyParam,
                         ty::GenericParamDefKind::Type {
                             has_default: false,
                             synthetic: false,
