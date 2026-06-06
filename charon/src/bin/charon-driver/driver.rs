@@ -11,7 +11,7 @@ use rustc_interface::Config;
 use rustc_interface::interface::Compiler;
 use rustc_middle::ty::TyCtxt;
 use rustc_middle::util::Providers;
-use rustc_session::config::{OutputType, OutputTypes};
+use rustc_session::config::OutputTypes;
 use rustc_span::ErrorGuaranteed;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{env, fmt};
@@ -53,12 +53,10 @@ fn set_parallel_frontend(config: &mut Config) {
     }
 }
 
-/// Don't even try to codegen. This avoids errors due to checking if the output filename is
-/// available (despite the fact that we won't emit it because we stop compilation early).
-fn set_no_codegen(config: &mut Config) {
+/// Don't even try to codegen or emit rustc artifacts.
+fn suppress_codegen_outputs(config: &mut Config) {
     config.opts.unstable_opts.no_codegen = true;
-    // Only emit metadata.
-    config.opts.output_types = OutputTypes::new(&[(OutputType::Metadata, None)]);
+    config.opts.output_types = OutputTypes::new(&[]);
 }
 
 // We use a static to be able to pass data to `override_queries`.
@@ -75,7 +73,12 @@ fn skip_borrowck_if_set(providers: &mut Providers) {
     }
 }
 
-fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
+fn setup_compiler(
+    config: &mut Config,
+    options: &CliOpts,
+    do_translate: bool,
+    emit_artifacts: bool,
+) {
     if do_translate {
         if options.skip_borrowck {
             // We use a static to be able to pass data to `override_queries`.
@@ -94,7 +97,9 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
             // };
         });
 
-        set_no_codegen(config);
+        if !emit_artifacts {
+            suppress_codegen_outputs(config);
+        }
         set_parallel_frontend(config);
     }
     set_mir_options(config);
@@ -135,6 +140,14 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
     // Retreive the command-line arguments pased to `charon_driver`. The first arg is the path to
     // the current executable, we skip it.
     let mut compiler_args: Vec<String> = env::args().skip(1).collect();
+    // We use `RUSTC_WORKSPACE_WRAPPER` to break cargo's caching; that value ends up as our first
+    // argument.
+    if compiler_args
+        .first()
+        .is_some_and(|arg| arg.starts_with("charon-dont-cache-this-"))
+    {
+        compiler_args.remove(0);
+    }
     trace!(
         "charon-driver called with args: {}",
         compiler_args.iter().format(" ")
@@ -167,7 +180,7 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
 
         // Retrieve the Charon options by deserializing them from the environment variable
         // (cargo-charon serialized the arguments and stored them in a specific environment
-        // variable before calling cargo with RUSTC_WRAPPER=charon-driver).
+        // variable before calling cargo with `RUSTC_WRAPPER=charon-driver`).
         let mut options: options::CliOpts = match env::var(options::CHARON_ARGS) {
             Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
             Err(_) => {
@@ -192,6 +205,7 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
         // Call the Rust compiler with our custom callback.
         let mut callback = CharonCallbacks {
             options: &options,
+            emit_artifacts: env::var("CHARON_USING_CARGO").is_ok(),
             error_ctx: Some(error_ctx),
             transform_ctx: None,
         };
@@ -206,6 +220,9 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
 /// The callbacks for Charon
 pub struct CharonCallbacks<'a> {
     options: &'a CliOpts,
+    /// Whether rustc should emit the artifacts requested by its command line. This is needed under
+    /// cargo so later crate invocations can consume earlier selected crates.
+    emit_artifacts: bool,
     /// Context for errors; `take()`n by translation.
     error_ctx: Option<ErrorCtx>,
     /// This is to be filled during the extraction; it contains the translated crate. `None` at the
@@ -214,7 +231,7 @@ pub struct CharonCallbacks<'a> {
 }
 impl<'a> Callbacks for CharonCallbacks<'a> {
     fn config(&mut self, config: &mut Config) {
-        setup_compiler(config, self.options, true);
+        setup_compiler(config, self.options, true, self.emit_artifacts);
     }
 
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
@@ -240,10 +257,6 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
 
         Compilation::Continue
     }
-    fn after_analysis<'tcx>(&mut self, _: &Compiler, _: TyCtxt<'tcx>) -> Compilation {
-        // Don't continue to codegen etc.
-        Compilation::Stop
-    }
 }
 
 /// Dummy callbacks used to run the compiler normally when we shouldn't be analyzing the crate.
@@ -251,7 +264,7 @@ pub struct RunCompilerNormallyCallbacks;
 
 impl Callbacks for RunCompilerNormallyCallbacks {
     fn config(&mut self, config: &mut Config) {
-        setup_compiler(config, &Default::default(), false);
+        setup_compiler(config, &Default::default(), false, true);
     }
 }
 

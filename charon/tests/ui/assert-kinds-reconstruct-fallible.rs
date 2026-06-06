@@ -2,6 +2,8 @@
 //@ charon-args=--ullbc --print-ullbc
 //@ charon-args=--reconstruct-fallible-operations
 
+#![allow(unconditional_panic)]
+
 fn main() {
     let _ = [1, 2, 3][0];
     let _ = 5 * 10;

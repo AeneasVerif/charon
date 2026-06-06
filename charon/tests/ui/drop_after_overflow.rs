@@ -1,6 +1,8 @@
 //@ no-default-options
 //@ charon-args=--ullbc --print-ullbc
 
+#![allow(arithmetic_overflow)]
+
 struct Foo {}
 
 impl Drop for Foo {
