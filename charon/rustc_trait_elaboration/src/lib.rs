@@ -65,9 +65,9 @@ pub enum BuiltinTraitData<'tcx> {
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum ImpliedPredicate<'tcx> {
+pub enum ImpliedPredicate<'tcx, Id: ItemId = DefId> {
     AssocItem {
-        item: ItemRef<'tcx>,
+        item: ItemRef<'tcx, Id>,
         /// The index of this predicate among the trait predicates returned by `ItemPredicates::Implied`.
         index: usize,
     },
@@ -78,11 +78,11 @@ pub enum ImpliedPredicate<'tcx> {
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum TraitProofKind<'tcx> {
+pub enum TraitProofKind<'tcx, Id: ItemId = DefId> {
     /// A concrete `impl Trait for Type {}` item.
-    Concrete(ItemRef<'tcx>),
+    Concrete(ItemRef<'tcx, Id>),
     /// A context-bound clause like `where T: Trait`.
-    LocalBound(ItemPredicateId),
+    LocalBound(ItemPredicateId<Id>),
     /// The automatic clause `Self: Trait` present inside a `impl Trait for Type {}` item.
     SelfProof,
     /// `dyn Trait` is a wrapped value with a virtual table for trait
@@ -101,40 +101,48 @@ pub enum TraitProofKind<'tcx> {
         /// The trait proofs required to satisfy the implied predicates on the trait declaration.
         /// E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have a proof for
         /// `T: FnOnce`.
-        proofs: Vec<TraitProof<'tcx>>,
+        proofs: Vec<TraitProof<'tcx, Id>>,
         /// The values of the associated types for this trait.
-        types: Vec<(DefId, ty::Ty<'tcx>, Vec<TraitProof<'tcx>>)>,
+        types: Vec<(DefId, ty::Ty<'tcx>, Vec<TraitProof<'tcx, Id>>)>,
     },
     /// A predicate implied by `base` by following `path`.
     Derived {
-        base: TraitProof<'tcx>,
-        path: ImpliedPredicate<'tcx>,
+        base: TraitProof<'tcx, Id>,
+        path: ImpliedPredicate<'tcx, Id>,
     },
     /// An error happened while elaborating traits.
     Error(String),
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct TraitProofContents<'tcx> {
+pub struct TraitProofContents<'tcx, Id: ItemId = DefId> {
     /// The trait predicate this is a proof for.
     pub pred: ty::PolyTraitRef<'tcx>,
     /// The proof.
-    pub kind: TraitProofKind<'tcx>,
+    pub kind: TraitProofKind<'tcx, Id>,
 }
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub struct TraitProof<'tcx> {
-    contents: Interned<'tcx, TraitProofContents<'tcx>>,
+#[derive(Debug, Hash, PartialEq, Eq)]
+pub struct TraitProof<'tcx, Id: ItemId = DefId> {
+    contents: Interned<'tcx, TraitProofContents<'tcx, Id>>,
 }
 
-impl<'tcx> TraitProof<'tcx> {
-    pub fn contents(&self) -> &TraitProofContents<'tcx> {
+impl<'tcx, Id: ItemId> TraitProof<'tcx, Id> {
+    pub fn contents(&self) -> &TraitProofContents<'tcx, Id> {
         &self.contents
     }
 }
 
-impl<'tcx> Deref for TraitProof<'tcx> {
-    type Target = TraitProofContents<'tcx>;
+impl<'tcx, Id: ItemId> Copy for TraitProof<'tcx, Id> {}
+
+impl<'tcx, Id: ItemId> Clone for TraitProof<'tcx, Id> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'tcx, Id: ItemId> Deref for TraitProof<'tcx, Id> {
+    type Target = TraitProofContents<'tcx, Id>;
     fn deref(&self) -> &Self::Target {
         &self.contents
     }

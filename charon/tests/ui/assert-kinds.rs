@@ -2,6 +2,8 @@
 //@ charon-args=--ullbc --print-ullbc
 // see "assert-kinds-reconstruct-fallible" for the version with --reconstruct-fallible-operations
 
+#![allow(unconditional_panic)]
+
 fn main() {
     let _ = [1, 2, 3][0];
     let _ = 5 * 10;

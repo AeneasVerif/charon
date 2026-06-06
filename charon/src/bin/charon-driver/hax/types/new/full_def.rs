@@ -55,7 +55,7 @@ where
     let diagnostic_item;
     let kind;
     match def_id.base {
-        DefIdBase::Synthetic(item, ..) => {
+        DefIdBase::Synthetic(item) => {
             let adt_kind = match item {
                 SyntheticItem::Array => AdtKind::Array,
                 SyntheticItem::Slice => AdtKind::Slice,
@@ -486,7 +486,7 @@ fn gen_vtable_sig<'tcx>(
     s: &impl UnderOwnerState<'tcx>,
     args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> Option<PolyFnSig> {
-    let method_def_id = s.owner_id();
+    let method_def_id = s.owner().as_real_def_id().unwrap();
     let tcx = s.base().tcx;
     let assoc_item = tcx.associated_item(method_def_id);
     let container_id = assoc_item.container_id(tcx);
@@ -1238,8 +1238,9 @@ fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> TraitPredicate {
     use ty::Upcast;
     let tcx = s.base().tcx;
+    let def_id = s.owner().as_real_def_id().unwrap();
     let typing_env = s.typing_env();
-    let pred: ty::TraitPredicate = crate::hax::traits::self_predicate(tcx, s.owner_id())
+    let pred: ty::TraitPredicate = self_predicate(tcx, def_id)
         .no_bound_vars()
         .unwrap()
         .upcast(tcx);
@@ -1357,9 +1358,10 @@ fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> GenericPredicates {
     let tcx = s.base().tcx;
-    let def_id = s.owner_id();
+    let owner = s.owner();
     let typing_env = s.typing_env();
-    let mut implied_predicates = ItemPredicates::implied(s.base().elab_ctx, def_id);
+    let mut implied_predicates =
+        ItemPredicates::implied(s.base().elab_ctx, &s.base_state(), owner.clone());
     if args.is_some() {
         for pred in implied_predicates.iter_mut() {
             pred.clause = substitute(tcx, typing_env, args, pred.clause);

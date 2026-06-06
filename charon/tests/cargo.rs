@@ -155,7 +155,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             root.join("issue-396-lib-bin"),
             &[],
             &[],
-            Failure,
+            Success,
         ),
         mktest(
             "issue-412-dup-deps",

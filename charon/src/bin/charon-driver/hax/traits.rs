@@ -3,16 +3,18 @@ use rustc_span::def_id::DefId as RDefId;
 
 pub use rustc_trait_elaboration as elaboration;
 pub use rustc_trait_elaboration::{
-    AssocItemResolution, ElaborationCtx, ItemPredicate, ItemPredicateId, ItemPredicates,
-    PredicateSearcher, ToPolyTraitRef, erase_and_norm, erase_free_regions, normalize,
+    AssocItemResolution, ElaborationCtx, ItemId, ItemPredicate, ItemPredicateId, ItemPredicates,
+    PredicateDirection, ToPolyTraitRef, erase_and_norm, erase_free_regions, normalize,
     self_predicate,
 };
 
 use crate::hax::prelude::*;
 use charon_lib::ast::HashConsed;
 
+pub type PredicateSearcher<'tcx> = elaboration::PredicateSearcher<'tcx, DefId>;
+
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImpliedPredicate<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImpliedPredicate<'tcx, DefId>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum TraitProofImpliedPredicate {
     AssocItem {
@@ -36,7 +38,7 @@ pub enum TraitProofImpliedPredicate {
 /// The source of a particular trait implementation. Most often this is either `Concrete` for a
 /// concrete `impl Trait for Type {}` item, or `LocalBound` for a context-bound `where T: Trait`.
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofKind<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofKind<'tcx, DefId>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum TraitProofKind {
     /// A concrete `impl Trait for Type {}` item.
@@ -115,7 +117,7 @@ pub enum DestructData {
 pub type TraitProof = HashConsed<TraitProofContents>;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofContents<'tcx>, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofContents<'tcx, DefId>, state: S as s)]
 pub struct TraitProofContents {
     /// The trait predicate this is an impl for.
     pub pred: Binder<TraitRef>,
@@ -123,7 +125,7 @@ pub struct TraitProofContents {
     pub kind: TraitProofKind,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitProof> for elaboration::TraitProof<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitProof> for elaboration::TraitProof<'tcx, DefId> {
     fn sinto(&self, s: &S) -> TraitProof {
         HashConsed::new(self.contents().sinto(s))
     }
@@ -170,7 +172,9 @@ pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
     if let Some(trait_proof) = s.with_cache(|cache| cache.trait_proofs.get(&trait_ref).cloned()) {
         return trait_proof;
     }
-    let trait_proof = s.with_predicate_searcher(|pred_searcher| pred_searcher.resolve(&trait_ref));
+    let trait_proof = s.with_predicate_searcher(|pred_searcher, elab_ctx| {
+        pred_searcher.resolve(elab_ctx, &trait_ref)
+    });
     let trait_proof: TraitProof = trait_proof.sinto(s);
     s.with_cache(|cache| cache.trait_proofs.insert(trait_ref, trait_proof.clone()));
     trait_proof
@@ -194,7 +198,7 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
     def_id: RDefId,
     generics: ty::GenericArgsRef<'tcx>,
 ) -> Vec<TraitProof> {
-    let predicates = ItemPredicates::implied(s.base().elab_ctx, def_id);
+    let predicates = ItemPredicates::implied(s.base().elab_ctx, &s.base_state(), def_id.sinto(s));
     solve_item_traits_inner(s, generics, predicates)
 }
 
@@ -203,7 +207,7 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
 fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     generics: ty::GenericArgsRef<'tcx>,
-    predicates: ItemPredicates<'tcx>,
+    predicates: ItemPredicates<'tcx, DefId>,
 ) -> Vec<TraitProof> {
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();

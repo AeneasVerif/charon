@@ -201,6 +201,8 @@ fn translate_with_cargo(
     options.validate()?;
     let mut cmd = toolchain::in_toolchain("cargo")?;
     cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
+    // We pass a random value to prevent cargo from considering a charon run cacheable.
+    cmd.env("RUSTC_WORKSPACE_WRAPPER", fresh_fingerprint());
     cmd.env("CHARON_USING_CARGO", "1");
     cmd.env_remove("CARGO_PRIMARY_PACKAGE");
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
@@ -249,6 +251,14 @@ fn get_rustc_version() -> anyhow::Result<rustc_version::VersionMeta> {
         panic!("failed to determine underlying rustc version of Charon:\\n{err:?}",)
     });
     Ok(rustc_version)
+}
+
+/// A sufficiently unique string used to force cargo to re-run charon each time we call it.
+fn fresh_fingerprint() -> String {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |duration| duration.as_nanos());
+    format!("charon-dont-cache-this-{}-{nanos}", std::process::id())
 }
 
 fn ensure_rustup() {
