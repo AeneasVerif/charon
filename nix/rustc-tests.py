@@ -21,8 +21,12 @@ UNSUPPORTED_FEATURES = (
 EXPENSIVE_RUSTC_STRESS_TESTS = {
     "associated-consts/issue-93775.rs",
     "bench/issue-32062.rs",
+    "closures/many-closures.rs",
     "closures/issue-72408-nested-closures-exponential.rs",
+    "codegen/normalization-overflow/recursion-issue-139659.rs",
     "codegen/no-codegen-blowup-in-deeply-nested-struct.rs",
+    "debuginfo/debuginfo-inline-callsite-location-macro-1.rs",
+    "debuginfo/debuginfo-inline-callsite-location-macro-2.rs",
     "drop/or-pattern-drop-order.rs",
     "expr/if/expr-stack-overflow.rs",
     "expr/weird-exprs.rs",
@@ -32,13 +36,40 @@ EXPENSIVE_RUSTC_STRESS_TESTS = {
     "iterators/iter-map-fold-type-length.rs",
     "macros/type-macros-hlist.rs",
     "match/match-stack-overflow-72933-.rs",
+    "query-system/query_depth.rs",
 }
 
 SPECIAL_UNSUPPORTED_FILES = {
-    "test-results/cfg/assume-incomplete-release/auxiliary/ver-cfg-rel.rs",
-    "test-results/macros/auxiliary/macro-comma-support.rs",
-    "test-results/meta/no_std-extern-libc.rs",
-    "test-results/parser/issues/auxiliary/issue-21146-inc.rs",
+    "abi/unsized-args-in-c-abi-issues-94223-115845.rs",
+    "attributes/export/crate-type.rs",
+    "attributes/export/crate-type-2.rs",
+    "attributes/export/exportable.rs",
+    "attributes/export/lang-item.rs",
+    "cfg/assume-incomplete-release/auxiliary/ver-cfg-rel.rs",
+    "codegen/incorrect-arch-intrinsic.rs",
+    "codegen/incorrect-llvm-intrinsic-signature.rs",
+    "codegen/unknown-llvm-intrinsic.rs",
+    "compile-flags/invalid/invalid-llvm-passes.rs",
+    "duplicate/dupe-symbols-7.rs",
+    "duplicate/dupe-symbols-8.rs",
+    "error-codes/E0511.rs",
+    "intrinsics/non-integer-atomic.rs",
+    "limits/huge-array-simple-32.rs",
+    "limits/huge-array-simple-64.rs",
+    "limits/huge-array.rs",
+    "limits/huge-enum.rs",
+    "limits/huge-struct.rs",
+    "limits/issue-15919-32.rs",
+    "limits/issue-15919-64.rs",
+    "limits/vtable.rs",
+    "link-native-libs/suggest-libname-only-1.rs",
+    "link-native-libs/suggest-libname-only-2.rs",
+    "lint/non-snake-case/non-snake-ffi-issue-31924.rs",
+    "lto/issue-11154.rs",
+    "macros/auxiliary/macro-comma-support.rs",
+    "meta/no_std-extern-libc.rs",
+    "nll/polonius/array-literal-index-oob-2024.rs",
+    "parser/issues/auxiliary/issue-21146-inc.rs",
 }
 
 VALID_EDITIONS = {"2015", "2018", "2021", "2024", "future"}
@@ -194,6 +225,8 @@ def has_unsupported_compile_flags(test_file: TestFile, rev: str) -> bool:
             or " --color=" in padded
             or " --json " in padded
             or " --json=" in padded
+            or " -Cllvm-args" in padded
+            or " -C llvm-args" in padded
             or " -Zterminal-urls" in padded
             or " -Zunpretty" in padded
             or " unpretty=" in padded
@@ -211,14 +244,15 @@ def has_auxiliary_path_attr(test_file: TestFile) -> bool:
 
 
 def is_expensive_rustc_stress_test(path: Path) -> bool:
-    return path.as_posix() in EXPENSIVE_RUSTC_STRESS_TESTS
+    return path.as_posix().removeprefix("test-results/") in EXPENSIVE_RUSTC_STRESS_TESTS
 
 
 def unsupported_build_settings(test_file: TestFile, rev: str) -> bool:
     path = test_file.path
     path_parts = set(path.parts)
     return (
-        (path.parent / "compiletest-ignore-dir").exists()
+        test_file.path_str.removeprefix("test-results/") in SPECIAL_UNSUPPORTED_FILES
+        or (path.parent / "compiletest-ignore-dir").exists()
         or "auxiliary" in path_parts
         or test_file.has_revision_magic_comment(rev, "ignore-test")
         or test_file.has_revision_magic_comment(rev, "ignore-auxiliary")
@@ -237,7 +271,6 @@ def unsupported_build_settings(test_file: TestFile, rev: str) -> bool:
         or has_unsupported_edition(test_file, rev)
         or has_unsupported_compile_flags(test_file, rev)
         or has_auxiliary_path_attr(test_file)
-        or is_expensive_rustc_stress_test(path)
     )
 
 
@@ -269,6 +302,10 @@ def run_revision(test_file: TestFile, rev: str, charon: str, timeout: int) -> No
 
     if unsupported_build_settings(test_file, rev):
         status_path.write_text("unsupported-build-settings", encoding="utf-8")
+        return
+
+    if is_expensive_rustc_stress_test(test_file.path):
+        status_path.write_text("stress-test", encoding="utf-8")
         return
 
     if unsupported_feature(test_file):
@@ -352,11 +389,13 @@ def analyze_revision(test_file: TestFile, rev: str) -> str:
     current_case_file = case_file(test_file.path, rev)
     status_text = Path(f"{current_case_file}.charon-status").read_text(encoding="utf-8")
 
-    if status_text.startswith("unsupported"):
+    if status_text == "stress-test":
+        result = "⊘ stress-test"
+    elif status_text.startswith("unsupported"):
         result = f"⊘ {status_text}"
     else:
         output = output_text(current_case_file)
-        if test_file.path_str in SPECIAL_UNSUPPORTED_FILES:
+        if test_file.path_str.removeprefix("test-results/") in SPECIAL_UNSUPPORTED_FILES:
             result = "⊘ unsupported-build-settings"
         elif re.search(r"error.E0601", output):
             result = "⊘ unsupported-build-settings"
