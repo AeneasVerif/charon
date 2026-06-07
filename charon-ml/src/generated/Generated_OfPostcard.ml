@@ -1794,7 +1794,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* start_from = list_of_postcard string_of_postcard ctx st in
      let* start_from_if_exists = list_of_postcard string_of_postcard ctx st in
-     let* start_from_attribute = option_of_postcard string_of_postcard ctx st in
+     let* start_from_attribute = list_of_postcard string_of_postcard ctx st in
      let* start_from_pub = bool_of_postcard ctx st in
      let* included = list_of_postcard string_of_postcard ctx st in
      let* opaque = list_of_postcard string_of_postcard ctx st in

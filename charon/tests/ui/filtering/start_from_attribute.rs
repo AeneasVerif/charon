@@ -1,5 +1,6 @@
-//@ charon-arg=--start-from-attribute
+//@ charon-arg=--start-from-attribute=verify::start_from,foobar::haha
 #![register_tool(verify)]
+#![register_tool(foobar)]
 
 fn dont_translate() {}
 
@@ -13,6 +14,9 @@ mod module2 {
 
     #[verify::start_from]
     fn do_translate() {}
+
+    #[foobar::haha]
+    fn also_translate() {}
 
     struct Type1;
     struct Type2;
