@@ -9,9 +9,9 @@ use itertools::Itertools;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::Config;
 use rustc_interface::interface::Compiler;
-use rustc_middle::ty::TyCtxt;
+use rustc_middle::ty::{InstanceKind, TyCtxt};
 use rustc_middle::util::Providers;
-use rustc_session::config::OutputTypes;
+use rustc_session::config::{OutputType, OutputTypes};
 use rustc_span::ErrorGuaranteed;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{env, fmt};
@@ -53,10 +53,10 @@ fn set_parallel_frontend(config: &mut Config) {
     }
 }
 
-/// Don't even try to codegen or emit rustc artifacts.
+/// Don't emit rustc artifacts.
 fn suppress_codegen_outputs(config: &mut Config) {
     config.opts.unstable_opts.no_codegen = true;
-    config.opts.output_types = OutputTypes::new(&[]);
+    config.opts.output_types = OutputTypes::new(&[(OutputType::Object, None)]);
 }
 
 // We use a static to be able to pass data to `override_queries`.
@@ -131,6 +131,18 @@ fn precheck_rustc_errors(tcx: TyCtxt<'_>) -> bool {
     });
 
     tcx.dcx().has_errors().is_some()
+}
+
+/// Run rustc checks that normally happen close to codegen, so that we get all the post-mono errors
+/// etc.
+fn check_late_rustc_errors(tcx: TyCtxt<'_>) {
+    tcx.par_hir_body_owners(|def_id| {
+        let _ = tcx.instance_mir(InstanceKind::Item(def_id.to_def_id()));
+    });
+
+    if tcx.dcx().err_count() == 0 {
+        let _ = tcx.collect_and_partition_mono_items(());
+    }
 }
 
 /// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
@@ -255,6 +267,12 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
         )
         .ok();
 
+        Compilation::Continue
+    }
+    fn after_analysis<'tcx>(&mut self, _compiler: &Compiler, tcx: TyCtxt<'tcx>) -> Compilation {
+        if !self.emit_artifacts {
+            check_late_rustc_errors(tcx);
+        }
         Compilation::Continue
     }
 }
