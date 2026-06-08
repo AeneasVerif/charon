@@ -14,6 +14,16 @@ fn do_translate()
     return
 }
 
+// Full name: test_crate::module2::also_translate
+fn also_translate()
+{
+    let _0: (); // return
+
+    _0 = ()
+    _0 = ()
+    return
+}
+
 // Full name: test_crate::module2::Type1
 struct Type1 {}
 

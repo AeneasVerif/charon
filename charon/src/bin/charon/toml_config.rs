@@ -13,7 +13,7 @@ pub struct TomlConfig {
     #[serde(default)]
     pub start_from_if_exists: Vec<String>,
     #[serde(default)]
-    pub start_from_attribute: Option<String>,
+    pub start_from_attribute: Vec<String>,
     #[serde(default)]
     pub start_from_pub: bool,
     #[serde(default)]
@@ -43,9 +43,9 @@ impl TomlConfig {
         config
             .start_from_if_exists
             .extend(self.start_from_if_exists);
-        if config.start_from_attribute.is_none() {
-            config.start_from_attribute = self.start_from_attribute;
-        }
+        config
+            .start_from_attribute
+            .extend(self.start_from_attribute);
         config.start_from_pub |= self.start_from_pub;
         config.hide_marker_traits |= self.hide_marker_traits;
         config.include.extend(self.include);
