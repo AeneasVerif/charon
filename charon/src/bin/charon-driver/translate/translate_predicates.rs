@@ -356,61 +356,63 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             TransImplSource::ImplicitDestruct,
                         )?)
                     }
-                    _ => {
-                        let Some(builtin_data) = self.recognize_builtin_impl(trait_data) else {
-                            raise_error!(
-                                self,
-                                span,
-                                "found a built-in trait impl we did not recognize: \
-                            {:?} (lang_item={:?})",
-                                trait_def.def_id(),
-                                trait_def.lang_item,
-                            )
+                    hax::BuiltinTraitData::Other(
+                        li @ (hax::SolverTraitLangItem::FnOnce
+                        | hax::SolverTraitLangItem::FnMut
+                        | hax::SolverTraitLangItem::Fn),
+                    ) if let Some(hax::GenericArg::Type(callable_ty)) =
+                        impl_source.pred.hax_skip_binder_ref().generic_args.first()
+                        && let Some(item) = match callable_ty.kind() {
+                            hax::TyKind::Closure(closure_args) => Some(&closure_args.item),
+                            hax::TyKind::FnDef { item, .. } => Some(item),
+                            _ => None,
+                        } =>
+                    {
+                        let closure_kind = match li {
+                            hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
+                            hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
+                            hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
+                            _ => unreachable!(),
                         };
-                        if let Some(closure_kind) = builtin_data.as_closure_kind()
-                            && let Some(hax::GenericArg::Type(closure_ty)) =
-                                impl_source.pred.hax_skip_binder_ref().generic_args.first()
-                            && let Some(item) = match closure_ty.kind() {
-                                hax::TyKind::Closure(closure_args) => Some(&closure_args.item),
-                                hax::TyKind::FnDef { item, .. } => Some(item),
-                                _ => None,
-                            }
-                        {
-                            let binder = self.translate_region_binder(
-                                span,
-                                &impl_source.pred,
-                                |ctx, _tref| {
-                                    ctx.translate_callable_impl_ref(span, item, closure_kind)
-                                },
-                            )?;
-                            TraitRefKind::TraitImpl(self.erase_region_binder(binder))
+                        let binder =
+                            self.translate_region_binder(span, &impl_source.pred, |ctx, _tref| {
+                                ctx.translate_callable_impl_ref(span, item, closure_kind)
+                            })?;
+                        TraitRefKind::TraitImpl(self.erase_region_binder(binder))
+                    }
+                    _ if let Some(builtin_data) = self.recognize_builtin_impl(trait_data) => {
+                        let parent_trait_refs = self.translate_trait_proofs(span, trait_proofs)?;
+                        let types: IndexMap<AssocTypeId, _> = if self.monomorphize() {
+                            IndexMap::new()
                         } else {
-                            let parent_trait_refs =
-                                self.translate_trait_proofs(span, trait_proofs)?;
-                            let types: IndexMap<AssocTypeId, _> = if self.monomorphize() {
-                                IndexMap::new()
-                            } else {
-                                let tdecl_id = trait_decl_ref.skip_binder.id;
-                                let mut type_map = IndexMap::new();
-                                for (def_id, ty, trait_proofs) in types {
-                                    let assoc_type_id =
-                                        self.translate_assoc_type_id(tdecl_id, def_id)?;
-                                    let assoc_ty = TraitAssocTyImpl {
-                                        value: self.translate_ty(span, ty)?,
-                                        implied_trait_refs: self
-                                            .translate_trait_proofs(span, trait_proofs)?,
-                                    };
-                                    type_map.set_slot_extend(assoc_type_id, assoc_ty);
-                                }
-                                type_map
-                            };
-                            TraitRefKind::BuiltinOrAuto {
-                                builtin_data,
-                                parent_trait_refs,
-                                types,
+                            let tdecl_id = trait_decl_ref.skip_binder.id;
+                            let mut type_map = IndexMap::new();
+                            for (def_id, ty, trait_proofs) in types {
+                                let assoc_type_id =
+                                    self.translate_assoc_type_id(tdecl_id, def_id)?;
+                                let assoc_ty = TraitAssocTyImpl {
+                                    value: self.translate_ty(span, ty)?,
+                                    implied_trait_refs: self
+                                        .translate_trait_proofs(span, trait_proofs)?,
+                                };
+                                type_map.set_slot_extend(assoc_type_id, assoc_ty);
                             }
+                            type_map
+                        };
+                        TraitRefKind::BuiltinOrAuto {
+                            builtin_data,
+                            parent_trait_refs,
+                            types,
                         }
                     }
+                    _ => raise_error!(
+                        self,
+                        span,
+                        "found a built-in trait impl we did not recognize: \
+                        {:?} (lang_item={:?})",
+                        trait_def.def_id(),
+                        trait_def.lang_item,
+                    ),
                 }
             }
             TraitProofKind::Error(msg) => {
