@@ -447,7 +447,7 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     let _0: TestDescAndFn; // return
     let _1: TestDesc; // anonymous local
     let _2: TestName; // anonymous local
-    let _3: Option<&'6 str>[{built_in impl Sized for &'6 str}]; // anonymous local
+    let _3: Option<&'7 str>[{built_in impl Sized for &'7 str}]; // anonymous local
     let _4: ShouldPanic; // anonymous local
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
@@ -468,8 +468,8 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    conditional_drop[impl_Destruct_for_TestName::drop_glue<'16>] _2
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestName::drop_glue<'19>] _2
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_2)
@@ -482,12 +482,12 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
     _0 = TestDescAndFn { desc: move _1, testfn: move _6 }
-    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'17>] _6
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'20>] _6
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_6)
-    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'19>] _1
+    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'22>] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     return
@@ -598,7 +598,7 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     let _0: TestDescAndFn; // return
     let _1: TestDesc; // anonymous local
     let _2: TestName; // anonymous local
-    let _3: Option<&'6 str>[{built_in impl Sized for &'6 str}]; // anonymous local
+    let _3: Option<&'7 str>[{built_in impl Sized for &'7 str}]; // anonymous local
     let _4: ShouldPanic; // anonymous local
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
@@ -619,8 +619,8 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    conditional_drop[impl_Destruct_for_TestName::drop_glue<'16>] _2
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestName::drop_glue<'19>] _2
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_2)
@@ -633,12 +633,12 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
     _0 = TestDescAndFn { desc: move _1, testfn: move _6 }
-    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'17>] _6
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'20>] _6
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_6)
-    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'19>] _1
+    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'22>] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     return
@@ -750,7 +750,7 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     let _0: TestDescAndFn; // return
     let _1: TestDesc; // anonymous local
     let _2: TestName; // anonymous local
-    let _3: Option<&'6 str>[{built_in impl Sized for &'6 str}]; // anonymous local
+    let _3: Option<&'7 str>[{built_in impl Sized for &'7 str}]; // anonymous local
     let _4: ShouldPanic; // anonymous local
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
@@ -771,8 +771,8 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    conditional_drop[impl_Destruct_for_TestName::drop_glue<'16>] _2
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestName::drop_glue<'19>] _2
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_2)
@@ -785,12 +785,12 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
     _0 = TestDescAndFn { desc: move _1, testfn: move _6 }
-    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'17>] _6
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'20>] _6
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_6)
-    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'19>] _1
+    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'22>] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     return

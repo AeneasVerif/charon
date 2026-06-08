@@ -184,10 +184,10 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
     let _5: Chunks<'6, u8>[{built_in impl Sized for u8}]; // anonymous local
     let _6: &'7 [u8]; // anonymous local
     let iter: Chunks<'8, u8>[{built_in impl Sized for u8}]; // local
-    let _8: Option<&'14 [u8]>[{built_in impl Sized for &'14 [u8]}]; // anonymous local
-    let _9: &'19 mut Chunks<'20, u8>[{built_in impl Sized for u8}]; // anonymous local
-    let _10: &'21 mut Chunks<'22, u8>[{built_in impl Sized for u8}]; // anonymous local
-    let bytes: &'23 [u8]; // local
+    let _8: Option<&'15 [u8]>[{built_in impl Sized for &'15 [u8]}]; // anonymous local
+    let _9: &'21 mut Chunks<'22, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let _10: &'23 mut Chunks<'24, u8>[{built_in impl Sized for u8}]; // anonymous local
+    let bytes: &'25 [u8]; // local
     let b1: i16; // local
     let _13: u8; // anonymous local
     let _14: usize; // anonymous local
@@ -242,14 +242,14 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
     storage_live(_5)
     storage_live(_6)
     _6 = &(*a) with_metadata(copy a.metadata)
-    _5 = chunks<'25, u8>[{built_in impl Sized for u8}](move _6, const 3usize)
+    _5 = chunks<'27, u8>[{built_in impl Sized for u8}](move _6, const 3usize)
     ↳⚡ storage_dead(_44)
         storage_dead(_37)
         storage_dead(result)
         storage_dead(a)
         unwind_continue
     storage_dead(_6)
-    _4 = into_iter<Chunks<'27, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'27, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Chunks<'27, u8>[{built_in impl Sized for u8}]](move _5)
+    _4 = into_iter<Chunks<'29, u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Chunks<'29, u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Chunks<'29, u8>[{built_in impl Sized for u8}]](move _5)
     ↳⚡ storage_dead(_44)
         storage_dead(_37)
         storage_dead(result)
@@ -264,7 +264,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         storage_live(_10)
         _10 = &mut iter
         _9 = &two-phase-mut (*_10)
-        _8 = next<'36, '38, u8>[{built_in impl Sized for u8}](move _9)
+        _8 = next<'39, '41, u8>[{built_in impl Sized for u8}](move _9)
         ↳⚡ storage_dead(_44)
             storage_dead(_37)
             storage_dead(result)

@@ -784,7 +784,7 @@ and pp_trait_ref_kind (env : fmt_env)
   match kind with
   | Self -> pp_string fmt "Self"
   | TraitImpl impl_ref -> pp_trait_impl_ref env fmt impl_ref
-  | BuiltinOrAuto (_, _, types) ->
+  | BuiltinOrAuto (_, _, _, types) ->
       let implements = Option.get implements in
       let types = AssocTypeId.Map.to_list types in
       Format.fprintf fmt "{built_in impl %a"

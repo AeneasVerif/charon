@@ -139,6 +139,8 @@ pub enum TraitRefKind {
     /// [`BuiltinImplData::RemovedAdtClause`].
     BuiltinOrAuto {
         builtin_data: BuiltinImplData,
+        /// The vtable value for this builtin implementation, if we generated one.
+        vtable: Option<GlobalDeclRef>,
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
@@ -224,26 +226,6 @@ impl TraitRef {
         .intern()
     }
 
-    pub fn new_builtin(
-        trait_id: TraitDeclId,
-        ty: Ty,
-        parents: IndexVec<TraitClauseId, TraitRef>,
-        builtin_data: BuiltinImplData,
-    ) -> Self {
-        let trait_decl_ref = RegionBinder::empty(TraitDeclRef {
-            id: trait_id,
-            generics: Box::new(GenericArgs::new_types([ty].into())),
-        });
-        Self::new(
-            TraitRefKind::BuiltinOrAuto {
-                builtin_data,
-                parent_trait_refs: parents,
-                types: Default::default(),
-            },
-            trait_decl_ref,
-        )
-    }
-
     pub fn trait_id(&self) -> TraitDeclId {
         self.trait_decl_ref.skip_binder.id
     }
@@ -252,6 +234,17 @@ impl TraitRef {
     /// value at the end of the function.
     pub fn with_contents_mut<R>(&mut self, f: impl FnOnce(&mut TraitRefContents) -> R) -> R {
         self.0.with_inner_mut(f)
+    }
+
+    pub fn vtable_ref<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a GlobalDeclRef> {
+        match &self.kind {
+            TraitRefKind::TraitImpl(impl_ref) => krate
+                .trait_impls
+                .get(impl_ref.id)
+                .and_then(|timpl| timpl.vtable.as_ref()),
+            TraitRefKind::BuiltinOrAuto { vtable, .. } => vtable.as_ref(),
+            _ => None,
+        }
     }
 }
 

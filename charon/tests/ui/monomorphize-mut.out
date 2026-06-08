@@ -317,17 +317,17 @@ where
 {
     let _0: (); // return
     let x: A; // arg #1
-    let _2: core::option::Option::<&_ mut _><'6, u32>[{built_in impl core::marker::Sized::<&_ mut _><'6> for u32}]; // anonymous local
-    let _3: &'9 mut u32; // anonymous local
+    let _2: core::option::Option::<&_ mut _><'7, u32>[{built_in impl core::marker::Sized::<&_ mut _><'7> for u32}]; // anonymous local
+    let _3: &'11 mut u32; // anonymous local
     let _4: u32; // anonymous local
-    let _5: core::option::Option::<&_ mut _><'16, A>[{built_in impl core::marker::Sized::<&_ mut _><'16> for A}]; // anonymous local
-    let _6: &'19 mut A; // anonymous local
-    let _7: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'41, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'41>[{built_in impl core::marker::Sized::<&_ mut _><'41> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'41> for A}]; // anonymous local
-    let _8: core::option::Option::<&_ mut _><'50, A>[{built_in impl core::marker::Sized::<&_ mut _><'50> for A}]; // anonymous local
-    let _9: &'53 mut A; // anonymous local
-    let _10: core::option::Option::<&_ mut &_ mut _><'68, '69, u32>[{built_in impl core::marker::Sized::<&_ mut &_ mut _><'68, '69> for u32}]; // anonymous local
-    let _11: &'74 mut &'75 mut u32; // anonymous local
-    let _12: &'76 mut u32; // anonymous local
+    let _5: core::option::Option::<&_ mut _><'19, A>[{built_in impl core::marker::Sized::<&_ mut _><'19> for A}]; // anonymous local
+    let _6: &'23 mut A; // anonymous local
+    let _7: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'54, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'54>[{built_in impl core::marker::Sized::<&_ mut _><'54> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'54> for A}]; // anonymous local
+    let _8: core::option::Option::<&_ mut _><'70, A>[{built_in impl core::marker::Sized::<&_ mut _><'70> for A}]; // anonymous local
+    let _9: &'74 mut A; // anonymous local
+    let _10: core::option::Option::<&_ mut &_ mut _><'91, '92, u32>[{built_in impl core::marker::Sized::<&_ mut &_ mut _><'91, '92> for u32}]; // anonymous local
+    let _11: &'99 mut &'100 mut u32; // anonymous local
+    let _12: &'101 mut u32; // anonymous local
     let _13: u32; // anonymous local
 
     storage_live(_0)
@@ -369,7 +369,7 @@ where
     storage_dead(_13)
     storage_dead(_12)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for A}::drop_glue<'125>] x
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'164>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)
@@ -538,24 +538,24 @@ where
     let _4: &'4 mut u32; // anonymous local
     let _5: &'5 mut u32; // anonymous local
     let _6: u32; // anonymous local
-    let _7: core::option::Option::<&_ mut _><'11, u32>[{built_in impl core::marker::Sized::<&_ mut _><'11> for u32}]; // anonymous local
-    let _8: core::option::Option::<&_ mut _><'14, u32>[{built_in impl core::marker::Sized::<&_ mut _><'14> for u32}]; // anonymous local
-    let _9: &'17 mut u32; // anonymous local
+    let _7: core::option::Option::<&_ mut _><'12, u32>[{built_in impl core::marker::Sized::<&_ mut _><'12> for u32}]; // anonymous local
+    let _8: core::option::Option::<&_ mut _><'16, u32>[{built_in impl core::marker::Sized::<&_ mut _><'16> for u32}]; // anonymous local
+    let _9: &'20 mut u32; // anonymous local
     let _10: u32; // anonymous local
-    let _11: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'45, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'45>[{built_in impl core::marker::Sized::<&_ mut _><'45> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'45> for A}]; // anonymous local
-    let _12: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'54, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'54>[{built_in impl core::marker::Sized::<&_ mut _><'54> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'54> for A}]; // anonymous local
-    let _13: core::option::Option::<&_ mut _><'63, A>[{built_in impl core::marker::Sized::<&_ mut _><'63> for A}]; // anonymous local
-    let _14: &'66 mut A; // anonymous local
-    let _15: Option<&'72 u32>[{built_in impl Sized for &'72 u32}]; // anonymous local
-    let _16: Option<&'75 u32>[{built_in impl Sized for &'75 u32}]; // anonymous local
-    let _17: &'78 u32; // anonymous local
-    let _18: &'79 u32; // anonymous local
-    let _19: &'80 u32; // anonymous local
-    let _20: &'81 u32; // anonymous local
-    let _21: &'261 u32; // anonymous local
-    let _22: &'348 u32; // anonymous local
+    let _11: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'58, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'58>[{built_in impl core::marker::Sized::<&_ mut _><'58> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'58> for A}]; // anonymous local
+    let _12: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'74, A>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'74>[{built_in impl core::marker::Sized::<&_ mut _><'74> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'74> for A}]; // anonymous local
+    let _13: core::option::Option::<&_ mut _><'90, A>[{built_in impl core::marker::Sized::<&_ mut _><'90> for A}]; // anonymous local
+    let _14: &'94 mut A; // anonymous local
+    let _15: Option<&'101 u32>[{built_in impl Sized for &'101 u32}]; // anonymous local
+    let _16: Option<&'105 u32>[{built_in impl Sized for &'105 u32}]; // anonymous local
+    let _17: &'109 u32; // anonymous local
+    let _18: &'110 u32; // anonymous local
+    let _19: &'111 u32; // anonymous local
+    let _20: &'112 u32; // anonymous local
+    let _21: &'382 u32; // anonymous local
+    let _22: &'490 u32; // anonymous local
     let _23: u32; // anonymous local
-    let _24: &'349 u32; // anonymous local
+    let _24: &'491 u32; // anonymous local
     let _25: u32; // anonymous local
 
     storage_live(_20)
@@ -572,13 +572,13 @@ where
     storage_live(_3)
     _19 = move _20
     _3 = &(*_19)
-    _2 = identity<&'83 u32>[{built_in impl Sized for &'83 u32}](move _3)
+    _2 = identity<&'114 u32>[{built_in impl Sized for &'114 u32}](move _3)
     ↳⚡ // Make sure we do generics right.
         // Use a function pointer.
         // These cause errors because of missing normalization :'(
         // let _ = Some(&mut 0u32).map(identity);
         // let _ = Some(&mut 0u32).map(mutable_identity);
-        conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+        conditional_drop[{built_in impl Destruct for A}::drop_glue<'120>] x
         ↳⚡ storage_dead(_19)
             storage_dead(_18)
             storage_dead(x)
@@ -600,8 +600,8 @@ where
     storage_live(_6)
     _6 = const 0u32
     _5 = &mut _6
-    _4 = test_crate::identity::<&_ mut _><'90, u32>[{built_in impl core::marker::Sized::<&_ mut _><'90> for u32}](move _5)
-    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+    _4 = test_crate::identity::<&_ mut _><'122, u32>[{built_in impl core::marker::Sized::<&_ mut _><'122> for u32}](move _5)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'120>] x
         ↳⚡ storage_dead(_19)
             storage_dead(_18)
             storage_dead(x)
@@ -627,8 +627,8 @@ where
     _9 = &mut _10
     _8 = core::option::Option::<&_ mut _>::Some { _0: move _9 }
     storage_dead(_9)
-    _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'106, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'106>[{built_in impl core::marker::Sized::<&_ mut _><'106> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'106> for u32}](move _8)
-    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+    _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'141, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'141>[{built_in impl core::marker::Sized::<&_ mut _><'141> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'141> for u32}](move _8)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'120>] x
         ↳⚡ storage_dead(_19)
             storage_dead(_18)
             storage_dead(x)
@@ -655,8 +655,8 @@ where
     storage_dead(_14)
     _12 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]>::Some { _0: move _13 }
     storage_dead(_13)
-    _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'180, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'180>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'180>[{built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'180>[{built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'180> for A}](move _12)
-    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+    _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'244, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'244>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'244>[{built_in impl core::marker::Sized::<&_ mut _><'244> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'244> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'244>[{built_in impl core::marker::Sized::<&_ mut _><'244> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'244> for A}](move _12)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'120>] x
         ↳⚡ storage_dead(_19)
             storage_dead(_18)
             storage_dead(x)
@@ -686,8 +686,8 @@ where
     _17 = &(*_18)
     _16 = Option::Some { _0: move _17 }
     storage_dead(_17)
-    _15 = map<&'268 u32, &'269 u32, identity<&'276 u32>[{built_in impl Sized for &'276 u32}]>[{built_in impl Sized for &'268 u32}, {built_in impl Sized for &'269 u32}, {built_in impl Sized for identity<&'293 u32>[{built_in impl Sized for &'293 u32}]}, {impl FnOnce<(T,)> for identity<T>[TraitClause0]}<&'268 u32>[{built_in impl Sized for &'268 u32}], {built_in impl Destruct for identity<&'329 u32>[{built_in impl Sized for &'329 u32}]}](move _16, const identity<&'342 u32>[{built_in impl Sized for &'342 u32}])
-    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+    _15 = map<&'390 u32, &'391 u32, identity<&'399 u32>[{built_in impl Sized for &'399 u32}]>[{built_in impl Sized for &'390 u32}, {built_in impl Sized for &'391 u32}, {built_in impl Sized for identity<&'420 u32>[{built_in impl Sized for &'420 u32}]}, {impl FnOnce<(T,)> for identity<T>[TraitClause0]}<&'390 u32>[{built_in impl Sized for &'390 u32}], {built_in impl Destruct for identity<&'467 u32>[{built_in impl Sized for &'467 u32}]}](move _16, const identity<&'483 u32>[{built_in impl Sized for &'483 u32}])
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'120>] x
         ↳⚡ storage_dead(_19)
             storage_dead(_18)
             storage_dead(x)
@@ -705,7 +705,7 @@ where
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for A}::drop_glue<'347>] x
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'489>] x
     ↳⚡ storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)
@@ -817,7 +817,7 @@ where
     RegionOutlives0: 'b: 'a,
 {
     let _0: (); // return
-    let _1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'42, '43, '44, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'42, '43> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'44>[{built_in impl core::marker::Sized::<&_ mut _><'44> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'44> for bool}]; // arg #1
+    let _1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'44, '45, '46, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'44, '45> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'46>[{built_in impl core::marker::Sized::<&_ mut _><'46> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'46> for bool}]; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -866,7 +866,7 @@ where
     RegionOutlives0: '_1: '_0,
 {
     let _0: (); // return
-    let _1: &'10 test_crate::List::<&_ mut _><'11, u32>[{built_in impl core::marker::Sized::<&_ mut _><'11> for u32}]; // arg #1
+    let _1: &'11 test_crate::List::<&_ mut _><'12, u32>[{built_in impl core::marker::Sized::<&_ mut _><'12> for u32}]; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -960,7 +960,7 @@ fn use_const_generic<'_0, '_1>(_1: test_crate::ArrayWrapper::<&_ mut _, 1usize><
 {
     let _0: (); // return
     let _1: test_crate::ArrayWrapper::<&_ mut _, 1usize><'6, u32>[{built_in impl core::marker::Sized::<&_ mut _><'6> for u32}]; // arg #1
-    let _2: test_crate::ArrayWrapper::<&_ mut _, 2usize><'14, u32>[{built_in impl core::marker::Sized::<&_ mut _><'14> for u32}]; // arg #2
+    let _2: test_crate::ArrayWrapper::<&_ mut _, 2usize><'16, u32>[{built_in impl core::marker::Sized::<&_ mut _><'16> for u32}]; // arg #2
 
     storage_live(_0)
     _0 = ()

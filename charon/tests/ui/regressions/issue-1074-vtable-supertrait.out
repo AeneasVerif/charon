@@ -6,12 +6,22 @@ opaque type core::marker::Send::{vtable}
 #[diagnostic_item("Send")]
 pub trait Send<Self>
 
+fn core::marker::Send::{vtable}<Self>() -> core::marker::Send::{vtable}
+= <opaque>
+
+static core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable}<Self>()
+
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
+
+fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -123,6 +133,8 @@ fn impl_MyTrait_for_MyStruct::{vtable}() -> test_crate::MyTrait::{vtable}
     let align: usize; // local
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1)); // anonymous local
     let _4: fn<'_0_1>(&'_0_1 (dyn MyTrait + '3)); // anonymous local
+    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _6: &'static core::marker::Send::{vtable}; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -133,7 +145,11 @@ fn impl_MyTrait_for_MyStruct::{vtable}() -> test_crate::MyTrait::{vtable}
     _3 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1))>(const {vtable_drop_shim}<'0>)
     storage_live(_4)
     _4 = cast<for<'_0_1> {vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn MyTrait + '3))>(const {vtable_method}<'2>)
-    ret = test_crate::MyTrait::{vtable} { size: move size, align: move align, drop: move _3, method_foo: move _4, super_trait_0: const &vtable_of({built_in impl MetaSized for MyStruct}), super_trait_1: const &vtable_of({built_in impl Send for MyStruct}) }
+    storage_live(_5)
+    _5 = &core::marker::MetaSized::{vtable}<MyStruct>
+    storage_live(_6)
+    _6 = &core::marker::Send::{vtable}<MyStruct>
+    ret = test_crate::MyTrait::{vtable} { size: move size, align: move align, drop: move _3, method_foo: move _4, super_trait_0: move _5, super_trait_1: move _6 }
     return
 }
 

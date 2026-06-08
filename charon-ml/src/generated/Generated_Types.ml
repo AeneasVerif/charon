@@ -652,7 +652,10 @@ and trait_ref_kind =
           including trait method declarations. Not present in trait
           implementations as we can use [TraitImpl] intead. *)
   | BuiltinOrAuto of
-      builtin_impl_data * trait_ref list * trait_assoc_ty_impl assoc_type_id_map
+      builtin_impl_data
+      * global_decl_ref option
+      * trait_ref list
+      * trait_assoc_ty_impl assoc_type_id_map
       (** A trait implementation that is computed by the compiler, such as for
           built-in trait [Sized]. This morally points to an invisible [impl]
           block; as such it contains the information we may need from one.
@@ -665,6 +668,8 @@ and trait_ref_kind =
 
           Fields:
           - [builtin_data]
+          - [vtable]: The vtable value for this builtin implementation, if we
+            generated one.
           - [parent_trait_refs]: Exactly like the same field on [TraitImpl]: the
             [TraitRef]s required to satisfy the implied predicates on the trait
             declaration. E.g. since [FnMut: FnOnce], a built-in [T: FnMut] impl

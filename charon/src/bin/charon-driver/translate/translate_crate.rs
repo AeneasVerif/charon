@@ -83,8 +83,8 @@ pub enum TransItemSourceKind {
     /// this takes a `Ptr<dyn Trait>` and forwards to the method. The `DefId` refers to the method
     /// implementation.
     VTableMethod,
-    /// The drop shim function to be used in the vtable as a field, the `DefId` is an `impl`.
-    VTableDropShim,
+    /// The drop shim function to be used in the vtable as a field.
+    VTableDropShim(TransImplSource),
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -99,6 +99,8 @@ pub enum TransImplSource {
     /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
     /// closure. The `DefId` is that of the ADT or closure.
     ImplicitDestruct,
+    /// A marker-trait implementation. The `DefId` is that of the trait.
+    Marker,
 }
 
 impl TransItemSource {
@@ -166,9 +168,16 @@ impl TransItemSource {
             TransItemSourceKind::CallableMethod(kind) => {
                 TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
             }
+            TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
+            | TransItemSourceKind::VTableInstance(TransImplSource::Marker)
+            | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Marker)
+            | TransItemSourceKind::VTableDropShim(TransImplSource::Marker) => {
+                TransItemSourceKind::TraitDecl
+            }
             TransItemSourceKind::DropGlueMethod(impl_kind)
             | TransItemSourceKind::VTableInstance(impl_kind)
-            | TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
+            | TransItemSourceKind::VTableInstanceInitializer(impl_kind)
+            | TransItemSourceKind::VTableDropShim(impl_kind) => {
                 TransItemSourceKind::TraitImpl(impl_kind)
             }
             _ => return None,
@@ -335,7 +344,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     | DropGlueMethod(..)
                     | VTableInstanceInitializer(..)
                     | VTableMethod
-                    | VTableDropShim => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    | VTableDropShim(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -720,7 +729,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
         if matches!(
             kind,
-            TransItemSourceKind::DropGlueMethod(..) | TransItemSourceKind::VTableDropShim
+            TransItemSourceKind::DropGlueMethod(..) | TransItemSourceKind::VTableDropShim(..)
         ) {
             generics = generics.concat(&self.drop_glue_generic_args());
         }

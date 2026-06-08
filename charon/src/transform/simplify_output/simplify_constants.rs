@@ -130,10 +130,8 @@ fn transform_constant_expr(
                 })),
             )
         }
-        ConstantExprKind::VTableRef(tref)
-            if let TraitRefKind::TraitImpl(impl_ref) = &tref.kind
-                && let Some(timpl) = ctx.ctx.translated.trait_impls.get(impl_ref.id)
-                && let Some(vtable_ref) = &timpl.vtable
+        ConstantExprKind::VTableRef(ref tref)
+            if let Some(vtable_ref) = tref.vtable_ref(&ctx.ctx.translated)
                 && let TyKind::Ref(_, vtable_ty, _) = val.ty.kind() =>
         {
             let inner = Box::new(ConstantExpr {

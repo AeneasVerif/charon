@@ -7,6 +7,11 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+fn core::marker::MetaSized::{vtable}::<Bar>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<Bar>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<Bar>()
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -136,6 +141,7 @@ fn impl_Foo_for_Bar::{vtable}() -> test_crate::Foo::{vtable}
     let erased_foo: *const (); // local
     let _7: unsafe fn(*mut (dyn Foo + '4)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Foo + '9)); // anonymous local
+    let _9: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     bb0: {
         storage_live(ret);
@@ -155,7 +161,9 @@ fn impl_Foo_for_Bar::{vtable}() -> test_crate::Foo::{vtable}
         _8 = cast<for<'_0_1> {vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Foo + '9))>(const {vtable_method}<'8>);
         foo = move _8;
         erased_foo = cast<fn<'_0_1>(&'_0_1 (dyn Foo + '10)), *const ()>(move foo);
-        ret = test_crate::Foo::{vtable} { size: move size, align: move align, drop: move erased_drop, method_foo: move erased_foo, super_trait_0: const &vtable_of({built_in impl MetaSized for Bar}) };
+        storage_live(_9);
+        _9 = &core::marker::MetaSized::{vtable}::<Bar>;
+        ret = test_crate::Foo::{vtable} { size: move size, align: move align, drop: move erased_drop, method_foo: move erased_foo, super_trait_0: move _9 };
         return;
     }
 }

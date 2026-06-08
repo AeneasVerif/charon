@@ -166,7 +166,7 @@ where
 // Full name: test_crate::f
 pub fn f<'a>(_1: &'a ()) -> Option<(&'a u8,)>[{built_in impl Sized for (&'a u8,)}]
 {
-    let _0: Option<(&'9 u8,)>[{built_in impl Sized for (&'9 u8,)}]; // return
+    let _0: Option<(&'8 u8,)>[{built_in impl Sized for (&'8 u8,)}]; // return
     let _1: &'13 (); // arg #1
 
     storage_live(_0)

@@ -399,10 +399,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             }
                             type_map
                         };
+                        let vtable = self.translate_vtable_instance_ref_no_enqueue(
+                            span,
+                            tref.hax_skip_binder_ref(),
+                            None,
+                        )?;
                         TraitRefKind::BuiltinOrAuto {
                             builtin_data,
                             parent_trait_refs,
                             types,
+                            vtable,
                         }
                     }
                     _ => raise_error!(

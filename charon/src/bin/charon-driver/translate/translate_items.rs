@@ -160,6 +160,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                     TransImplSource::ImplicitDestruct => {
                         bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
                     }
+                    TransImplSource::Marker => {
+                        unreachable!("marker impls are only used as vtable item sources")
+                    }
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
@@ -191,7 +194,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
-            TransItemSourceKind::VTableInstance(impl_kind) => {
+            &TransItemSourceKind::VTableInstance(impl_kind) => {
                 let Some(ItemId::Global(id)) = trans_id else {
                     unreachable!()
                 };
@@ -199,7 +202,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
+            &TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
@@ -214,11 +217,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::VTableDropShim => {
+            &TransItemSourceKind::VTableDropShim(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -1076,8 +1079,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             RegionBinder::empty(implemented_trait.clone()),
         );
 
-        let vtable =
-            self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;
+        let vtable = self.translate_vtable_instance_ref_no_enqueue(
+            span,
+            &trait_pred.trait_ref,
+            Some(def.this()),
+        )?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let implied_trait_refs = self.translate_trait_proofs(span, implied_trait_proofs)?;

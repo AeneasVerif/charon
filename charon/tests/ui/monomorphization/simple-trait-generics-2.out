@@ -16,6 +16,16 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+fn core::marker::MetaSized::{vtable}::<i32>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<i32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<i32>()
+
+fn core::marker::MetaSized::{vtable}::<u32>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<u32>()
+
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,
@@ -91,6 +101,7 @@ fn impl_Trait_bool_for_i32::{vtable}() -> test_crate::Trait::{vtable}
     let erased_comsume: *const (); // local
     let _7: unsafe fn(*mut (dyn Trait<bool> + '4)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '9)) -> bool; // anonymous local
+    let _9: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -109,7 +120,9 @@ fn impl_Trait_bool_for_i32::{vtable}() -> test_crate::Trait::{vtable}
     _8 = cast<for<'_0_1> impl_Trait_bool_for_i32::comsume::{vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '9)) -> bool>(const impl_Trait_bool_for_i32::comsume::{vtable_method}<'8>)
     comsume = move _8
     erased_comsume = cast<fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '10)) -> bool, *const ()>(move comsume)
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
+    storage_live(_9)
+    _9 = &core::marker::MetaSized::{vtable}::<i32>
+    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: move _9 }
     return
 }
 
@@ -182,6 +195,7 @@ fn impl_Trait_usize_for_u32::{vtable}() -> test_crate::Trait::{vtable}
     let erased_comsume: *const (); // local
     let _7: unsafe fn(*mut (dyn Trait<usize> + '4)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '9)) -> usize; // anonymous local
+    let _9: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -200,7 +214,9 @@ fn impl_Trait_usize_for_u32::{vtable}() -> test_crate::Trait::{vtable}
     _8 = cast<for<'_0_1> impl_Trait_usize_for_u32::comsume::{vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '9)) -> usize>(const impl_Trait_usize_for_u32::comsume::{vtable_method}<'8>)
     comsume = move _8
     erased_comsume = cast<fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '10)) -> usize, *const ()>(move comsume)
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: const &vtable_of({built_in impl MetaSized for u32}) }
+    storage_live(_9)
+    _9 = &core::marker::MetaSized::{vtable}::<u32>
+    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: move _9 }
     return
 }
 

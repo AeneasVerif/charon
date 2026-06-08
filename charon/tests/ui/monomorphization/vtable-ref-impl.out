@@ -7,6 +7,11 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+fn core::marker::MetaSized::{vtable}::<&'_ u32>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<&'_ u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<&'_ u32>()
+
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,
@@ -83,6 +88,7 @@ fn {impl Trait for &'_ u32}::{vtable}::<'_, u32>() -> test_crate::Trait::{vtable
     let erased_method: *const (); // local
     let _7: unsafe fn(*mut (dyn Trait + '6)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Trait + '11)); // anonymous local
+    let _9: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -101,7 +107,9 @@ fn {impl Trait for &'_ u32}::{vtable}::<'_, u32>() -> test_crate::Trait::{vtable
     _8 = cast<for<'_0_1> {vtable_method}::<'_, u32><'10>, fn<'_0_1>(&'_0_1 (dyn Trait + '11))>(const {vtable_method}::<'_, u32><'10>)
     method = move _8
     erased_method = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '12)), *const ()>(move method)
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_method: move erased_method, super_trait_0: const &vtable_of({built_in impl MetaSized for &'14 u32}) }
+    storage_live(_9)
+    _9 = &core::marker::MetaSized::{vtable}::<&'_ u32>
+    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_method: move erased_method, super_trait_0: move _9 }
     return
 }
 

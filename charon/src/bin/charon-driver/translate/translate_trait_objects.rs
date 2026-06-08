@@ -627,8 +627,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
         let ty = TyKind::Ref(Region::Static, vtbl_ty.clone(), RefKind::Shared).into_ty();
 
-        let kind = {
-            if let hax::TraitProofKind::Concrete(impl_item) = &trait_proof.kind {
+        let kind = match &trait_proof.kind {
+            // The marker trait vtable translation pipeline would give incorrect results for these
+            // traits.
+            // FIXME(dyn): translate vtables for the closure traits
+            hax::TraitProofKind::Builtin {
+                trait_data:
+                    hax::BuiltinTraitData::Other(
+                        hax::SolverTraitLangItem::FnOnce
+                        | hax::SolverTraitLangItem::FnMut
+                        | hax::SolverTraitLangItem::Fn,
+                    ),
+                ..
+            } => ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?),
+            hax::TraitProofKind::Concrete { .. } | hax::TraitProofKind::Builtin { .. } => {
+                let impl_item = match &trait_proof.kind {
+                    hax::TraitProofKind::Concrete(impl_item) => Some(impl_item),
+                    _ => None,
+                };
                 // We could return `VTableRef` but we need to enqueue the translation of the static
                 // so may as well reuse that to normalize a bit.
                 let vtable_instance =
@@ -641,9 +657,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     ty: vtbl_ty,
                 });
                 ConstantExprKind::Ref(vtable_instance, None)
-            } else {
-                ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?)
             }
+            _ => ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?),
         };
 
         Ok(Box::new(ConstantExpr { kind, ty }))
@@ -654,7 +669,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         trait_ref: &hax::TraitRef,
-        impl_ref: &hax::ItemRef,
+        // `None` if we're translating for a marker trait, which has no concret impl
+        impl_ref: Option<&hax::ItemRef>,
     ) -> Result<GlobalDeclRef, Error> {
         Ok(self
             .translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)?
@@ -665,7 +681,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         trait_ref: &hax::TraitRef,
-        impl_ref: &hax::ItemRef,
+        // `None` if we're translating for a marker trait, which has no concret impl
+        impl_ref: Option<&hax::ItemRef>,
     ) -> Result<Option<GlobalDeclRef>, Error> {
         self.translate_vtable_instance_ref_maybe_enqueue(false, span, trait_ref, impl_ref)
     }
@@ -675,7 +692,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         enqueue: bool,
         span: Span,
         trait_ref: &hax::TraitRef,
-        impl_ref: &hax::ItemRef,
+        // `None` if we're translating for a marker trait, which has no concret impl
+        impl_ref: Option<&hax::ItemRef>,
     ) -> Result<Option<GlobalDeclRef>, Error> {
         if !self.trait_is_dyn_compatible(&trait_ref.def_id)? {
             return Ok(None);
@@ -684,10 +702,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // `dyn Trait` coercion.
         // TODO(dyn): To do this properly we'd need to know for each clause whether it ultimately
         // ends up used in a vtable cast.
+        let (item_ref, impl_kind) = match impl_ref {
+            Some(impl_ref) => (impl_ref, TransImplSource::Normal),
+            None => (trait_ref, TransImplSource::Marker),
+        };
         let vtable_ref: GlobalDeclRef = self.translate_item_maybe_enqueue(
             span,
-            impl_ref,
-            TransItemSourceKind::VTableInstance(TransImplSource::Normal),
+            item_ref,
+            TransItemSourceKind::VTableInstance(impl_kind),
             enqueue,
         )?;
         Ok(Some(vtable_ref))
@@ -698,22 +720,30 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         impl_def: &hax::FullDef<'tcx>,
-        impl_kind: &TransImplSource,
+        impl_kind: TransImplSource,
     ) -> Result<(Option<TraitImplRef>, TypeDeclRef), Error> {
         let implemented_trait = match impl_def.kind() {
-            hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref,
+            hax::FullDefKind::TraitImpl { trait_pred, .. } => {
+                assert_ne!(impl_kind, TransImplSource::Marker);
+                &trait_pred.trait_ref
+            }
+            hax::FullDefKind::Trait { self_predicate, .. } => {
+                assert_eq!(impl_kind, TransImplSource::Marker);
+                &self_predicate.trait_ref
+            }
             _ => unreachable!(),
         };
         let vtable_struct_ref = self.translate_vtable_struct_ref(span, implemented_trait)?;
-        if self.monomorphize() {
-            return Ok((None, vtable_struct_ref));
-        }
-        let impl_ref = self.translate_item(
-            span,
-            impl_def.this(),
-            TransItemSourceKind::TraitImpl(*impl_kind),
-        )?;
-        Ok((Some(impl_ref), vtable_struct_ref))
+        let impl_ref = if impl_kind == TransImplSource::Marker || self.monomorphize() {
+            None
+        } else {
+            Some(self.translate_item(
+                span,
+                impl_def.this(),
+                TransItemSourceKind::TraitImpl(impl_kind),
+            )?)
+        };
+        Ok((impl_ref, vtable_struct_ref))
     }
 
     /// E.g.,
@@ -735,7 +765,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         global_id: GlobalDeclId,
         item_meta: ItemMeta,
         impl_def: &hax::FullDef<'tcx>,
-        impl_kind: &TransImplSource,
+        impl_kind: TransImplSource,
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
 
@@ -747,7 +777,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let init = self.register_item(
             span,
             impl_def.this(),
-            TransItemSourceKind::VTableInstanceInitializer(*impl_kind),
+            TransItemSourceKind::VTableInstanceInitializer(impl_kind),
         );
         let ty = Ty::new(TyKind::Adt(vtable_struct_ref));
         let value = ConstantExpr {
@@ -848,7 +878,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     }
 
     /// Generate the body of the vtable instance function.
-    /// This is for `impl Trait for T` implementation, it does NOT handle builtin impls.
     /// ```ignore
     /// let ret@0 : VTable;
     /// ret@0 = VTable { ... };
@@ -859,20 +888,25 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         impl_def: &hax::FullDef<'tcx>,
         vtable_struct_ref: TypeDeclRef,
+        impl_kind: TransImplSource,
     ) -> Result<Body, Error> {
-        let hax::FullDefKind::TraitImpl {
-            trait_pred,
-            implied_trait_proofs,
-            items,
-            ..
-        } = impl_def.kind()
-        else {
-            unreachable!()
+        let (implemented_trait_ref, impl_items) = match impl_def.kind() {
+            hax::FullDefKind::TraitImpl {
+                trait_pred, items, ..
+            } => {
+                assert_ne!(impl_kind, TransImplSource::Marker);
+                (trait_pred.trait_ref.clone(), items.as_slice())
+            }
+            hax::FullDefKind::Trait { self_predicate, .. } => {
+                assert_eq!(impl_kind, TransImplSource::Marker);
+                (self_predicate.trait_ref.clone(), &[] as &[_])
+            }
+            _ => unreachable!(),
         };
 
-        let trait_def = self.hax_def(&trait_pred.trait_ref)?;
+        let trait_def = self.hax_def(&implemented_trait_ref)?;
         // We use `poly_trait_def` to fetch `implied_preds`, which is used to fetch supertrait in `prepare_vtable_fields`.
-        let poly_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
+        let poly_trait_def = self.poly_hax_def(&implemented_trait_ref.def_id)?;
         let hax::FullDefKind::Trait {
             implied_predicates: implied_preds,
             ..
@@ -881,7 +915,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             unreachable!()
         };
 
-        let implemented_trait = self.translate_trait_decl_ref(span, &trait_pred.trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref(span, &implemented_trait_ref)?;
         let trait_id = implemented_trait.id;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
@@ -915,7 +949,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Construct a list with one operand per vtable field.
         let mut aggregate_fields = vec![];
-        let mut items_iter = items.iter();
+        let mut items_iter = impl_items.iter();
         for (field, ty) in vtable_data.fields.into_iter().zip(field_tys) {
             // In poly mode, all fields of vtables can be filled with const values.
             let mk_const = |kind| {
@@ -993,7 +1027,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let drop_shim = self.translate_item(
                         span,
                         impl_def.this(),
-                        TransItemSourceKind::VTableDropShim,
+                        TransItemSourceKind::VTableDropShim(impl_kind),
                     )?;
                     if self.monomorphize() {
                         // manually compute the type of drop shim function.
@@ -1039,9 +1073,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     unreachable!()
                 }
                 TrVTableField::SuperTrait(clause_id, _) => {
-                    let trait_proof = &implied_trait_proofs[clause_id.index()];
-                    let vtable = self.translate_vtable_instance_const(span, trait_proof)?;
-                    Operand::Const(vtable)
+                    let supertrait_proofs = match impl_def.kind() {
+                        hax::FullDefKind::TraitImpl {
+                            implied_trait_proofs,
+                            ..
+                        }
+                        | hax::FullDefKind::Trait {
+                            implied_trait_proofs,
+                            ..
+                        } => implied_trait_proofs,
+                        _ => unreachable!(),
+                    };
+                    let trait_proof = &supertrait_proofs[clause_id.index()];
+                    Operand::Const(self.translate_vtable_instance_const(span, trait_proof)?)
                 }
             };
             aggregate_fields.push(op);
@@ -1064,7 +1108,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         init_func_id: FunDeclId,
         item_meta: ItemMeta,
         impl_def: &hax::FullDef<'tcx>,
-        impl_kind: &TransImplSource,
+        impl_kind: TransImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
@@ -1073,7 +1117,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let init_for = self.register_item(
             span,
             impl_def.this(),
-            TransItemSourceKind::VTableInstance(*impl_kind),
+            TransItemSourceKind::VTableInstance(impl_kind),
         );
         let src = FunSource::GlobalInitializer(GlobalDeclRef {
             id: init_for,
@@ -1091,8 +1135,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let body = match impl_kind {
             _ if item_meta.opacity.with_private_contents().is_opaque() => Body::Opaque,
-            TransImplSource::Normal => {
-                self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref)?
+            TransImplSource::Marker | TransImplSource::Normal => {
+                self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)?
             }
             _ => {
                 raise_error!(
@@ -1223,20 +1267,34 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         fun_id: FunDeclId,
         item_meta: ItemMeta,
         impl_def: &hax::FullDef,
+        impl_kind: TransImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        let hax::FullDefKind::TraitImpl {
-            dyn_self: Some(dyn_self),
-            trait_pred,
-            ..
-        } = impl_def.kind()
-        else {
-            raise_error!(
-                self,
-                span,
-                "Trying to generate a vtable drop shim for a non-dyn-compatible trait impl"
-            );
+        let (dyn_self, trait_pred) = match impl_def.kind() {
+            hax::FullDefKind::TraitImpl {
+                dyn_self: Some(dyn_self),
+                trait_pred,
+                ..
+            } => {
+                assert_ne!(impl_kind, TransImplSource::Marker);
+                (dyn_self, trait_pred)
+            }
+            hax::FullDefKind::Trait {
+                dyn_self: Some(dyn_self),
+                self_predicate,
+                ..
+            } => {
+                assert_eq!(impl_kind, TransImplSource::Marker);
+                (dyn_self, self_predicate)
+            }
+            _ => {
+                raise_error!(
+                    self,
+                    span,
+                    "Trying to generate a vtable drop shim for a non-dyn-compatible trait"
+                );
+            }
         };
 
         let borrow_region = self.drop_glue_region();

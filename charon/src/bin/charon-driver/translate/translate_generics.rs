@@ -546,7 +546,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         if matches!(
             kind,
-            TransItemSourceKind::DropGlueMethod(..) | TransItemSourceKind::VTableDropShim
+            TransItemSourceKind::DropGlueMethod(..) | TransItemSourceKind::VTableDropShim(..)
         ) {
             self.the_only_binder_mut().push_drop_glue_region();
         }

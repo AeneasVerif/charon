@@ -1550,7 +1550,7 @@ where
 {
     let _0: Option<&'6 mut [T]>[{built_in impl Sized for &'6 mut [T]}]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice: &'9 mut [T]; // arg #2
+    let slice: &'10 mut [T]; // arg #2
     let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
@@ -1558,9 +1558,9 @@ where
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
-    let _10: &'11 [T]; // anonymous local
-    let _11: &'12 mut [T]; // anonymous local
-    let _12: &'13 mut [T]; // anonymous local
+    let _10: &'12 [T]; // anonymous local
+    let _11: &'13 mut [T]; // anonymous local
+    let _12: &'14 mut [T]; // anonymous local
     let _13: *mut [T]; // anonymous local
     let _14: *mut [T]; // anonymous local
     let _15: usize; // anonymous local
@@ -1588,7 +1588,7 @@ where
             storage_live(_9)
             storage_live(_10)
             _10 = &(*slice) with_metadata(copy slice.metadata)
-            _9 = core::slice::{[T]}::len<'15, T>[TraitClause0](move _10)
+            _9 = core::slice::{[T]}::len<'16, T>[TraitClause0](move _10)
             ↳⚡ storage_dead(slice)
                 storage_dead(self)
                 unwind_continue
@@ -1650,7 +1650,7 @@ where
 {
     let _0: Option<&'6 [T]>[{built_in impl Sized for &'6 [T]}]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice: &'9 [T]; // arg #2
+    let slice: &'10 [T]; // arg #2
     let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
@@ -1658,9 +1658,9 @@ where
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
-    let _10: &'10 [T]; // anonymous local
-    let _11: &'11 [T]; // anonymous local
-    let _12: &'12 [T]; // anonymous local
+    let _10: &'11 [T]; // anonymous local
+    let _11: &'12 [T]; // anonymous local
+    let _12: &'13 [T]; // anonymous local
     let _13: *const [T]; // anonymous local
     let _14: *const [T]; // anonymous local
     let _15: usize; // anonymous local
@@ -1688,7 +1688,7 @@ where
             storage_live(_9)
             storage_live(_10)
             _10 = &(*slice) with_metadata(copy slice.metadata)
-            _9 = core::slice::{[T]}::len<'14, T>[TraitClause0](move _10)
+            _9 = core::slice::{[T]}::len<'15, T>[TraitClause0](move _10)
             ↳⚡ storage_dead(slice)
                 storage_dead(self)
                 unwind_continue

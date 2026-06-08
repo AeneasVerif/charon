@@ -129,7 +129,7 @@ impl "impl_FnOnce_unit_for_closure" FnOnce<()> for closure {
 fn main()
 {
     let _0: (); // return
-    let _1: Result<(), alloc::boxed::Box<(dyn Any + Send + '18)>[{built_in impl MetaSized for (dyn Any + Send + '19)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '22)>[{built_in impl MetaSized for (dyn Any + Send + '23)}, {built_in impl Sized for Global}]}]; // anonymous local
+    let _1: Result<(), alloc::boxed::Box<(dyn Any + Send + '27)>[{built_in impl MetaSized for (dyn Any + Send + '29)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '36)>[{built_in impl MetaSized for (dyn Any + Send + '38)}, {built_in impl Sized for Global}]}]; // anonymous local
     let _2: closure; // anonymous local
 
     storage_live(_0)
@@ -140,7 +140,7 @@ fn main()
     _1 = catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, impl_FnOnce_unit_for_closure, {built_in impl UnwindSafe for closure}](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
-    conditional_drop[drop_glue<'62, (), alloc::boxed::Box<(dyn Any + Send + '48)>[{built_in impl MetaSized for (dyn Any + Send + '49)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '48)>[{built_in impl MetaSized for (dyn Any + Send + '49)}, {built_in impl Sized for Global}]}]] _1
+    conditional_drop[drop_glue<'100, (), alloc::boxed::Box<(dyn Any + Send + '78)>[{built_in impl MetaSized for (dyn Any + Send + '80)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '78)>[{built_in impl MetaSized for (dyn Any + Send + '80)}, {built_in impl Sized for Global}]}]] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

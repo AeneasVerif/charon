@@ -173,12 +173,12 @@ impl<'a> "impl_FnMut_unit_for_closure" FnMut<()> for closure<'a> {
 fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for closure<'a>}]
 {
     let _0: FromFn<closure<'6>>[{built_in impl Sized for closure<'6>}]; // return
-    let _1: closure<'9>; // anonymous local
+    let _1: closure<'10>; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<u8, closure<'12>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'12>}, impl_FnMut_unit_for_closure<'12>](move _1)
+    _0 = from_fn<u8, closure<'13>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'13>}, impl_FnMut_unit_for_closure<'13>](move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return

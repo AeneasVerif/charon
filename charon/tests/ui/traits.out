@@ -1534,7 +1534,7 @@ impl "impl_RecursiveImpl_for_unit" RecursiveImpl for () {
 // Full name: test_crate::flabada
 pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
-    let _0: Wrapper<(bool, &'9 ())>[{built_in impl Sized for (bool, &'9 ())}]; // return
+    let _0: Wrapper<(bool, &'8 ())>[{built_in impl Sized for (bool, &'8 ())}]; // return
     let _x: &'12 (); // arg #1
 
     storage_live(_0)

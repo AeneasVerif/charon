@@ -128,6 +128,7 @@ fn build_removed_clause_placeholder(
     let stub_tref = TraitRef::new(
         TraitRefKind::BuiltinOrAuto {
             builtin_data: BuiltinImplData::RemovedAdtClause,
+            vtable: None,
             parent_trait_refs: Default::default(),
             types: Default::default(),
         },
@@ -149,6 +150,7 @@ fn build_removed_clause_placeholder(
         .unwrap_or_default();
     TraitRefKind::BuiltinOrAuto {
         builtin_data: BuiltinImplData::RemovedAdtClause,
+        vtable: None,
         parent_trait_refs,
         types: Default::default(),
     }

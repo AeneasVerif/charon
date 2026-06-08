@@ -316,8 +316,14 @@ pub enum FullDefKind<'tcx> {
     Trait {
         param_env: ParamEnv,
         implied_predicates: GenericPredicates,
+        /// Proofs of the implied predicates. Most often uses the `Self` clause, except for builtin
+        /// traits like `Sized`.
+        implied_trait_proofs: Vec<TraitProof>,
         /// The special `Self: Trait` clause.
         self_predicate: TraitPredicate,
+        /// The proof for the special `Self: Trait` clause. Almost always a `TraitProofKind::Self`,
+        /// except for builtin traits like `Sized`.
+        self_proof: TraitProof,
         /// Associated items, in definition order.
         items: Vec<AssocItem>,
         /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
@@ -704,7 +710,9 @@ where
         RDefKind::Trait { .. } => FullDefKind::Trait {
             param_env: get_param_env(s, args),
             implied_predicates: get_implied_predicates(s, args),
+            implied_trait_proofs: solve_item_implied_traits(s, def_id, args_or_default()),
             self_predicate: get_self_predicate(s, args),
+            self_proof: solve_trait(s, self_trait_ref(s, args)),
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
             items: tcx
                 .associated_items(def_id)
@@ -1292,14 +1300,19 @@ fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> TraitPredicate {
     use ty::Upcast;
     let tcx = s.base().tcx;
+    let pred: ty::TraitPredicate = self_trait_ref(s, args).no_bound_vars().unwrap().upcast(tcx);
+    pred.sinto(s)
+}
+
+fn self_trait_ref<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    args: Option<ty::GenericArgsRef<'tcx>>,
+) -> ty::PolyTraitRef<'tcx> {
+    let tcx = s.base().tcx;
     let def_id = s.owner().as_real_def_id().unwrap();
     let typing_env = s.typing_env();
-    let pred: ty::TraitPredicate = self_predicate(tcx, def_id)
-        .no_bound_vars()
-        .unwrap()
-        .upcast(tcx);
-    let pred = substitute(tcx, typing_env, args, pred);
-    pred.sinto(s)
+    let pred = self_predicate(tcx, def_id);
+    substitute(tcx, typing_env, args, pred)
 }
 
 /// Generates a `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` type for this trait.
