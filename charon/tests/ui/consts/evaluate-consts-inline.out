@@ -1,0 +1,55 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::promoted_scalar
+pub fn promoted_scalar() -> &'static i32
+{
+    let _0: &'1 i32; // return
+    let _1: i32; // anonymous local
+    let _2: &'2 i32; // anonymous local
+
+    storage_live(_1)
+    _1 = const 42i32
+    storage_live(_2)
+    _2 = &_1
+    _0 = move _2
+    return
+}
+
+// Full name: test_crate::promoted_array
+pub fn promoted_array() -> &'static [i32; 3usize]
+{
+    let _0: &'1 [i32; 3usize]; // return
+    let _1: [i32; 3usize]; // anonymous local
+    let _2: &'2 [i32; 3usize]; // anonymous local
+
+    storage_live(_1)
+    _1 = [const 1i32, const 2i32, const 3i32]
+    storage_live(_2)
+    _2 = &_1
+    _0 = move _2
+    return
+}
+
+// Full name: test_crate::inline_block
+pub fn inline_block() -> u32
+{
+    let _0: u32; // return
+
+    _0 = const 5u32
+    return
+}
+
+// Full name: test_crate::inline_pair
+pub fn inline_pair() -> (u32, u32)
+{
+    let _0: (u32, u32); // return
+    let _1: (u32, u32); // anonymous local
+
+    storage_live(_1)
+    _1 = (const 1u32, const 2u32)
+    _0 = move _1
+    return
+}
+
+
+

@@ -2053,6 +2053,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("index_to_function_calls", index_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
           ("raw_consts", raw_consts);
+          ("evaluate_consts", evaluate_consts);
           ("unsized_strings", unsized_strings);
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
           ("reconstruct_asserts", reconstruct_asserts);
@@ -2114,6 +2115,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
         let* raw_consts = bool_of_json ctx raw_consts in
+        let* evaluate_consts = bool_of_json ctx evaluate_consts in
         let* unsized_strings = bool_of_json ctx unsized_strings in
         let* reconstruct_fallible_operations =
           bool_of_json ctx reconstruct_fallible_operations
@@ -2168,6 +2170,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              index_to_function_calls;
              treat_box_as_builtin;
              raw_consts;
+             evaluate_consts;
              unsized_strings;
              reconstruct_fallible_operations;
              reconstruct_asserts;

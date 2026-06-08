@@ -1,0 +1,107 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::SIMPLE
+pub const SIMPLE: u32 = 42u32
+
+// Full name: test_crate::COMPUTED
+pub const COMPUTED: u32 = 43u32
+
+// Full name: test_crate::PAIR
+pub const PAIR: (u32, bool) = (43u32, true)
+
+// Full name: test_crate::ARRAY
+pub const ARRAY: [u8; 3usize] = [1u8, 2u8, 3u8]
+
+// Full name: test_crate::STATIC
+pub static STATIC: u32 = 100u32
+
+// Full name: test_crate::Node
+pub struct Node {
+  &'static Node,
+}
+
+// Full name: test_crate::REC_A
+pub static REC_A: Node = Node { 0: &REC_B }
+
+// Full name: test_crate::REC_B
+pub static REC_B: Node = Node { 0: &REC_A }
+
+// Full name: test_crate::HasLen
+trait HasLen<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    const LEN : usize
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl HasLen for [T; 4usize]}::LEN
+fn LEN<T>() -> usize
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: usize; // return
+
+    _0 = const 4usize
+    return
+}
+
+// Full name: test_crate::{impl HasLen for [T; 4usize]}::LEN
+const LEN<T>: usize
+where
+    TraitClause0: (T: Sized),
+ = LEN<T>[TraitClause0]()
+
+// Full name: test_crate::{impl HasLen for [T; 4usize]}
+impl<T> "impl_HasLen_for_array" HasLen for [T; 4usize]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: ([T; 4usize]: MetaSized) = {built_in impl MetaSized for [T; 4usize]}
+    const LEN = LEN<T>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::use_consts
+pub fn use_consts() -> u32
+{
+    let _0: u32; // return
+    let _1: u32; // anonymous local
+    let _2: u32; // anonymous local
+    let _3: u32; // anonymous local
+    let _4: &'1 u32; // anonymous local
+    let _5: u32; // anonymous local
+    let _6: &'2 u32; // anonymous local
+
+    storage_live(_2)
+    storage_live(_5)
+    storage_live(_1)
+    _2 = copy SIMPLE panic.+ copy COMPUTED
+    _1 = move _2
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_6)
+    _6 = &STATIC
+    _4 = move _6
+    _3 = copy (*_4)
+    _5 = copy _1 panic.+ copy _3
+    _0 = move _5
+    storage_dead(_3)
+    storage_dead(_1)
+    storage_dead(_4)
+    return
+}
+
+
+

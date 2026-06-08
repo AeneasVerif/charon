@@ -621,16 +621,27 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
 
-        let initializer = self.register_item(span, def.this(), TransItemSourceKind::Fun);
-        let value = ConstantExpr {
-            kind: ConstantExprKind::Call(
-                FnPtr::new(
-                    FnPtrKind::Fun(FunId::Regular(initializer)),
-                    self.outermost_generics().identity_args(),
+        // With `--evaluate-consts`, try to evaluate the constant/static into a value. This
+        // isn't always possible (e.g. for generic constants or recursive statics), in which
+        // case we fall back to a call to the initializer below.
+        let value = if self.options.evaluate_consts
+            && let Some(evaluated) = self.evaluate_const_def(def)
+        {
+            self.translate_constant_expr(span, &evaluated)?
+        } else {
+            // Default: the value is a call to the initializer function, which uses the same
+            // generic parameters as the global.
+            let initializer = self.register_item(span, def.this(), TransItemSourceKind::Fun);
+            ConstantExpr {
+                kind: ConstantExprKind::Call(
+                    FnPtr::new(
+                        FnPtrKind::Fun(FunId::Regular(initializer)),
+                        self.outermost_generics().identity_args(),
+                    ),
+                    vec![],
                 ),
-                vec![],
-            ),
-            ty: ty.clone(),
+                ty: ty.clone(),
+            }
         };
 
         Ok(GlobalDecl {

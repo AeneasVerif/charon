@@ -99,11 +99,13 @@ fn get_mir_for_def_id_and_level<'tcx>(
                     | hax::DefKind::AssocConst { .. }
                     | hax::DefKind::InlineConst
             );
+            let is_static = matches!(def_id.kind, hax::DefKind::Static { .. });
             let mir_available = tcx.is_mir_available(rust_def_id);
 
-            if mir_available && !is_global {
+            if mir_available && !is_global && !is_static {
                 Some(tcx.optimized_mir(rust_def_id).clone())
             } else if (is_global && !tcx.is_trivial_const(rust_def_id))
+                || (is_static && rust_def_id.is_local())
                 || tcx.is_const_fn(rust_def_id)
             {
                 Some(tcx.mir_for_ctfe(rust_def_id).clone())
