@@ -1,0 +1,6 @@
+pub opaque type core::ascii::EscapeDefault
+
+pub fn core::ascii::escape_default(_1: u8) -> core::ascii::EscapeDefault
+= <missing>
+
+
