@@ -1,32 +1,28 @@
 use super::translate_ctx::*;
 use crate::hax;
 use charon_lib::{ast::*, ids::IndexVec};
-use rustc_type_ir::Interner;
 
 impl<'tcx> TranslateCtx<'tcx> {
     pub fn recognize_builtin_impl(
         &self,
         trait_data: &hax::BuiltinTraitData,
-        trait_def: &hax::FullDef<'tcx>,
     ) -> Option<BuiltinImplData> {
         Some(match trait_data {
             hax::BuiltinTraitData::Destruct(x) => {
                 match x {
                     hax::DestructData::Noop => BuiltinImplData::NoopDestruct,
                     hax::DestructData::Implicit => BuiltinImplData::UntrackedDestruct,
-                    // This is unconditionally replaced by a `TraitImpl`.
-                    hax::DestructData::Glue { .. } => return None,
+                    // This is unconditionally replaced by a `TraitImpl` earlier.
+                    hax::DestructData::Glue { .. } => unreachable!(),
                 }
             }
+            hax::BuiltinTraitData::Alias => unreachable!(),
             hax::BuiltinTraitData::Auto => BuiltinImplData::Auto,
-            hax::BuiltinTraitData::Other => {
-                use rustc_type_ir::lang_items::SolverTraitLangItem;
+            hax::BuiltinTraitData::Other(item) => {
+                use hax::SolverTraitLangItem;
                 // The ones for which we return `None` are those I don't think would show up in a
                 // builtin impl.
-                match self
-                    .tcx
-                    .as_trait_lang_item(trait_def.def_id().real_rust_def_id())?
-                {
+                match item {
                     SolverTraitLangItem::AsyncFn => BuiltinImplData::AsyncFn,
                     SolverTraitLangItem::AsyncFnKindHelper => return None,
                     SolverTraitLangItem::AsyncFnMut => BuiltinImplData::AsyncFnMut,
@@ -325,85 +321,94 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             } => {
                 let tref = &impl_source.pred;
                 let trait_def = self.poly_hax_def(&tref.hax_skip_binder_ref().def_id)?;
-                if let hax::FullDefKind::TraitAlias { .. } = trait_def.kind() {
-                    // We reuse the same `def_id` to generate a blanket impl for the trait.
-                    let mut impl_ref: TraitImplRef = self.translate_item(
-                        span,
-                        &tref.hax_skip_binder_ref().erase(self.hax_state_with_id()),
-                        TransItemSourceKind::TraitImpl(TransImplSource::TraitAlias),
-                    )?;
-                    assert!(
-                        impl_ref.generics.trait_refs.is_empty(),
-                        "found trait alias with non-empty required predicates"
-                    );
-                    impl_ref.generics.trait_refs =
-                        self.translate_trait_proofs(span, trait_proofs)?;
-                    TraitRefKind::TraitImpl(impl_ref)
-                } else if let hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) =
-                    trait_data
-                {
-                    let (hax::TyKind::Adt(item)
-                    | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
-                    | hax::TyKind::Array(item)
-                    | hax::TyKind::Slice(item)
-                    | hax::TyKind::Tuple(item)) = ty.kind()
-                    else {
-                        raise_error!(self, span, "failed to translate drop glue for type {ty:?}")
-                    };
-                    TraitRefKind::TraitImpl(self.translate_trait_impl_ref(
-                        span,
-                        item,
-                        TransImplSource::ImplicitDestruct,
-                    )?)
-                } else {
-                    let Some(builtin_data) = self.recognize_builtin_impl(trait_data, &trait_def)
-                    else {
-                        raise_error!(
-                            self,
+                match trait_data {
+                    hax::BuiltinTraitData::Alias => {
+                        // We reuse the same `def_id` to generate a blanket impl for the trait.
+                        let mut impl_ref: TraitImplRef = self.translate_item(
                             span,
-                            "found a built-in trait impl we did not recognize: \
-                            {:?} (lang_item={:?})",
-                            trait_def.def_id(),
-                            trait_def.lang_item,
-                        )
-                    };
-                    if let Some(closure_kind) = builtin_data.as_closure_kind()
-                        && let Some(hax::GenericArg::Type(closure_ty)) =
-                            impl_source.pred.hax_skip_binder_ref().generic_args.first()
-                        && let Some(item) = match closure_ty.kind() {
-                            hax::TyKind::Closure(closure_args) => Some(&closure_args.item),
-                            hax::TyKind::FnDef { item, .. } => Some(item),
-                            _ => None,
-                        }
-                    {
-                        let binder =
-                            self.translate_region_binder(span, &impl_source.pred, |ctx, _tref| {
-                                ctx.translate_callable_impl_ref(span, item, closure_kind)
-                            })?;
-                        TraitRefKind::TraitImpl(self.erase_region_binder(binder))
-                    } else {
-                        let parent_trait_refs = self.translate_trait_proofs(span, trait_proofs)?;
-                        let types: IndexMap<AssocTypeId, _> = if self.monomorphize() {
-                            IndexMap::new()
-                        } else {
-                            let tdecl_id = trait_decl_ref.skip_binder.id;
-                            let mut type_map = IndexMap::new();
-                            for (def_id, ty, trait_proofs) in types {
-                                let assoc_type_id =
-                                    self.translate_assoc_type_id(tdecl_id, def_id)?;
-                                let assoc_ty = TraitAssocTyImpl {
-                                    value: self.translate_ty(span, ty)?,
-                                    implied_trait_refs: self
-                                        .translate_trait_proofs(span, trait_proofs)?,
-                                };
-                                type_map.set_slot_extend(assoc_type_id, assoc_ty);
-                            }
-                            type_map
+                            &tref.hax_skip_binder_ref().erase(self.hax_state_with_id()),
+                            TransItemSourceKind::TraitImpl(TransImplSource::TraitAlias),
+                        )?;
+                        assert!(
+                            impl_ref.generics.trait_refs.is_empty(),
+                            "found trait alias with non-empty required predicates"
+                        );
+                        impl_ref.generics.trait_refs =
+                            self.translate_trait_proofs(span, trait_proofs)?;
+                        TraitRefKind::TraitImpl(impl_ref)
+                    }
+                    hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) => {
+                        let (hax::TyKind::Adt(item)
+                        | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
+                        | hax::TyKind::Array(item)
+                        | hax::TyKind::Slice(item)
+                        | hax::TyKind::Tuple(item)) = ty.kind()
+                        else {
+                            raise_error!(
+                                self,
+                                span,
+                                "failed to translate drop glue for type {ty:?}"
+                            )
                         };
-                        TraitRefKind::BuiltinOrAuto {
-                            builtin_data,
-                            parent_trait_refs,
-                            types,
+                        TraitRefKind::TraitImpl(self.translate_trait_impl_ref(
+                            span,
+                            item,
+                            TransImplSource::ImplicitDestruct,
+                        )?)
+                    }
+                    _ => {
+                        let Some(builtin_data) = self.recognize_builtin_impl(trait_data) else {
+                            raise_error!(
+                                self,
+                                span,
+                                "found a built-in trait impl we did not recognize: \
+                            {:?} (lang_item={:?})",
+                                trait_def.def_id(),
+                                trait_def.lang_item,
+                            )
+                        };
+                        if let Some(closure_kind) = builtin_data.as_closure_kind()
+                            && let Some(hax::GenericArg::Type(closure_ty)) =
+                                impl_source.pred.hax_skip_binder_ref().generic_args.first()
+                            && let Some(item) = match closure_ty.kind() {
+                                hax::TyKind::Closure(closure_args) => Some(&closure_args.item),
+                                hax::TyKind::FnDef { item, .. } => Some(item),
+                                _ => None,
+                            }
+                        {
+                            let binder = self.translate_region_binder(
+                                span,
+                                &impl_source.pred,
+                                |ctx, _tref| {
+                                    ctx.translate_callable_impl_ref(span, item, closure_kind)
+                                },
+                            )?;
+                            TraitRefKind::TraitImpl(self.erase_region_binder(binder))
+                        } else {
+                            let parent_trait_refs =
+                                self.translate_trait_proofs(span, trait_proofs)?;
+                            let types: IndexMap<AssocTypeId, _> = if self.monomorphize() {
+                                IndexMap::new()
+                            } else {
+                                let tdecl_id = trait_decl_ref.skip_binder.id;
+                                let mut type_map = IndexMap::new();
+                                for (def_id, ty, trait_proofs) in types {
+                                    let assoc_type_id =
+                                        self.translate_assoc_type_id(tdecl_id, def_id)?;
+                                    let assoc_ty = TraitAssocTyImpl {
+                                        value: self.translate_ty(span, ty)?,
+                                        implied_trait_refs: self
+                                            .translate_trait_proofs(span, trait_proofs)?,
+                                    };
+                                    type_map.set_slot_extend(assoc_type_id, assoc_ty);
+                                }
+                                type_map
+                            };
+                            TraitRefKind::BuiltinOrAuto {
+                                builtin_data,
+                                parent_trait_refs,
+                                types,
+                            }
                         }
                     }
                 }
