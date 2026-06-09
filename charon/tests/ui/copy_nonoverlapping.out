@@ -104,49 +104,6 @@ impl "impl_Clone_for_usize" Clone for usize {
     non-dyn-compatible
 }
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub struct NonNull<T> {
-  pointer: *const T is !null,
-}
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
-pub struct PhantomData<T> {}
-
-// Full name: core::fmt::rt::ArgumentType
-enum ArgumentType<'a> {
-  Placeholder(value: NonNull<()>, formatter: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], _lifetime: PhantomData<&'a ()>),
-  Count(u16),
-}
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub struct Argument<'a> {
-  ty: ArgumentType<'a>,
-}
-
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub struct Arguments<'a> {
-  template: NonNull<u8>,
-  args: NonNull<Argument<'a>>,
-}
-
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
@@ -265,6 +222,12 @@ pub struct Alignment {
   _inner_repr_trick: AlignmentEnum,
 }
 
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub struct NonNull<T> {
+  pointer: *const T is !null,
+}
+
 // Full name: core::panicking::panic_nounwind_fmt
 pub fn panic_nounwind_fmt<'_0>(fmt_1: Arguments<'_0>, force_no_backtrace_2: bool) -> !
 {
@@ -337,7 +300,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align_1:
             storage_dead(_10)
             _8 = transmute<usize, NonNull<Argument<'12>>>(move _9)
             storage_dead(_9)
-            _4 = Arguments { template: move _6, args: move _8 }
+            _4 = Arguments { 0: move _6, 1: move _8 }
             storage_dead(_8)
             storage_dead(_6)
             _3 = panic_nounwind_fmt<'15>(move _4, const false)

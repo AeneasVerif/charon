@@ -471,7 +471,7 @@ impl CliOpts {
                         .push("-Zcrate-attr=feature(register_tool)".to_owned());
                     self.rustc_args
                         .push("-Zcrate-attr=register_tool(charon)".to_owned());
-                    self.exclude.push("core::fmt::Formatter".to_owned());
+                    self.exclude.push("core::fmt".to_owned());
                 }
             }
         }

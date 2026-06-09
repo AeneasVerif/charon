@@ -1,13 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Arguments::<'_>
-#[lang_item("format_arguments")]
-pub opaque type Arguments::<'_>
-
-// Full name: core::fmt::{Arguments::<'_>}::from_str::<'_>
-pub fn from_str::<'_>(_1: &'static str) -> Arguments::<'_>
-= <opaque>
-
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized

@@ -4,14 +4,6 @@
 #[lang_item("alloc_layout")]
 pub opaque type Layout
 
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub opaque type Arguments<'a>
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
 // Full name: core::intrinsics::cold_path
 pub fn cold_path()
 = <intrinsic:cold_path>

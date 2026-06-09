@@ -1,13 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub opaque type Arguments<'a>
-
-// Full name: core::fmt::{Arguments<'a>}::from_str
-pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
-= <opaque>
-
 // Full name: test_crate::main
 fn main()
 {

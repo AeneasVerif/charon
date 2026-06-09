@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-pub struct core::fmt::Error {}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -25,19 +23,6 @@ where
   Err(E),
 }
 
-// Full name: core::fmt::Debug
-#[lang_item("Debug")]
-pub trait Debug<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Debug::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::Debug::{vtable}
-}
-
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), core::fmt::Error>[{built_in impl Sized for ()}, {built_in impl Sized for core::fmt::Error}]
-where
-    TraitClause0: (Self: Debug),
-= <opaque>
-
 // Full name: core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap
 pub fn unwrap<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> T
 where
@@ -46,15 +31,11 @@ where
     TraitClause2: (E: Debug),
 = <opaque>
 
-pub opaque type std::io::error::Error
+// Full name: std::io::error::Error
+pub opaque type Error
 
-// Full name: std::io::error::{impl Debug for std::io::error::Error}::fmt
-pub fn impl_Debug_for_Error::fmt<'_0, '_1, '_2>(_1: &'_0 std::io::error::Error, _2: &'_1 mut Formatter<'_2>) -> Result<(), core::fmt::Error>[{built_in impl Sized for ()}, {built_in impl Sized for core::fmt::Error}]
-= <opaque>
-
-// Full name: std::io::error::{impl Debug for std::io::error::Error}
-impl "impl_Debug_for_Error" Debug for std::io::error::Error {
-    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_Error::fmt<'_0_1, '_1_1, '_2_1>
+// Full name: std::io::error::{impl Debug for Error}
+impl "impl_Debug_for_Error" Debug for Error {
     vtable: impl_Debug_for_Error::{vtable}
 }
 
@@ -66,7 +47,7 @@ where
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: std::io::impls::{impl Write for Vec<u8>[{built_in impl Sized for u8}, TraitClause0]}::write_all
-pub fn impl_Write_for_Vec_u8::write_all<'_0, '_1, A>(_1: &'_0 mut Vec<u8>[{built_in impl Sized for u8}, TraitClause0], _2: &'_1 [u8]) -> Result<(), std::io::error::Error>[{built_in impl Sized for ()}, {built_in impl Sized for std::io::error::Error}]
+pub fn impl_Write_for_Vec_u8::write_all<'_0, '_1, A>(_1: &'_0 mut Vec<u8>[{built_in impl Sized for u8}, TraitClause0], _2: &'_1 [u8]) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     TraitClause0: (A: Sized),
 = <opaque>
@@ -95,7 +76,7 @@ fn main()
     let _0: (); // return
     let buf_1: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
     let _2: (); // anonymous local
-    let _3: Result<(), std::io::error::Error>[{built_in impl Sized for ()}, {built_in impl Sized for std::io::error::Error}]; // anonymous local
+    let _3: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
     let _4: &'1 mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
     let _5: &'3 [u8]; // anonymous local
     let _6: &'5 [u8; 5usize]; // anonymous local
@@ -124,7 +105,7 @@ fn main()
     _3 = impl_Write_for_Vec_u8::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    _2 = unwrap<(), std::io::error::Error>[{built_in impl Sized for ()}, {built_in impl Sized for std::io::error::Error}, impl_Debug_for_Error](move _3)
+    _2 = unwrap<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}, impl_Debug_for_Error](move _3)
     storage_dead(_3)
     storage_dead(_7)
     storage_dead(_2)

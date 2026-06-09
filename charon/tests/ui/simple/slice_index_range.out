@@ -1,14 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub struct NonNull<T> {
-  pointer: *const T is !null,
-}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -32,32 +23,15 @@ where
   Err(E),
 }
 
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub struct NonNull<T> {
+  pointer: *const T is !null,
+}
+
 // Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
 pub struct PhantomData<T> {}
-
-// Full name: core::fmt::rt::ArgumentType
-enum ArgumentType<'a> {
-  Placeholder(value: NonNull<()>, formatter: unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], _lifetime: PhantomData<&'a ()>),
-  Count(u16),
-}
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub struct Argument<'a> {
-  ty: ArgumentType<'a>,
-}
-
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub struct Arguments<'a> {
-  template: NonNull<u8>,
-  args: NonNull<Argument<'a>>,
-}
-
-// Full name: core::fmt::num::imp::{impl Display for usize}::fmt
-pub fn impl_Display_for_usize::fmt<'_0, '_1, '_2>(_1: &'_0 usize, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <missing>
 
 fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2: usize) -> !
 {
@@ -102,15 +76,15 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
     storage_live(_13)
-    _13 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'25, '26, '27>)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
     storage_dead(_13)
     storage_live(_22)
     _22 = PhantomData {  }
-    _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _22 }
+    _10 = ArgumentType::@Variant0 { 0: move _11, 1: copy _12, 2: move _22 }
     storage_dead(_12)
     storage_dead(_11)
-    _7 = Argument { ty: move _10 }
+    _7 = Argument { 0: move _10 }
     storage_dead(_10)
     storage_dead(_14)
     storage_live(_8)
@@ -121,15 +95,15 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
     storage_live(_18)
-    _18 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'36, '37, '38>)
+    _18 = cast<for<'_0_1, '_1_1, '_2_1> fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
     storage_dead(_18)
     storage_live(_23)
     _23 = PhantomData {  }
-    _15 = ArgumentType::Placeholder { value: move _16, formatter: copy _17, _lifetime: move _23 }
+    _15 = ArgumentType::@Variant0 { 0: move _16, 1: copy _17, 2: move _23 }
     storage_dead(_17)
     storage_dead(_16)
-    _8 = Argument { ty: move _15 }
+    _8 = Argument { 0: move _15 }
     storage_dead(_15)
     storage_dead(_19)
     args_6 = [move _7, move _8]
@@ -145,7 +119,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     _20 = transmute<&'44 [u8; 57usize], NonNull<u8>>(move _25)
     storage_live(_21)
     _21 = transmute<&'12 [Argument<'13>; 2usize], NonNull<Argument<'45>>>(copy args_9)
-    _3 = Arguments { template: move _20, args: move _21 }
+    _3 = Arguments { 0: move _20, 1: move _21 }
     storage_dead(_21)
     storage_dead(_20)
     storage_dead(args_9)
@@ -195,15 +169,15 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
     storage_live(_13)
-    _13 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'25, '26, '27>)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
     storage_dead(_13)
     storage_live(_22)
     _22 = PhantomData {  }
-    _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _22 }
+    _10 = ArgumentType::@Variant0 { 0: move _11, 1: copy _12, 2: move _22 }
     storage_dead(_12)
     storage_dead(_11)
-    _7 = Argument { ty: move _10 }
+    _7 = Argument { 0: move _10 }
     storage_dead(_10)
     storage_dead(_14)
     storage_live(_8)
@@ -214,15 +188,15 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
     storage_live(_18)
-    _18 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'36, '37, '38>)
+    _18 = cast<for<'_0_1, '_1_1, '_2_1> fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
     storage_dead(_18)
     storage_live(_23)
     _23 = PhantomData {  }
-    _15 = ArgumentType::Placeholder { value: move _16, formatter: copy _17, _lifetime: move _23 }
+    _15 = ArgumentType::@Variant0 { 0: move _16, 1: copy _17, 2: move _23 }
     storage_dead(_17)
     storage_dead(_16)
-    _8 = Argument { ty: move _15 }
+    _8 = Argument { 0: move _15 }
     storage_dead(_15)
     storage_dead(_19)
     args_6 = [move _7, move _8]
@@ -238,7 +212,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     _20 = transmute<&'44 [u8; 55usize], NonNull<u8>>(move _25)
     storage_live(_21)
     _21 = transmute<&'12 [Argument<'13>; 2usize], NonNull<Argument<'45>>>(copy args_9)
-    _3 = Arguments { template: move _20, args: move _21 }
+    _3 = Arguments { 0: move _20, 1: move _21 }
     storage_dead(_21)
     storage_dead(_20)
     storage_dead(args_9)
@@ -288,15 +262,15 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
     storage_live(_13)
-    _13 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'25, '26, '27>)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
     storage_dead(_13)
     storage_live(_22)
     _22 = PhantomData {  }
-    _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _22 }
+    _10 = ArgumentType::@Variant0 { 0: move _11, 1: copy _12, 2: move _22 }
     storage_dead(_12)
     storage_dead(_11)
-    _7 = Argument { ty: move _10 }
+    _7 = Argument { 0: move _10 }
     storage_dead(_10)
     storage_dead(_14)
     storage_live(_8)
@@ -307,15 +281,15 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
     storage_live(_18)
-    _18 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'36, '37, '38>)
+    _18 = cast<for<'_0_1, '_1_1, '_2_1> fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
     storage_dead(_18)
     storage_live(_23)
     _23 = PhantomData {  }
-    _15 = ArgumentType::Placeholder { value: move _16, formatter: copy _17, _lifetime: move _23 }
+    _15 = ArgumentType::@Variant0 { 0: move _16, 1: copy _17, 2: move _23 }
     storage_dead(_17)
     storage_dead(_16)
-    _8 = Argument { ty: move _15 }
+    _8 = Argument { 0: move _15 }
     storage_dead(_15)
     storage_dead(_19)
     args_6 = [move _7, move _8]
@@ -331,7 +305,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     _20 = transmute<&'44 [u8; 40usize], NonNull<u8>>(move _25)
     storage_live(_21)
     _21 = transmute<&'12 [Argument<'13>; 2usize], NonNull<Argument<'45>>>(copy args_9)
-    _3 = Arguments { template: move _20, args: move _21 }
+    _3 = Arguments { 0: move _20, 1: move _21 }
     storage_dead(_21)
     storage_dead(_20)
     storage_dead(args_9)
@@ -381,15 +355,15 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     _11 = transmute<*const usize, NonNull<()>>(copy _14)
     storage_live(_12)
     storage_live(_13)
-    _13 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'25, '26, '27>)
+    _13 = cast<for<'_0_1, '_1_1, '_2_1> fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const fmt<'25, '26, '27>)
     _12 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _13)
     storage_dead(_13)
     storage_live(_22)
     _22 = PhantomData {  }
-    _10 = ArgumentType::Placeholder { value: move _11, formatter: copy _12, _lifetime: move _22 }
+    _10 = ArgumentType::@Variant0 { 0: move _11, 1: copy _12, 2: move _22 }
     storage_dead(_12)
     storage_dead(_11)
-    _7 = Argument { ty: move _10 }
+    _7 = Argument { 0: move _10 }
     storage_dead(_10)
     storage_dead(_14)
     storage_live(_8)
@@ -400,15 +374,15 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     _16 = transmute<*const usize, NonNull<()>>(copy _19)
     storage_live(_17)
     storage_live(_18)
-    _18 = cast<for<'_0_1, '_1_1, '_2_1> impl_Display_for_usize::fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const impl_Display_for_usize::fmt<'36, '37, '38>)
+    _18 = cast<for<'_0_1, '_1_1, '_2_1> fmt<'_0_1, '_1_1, '_2_1>, fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(const fmt<'36, '37, '38>)
     _17 = transmute<fn<'_0_1, '_1_1, '_2_1>(&'_0_1 usize, &'_1_1 mut Formatter<'_2_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}], unsafe fn<'_0_1, '_1_1>(NonNull<()>, &'_0_1 mut Formatter<'_1_1>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>(copy _18)
     storage_dead(_18)
     storage_live(_23)
     _23 = PhantomData {  }
-    _15 = ArgumentType::Placeholder { value: move _16, formatter: copy _17, _lifetime: move _23 }
+    _15 = ArgumentType::@Variant0 { 0: move _16, 1: copy _17, 2: move _23 }
     storage_dead(_17)
     storage_dead(_16)
-    _8 = Argument { ty: move _15 }
+    _8 = Argument { 0: move _15 }
     storage_dead(_15)
     storage_dead(_19)
     args_6 = [move _7, move _8]
@@ -424,7 +398,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     _20 = transmute<&'44 [u8; 55usize], NonNull<u8>>(move _25)
     storage_live(_21)
     _21 = transmute<&'12 [Argument<'13>; 2usize], NonNull<Argument<'45>>>(copy args_9)
-    _3 = Arguments { template: move _20, args: move _21 }
+    _3 = Arguments { 0: move _20, 1: move _21 }
     storage_dead(_21)
     storage_dead(_20)
     storage_dead(args_9)
@@ -963,7 +937,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
     storage_dead(_13)
     _11 = transmute<usize, NonNull<Argument<'12>>>(move _12)
     storage_dead(_12)
-    _8 = Arguments { template: move _9, args: move _11 }
+    _8 = Arguments { 0: move _9, 1: move _11 }
     storage_dead(_11)
     storage_dead(_9)
     _7 = panic_nounwind_fmt<'15>(move _8, const false)
@@ -1086,7 +1060,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
     storage_dead(_13)
     _11 = transmute<usize, NonNull<Argument<'12>>>(move _12)
     storage_dead(_12)
-    _8 = Arguments { template: move _9, args: move _11 }
+    _8 = Arguments { 0: move _9, 1: move _11 }
     storage_dead(_11)
     storage_dead(_9)
     _7 = panic_nounwind_fmt<'15>(move _8, const false)

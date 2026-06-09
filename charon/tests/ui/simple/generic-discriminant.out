@@ -51,34 +51,6 @@ pub trait Eq<Self>
     non-dyn-compatible
 }
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Debug
-#[lang_item("Debug")]
-pub trait Debug<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::Debug::{vtable}
-}
-
-// Full name: core::fmt::Debug::fmt
-pub fn fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    TraitClause0: (Self: Debug),
-= <opaque>
-
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {
