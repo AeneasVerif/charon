@@ -1,7 +1,13 @@
 //@ no-default-options
 //@ charon-args=--extract-opaque-bodies
 //@ charon-args=--mir elaborated
-//@ charon-args=--exclude core::fmt::Formatter
+//@ charon-args=--exclude=core
+//@ charon-args=--include=core::result::Result
+//@ charon-args=--include=core::marker::Destruct
+//@ charon-args=--include=core::alloc
+//@ charon-args=--include=core::mem
+//@ charon-args=--include=core::ptr
+//@ charon-args=--exclude=alloc::alloc
 
 unsafe fn foo() {
     let b = Box::new(42);

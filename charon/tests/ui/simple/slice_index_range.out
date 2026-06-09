@@ -1,38 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub struct NonNull<T> {
-  pointer: *const T is !null,
-}
-
-// Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
-pub struct PhantomData<T> {}
-
 fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2: usize) -> !
 {
     let _0: !; // return
@@ -405,51 +372,6 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     panic(core::panicking::panic_fmt)
 }
 
-// Full name: core::panicking::panic_nounwind_fmt::compiletime
-fn compiletime<'_0>(fmt_1: Arguments<'_0>, force_no_backtrace_2: bool) -> !
-{
-    let _0: !; // return
-    let fmt_1: Arguments<'1>; // arg #1
-    let force_no_backtrace_2: bool; // arg #2
-
-    panic(core::panicking::panic_fmt)
-}
-
-// Full name: core::ops::range::RangeInclusive
-#[lang_item("RangeInclusive")]
-pub struct RangeInclusive<Idx>
-where
-    TraitClause0: (Idx: Sized),
-{
-  start: Idx,
-  end: Idx,
-  exhausted: bool,
-}
-
-// Full name: core::ops::range::{RangeInclusive<Idx>[TraitClause0]}::new
-#[lang_item("range_inclusive_new")]
-pub fn new<Idx>(start_1: Idx, end_2: Idx) -> RangeInclusive<Idx>[TraitClause0]
-where
-    TraitClause0: (Idx: Sized),
-{
-    let _0: RangeInclusive<Idx>[TraitClause0]; // return
-    let start_1: Idx; // arg #1
-    let end_2: Idx; // arg #2
-
-    _0 = RangeInclusive { start: copy start_1, end: copy end_2, exhausted: const false }
-    return
-}
-
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    TraitClause0: (T: Sized),
-{
-  None,
-  Some(T),
-}
-
 fn core::slice::index::slice_index_fail::do_panic(start_1: usize, len_2: usize) -> !
 {
     let _0: !; // return
@@ -484,27 +406,6 @@ fn core::slice::index::slice_index_fail::do_panic#3(end_1: usize, len_2: usize) 
     let len_2: usize; // arg #2
 
     _0 = core::slice::index::slice_index_fail::do_panic#3::runtime(move end_1, move len_2)
-}
-
-// Full name: core::panicking::panic_nounwind_fmt
-pub fn panic_nounwind_fmt<'_0>(fmt_1: Arguments<'_0>, force_no_backtrace_2: bool) -> !
-{
-    let _0: !; // return
-    let fmt_1: Arguments<'1>; // arg #1
-    let force_no_backtrace_2: bool; // arg #2
-    let _3: (Arguments<'3>, bool); // anonymous local
-    let _4: Arguments<'4>; // anonymous local
-    let _5: bool; // anonymous local
-
-    storage_live(_3)
-    storage_live(_4)
-    _4 = copy fmt_1
-    storage_live(_5)
-    _5 = copy force_no_backtrace_2
-    _3 = (move _4, move _5)
-    storage_dead(_5)
-    storage_dead(_4)
-    _0 = compiletime<'6>(move _3.0, move _3.1)
 }
 
 // Full name: core::slice::index::private_slice_index::Sealed
@@ -708,10 +609,10 @@ where
     storage_live(start_3)
     storage_live(end_4)
     storage_live(_16)
-    start_3 = copy (self_1).start
-    end_4 = copy (self_1).end
+    start_3 = copy (self_1).0
+    end_4 = copy (self_1).1
     storage_live(exhausted_5)
-    exhausted_5 = copy (self_1).exhausted
+    exhausted_5 = copy (self_1).2
     storage_live(len_6)
     len_6 = copy slice_2.metadata
     storage_live(_7)
@@ -739,13 +640,13 @@ where
         } else {
             storage_live(_18)
             _18 = copy self_11 ub.- copy rhs_12
-            _10 = Option::Some { 0: move _18 }
+            _10 = Option::@Variant1 { 0: move _18 }
             storage_dead(_18)
             storage_dead(_17)
             storage_dead(rhs_12)
             storage_dead(self_11)
             storage_live(new_len_13)
-            new_len_13 = copy (_10 as variant Option::Some).0
+            new_len_13 = copy (_10 as variant Option::@Variant1).0
             storage_live(_14)
             storage_live(ptr_15)
             ptr_15 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
@@ -807,10 +708,10 @@ where
     storage_live(start_3)
     storage_live(end_4)
     storage_live(_16)
-    start_3 = copy (self_1).start
-    end_4 = copy (self_1).end
+    start_3 = copy (self_1).0
+    end_4 = copy (self_1).1
     storage_live(exhausted_5)
-    exhausted_5 = copy (self_1).exhausted
+    exhausted_5 = copy (self_1).2
     storage_live(len_6)
     len_6 = copy slice_2.metadata
     storage_live(_7)
@@ -838,13 +739,13 @@ where
         } else {
             storage_live(_18)
             _18 = copy self_11 ub.- copy rhs_12
-            _10 = Option::Some { 0: move _18 }
+            _10 = Option::@Variant1 { 0: move _18 }
             storage_dead(_18)
             storage_dead(_17)
             storage_dead(rhs_12)
             storage_dead(self_11)
             storage_live(new_len_13)
-            new_len_13 = copy (_10 as variant Option::Some).0
+            new_len_13 = copy (_10 as variant Option::@Variant1).0
             storage_live(_14)
             storage_live(_15)
             _15 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
@@ -967,9 +868,9 @@ where
     storage_live(self_9)
     storage_live(self_10)
     storage_live(self_11)
-    self_9 = move (self_1).start
-    self_10 = move (self_1).end
-    self_11 = move (self_1).exhausted
+    self_9 = move (self_1).0
+    self_10 = move (self_1).1
+    self_11 = move (self_1).2
     exclusive_end_3 = copy self_10 wrap.+ const 1usize
     if copy self_11 {
         self_9 = copy exclusive_end_3
@@ -1090,9 +991,9 @@ where
     storage_live(self_9)
     storage_live(self_10)
     storage_live(self_11)
-    self_9 = move (self_1).start
-    self_10 = move (self_1).end
-    self_11 = move (self_1).exhausted
+    self_9 = move (self_1).0
+    self_10 = move (self_1).1
+    self_11 = move (self_1).2
     exclusive_end_3 = copy self_10 wrap.+ const 1usize
     if copy self_11 {
         self_9 = copy exclusive_end_3
@@ -1127,7 +1028,7 @@ pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::get_mut<'_0, T>(self_1: R
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Option<&'6 mut [T]>[{built_in impl Sized for &'6 mut [T]}]; // return
+    let _0: Option<&'6 mut [T]>[{built_in impl Sized for &'8 mut [T]}]; // return
     let self_1: RangeInclusive<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice_2: &'9 mut [T]; // arg #2
     let _3: bool; // anonymous local
@@ -1153,17 +1054,17 @@ where
     storage_live(new_len_12)
     storage_live(self_15)
     storage_live(_3)
-    self_4 = copy (self_1).end
+    self_4 = copy (self_1).1
     _5 = copy slice_2.metadata
     _3 = copy self_4 >= copy _5
     if move _3 {
         storage_live(_17)
-        _17 = Option::None {  }
+        _17 = Option::@Variant0 {  }
         _0 = move _17
     } else {
         storage_live(self_16)
-        self_15 = move (self_1).start
-        self_16 = move (self_1).exhausted
+        self_15 = move (self_1).0
+        self_16 = move (self_1).2
         exclusive_end_6 = copy self_4 wrap.+ const 1usize
         if copy self_16 {
             self_15 = copy exclusive_end_6
@@ -1175,7 +1076,7 @@ where
         if move _11 {
             storage_dead(_11)
             storage_live(_18)
-            _18 = Option::None {  }
+            _18 = Option::@Variant0 {  }
             _0 = move _18
         } else {
             new_len_12 = copy exclusive_end_6 ub.- copy self_15
@@ -1196,12 +1097,12 @@ where
                 storage_dead(_13)
                 storage_dead(ptr_10)
                 _8 = &mut (*_9) with_metadata(copy _9.metadata)
-                _0 = Option::Some { 0: copy _8 }
+                _0 = Option::@Variant1 { 0: copy _8 }
                 storage_dead(_9)
                 storage_dead(_8)
             } else {
                 storage_live(_18)
-                _18 = Option::None {  }
+                _18 = Option::@Variant0 {  }
                 _0 = move _18
             }
         }
@@ -1216,7 +1117,7 @@ pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::get<'_0, T>(self_1: Range
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Option<&'6 [T]>[{built_in impl Sized for &'6 [T]}]; // return
+    let _0: Option<&'6 [T]>[{built_in impl Sized for &'8 [T]}]; // return
     let self_1: RangeInclusive<usize>[{built_in impl Sized for usize}]; // arg #1
     let slice_2: &'9 [T]; // arg #2
     let _3: bool; // anonymous local
@@ -1242,17 +1143,17 @@ where
     storage_live(new_len_12)
     storage_live(self_15)
     storage_live(_3)
-    self_4 = copy (self_1).end
+    self_4 = copy (self_1).1
     _5 = copy slice_2.metadata
     _3 = copy self_4 >= copy _5
     if move _3 {
         storage_live(_17)
-        _17 = Option::None {  }
+        _17 = Option::@Variant0 {  }
         _0 = move _17
     } else {
         storage_live(self_16)
-        self_15 = move (self_1).start
-        self_16 = move (self_1).exhausted
+        self_15 = move (self_1).0
+        self_16 = move (self_1).2
         exclusive_end_6 = copy self_4 wrap.+ const 1usize
         if copy self_16 {
             self_15 = copy exclusive_end_6
@@ -1264,7 +1165,7 @@ where
         if move _11 {
             storage_dead(_11)
             storage_live(_18)
-            _18 = Option::None {  }
+            _18 = Option::@Variant0 {  }
             _0 = move _18
         } else {
             new_len_12 = copy exclusive_end_6 ub.- copy self_15
@@ -1285,12 +1186,12 @@ where
                 storage_dead(_13)
                 storage_dead(_10)
                 _8 = &(*_9) with_metadata(copy _9.metadata)
-                _0 = Option::Some { 0: copy _8 }
+                _0 = Option::@Variant1 { 0: copy _8 }
                 storage_dead(_9)
                 storage_dead(_8)
             } else {
                 storage_live(_18)
-                _18 = Option::None {  }
+                _18 = Option::@Variant0 {  }
                 _0 = move _18
             }
         }
