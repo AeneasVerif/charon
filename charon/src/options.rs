@@ -61,6 +61,11 @@ pub struct CliOpts {
     #[clap(long, value_delimiter = ',')]
     #[serde(default)]
     pub targets: Vec<String>,
+    /// Sysroot to use for rustc invocations. Use `miri` to ask Charon to prepare a per-target
+    /// sysroot with full MIR for standard library items.
+    #[clap(long)]
+    #[serde(default)]
+    pub sysroot: Option<String>,
 
     /// Monomorphize the items encountered when possible. Generic items found in the crate are
     /// skipped. To only translate a particular call graph, use `--start-from`. Note: this doesn't

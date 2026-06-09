@@ -3,6 +3,7 @@
 , craneLib
 , lib
 , makeWrapper
+, miriSysroots ? null
 , rustToolchain
 , stdenv
 , enableWrapping ? true
@@ -48,6 +49,7 @@ craneLib.buildPackage (
       ''
         wrapProgram $out/bin/charon \
           --set CHARON_TOOLCHAIN_IS_IN_PATH 1 \
+          ${lib.optionalString (miriSysroots != null) ''--set CHARON_MIRI_SYSROOTS "${miriSysroots}" \''}
           --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ rustToolchain ]}" \
           --prefix PATH : "${lib.makeBinPath [ rustToolchain ]}"
       ''
@@ -57,6 +59,7 @@ craneLib.buildPackage (
       '')
     );
     checkPhaseCargoCommand = ''
+      ${lib.optionalString (miriSysroots != null) ''export CHARON_MIRI_SYSROOTS="${miriSysroots}"''}
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
       # We also re-generate the ocaml files.
       mkdir src/bin/generate-ml/generated
