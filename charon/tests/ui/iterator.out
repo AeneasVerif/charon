@@ -1636,10 +1636,6 @@ where
     TraitClause0: (Self: Default),
 = <opaque>
 
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub opaque type Arguments<'a>
-
 // Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
 pub fn impl_AddAssign_for_i32::add_assign<'_0, '_1>(_1: &'_1 mut i32, _2: &'_0 i32)
 = <opaque>

@@ -6,8 +6,16 @@ pub fn wrapping_add(self_1: u8, rhs_2: u8) -> u8
     let _0: u8; // return
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
+    let _3: u8; // anonymous local
+    let _4: u8; // anonymous local
 
-    _0 = copy self_1 wrap.+ copy rhs_2
+    storage_live(_3)
+    _3 = copy self_1
+    storage_live(_4)
+    _4 = copy rhs_2
+    _0 = move _3 wrap.+ move _4
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 
@@ -17,8 +25,16 @@ pub fn wrapping_sub(self_1: u8, rhs_2: u8) -> u8
     let _0: u8; // return
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
+    let _3: u8; // anonymous local
+    let _4: u8; // anonymous local
 
-    _0 = copy self_1 wrap.- copy rhs_2
+    storage_live(_3)
+    _3 = copy self_1
+    storage_live(_4)
+    _4 = copy rhs_2
+    _0 = move _3 wrap.- move _4
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 
@@ -28,8 +44,16 @@ pub fn wrapping_mul(self_1: u8, rhs_2: u8) -> u8
     let _0: u8; // return
     let self_1: u8; // arg #1
     let rhs_2: u8; // arg #2
+    let _3: u8; // anonymous local
+    let _4: u8; // anonymous local
 
-    _0 = copy self_1 wrap.* copy rhs_2
+    storage_live(_3)
+    _3 = copy self_1
+    storage_live(_4)
+    _4 = copy rhs_2
+    _0 = move _3 wrap.* move _4
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 

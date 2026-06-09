@@ -1,35 +1,89 @@
-disabled backtrace
-warning[E9999]: Couldn't convert constant back to an expression
-                
-                Context:
-                 - const_value: Scalar(
-                    0x0000000000000000,
-                )
-                 - ty: *const u8
-                 - err: InterpErrorInfo(
-                    InterpErrorInfoInner {
-                        kind: UndefinedBehavior(
-                            DanglingIntPointer {
-                                addr: 0,
-                                inbounds_size: 0,
-                                msg: Dereferenceable,
-                            },
-                        ),
-                        backtrace: InterpErrorBacktrace {
-                            backtrace: None,
-                        },
-                    },
-                )
-                
+# Final LLBC before serialization:
 
-error: Unsupported constant: "ConstEvalVal"
- --> /rustc/library/core/src/ptr/metadata.rs:120:5
+// Full name: core::ptr::metadata::from_raw_parts::<u8, ()>
+pub fn from_raw_parts::<u8, ()>(data_pointer_1: *const (), metadata_2: ()) -> *const u8
+{
+    let _0: *const u8; // return
+    let data_pointer_1: *const (); // arg #1
+    let metadata_2: (); // arg #2
+    let _3: *const (); // anonymous local
+    let _4: (); // anonymous local
 
-note: the error occurred when translating `core::ptr::null::<u8>`, which is (transitively) used at the following location(s):
- --> tests/ui/consts/ptr-null-constevalval.rs:8:13
-  |
-8 |     let _ = core::ptr::null::<u8>();
-  |             -----------------------
-warning: 1 warning emitted
+    storage_live(_3)
+    _3 = copy data_pointer_1
+    storage_live(_4)
+    _4 = ()
+    _0 = *const (move _3, move _4)
+    storage_dead(_4)
+    storage_dead(_3)
+    return
+}
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::ptr::without_provenance_mut::<()>
+#[lang_item("ptr_without_provenance_mut")]
+pub fn without_provenance_mut::<()>(addr_1: usize) -> *mut ()
+{
+    let _0: *mut (); // return
+    let addr_1: usize; // arg #1
+    let _2: usize; // anonymous local
+
+    storage_live(_2)
+    _2 = copy addr_1
+    _0 = transmute<usize, *mut ()>(move _2)
+    storage_dead(_2)
+    return
+}
+
+// Full name: core::ptr::without_provenance::<()>
+#[lang_item("ptr_without_provenance")]
+pub fn without_provenance::<()>(addr_1: usize) -> *const ()
+{
+    let _0: *const (); // return
+    let addr_1: usize; // arg #1
+    let _2: *mut (); // anonymous local
+    let _3: usize; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy addr_1
+    _2 = without_provenance_mut::<()>(move _3)
+    _0 = cast<*mut (), *const ()>(move _2)
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
+// Full name: core::ptr::null::<u8>
+#[lang_item("ptr_null")]
+pub fn null::<u8>() -> *const u8
+{
+    let _0: *const u8; // return
+    let _1: *const (); // anonymous local
+    let _2: (); // anonymous local
+
+    storage_live(_1)
+    _1 = without_provenance::<()>(const 0usize)
+    storage_live(_2)
+    _2 = ()
+    _0 = from_raw_parts::<u8, ()>(move _1, move _2)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::null_ptr
+pub fn null_ptr()
+{
+    let _0: (); // return
+    let _1: *const u8; // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    _1 = null::<u8>()
+    storage_dead(_1)
+    _0 = const ()
+    return
+}
+
+
+

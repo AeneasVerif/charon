@@ -1,5 +1,13 @@
 # Final LLBC before serialization:
 
+// Full name: core::array::TryFromSliceError
+pub opaque type TryFromSliceError
+
+// Full name: core::array::{impl Debug for TryFromSliceError}
+impl "impl_Debug_for_TryFromSliceError" Debug for TryFromSliceError {
+    vtable: impl_Debug_for_TryFromSliceError::{vtable}
+}
+
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -10,41 +18,6 @@ pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
-}
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::fmt::Debug
-#[lang_item("Debug")]
-pub trait Debug<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Debug::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::Debug::{vtable}
-}
-
-// Full name: core::array::TryFromSliceError
-pub opaque type TryFromSliceError
-
-// Full name: core::array::{impl Debug for TryFromSliceError}::fmt
-pub fn impl_Debug_for_TryFromSliceError::fmt<'_0, '_1, '_2>(_1: &'_0 TryFromSliceError, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <opaque>
-
-// Full name: core::array::{impl Debug for TryFromSliceError}
-impl "impl_Debug_for_TryFromSliceError" Debug for TryFromSliceError {
-    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_TryFromSliceError::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: impl_Debug_for_TryFromSliceError::{vtable}
 }
 
 // Full name: core::clone::Clone
@@ -63,6 +36,17 @@ pub trait Copy<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
+}
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+{
+  Ok(T),
+  Err(E),
 }
 
 // Full name: core::convert::TryFrom
@@ -127,11 +111,6 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
     TraitClause2: (U: TryFrom<T>),
-= <opaque>
-
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    TraitClause0: (Self: Debug),
 = <opaque>
 
 // Full name: core::marker::{impl Copy for u8}

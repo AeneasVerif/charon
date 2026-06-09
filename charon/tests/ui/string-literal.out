@@ -1,53 +1,8 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Display
-#[lang_item("Display")]
-pub trait Display<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Display::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::Display::{vtable}
-}
-
-pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    TraitClause0: (Self: Display),
-= <opaque>
-
-// Full name: core::fmt::{impl Display for str}::fmt
-pub fn impl_Display_for_str::fmt<'_0, '_1, '_2>(_1: &'_0 str, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <opaque>
-
-// Full name: core::fmt::{impl Display for str}
-impl "impl_Display_for_str" Display for str {
-    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Display_for_str::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: impl_Display_for_str::{vtable}
-}
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -116,7 +71,7 @@ fn main()
     storage_live(_3)
     _3 = const "Hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    _s_1 = impl_ToString_for_T::to_string<'5, str>[{built_in impl MetaSized for str}, impl_Display_for_str](move _2)
+    _s_1 = impl_ToString_for_T::to_string<'5, str>[{built_in impl MetaSized for str}, {impl#1}](move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()

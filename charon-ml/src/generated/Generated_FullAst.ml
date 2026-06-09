@@ -83,9 +83,11 @@ and cli_options = {
           useful if the code includes [#[cfg(..)]] filters. Warning: this is an
           initial implementation which is extremely slow. *)
   sysroot : string option;
-      (** Sysroot to use for rustc invocations. Use [miri] to ask Charon to
-          prepare a per-target sysroot with full MIR for standard library items.
-      *)
+      (** Sysroot to use for rustc invocations. By default Charon builds a
+          sysroot that has full MIR for the standard library. You can pass a
+          custom sysroot to use instead, or pass "default" to use the normal
+          distributed sysroot, which lacks MIR bodies for many standard library
+          functions. *)
   monomorphize : bool;
       (** Monomorphize the items encountered when possible. Generic items found
           in the crate are skipped. To only translate a particular call graph,

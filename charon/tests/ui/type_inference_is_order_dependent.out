@@ -38,62 +38,6 @@ impl "impl_Default_for_bool" Default for bool {
     non-dyn-compatible
 }
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub opaque type Arguments<'a>
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
-// Full name: core::fmt::{Arguments<'a>}::new
-pub unsafe fn new<'a, const N : usize, const M : usize>(_1: &'a [u8; N], _2: &'a [Argument<'a>; M]) -> Arguments<'a>
-= <opaque>
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Debug
-#[lang_item("Debug")]
-pub trait Debug<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Debug::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::Debug::{vtable}
-}
-
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    TraitClause0: (Self: Debug),
-= <opaque>
-
-// Full name: core::fmt::{impl Debug for bool}::fmt
-pub fn impl_Debug_for_bool::fmt<'_0, '_1, '_2>(_1: &'_0 bool, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <opaque>
-
-// Full name: core::fmt::{impl Debug for bool}
-impl "impl_Debug_for_bool" Debug for bool {
-    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_bool::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: impl_Debug_for_bool::{vtable}
-}
-
-// Full name: core::fmt::rt::{Argument<'_0>}::new_debug
-pub fn new_debug<'_0, '_1, T>(_1: &'_1 T) -> Argument<'_1>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Debug),
-= <opaque>
-
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
@@ -266,7 +210,7 @@ where
     let _0: (); // return
 
     _0 = ()
-    _0 = impl_Join_for_T::test<T, bool>[TraitClause0, {built_in impl Sized for bool}, TraitClause3, impl_Right_for_T<T, bool>[TraitClause0, {built_in impl Sized for bool}, impl_Default_for_bool, impl_Debug_for_bool], impl_Default_for_bool, impl_Debug_for_bool]()
+    _0 = impl_Join_for_T::test<T, bool>[TraitClause0, {built_in impl Sized for bool}, TraitClause3, impl_Right_for_T<T, bool>[TraitClause0, {built_in impl Sized for bool}, impl_Default_for_bool, {impl#4}], impl_Default_for_bool, {impl#4}]()
     return
 }
 

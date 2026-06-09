@@ -138,43 +138,6 @@ impl "impl_Ord_for_unit" Ord for () {
     non-dyn-compatible
 }
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Debug
-#[lang_item("Debug")]
-pub trait Debug<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Debug::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::Debug::{vtable}
-}
-
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    TraitClause0: (Self: Debug),
-= <opaque>
-
-// Full name: core::fmt::{impl Debug for ()}::fmt
-pub fn impl_Debug_for_unit::fmt<'_0, '_1, '_2>(_1: &'_0 (), _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <opaque>
-
-// Full name: core::fmt::{impl Debug for ()}
-impl "impl_Debug_for_unit" Debug for () {
-    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_unit::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: impl_Debug_for_unit::{vtable}
-}
-
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {

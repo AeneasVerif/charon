@@ -61,8 +61,10 @@ pub struct CliOpts {
     #[clap(long, value_delimiter = ',')]
     #[serde(default)]
     pub targets: Vec<String>,
-    /// Sysroot to use for rustc invocations. Use `miri` to ask Charon to prepare a per-target
-    /// sysroot with full MIR for standard library items.
+    /// Sysroot to use for rustc invocations. By default Charon builds a sysroot that has full MIR
+    /// for the standard library. You can pass a custom sysroot to use instead, or pass "default"
+    /// to use the normal distributed sysroot, which lacks MIR bodies for many standard library
+    /// functions.
     #[clap(long)]
     #[serde(default)]
     pub sysroot: Option<String>,
@@ -471,7 +473,7 @@ impl CliOpts {
                         .push("-Zcrate-attr=feature(register_tool)".to_owned());
                     self.rustc_args
                         .push("-Zcrate-attr=register_tool(charon)".to_owned());
-                    self.exclude.push("core::fmt::Formatter".to_owned());
+                    self.exclude.push("core::fmt".to_owned());
                 }
             }
         }

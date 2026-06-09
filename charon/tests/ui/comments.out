@@ -31,10 +31,6 @@ where
 pub fn impl_Default_for_u32::default() -> u32
 = <opaque>
 
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub opaque type Arguments<'a>
-
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>

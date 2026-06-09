@@ -1,5 +1,6 @@
 //@ charon-args=--ullbc --print-ullbc
 //@ charon-args=--include core::slice::_::binary_search_by
+//@ charon-args=--sysroot=default
 
 fn main() {
     let a: [u32; 5] = [1, 2, 3, 4, 5];

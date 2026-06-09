@@ -6,7 +6,7 @@ use std::{
     process::{Command, ExitStatus},
 };
 
-use crate::{cli::UiTestArgs, toolchain};
+use crate::cli::UiTestArgs;
 
 enum TestKind {
     PrettyLlbc,
@@ -73,14 +73,19 @@ pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
         })
         .collect::<Result<_>>()?;
     for (crate_name, rs_path, rlib_path) in deps.iter() {
-        let mut cmd = toolchain::in_toolchain("rustc")?;
+        let mut cmd = Command::new(std::env::current_exe()?);
         let status = cmd
+            .arg("rustc")
+            .arg("--no-serialize")
+            .arg("--")
             .arg("--crate-type=rlib")
-            .arg("-Zalways-encode-mir")
             .arg(format!("--crate-name={crate_name}"))
             .arg("-o")
             .arg(rlib_path)
             .arg(rs_path)
+            // The main test crate consumes this as an extern dependency, so unlike regular
+            // `charon rustc` invocations we need rustc to leave the `.rlib` behind.
+            .env("CHARON_EMIT_ARTIFACTS", "1")
             .status()?;
         if !status.success() {
             bail!("failed to compile auxiliary crate `{crate_name}` with status {status}");

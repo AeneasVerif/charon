@@ -42,18 +42,30 @@ where
     let _0: Option<T>[TraitClause0]; // return
     let self_1: bool; // arg #1
     let t_2: T; // arg #2
-    let _3: T; // anonymous local
+    let _3: bool; // anonymous local
+    let _4: T; // anonymous local
+    let _5: bool; // anonymous local
 
-    if copy self_1 {
+    storage_live(_5)
+    _5 = const false
+    _5 = const true
+    storage_live(_3)
+    _3 = copy self_1
+    if move _3 {
+        storage_live(_4)
+        _5 = const false
+        _4 = move t_2
+        _0 = Option::Some { 0: move _4 }
+        storage_dead(_4)
     } else {
         _0 = Option::None {  }
-        drop[TraitClause1::drop_glue<'0>] t_2
+    }
+    storage_dead(_3)
+    if copy _5 {
+    } else {
         return
     }
-    storage_live(_3)
-    _3 = move t_2
-    _0 = Option::Some { 0: move _3 }
-    storage_dead(_3)
+    drop[TraitClause1::drop_glue<'0>] t_2
     return
 }
 
@@ -83,21 +95,151 @@ where
     let self_1: &'1 Self; // arg #1
     let other_2: &'3 Rhs; // arg #2
     let _3: bool; // anonymous local
+    let _4: &'4 Self; // anonymous local
+    let _5: &'5 Rhs; // anonymous local
 
     storage_live(_3)
-    _3 = TraitClause0::eq<'6, '7>(move self_1, move other_2)
+    storage_live(_4)
+    _4 = &(*self_1) with_metadata(copy self_1.metadata)
+    storage_live(_5)
+    _5 = &(*other_2) with_metadata(copy other_2.metadata)
+    _3 = TraitClause0::eq<'8, '9>(move _4, move _5)
+    storage_dead(_5)
+    storage_dead(_4)
     _0 = ~(move _3)
     storage_dead(_3)
     return
 }
+
+pub fn core::num::{u64}::MAX() -> u64
+{
+    let _0: u64; // return
+
+    _0 = ~(const 0u64)
+    return
+}
+
+pub const core::num::{u64}::MAX: u64 = core::num::{u64}::MAX()
+
+pub fn core::num::{i64}::MAX() -> i64
+{
+    let _0: i64; // return
+    let _1: u64; // anonymous local
+
+    storage_live(_1)
+    _1 = copy core::num::{u64}::MAX panic.>> const 1i32
+    _0 = cast<u64, i64>(move _1)
+    storage_dead(_1)
+    return
+}
+
+pub const core::num::{i64}::MAX: i64 = core::num::{i64}::MAX()
+
+pub fn core::num::{u32}::MAX() -> u32
+{
+    let _0: u32; // return
+
+    _0 = ~(const 0u32)
+    return
+}
+
+pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
+
+pub fn core::num::{i32}::MAX() -> i32
+{
+    let _0: i32; // return
+    let _1: u32; // anonymous local
+
+    storage_live(_1)
+    _1 = copy core::num::{u32}::MAX panic.>> const 1i32
+    _0 = cast<u32, i32>(move _1)
+    storage_dead(_1)
+    return
+}
+
+pub const core::num::{i32}::MAX: i32 = core::num::{i32}::MAX()
+
+pub fn core::num::{i32}::MIN() -> i32
+{
+    let _0: i32; // return
+
+    _0 = ~(copy core::num::{i32}::MAX)
+    return
+}
+
+pub const core::num::{i32}::MIN: i32 = core::num::{i32}::MIN()
+
+pub fn core::num::{i64}::MIN() -> i64
+{
+    let _0: i64; // return
+
+    _0 = ~(copy core::num::{i64}::MAX)
+    return
+}
+
+pub const core::num::{i64}::MIN: i64 = core::num::{i64}::MIN()
 
 // Full name: core::convert::num::{impl From<i32> for i64}::from
 pub fn impl_From_i32_for_i64::from(small_1: i32) -> i64
 {
     let _0: i64; // return
     let small_1: i32; // arg #1
+    let _2: bool; // anonymous local
+    let _3: bool; // anonymous local
+    let _4: i128; // anonymous local
+    let _5: i128; // anonymous local
+    let _6: bool; // anonymous local
+    let _7: bool; // anonymous local
+    let _8: u128; // anonymous local
+    let _9: u128; // anonymous local
+    let _10: i32; // anonymous local
 
-    _0 = cast<i32, i64>(copy small_1)
+    storage_live(_2)
+    _2 = const false
+    if move _2 {
+        storage_live(_3)
+        storage_live(_4)
+        _4 = cast<i64, i128>(copy core::num::{i64}::MIN)
+        storage_live(_5)
+        _5 = cast<i32, i128>(copy core::num::{i32}::MIN)
+        _3 = move _4 <= move _5
+        if move _3 {
+        } else {
+            storage_dead(_5)
+            storage_dead(_4)
+            panic(core::panicking::panic)
+        }
+        storage_dead(_5)
+        storage_dead(_4)
+        storage_dead(_3)
+    } else {
+    }
+    storage_dead(_2)
+    storage_live(_6)
+    _6 = const false
+    if move _6 {
+        storage_live(_7)
+        storage_live(_8)
+        _8 = cast<i32, u128>(copy core::num::{i32}::MAX)
+        storage_live(_9)
+        _9 = cast<i64, u128>(copy core::num::{i64}::MAX)
+        _7 = move _8 <= move _9
+        if move _7 {
+        } else {
+            storage_dead(_9)
+            storage_dead(_8)
+            panic(core::panicking::panic)
+        }
+        storage_dead(_9)
+        storage_dead(_8)
+        storage_dead(_7)
+    } else {
+    }
+    storage_dead(_6)
+    storage_live(_10)
+    _10 = copy small_1
+    _0 = cast<i32, i64>(move _10)
+    storage_dead(_10)
     return
 }
 
@@ -110,8 +252,7 @@ pub struct UsizeNoHighBit {
   usize is 0usize..=9223372036854775807usize,
 }
 
-// Full name: core::num::{usize}::MAX
-pub fn MAX() -> usize
+pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
 
@@ -119,8 +260,7 @@ pub fn MAX() -> usize
     return
 }
 
-// Full name: core::num::{usize}::MAX
-pub const MAX: usize = MAX()
+pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
 
 // Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
@@ -305,7 +445,7 @@ fn max() -> usize
 {
     let _0: usize; // return
 
-    _0 = copy MAX
+    _0 = copy core::num::{usize}::MAX
     return
 }
 

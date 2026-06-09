@@ -1,20 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::fmt::Error
-pub struct Error {}
-
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub opaque type Arguments<'a>
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
-// Full name: core::fmt::{Arguments<'a>}::new
-pub unsafe fn new<'a, const N : usize, const M : usize>(_1: &'a [u8; N], _2: &'a [Argument<'a>; M]) -> Arguments<'a>
-= <opaque>
-
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
@@ -26,62 +11,6 @@ pub trait Sized<Self>
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
-
-// Full name: core::result::Result
-#[lang_item("Result")]
-pub enum Result<T, E>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (E: Sized),
-{
-  Ok(T),
-  Err(E),
-}
-
-// Full name: core::fmt::Debug
-#[lang_item("Debug")]
-pub trait Debug<Self>
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = core::fmt::Debug::fmt<'_0_1, '_1_1, '_2_1, Self>[Self]
-    vtable: core::fmt::Debug::{vtable}
-}
-
-pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(_1: &'_0 Self, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    TraitClause0: (Self: Debug),
-= <opaque>
-
-// Full name: core::fmt::{impl Debug for &'_0 T}::fmt
-pub fn {impl Debug for &'_0 T}::fmt<'_0, '_1, '_2, '_3, T>(_1: &'_1 &'_0 T, _2: &'_2 mut Formatter<'_3>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-where
-    TraitClause0: (T: Debug),
-= <opaque>
-
-// Full name: core::fmt::{impl Debug for &'_0 T}
-impl<'_0, T> Debug for &'_0 T
-where
-    TraitClause0: (T: Debug),
-{
-    fn fmt<'_0_1, '_1_1, '_2_1> = {impl Debug for &'_0 T}::fmt<'_0, '_0_1, '_1_1, '_2_1, T>[TraitClause0]
-    vtable: {impl Debug for &'_0 T}::{vtable}<'_0, T>[TraitClause0]
-}
-
-// Full name: core::fmt::num::{impl Debug for i32}::fmt
-pub fn impl_Debug_for_i32::fmt<'_0, '_1, '_2>(_1: &'_0 i32, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
-= <opaque>
-
-// Full name: core::fmt::num::{impl Debug for i32}
-impl "impl_Debug_for_i32" Debug for i32 {
-    fn fmt<'_0_1, '_1_1, '_2_1> = impl_Debug_for_i32::fmt<'_0_1, '_1_1, '_2_1>
-    vtable: impl_Debug_for_i32::{vtable}
-}
-
-// Full name: core::fmt::rt::{Argument<'_0>}::new_debug
-pub fn new_debug<'_0, '_1, T>(_1: &'_1 T) -> Argument<'_1>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Debug),
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -182,7 +111,7 @@ where
         storage_live(_14)
         storage_live(_15)
         _15 = &(*args_11.0)
-        _14 = new_debug<'59, '70, &'61 T>[{built_in impl Sized for &'61 T}, {impl Debug for &'_0 T}<'61, T>[TraitClause1]](move _15)
+        _14 = new_debug<'59, '70, &'61 T>[{built_in impl Sized for &'63 T}, {impl#2}<'68, T>[TraitClause1]](move _15)
         storage_dead(_15)
         args_13 = [move _14]
         storage_dead(_14)
@@ -251,7 +180,7 @@ fn main()
     _3 = &(*_4)
     _2 = @ArrayToSliceShared<'_, i32, 3usize>(move _3)
     storage_dead(_3)
-    _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, impl_Debug_for_i32](move _2)
+    _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, {impl#3}](move _2)
     storage_dead(_2)
     storage_dead(_4)
     storage_dead(_1)

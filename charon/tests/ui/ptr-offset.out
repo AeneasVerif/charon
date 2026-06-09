@@ -1,20 +1,8 @@
 # Final LLBC before serialization:
 
-// Full name: core::alloc::layout::Layout
-#[lang_item("alloc_layout")]
-pub opaque type Layout
-
-// Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
-pub opaque type Arguments<'a>
-
-// Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
-pub opaque type Argument<'a>
-
-// Full name: core::intrinsics::cold_path
-pub fn cold_path()
-= <intrinsic:cold_path>
+// Full name: core::ptr::const_ptr::{*const T}::addr
+pub fn addr<T>(_1: *const T) -> usize
+= <opaque>
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
@@ -28,120 +16,131 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::mem::alignment::Alignment
-pub opaque type Alignment
-
-// Full name: core::mem::SizedTypeProperties
-pub trait SizedTypeProperties<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    const SIZE : usize
-    const ALIGN : usize
-    const ALIGNMENT : Alignment
-    const IS_ZST : bool
-    const LAYOUT : Layout
-    const MAX_SLICE_LEN : usize
-    non-dyn-compatible
-}
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub fn SIZE<Self>() -> usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
-pub const SIZE<Self>: usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = SIZE<Self>[TraitClause0]()
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub fn ALIGN<Self>() -> usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
-pub const ALIGN<Self>: usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = ALIGN<Self>[TraitClause0]()
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub fn ALIGNMENT<Self>() -> Alignment
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::ALIGNMENT
-pub const ALIGNMENT<Self>: Alignment
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = ALIGNMENT<Self>[TraitClause0]()
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub fn IS_ZST<Self>() -> bool
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::IS_ZST
-pub const IS_ZST<Self>: bool
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = IS_ZST<Self>[TraitClause0]()
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub fn LAYOUT<Self>() -> Layout
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::LAYOUT
-pub const LAYOUT<Self>: Layout
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = LAYOUT<Self>[TraitClause0]()
-
-// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
-pub fn MAX_SLICE_LEN<Self>() -> usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
-= <opaque>
-
-// Full name: core::mem::SizedTypeProperties::MAX_SLICE_LEN
-pub const MAX_SLICE_LEN<Self>: usize
-where
-    TraitClause0: (Self: SizedTypeProperties),
- = MAX_SLICE_LEN<Self>[TraitClause0]()
-
-// Full name: core::mem::{impl SizedTypeProperties for T}
-impl<T> "impl_SizedTypeProperties_for_T" SizedTypeProperties for T
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
 where
     TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (T: Sized) = TraitClause0
-    const SIZE = SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const ALIGN = ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const ALIGNMENT = ALIGNMENT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const IS_ZST = IS_ZST<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const LAYOUT = LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    const MAX_SLICE_LEN = MAX_SLICE_LEN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
-    non-dyn-compatible
+  None,
+  Some(T),
 }
+
+// Full name: core::num::{usize}::overflowing_add_signed
+pub fn overflowing_add_signed(_1: usize, _2: isize) -> (usize, bool)
+= <opaque>
+
+// Full name: core::num::{isize}::checked_mul
+pub fn checked_mul(_1: isize, _2: isize) -> Option<isize>[{built_in impl Sized for isize}]
+= <opaque>
+
+// Full name: core::ptr::const_ptr::{*const T}::offset::runtime_offset_nowrap::runtime
+fn runtime(this_1: *const (), count_2: isize, size_3: usize) -> bool
+{
+    let _0: bool; // return
+    let this_1: *const (); // arg #1
+    let count_2: isize; // arg #2
+    let size_3: usize; // arg #3
+    let byte_offset_4: isize; // local
+    let _5: Option<isize>[{built_in impl Sized for isize}]; // anonymous local
+    let _6: isize; // anonymous local
+    let _7: isize; // anonymous local
+    let _8: usize; // anonymous local
+    let overflow_9: bool; // local
+    let _10: (usize, bool); // anonymous local
+    let _11: usize; // anonymous local
+    let _12: *const (); // anonymous local
+    let _13: isize; // anonymous local
+    let _14: bool; // anonymous local
+
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy count_2
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy size_3
+    _7 = cast<usize, isize>(move _8)
+    storage_dead(_8)
+    _5 = checked_mul(move _6, move _7)
+    storage_dead(_7)
+    storage_dead(_6)
+    match _5 {
+        Option::Some => {
+        },
+        _ => {
+            storage_dead(_5)
+            _0 = const false
+            return
+        },
+    }
+    storage_live(byte_offset_4)
+    byte_offset_4 = copy (_5 as variant Option::Some).0
+    storage_dead(_5)
+    storage_live(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _12 = copy this_1
+    _11 = addr<()>(move _12)
+    storage_dead(_12)
+    storage_live(_13)
+    _13 = copy byte_offset_4
+    _10 = overflowing_add_signed(move _11, move _13)
+    storage_dead(_13)
+    storage_dead(_11)
+    storage_live(overflow_9)
+    overflow_9 = copy _10.1
+    storage_dead(_10)
+    storage_live(_14)
+    _14 = copy overflow_9
+    _0 = ~(move _14)
+    storage_dead(_14)
+    storage_dead(overflow_9)
+    storage_dead(byte_offset_4)
+    return
+}
+
+// Full name: core::mem::size_of
+#[lang_item("mem_size_of")]
+pub fn size_of<T>() -> usize
+where
+    TraitClause0: (T: Sized),
+= <opaque>
 
 // Full name: core::panicking::panic_nounwind_fmt
 pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 = <opaque>
 
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub opaque type NonNull<T>
+// Full name: core::ub_checks::check_language_ub
+fn check_language_ub() -> bool
+= <opaque>
+
+// Full name: core::ptr::const_ptr::{*const T}::offset::runtime_offset_nowrap
+fn runtime_offset_nowrap(this_1: *const (), count_2: isize, size_3: usize) -> bool
+{
+    let _0: bool; // return
+    let this_1: *const (); // arg #1
+    let count_2: isize; // arg #2
+    let size_3: usize; // arg #3
+    let _4: (*const (), isize, usize); // anonymous local
+    let _5: *const (); // anonymous local
+    let _6: isize; // anonymous local
+    let _7: usize; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy this_1
+    storage_live(_6)
+    _6 = copy count_2
+    storage_live(_7)
+    _7 = copy size_3
+    _4 = (move _5, move _6, move _7)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    _0 = runtime(move _4.0, move _4.1, move _4.2)
+    storage_dead(_4)
+    return
+}
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::precondition_check
 fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
@@ -151,124 +150,44 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     let count_2: isize; // arg #2
     let size_3: usize; // arg #3
     let _4: bool; // anonymous local
-    let msg_5: &'1 str; // local
-    let _6: !; // anonymous local
-    let _7: Arguments<'3>; // anonymous local
-    let rhs_8: isize; // local
-    let self_9: usize; // local
-    let _10: i64; // anonymous local
-    let b_11: bool; // local
-    let _12: (i64, bool); // anonymous local
-    let _13: i64; // anonymous local
-    let _14: i64; // anonymous local
-    let byte_offset_15: isize; // local
-    let _16: (); // anonymous local
-    let _17: usize; // anonymous local
-    let overflow_18: bool; // local
-    let _19: bool; // anonymous local
-    let _20: bool; // anonymous local
-    let _21: (u64, bool); // anonymous local
-    let _22: u64; // anonymous local
-    let _23: u64; // anonymous local
-    let _24: NonNull<u8>; // anonymous local
-    let _25: *const u8; // anonymous local
-    let _26: NonNull<Argument<'6>>; // anonymous local
-    let _27: usize; // anonymous local
-    let _28: usize; // anonymous local
-    let _29: usize; // anonymous local
-    let _30: *const str; // anonymous local
-    let _31: &'8 [u8]; // anonymous local
+    let _5: *const (); // anonymous local
+    let _6: isize; // anonymous local
+    let _7: usize; // anonymous local
+    let msg_8: &'1 str; // local
+    let _9: !; // anonymous local
+    let _10: Arguments<'3>; // anonymous local
+    let _11: &'4 str; // anonymous local
 
-    storage_live(msg_5)
-    storage_live(_6)
-    storage_live(byte_offset_15)
-    storage_live(_16)
     _0 = ()
     storage_live(_4)
-    storage_live(overflow_18)
-    storage_live(rhs_8)
-    rhs_8 = cast<usize, isize>(copy size_3)
-    storage_live(b_11)
-    storage_live(_12)
-    storage_live(_13)
-    _13 = cast<isize, i64>(copy count_2)
-    storage_live(_14)
-    _14 = cast<isize, i64>(copy rhs_8)
-    _12 = move _13 checked.* move _14
-    storage_dead(_14)
-    storage_dead(_13)
-    storage_live(_10)
-    _10 = copy _12.0
-    b_11 = copy _12.1
-    storage_dead(_12)
-    byte_offset_15 = cast<i64, isize>(copy _10)
-    storage_dead(_10)
-    if copy b_11 {
-        _16 = cold_path()
-        storage_dead(b_11)
-        storage_dead(rhs_8)
-        storage_dead(overflow_18)
-    } else {
-        storage_dead(b_11)
-        storage_dead(rhs_8)
-        storage_live(self_9)
-        self_9 = transmute<*const (), usize>(copy this_1)
-        storage_live(_20)
-        storage_live(_17)
-        _17 = cast<isize, usize>(copy byte_offset_15)
-        storage_live(_21)
-        storage_live(_22)
-        _22 = cast<usize, u64>(copy self_9)
-        storage_live(_23)
-        _23 = cast<usize, u64>(copy _17)
-        _21 = move _22 checked.+ move _23
-        storage_dead(_23)
-        storage_dead(_22)
-        _20 = copy _21.1
-        storage_dead(_21)
-        storage_dead(_17)
-        storage_live(_19)
-        _19 = copy byte_offset_15 < const 0isize
-        overflow_18 = copy _20 ^ move _19
-        storage_dead(_19)
-        storage_dead(_20)
-        storage_dead(self_9)
-        _4 = ~(copy overflow_18)
-        storage_dead(overflow_18)
-        if move _4 {
-            storage_dead(_4)
-            return
-        } else {
-        }
-    }
-    msg_5 = const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+    storage_live(_5)
+    _5 = copy this_1
+    storage_live(_6)
+    _6 = copy count_2
     storage_live(_7)
-    storage_live(_24)
-    storage_live(_25)
-    storage_live(_30)
-    _30 = &raw const (*msg_5) with_metadata(copy msg_5.metadata)
-    _25 = cast<*const str, *const u8>(copy _30)
-    storage_dead(_30)
-    _24 = transmute<*const u8, NonNull<u8>>(copy _25)
-    storage_dead(_25)
-    storage_live(_26)
-    storage_live(_27)
-    storage_live(_28)
-    storage_live(_29)
-    storage_live(_31)
-    _31 = transmute<&'11 str, &'10 [u8]>(const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.")
-    _29 = copy _31.metadata
-    storage_dead(_31)
-    _28 = move _29 wrap.<< const 1i32
-    storage_dead(_29)
-    _27 = move _28 | const 1usize
-    storage_dead(_28)
-    _26 = transmute<usize, NonNull<Argument<'12>>>(move _27)
-    storage_dead(_27)
-    _7 = Arguments { 0: move _24, 1: move _26 }
-    storage_dead(_26)
-    storage_dead(_24)
-    _6 = panic_nounwind_fmt<'15>(move _7, const false)
+    _7 = copy size_3
+    _4 = runtime_offset_nowrap(move _5, move _6, move _7)
+    if move _4 {
+    } else {
+        storage_dead(_7)
+        storage_dead(_6)
+        storage_dead(_5)
+        storage_live(msg_8)
+        msg_8 = const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        storage_live(_9)
+        storage_live(_10)
+        storage_live(_11)
+        _11 = &(*msg_8) with_metadata(copy msg_8.metadata)
+        _10 = from_str<'6>(move _11)
+        storage_dead(_11)
+        _9 = panic_nounwind_fmt<'8>(move _10, const false)
+    }
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    _0 = ()
+    storage_dead(_4)
+    return
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset
@@ -279,21 +198,43 @@ where
     let _0: *const T; // return
     let self_1: *const T; // arg #1
     let count_2: isize; // arg #2
-    let _3: (); // anonymous local
-    let _4: *const (); // anonymous local
-    let _5: bool; // anonymous local
+    let _3: bool; // anonymous local
+    let _4: (); // anonymous local
+    let _5: *const (); // anonymous local
+    let _6: *const T; // anonymous local
+    let _7: isize; // anonymous local
+    let _8: usize; // anonymous local
+    let _9: *const T; // anonymous local
+    let _10: isize; // anonymous local
 
     storage_live(_3)
-    storage_live(_5)
-    _5 = ub_checks<bool>
-    if move _5 {
+    _3 = check_language_ub()
+    if move _3 {
         storage_live(_4)
-        _4 = cast<*const T, *const ()>(copy self_1)
-        _3 = precondition_check(move _4, copy count_2, copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
+        storage_live(_5)
+        storage_live(_6)
+        _6 = copy self_1
+        _5 = cast<*const T, *const ()>(move _6)
+        storage_dead(_6)
+        storage_live(_7)
+        _7 = copy count_2
+        storage_live(_8)
+        _8 = size_of<T>[TraitClause0]()
+        _4 = precondition_check(move _5, move _7, move _8)
+        storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_5)
         storage_dead(_4)
     } else {
     }
-    _0 = copy self_1 offset copy count_2
+    storage_dead(_3)
+    storage_live(_9)
+    _9 = copy self_1
+    storage_live(_10)
+    _10 = copy count_2
+    _0 = move _9 offset move _10
+    storage_dead(_10)
+    storage_dead(_9)
     return
 }
 

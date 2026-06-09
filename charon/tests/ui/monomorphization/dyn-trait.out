@@ -1,11 +1,5 @@
 # Final LLBC before serialization:
 
-opaque type core::fmt::Display::{vtable}
-
-// Full name: core::fmt::Display
-#[lang_item("Display")]
-pub trait Display<Self>
-
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String

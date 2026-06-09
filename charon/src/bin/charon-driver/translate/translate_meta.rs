@@ -50,21 +50,23 @@ impl<'tcx> TranslateCtx<'tcx> {
                             }
                             normalized
                         };
-                        let path = if let Ok(path) = path.strip_prefix(&self.sysroot) {
-                            // The path to files in the standard library may be full paths to somewhere
-                            // in the sysroot. This may depend on how the toolchain is installed
-                            // (rustup vs nix), so we normalize the paths here to avoid
-                            // inconsistencies in the translation.
-                            if let Ok(path) = path.strip_prefix("lib/rustlib/src/rust") {
-                                let mut rewritten_path: PathBuf = "/rustc".into();
-                                rewritten_path.extend(path);
-                                rewritten_path
-                            } else {
-                                // Unclear if this can happen, but just in case.
-                                let mut rewritten_path: PathBuf = "/toolchain".into();
-                                rewritten_path.extend(path);
-                                rewritten_path
-                            }
+                        // The path to files in the standard library may be full paths to
+                        // somewhere in the sysroot or in the original toolchain source tree. This
+                        // may depend on how the toolchain is installed (rustup vs nix), so we
+                        // normalize the paths here to avoid inconsistencies in the translation.
+                        let path = if let Some(rust_src) = path
+                            .ancestors()
+                            .find(|ancestor| ancestor.ends_with("lib/rustlib/src/rust"))
+                            && let Ok(path) = path.strip_prefix(rust_src)
+                        {
+                            let mut rewritten_path: PathBuf = "/rustc".into();
+                            rewritten_path.extend(path);
+                            rewritten_path
+                        } else if let Ok(path) = path.strip_prefix(&self.sysroot) {
+                            // Unclear if this can happen, but just in case.
+                            let mut rewritten_path: PathBuf = "/toolchain".into();
+                            rewritten_path.extend(path);
+                            rewritten_path
                         } else {
                             // Find the cargo home directory: according to cargo docs and having a
                             // look at the cargo source, it's either the `$CARGO_HOME` var or
