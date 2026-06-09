@@ -222,8 +222,10 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
     // whether the crate was specifically selected or is a dependency.
     let is_workspace_dependency =
         env::var("CHARON_USING_CARGO").is_ok() && env::var("CARGO_PRIMARY_PACKAGE").is_err();
-    // Let rustc emit artifacts (metadata, binaries) normally if invoked by `cargo`.
-    let emit_artifacts = env::var("CHARON_USING_CARGO").is_ok();
+    // Let rustc emit artifacts (metadata, binaries) normally if invoked by `cargo` or when
+    // explicitly requested.
+    let emit_artifacts =
+        env::var("CHARON_USING_CARGO").is_ok() || env::var("CHARON_EMIT_ARTIFACTS").is_ok();
     // Let rustc emit codegen artifacts, more specifically.
     let mut codegen = emit_artifacts;
     // Determines if we are being invoked to build a crate for the "target" architecture, in
@@ -259,18 +261,19 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
         }
     };
 
-    if let Some(target) = target
-        && let Some(sysroot) = options.sysroot.as_ref()
+    if options.sysroot.as_deref() == Some("default") {
+        // Do nothing
+    } else if let Some(sysroot) = options.sysroot.as_ref()
+        && sysroot != "miri"
     {
-        if sysroot == "miri" {
-            if let Some(sysroot) = setup_miri_sysroot(target) {
-                compiler_args.push(format!("--sysroot={}", sysroot.display()));
-                // The Miri sysroot doesn't support codegen.
-                codegen = false;
-            }
-        } else {
-            compiler_args.push(format!("--sysroot={sysroot}"));
-        }
+        compiler_args.push(format!("--sysroot={sysroot}"));
+    } else if let Some(target) = target
+        && let Some(sysroot) = setup_miri_sysroot(target)
+    {
+        // In the default case, or `--sysroot=miri`, we ask Miri to build a full-mir syroot for us.
+        compiler_args.push(format!("--sysroot={}", sysroot.display()));
+        // The Miri sysroot doesn't support codegen.
+        codegen = false;
     }
 
     let output = if !is_selected_crate {

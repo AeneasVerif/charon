@@ -1,36 +1,111 @@
-disabled backtrace
-warning[E9999]: Couldn't convert constant back to an expression
-                
-                Context:
-                 - const_value: Indirect {
-                    alloc_id: a4,
-                    offset: Size(0 bytes),
-                }
-                 - ty: alloc::raw_vec::RawVec<u8, std::alloc::Global>
-                 - err: InterpErrorInfo(
-                    InterpErrorInfoInner {
-                        kind: UndefinedBehavior(
-                            DanglingIntPointer {
-                                addr: 1,
-                                inbounds_size: 0,
-                                msg: Dereferenceable,
-                            },
-                        ),
-                        backtrace: InterpErrorBacktrace {
-                            backtrace: None,
-                        },
-                    },
-                )
-                
+# Final LLBC before serialization:
 
-error: Unsupported constant: "ConstEvalVal"
- --> /rustc/library/alloc/src/vec/mod.rs:464:9
+// Full name: alloc::vec::Vec
+#[lang_item("Vec")]
+pub struct Vec<T, A>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+{
+  buf: RawVec<T, A>[TraitClause0, TraitClause1, TraitClause2],
+  len: usize,
+}
 
-note: the error occurred when translating `alloc::string::{alloc::string::String}::new`, which is (transitively) used at the following location(s):
-  --> tests/ui/consts/string-new-constevalval.rs:10:13
-   |
-10 |     let _ = String::new();
-   |             -------------
-warning: 1 warning emitted
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub struct String {
+  vec: Vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {impl#1}],
+}
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: alloc::string::String::{impl Destruct for String}
+impl "impl_Destruct_for_String" Destruct for String {
+    non-dyn-compatible
+}
+
+#[lang_item("vec_new")]
+pub fn alloc::vec::{Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]}::new<T>() -> Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]; // return
+    let _1: RawVec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]; // anonymous local
+
+    storage_live(_1)
+    _1 = alloc::raw_vec::{RawVec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]}::new<T>[TraitClause0]()
+    _0 = Vec { buf: move _1, len: const 0usize }
+    storage_dead(_1)
+    return
+}
+
+#[lang_item("string_new")]
+pub fn alloc::string::{String}::new() -> String
+{
+    let _0: String; // return
+    let _1: Vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {impl#1}]; // anonymous local
+
+    storage_live(_1)
+    _1 = alloc::vec::{Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]}::new<u8>[{built_in impl Sized for u8}]()
+    _0 = String { vec: move _1 }
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::<slice>::{impl Destruct for [T]}
+impl<T> "impl_Destruct_for_slice" Destruct for [T]
+where
+    TraitClause0: (T: Sized),
+{
+    non-dyn-compatible
+}
+
+// Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_glue
+unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: &'1 mut [T]; // arg #1
+    let _2: usize; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: *mut T; // anonymous local
+    let _5: bool; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _0 = ()
+    _2 = copy _1.metadata
+    _3 = const 0usize
+    loop {
+        _5 = copy _3 == copy _2
+        if move _5 {
+            break 0
+        } else {
+            _4 = &raw mut (*_1)[copy _3]
+            _3 = move _3 wrap.+ const 1usize
+            drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_4)
+            continue 0
+        }
+    }
+    return
+}
+
+// Full name: test_crate::mk_string
+pub fn mk_string()
+{
+    let _0: (); // return
+    let _1: String; // anonymous local
+
+    _0 = ()
+    storage_live(_1)
+    _1 = alloc::string::{String}::new()
+    conditional_drop[impl_Destruct_for_String::drop_glue<'0>] _1
+    storage_dead(_1)
+    _0 = const ()
+    return
+}
+
+
+

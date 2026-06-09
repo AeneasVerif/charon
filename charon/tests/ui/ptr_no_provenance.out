@@ -248,6 +248,20 @@ where
     non-dyn-compatible
 }
 
+// Full name: core::ptr::metadata::from_raw_parts
+pub fn from_raw_parts<T, T1>(_1: *const T1, _2: {built_in impl Pointee for T}::Metadata) -> *const T
+where
+    TraitClause0: (T1: Sized),
+    TraitClause1: (T1: Thin),
+= <opaque>
+
+// Full name: core::ptr::without_provenance
+#[lang_item("ptr_without_provenance")]
+pub fn without_provenance<T>(_1: usize) -> *const T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: core::ptr::null
 #[lang_item("ptr_null")]
 pub fn null<T>() -> *const T
@@ -255,11 +269,16 @@ where
     TraitClause0: (T: Thin),
 {
     let _0: *const T; // return
-    let _1: *const T; // anonymous local
+    let _1: *const (); // anonymous local
+    let _2: (); // anonymous local
 
     storage_live(_1)
-    _1 = cast<usize, *const T>(const 0usize)
-    _0 = move _1
+    _1 = without_provenance<()>[{built_in impl Sized for ()}](const 0usize)
+    storage_live(_2)
+    _2 = ()
+    _0 = from_raw_parts<T, ()>[{built_in impl Sized for ()}, impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]](move _1, move _2)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

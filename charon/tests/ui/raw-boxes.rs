@@ -3,8 +3,11 @@
 //@ charon-args=--mir elaborated
 //@ charon-args=--exclude=core
 //@ charon-args=--include=core::result::Result
+//@ charon-args=--include=core::option::Option
+//@ charon-args=--include=core::ops::control_flow::ControlFlow
 //@ charon-args=--include=core::marker::Destruct
 //@ charon-args=--include=core::alloc
+//@ charon-args=--exclude=core::alloc::layout
 //@ charon-args=--include=core::mem
 //@ charon-args=--include=core::ptr
 //@ charon-args=--exclude=alloc::alloc

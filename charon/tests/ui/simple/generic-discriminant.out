@@ -142,9 +142,13 @@ where
     let _0: Discriminant<T>[TraitClause0]; // return
     let v_1: &'1 T; // arg #1
     let _2: {built_in impl DiscriminantKind for T}::Discriminant; // anonymous local
+    let _3: &'2 T; // anonymous local
 
     storage_live(_2)
-    _2 = @discriminant((*v_1))
+    storage_live(_3)
+    _3 = &(*v_1)
+    _2 = @discriminant((*_3))
+    storage_dead(_3)
     _0 = Discriminant { 0: move _2 }
     storage_dead(_2)
     return

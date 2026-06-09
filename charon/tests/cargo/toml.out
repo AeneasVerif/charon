@@ -29,11 +29,17 @@ where
 {
     let _0: bool; // return
     let self_1: &'1 Option<T>[TraitClause0]; // arg #1
-    let _2: isize; // anonymous local
 
-    storage_live(_2)
-    _2 = @discriminant((*self_1))
-    _0 = copy _2 == const 1isize
+    _ = (*self_1)
+    match (*self_1) {
+        Option::Some => {
+        },
+        _ => {
+            _0 = const false
+            return
+        },
+    }
+    _0 = const true
     return
 }
 

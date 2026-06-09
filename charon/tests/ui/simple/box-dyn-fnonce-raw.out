@@ -4,14 +4,24 @@
 #[lang_item("alloc_layout")]
 pub opaque type Layout
 
-// Full name: core::alloc::AllocError
-pub struct AllocError {}
+// Full name: core::alloc::layout::{Layout}::size
+pub fn size<'_0>(_1: &'_0 Layout) -> usize
+= <opaque>
 
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
+
+// Full name: core::alloc::layout::{Layout}::for_value_raw
+pub unsafe fn for_value_raw<T>(_1: *const T) -> Layout
+where
+    TraitClause0: (T: MetaSized),
+= <opaque>
+
+// Full name: core::alloc::AllocError
+pub struct AllocError {}
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -54,22 +64,6 @@ pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(_1: &'_0 Self, _2: N
 where
     TraitClause0: (Self: Allocator),
 = <opaque>
-
-// Full name: core::intrinsics::size_of_val
-pub unsafe fn size_of_val<T>(ptr_1: *const T) -> usize
-where
-    TraitClause0: (T: MetaSized),
-= <intrinsic:size_of_val>
-
-// Full name: core::intrinsics::align_of_val
-pub unsafe fn align_of_val<T>(ptr_1: *const T) -> usize
-where
-    TraitClause0: (T: MetaSized),
-= <intrinsic:align_of_val>
-
-// Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
-pub struct PhantomData<T> {}
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
@@ -223,22 +217,32 @@ where
     TraitClause0: (Self: FnOnce<Args>),
 = <method_without_default_body>
 
+// Full name: core::ptr::non_null::{NonNull<[T]>}::as_mut_ptr
+pub fn as_mut_ptr<T>(_1: NonNull<[T]>) -> *mut T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: core::ptr::unique::Unique
 pub opaque type Unique<T>
 
-fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(_1: usize)
+// Full name: core::ptr::non_null::{impl From<Unique<T>> for NonNull<T>}::from
+pub fn impl_From_Unique_for_NonNull::from<T>(_1: Unique<T>) -> NonNull<T>
 = <opaque>
 
-fn core::alloc::layout::{Layout}::from_size_alignment_unchecked::precondition_check(_1: usize, _2: Alignment)
+// Full name: core::ptr::unique::{Unique<T>}::as_ptr
+pub fn as_ptr<T>(_1: Unique<T>) -> *mut T
+= <opaque>
+
+// Full name: core::ptr::unique::{Unique<T>}::cast
+pub fn cast<T, U>(_1: Unique<T>) -> Unique<U>
+where
+    TraitClause0: (U: Sized),
 = <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
-
-// Full name: alloc::alloc::{Global}::alloc_impl_runtime
-fn alloc_impl_runtime(_1: Layout, _2: bool) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
-= <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
 pub unsafe fn impl_Allocator_for_Global::deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
@@ -281,76 +285,70 @@ where
 {
     let _0: (); // return
     let self_1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
-    let layout_2: Layout; // local
-    let t_3: *const T; // local
-    let _4: *mut T; // anonymous local
-    let _5: (); // anonymous local
-    let _6: &'5 A; // anonymous local
-    let size_7: usize; // local
-    let alignment_8: Alignment; // local
-    let align_9: usize; // local
+    let ptr_2: Unique<T>; // local
+    let layout_3: Layout; // local
+    let _4: *const T; // anonymous local
+    let _5: *mut T; // anonymous local
+    let _6: Unique<T>; // anonymous local
+    let _7: bool; // anonymous local
+    let _8: usize; // anonymous local
+    let _9: &'3 Layout; // anonymous local
     let _10: (); // anonymous local
-    let _11: (); // anonymous local
-    let unique_12: NonNull<u8>; // local
-    let _13: *mut u8; // anonymous local
-    let ptr_14: NonNull<T>; // local
-    let ptr_15: PhantomData<T>; // local
-    let _16: bool; // anonymous local
-    let _17: bool; // anonymous local
+    let _11: &'5 A; // anonymous local
+    let _12: NonNull<u8>; // anonymous local
+    let _13: Unique<u8>; // anonymous local
+    let _14: Unique<T>; // anonymous local
+    let _15: Layout; // anonymous local
 
+    _0 = ()
+    storage_live(ptr_2)
+    ptr_2 = copy ((*self_1)).0
+    storage_live(layout_3)
     storage_live(_4)
     storage_live(_5)
-    storage_live(size_7)
-    storage_live(_10)
-    storage_live(_11)
-    storage_live(unique_12)
-    _0 = ()
-    storage_live(ptr_14)
-    storage_live(ptr_15)
-    ptr_14 = copy (((*self_1)).0).0
-    ptr_15 = copy (((*self_1)).0).1
-    storage_live(layout_2)
-    storage_live(t_3)
-    _4 = transmute<NonNull<T>, *mut T>(copy ptr_14)
-    t_3 = transmute<NonNull<T>, *const T>(copy ptr_14)
-    storage_live(alignment_8)
-    size_7 = size_of_val<T>[TraitClause0](copy t_3)
-    storage_live(align_9)
-    align_9 = align_of_val<T>[TraitClause0](move t_3)
-    storage_live(_16)
-    _16 = ub_checks<bool>
-    if move _16 {
-        _10 = core::mem::alignment::{Alignment}::new_unchecked::precondition_check(copy align_9)
+    storage_live(_6)
+    _6 = copy ptr_2
+    _5 = as_ptr<T>(move _6)
+    _4 = cast<*mut T, *const T>(move _5)
+    storage_dead(_6)
+    storage_dead(_5)
+    layout_3 = for_value_raw<T>[TraitClause0](move _4)
+    storage_dead(_4)
+    storage_live(_7)
+    storage_live(_8)
+    storage_live(_9)
+    _9 = &layout_3
+    _8 = size<'7>(move _9)
+    storage_dead(_9)
+    _7 = move _8 != const 0usize
+    if move _7 {
+        storage_dead(_8)
+        storage_live(_10)
+        storage_live(_11)
+        _11 = &((*self_1)).1
+        storage_live(_12)
+        storage_live(_13)
+        storage_live(_14)
+        _14 = copy ptr_2
+        _13 = cast<T, u8>[{built_in impl Sized for u8}](move _14)
+        storage_dead(_14)
+        _12 = impl_From_Unique_for_NonNull::from<u8>(move _13)
+        storage_dead(_13)
+        storage_live(_15)
+        _15 = copy layout_3
+        _10 = TraitClause2::deallocate<'9>(move _11, move _12, move _15)
+        storage_dead(_15)
+        storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(_10)
+        _0 = ()
     } else {
+        storage_dead(_8)
+        _0 = ()
     }
-    alignment_8 = transmute<usize, Alignment>(copy align_9)
-    storage_dead(align_9)
-    storage_live(_17)
-    _17 = ub_checks<bool>
-    if move _17 {
-        _11 = core::alloc::layout::{Layout}::from_size_alignment_unchecked::precondition_check(copy size_7, copy alignment_8)
-    } else {
-    }
-    layout_2 = Layout { 0: copy size_7, 1: copy alignment_8 }
-    storage_dead(alignment_8)
-    storage_dead(t_3)
-    switch copy size_7 {
-        0usize => {
-        },
-        _ => {
-            storage_live(_6)
-            _6 = &((*self_1)).1
-            storage_live(_13)
-            _13 = cast<*mut T, *mut u8>(copy _4)
-            unique_12 = transmute<*mut u8, NonNull<u8>>(copy _13)
-            storage_dead(_13)
-            _5 = TraitClause2::deallocate<'7>(move _6, move unique_12, move layout_2)
-            storage_dead(_6)
-        },
-    }
-    storage_dead(layout_2)
-    storage_dead(ptr_14)
-    storage_dead(ptr_15)
+    storage_dead(_7)
+    storage_dead(layout_3)
+    storage_dead(ptr_2)
     return
 }
 
@@ -385,35 +383,50 @@ fn box_new_uninit(layout_1: Layout) -> *mut u8
     let _0: *mut u8; // return
     let layout_1: Layout; // arg #1
     let _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
-    let ptr_3: NonNull<[u8]>; // local
-    let _4: !; // anonymous local
-    let _5: NonNull<u8>; // anonymous local
-    let _6: *mut u8; // anonymous local
-    let _7: *mut [u8]; // anonymous local
+    let _3: &'1 Global; // anonymous local
+    let _4: Layout; // anonymous local
+    let ptr_5: NonNull<[u8]>; // local
+    let _6: NonNull<[u8]>; // anonymous local
+    let _7: !; // anonymous local
+    let _8: Layout; // anonymous local
+    let _9: &'2 Global; // anonymous local
+    let _10: &'3 Global; // anonymous local
+    let _11: &'6 Global; // anonymous local
+    let _12: Global; // anonymous local
 
-    storage_live(_4)
+    storage_live(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _12 = Global {  }
+    _11 = &_12
+    _10 = move _11
+    storage_live(_9)
     storage_live(_2)
-    _2 = alloc_impl_runtime(copy layout_1, const false)
+    storage_live(_3)
+    _9 = move _10
+    _3 = &(*_9)
+    storage_live(_4)
+    _4 = copy layout_1
+    _2 = impl_Allocator_for_Global::allocate<'5>(move _3, move _4)
+    storage_dead(_4)
+    storage_dead(_3)
     match _2 {
         Result::Ok => {
         },
         Result::Err => {
-            _4 = handle_alloc_error(move layout_1)
+            storage_live(_7)
+            storage_live(_8)
+            _8 = copy layout_1
+            _7 = handle_alloc_error(move _8)
         },
     }
-    storage_live(ptr_3)
-    ptr_3 = copy (_2 as variant Result::Ok).0
-    storage_live(_5)
+    storage_live(ptr_5)
+    ptr_5 = copy (_2 as variant Result::Ok).0
     storage_live(_6)
-    storage_live(_7)
-    _7 = transmute<NonNull<[u8]>, *mut [u8]>(copy ptr_3)
-    _6 = cast<*mut [u8], *mut u8>(copy _7)
-    storage_dead(_7)
-    _5 = transmute<*mut u8, NonNull<u8>>(copy _6)
+    _6 = copy ptr_5
+    _0 = as_mut_ptr<u8>[{built_in impl Sized for u8}](move _6)
     storage_dead(_6)
-    _0 = transmute<NonNull<u8>, *mut u8>(copy _5)
-    storage_dead(_5)
-    storage_dead(ptr_3)
+    storage_dead(ptr_5)
     storage_dead(_2)
     return
 }
@@ -427,14 +440,33 @@ where
     let _0: Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // return
     let x_1: T; // arg #1
     let ptr_2: *mut T; // local
-    let _3: *mut u8; // anonymous local
+    let _3: *mut T; // anonymous local
+    let _4: *mut u8; // anonymous local
+    let _5: *mut T; // anonymous local
+    let _6: *mut T; // anonymous local
+    let _7: bool; // anonymous local
 
+    storage_live(_7)
+    _7 = const false
+    _7 = const true
     storage_live(ptr_2)
     storage_live(_3)
-    _3 = box_new_uninit(copy LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
-    ptr_2 = cast<*mut u8, *mut T>(copy _3)
-    (*ptr_2) = move x_1
-    _0 = transmute<*mut u8, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>(copy _3)
+    storage_live(_4)
+    _4 = box_new_uninit(copy LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
+    _3 = cast<*mut u8, *mut T>(move _4)
+    ptr_2 = copy _3
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_live(_5)
+    _5 = copy ptr_2
+    _7 = const false
+    (*_5) = move x_1
+    storage_dead(_5)
+    storage_live(_6)
+    _6 = copy ptr_2
+    _0 = transmute<*mut T, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>(move _6)
+    storage_dead(_6)
+    storage_dead(ptr_2)
     return
 }
 
@@ -452,20 +484,27 @@ where
     let self_1: Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // arg #1
     let args_2: Args; // arg #2
     let _3: Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // anonymous local
-    let _4: &'1 mut Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // anonymous local
-    let _5: (); // anonymous local
-    let _6: *const F; // anonymous local
+    let _4: Args; // anonymous local
+    let _5: &'1 mut Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // anonymous local
+    let _6: (); // anonymous local
+    let _7: *const F; // anonymous local
+    let _8: *const F; // anonymous local
 
-    storage_live(_4)
     storage_live(_5)
     storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
     storage_live(_3)
     _3 = move self_1
-    _6 = transmute<NonNull<F>, *const F>(copy ((_3).0).0)
-    _0 = TraitClause4::call_once(move (*_6), move args_2)
-    _4 = &mut _3
-    _5 = impl_Drop_for_Box::drop<'6, F, A>[TraitClause1, TraitClause2, TraitClause5](move _4)
-    drop[{built_in impl Destruct for A}::drop_glue<'9>] (_3).1
+    storage_live(_4)
+    _4 = move args_2
+    _8 = transmute<NonNull<F>, *const F>(copy ((_3).0).0)
+    _0 = TraitClause4::call_once(move (*_8), move _4)
+    storage_dead(_4)
+    _7 = transmute<NonNull<F>, *const F>(copy ((_3).0).0)
+    _5 = &mut _3
+    _6 = impl_Drop_for_Box::drop<'7, F, A>[TraitClause1, TraitClause2, TraitClause5](move _5)
+    drop[{built_in impl Destruct for A}::drop_glue<'10>] (_3).1
     storage_dead(_3)
     return
 }
