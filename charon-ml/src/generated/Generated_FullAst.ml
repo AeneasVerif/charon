@@ -82,6 +82,10 @@ and cli_options = {
           compiler once for each target and aggregate the results, which is
           useful if the code includes [#[cfg(..)]] filters. Warning: this is an
           initial implementation which is extremely slow. *)
+  sysroot : string option;
+      (** Sysroot to use for rustc invocations. Use [miri] to ask Charon to
+          prepare a per-target sysroot with full MIR for standard library items.
+      *)
   monomorphize : bool;
       (** Monomorphize the items encountered when possible. Generic items found
           in the crate are skipped. To only translate a particular call graph,

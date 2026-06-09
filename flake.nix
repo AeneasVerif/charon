@@ -26,7 +26,11 @@
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         ocamlformat = pkgs.ocamlPackages.ocamlformat_0_27_0;
 
-        charon = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; };
+        fullMirSysroots = pkgs.callPackage ./nix/full-mir-sysroots.nix { inherit rustToolchain; };
+        charon = pkgs.callPackage ./nix/charon.nix {
+          inherit craneLib rustToolchain;
+          miriSysroots = fullMirSysroots;
+        };
         charon-unwrapped = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; enableWrapping = false; };
         charon-portable = pkgs.runCommand "charon-portable" { } ''
           mkdir -p $out/bin
@@ -104,6 +108,7 @@
       {
         packages = {
           inherit charon charon-unwrapped charon-portable charon-ml rustToolchain;
+          charon-full-mir-sysroots = fullMirSysroots;
           inherit (rustc-tests) rustc-tests;
           default = charon;
         };

@@ -1788,6 +1788,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* mir = option_of_postcard mir_level_of_postcard ctx st in
      let* rustc_args = list_of_postcard string_of_postcard ctx st in
      let* targets = list_of_postcard string_of_postcard ctx st in
+     let* sysroot = option_of_postcard string_of_postcard ctx st in
      let* monomorphize = bool_of_postcard ctx st in
      let* monomorphize_mut =
        option_of_postcard monomorphize_mut_of_postcard ctx st
@@ -1840,6 +1841,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           mir;
           rustc_args;
           targets;
+          sysroot;
           monomorphize;
           monomorphize_mut;
           start_from;
