@@ -628,11 +628,10 @@ and fn_ptr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Fun", fun_) ] ->
         let* fun_ = fun_id_of_json ctx fun_ in
         Ok (FunId fun_)
-    | `Assoc [ ("Trait", `List [ x_0; x_1; x_2 ]) ] ->
+    | `Assoc [ ("Trait", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_ref_of_json ctx x_0 in
         let* x_1 = trait_method_id_of_json ctx x_1 in
-        let* x_2 = fun_decl_id_of_json ctx x_2 in
-        Ok (TraitMethod (x_0, x_1, x_2))
+        Ok (TraitMethod (x_0, x_1))
     | _ -> Error "")
 
 and fun_decl_id_of_json (ctx : of_json_ctx) (js : json) :

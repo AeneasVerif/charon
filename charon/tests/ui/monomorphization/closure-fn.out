@@ -85,18 +85,6 @@ struct closure<'_0, '_1> {
   &'_1 u8,
 }
 
-// Full name: core::ops::function::Fn::call
-pub extern "rust-call" fn call<'_0>(_1: &'_0 closure<'_, '_>, _2: (u8, u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnMut::call_mut
-pub extern "rust-call" fn call_mut<'_0>(_1: &'_0 mut closure<'_, '_>, _2: (u8, u8)) -> u8
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once
-pub extern "rust-call" fn call_once(_1: closure<'_, '_>, _2: (u8, u8)) -> u8
-= <opaque>
-
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
 impl<'_0, '_1> "impl_FnOnce_tuple_for_closure" FnOnce<(u8, u8)> for closure<'_0, '_1> {
     proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}

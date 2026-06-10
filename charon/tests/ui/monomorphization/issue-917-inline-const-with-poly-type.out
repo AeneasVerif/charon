@@ -82,10 +82,6 @@ pub trait Fn<Self, Args>
 // Full name: test_crate::foo::{const}::closure::<()>
 struct closure::<()> {}
 
-// Full name: core::ops::function::FnMut::call_mut
-pub extern "rust-call" fn call_mut<'_0>(_1: &'_0 mut closure::<()>, _2: ((),))
-= <opaque>
-
 // Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}::drop_glue::<()>
 unsafe fn {impl Destruct for closure::<()>}::drop_glue::<()><'_0>(_1: &'_0 mut closure::<()>)
 {

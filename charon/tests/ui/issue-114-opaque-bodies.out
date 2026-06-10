@@ -30,9 +30,6 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <missing>
-
 // Full name: core::bool::{bool}::then_some
 pub fn then_some<T>(self_1: bool, t_2: T) -> Option<T>[TraitClause0]
 where
@@ -246,6 +243,9 @@ pub fn impl_From_i32_for_i64::from(small_1: i32) -> i64
 // Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
 pub struct PhantomData<T> {}
+
+unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
+= <missing>
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {

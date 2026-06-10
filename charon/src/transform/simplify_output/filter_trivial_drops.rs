@@ -4,7 +4,7 @@ use crate::ullbc_ast::*;
 
 fn is_noop_destruct(glue: &FnPtr) -> bool {
     match glue.kind.as_ref() {
-        FnPtrKind::Trait(tref, _, _) => matches!(
+        FnPtrKind::Trait(tref, _) => matches!(
             &tref.kind,
             TraitRefKind::BuiltinOrAuto {
                 builtin_data: BuiltinImplData::NoopDestruct,

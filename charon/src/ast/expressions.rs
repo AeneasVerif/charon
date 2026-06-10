@@ -496,10 +496,8 @@ pub enum FnPtrKind {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("FunId"))]
     Fun(FunId),
     /// If a trait: the reference to the trait and the id of the trait method.
-    /// The fun decl id is not really necessary - we put it here for convenience
-    /// purposes.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("TraitMethod"))]
-    Trait(TraitRef, TraitMethodId, FunDeclId),
+    Trait(TraitRef, TraitMethodId),
 }
 
 impl From<FunId> for FnPtrKind {

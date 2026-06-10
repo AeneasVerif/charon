@@ -465,10 +465,9 @@ and fn_ptr = { kind : fn_ptr_kind; generics : generic_args }
 
 and fn_ptr_kind =
   | FunId of fun_id
-  | TraitMethod of trait_ref * trait_method_id * fun_decl_id
+  | TraitMethod of trait_ref * trait_method_id
       (** If a trait: the reference to the trait and the id of the trait method.
-          The fun decl id is not really necessary - we put it here for
-          convenience purposes. *)
+      *)
 
 (** Reference to a function declaration. *)
 and fun_decl_ref = {

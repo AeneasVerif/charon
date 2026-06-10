@@ -40,7 +40,7 @@ fn transform_dyn_trait_call(
     let FnOperand::Regular(fn_ptr) = &call.func else {
         return Ok(()); // Not a regular function call
     };
-    let FnPtrKind::Trait(trait_ref, method_id, _) = fn_ptr.kind.as_ref() else {
+    let FnPtrKind::Trait(trait_ref, method_id) = fn_ptr.kind.as_ref() else {
         return Ok(()); // Not a trait method call
     };
     let TraitRefKind::Dyn = &trait_ref.kind else {

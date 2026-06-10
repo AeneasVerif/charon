@@ -79,32 +79,12 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}
 }
 
-struct test_crate::main::closure<'_0> {
-  &'_0 u8,
-}
-
-// Full name: core::ops::function::Fn::call
-pub extern "rust-call" fn call<'_0>(_1: &'_0 test_crate::main::closure<'_>, _2: (u8,)) -> u8
-= <opaque>
-
-struct test_crate::main::closure#1<'_0> {
-  &'_0 mut u8,
-}
-
-// Full name: core::ops::function::FnMut::call_mut
-pub extern "rust-call" fn call_mut<'_0>(_1: &'_0 mut test_crate::main::closure#1<'_>, _2: (u8,)) -> u8
-= <opaque>
-
 // Full name: test_crate::Thing
 struct Thing {}
 
-struct test_crate::main::closure#2 {
-  Thing,
+struct test_crate::main::closure<'_0> {
+  &'_0 u8,
 }
-
-// Full name: core::ops::function::FnOnce::call_once
-pub extern "rust-call" fn call_once(_1: test_crate::main::closure#2, _2: (u8,)) -> u8
-= <opaque>
 
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}::drop_glue
 unsafe fn {impl Destruct for test_crate::main::closure<'_0>}::drop_glue<'_0, '_1>(_1: &'_1 mut test_crate::main::closure<'_0>)
@@ -161,6 +141,10 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(f_1: test_crate::main::closure
     return
 }
 
+struct test_crate::main::closure#1<'_0> {
+  &'_0 mut u8,
+}
+
 // Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}::drop_glue
 unsafe fn {impl Destruct for test_crate::main::closure#1<'_0>}::drop_glue<'_0, '_1>(_1: &'_1 mut test_crate::main::closure#1<'_0>)
 {
@@ -205,6 +189,10 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(f_1: test_crate::main::c
     storage_dead(_2)
     conditional_drop[{impl Destruct for test_crate::main::closure#1<'_0>}::drop_glue<'16, '17>] f_1
     return
+}
+
+struct test_crate::main::closure#2 {
+  Thing,
 }
 
 // Full name: test_crate::main::closure#2::{impl Destruct for test_crate::main::closure#2}::drop_glue

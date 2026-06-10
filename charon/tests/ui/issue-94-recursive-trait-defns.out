@@ -95,12 +95,6 @@ pub trait T7<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::T7::g
-pub fn g<Self>(_1: u64)
-where
-    TraitClause0: (Self: T7),
-= <method_without_default_body>
-
 // Full name: test_crate::T6::f
 pub fn f<Self, T>(x_1: u64)
 where
@@ -117,6 +111,12 @@ where
     storage_dead(_2)
     return
 }
+
+// Full name: test_crate::T7::g
+pub fn g<Self>(_1: u64)
+where
+    TraitClause0: (Self: T7),
+= <method_without_default_body>
 
 
 

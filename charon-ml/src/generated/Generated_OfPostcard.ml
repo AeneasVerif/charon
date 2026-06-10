@@ -593,8 +593,7 @@ and fn_ptr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* x_0 = trait_ref_of_postcard ctx st in
          let* x_1 = trait_method_id_of_postcard ctx st in
-         let* x_2 = fun_decl_id_of_postcard ctx st in
-         Ok (TraitMethod (x_0, x_1, x_2))
+         Ok (TraitMethod (x_0, x_1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and fun_decl_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

@@ -43,15 +43,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<FnPtr, Error> {
         let trait_proof = hax::solve_destruct(self.hax_state_with_id(), ty);
         let tref = self.translate_trait_proof(span, &trait_proof)?;
-        let (fun_id, method_id) = self.translate_drop_glue_method_ref(
-            span,
-            trait_proof.pred.hax_skip_binder_ref(),
+        let method_id = self.translate_drop_glue_method_id(
             &trait_proof.pred.hax_skip_binder_ref().def_id,
             tref.trait_id(),
-            None,
         )?;
         let fn_ptr = FnPtr::new(
-            FnPtrKind::Trait(tref, method_id, fun_id),
+            FnPtrKind::Trait(tref, method_id),
             self.drop_glue_generic_args(),
         );
         Ok(fn_ptr)
@@ -203,13 +200,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         destruct_trait_id: TraitDeclId,
         impl_kind: Option<TraitImplSource>,
     ) -> Result<(TraitMethodId, Binder<FunDeclRef>), Error> {
-        let (fun_id, method_id) = self.translate_drop_glue_method_ref(
+        let method_id =
+            self.translate_drop_glue_method_id(destruct_trait_def_id, destruct_trait_id)?;
+        let fun_id = self.register_item(
             span,
             def.this(),
-            destruct_trait_def_id,
-            destruct_trait_id,
-            impl_kind,
-        )?;
+            TransItemSourceKind::DropGlueMethod(impl_kind),
+        );
         let method_binder = {
             let method_params = Self::drop_glue_params();
             let generics = self

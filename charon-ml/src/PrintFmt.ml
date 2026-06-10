@@ -564,7 +564,7 @@ and pp_fun_id (env : fmt_env) (fmt : Format.formatter) (fid : fun_id) : unit =
 and pp_fn_ptr_kind (env : fmt_env) (fmt : Format.formatter) (r : fn_ptr_kind) :
     unit =
   match r with
-  | TraitMethod (trait_ref, method_id, _) ->
+  | TraitMethod (trait_ref, method_id) ->
       let method_name =
         GAstUtils.get_method_name env.crate
           trait_ref.trait_decl_ref.binder_value.id method_id

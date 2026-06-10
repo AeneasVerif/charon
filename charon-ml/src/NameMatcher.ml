@@ -822,7 +822,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
         | _ -> false
       in
       match_function_name || match_trait_ref
-  | TraitMethod (tr, method_id, _) ->
+  | TraitMethod (tr, method_id) ->
       match_trait_decl_ref_item ctx c (mk_empty_maps ()) p tr.trait_decl_ref
         (AssocIdMethod method_id) func.generics
 
@@ -1228,7 +1228,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
     | FunId (FRegular fid) ->
         let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
         name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some args)
-    | TraitMethod (tr, method_id, _) ->
+    | TraitMethod (tr, method_id) ->
         let method_name =
           GAstUtils.get_method_name ctx.crate tr.trait_decl_ref.binder_value.id
             method_id

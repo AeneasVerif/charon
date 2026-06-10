@@ -61,10 +61,6 @@ struct closure {
   NotCopy,
 }
 
-// Full name: core::ops::function::FnOnce::call_once
-pub extern "rust-call" fn call_once(_1: closure, _2: (u8,)) -> u8
-= <opaque>
-
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_glue
 unsafe fn impl_Destruct_for_closure::drop_glue<'_0>(_1: &'_0 mut closure)
 {

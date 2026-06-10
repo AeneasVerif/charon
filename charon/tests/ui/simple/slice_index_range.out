@@ -395,11 +395,6 @@ pub trait SliceIndex<Self, T>
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }
 
-pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(_1: Self, _2: &'_0 T) -> &'_0 TraitClause0::Output
-where
-    TraitClause0: (Self: SliceIndex<T>),
-= <method_without_default_body>
-
 // Full name: core::slice::index::{impl Index<I> for [T]}::index
 pub fn impl_Index_for_slice::index<'_0, T, I>(self_1: &'_0 [T], index_2: I) -> &'_0 TraitClause2::Output
 where
@@ -636,6 +631,11 @@ where
 = <method_without_default_body>
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(_1: Self, _2: *mut T) -> *mut TraitClause0::Output
+where
+    TraitClause0: (Self: SliceIndex<T>),
+= <method_without_default_body>
+
+pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(_1: Self, _2: &'_0 T) -> &'_0 TraitClause0::Output
 where
     TraitClause0: (Self: SliceIndex<T>),
 = <method_without_default_body>

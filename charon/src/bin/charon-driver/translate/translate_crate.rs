@@ -742,13 +742,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             None => FnPtrKind::Fun(fun_item.id),
             // Trait method
             Some(trait_ref) => {
-                let method_decl_id = *fun_item
-                    .id
-                    .as_regular()
-                    .expect("methods are not builtin functions");
                 let trait_decl_id = trait_ref.trait_id();
                 let method_id = self.translate_trait_method_id(trait_decl_id, &item.def_id)?;
-                FnPtrKind::Trait(trait_ref, method_id, method_decl_id)
+                FnPtrKind::Trait(trait_ref, method_id)
             }
         };
         let mut generics = fun_item.generics;

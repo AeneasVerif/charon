@@ -570,7 +570,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
         match self.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(def_id)) => write!(f, "{}", def_id.with_ctx(ctx))?,
             FnPtrKind::Fun(FunId::Builtin(builtin)) => write!(f, "@{}", builtin)?,
-            FnPtrKind::Trait(trait_ref, method_id, _) => {
+            FnPtrKind::Trait(trait_ref, method_id) => {
                 write!(f, "{}::", trait_ref.with_ctx(ctx))?;
                 ctx.format_method_name(f, trait_ref.trait_id(), *method_id)?;
             }

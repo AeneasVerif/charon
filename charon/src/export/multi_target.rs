@@ -597,7 +597,7 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
         }
 
         fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-            if let FnPtrKind::Trait(trait_ref, method_id, _) = fn_ptr.kind.as_ref() {
+            if let FnPtrKind::Trait(trait_ref, method_id) = fn_ptr.kind.as_ref() {
                 (self.0)(Method((trait_ref.trait_id(), *method_id)));
             }
         }
@@ -800,10 +800,8 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
         }
     }
     fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
-        match &mut *x.kind {
-            FnPtrKind::Fun(FunId::Regular(id)) => self.map(id),
-            FnPtrKind::Trait(_, _, id) => self.map(id),
-            _ => {}
+        if let FnPtrKind::Fun(FunId::Regular(id)) = x.kind.as_mut() {
+            self.map(id)
         }
     }
     fn enter_fun_decl(&mut self, x: &mut FunDecl) {
