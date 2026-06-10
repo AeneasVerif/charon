@@ -35,10 +35,6 @@ and body =
       (** A façade body that dispatches to one of several per-target function
           bodies. Created during multi-target merging for functions with the
           same signature but different bodies across targets. *)
-  | TraitMethodWithoutDefaultBody
-      (** The body of the function item we add for each trait method
-          declaration, if the trait doesn't provide a default for that method.
-      *)
   | ExternBody of string
       (** Function declared in an [extern { ... }] block. The string is the
           foreign symbol name. *)

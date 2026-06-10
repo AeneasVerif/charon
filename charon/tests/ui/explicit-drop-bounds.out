@@ -16,24 +16,21 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
-unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
+unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: alloc::string::String::{impl Destruct for String}
 impl "impl_Destruct_for_String" Destruct for String {
-    fn drop_glue<'_0_1> = impl_Destruct_for_String::drop_glue<'_0_1>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
     non-dyn-compatible
 }
 

@@ -17,15 +17,9 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
 
 // Full name: core::clone::TrivialClone
 #[lang_item("trivial_clone")]
@@ -49,7 +43,7 @@ pub trait Copy<Self>
 struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
-pub fn impl_Clone_for_Foo::clone<'_0>(self_1: &'_0 Foo) -> Foo
+pub fn clone<'_0>(self_1: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return
     let self_1: &'1 Foo; // arg #1
@@ -61,7 +55,7 @@ pub fn impl_Clone_for_Foo::clone<'_0>(self_1: &'_0 Foo) -> Foo
 // Full name: test_crate::{impl Clone for Foo}
 impl "impl_Clone_for_Foo" Clone for Foo {
     proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
-    fn clone<'_0_1> = impl_Clone_for_Foo::clone<'_0_1>
+    fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
 

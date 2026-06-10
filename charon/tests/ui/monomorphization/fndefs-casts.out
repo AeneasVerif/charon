@@ -104,7 +104,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c_1: for<'a> foo::<u32><'a>)
     let _5: &'6 u32; // anonymous local
     let _6: &'7 u32; // anonymous local
     let _7: &'8 u32; // anonymous local
-    let _8: &'66 u32; // anonymous local
+    let _8: &'65 u32; // anonymous local
     let _9: u32; // anonymous local
 
     storage_live(_7)
@@ -124,7 +124,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c_1: for<'a> foo::<u32><'a>)
     _5 = &(*_6)
     _4 = &(*_5)
     _3 = (move _4,)
-    _0 = {built_in impl Fn<(&'13 u32,)> for for<'a> foo::<u32><'a>}::call<'61>(move _2, move _3)
+    _0 = {built_in impl Fn<(&'12 u32,)> for for<'a> foo::<u32><'a>}::call<'60>(move _2, move _3)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)

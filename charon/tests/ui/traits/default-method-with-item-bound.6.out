@@ -33,17 +33,10 @@ trait Trait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn consume<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Takes<Self::Item>)> = test_crate::Trait::consume<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1]
+    fn consume<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Takes<Self::Item>)>;
     fn provided<'_0_1, TraitClause0_1: (Self: Trait), TypeConstraint0: Self::Item = bool> = test_crate::Trait::provided<'_0_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
-
-fn test_crate::Trait::consume<'_0, Self, P>(_1: &'_0 Self)
-where
-    TraitClause0: (Self: Trait),
-    TraitClause1: (P: Sized),
-    TraitClause2: (P: Takes<TraitClause0::Item>),
-= <method_without_default_body>
 
 fn test_crate::Trait::provided<'_0, Self>(self_1: &'_0 Self)
 where
@@ -60,7 +53,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1) with_metadata(copy self_1.metadata)
-    _2 = TraitClause0::consume<'4, ()>[{built_in impl Sized for ()}, impl_Takes_bool_for_unit](move _3)
+    _2 = TraitClause0::consume<'3, ()>[{built_in impl Sized for ()}, impl_Takes_bool_for_unit](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -68,7 +61,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for ()}::consume
-fn impl_Trait_for_unit::consume<'_0, P>(self_1: &'_0 ())
+fn consume<'_0, P>(self_1: &'_0 ())
 where
     TraitClause0: (P: Sized),
     TraitClause1: (P: Takes<u32>),
@@ -96,7 +89,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self_1)
-    _2 = impl_Trait_for_unit::consume<'4, ()>[{built_in impl Sized for ()}, impl_Takes_bool_for_unit](move _3)
+    _2 = consume<'3, ()>[{built_in impl Sized for ()}, impl_Takes_bool_for_unit](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -108,7 +101,7 @@ impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
     type Item = u32
-    fn consume<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Takes<u32>)> = impl_Trait_for_unit::consume<'_0_1, P>[TraitClause0_1, TraitClause1_1]
+    fn consume<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: Takes<u32>)> = consume<'_0_1, P>[TraitClause0_1, TraitClause1_1]
     fn provided<'_0_1, TraitClause0_1: ((): Trait), TypeConstraint0: impl_Trait_for_unit::Item = bool> = impl_Trait_for_unit::provided<'_0_1>[TraitClause0_1]
     non-dyn-compatible
 }

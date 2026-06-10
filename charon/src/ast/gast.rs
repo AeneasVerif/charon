@@ -97,9 +97,6 @@ pub enum Body {
         #[serde(with = "SeqHashMapToArray::<TargetTriple, FunDeclRef>")]
         SeqHashMap<TargetTriple, FunDeclRef>,
     ),
-    /// The body of the function item we add for each trait method declaration, if the trait
-    /// doesn't provide a default for that method.
-    TraitMethodWithoutDefault,
     /// Function declared in an `extern { ... }` block. The string is the foreign symbol name.
     Extern(#[drive(skip)] String),
     /// Rust intrinsic function.
@@ -408,10 +405,8 @@ pub struct TraitMethod {
     pub name: TraitItemName,
     pub item_meta: ItemMeta,
     pub signature: FunSig,
-    /// Each method declaration is represented by a function item. That function contains the
-    /// signature of the method as well as information like attributes. It has a body iff the
-    /// method declaration has a default implementation; otherwise it has an `Opaque` body.
-    pub item: FunDeclRef,
+    /// The default method implementation, if there is one.
+    pub default: Option<FunDeclRef>,
 }
 
 /// A trait **implementation**.

@@ -18,18 +18,12 @@ pub trait From<Self, T>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (T: Sized)
-    fn from = core::convert::From::from<Self, T>[Self]
+    fn from;
     non-dyn-compatible
 }
 
-#[lang_item("from_fn")]
-pub fn core::convert::From::from<Self, T>(_1: T) -> Self
-where
-    TraitClause0: (Self: From<T>),
-= <opaque>
-
 // Full name: core::convert::{impl From<T> for T}::from
-pub fn impl_From_for_T::from<T>(_1: T) -> T
+pub fn from<T>(_1: T) -> T
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -41,7 +35,7 @@ where
 {
     proof ImpliedClause0: (T: Sized) = TraitClause0
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    fn from = impl_From_for_T::from<T>[TraitClause0]
+    fn from = from<T>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -86,14 +80,14 @@ where
 = <opaque>
 
 // Full name: core::result::{impl Try for Result<T, E>[TraitClause0, TraitClause1]}::branch
-pub fn impl_Try_for_Result::branch<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> ControlFlow<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1], T>[{built_in impl Sized for Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]}, TraitClause0]
+pub fn branch<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> ControlFlow<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1], T>[{built_in impl Sized for Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]}, TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 = <opaque>
 
 // Full name: core::result::{impl FromResidual<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]> for Result<T, F>[TraitClause0, TraitClause2]}::from_residual
-pub fn impl_FromResidual_Result_for_Result::from_residual<T, E, F>(_1: Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]) -> Result<T, F>[TraitClause0, TraitClause2]
+pub fn from_residual<T, E, F>(_1: Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]) -> Result<T, F>[TraitClause0, TraitClause2]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
@@ -121,7 +115,7 @@ pub fn example(x_1: Result<u32, String>[{built_in impl Sized for u32}, {built_in
     storage_live(_3)
     storage_live(_4)
     _4 = move x_1
-    _3 = impl_Try_for_Result::branch<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}](move _4)
+    _3 = branch<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}](move _4)
     storage_dead(_4)
     match _3 {
         ControlFlow::Continue => {
@@ -131,7 +125,7 @@ pub fn example(x_1: Result<u32, String>[{built_in impl Sized for u32}, {built_in
             residual_5 = move (_3 as variant ControlFlow::Break).0
             storage_live(_6)
             _6 = move residual_5
-            _0 = impl_FromResidual_Result_for_Result::from_residual<u32, String, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}, {built_in impl Sized for String}, impl_From_for_T<String>[{built_in impl Sized for String}]](move _6)
+            _0 = from_residual<u32, String, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}, {built_in impl Sized for String}, impl_From_for_T<String>[{built_in impl Sized for String}]](move _6)
             storage_dead(_6)
             conditional_drop[impl_Destruct_for_Result::drop_glue<'5, Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]] residual_5
             storage_dead(residual_5)

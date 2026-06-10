@@ -1999,7 +1999,6 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
             target_dispatch
         in
         Ok (TargetDispatchBody target_dispatch)
-    | `String "TraitMethodWithoutDefault" -> Ok TraitMethodWithoutDefaultBody
     | `Assoc [ ("Extern", extern) ] ->
         let* extern = string_of_json ctx extern in
         Ok (ExternBody extern)
@@ -2965,13 +2964,13 @@ and trait_method_of_json (ctx : of_json_ctx) (js : json) :
           ("name", name);
           ("item_meta", item_meta);
           ("signature", signature);
-          ("item", item);
+          ("default", default);
         ] ->
         let* name = trait_item_name_of_json ctx name in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* signature = fun_sig_of_json ctx signature in
-        let* item = fun_decl_ref_of_json ctx item in
-        Ok ({ name; item_meta; signature; item } : trait_method)
+        let* default = option_of_json fun_decl_ref_of_json ctx default in
+        Ok ({ name; item_meta; signature; default } : trait_method)
     | _ -> Error "")
 
 and translated_crate_of_json (ctx : of_json_ctx) (js : json) :

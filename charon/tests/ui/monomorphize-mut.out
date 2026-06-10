@@ -121,14 +121,14 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, &_ mut _><'_0_1, '_0, T0>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -146,7 +146,7 @@ pub trait core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitC
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0_1, '_0, T0>[TraitClause0]
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -166,7 +166,7 @@ where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0_1, '_0, T0>[TraitClause0, TraitClause1]
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -184,34 +184,9 @@ where
     TypeOutlives0: T0: '_0,
     TypeOutlives1: T0: '_0,
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, IterMut<_, _>[TraitClause0]><'_0_1, '_0, T0>[TraitClause0]
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_glue::<_, &_ mut _><'_0, '_1, T0>(_1: &'_0 mut &'_1 mut T0)
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_glue::<_, core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, '_1, T0>(_1: &'_0 mut core::option::Option::<&_ mut _><'_1, T0>[TraitClause0])
-where
-    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_1>),
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_glue::<_, core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, '_1, T0>(_1: &'_0 mut core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_1, T0>[TraitClause0, TraitClause1])
-where
-    TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_1>[TraitClause1]),
-    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_1>),
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_glue::<_, IterMut<_, _>[TraitClause0]><'_0, '_1, T0>(_1: &'_0 mut IterMut<'_1, T0>[TraitClause0])
-where
-    TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_1,
-    TypeOutlives1: T0: '_1,
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -230,15 +205,9 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
-
-// Full name: core::ops::function::FnOnce::call_once
-pub extern "rust-call" fn call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]

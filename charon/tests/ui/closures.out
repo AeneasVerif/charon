@@ -28,7 +28,7 @@ pub trait FnOnce<Self, Args, Self_Output>
     proof ImpliedClause1: (Args: Sized)
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self_Output: Sized)
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
 }
 
@@ -40,7 +40,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     proof ImpliedClause1: (Self: FnOnce<Args, Self_Clause1_Output>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args, Self_Clause1_Output>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
@@ -48,7 +48,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -69,29 +69,20 @@ where
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
-
 // Full name: core::clone::impls::{impl Clone for u32}::clone
-pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+pub fn clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u32}
 impl "impl_Clone_for_u32" Clone for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
-    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::ops::function::Fn
 #[lang_item("fn")]
@@ -101,24 +92,9 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     proof ImpliedClause1: (Self: FnMut<Args, Self_Clause1_Clause1_Output>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args, Self_Clause1_Clause1_Output>[Self]
+    fn call<'_0_1>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
-
-pub extern "rust-call" fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(_1: &'_0 Self, _2: Args) -> Clause0_Clause1_Clause1_Output
-where
-    TraitClause0: (Self: Fn<Args, Clause0_Clause1_Clause1_Output>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Clause0_Clause1_Output>(_1: &'_0 mut Self, _2: Args) -> Clause0_Clause1_Output
-where
-    TraitClause0: (Self: FnMut<Args, Clause0_Clause1_Output>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args, Clause0_Output>(_1: Self, _2: Args) -> Clause0_Output
-where
-    TraitClause0: (Self: FnOnce<Args, Clause0_Output>),
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -200,20 +176,20 @@ where
             storage_live(_7)
             _7 = move x_3
             _6 = (move _7,)
-            _4 = TraitClause2::call<'3>(move _5, move _6)
-            conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _7
+            _4 = TraitClause2::call<'2>(move _5, move _6)
+            conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _7
             storage_dead(_7)
             storage_dead(_6)
             storage_dead(_5)
             _0 = Option::Some { 0: move _4 }
-            conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] _4
+            conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] _4
             storage_dead(_4)
-            conditional_drop[{built_in impl Destruct for T}::drop_glue<'13>] x_3
+            conditional_drop[{built_in impl Destruct for T}::drop_glue<'12>] x_3
             storage_dead(x_3)
         },
     }
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'6>] f_2
-    conditional_drop[impl_Destruct_for_Option::drop_glue<'10, T>[TraitClause0]] x_1
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'5>] f_2
+    conditional_drop[impl_Destruct_for_Option::drop_glue<'9, T>[TraitClause0]] x_1
     return
 }
 
@@ -320,8 +296,8 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::closure}::call_on
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_u32::closure}::drop_glue<'5>] _1
+    _0 = {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}::call_mut<'2>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_closure_u32::closure}::drop_glue<'4>] _1
     return
 }
 
@@ -466,8 +442,8 @@ fn {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::ca
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_u32s::closure}::drop_glue<'5>] _1
+    _0 = {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut<'2>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_closure_u32s::closure}::drop_glue<'4>] _1
     return
 }
 
@@ -603,8 +579,8 @@ fn {impl FnOnce<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closu
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_mut<'_0, '9>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_glue<'11>] _1
+    _0 = {impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_mut<'_0, '8>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_glue<'10>] _1
     return
 }
 
@@ -750,8 +726,8 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_mut<'_0, '9, T>[TraitClause0](move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_glue<'11, T>[TraitClause0]] _1
+    _0 = {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_mut<'_0, '8, T>[TraitClause0](move _3, move _2)
+    drop[{impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_glue<'10, T>[TraitClause0]] _1
     return
 }
 
@@ -925,8 +901,8 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '17, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '29, T>[TraitClause0, TraitClause1]] _1
+    _0 = {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '16, T>[TraitClause0, TraitClause1](move _3, move _2)
+    drop[{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '28, T>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -1090,8 +1066,8 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::closure}::call_on
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_map_option2::closure}::drop_glue<'5>] _1
+    _0 = {impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}::call_mut<'2>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_map_option2::closure}::drop_glue<'4>] _1
     return
 }
 
@@ -1233,9 +1209,9 @@ where
 
     storage_live(_2)
     _2 = &x_1
-    _0 = TraitClause1::clone<'3>(move _2)
+    _0 = TraitClause1::clone<'2>(move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x_1
     return
 }
 
@@ -1358,8 +1334,8 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option3::closure}::call_on
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_map_option3::closure}::drop_glue<'5>] _1
+    _0 = {impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::call_mut<'2>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_map_option3::closure}::drop_glue<'4>] _1
     return
 }
 
@@ -1454,7 +1430,7 @@ pub fn test_regions<'a>(x_1: &'a u32) -> u32
     _6 = &x_1
     _5 = &(*_6)
     _4 = (move _5,)
-    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'23, '24, '25>(move _3, move _4)
+    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'22, '23, '24>(move _3, move _4)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -1497,8 +1473,8 @@ fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::cal
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '14>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_regions::closure}::drop_glue<'16>] _1
+    _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '13>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_regions::closure}::drop_glue<'15>] _1
     return
 }
 
@@ -1588,8 +1564,8 @@ fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closur
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '14>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_regions_casted::closure}::drop_glue<'16>] _1
+    _0 = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '13>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_regions_casted::closure}::drop_glue<'15>] _1
     return
 }
 
@@ -1742,7 +1718,7 @@ pub fn test_closure_capture(x_1: u32, y_2: u32) -> u32
     _7 = &(*f_3)
     storage_live(_8)
     _8 = (const 0u32,)
-    _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'25, '26, '27>(move _7, move _8)
+    _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'24, '25, '26>(move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_4)
@@ -1784,8 +1760,8 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, 
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '7>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_glue<'_0, '_1, '17>] _1
+    _0 = {impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '6>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_glue<'_0, '_1, '16>] _1
     return
 }
 
@@ -1847,9 +1823,9 @@ where
     x_3 = move tupled_args_2.0
     storage_live(_4)
     _4 = &x_3
-    _0 = TraitClause1::clone<'5>(move _4)
+    _0 = TraitClause1::clone<'4>(move _4)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] x_3
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x_3
     return
 }
 
@@ -1877,14 +1853,14 @@ where
     storage_live(_6)
     _6 = move x_1
     _5 = (move _6,)
-    _0 = {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'4, T>[TraitClause0, TraitClause1](move _3, move _5)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] _6
+    _0 = {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'3, T>[TraitClause0, TraitClause1](move _3, move _5)
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _6
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_3)
     storage_dead(f_2)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] x_1
     return
 }
 
@@ -1931,8 +1907,8 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call_mut<'3, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'5, T>[TraitClause0, TraitClause1]] _1
+    _0 = {impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call_mut<'2, T>[TraitClause0, TraitClause1](move _3, move _2)
+    drop[{impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'4, T>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -2030,8 +2006,8 @@ fn {impl FnOnce<(i32,), i32> for test_crate::test_array_map::closure}::call_once
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'3>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_array_map::closure}::drop_glue<'5>] _1
+    _0 = {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'2>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_array_map::closure}::drop_glue<'4>] _1
     return
 }
 
@@ -2114,7 +2090,7 @@ fn test_fnmut_with_ref()
     let _8: &'12 usize; // anonymous local
     let _9: &'13 usize; // anonymous local
     let _10: &'15 usize; // anonymous local
-    let _11: &'25 usize; // anonymous local
+    let _11: &'24 usize; // anonymous local
     let _12: usize; // anonymous local
 
     storage_live(_10)
@@ -2142,7 +2118,7 @@ fn test_fnmut_with_ref()
     _8 = &(*_9)
     _7 = &(*_8)
     _6 = (move _7,)
-    _4 = {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'22, '23, '24>(move _5, move _6)
+    _4 = {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'21, '22, '23>(move _5, move _6)
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -2175,8 +2151,8 @@ fn {impl FnOnce<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '10>(move _3, move _2)
-    drop[{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_glue<'_0, '16>] _1
+    _0 = {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '9>(move _3, move _2)
+    drop[{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_glue<'_0, '15>] _1
     return
 }
 

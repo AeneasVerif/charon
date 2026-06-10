@@ -29,16 +29,9 @@ trait Foo<Self, T>
         TraitClause0_1: (U: Sized),
         proof ImpliedClause0: (Self::into_iter_ty<U>[TraitClause0_1]: Sized),
         proof ImpliedClause1: (Self::into_iter_ty<U>[TraitClause0_1]: Trait);
-    fn into_iter<U, TraitClause0_1: (U: Sized)> = into_iter<Self, T, U>[Self, TraitClause0_1]
+    fn into_iter<U, TraitClause0_1: (U: Sized)>;
     non-dyn-compatible
 }
-
-// Full name: test_crate::Foo::into_iter
-fn into_iter<Self, T, U>(_1: Self) -> TraitClause0::into_iter_ty<U>[TraitClause1]
-where
-    TraitClause0: (Self: Foo<T>),
-    TraitClause1: (U: Sized),
-= <method_without_default_body>
 
 
 

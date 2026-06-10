@@ -26,7 +26,7 @@ where
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -70,17 +70,10 @@ where
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1>;
     fn ne<'_0_1, '_1_1> = ne<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
-
-// Full name: core::cmp::PartialEq::eq
-#[lang_item("cmp_partialeq_eq")]
-pub fn eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
-where
-    TraitClause0: (Self: PartialEq<Rhs>),
-= <method_without_default_body>
 
 // Full name: core::cmp::PartialEq::ne
 #[lang_item("cmp_partialeq_ne")]
@@ -100,7 +93,7 @@ where
     _4 = &(*self_1) with_metadata(copy self_1.metadata)
     storage_live(_5)
     _5 = &(*other_2) with_metadata(copy other_2.metadata)
-    _3 = TraitClause0::eq<'8, '9>(move _4, move _5)
+    _3 = TraitClause0::eq<'6, '7>(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ~(move _3)
@@ -177,7 +170,7 @@ pub fn core::num::{i64}::MIN() -> i64
 pub const core::num::{i64}::MIN: i64 = core::num::{i64}::MIN()
 
 // Full name: core::convert::num::{impl From<i32> for i64}::from
-pub fn impl_From_i32_for_i64::from(small_1: i32) -> i64
+pub fn from(small_1: i32) -> i64
 {
     let _0: i64; // return
     let small_1: i32; // arg #1
@@ -244,9 +237,6 @@ pub fn impl_From_i32_for_i64::from(small_1: i32) -> i64
 #[lang_item("phantom_data")]
 pub struct PhantomData<T> {}
 
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <missing>
-
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
   usize is 0usize..=9223372036854775807usize,
@@ -310,7 +300,7 @@ where
 }
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
+unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -423,7 +413,7 @@ fn convert(x_1: i32) -> i64
 
     storage_live(_2)
     _2 = copy x_1
-    _0 = impl_From_i32_for_i64::from(move _2)
+    _0 = from(move _2)
     storage_dead(_2)
     return
 }
@@ -436,7 +426,7 @@ fn vec(_x_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Gl
 
     _0 = ()
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
+    conditional_drop[drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
     return
 }
 

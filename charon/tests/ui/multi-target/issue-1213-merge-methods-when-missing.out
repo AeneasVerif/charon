@@ -33,7 +33,7 @@ where
     proof ImpliedClause3: (Self::IntoIter: core::iter::traits::iterator::Iterator)
     type Item
     type IntoIter
-    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
+    fn into_iter;
     vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
@@ -43,7 +43,7 @@ pub trait core::iter::traits::iterator::Iterator<Self>
     proof ImpliedClause0: (Self: core::marker::MetaSized)
     proof ImpliedClause1: (Self::Item: core::marker::Sized)
     type Item
-    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
+    fn next<'_0_1>;
     fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (Self: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::iter::traits::iterator::Iterator::zip<Self, U>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
@@ -83,12 +83,6 @@ where
     vtable: core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::{vtable}<A, B>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
 }
 
-#[lang_item("into_iter")]
-pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(_1: Self) -> TraitClause0::IntoIter
-where
-    TraitClause0: (Self: core::iter::traits::collect::IntoIterator),
-= <opaque>
-
 pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(_1: I) -> I
 where
     TraitClause0: (I: core::marker::Sized),
@@ -110,12 +104,6 @@ where
     fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>[TraitClause0, TraitClause1]
     vtable: core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::{vtable}<I>[TraitClause0, TraitClause1]
 }
-
-#[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(_1: &'_0 mut Self) -> core::option::Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]
-where
-    TraitClause0: (Self: core::iter::traits::iterator::Iterator),
-= <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::zip<Self, U>(_1: Self, _2: U) -> core::iter::adapters::zip::Zip<Self, TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
 where

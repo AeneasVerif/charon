@@ -21,7 +21,6 @@ struct Item<'c> {
     name_str: String,
     // Not a ref because we do a little hack.
     generics: GenericParams,
-    #[expect(dead_code)]
     kind: ItemRef<'c>,
 }
 
@@ -196,16 +195,6 @@ fn predicate_origins() -> anyhow::Result<()> {
                 (TraitItem(AssocTypeId::ZERO), "Default"),
             ],
         ),
-        // Interesting note: the method definition does not mention the clauses on the trait.
-        (
-            "test_crate::Trait::trait_method",
-            vec![
-                (WhereClauseOnFn, "Trait"),
-                (WhereClauseOnFn, "Sized"),
-                (WhereClauseOnFn, "From"),
-                (WhereClauseOnFn, "From"),
-            ],
-        ),
         (
             "test_crate::<impl Trait for ??>",
             vec![
@@ -243,6 +232,27 @@ fn predicate_origins() -> anyhow::Result<()> {
             assert_eq!(trait_name, expected_trait_name, "failed for {item_name}");
             assert_eq!(&clause.origin, &expected_origin, "failed for {item_name}");
         }
+    }
+
+    // The trait method declaration is not a standalone item anymore, but its
+    // method-level clauses are still stored in the method binder.
+    let trait_decl = &items_by_name["test_crate::Trait"]
+        .kind
+        .as_trait_decl()
+        .unwrap();
+    let method = &trait_decl.methods[TraitMethodId::ZERO];
+    assert_eq!(method.skip_binder.name.0.to_string(), "trait_method");
+    let origins = vec![
+        (WhereClauseOnFn, "Sized"),
+        (WhereClauseOnFn, "From"),
+        (WhereClauseOnFn, "From"),
+    ];
+    let clauses = &method.params.trait_clauses;
+    assert_eq!(origins.len(), clauses.len(), "failed for trait_method");
+    for (clause, (expected_origin, expected_trait_name)) in clauses.iter().zip(origins) {
+        let trait_name = trait_name(&crate_data, clause.trait_.skip_binder.id);
+        assert_eq!(trait_name, expected_trait_name, "failed for trait_method");
+        assert_eq!(&clause.origin, &expected_origin, "failed for trait_method");
     }
 
     Ok(())
@@ -518,10 +528,7 @@ fn rename_attribute() -> anyhow::Result<()> {
         .filter_map(|fun| fun.item_meta.attr_info.rename.as_deref())
         .sorted()
         .collect_vec();
-    assert_eq!(
-        fun_renames,
-        ["BoolFn", "Const_Test", "getTest", "konst", "retTest"]
-    );
+    assert_eq!(fun_renames, ["BoolFn", "Const_Test", "konst", "retTest"]);
 
     assert_eq!(
         crate_data.trait_impls[0]

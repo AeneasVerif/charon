@@ -17,7 +17,6 @@ let get_fun_args (fun_decl : fun_decl) : local list option =
   match fun_decl.body with
   | StructuredBody { locals; _ } | UnstructuredBody { locals; _ } ->
       Some (GAstUtils.locals_get_input_vars locals)
-  | TraitMethodWithoutDefaultBody
   | OpaqueBody
   | MissingBody
   | TargetDispatchBody _
@@ -103,7 +102,6 @@ class ['self] map_crate =
         | StructuredBody body ->
             StructuredBody (self#visit_gexpr_body self#visit_block env body)
         | UnstructuredBody _ -> (* ULLBC in LLBC visitor: ignore *) body
-        | TraitMethodWithoutDefaultBody -> TraitMethodWithoutDefaultBody
         | ExternBody sym -> ExternBody (self#visit_string env sym)
         | IntrinsicBody (name, arg_names) ->
             IntrinsicBody
@@ -253,7 +251,6 @@ class ['self] iter_crate =
       match body with
       | StructuredBody body -> self#visit_expr_body env body
       | UnstructuredBody body -> (* ULLBC in LLBC visitor: ignore *) ()
-      | TraitMethodWithoutDefaultBody -> ()
       | ExternBody sym -> self#visit_string env sym
       | IntrinsicBody (name, arg_names) ->
           self#visit_string env name;

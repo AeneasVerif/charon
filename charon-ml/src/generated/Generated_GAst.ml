@@ -330,11 +330,8 @@ and trait_method = {
   name : trait_item_name;
   item_meta : item_meta;
   signature : fun_sig;
-  item : fun_decl_ref;
-      (** Each method declaration is represented by a function item. That
-          function contains the signature of the method as well as information
-          like attributes. It has a body iff the method declaration has a
-          default implementation; otherwise it has an [Opaque] body. *)
+  default : fun_decl_ref option;
+      (** The default method implementation, if there is one. *)
 }
 [@@deriving
   show,

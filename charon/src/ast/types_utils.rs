@@ -211,7 +211,7 @@ impl<T> Binder<T> {
         Binder {
             params: self.params,
             skip_binder: f(self.skip_binder),
-            kind: self.kind.clone(),
+            kind: self.kind,
         }
     }
 

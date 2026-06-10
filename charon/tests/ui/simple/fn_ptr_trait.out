@@ -17,16 +17,9 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
 
 // Full name: core::marker::Copy
 #[lang_item("copy")]
@@ -44,16 +37,9 @@ pub trait FnPtr<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Copy)
     proof ImpliedClause2: (Self: Clone)
-    fn addr = addr<Self>[Self]
+    fn addr;
     non-dyn-compatible
 }
-
-// Full name: core::marker::FnPtr::addr
-#[lang_item("fn_ptr_addr")]
-pub fn addr<Self>(_1: Self) -> *const ()
-where
-    TraitClause0: (Self: FnPtr),
-= <opaque>
 
 // Full name: test_crate::requires_fn_ptr
 fn requires_fn_ptr<F>()

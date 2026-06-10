@@ -16,12 +16,9 @@ pub trait MetaSized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 struct test_crate::MyTrait::{vtable} {
   size: usize,
@@ -39,20 +36,15 @@ where
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Send)
-    fn foo<'_0_1> = test_crate::MyTrait::foo<'_0_1, Self>[Self]
+    fn foo<'_0_1>;
     vtable: test_crate::MyTrait::{vtable}
 }
-
-pub fn test_crate::MyTrait::foo<'_0, Self>(_1: &'_0 Self)
-where
-    TraitClause0: (Self: MyTrait),
-= <method_without_default_body>
 
 // Full name: test_crate::MyStruct
 pub struct MyStruct {}
 
 // Full name: test_crate::MyStruct::{impl Destruct for MyStruct}::drop_glue
-unsafe fn impl_Destruct_for_MyStruct::drop_glue<'_0>(_1: &'_0 mut MyStruct)
+unsafe fn drop_glue<'_0>(_1: &'_0 mut MyStruct)
 {
     let _0: (); // return
     let _1: &'1 mut MyStruct; // arg #1
@@ -63,12 +55,12 @@ unsafe fn impl_Destruct_for_MyStruct::drop_glue<'_0>(_1: &'_0 mut MyStruct)
 
 // Full name: test_crate::MyStruct::{impl Destruct for MyStruct}
 impl "impl_Destruct_for_MyStruct" Destruct for MyStruct {
-    fn drop_glue<'_0_1> = impl_Destruct_for_MyStruct::drop_glue<'_0_1>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::foo
-pub fn impl_MyTrait_for_MyStruct::foo<'_0>(self_1: &'_0 MyStruct)
+pub fn foo<'_0>(self_1: &'_0 MyStruct)
 {
     let _0: (); // return
     let self_1: &'1 MyStruct; // arg #1
@@ -88,7 +80,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn MyTrait))
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn MyTrait + '1), &'_0 MyStruct>(move _1)
-    _0 = impl_MyTrait_for_MyStruct::foo<'_0>(move _2)
+    _0 = foo<'_0>(move _2)
     return
 }
 
@@ -102,7 +94,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self_1: &'_0 mut (dyn MyTrait))
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<&'_0 mut (dyn MyTrait + '1), &'_0 mut MyStruct>(move dyn_self_1)
-    drop[impl_Destruct_for_MyStruct::drop_glue<'3>] (*target_self_2)
+    drop[drop_glue<'3>] (*target_self_2)
     return
 }
 
@@ -134,7 +126,7 @@ static impl_MyTrait_for_MyStruct::{vtable}: test_crate::MyTrait::{vtable} = impl
 impl "impl_MyTrait_for_MyStruct" MyTrait for MyStruct {
     proof ImpliedClause0: (MyStruct: MetaSized) = {built_in impl MetaSized for MyStruct}
     proof ImpliedClause1: (MyStruct: Send) = {built_in impl Send for MyStruct}
-    fn foo<'_0_1> = impl_MyTrait_for_MyStruct::foo<'_0_1>
+    fn foo<'_0_1> = foo<'_0_1>
     vtable: impl_MyTrait_for_MyStruct::{vtable}
 }
 
@@ -149,7 +141,7 @@ fn main()
     let _5: &'8 (dyn MyTrait + '9); // anonymous local
     let _6: &'10 MyStruct; // anonymous local
     let _7: &'11 MyStruct; // anonymous local
-    let _8: &'19 MyStruct; // anonymous local
+    let _8: &'18 MyStruct; // anonymous local
     let _9: MyStruct; // anonymous local
 
     storage_live(_7)

@@ -29,7 +29,7 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
@@ -41,21 +41,9 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
-
-// Full name: core::ops::function::FnMut::call_mut
-pub extern "rust-call" fn call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
-where
-    TraitClause0: (Self: FnMut<Args>),
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once
-pub extern "rust-call" fn call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <opaque>
 
 // Full name: test_crate::Iterator
 trait Iterator<Self>
@@ -63,7 +51,7 @@ trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(Self::Item,)>), TraitClause2_1: (Self: DoubleEndedIterator), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = ()> = test_crate::Iterator::rposition<'_0_1, Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(Self::Item,)>), TraitClause2_1: (Self: DoubleEndedIterator), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = ()>;
     non-dyn-compatible
 }
 
@@ -75,15 +63,6 @@ trait DoubleEndedIterator<Self>
     non-dyn-compatible
 }
 
-fn test_crate::Iterator::rposition<'_0, Self, P>(_1: &'_0 mut Self)
-where
-    TraitClause0: (Self: Iterator),
-    TraitClause1: (P: Sized),
-    TraitClause2: (P: FnMut<(TraitClause0::Item,)>),
-    TraitClause3: (Self: DoubleEndedIterator),
-    TypeConstraint0: TraitClause2::ImpliedClause1::Output = (),
-= <method_without_default_body>
-
 // Full name: test_crate::Iter
 struct Iter<'a, T>
 where
@@ -94,7 +73,7 @@ where
 }
 
 // Full name: test_crate::{impl Iterator for Iter<'a, T>[TraitClause0]}::rposition
-fn impl_Iterator_for_Iter::rposition<'a, '_1, T, P>(self_1: &'_1 mut Iter<'a, T>[TraitClause0])
+fn rposition<'a, '_1, T, P>(self_1: &'_1 mut Iter<'a, T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (P: Sized),
@@ -118,7 +97,7 @@ where
     proof ImpliedClause0: (Iter<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Iter<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a T: Sized) = {built_in impl Sized for &'a T}
     type Item = &'a T
-    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(TraitClause2_1::ImpliedClause1::Item,)>), TraitClause2_1: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = ()> = impl_Iterator_for_Iter::rposition<'a, '_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    fn rposition<'_0_1, P, TraitClause0_1: (P: Sized), TraitClause1_1: (P: FnMut<(TraitClause2_1::ImpliedClause1::Item,)>), TraitClause2_1: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator), TypeConstraint0: TraitClause1_1::ImpliedClause1::Output = ()> = rposition<'a, '_0_1, T, P>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     non-dyn-compatible
 }
 

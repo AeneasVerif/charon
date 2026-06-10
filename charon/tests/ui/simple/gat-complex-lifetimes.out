@@ -16,28 +16,18 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: test_crate::Foo
 pub trait Foo<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn foo = foo<Self, T>[Self]
+    fn foo;
     vtable: test_crate::Foo::{vtable}<T>
 }
-
-// Full name: test_crate::Foo::foo
-pub fn foo<Self, T>(_1: Self) -> T
-where
-    TraitClause0: (Self: Foo<T>),
-= <method_without_default_body>
 
 // Full name: test_crate::Bar
 pub trait Bar<'a, Self>

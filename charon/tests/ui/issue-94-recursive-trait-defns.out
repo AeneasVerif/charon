@@ -91,7 +91,7 @@ pub trait T7<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: T6<Self>)
-    fn g = g<Self>[Self]
+    fn g;
     non-dyn-compatible
 }
 
@@ -111,12 +111,6 @@ where
     storage_dead(_2)
     return
 }
-
-// Full name: test_crate::T7::g
-pub fn g<Self>(_1: u64)
-where
-    TraitClause0: (Self: T7),
-= <method_without_default_body>
 
 
 

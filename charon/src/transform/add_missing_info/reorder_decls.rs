@@ -386,11 +386,11 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
                     }
                 }
                 for bound_method in methods {
-                    let id = bound_method.skip_binder.item.id;
-                    visitor.insert_node(id); // Still count the item as reachable.
                     let _ = bound_method.params.drive(&mut visitor);
-                    if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                        let _ = decl.signature.drive(&mut visitor);
+                    let _ = bound_method.skip_binder.signature.drive(&mut visitor);
+                    if let Some(funref) = &bound_method.skip_binder.default {
+                        visitor.insert_node(funref.id); // Still count the item as reachable.
+                        let _ = funref.generics.drive(&mut visitor);
                     }
                 }
             }

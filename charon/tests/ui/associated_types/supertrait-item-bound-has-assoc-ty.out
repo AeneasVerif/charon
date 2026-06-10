@@ -34,14 +34,9 @@ pub trait ChildTrait<Self, Self_Clause1_FromParent, Self_Clause1_Clause2_Target>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: ParentTrait<Self_Clause1_FromParent, Self_Clause1_Clause2_Target>)
-    fn convert = test_crate::ChildTrait::convert<Self, Self_Clause1_FromParent, Self_Clause1_Clause2_Target>[Self]
+    fn convert;
     non-dyn-compatible
 }
-
-pub fn test_crate::ChildTrait::convert<Self, Clause0_Clause1_FromParent, Clause0_Clause1_Clause2_Target>(_1: Clause0_Clause1_FromParent) -> Clause0_Clause1_Clause2_Target
-where
-    TraitClause0: (Self: ChildTrait<Clause0_Clause1_FromParent, Clause0_Clause1_Clause2_Target>),
-= <method_without_default_body>
 
 // Full name: test_crate::{impl WithTarget<u32> for u32}
 impl "impl_WithTarget_for_u32" WithTarget<u32> for u32 {
@@ -59,7 +54,7 @@ impl "impl_ParentTrait_for_u32" ParentTrait<u32, u32> for u32 {
 }
 
 // Full name: test_crate::{impl ChildTrait<u32, u32> for u32}::convert
-pub fn impl_ChildTrait_for_u32::convert(x_1: u32) -> u32
+pub fn convert(x_1: u32) -> u32
 {
     let _0: u32; // return
     let x_1: u32; // arg #1
@@ -72,7 +67,7 @@ pub fn impl_ChildTrait_for_u32::convert(x_1: u32) -> u32
 impl "impl_ChildTrait_for_u32" ChildTrait<u32, u32> for u32 {
     proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
     proof ImpliedClause1: (u32: ParentTrait<u32, u32>) = impl_ParentTrait_for_u32
-    fn convert = impl_ChildTrait_for_u32::convert
+    fn convert = convert
     non-dyn-compatible
 }
 

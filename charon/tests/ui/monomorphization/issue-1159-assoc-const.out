@@ -48,14 +48,9 @@ pub trait MyConfig<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     const SLICE_HOLDER : Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}]
-    fn op = test_crate::MyConfig::op<Self>[Self]
+    fn op;
     non-dyn-compatible
 }
-
-pub fn test_crate::MyConfig::op<Self>(_1: u64) -> u64
-where
-    TraitClause0: (Self: MyConfig),
-= <method_without_default_body>
 
 // Full name: test_crate::Concrete
 pub struct Concrete {}

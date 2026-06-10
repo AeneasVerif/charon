@@ -16,18 +16,12 @@ pub trait Sized<Self>
 trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn method<TraitClause0_1: (Self: Sized)> = test_crate::Trait::method<Self>[Self, TraitClause0_1]
+    fn method<TraitClause0_1: (Self: Sized)>;
     vtable: test_crate::Trait::{vtable}
 }
 
-fn test_crate::Trait::method<Self>()
-where
-    TraitClause0: (Self: Trait),
-    TraitClause1: (Self: Sized),
-= <method_without_default_body>
-
 // Full name: test_crate::{impl Trait for ()}::method
-fn impl_Trait_for_unit::method()
+fn method()
 {
     let _0: (); // return
 
@@ -39,7 +33,7 @@ fn impl_Trait_for_unit::method()
 // Full name: test_crate::{impl Trait for ()}
 impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn method<TraitClause0_1: ((): Sized)> = impl_Trait_for_unit::method
+    fn method<TraitClause0_1: ((): Sized)> = method
     vtable: impl_Trait_for_unit::{vtable}
 }
 
@@ -49,7 +43,7 @@ pub fn main()
     let _0: (); // return
 
     _0 = ()
-    _0 = impl_Trait_for_unit::method()
+    _0 = method()
     return
 }
 

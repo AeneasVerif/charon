@@ -277,7 +277,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
                 let body = body.with_ctx(ctx);
                 write!(f, "{{\n{body}{tab}}}")
             }
-            Body::TraitMethodWithoutDefault => write!(f, "= <method_without_default_body>"),
             Body::Extern(name) => write!(f, "= <extern:{name}>"),
             Body::Intrinsic { name, .. } => write!(f, "= <intrinsic:{name}>"),
             Body::Opaque => write!(f, "= <opaque>"),
@@ -628,7 +627,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
             | Body::Extern(..)
             | Body::Missing
             | Body::Opaque
-            | Body::TraitMethodWithoutDefault
             | Body::TargetDispatch(..) => (0..n_args)
                 .map(|i| format!("{}", LocalId::new(i + 1).with_ctx(ctx)))
                 .collect(),
@@ -2112,9 +2110,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
             }
             for method in self.methods() {
                 let name = method.name();
-                let (params, fn_ref) =
-                    method.fmt_split_with(ctx, |ctx, method| method.item.to_string_with_ctx(ctx));
-                writeln!(f, "{TAB_INCR}fn {name}{params} = {fn_ref}")?;
+                let (params, method) =
+                    method.fmt_split_with(ctx, |ctx, method| match &method.default {
+                        Some(fn_ref) => format!(" = {}", fn_ref.to_string_with_ctx(ctx)),
+                        None => format!(";"),
+                    });
+                writeln!(f, "{TAB_INCR}fn {name}{params}{method}")?;
             }
             if let Some(vtb_ref) = &self.vtable {
                 writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?;

@@ -17,24 +17,18 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
-
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn impl_Clone_for_u8::clone<'_0>(_1: &'_0 u8) -> u8
+pub fn clone<'_0>(_1: &'_0 u8) -> u8
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl "impl_Clone_for_u8" Clone for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
+    fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -42,23 +36,17 @@ impl "impl_Clone_for_u8" Clone for u8 {
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
 
-#[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
-where
-    TraitClause0: (Self: PartialEq<Rhs>),
-= <opaque>
-
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}::eq
-pub fn impl_PartialEq_bool_for_bool::eq<'_0, '_1>(_1: &'_0 bool, _2: &'_1 bool) -> bool
+pub fn eq<'_0, '_1>(_1: &'_0 bool, _2: &'_1 bool) -> bool
 = <opaque>
 
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
 impl "impl_PartialEq_bool_for_bool" PartialEq<bool> for bool {
-    fn eq<'_0_1, '_1_1> = impl_PartialEq_bool_for_bool::eq<'_0_1, '_1_1>
+    fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1>
     vtable: impl_PartialEq_bool_for_bool::{vtable}
 }
 
@@ -67,15 +55,9 @@ impl "impl_PartialEq_bool_for_bool" PartialEq<bool> for bool {
 pub trait Default<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn default = core::default::Default::default<Self>[Self]
+    fn default;
     non-dyn-compatible
 }
-
-#[lang_item("default_fn")]
-pub fn core::default::Default::default<Self>() -> Self
-where
-    TraitClause0: (Self: Default),
-= <opaque>
 
 // Full name: core::default::{impl Default for bool}::default
 pub fn impl_Default_for_bool::default() -> bool
@@ -92,13 +74,9 @@ impl "impl_Default_for_bool" Default for bool {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: alloc::string::String
 #[lang_item("String")]
@@ -146,18 +124,12 @@ trait Trait<Self, B, Self_Item>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (B: Sized)
     proof ImpliedClause2: (Self_Item: Sized)
-    fn method<C, TraitClause0_1: (C: Sized)> = test_crate::Trait::method<Self, B, C, Self_Item>[Self, TraitClause0_1]
+    fn method<C, TraitClause0_1: (C: Sized)>;
     non-dyn-compatible
 }
 
-fn test_crate::Trait::method<Self, B, C, Clause0_Item>()
-where
-    TraitClause0: (Self: Trait<B, Clause0_Item>),
-    TraitClause1: (C: Sized),
-= <method_without_default_body>
-
 // Full name: test_crate::{impl Trait<B, (A, B)> for Struct<A>[TraitClause0]}::method
-fn impl_Trait_for_Struct::method<A, B, C>()
+fn method<A, B, C>()
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -183,7 +155,7 @@ where
     proof ImpliedClause0: (Struct<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Struct<A>[TraitClause0]}
     proof ImpliedClause1: (B: Sized) = TraitClause1
     proof ImpliedClause2: ((A, B): Sized) = {built_in impl Sized for (A, B)}
-    fn method<C, TraitClause0_1: (C: Sized)> = impl_Trait_for_Struct::method<A, B, C>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause0_1]
+    fn method<C, TraitClause0_1: (C: Sized)> = method<A, B, C>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause0_1]
     non-dyn-compatible
 }
 
@@ -201,7 +173,7 @@ fn main()
     storage_live(_y_2)
     _y_2 = impl_Default_for_Struct::default<bool>[{built_in impl Sized for bool}, impl_Default_for_bool]()
     storage_live(_3)
-    _3 = impl_Trait_for_Struct::method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, impl_Clone_for_u8, impl_PartialEq_bool_for_bool, {built_in impl Sized for String}]()
+    _3 = method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, impl_Clone_for_u8, impl_PartialEq_bool_for_bool, {built_in impl Sized for String}]()
     storage_dead(_3)
     _0 = ()
     storage_dead(_y_2)

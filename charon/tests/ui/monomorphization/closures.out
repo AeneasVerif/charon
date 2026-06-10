@@ -18,20 +18,9 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -134,10 +123,10 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(f_1: test_crate::main::closure
     _2 = &f_1
     storage_live(_3)
     _3 = (const 0u8,)
-    _0 = impl_Fn_tuple_for_closure<'8>::call<'9>(move _2, move _3)
+    _0 = impl_Fn_tuple_for_closure<'7>::call<'8>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for test_crate::main::closure<'_0>}::drop_glue<'16, '17>] f_1
+    conditional_drop[{impl Destruct for test_crate::main::closure<'_0>}::drop_glue<'15, '16>] f_1
     return
 }
 
@@ -184,10 +173,10 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(f_1: test_crate::main::c
     _2 = &mut f_1
     storage_live(_3)
     _3 = (const 0u8,)
-    _0 = {impl FnMut<(u8,)> for test_crate::main::closure#1<'_0>}<'8>::call_mut<'9>(move _2, move _3)
+    _0 = {impl FnMut<(u8,)> for test_crate::main::closure#1<'_0>}<'7>::call_mut<'8>(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{impl Destruct for test_crate::main::closure#1<'_0>}::drop_glue<'16, '17>] f_1
+    conditional_drop[{impl Destruct for test_crate::main::closure#1<'_0>}::drop_glue<'15, '16>] f_1
     return
 }
 

@@ -52,7 +52,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*x_1)
-    _0 = TraitClause1::method1<'4>(move _2)
+    _0 = TraitClause1::method1<'3>(move _2)
     storage_dead(_2)
     return
 }
@@ -69,7 +69,7 @@ where
     _0 = ()
     storage_live(_2)
     _2 = &(*x_1)
-    _0 = TraitClause1::method2<'4>(move _2)
+    _0 = TraitClause1::method2<'3>(move _2)
     storage_dead(_2)
     return
 }

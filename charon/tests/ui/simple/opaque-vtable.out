@@ -10,17 +10,12 @@ opaque type test_crate::x::Trait::{vtable}
 pub trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn method<'_0_1> = test_crate::x::Trait::method<'_0_1, Self>[Self]
+    fn method<'_0_1>;
     vtable: test_crate::x::Trait::{vtable}
 }
 
-pub fn test_crate::x::Trait::method<'_0, Self>(_1: &'_0 Self)
-where
-    TraitClause0: (Self: Trait),
-= <opaque>
-
 // Full name: test_crate::x::{impl Trait for ()}::method
-pub fn impl_Trait_for_unit::method<'_0>(_1: &'_0 ())
+pub fn method<'_0>(_1: &'_0 ())
 = <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
@@ -33,7 +28,7 @@ static impl_Trait_for_unit::{vtable}: test_crate::x::Trait::{vtable} = impl_Trai
 // Full name: test_crate::x::{impl Trait for ()}
 impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn method<'_0_1> = impl_Trait_for_unit::method<'_0_1>
+    fn method<'_0_1> = method<'_0_1>
     vtable: impl_Trait_for_unit::{vtable}
 }
 

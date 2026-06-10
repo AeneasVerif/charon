@@ -55,7 +55,7 @@ pub fn alloc::string::{String}::new() -> String
 = <opaque>
 
 // Full name: alloc::string::{impl Clone for String}::clone
-pub fn impl_Clone_for_String::clone<'_0>(_1: &'_0 String) -> String
+pub fn clone<'_0>(_1: &'_0 String) -> String
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
@@ -147,7 +147,7 @@ fn foo()
     storage_live(_17)
     storage_live(_18)
     _18 = &string_11
-    _17 = impl_Clone_for_String::clone<'35>(move _18)
+    _17 = clone<'35>(move _18)
     storage_dead(_18)
     _16 = @BoxNew<String>[{built_in impl Sized for String}](move _17)
     _15 = unsize_cast<alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], alloc::boxed::Box<(dyn Display + '38)>[{built_in impl MetaSized for (dyn Display + '39)}, {built_in impl Sized for Global}], &impl_Display_for_String::{vtable}>(move _16)
@@ -161,7 +161,7 @@ fn foo()
     storage_live(_21)
     storage_live(_22)
     _22 = &string_11
-    _21 = impl_Clone_for_String::clone<'53>(move _22)
+    _21 = clone<'53>(move _22)
     storage_dead(_22)
     _20 = alloc::rc::{Rc<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _21)
     _19 = unsize_cast<Rc<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], Rc<(dyn Display + '65)>[{built_in impl MetaSized for (dyn Display + '66)}, {built_in impl Sized for Global}], ?>(move _20)

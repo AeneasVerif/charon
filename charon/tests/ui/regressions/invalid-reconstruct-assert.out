@@ -9,14 +9,14 @@ pub enum Ordering {
 }
 
 // Full name: core::cmp::impls::{impl Ord for u32}::cmp
-pub fn impl_Ord_for_u32::cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Ordering
+pub fn cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Ordering
 = <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -39,9 +39,6 @@ where
     TraitClause1: (T: Destruct),
 = <opaque>
 
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
-
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -59,7 +56,7 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
@@ -71,19 +68,9 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
-
-pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
-where
-    TraitClause0: (Self: FnMut<Args>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <opaque>
 
 // Full name: core::result::Result
 #[lang_item("Result")]
@@ -258,7 +245,7 @@ where
         _15 = &(*_29);
         storage_dead(_29);
         _14 = (copy _15,);
-        cmp_12 = TraitClause2::call_mut<'20>(move _13, move _14) -> bb14 (unwind: bb13);
+        cmp_12 = TraitClause2::call_mut<'19>(move _13, move _14) -> bb14 (unwind: bb13);
     }
 
     bb9: {
@@ -274,7 +261,7 @@ where
         storage_dead(_35);
         storage_dead(index_22);
         _20 = (copy _21,);
-        cmp_18 = TraitClause2::call_mut<'25>(move _19, move _20) -> bb17 (unwind: bb13);
+        cmp_18 = TraitClause2::call_mut<'23>(move _19, move _20) -> bb17 (unwind: bb13);
     }
 
     bb11: {
@@ -287,7 +274,7 @@ where
     }
 
     bb13: {
-        drop[{built_in impl Destruct for F}::drop_glue<'26>] f_2 -> bb18 (unwind: bb19);
+        drop[{built_in impl Destruct for F}::drop_glue<'24>] f_2 -> bb18 (unwind: bb19);
     }
 
     bb14: {
@@ -395,7 +382,7 @@ where
     bb28: {
         storage_dead(cmp_18);
         storage_dead(size_3);
-        drop[{built_in impl Destruct for F}::drop_glue<'27>] f_2 -> bb32 (unwind: bb30);
+        drop[{built_in impl Destruct for F}::drop_glue<'25>] f_2 -> bb32 (unwind: bb30);
     }
 
     bb29: {
@@ -419,7 +406,7 @@ where
 struct closure {}
 
 // Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}::call_mut
-fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args_2: (&'_0 u32,)) -> Ordering
+fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args_2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: &'1 mut closure; // arg #1
@@ -450,7 +437,7 @@ fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled
         _7 = move _8;
         _6 = &(*_7);
         _5 = &(*_6);
-        _0 = impl_Ord_for_u32::cmp<'10, '11>(move _4, move _5) -> bb2 (unwind: bb1);
+        _0 = cmp<'10, '11>(move _4, move _5) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -466,7 +453,7 @@ fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_glue
-unsafe fn impl_Destruct_for_closure::drop_glue<'_0>(_1: &'_0 mut closure)
+unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
 {
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
@@ -478,7 +465,7 @@ unsafe fn impl_Destruct_for_closure::drop_glue<'_0>(_1: &'_0 mut closure)
 }
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}::call_once
-fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
+fn call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: closure; // arg #1
@@ -488,15 +475,15 @@ fn impl_FnOnce_tuple_for_closure::call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -
     bb0: {
         storage_live(_3);
         _3 = &mut _1;
-        _0 = impl_FnMut_tuple_for_closure::call_mut<'_0, '8>(move _3, move _2) -> bb2 (unwind: bb1);
+        _0 = call_mut<'_0, '7>(move _3, move _2) -> bb2 (unwind: bb1);
     }
 
     bb1: {
-        drop[impl_Destruct_for_closure::drop_glue<'9>] _1 -> bb3 (unwind: bb4);
+        drop[drop_glue<'8>] _1 -> bb3 (unwind: bb4);
     }
 
     bb2: {
-        drop[impl_Destruct_for_closure::drop_glue<'10>] _1 -> bb6 (unwind: bb5);
+        drop[drop_glue<'9>] _1 -> bb6 (unwind: bb5);
     }
 
     bb3: {
@@ -523,7 +510,7 @@ impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ u32,)> for closure {
     proof ImpliedClause2: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
     proof ImpliedClause3: (Ordering: Sized) = {built_in impl Sized for Ordering}
     type Output = Ordering
-    fn call_once = impl_FnOnce_tuple_for_closure::call_once<'_0>
+    fn call_once = call_once<'_0>
     non-dyn-compatible
 }
 
@@ -533,7 +520,7 @@ impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_ u32,)> for closure {
     proof ImpliedClause1: (closure: FnOnce<(&'_ u32,)>) = impl_FnOnce_tuple_for_closure<'_0>
     proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
     proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
-    fn call_mut<'_0_1> = impl_FnMut_tuple_for_closure::call_mut<'_0, '_0_1>
+    fn call_mut<'_0_1> = call_mut<'_0, '_0_1>
     non-dyn-compatible
 }
 
@@ -590,7 +577,7 @@ fn main()
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}
 impl "impl_Destruct_for_closure" Destruct for closure {
-    fn drop_glue<'_0_1> = impl_Destruct_for_closure::drop_glue<'_0_1>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
     non-dyn-compatible
 }
 

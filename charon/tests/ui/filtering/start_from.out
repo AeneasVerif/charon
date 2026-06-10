@@ -53,7 +53,7 @@ fn test_crate::hidden_module::do_translate_glob()
 struct Type1 {}
 
 // Full name: test_crate::hidden_module::{impl Trait1 for Type1}::method
-fn impl_Trait1_for_Type1::method()
+fn method()
 {
     let _0: (); // return
 

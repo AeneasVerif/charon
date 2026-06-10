@@ -4,14 +4,9 @@ pub trait core::marker::MetaSized<Self>
 pub trait test_crate::Foo<Self>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)
-    fn method = test_crate::Foo::method<Self>[Self]
+    fn method;
     non-dyn-compatible
 }
-
-pub fn test_crate::Foo::method<Self>() -> u32
-where
-    TraitClause0: (Self: test_crate::Foo),
-= <method_without_default_body>
 
 pub struct test_crate::Struct {}
 

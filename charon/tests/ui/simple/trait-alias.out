@@ -17,27 +17,17 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -62,7 +52,7 @@ trait Trait<Self, T, Self_Item>
 struct Struct {}
 
 // Full name: test_crate::{impl Clone for Struct}::clone
-pub fn impl_Clone_for_Struct::clone<'_0>(self_1: &'_0 Struct) -> Struct
+pub fn clone<'_0>(self_1: &'_0 Struct) -> Struct
 {
     let _0: Struct; // return
     let self_1: &'1 Struct; // arg #1
@@ -74,7 +64,7 @@ pub fn impl_Clone_for_Struct::clone<'_0>(self_1: &'_0 Struct) -> Struct
 // Full name: test_crate::{impl Clone for Struct}
 impl "impl_Clone_for_Struct" Clone for Struct {
     proof ImpliedClause0: (Struct: Sized) = {built_in impl Sized for Struct}
-    fn clone<'_0_1> = impl_Clone_for_Struct::clone<'_0_1>
+    fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -129,12 +119,12 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = TraitClause1::ImpliedClause2::clone<'3>(move _3)
+    _2 = TraitClause1::ImpliedClause2::clone<'2>(move _3)
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _2
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x_1
     return
 }
 

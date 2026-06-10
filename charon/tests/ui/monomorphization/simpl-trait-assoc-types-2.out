@@ -21,12 +21,6 @@ trait Trait<Self>
     vtable: test_crate::Trait::{vtable}
 }
 
-fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<Item = bool>))
-= <method_without_default_body>
-
-fn test_crate::Trait::comsume<'_0>(_1: &'_0 (dyn Trait<Item = u32>))
-= <method_without_default_body>
-
 // Full name: test_crate::{impl Trait for i32}::comsume
 fn impl_Trait_for_i32::comsume<'_0>(self_1: &'_0 i32)
 {
@@ -206,10 +200,10 @@ fn main()
     let _13: unsafe fn(&'8 (dyn Trait<Item = bool> + '9)); // anonymous local
     let _14: unsafe fn(&'18 (dyn Trait<Item = u32> + '19)); // anonymous local
     let _15: &'22 i32; // anonymous local
-    let _16: &'30 usize; // anonymous local
-    let _17: &'38 i32; // anonymous local
+    let _16: &'29 usize; // anonymous local
+    let _17: &'36 i32; // anonymous local
     let _18: i32; // anonymous local
-    let _19: &'39 usize; // anonymous local
+    let _19: &'37 usize; // anonymous local
     let _20: usize; // anonymous local
 
     storage_live(_15)
@@ -250,7 +244,7 @@ fn main()
     _11 = move _16
     _8 = &(*_11)
     _7 = &(*_8)
-    b_6 = unsize_cast<&'16 usize, &'31 (dyn Trait<Item = u32> + '32), &impl_Trait_for_usize::{vtable}>(move _7)
+    b_6 = unsize_cast<&'16 usize, &'30 (dyn Trait<Item = u32> + '31), &impl_Trait_for_usize::{vtable}>(move _7)
     storage_dead(_7)
     storage_dead(_8)
     storage_live(_9)
