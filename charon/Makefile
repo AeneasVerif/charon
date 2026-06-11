@@ -22,11 +22,15 @@ test-noclippy:
 clippy:
 	cargo clippy --all-targets --fix --allow-dirty
 
-.PHONY: generate-rust
-generate-rust:
+.PHONY: generate-asts
+generate-asts:
 	cargo build --bins
-	cargo run --bin generate-rust
+	cargo run --bin generate-asts
 	cargo fmt
+
+.PHONY: generate-asts-keep-llbc
+generate-asts-keep-llbc:
+	CHARON_GENERATE_REUSE_LLBC=1 $(MAKE) generate-asts
 
 .PHONY: test-popular-crates
 test-popular-crates:

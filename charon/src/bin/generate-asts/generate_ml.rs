@@ -1,10 +1,9 @@
 //! Generate ocaml deserialization code for our types.
 //!
 //! This binary runs charon on itself and generates the appropriate `<type>_of_json` functions for
-//! our types. The generated functions are inserted into `./generate-ml/GAstOfJson.template.ml` to
-//! construct the final `GAstOfJson.ml`.
+//! our types. The generated functions are inserted into the templates in this directory.
 //!
-//! To run it, call `cargo run --bin generate-ml`. It is also run by `make generate-ml` in the
+//! To run it, call `cargo run --bin generate-asts`. It is also run by `make generate-asts` in the
 //! crate root. Don't forget to format the output code after regenerating.
 
 use anyhow::{Context, Result, bail};
@@ -17,12 +16,16 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::to_ocaml_ty::DeriveVisitors;
-use crate::util::*;
+use self::to_ocaml_ty::DeriveVisitors;
+use self::util::*;
 
+#[path = "of_json.rs"]
 mod of_json;
+#[path = "of_postcard.rs"]
 mod of_postcard;
+#[path = "to_ocaml_ty.rs"]
 mod to_ocaml_ty;
+#[path = "util.rs"]
 mod util;
 
 struct GenerateCtx<'a> {
@@ -128,10 +131,13 @@ impl GenerateCodeFor {
     }
 }
 
-fn main() -> Result<()> {
-    let dir = PathBuf::from("src/bin/generate-ml");
-    let charon_llbc = dir.join("charon-itself.ullbc");
-    let reuse_llbc = std::env::var("CHARON_ML_REUSE_LLBC").is_ok(); // Useful when developping
+pub(crate) fn main() -> Result<()> {
+    let dir = PathBuf::from("src/bin/generate-asts");
+    let generated_dir = dir.join("generated");
+    fs::create_dir_all(&generated_dir)
+        .with_context(|| format!("Failed to create {}", generated_dir.display()))?;
+    let charon_llbc = generated_dir.join("charon-itself.ullbc");
+    let reuse_llbc = std::env::var("CHARON_GENERATE_REUSE_LLBC").is_ok();
     if !reuse_llbc {
         // Call charon on itself
         let mut cmd = Command::cargo_bin("charon")?;
@@ -162,7 +168,7 @@ fn main() -> Result<()> {
     let crate_data: TranslatedCrate =
         charon_lib::deserialize_llbc_with_format(&charon_llbc, SerializationFormat::Json)?;
     let output_dir = if std::env::var("IN_CI").as_deref() == Ok("1") {
-        dir.join("generated")
+        generated_dir
     } else {
         dir.join("../../../../charon-ml/src/generated")
     };

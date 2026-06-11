@@ -19,7 +19,7 @@ let
       (craneLib.filterCargoSources path type)
       || (lib.hasPrefix (toString ../charon/rust-toolchain) path) # We read it at compile-time
       || (lib.hasPrefix (toString ../charon/tests) path && !lib.hasSuffix ".llbc" path)
-      || (lib.hasPrefix (toString ../charon/src/bin/generate-ml) path && !lib.hasSuffix ".llbc" path);
+      || (lib.hasPrefix (toString ../charon/src/bin/generate-asts) path && !lib.hasSuffix ".llbc" path);
   };
 
   craneArgs = {
@@ -61,18 +61,18 @@ craneLib.buildPackage (
     checkPhaseCargoCommand = ''
       ${lib.optionalString (miriSysroots != null) ''export CHARON_MIRI_SYSROOTS="${miriSysroots}"''}
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
-      # We also re-generate the ocaml files.
-      mkdir src/bin/generate-ml/generated
-      CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo run --release --locked --bin generate-ml
+      # We also re-generate the generated AST files.
+      mkdir -p src/bin/generate-asts/generated
+      CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo run --release --locked --bin generate-asts
 
       # While running tests we also outputted llbc files. We export them for charon-ml tests.
       mkdir -p $out
       cp -r tests/ui $out/tests-llbc
-      cp src/bin/generate-ml/charon-itself.ullbc $out/tests-llbc
+      cp src/bin/generate-asts/generated/charon-itself.ullbc $out/tests-llbc
 
       # Export the generated files to later check if they match the committed files.
       mkdir -p $out/generated-ml
-      cp src/bin/generate-ml/generated/*.ml $out/generated-ml
+      cp src/bin/generate-asts/generated/*.ml $out/generated-ml
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;

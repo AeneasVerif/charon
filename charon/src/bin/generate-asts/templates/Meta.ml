@@ -4,8 +4,8 @@
 
     `templates/Meta.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
-    definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`.
+    definitions by running `make generate-asts` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-asts`.
  *)
 
 
