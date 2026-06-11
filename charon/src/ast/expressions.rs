@@ -658,7 +658,7 @@ pub enum ConstantExprKind {
     ///
     /// We eliminate this case in a micro-pass.
     #[drive(skip)]
-    PtrNoProvenance(u128),
+    PtrNoProvenance(#[serde(with = "crate::ast::values_utils::scalar_value_ser_de")] u128),
     /// Raw memory value obtained from constant evaluation. Used when a more structured
     /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
     #[drive(skip)]
