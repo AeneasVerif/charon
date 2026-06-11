@@ -70,13 +70,6 @@ pub enum ConstantExprKind {
         mutability: Mutability,
         arg: ConstantExpr,
     },
-    /// A cast `<source> as <type>`, `<type>` is stored as the type of
-    /// the current constant expression. Currently, this is only used
-    /// to represent `lit as *mut T` or `lit as *const T`, where `lit`
-    /// is a `usize` literal.
-    Cast {
-        source: ConstantExpr,
-    },
     ConstRef {
         id: ParamConst,
     },
