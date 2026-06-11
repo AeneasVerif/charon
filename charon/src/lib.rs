@@ -26,7 +26,12 @@
 )]
 // For when we use charon on itself :3
 #![cfg_attr(feature = "charon_on_charon", feature(register_tool))]
+#![cfg_attr(feature = "charon_on_charon", feature(rustc_private))]
 #![cfg_attr(feature = "charon_on_charon", register_tool(charon))]
+
+#[cfg(feature = "charon_on_charon")]
+#[allow(unused_extern_crates)]
+extern crate rustc_hir;
 
 #[macro_use]
 pub mod ids;

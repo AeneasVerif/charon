@@ -1,20 +1,17 @@
 //! Generate Rust definitions and translation code for rustc's parsed attributes.
 //!
-//! This binary runs Charon on `rustc_hir::attrs::AttributeKind`, then uses the translated type
-//! declarations to generate Charon-owned attribute types and rustc-to-Charon conversion code.
+//! This uses the translated `rustc_hir::attrs::AttributeKind` type declarations to generate
+//! Charon-owned attribute types and rustc-to-Charon conversion code.
 
 use anyhow::{Context, Result, bail};
-use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
-use charon_lib::options::SerializationFormat;
 use convert_case::{Case, Casing};
 use itertools::Itertools;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
-use std::process::Command;
 
-const ATTRIBUTE_KIND: &str = "rustc_hir::attrs::data_structures::AttributeKind";
+pub(crate) const ATTRIBUTE_KIND: &str = "rustc_hir::attrs::data_structures::AttributeKind";
 
 /// Hand-selected list of attributes that feel user-facing enough and stable enough to expose.
 /// Some of this info is better represented somewhere else, e.g. `repr` stuff belongs in `Layout`.
@@ -39,52 +36,10 @@ const ATTRIBUTE_KIND_VARIANTS: &[&str] = &[
     "TrackCaller",
 ];
 
-pub(crate) fn main() -> Result<()> {
-    let crate_data = translate_rustc_attributes()?;
-    let generator = Generator::new(&crate_data)?;
+pub(crate) fn generate(crate_data: &TranslatedCrate) -> Result<()> {
+    let generator = Generator::new(crate_data)?;
     generator.write_files()?;
     Ok(())
-}
-
-fn translate_rustc_attributes() -> Result<TranslatedCrate> {
-    let temp_dir = tempfile::tempdir().context("failed to create temp dir")?;
-    let rust_file = temp_dir.path().join("rustc_hir_attr.rs");
-    let llbc_file = temp_dir.path().join("rustc_hir_attr.ullbc");
-    fs::write(
-        &rust_file,
-        indoc::indoc! {r#"
-            #![feature(rustc_private)]
-            extern crate rustc_hir;
-            use rustc_hir::attrs::AttributeKind;
-
-            fn main() {
-                let _ = core::mem::size_of::<AttributeKind>();
-            }
-        "#},
-    )
-    .context("failed to write temporary rustc_hir input")?;
-
-    let mut cmd = Command::cargo_bin("charon")?;
-    cmd.arg("rustc");
-    cmd.arg("--ullbc");
-    cmd.arg("--hide-marker-traits");
-    cmd.arg("--hide-allocator");
-    cmd.arg("--treat-box-as-builtin");
-    cmd.arg(format!("--start-from={ATTRIBUTE_KIND}"));
-    cmd.arg("--sysroot=default");
-    cmd.arg("--dest-file");
-    cmd.arg(&llbc_file);
-    cmd.arg("--");
-    cmd.arg(&rust_file);
-
-    let output = cmd.output().context("failed to run Charon on rustc_hir")?;
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        bail!("failed to translate rustc_hir attributes:\n{stderr}");
-    }
-
-    charon_lib::deserialize_llbc_with_format(&llbc_file, SerializationFormat::Json)
-        .context("failed to deserialize generated rustc_hir ULLBC")
 }
 
 struct Generator<'a> {

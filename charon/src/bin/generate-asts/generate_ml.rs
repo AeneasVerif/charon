@@ -1,20 +1,18 @@
-//! Generate ocaml deserialization code for our types.
+//! Generate OCaml deserialization code for our types.
 //!
-//! This binary runs charon on itself and generates the appropriate `<type>_of_json` functions for
-//! our types. The generated functions are inserted into the templates in this directory.
+//! This uses Charon's translated AST definitions to generate the appropriate `<type>_of_json`
+//! functions for our types. The generated functions are inserted into the templates in this
+//! directory.
 //!
 //! To run it, call `cargo run --bin generate-asts`. It is also run by `make generate-asts` in the
 //! crate root. Don't forget to format the output code after regenerating.
 
-use anyhow::{Context, Result, bail};
-use assert_cmd::cargo::CommandCargoExt;
+use anyhow::{Context, Result};
 use charon_lib::ast::*;
-use charon_lib::options::SerializationFormat;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::PathBuf;
-use std::process::Command;
 
 use self::to_ocaml_ty::DeriveVisitors;
 use self::util::*;
@@ -131,52 +129,8 @@ impl GenerateCodeFor {
     }
 }
 
-pub(crate) fn main() -> Result<()> {
-    let dir = PathBuf::from("src/bin/generate-asts");
-    let generated_dir = dir.join("generated");
-    fs::create_dir_all(&generated_dir)
-        .with_context(|| format!("Failed to create {}", generated_dir.display()))?;
-    let charon_llbc = generated_dir.join("charon-itself.ullbc");
-    let reuse_llbc = std::env::var("CHARON_GENERATE_REUSE_LLBC").is_ok();
-    if !reuse_llbc {
-        // Call charon on itself
-        let mut cmd = Command::cargo_bin("charon")?;
-        cmd.arg("cargo");
-        cmd.arg("--hide-marker-traits");
-        cmd.arg("--hide-allocator");
-        cmd.arg("--treat-box-as-builtin");
-        cmd.arg("--ullbc");
-        cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
-        cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
-        cmd.arg("--exclude=charon_lib::common::hash_by_addr::HashByAddr");
-        cmd.arg("--unbind-item-vars");
-        cmd.arg("--sysroot=default");
-        cmd.arg("--dest-file");
-        cmd.arg(&charon_llbc);
-        cmd.arg("--");
-        cmd.arg("--lib");
-        cmd.arg("--features");
-        cmd.arg("charon_on_charon");
-        let output = cmd.output()?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8(output.stderr.clone())?;
-            bail!("Compilation failed: {stderr}")
-        }
-    }
-
-    let crate_data: TranslatedCrate =
-        charon_lib::deserialize_llbc_with_format(&charon_llbc, SerializationFormat::Json)?;
-    let output_dir = if std::env::var("IN_CI").as_deref() == Ok("1") {
-        generated_dir
-    } else {
-        dir.join("../../../../charon-ml/src/generated")
-    };
-    generate_ml(crate_data, dir.join("templates"), output_dir)
-}
-
-fn generate_ml(
-    crate_data: TranslatedCrate,
+pub(crate) fn generate(
+    crate_data: &TranslatedCrate,
     template_dir: PathBuf,
     output_dir: PathBuf,
 ) -> anyhow::Result<()> {
@@ -200,7 +154,7 @@ fn generate_ml(
         ("charon_lib::ast::llbc_ast::Block", ("Generated_LlbcAst", "Llbc")),
     ];
 
-    let mut ctx = GenerateCtx::new(&crate_data, ambiguous_types);
+    let mut ctx = GenerateCtx::new(crate_data, ambiguous_types);
 
     // Compute type sets for json deserializers.
     let mut gast_types: HashSet<TypeDeclId> = HashSet::new();
