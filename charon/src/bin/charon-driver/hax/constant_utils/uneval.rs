@@ -222,14 +222,8 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
             }
         }
         (ty::ValTreeKind::Leaf(x), ty::RawPtr(_, _)) => {
-            use rustc_type_ir::inherent::Ty;
             let raw_address = x.to_bits_unchecked();
-            let uint_ty = UintTy::Usize;
-            let usize_ty = rustc_middle::ty::Ty::new_usize(s.base().tcx).sinto(s);
-            let lit = ConstantLiteral::Int(ConstantInt::Uint(raw_address, uint_ty));
-            ConstantExprKind::Cast {
-                source: ConstantExprKind::Literal(lit).decorate(usize_ty, span.sinto(s)),
-            }
+            ConstantExprKind::Literal(ConstantLiteral::PtrNoProvenance(raw_address))
         }
         (ty::ValTreeKind::Leaf(x), _) => {
             ConstantExprKind::Literal(scalar_int_to_constant_literal(s, *x, ty))

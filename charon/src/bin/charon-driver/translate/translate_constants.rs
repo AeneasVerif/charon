@@ -150,14 +150,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
                 ConstantExprKind::Ref(Box::new(val), metadata)
             }
-            hax::ConstantExprKind::Cast { .. } => {
-                register_error!(
-                    self,
-                    span,
-                    "Unsupported constant: `ConstantExprKind::Cast {{..}}`",
-                );
-                ConstantExprKind::Opaque("`ConstantExprKind::Cast {{..}}`".into())
-            }
             hax::ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr(span, arg)?;
                 let rk = RefKind::mutable(mutability.is_mut());

@@ -1,4 +1,3 @@
-//@ known-failure
 //@ no-default-options
 //@ charon-args=--raw-consts
 

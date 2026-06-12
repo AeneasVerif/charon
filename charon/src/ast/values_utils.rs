@@ -257,6 +257,20 @@ pub(crate) mod scalar_value_ser_de {
         serializer.serialize_str(&val.to_string())
     }
 
+    /// Stateful variant for types that derive `SerializeState`: the state is irrelevant for a
+    /// scalar, so we delegate to the stateless [`serialize`].
+    pub fn serialize_state<S, State: ?Sized, V>(
+        val: &V,
+        _state: &State,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+        V: ToString,
+    {
+        serialize(val, serializer)
+    }
+
     pub fn deserialize<'de, D, V>(deserializer: D) -> Result<V, D::Error>
     where
         D: Deserializer<'de>,
@@ -282,6 +296,19 @@ pub(crate) mod scalar_value_ser_de {
             }
         }
         deserializer.deserialize_str(Visitor { _val: PhantomData })
+    }
+
+    /// Stateful variant for types that derive `DeserializeState`: the state is irrelevant for a
+    /// scalar, so we delegate to the stateless [`deserialize`].
+    pub fn deserialize_state<'de, D, State: ?Sized, V>(
+        _state: &State,
+        deserializer: D,
+    ) -> Result<V, D::Error>
+    where
+        D: Deserializer<'de>,
+        V: FromStr,
+    {
+        deserialize(deserializer)
     }
 }
 

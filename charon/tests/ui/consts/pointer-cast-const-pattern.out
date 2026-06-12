@@ -1,7 +1,41 @@
-error: Unsupported constant: `ConstantExprKind::Cast {..}`
- --> tests/ui/consts/pointer-cast-const-pattern.rs:9:9
-  |
-9 |         DISGUISED_INT => {}
-  |         ^^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: test_crate::DISGUISED_INT
+fn DISGUISED_INT() -> *const ()
+{
+    let _0: *const (); // return
+    let _1: *const (); // anonymous local
+
+    storage_live(_1)
+    _1 = cast<i32, *const ()>(const 42i32)
+    _0 = copy _1
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::DISGUISED_INT
+const DISGUISED_INT: *const () = DISGUISED_INT()
+
+// Full name: test_crate::pointer_pattern
+pub fn pointer_pattern()
+{
+    let _0: (); // return
+    let _1: *const (); // anonymous local
+    let _2: bool; // anonymous local
+
+    storage_live(_2)
+    _0 = ()
+    storage_live(_1)
+    _1 = cast<usize, *const ()>(const 43usize)
+    _2 = const no-provenance 42 == copy _1
+    if move _2 {
+        _0 = const ()
+    } else {
+        _0 = const ()
+    }
+    storage_dead(_1)
+    return
+}
+
+
+
