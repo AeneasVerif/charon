@@ -177,6 +177,10 @@ and cli_options = {
           information. *)
   reconstruct_asserts : bool;
       (** Replace [if x { panic() }] with [assert(x)]. *)
+  reconstruct_null_checks : bool;
+      (** Replace the [transmute::<*T, usize>(p)] that rustc emits when lowering
+          pointer null-checks (e.g. [<*const T>::is_null]) with a comparison
+          against the null pointer. *)
   unbind_item_vars : bool;
       (** Use [DeBruijnVar::Free] for the variables bound in item signatures,
           instead of [DeBruijnVar::Bound] everywhere. This simplifies the

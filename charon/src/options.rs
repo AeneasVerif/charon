@@ -233,6 +233,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_asserts: bool,
+    /// Replace the `transmute::<*T, usize>(p)` that rustc emits when lowering pointer null-checks
+    /// (e.g. `<*const T>::is_null`) with a comparison against the null pointer.
+    #[clap(long)]
+    #[serde(default)]
+    pub reconstruct_null_checks: bool,
     /// Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of
     /// `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects
     /// that don't intend to manipulate them too much.
@@ -620,6 +625,9 @@ pub struct TranslateOptions {
     pub reconstruct_fallible_operations: bool,
     /// Replace `if x { panic() }` with `assert(x)`.
     pub reconstruct_asserts: bool,
+    /// Replace the `transmute::<*T, usize>(p)` that rustc emits for pointer null-checks with a
+    /// comparison against the null pointer.
+    pub reconstruct_null_checks: bool,
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
     pub unbind_item_vars: bool,
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
@@ -772,6 +780,7 @@ impl TranslateOptions {
             unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,
+            reconstruct_null_checks: options.reconstruct_null_checks,
             lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,

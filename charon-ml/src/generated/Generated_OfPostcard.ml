@@ -1816,6 +1816,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* unsized_strings = bool_of_postcard ctx st in
      let* reconstruct_fallible_operations = bool_of_postcard ctx st in
      let* reconstruct_asserts = bool_of_postcard ctx st in
+     let* reconstruct_null_checks = bool_of_postcard ctx st in
      let* unbind_item_vars = bool_of_postcard ctx st in
      let* print_original_ullbc = bool_of_postcard ctx st in
      let* print_ullbc = bool_of_postcard ctx st in
@@ -1867,6 +1868,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           unsized_strings;
           reconstruct_fallible_operations;
           reconstruct_asserts;
+          reconstruct_null_checks;
           unbind_item_vars;
           print_original_ullbc;
           print_ullbc;

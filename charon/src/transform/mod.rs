@@ -38,6 +38,7 @@ pub mod resugar {
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
+    pub mod reconstruct_ptr_null_checks;
     pub mod reconstruct_vec_boxes;
 }
 
@@ -161,6 +162,9 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&resugar::reconstruct_intrinsics::Transform),
         // Reconstruct the asserts
         CowBox::Borrowed(&resugar::reconstruct_asserts::Transform),
+        // # Micro pass: when a pointer is transmuted only to check if it is null, replace the
+        // transmutation with a comparison against the null pointer.
+        CowBox::Borrowed(&resugar::reconstruct_ptr_null_checks::Transform),
         // Desugar the constants to other values/operands as much as possible.
         CowBox::Borrowed(&simplify_output::simplify_constants::Transform),
         // Introduce intermediate assignments in preparation of the [`index_to_function_calls`]

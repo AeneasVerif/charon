@@ -135,6 +135,9 @@ Options:
       --reconstruct-asserts
           Replace `if x { panic() }` with `assert(x)`
 
+      --reconstruct-null-checks
+          Replace the `transmute::<*T, usize>(p)` that rustc emits when lowering pointer null-checks (e.g. `<*const T>::is_null`) with a comparison against the null pointer
+
       --unbind-item-vars
           Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects that don't intend to manipulate them too much
 

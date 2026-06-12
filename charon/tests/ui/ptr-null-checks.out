@@ -1,0 +1,109 @@
+# Final LLBC before serialization:
+
+// Full name: core::num::{usize}::wrapping_add
+pub fn wrapping_add(_1: usize, _2: usize) -> usize
+= <opaque>
+
+// Full name: test_crate::check_raw
+pub fn check_raw(p_1: *mut u8) -> u32
+{
+    let _0: u32; // return
+    let p_1: *mut u8; // arg #1
+    let x_2: usize; // local
+    let _3: *mut u8; // anonymous local
+    let _4: bool; // anonymous local
+    let _5: *mut u8; // anonymous local
+
+    storage_live(x_2)
+    storage_live(_3)
+    _3 = copy p_1
+    storage_live(_4)
+    storage_live(_5)
+    _5 = cast<usize, *mut u8>(const 0usize)
+    _4 = move _3 != move _5
+    x_2 = cast<bool, usize>(move _4)
+    storage_dead(_4)
+    storage_dead(_3)
+    switch copy x_2 {
+        0usize => {
+            _0 = const 1u32
+        },
+        _ => {
+            _0 = const 2u32
+        },
+    }
+    storage_dead(x_2)
+    return
+}
+
+// Full name: test_crate::check_ref
+pub fn check_ref<'_0>(p_1: &'_0 u8) -> u32
+{
+    let _0: u32; // return
+    let p_1: &'1 u8; // arg #1
+    let x_2: isize; // local
+    let _3: &'2 u8; // anonymous local
+    let _4: bool; // anonymous local
+    let _5: &'2 u8; // anonymous local
+
+    storage_live(x_2)
+    storage_live(_3)
+    _3 = copy p_1
+    storage_live(_4)
+    storage_live(_5)
+    _5 = cast<usize, &'2 u8>(const 0usize)
+    _4 = move _3 != move _5
+    x_2 = cast<bool, isize>(move _4)
+    storage_dead(_4)
+    storage_dead(_3)
+    switch copy x_2 {
+        0isize => {
+            _0 = const 1u32
+        },
+        _ => {
+            _0 = const 2u32
+        },
+    }
+    storage_dead(x_2)
+    return
+}
+
+// Full name: test_crate::other_use
+pub fn other_use(p_1: *mut u8) -> usize
+{
+    let _0: usize; // return
+    let p_1: *mut u8; // arg #1
+    let x_2: usize; // local
+    let _3: *mut u8; // anonymous local
+    let y_4: usize; // local
+    let _5: usize; // anonymous local
+    let _6: usize; // anonymous local
+
+    storage_live(x_2)
+    storage_live(_3)
+    _3 = copy p_1
+    x_2 = transmute<*mut u8, usize>(move _3)
+    storage_dead(_3)
+    storage_live(y_4)
+    switch copy x_2 {
+        0usize => {
+            y_4 = const 1usize
+        },
+        _ => {
+            y_4 = const 2usize
+        },
+    }
+    storage_live(_5)
+    _5 = copy x_2
+    storage_live(_6)
+    _6 = copy y_4
+    _0 = wrapping_add(move _5, move _6)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(y_4)
+    storage_dead(x_2)
+    return
+}
+
+
+

@@ -117,6 +117,21 @@ impl Operand {
             Operand::Const(constant_expr) => &constant_expr.ty,
         }
     }
+
+    pub fn is_zero_constant(&self) -> bool {
+        matches!(
+            self,
+            Operand::Const(c) if matches!(&c.kind, ConstantExprKind::Literal(lit) if lit.is_zero())
+        )
+    }
+
+    /// If this operand is a copy/move of an unprojected local, return that local. Otherwise, return `None`.
+    pub fn as_local(&self) -> Option<LocalId> {
+        match self {
+            Operand::Copy(p) | Operand::Move(p) => p.as_local(),
+            Operand::Const(_) => None,
+        }
+    }
 }
 
 impl Rvalue {

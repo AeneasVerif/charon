@@ -46,6 +46,10 @@ impl Literal {
             _ => None,
         }
     }
+
+    pub fn is_zero(&self) -> bool {
+        matches!(self, Literal::Scalar(scalar) if scalar.to_bits() == 0)
+    }
 }
 
 impl ScalarValue {
