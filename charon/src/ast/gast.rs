@@ -383,7 +383,6 @@ pub struct TraitDecl {
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitAssocConst {
     pub name: TraitItemName,
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub attr_info: AttrInfo,
     pub ty: Ty,
@@ -394,7 +393,6 @@ pub struct TraitAssocConst {
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitAssocTy {
     pub name: TraitItemName,
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub attr_info: AttrInfo,
     pub default: Option<TraitAssocTyImpl>,
@@ -406,7 +404,6 @@ pub struct TraitAssocTy {
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitMethod {
     pub name: TraitItemName,
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub attr_info: AttrInfo,
     pub signature: FunSig,

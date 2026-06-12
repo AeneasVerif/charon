@@ -1,6 +1,7 @@
 //! Meta-information about programs (spans, etc.).
 
 pub use super::meta_utils::*;
+use crate::ast::attributes::BuiltinAttr;
 use crate::names::Name;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
@@ -130,6 +131,8 @@ pub enum Attribute {
     /// The structure is treated as a transparent wrapper around its sole field.
     /// Written `#[charon::transparent]`.
     Transparent,
+    /// A parsed built-in rustc attribute.
+    Builtin(BuiltinAttr),
     /// A doc-comment such as `/// ...`.
     DocComment(String),
     /// A non-charon-specific attribute.
@@ -224,7 +227,6 @@ pub struct ItemMeta {
     #[drive(skip)]
     pub source_text: Option<String>,
     /// Attributes and visibility.
-    #[drive(skip)]
     pub attr_info: AttrInfo,
     /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.
     #[drive(skip)]

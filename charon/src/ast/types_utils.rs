@@ -505,6 +505,17 @@ impl GenericArgs {
 }
 
 impl IntTy {
+    pub fn name(&self) -> &'static str {
+        match self {
+            IntTy::Isize => "isize",
+            IntTy::I8 => "i8",
+            IntTy::I16 => "i16",
+            IntTy::I32 => "i32",
+            IntTy::I64 => "i64",
+            IntTy::I128 => "i128",
+        }
+    }
+
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
     pub fn target_size(&self, ptr_size: ByteCount) -> usize {
@@ -519,6 +530,17 @@ impl IntTy {
     }
 }
 impl UIntTy {
+    pub fn name(&self) -> &'static str {
+        match self {
+            UIntTy::Usize => "usize",
+            UIntTy::U8 => "u8",
+            UIntTy::U16 => "u16",
+            UIntTy::U32 => "u32",
+            UIntTy::U64 => "u64",
+            UIntTy::U128 => "u128",
+        }
+    }
+
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
     pub fn target_size(&self, ptr_size: ByteCount) -> usize {
@@ -533,6 +555,15 @@ impl UIntTy {
     }
 }
 impl FloatTy {
+    pub fn name(&self) -> &'static str {
+        match self {
+            FloatTy::F16 => "f16",
+            FloatTy::F32 => "f32",
+            FloatTy::F64 => "f64",
+            FloatTy::F128 => "f128",
+        }
+    }
+
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
     pub fn target_size(&self) -> usize {
@@ -569,6 +600,16 @@ impl IntegerTy {
 }
 
 impl LiteralTy {
+    pub fn name(&self) -> &'static str {
+        match self {
+            LiteralTy::Bool => "bool",
+            LiteralTy::Char => "char",
+            LiteralTy::Int(ty) => ty.name(),
+            LiteralTy::UInt(ty) => ty.name(),
+            LiteralTy::Float(ty) => ty.name(),
+        }
+    }
+
     pub fn to_integer_ty(&self) -> Option<IntegerTy> {
         match self {
             Self::Int(int_ty) => Some(IntegerTy::Signed(*int_ty)),

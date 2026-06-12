@@ -85,7 +85,7 @@ Guidance for AI agents working on Charon.
 ## OCaml vs Rust
 
 Charon is a hybrid codebase. A typical feature is mostly on the Rust side. However when the AST
-changes, this must be propagated. Use `make generate-ml` to regenerate the generated OCaml files.
+changes, this must be propagated. Use `make generate-asts` to regenerate the generated AST files.
 `make test` at the root of the repo tests both the OCaml and Rust sides.
 
 ## Versioning

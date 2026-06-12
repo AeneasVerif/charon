@@ -4,8 +4,8 @@
 
     `GAst.template.ml` contains the manual definitions and some `(* __REPLACEn__
     *)` comments. These comments are replaced by auto-generated definitions by
-    running `make generate-ml` in the crate root. The code-generation code is in
-    `charon/src/bin/generate-ml`. *)
+    running `make generate-asts` in the crate root. The code-generation code is
+    in `charon/src/bin/generate-asts`. *)
 
 open Generated_Types
 open Generated_Meta
@@ -25,7 +25,7 @@ type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 (** (U)LLBC is a language with side-effects: a statement may abort in a way that
     isn't tracked by control-flow. The three kinds of abort are:
     - Panic
-    - Undefined behavior (caused by an "assume")
+    - Undefined behavior (caused by an 'assume')
     - Unwind termination *)
 type abort_kind =
   | Panic of name option
@@ -85,7 +85,7 @@ and copy_non_overlapping = { src : operand; dst : operand; count : operand }
 
 (** A [Drop] statement/terminator can mean two things, depending on what MIR
     phase we retrieved from rustc: it could be a real drop, or it could be a
-    "conditional drop", which is where drop may happen depending on whether the
+    'conditional drop', which is where drop may happen depending on whether the
     borrow-checker determines a drop is needed. *)
 and drop_kind =
   | Precise
@@ -289,7 +289,7 @@ and trait_decl = {
   item_meta : item_meta;
   generics : generic_params;
   implied_clauses : trait_param list;
-      (** The "parent" clauses: the supertraits.
+      (** The 'parent' clauses: the supertraits.
 
           Supertraits are actually regular where clauses, but we decided to have
           a custom treatment.
@@ -312,7 +312,6 @@ and trait_decl = {
           parameters of the method.
 
           {@rust[
-            rust
             trait Trait<T> {
               // The [Binder] for this method binds ['a] and [U].
               fn method<'a, U>(x: &'a U);
@@ -384,7 +383,7 @@ and trait_impl = {
   item_meta : item_meta;
   impl_trait : trait_decl_ref;
       (** The information about the implemented trait. Note that this contains
-          the instantiation of the "parent" clauses. *)
+          the instantiation of the 'parent' clauses. *)
   generics : generic_params;
   implied_trait_refs : trait_ref list;
       (** The trait references for the parent clauses (see [TraitDecl]). *)

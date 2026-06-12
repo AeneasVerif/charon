@@ -25,7 +25,7 @@ tracing = { version = "0.1", features = ["max_level_trace"] }
 
 [package]
 name = "charon"
-version = "0.1.214"
+version = "0.1.215"
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -48,8 +48,8 @@ name = "charon-driver"
 path = "src/bin/charon-driver/main.rs"
 
 [[bin]]
-name = "generate-ml"
-path = "src/bin/generate-ml/main.rs"
+name = "generate-asts"
+path = "src/bin/generate-asts/main.rs"
 
 [[test]]
 name = "ui"

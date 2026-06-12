@@ -1,3 +1,4 @@
+pub mod attributes;
 pub mod builtins;
 pub mod expressions;
 pub mod expressions_utils;

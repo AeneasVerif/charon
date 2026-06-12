@@ -3,7 +3,7 @@ use convert_case::{Case, Casing};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
-use crate::GenerateCtx;
+use super::GenerateCtx;
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
 pub fn repr_name(n: &Name) -> String {
@@ -23,21 +23,55 @@ pub fn make_ocaml_ident(name: &str) -> String {
     if matches!(
         &*name,
         "assert"
+            | "begin"
             | "bool"
             | "char"
+            | "class"
+            | "constraint"
+            | "done"
+            | "downto"
             | "end"
+            | "exception"
+            | "external"
             | "float"
+            | "for"
             | "fun"
             | "function"
+            | "if"
+            | "in"
             | "include"
+            | "inherit"
+            | "initializer"
+            | "land"
+            | "lazy"
             | "let"
+            | "lor"
+            | "lsl"
+            | "lsr"
+            | "lxor"
+            | "match"
             | "method"
+            | "mod"
+            | "module"
+            | "mutable"
+            | "new"
+            | "object"
+            | "of"
             | "open"
+            | "or"
+            | "private"
             | "rec"
+            | "sig"
             | "struct"
+            | "then"
             | "to"
+            | "try"
             | "type"
+            | "val"
             | "virtual"
+            | "when"
+            | "while"
+            | "with"
     ) {
         name += "_";
     }

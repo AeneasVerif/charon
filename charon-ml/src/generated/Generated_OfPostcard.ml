@@ -4,8 +4,8 @@
 
     `templates/OfPostcard.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
-    definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`. *)
+    definitions by running `make generate-asts` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-asts`. *)
 
 open OfPostcardBasic
 open Identifiers
@@ -1733,9 +1733,12 @@ and attribute_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (AttrVariantsSuffix x_0)
      | 5 -> Ok AttrTransparent
      | 6 ->
+         let* x_0 = builtin_attr_of_postcard ctx st in
+         Ok (AttrBuiltin x_0)
+     | 7 ->
          let* x_0 = string_of_postcard ctx st in
          Ok (AttrDocComment x_0)
-     | 7 ->
+     | 8 ->
          let* x_0 = raw_attribute_of_postcard ctx st in
          Ok (AttrUnknown x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -1777,6 +1780,66 @@ and body_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 8 ->
          let* x_0 = error_of_postcard ctx st in
          Ok (ErrorBody x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and builtin_attr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (builtin_attr, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok BuiltinAttrAutomaticallyDerived
+     | 1 -> Ok BuiltinAttrCold
+     | 2 ->
+         let* x_0 = builtin_attr_eii_decl_of_postcard ctx st in
+         Ok (BuiltinAttrEiiDeclaration x_0)
+     | 3 ->
+         let* x_0 = list_of_postcard builtin_attr_eii_impl_of_postcard ctx st in
+         Ok (BuiltinAttrEiiImpls x_0)
+     | 4 -> Ok BuiltinAttrFundamental
+     | 5 ->
+         let* span = span_of_postcard ctx st in
+         let* reason = option_of_postcard string_of_postcard ctx st in
+         Ok (BuiltinAttrIgnore (span, reason))
+     | 6 ->
+         let* x_0 = builtin_attr_inline_attr_of_postcard ctx st in
+         let* x_1 = span_of_postcard ctx st in
+         Ok (BuiltinAttrInline (x_0, x_1))
+     | 7 ->
+         let* x_0 = builtin_attr_lang_item_of_postcard ctx st in
+         Ok (BuiltinAttrLang x_0)
+     | 8 ->
+         let* x_0 = span_of_postcard ctx st in
+         Ok (BuiltinAttrMayDangle x_0)
+     | 9 ->
+         let* x_0 = span_of_postcard ctx st in
+         Ok (BuiltinAttrNaked x_0)
+     | 10 -> Ok BuiltinAttrNoLink
+     | 11 ->
+         let* x_0 = span_of_postcard ctx st in
+         Ok (BuiltinAttrNoMangle x_0)
+     | 12 ->
+         let* x_0 = span_of_postcard ctx st in
+         Ok (BuiltinAttrNonExhaustive x_0)
+     | 13 ->
+         let* x_0 = builtin_attr_optimize_attr_of_postcard ctx st in
+         let* x_1 = span_of_postcard ctx st in
+         Ok (BuiltinAttrOptimize (x_0, x_1))
+     | 14 ->
+         let* x_0 = string_of_postcard ctx st in
+         Ok (BuiltinAttrRustcDiagnosticItem x_0)
+     | 15 -> Ok BuiltinAttrRustcIntrinsic
+     | 16 ->
+         let* features =
+           list_of_postcard
+             (pair_of_postcard string_of_postcard span_of_postcard)
+             ctx st
+         in
+         let* attr_span = span_of_postcard ctx st in
+         let* was_forced = bool_of_postcard ctx st in
+         Ok (BuiltinAttrTargetFeature (features, attr_span, was_forced))
+     | 17 ->
+         let* x_0 = span_of_postcard ctx st in
+         Ok (BuiltinAttrTrackCaller x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1975,6 +2038,42 @@ and discriminator_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (Branch (offset, int_ty, children, fallback))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and builtin_attr_eii_decl_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (builtin_attr_eii_decl, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* foreign_item = string_of_postcard ctx st in
+     let* impl_unsafe = bool_of_postcard ctx st in
+     let* name = builtin_attr_ident_of_postcard ctx st in
+     Ok ({ foreign_item; impl_unsafe; name } : builtin_attr_eii_decl))
+
+and builtin_attr_eii_impl_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (builtin_attr_eii_impl, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* resolution = builtin_attr_eii_impl_resolution_of_postcard ctx st in
+     let* impl_marked_unsafe = bool_of_postcard ctx st in
+     let* span = span_of_postcard ctx st in
+     let* inner_span = span_of_postcard ctx st in
+     let* is_default = bool_of_postcard ctx st in
+     Ok
+       ({ resolution; impl_marked_unsafe; span; inner_span; is_default }
+         : builtin_attr_eii_impl))
+
+and builtin_attr_eii_impl_resolution_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (builtin_attr_eii_impl_resolution, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = string_of_postcard ctx st in
+         Ok (BuiltinAttrEiiImplResolutionMacro x_0)
+     | 1 ->
+         let* x_0 = builtin_attr_eii_decl_of_postcard ctx st in
+         Ok (BuiltinAttrEiiImplResolutionKnown x_0)
+     | 2 ->
+         let* x_0 = string_of_postcard ctx st in
+         Ok (BuiltinAttrEiiImplResolutionError x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and error_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (error, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2105,6 +2204,13 @@ and global_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 3 -> Ok AnonConst
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and builtin_attr_ident_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (builtin_attr_ident, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* name = string_of_postcard ctx st in
+     let* span = span_of_postcard ctx st in
+     Ok ({ name; span } : builtin_attr_ident))
+
 and index_map_of_postcard :
     'a0 'a1 'a2.
     (of_postcard_ctx -> postcard_state -> ('a0, string) result) ->
@@ -2127,6 +2233,21 @@ and inline_attr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 0 -> Ok Hint
      | 1 -> Ok Never
      | 2 -> Ok Always
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and builtin_attr_inline_attr_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (builtin_attr_inline_attr, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok BuiltinAttrInlineAttrNone
+     | 1 -> Ok BuiltinAttrInlineAttrHint
+     | 2 -> Ok BuiltinAttrInlineAttrAlways
+     | 3 -> Ok BuiltinAttrInlineAttrNever
+     | 4 ->
+         let* attr_span = span_of_postcard ctx st in
+         let* reason = option_of_postcard string_of_postcard ctx st in
+         Ok (BuiltinAttrInlineAttrForce (attr_span, reason))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and integer_type_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2231,6 +2352,227 @@ and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 8 -> Ok VTableInstanceMonoItem
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and builtin_attr_lang_item_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (builtin_attr_lang_item, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok BuiltinAttrLangItemSized
+     | 1 -> Ok BuiltinAttrLangItemMetaSized
+     | 2 -> Ok BuiltinAttrLangItemPointeeSized
+     | 3 -> Ok BuiltinAttrLangItemUnsize
+     | 4 -> Ok BuiltinAttrLangItemAlignOf
+     | 5 -> Ok BuiltinAttrLangItemSizeOf
+     | 6 -> Ok BuiltinAttrLangItemOffsetOf
+     | 7 -> Ok BuiltinAttrLangItemStructuralPeq
+     | 8 -> Ok BuiltinAttrLangItemCopy
+     | 9 -> Ok BuiltinAttrLangItemClone
+     | 10 -> Ok BuiltinAttrLangItemCloneFn
+     | 11 -> Ok BuiltinAttrLangItemUseCloned
+     | 12 -> Ok BuiltinAttrLangItemTrivialClone
+     | 13 -> Ok BuiltinAttrLangItemSync
+     | 14 -> Ok BuiltinAttrLangItemDiscriminantKind
+     | 15 -> Ok BuiltinAttrLangItemDiscriminant
+     | 16 -> Ok BuiltinAttrLangItemPointeeTrait
+     | 17 -> Ok BuiltinAttrLangItemMetadata
+     | 18 -> Ok BuiltinAttrLangItemDynMetadata
+     | 19 -> Ok BuiltinAttrLangItemFreeze
+     | 20 -> Ok BuiltinAttrLangItemUnsafeUnpin
+     | 21 -> Ok BuiltinAttrLangItemFnPtrTrait
+     | 22 -> Ok BuiltinAttrLangItemFnPtrAddr
+     | 23 -> Ok BuiltinAttrLangItemDrop
+     | 24 -> Ok BuiltinAttrLangItemDestruct
+     | 25 -> Ok BuiltinAttrLangItemAsyncDrop
+     | 26 -> Ok BuiltinAttrLangItemAsyncDropInPlace
+     | 27 -> Ok BuiltinAttrLangItemCoerceUnsized
+     | 28 -> Ok BuiltinAttrLangItemDispatchFromDyn
+     | 29 -> Ok BuiltinAttrLangItemTransmuteOpts
+     | 30 -> Ok BuiltinAttrLangItemTransmuteTrait
+     | 31 -> Ok BuiltinAttrLangItemAdd
+     | 32 -> Ok BuiltinAttrLangItemSub
+     | 33 -> Ok BuiltinAttrLangItemMul
+     | 34 -> Ok BuiltinAttrLangItemDiv
+     | 35 -> Ok BuiltinAttrLangItemRem
+     | 36 -> Ok BuiltinAttrLangItemNeg
+     | 37 -> Ok BuiltinAttrLangItemNot
+     | 38 -> Ok BuiltinAttrLangItemBitXor
+     | 39 -> Ok BuiltinAttrLangItemBitAnd
+     | 40 -> Ok BuiltinAttrLangItemBitOr
+     | 41 -> Ok BuiltinAttrLangItemShl
+     | 42 -> Ok BuiltinAttrLangItemShr
+     | 43 -> Ok BuiltinAttrLangItemAddAssign
+     | 44 -> Ok BuiltinAttrLangItemSubAssign
+     | 45 -> Ok BuiltinAttrLangItemMulAssign
+     | 46 -> Ok BuiltinAttrLangItemDivAssign
+     | 47 -> Ok BuiltinAttrLangItemRemAssign
+     | 48 -> Ok BuiltinAttrLangItemBitXorAssign
+     | 49 -> Ok BuiltinAttrLangItemBitAndAssign
+     | 50 -> Ok BuiltinAttrLangItemBitOrAssign
+     | 51 -> Ok BuiltinAttrLangItemShlAssign
+     | 52 -> Ok BuiltinAttrLangItemShrAssign
+     | 53 -> Ok BuiltinAttrLangItemIndex
+     | 54 -> Ok BuiltinAttrLangItemIndexMut
+     | 55 -> Ok BuiltinAttrLangItemUnsafeCell
+     | 56 -> Ok BuiltinAttrLangItemUnsafePinned
+     | 57 -> Ok BuiltinAttrLangItemVaArgSafe
+     | 58 -> Ok BuiltinAttrLangItemVaList
+     | 59 -> Ok BuiltinAttrLangItemDeref
+     | 60 -> Ok BuiltinAttrLangItemDerefMut
+     | 61 -> Ok BuiltinAttrLangItemDerefPure
+     | 62 -> Ok BuiltinAttrLangItemDerefTarget
+     | 63 -> Ok BuiltinAttrLangItemReceiver
+     | 64 -> Ok BuiltinAttrLangItemReceiverTarget
+     | 65 -> Ok BuiltinAttrLangItemLegacyReceiver
+     | 66 -> Ok BuiltinAttrLangItemFn
+     | 67 -> Ok BuiltinAttrLangItemFnMut
+     | 68 -> Ok BuiltinAttrLangItemFnOnce
+     | 69 -> Ok BuiltinAttrLangItemAsyncFn
+     | 70 -> Ok BuiltinAttrLangItemAsyncFnMut
+     | 71 -> Ok BuiltinAttrLangItemAsyncFnOnce
+     | 72 -> Ok BuiltinAttrLangItemAsyncFnOnceOutput
+     | 73 -> Ok BuiltinAttrLangItemCallOnceFuture
+     | 74 -> Ok BuiltinAttrLangItemCallRefFuture
+     | 75 -> Ok BuiltinAttrLangItemAsyncFnKindHelper
+     | 76 -> Ok BuiltinAttrLangItemAsyncFnKindUpvars
+     | 77 -> Ok BuiltinAttrLangItemFnOnceOutput
+     | 78 -> Ok BuiltinAttrLangItemIterator
+     | 79 -> Ok BuiltinAttrLangItemFusedIterator
+     | 80 -> Ok BuiltinAttrLangItemFuture
+     | 81 -> Ok BuiltinAttrLangItemFutureOutput
+     | 82 -> Ok BuiltinAttrLangItemAsyncIterator
+     | 83 -> Ok BuiltinAttrLangItemCoroutineState
+     | 84 -> Ok BuiltinAttrLangItemCoroutine
+     | 85 -> Ok BuiltinAttrLangItemCoroutineReturn
+     | 86 -> Ok BuiltinAttrLangItemCoroutineYield
+     | 87 -> Ok BuiltinAttrLangItemCoroutineResume
+     | 88 -> Ok BuiltinAttrLangItemUnpin
+     | 89 -> Ok BuiltinAttrLangItemPin
+     | 90 -> Ok BuiltinAttrLangItemOrderingEnum
+     | 91 -> Ok BuiltinAttrLangItemPartialEq
+     | 92 -> Ok BuiltinAttrLangItemPartialOrd
+     | 93 -> Ok BuiltinAttrLangItemCVoid
+     | 94 -> Ok BuiltinAttrLangItemType
+     | 95 -> Ok BuiltinAttrLangItemTypeId
+     | 96 -> Ok BuiltinAttrLangItemPanic
+     | 97 -> Ok BuiltinAttrLangItemPanicNounwind
+     | 98 -> Ok BuiltinAttrLangItemPanicFmt
+     | 99 -> Ok BuiltinAttrLangItemPanicDisplay
+     | 100 -> Ok BuiltinAttrLangItemConstPanicFmt
+     | 101 -> Ok BuiltinAttrLangItemPanicBoundsCheck
+     | 102 -> Ok BuiltinAttrLangItemPanicMisalignedPointerDereference
+     | 103 -> Ok BuiltinAttrLangItemPanicInfo
+     | 104 -> Ok BuiltinAttrLangItemPanicLocation
+     | 105 -> Ok BuiltinAttrLangItemPanicImpl
+     | 106 -> Ok BuiltinAttrLangItemPanicCannotUnwind
+     | 107 -> Ok BuiltinAttrLangItemPanicInCleanup
+     | 108 -> Ok BuiltinAttrLangItemPanicAddOverflow
+     | 109 -> Ok BuiltinAttrLangItemPanicSubOverflow
+     | 110 -> Ok BuiltinAttrLangItemPanicMulOverflow
+     | 111 -> Ok BuiltinAttrLangItemPanicDivOverflow
+     | 112 -> Ok BuiltinAttrLangItemPanicRemOverflow
+     | 113 -> Ok BuiltinAttrLangItemPanicNegOverflow
+     | 114 -> Ok BuiltinAttrLangItemPanicShrOverflow
+     | 115 -> Ok BuiltinAttrLangItemPanicShlOverflow
+     | 116 -> Ok BuiltinAttrLangItemPanicDivZero
+     | 117 -> Ok BuiltinAttrLangItemPanicRemZero
+     | 118 -> Ok BuiltinAttrLangItemPanicCoroutineResumed
+     | 119 -> Ok BuiltinAttrLangItemPanicAsyncFnResumed
+     | 120 -> Ok BuiltinAttrLangItemPanicAsyncGenFnResumed
+     | 121 -> Ok BuiltinAttrLangItemPanicGenFnNone
+     | 122 -> Ok BuiltinAttrLangItemPanicCoroutineResumedPanic
+     | 123 -> Ok BuiltinAttrLangItemPanicAsyncFnResumedPanic
+     | 124 -> Ok BuiltinAttrLangItemPanicAsyncGenFnResumedPanic
+     | 125 -> Ok BuiltinAttrLangItemPanicGenFnNonePanic
+     | 126 -> Ok BuiltinAttrLangItemPanicNullPointerDereference
+     | 127 -> Ok BuiltinAttrLangItemPanicInvalidEnumConstruction
+     | 128 -> Ok BuiltinAttrLangItemPanicCoroutineResumedDrop
+     | 129 -> Ok BuiltinAttrLangItemPanicAsyncFnResumedDrop
+     | 130 -> Ok BuiltinAttrLangItemPanicAsyncGenFnResumedDrop
+     | 131 -> Ok BuiltinAttrLangItemPanicGenFnNoneDrop
+     | 132 -> Ok BuiltinAttrLangItemBeginPanic
+     | 133 -> Ok BuiltinAttrLangItemFormatArgument
+     | 134 -> Ok BuiltinAttrLangItemFormatArguments
+     | 135 -> Ok BuiltinAttrLangItemDropGlue
+     | 136 -> Ok BuiltinAttrLangItemAllocLayout
+     | 137 -> Ok BuiltinAttrLangItemStart
+     | 138 -> Ok BuiltinAttrLangItemEhPersonality
+     | 139 -> Ok BuiltinAttrLangItemEhCatchTypeinfo
+     | 140 -> Ok BuiltinAttrLangItemCompilerMove
+     | 141 -> Ok BuiltinAttrLangItemCompilerCopy
+     | 142 -> Ok BuiltinAttrLangItemOwnedBox
+     | 143 -> Ok BuiltinAttrLangItemGlobalAlloc
+     | 144 -> Ok BuiltinAttrLangItemPhantomData
+     | 145 -> Ok BuiltinAttrLangItemManuallyDrop
+     | 146 -> Ok BuiltinAttrLangItemMaybeDangling
+     | 147 -> Ok BuiltinAttrLangItemBikeshedGuaranteedNoDrop
+     | 148 -> Ok BuiltinAttrLangItemMaybeUninit
+     | 149 -> Ok BuiltinAttrLangItemTermination
+     | 150 -> Ok BuiltinAttrLangItemTry
+     | 151 -> Ok BuiltinAttrLangItemTuple
+     | 152 -> Ok BuiltinAttrLangItemSliceLen
+     | 153 -> Ok BuiltinAttrLangItemTryTraitFromResidual
+     | 154 -> Ok BuiltinAttrLangItemTryTraitFromOutput
+     | 155 -> Ok BuiltinAttrLangItemTryTraitBranch
+     | 156 -> Ok BuiltinAttrLangItemTryTraitFromYeet
+     | 157 -> Ok BuiltinAttrLangItemResidualIntoTryType
+     | 158 -> Ok BuiltinAttrLangItemCoercePointeeValidated
+     | 159 -> Ok BuiltinAttrLangItemConstParamTy
+     | 160 -> Ok BuiltinAttrLangItemPoll
+     | 161 -> Ok BuiltinAttrLangItemPollReady
+     | 162 -> Ok BuiltinAttrLangItemPollPending
+     | 163 -> Ok BuiltinAttrLangItemAsyncGenReady
+     | 164 -> Ok BuiltinAttrLangItemAsyncGenPending
+     | 165 -> Ok BuiltinAttrLangItemAsyncGenFinished
+     | 166 -> Ok BuiltinAttrLangItemResumeTy
+     | 167 -> Ok BuiltinAttrLangItemGetContext
+     | 168 -> Ok BuiltinAttrLangItemContext
+     | 169 -> Ok BuiltinAttrLangItemFuturePoll
+     | 170 -> Ok BuiltinAttrLangItemAsyncIteratorPollNext
+     | 171 -> Ok BuiltinAttrLangItemIntoAsyncIterIntoIter
+     | 172 -> Ok BuiltinAttrLangItemOption
+     | 173 -> Ok BuiltinAttrLangItemOptionSome
+     | 174 -> Ok BuiltinAttrLangItemOptionNone
+     | 175 -> Ok BuiltinAttrLangItemResultOk
+     | 176 -> Ok BuiltinAttrLangItemResultErr
+     | 177 -> Ok BuiltinAttrLangItemControlFlowContinue
+     | 178 -> Ok BuiltinAttrLangItemControlFlowBreak
+     | 179 -> Ok BuiltinAttrLangItemIntoFutureIntoFuture
+     | 180 -> Ok BuiltinAttrLangItemIntoIterIntoIter
+     | 181 -> Ok BuiltinAttrLangItemIteratorNext
+     | 182 -> Ok BuiltinAttrLangItemPinNewUnchecked
+     | 183 -> Ok BuiltinAttrLangItemRangeFrom
+     | 184 -> Ok BuiltinAttrLangItemRangeFull
+     | 185 -> Ok BuiltinAttrLangItemRangeInclusiveStruct
+     | 186 -> Ok BuiltinAttrLangItemRangeInclusiveNew
+     | 187 -> Ok BuiltinAttrLangItemRange
+     | 188 -> Ok BuiltinAttrLangItemRangeToInclusive
+     | 189 -> Ok BuiltinAttrLangItemRangeTo
+     | 190 -> Ok BuiltinAttrLangItemRangeMax
+     | 191 -> Ok BuiltinAttrLangItemRangeMin
+     | 192 -> Ok BuiltinAttrLangItemRangeSub
+     | 193 -> Ok BuiltinAttrLangItemRangeFromCopy
+     | 194 -> Ok BuiltinAttrLangItemRangeCopy
+     | 195 -> Ok BuiltinAttrLangItemRangeInclusiveCopy
+     | 196 -> Ok BuiltinAttrLangItemRangeToInclusiveCopy
+     | 197 -> Ok BuiltinAttrLangItemString
+     | 198 -> Ok BuiltinAttrLangItemCStr
+     | 199 -> Ok BuiltinAttrLangItemContractBuildCheckEnsures
+     | 200 -> Ok BuiltinAttrLangItemContractCheckRequires
+     | 201 -> Ok BuiltinAttrLangItemDefaultTrait4
+     | 202 -> Ok BuiltinAttrLangItemDefaultTrait3
+     | 203 -> Ok BuiltinAttrLangItemDefaultTrait2
+     | 204 -> Ok BuiltinAttrLangItemDefaultTrait1
+     | 205 -> Ok BuiltinAttrLangItemContractCheckEnsures
+     | 206 -> Ok BuiltinAttrLangItemReborrow
+     | 207 -> Ok BuiltinAttrLangItemCoerceShared
+     | 208 -> Ok BuiltinAttrLangItemFieldRepresentingType
+     | 209 -> Ok BuiltinAttrLangItemField
+     | 210 -> Ok BuiltinAttrLangItemFieldBase
+     | 211 -> Ok BuiltinAttrLangItemFieldType
+     | 212 -> Ok BuiltinAttrLangItemFieldOffset
+     | 213 -> Ok BuiltinAttrLangItemFrom
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (layout, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2284,6 +2626,17 @@ and monomorphize_mut_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 -> Ok All
      | 1 -> Ok ExceptTypes
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and builtin_attr_optimize_attr_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (builtin_attr_optimize_attr, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok BuiltinAttrOptimizeAttrDefault
+     | 1 -> Ok BuiltinAttrOptimizeAttrDoNotOptimize
+     | 2 -> Ok BuiltinAttrOptimizeAttrSpeed
+     | 3 -> Ok BuiltinAttrOptimizeAttrSize
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and preset_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

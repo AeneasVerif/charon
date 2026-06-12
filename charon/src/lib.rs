@@ -26,7 +26,12 @@
 )]
 // For when we use charon on itself :3
 #![cfg_attr(feature = "charon_on_charon", feature(register_tool))]
+#![cfg_attr(feature = "charon_on_charon", feature(rustc_private))]
 #![cfg_attr(feature = "charon_on_charon", register_tool(charon))]
+
+#[cfg(feature = "charon_on_charon")]
+#[allow(unused_extern_crates)]
+extern crate rustc_hir;
 
 #[macro_use]
 pub mod ids;
@@ -42,7 +47,9 @@ pub mod pretty;
 pub mod transform;
 
 // Re-export all the ast modules so we can keep the old import structure.
-pub use ast::{builtins, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values};
+pub use ast::{
+    attributes, builtins, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values,
+};
 pub use pretty::formatter;
 
 /// The version of the crate, as defined in `Cargo.toml`.

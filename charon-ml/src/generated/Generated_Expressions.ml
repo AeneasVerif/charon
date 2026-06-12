@@ -4,8 +4,8 @@
 
     `templates/Expressions.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
-    definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`. *)
+    definitions by running `make generate-asts` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-asts`. *)
 open Identifiers
 
 open Generated_Types
@@ -199,7 +199,7 @@ and place_kind =
       (** A global (const or static). Not present in MIR; introduced in
           [simplify_constants.rs]. *)
 
-(** Note that we don't have the equivalent of "downcasts". Downcasts are
+(** Note that we don't have the equivalent of 'downcasts'. Downcasts are
     actually necessary, for instance when initializing enumeration values: the
     value is initially [Bottom], and we need a way of knowing the variant. For
     example: [((_0 as Right).0: T2) = move _1;] In MIR, downcasts always happen
@@ -220,7 +220,7 @@ and projection_elem =
           length for slices, and the vtable for [dyn Trait].
 
           We consider such pointers to be like a struct with two fields; this
-          represent access to the metadata "field". *)
+          represent access to the metadata 'field'. *)
   | ProjIndex of operand * bool
       (** MIR imposes that the argument to an index projection be a local
           variable, meaning that even constant indices into arrays are let-bound
@@ -243,7 +243,7 @@ and projection_elem =
 (** TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
     We can also factor out the unops, binops with the function calls. TODO: move
     the aggregate kind to operands TODO: we should prefix the type variants with
-    "R" or "Rv", this would avoid collisions *)
+    'R' or 'Rv', this would avoid collisions *)
 and rvalue =
   | Use of operand * with_retag  (** Lifts an operand as an rvalue. *)
   | RvRef of place * borrow_kind * operand
@@ -265,7 +265,7 @@ and rvalue =
           - [kind]
           - [ptr_metadata] *)
   | BinaryOp of binop * operand * operand
-      (** Binary operations (note that we merge "checked" and "unchecked"
+      (** Binary operations (note that we merge 'checked' and 'unchecked'
           binops) *)
   | UnaryOp of unop * operand  (** Unary operation (e.g. not, neg) *)
   | NullaryOp of nullop * ty  (** Nullary operation (e.g. [size_of]) *)

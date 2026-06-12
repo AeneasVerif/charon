@@ -1,3 +1,4 @@
+use charon_lib::attributes;
 use charon_lib::llbc_ast::*;
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -318,14 +319,12 @@ fn attributes() -> anyhow::Result<()> {
         crate_data.fun_decls[0].item_meta.attr_info.inline,
         Some(InlineAttr::Never)
     );
-    assert_eq!(
+    assert!(
         crate_data.fun_decls[0]
             .item_meta
             .attr_info
             .attributes
-            .last()
-            .unwrap(),
-        &Attribute::DocComment(" This is a doc comment.".to_owned())
+            .contains(&Attribute::DocComment(" This is a doc comment.".to_owned()))
     );
     // Check that the `inline` attribute on closures gets picked up.
     let any_inline_always = crate_data
@@ -333,6 +332,33 @@ fn attributes() -> anyhow::Result<()> {
         .iter()
         .any(|decl| matches!(decl.item_meta.attr_info.inline, Some(InlineAttr::Always)));
     assert!(any_inline_always);
+    Ok(())
+}
+
+#[test]
+fn parsed_builtin_attributes() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"
+        #[track_caller]
+        pub fn tracked() {}
+        "#,
+    )?;
+    let fun_decl = crate_data
+        .fun_decls
+        .iter()
+        .find(|decl| repr_name(&crate_data, &decl.item_meta.name) == "test_crate::tracked")
+        .unwrap();
+    assert!(
+        fun_decl
+            .item_meta
+            .attr_info
+            .attributes
+            .iter()
+            .any(|attr| matches!(
+                attr,
+                Attribute::Builtin(attributes::BuiltinAttr::TrackCaller(_))
+            ))
+    );
     Ok(())
 }
 

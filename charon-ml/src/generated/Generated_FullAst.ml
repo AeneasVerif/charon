@@ -4,8 +4,8 @@
 
     `templates/FullAst.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
-    definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`. *)
+    definitions by running `make generate-asts` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-asts`. *)
 
 open Generated_GAst
 open Generated_UllbcAst
@@ -68,7 +68,7 @@ and cli_options = {
           we add explicit [Destruct] bounds to all generic parameters and set
           the MIR level to at least [elaborated].
 
-          Without this option, drops may be "conditional" and we may lack
+          Without this option, drops may be 'conditional' and we may lack
           information about what code is run on drop in a given polymorphic
           function body. *)
   skip_borrowck : bool;
@@ -85,7 +85,7 @@ and cli_options = {
   sysroot : string option;
       (** Sysroot to use for rustc invocations. By default Charon builds a
           sysroot that has full MIR for the standard library. You can pass a
-          custom sysroot to use instead, or pass "default" to use the normal
+          custom sysroot to use instead, or pass 'default' to use the normal
           distributed sysroot, which lacks MIR bodies for many standard library
           functions. *)
   monomorphize : bool;
@@ -172,7 +172,7 @@ and cli_options = {
           unsized, expliciting the fact a string constant has a hidden
           reference. *)
   reconstruct_fallible_operations : bool;
-      (** Replace "bound checks followed by UB-on-overflow operation" with the
+      (** Replace 'bound checks followed by UB-on-overflow operation' with the
           corresponding panic-on-overflow operation. This loses unwinding
           information. *)
   reconstruct_asserts : bool;
@@ -237,7 +237,7 @@ and fun_decl = {
   signature : fun_sig;
       (** The signature contains the inputs/output types and ABI details. *)
   src : item_source;
-      (** The function kind: "regular" function, trait method declaration, etc.
+      (** The function kind: 'regular' function, trait method declaration, etc.
       *)
   is_global_initializer : global_decl_id option;
       (** Whether this function is in fact the body of a constant/static that we
@@ -245,8 +245,8 @@ and fun_decl = {
   body : body;  (** The function body. *)
 }
 
-(** A (group of) top-level declaration(s), properly reordered. "G" stands for
-    "generic" *)
+(** A (group of) top-level declaration(s), properly reordered. 'G' stands for
+    'generic' *)
 and 'a0 g_declaration_group =
   | NonRecGroup of 'a0  (** A non-recursive declaration *)
   | RecGroup of 'a0 list  (** A (group of mutually) recursive declaration(s) *)

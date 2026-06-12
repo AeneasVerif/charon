@@ -4,8 +4,8 @@
 
     `Types.template.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
-    definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`. *)
+    definitions by running `make generate-asts` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-asts`. *)
 
 open Identifiers
 open Generated_Meta
@@ -198,7 +198,7 @@ type abi =
   | AbiRust
   | AbiC
   | AbiOther of string
-      (** Rust's spelling for the ABI, e.g. "C-unwind" or "system". *)
+      (** Rust's spelling for the ABI, e.g. 'C-unwind' or 'system'. *)
 
 and assoc_const_id = (AssocConstId.id[@visitors.opaque])
 and assoc_type_id = (AssocTypeId.id[@visitors.opaque])
@@ -479,11 +479,11 @@ and fun_decl_ref = {
 (** A function identifier. See [crate::ullbc_ast::Terminator] *)
 and fun_id =
   | FRegular of fun_decl_id
-      (** A "regular" function (function local to the crate, external function
+      (** A 'regular' function (function local to the crate, external function
           not treated as a primitive one). *)
   | FBuiltin of builtin_fun_id
       (** A primitive function, coming from a standard library (for instance:
-          [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
+          [alloc::boxed::Box::new]). TODO: rename to 'Primitive' *)
 
 (** A function signature. *)
 and fun_sig = {
@@ -817,7 +817,7 @@ and type_decl_ref = { id : type_id; generics : generic_args }
     Allows us to factorize the code for built-in types, adts and tuples *)
 and type_id =
   | TAdtId of type_decl_id
-      (** A "regular" ADT type.
+      (** A 'regular' ADT type.
 
           Includes transparent ADTs and opaque ADTs (local ADTs marked as
           opaque, and external ADTs). *)
@@ -947,7 +947,7 @@ and field = {
 
 (** There are two kinds of [impl] blocks:
     {ul
-     {- impl blocks linked to a type ("inherent" impl blocks following Rust
+     {- impl blocks linked to a type ('inherent' impl blocks following Rust
         terminology):
         {@rust[
           impl<T> List<T> { ...}
@@ -1117,7 +1117,7 @@ and layout = {
 (** An item name/path
 
     A name really is a list of strings. However, we sometimes need to introduce
-    unique indices to disambiguate. This mostly happens because of "impl"
+    unique indices to disambiguate. This mostly happens because of 'impl'
     blocks:
     {@rust[
       impl<T> List<T> {
@@ -1125,9 +1125,9 @@ and layout = {
       }
     ]}
 
-    A type in Rust can have several "impl" blocks, and those blocks can contain
+    A type in Rust can have several 'impl' blocks, and those blocks can contain
     items with similar names. For this reason, we need to disambiguate them with
-    unique indices. Rustc calls those "disambiguators". In rustc, this gives
+    unique indices. Rustc calls those 'disambiguators'. In rustc, this gives
     names like this:
     - [betree_main::betree::NodeIdCounter{impl#0}::new]
     - note that impl blocks can be nested, and macros sometimes generate weird
@@ -1141,7 +1141,7 @@ and layout = {
 
     On our side, we want to stay high-level and simple: we use string
     identifiers as much as possible, insert disambiguators only when necessary
-    (for instance when we find an "impl" block or when two loaded crates have
+    (for instance when we find an 'impl' block or when two loaded crates have
     the same name) and check that the disambiguator is useless in the other
     situations (i.e., the disambiguator is always equal to 0).
 
