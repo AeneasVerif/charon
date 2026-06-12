@@ -1,9 +1,5 @@
 [workspace]
-members = [
-    "adt-into",
-    "macros",
-    "rustc_trait_elaboration",
-]
+members = ["adt-into", "macros", "rustc_trait_elaboration"]
 
 [workspace.package]
 authors = [
@@ -25,7 +21,7 @@ tracing = { version = "0.1", features = ["max_level_trace"] }
 
 [package]
 name = "charon"
-version = "0.1.214"
+version = "0.1.215"
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -109,8 +105,14 @@ take_mut = "0.2.2"
 tar = { version = "0.4.42", optional = true }
 tempfile = "3"
 toml = { version = "0.8", features = ["parse"] }
-tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt", ] }
-tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [ "time", ] } # Fork with improved formating and timing info.
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+    "std",
+    "fmt",
+] }
+tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [
+    "time",
+] } # Fork with improved formating and timing info.
 tracing.workspace = true
 ustr = { version = "1.1.0", features = ["serde"] }
 wait-timeout = { version = "0.2.0", optional = true }
