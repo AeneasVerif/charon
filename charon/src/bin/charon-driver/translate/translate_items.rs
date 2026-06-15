@@ -714,6 +714,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 self.prepare_drop_glue_method(def, span, def.def_id(), trait_decl_id, None)?;
             let method_name = self.translated.assoc_item_name(trait_decl_id, method_id);
             self.mark_method_as_used(trait_decl_id, method_id);
+            let mut method_item_meta = ItemMeta::dummy_public(
+                span,
+                item_meta.name.clone(),
+                item_meta.is_local,
+                item_meta.opacity,
+            );
+            method_item_meta.name.name.push(PathElem::Ident(
+                method_name.to_string(),
+                Disambiguator::ZERO,
+            ));
+
             let method = method_binder.map(|fn_ref| {
                 let self_ty = if self.monomorphize() {
                     // FIXME: put something real here
@@ -729,7 +740,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 TraitMethod {
                     name: method_name,
                     item: fn_ref,
-                    attr_info: AttrInfo::dummy_public(),
+                    item_meta: method_item_meta,
                     signature,
                 }
             });
@@ -776,6 +787,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 hax::FullDefKind::AssocFn { sig, .. } => {
                     let trait_method_id = *assoc_item_id.as_method().unwrap();
                     let fun_id = self.register_no_enqueue(item_span, &item_src);
+                    let method_name = self.translate_name(&item_src)?;
+                    let method_opacity = self.opacity_for_name(&method_name);
+                    let method_item_meta =
+                        self.translate_item_meta(&item_def, &item_src, method_name, method_opacity);
                     // Register this method.
                     self.register_method_impl(trait_decl_id, trait_method_id, fun_id);
                     // By default we only enqueue required methods (those that don't have a default
@@ -814,7 +829,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 bt_ctx.translate_fun_sig(span, sig.hax_skip_binder_ref())?;
                             Ok(TraitMethod {
                                 name: item_name,
-                                attr_info,
+                                item_meta: method_item_meta,
                                 signature,
                                 item: fn_ref,
                             })

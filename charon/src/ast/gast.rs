@@ -406,9 +406,7 @@ pub struct TraitAssocTy {
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct TraitMethod {
     pub name: TraitItemName,
-    #[drive(skip)]
-    #[serde_state(stateless)]
-    pub attr_info: AttrInfo,
+    pub item_meta: ItemMeta,
     pub signature: FunSig,
     /// Each method declaration is represented by a function item. That function contains the
     /// signature of the method as well as information like attributes. It has a body iff the

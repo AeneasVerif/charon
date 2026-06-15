@@ -178,6 +178,18 @@ impl ItemMeta {
         }
         name
     }
+
+    pub fn dummy_public(span: Span, name: Name, is_local: bool, opacity: ItemOpacity) -> Self {
+        ItemMeta {
+            name,
+            span,
+            source_text: None,
+            attr_info: AttrInfo::dummy_public(),
+            is_local,
+            opacity,
+            lang_item: None,
+        }
+    }
 }
 
 impl Default for Span {

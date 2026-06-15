@@ -2486,10 +2486,10 @@ and trait_method_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (trait_method, string) result =
   combine_error_msgs st __FUNCTION__
     (let* name = trait_item_name_of_postcard ctx st in
-     let* attr_info = attr_info_of_postcard ctx st in
+     let* item_meta = item_meta_of_postcard ctx st in
      let* signature = fun_sig_of_postcard ctx st in
      let* item = fun_decl_ref_of_postcard ctx st in
-     Ok ({ name; attr_info; signature; item } : trait_method))
+     Ok ({ name; item_meta; signature; item } : trait_method))
 
 and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (translated_crate, string) result =
