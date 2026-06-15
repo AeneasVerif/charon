@@ -505,6 +505,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     assert_eq!(
         crate_data.trait_decls[0].methods[0]
             .skip_binder
+            .item_meta
             .attr_info
             .rename
             .as_deref(),

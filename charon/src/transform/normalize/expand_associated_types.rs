@@ -1091,9 +1091,8 @@ impl UpdateItemBody<'_> {
                         register_error!(
                             self.ctx,
                             self.span,
-                            "Could not compute the value of {path_fmt} on a GAT: \
-                        lifting associated types can fail in the presence of GATs. \
-                        To fix this, `--exclude` this trait."
+                            "GATs cannot work with the `--lift-associated-types` option (implied by `--preset=aeneas`). \
+                            Either stop using this option or `--exclude` this trait."
                         );
                     } else {
                         let item_name = target.item_name(&self.ctx.translated, fmt_ctx);

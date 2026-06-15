@@ -328,7 +328,7 @@ and trait_item_name = string
 (** A trait method. *)
 and trait_method = {
   name : trait_item_name;
-  attr_info : attr_info;
+  item_meta : item_meta;
   signature : fun_sig;
   item : fun_decl_ref;
       (** Each method declaration is represented by a function item. That

@@ -708,11 +708,10 @@ fn normalize_item(
 ) -> ItemByVal {
     item.as_mut().drive_mut(&mut IdRefMapperVisitor::new(remap));
     item.as_mut().set_id(canonical_id);
-    item.as_mut()
-        .item_meta()
-        .name
-        .name
-        .retain(|elem| !matches!(elem, PathElem::Target(_)));
+    item.as_mut().dyn_visit_mut(|name: &mut Name| {
+        name.name
+            .retain(|elem| !matches!(elem, PathElem::Target(_)))
+    });
 
     strip_unstable_attributes(&mut item);
     // Ignore source text and spans: if the items are otherwise identical, it's ok to just pick one
@@ -740,7 +739,7 @@ fn strip_unstable_attributes(item: &mut ItemByVal) {
 
     if let ItemByVal::TraitDecl(d) = item {
         for method in &mut d.methods {
-            strip_in_vec(&mut method.skip_binder.attr_info);
+            strip_in_vec(&mut method.skip_binder.item_meta.attr_info);
         }
         for cst in &mut d.consts {
             strip_in_vec(&mut cst.attr_info);

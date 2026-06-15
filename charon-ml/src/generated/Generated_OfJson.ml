@@ -2964,15 +2964,15 @@ and trait_method_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ("name", name);
-          ("attr_info", attr_info);
+          ("item_meta", item_meta);
           ("signature", signature);
           ("item", item);
         ] ->
         let* name = trait_item_name_of_json ctx name in
-        let* attr_info = attr_info_of_json ctx attr_info in
+        let* item_meta = item_meta_of_json ctx item_meta in
         let* signature = fun_sig_of_json ctx signature in
         let* item = fun_decl_ref_of_json ctx item in
-        Ok ({ name; attr_info; signature; item } : trait_method)
+        Ok ({ name; item_meta; signature; item } : trait_method)
     | _ -> Error "")
 
 and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
