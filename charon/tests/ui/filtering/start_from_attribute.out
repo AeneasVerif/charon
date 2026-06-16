@@ -28,7 +28,7 @@ fn also_translate()
 struct Type1 {}
 
 // Full name: test_crate::module2::{impl Trait1 for Type1}::method
-fn impl_Trait1_for_Type1::method()
+fn method()
 {
     let _0: (); // return
 

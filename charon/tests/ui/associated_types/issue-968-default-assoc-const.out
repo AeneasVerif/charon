@@ -16,15 +16,9 @@ pub trait Sized<Self>
 pub trait ToU64<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn to_u64 = to_u64<Self>[Self]
+    fn to_u64;
     vtable: test_crate::ToU64::{vtable}
 }
-
-// Full name: test_crate::ToU64::to_u64
-pub fn to_u64<Self>(_1: Self) -> u64
-where
-    TraitClause0: (Self: ToU64),
-= <method_without_default_body>
 
 // Full name: test_crate::WithConstTy
 pub trait WithConstTy<Self, Self_W, const LEN : usize>

@@ -4,13 +4,9 @@
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: test_crate::drop
 fn drop<T>(_1: T)

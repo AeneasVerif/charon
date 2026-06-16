@@ -28,7 +28,6 @@ fn normalize_default_method_call_on_known_impl(
     let ItemSource::TraitDecl {
         trait_ref,
         item_id: AssocItemId::Method(method_id),
-        has_default: true,
     } = &fun_decl.src
     else {
         return None;
@@ -66,7 +65,7 @@ fn normalize_default_method_call_on_known_impl(
 
 /// Transform `impl_trait_for_X::method` to a direct method call.
 fn normalize_method_call_on_known_impl(ctx: &TransformCtx, fn_ptr: &FnPtr) -> Option<FnPtr> {
-    let FnPtrKind::Trait(trait_ref, method_id, _) = fn_ptr.kind.as_ref() else {
+    let FnPtrKind::Trait(trait_ref, method_id) = fn_ptr.kind.as_ref() else {
         return None;
     };
     let TraitRefKind::TraitImpl(impl_ref) = &trait_ref.kind else {

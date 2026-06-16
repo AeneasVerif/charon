@@ -564,7 +564,7 @@ and pp_fun_id (env : fmt_env) (fmt : Format.formatter) (fid : fun_id) : unit =
 and pp_fn_ptr_kind (env : fmt_env) (fmt : Format.formatter) (r : fn_ptr_kind) :
     unit =
   match r with
-  | TraitMethod (trait_ref, method_id, _) ->
+  | TraitMethod (trait_ref, method_id) ->
       let method_name =
         GAstUtils.get_method_name env.crate
           trait_ref.trait_decl_ref.binder_value.id method_id
@@ -1628,8 +1628,12 @@ let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
       (fun (m : trait_method binder) ->
         let env = fmt_env_push_generics_and_preds env m.binder_params in
         let params = generic_params_to_string_single_line env m.binder_params in
-        Format.fprintf fmt "%sfn %s%s = %a\n" indent1 m.binder_value.name params
-          (pp_fun_decl_ref env) m.binder_value.item)
+        Format.fprintf fmt "%sfn %s%s" indent1 m.binder_value.name params;
+        (match m.binder_value.default with
+        | Some default ->
+            Format.fprintf fmt " = %a" (pp_fun_decl_ref env) default
+        | None -> Format.fprintf fmt ";");
+        Format.fprintf fmt "\n")
       methods;
     (match def.vtable with
     | Some vtb_ref ->
@@ -2066,7 +2070,6 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
     | ExternBody _
     | MissingBody
     | OpaqueBody
-    | TraitMethodWithoutDefaultBody
     | TargetDispatchBody _ ->
         List.init n_args (fun i -> "_" ^ string_of_int (i + 1))
   in
@@ -2099,8 +2102,6 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
         locals
         (pp_ullbc_blocks env body_indent indent_incr)
         body indent
-  | TraitMethodWithoutDefaultBody ->
-      Format.fprintf fmt "\n%s= <method_without_default_body>" indent
   | ExternBody name -> Format.fprintf fmt "\n%s= <extern:%s>" indent name
   | IntrinsicBody (name, _) ->
       Format.fprintf fmt "\n%s= <intrinsic:%s>" indent name

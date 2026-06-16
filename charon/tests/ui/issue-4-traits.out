@@ -25,7 +25,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
 
@@ -57,12 +57,12 @@ pub trait TryFrom<Self, T>
     proof ImpliedClause1: (T: Sized)
     proof ImpliedClause2: (Self::Error: Sized)
     type Error
-    fn try_from = core::convert::TryFrom::try_from<Self, T>[Self]
+    fn try_from;
     non-dyn-compatible
 }
 
 // Full name: core::array::{impl TryFrom<&'_0 [T]> for [T; N]}::try_from
-pub fn impl_TryFrom_for_array::try_from<'_0, T, const N : usize>(_1: &'_0 [T]) -> Result<[T; N], TryFromSliceError>[{built_in impl Sized for [T; N]}, {built_in impl Sized for TryFromSliceError}]
+pub fn try_from<'_0, T, const N : usize>(_1: &'_0 [T]) -> Result<[T; N], TryFromSliceError>[{built_in impl Sized for [T; N]}, {built_in impl Sized for TryFromSliceError}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
@@ -78,35 +78,23 @@ where
     proof ImpliedClause1: (&'_0 [T]: Sized) = {built_in impl Sized for &'_0 [T]}
     proof ImpliedClause2: (TryFromSliceError: Sized) = {built_in impl Sized for TryFromSliceError}
     type Error = TryFromSliceError
-    fn try_from = impl_TryFrom_for_array::try_from<'_0, T, N>[TraitClause0, TraitClause1]
+    fn try_from = try_from<'_0, T, N>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
-
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn impl_Clone_for_u8::clone<'_0>(_1: &'_0 u8) -> u8
+pub fn clone<'_0>(_1: &'_0 u8) -> u8
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl "impl_Clone_for_u8" Clone for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
+    fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
 
-#[lang_item("try_from_fn")]
-pub fn core::convert::TryFrom::try_from<Self, T>(_1: T) -> Result<Self, TraitClause0::Error>[TraitClause0::ImpliedClause0, TraitClause0::ImpliedClause2]
-where
-    TraitClause0: (Self: TryFrom<T>),
-= <opaque>
-
 // Full name: core::convert::{impl TryInto<U> for T}::try_into
-pub fn impl_TryInto_for_T::try_into<T, U>(_1: T) -> Result<U, TraitClause2::Error>[TraitClause1, TraitClause2::ImpliedClause2]
+pub fn try_into<T, U>(_1: T) -> Result<U, TraitClause2::Error>[TraitClause1, TraitClause2::ImpliedClause2]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -142,7 +130,7 @@ fn trait_error<'_0>(s_1: &'_0 [u8])
     storage_live(_3)
     storage_live(_4)
     _4 = &(*s_1) with_metadata(copy s_1.metadata)
-    _3 = impl_TryInto_for_T::try_into<&'4 [u8], [u8; 4usize]>[{built_in impl Sized for &'4 [u8]}, {built_in impl Sized for [u8; 4usize]}, impl_TryFrom_for_array<'4, u8, 4usize>[{built_in impl Sized for u8}, impl_Copy_for_u8]](move _4)
+    _3 = try_into<&'4 [u8], [u8; 4usize]>[{built_in impl Sized for &'4 [u8]}, {built_in impl Sized for [u8; 4usize]}, impl_TryFrom_for_array<'4, u8, 4usize>[{built_in impl Sized for u8}, impl_Copy_for_u8]](move _4)
     storage_dead(_4)
     _array_2 = unwrap<[u8; 4usize], TryFromSliceError>[{built_in impl Sized for [u8; 4usize]}, {built_in impl Sized for TryFromSliceError}, impl_Debug_for_TryFromSliceError](move _3)
     storage_dead(_3)

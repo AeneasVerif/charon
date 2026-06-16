@@ -4,15 +4,9 @@
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
-
-#[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
-where
-    TraitClause0: (Self: PartialEq<Rhs>),
-= <opaque>
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
@@ -87,7 +81,7 @@ pub fn impl_Eq_for_Foo::assert_fields_are_eq<'_0>(self_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
-pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
+pub fn eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
 {
     let _0: bool; // return
     let self_1: &'1 Foo; // arg #1
@@ -123,7 +117,7 @@ pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}
 impl "impl_PartialEq_Foo_for_Foo" PartialEq<Foo> for Foo {
-    fn eq<'_0_1, '_1_1> = impl_PartialEq_Foo_for_Foo::eq<'_0_1, '_1_1>
+    fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1>
     vtable: impl_PartialEq_Foo_for_Foo::{vtable}
 }
 

@@ -18,17 +18,12 @@ struct test_crate::Trait::{vtable} {
 trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn foo<'a, '_1_1, TypeOutlives0: Self: 'a> = test_crate::Trait::foo<'a, '_1_1, Self>[Self]
+    fn foo<'a, '_1_1, TypeOutlives0: Self: 'a>;
     vtable: test_crate::Trait::{vtable}
 }
 
-fn test_crate::Trait::foo<'a, '_1, Self>(_1: &'_1 Self)
-where
-    TraitClause0: (Self: Trait),
-    TypeOutlives0: Self: 'a,
-= <method_without_default_body>
-
-fn test_crate::foo<'_0>(x_1: &'_0 (dyn Trait + '_0))
+// Full name: test_crate::foo
+fn foo<'_0>(x_1: &'_0 (dyn Trait + '_0))
 {
     let _0: (); // return
     let x_1: &'3 (dyn Trait + '4); // arg #1

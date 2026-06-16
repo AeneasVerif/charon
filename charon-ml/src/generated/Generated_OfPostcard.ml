@@ -593,8 +593,7 @@ and fn_ptr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* x_0 = trait_ref_of_postcard ctx st in
          let* x_1 = trait_method_id_of_postcard ctx st in
-         let* x_2 = fun_decl_id_of_postcard ctx st in
-         Ok (TraitMethod (x_0, x_1, x_2))
+         Ok (TraitMethod (x_0, x_1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and fun_decl_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1762,19 +1761,18 @@ and body_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
              int_of_postcard ctx st
          in
          Ok (TargetDispatchBody x_0)
-     | 3 -> Ok TraitMethodWithoutDefaultBody
-     | 4 ->
+     | 3 ->
          let* x_0 = string_of_postcard ctx st in
          Ok (ExternBody x_0)
-     | 5 ->
+     | 4 ->
          let* name = string_of_postcard ctx st in
          let* arg_names =
            list_of_postcard (option_of_postcard string_of_postcard) ctx st
          in
          Ok (IntrinsicBody (name, arg_names))
-     | 6 -> Ok OpaqueBody
-     | 7 -> Ok MissingBody
-     | 8 ->
+     | 5 -> Ok OpaqueBody
+     | 6 -> Ok MissingBody
+     | 7 ->
          let* x_0 = error_of_postcard ctx st in
          Ok (ErrorBody x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -2201,8 +2199,7 @@ and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 2 ->
          let* trait_ref = trait_decl_ref_of_postcard ctx st in
          let* item_id = assoc_item_id_of_postcard ctx st in
-         let* has_default = bool_of_postcard ctx st in
-         Ok (TraitDeclItem (trait_ref, item_id, has_default))
+         Ok (TraitDeclItem (trait_ref, item_id))
      | 3 ->
          let* impl_ref = trait_impl_ref_of_postcard ctx st in
          let* trait_ref = trait_decl_ref_of_postcard ctx st in
@@ -2488,8 +2485,8 @@ and trait_method_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* name = trait_item_name_of_postcard ctx st in
      let* item_meta = item_meta_of_postcard ctx st in
      let* signature = fun_sig_of_postcard ctx st in
-     let* item = fun_decl_ref_of_postcard ctx st in
-     Ok ({ name; item_meta; signature; item } : trait_method))
+     let* default = option_of_postcard fun_decl_ref_of_postcard ctx st in
+     Ok ({ name; item_meta; signature; default } : trait_method))
 
 and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (translated_crate, string) result =

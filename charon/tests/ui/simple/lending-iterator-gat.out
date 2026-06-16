@@ -16,12 +16,9 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -40,7 +37,7 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
@@ -52,19 +49,9 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
-
-pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
-where
-    TraitClause0: (Self: FnMut<Args>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -114,17 +101,12 @@ pub trait LendingIterator<Self>
     where
         TypeOutlives0: Self: 'a,
         proof ImpliedClause0: (Self::Item<'a>: Sized);
-    fn next<'a> = test_crate::LendingIterator::next<'a, Self>[Self]
+    fn next<'a>;
     non-dyn-compatible
 }
 
-pub fn test_crate::LendingIterator::next<'a, Self>(_1: &'a mut Self) -> Option<TraitClause0::Item<'a>>[TraitClause0::Item::ImpliedClause0]
-where
-    TraitClause0: (Self: LendingIterator),
-= <method_without_default_body>
-
 // Full name: test_crate::{impl LendingIterator for Option<&'a T>[{built_in impl Sized for &'a T}]}::next
-pub fn impl_LendingIterator_for_Option::next<'a, '_1, T>(self_1: &'_1 mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'_1 T>[{built_in impl Sized for &'_1 T}]
+pub fn next<'a, '_1, T>(self_1: &'_1 mut Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'_1 T>[{built_in impl Sized for &'_1 T}]
 where
     TraitClause0: (T: Sized),
 {
@@ -170,7 +152,7 @@ where
     where
         TypeOutlives0: Option<&'a T>[{built_in impl Sized for &'a T}]: 'a,
         proof ImpliedClause0: (&'a T: Sized) = {built_in impl Sized for &'a T};
-    fn next<'_0_1> = impl_LendingIterator_for_Option::next<'a, '_0_1, T>[TraitClause0]
+    fn next<'_0_1> = next<'a, '_0_1, T>[TraitClause0]
     non-dyn-compatible
 }
 
@@ -200,7 +182,7 @@ where
         storage_live(_4)
         storage_live(_5)
         _5 = &two-phase-mut iter_1
-        _4 = TraitClause2::next<'15>(move _5)
+        _4 = TraitClause2::next<'14>(move _5)
         storage_dead(_5)
         match _4 {
             Option::Some => {
@@ -217,22 +199,22 @@ where
         storage_live(_9)
         _9 = move item_6
         _8 = (move _9,)
-        _3 = TraitClause3::call_mut<'35>(move _7, move _8)
-        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'43>}::drop_glue<'44>] _9
+        _3 = TraitClause3::call_mut<'33>(move _7, move _8)
+        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'41>}::drop_glue<'42>] _9
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
-        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'50>}::drop_glue<'51>] item_6
+        conditional_drop[{built_in impl Destruct for TraitClause2::Item<'48>}::drop_glue<'49>] item_6
         storage_dead(item_6)
-        conditional_drop[impl_Destruct_for_Option::drop_glue<'64, TraitClause2::Item<'61>>[TraitClause2::Item::ImpliedClause0]] _4
+        conditional_drop[impl_Destruct_for_Option::drop_glue<'62, TraitClause2::Item<'59>>[TraitClause2::Item::ImpliedClause0]] _4
         storage_dead(_4)
         continue 0
     }
     _0 = ()
-    conditional_drop[impl_Destruct_for_Option::drop_glue<'27, TraitClause2::Item<'24>>[TraitClause2::Item::ImpliedClause0]] _4
+    conditional_drop[impl_Destruct_for_Option::drop_glue<'26, TraitClause2::Item<'23>>[TraitClause2::Item::ImpliedClause0]] _4
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T1}::drop_glue<'36>] f_2
-    conditional_drop[{built_in impl Destruct for I}::drop_glue<'45>] iter_1
+    conditional_drop[{built_in impl Destruct for T1}::drop_glue<'34>] f_2
+    conditional_drop[{built_in impl Destruct for I}::drop_glue<'43>] iter_1
     return
 }
 
@@ -242,7 +224,7 @@ struct closure<'_0> {
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut
-fn impl_FnMut_tuple_for_closure::call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0>, tupled_args_2: (&'_1 i32,))
+fn call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0>, tupled_args_2: (&'_1 i32,))
 {
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1
@@ -275,7 +257,7 @@ unsafe fn impl_Destruct_for_closure::drop_glue<'_0, '_1>(_1: &'_1 mut closure<'_
 }
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ i32,)> for closure<'_0>}::call_once
-fn impl_FnOnce_tuple_for_closure::call_once<'_0, '_1>(_1: closure<'_0>, _2: (&'_1 i32,))
+fn call_once<'_0, '_1>(_1: closure<'_0>, _2: (&'_1 i32,))
 {
     let _0: (); // return
     let _1: closure<'_0>; // arg #1
@@ -285,8 +267,8 @@ fn impl_FnOnce_tuple_for_closure::call_once<'_0, '_1>(_1: closure<'_0>, _2: (&'_
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = impl_FnMut_tuple_for_closure::call_mut<'_0, '_1, '10>(move _3, move _2)
-    drop[impl_Destruct_for_closure::drop_glue<'_0, '16>] _1
+    _0 = call_mut<'_0, '_1, '9>(move _3, move _2)
+    drop[impl_Destruct_for_closure::drop_glue<'_0, '15>] _1
     return
 }
 
@@ -297,7 +279,7 @@ impl<'_0, '_1> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ i32,)> for closure<'_
     proof ImpliedClause2: ((&'_ i32,): Tuple) = {built_in impl Tuple for (&'_ i32,)}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
-    fn call_once = impl_FnOnce_tuple_for_closure::call_once<'_0, '_1>
+    fn call_once = call_once<'_0, '_1>
     non-dyn-compatible
 }
 
@@ -307,7 +289,7 @@ impl<'_0, '_1> "impl_FnMut_tuple_for_closure" FnMut<(&'_ i32,)> for closure<'_0>
     proof ImpliedClause1: (closure<'_0>: FnOnce<(&'_ i32,)>) = impl_FnOnce_tuple_for_closure<'_0, '_1>
     proof ImpliedClause2: ((&'_ i32,): Sized) = {built_in impl Sized for (&'_ i32,)}
     proof ImpliedClause3: ((&'_ i32,): Tuple) = {built_in impl Tuple for (&'_ i32,)}
-    fn call_mut<'_0_1> = impl_FnMut_tuple_for_closure::call_mut<'_0, '_1, '_0_1>
+    fn call_mut<'_0_1> = call_mut<'_0, '_1, '_0_1>
     non-dyn-compatible
 }
 

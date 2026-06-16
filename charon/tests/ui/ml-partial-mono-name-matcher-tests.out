@@ -36,14 +36,14 @@ pub trait core::marker::Sized::<Option<&_ mut _>><'_0, T0>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, &_ mut _><'_0_1, '_0, T0>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -57,19 +57,9 @@ pub enum Option<T> {
 #[lang_item("destruct")]
 pub trait core::marker::Destruct::<Option<&_ mut _>><'_0, T0>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue::<_, Option<&_ mut _>><'_0_1, '_0, T0>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_glue::<_, &_ mut _><'_0, '_1, T0>(_1: &'_0 mut &'_1 mut T0)
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_glue::<_, Option<&_ mut _>><'_0, '_1, T0>(_1: &'_0 mut Option<&'_1 mut T0>)
-= <opaque>
 
 // Full name: test_crate::identity
 fn identity<T>(x_1: T) -> T

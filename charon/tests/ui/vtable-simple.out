@@ -19,24 +19,18 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
-
 // Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
+pub fn clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for i32}
 impl "impl_Clone_for_i32" Clone for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
-    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
+    fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -53,17 +47,12 @@ trait Modifiable<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    fn modify<'_0_1, '_1_1> = test_crate::Modifiable::modify<'_0_1, '_1_1, Self, T>[Self]
+    fn modify<'_0_1, '_1_1>;
     vtable: test_crate::Modifiable::{vtable}<T>
 }
 
-fn test_crate::Modifiable::modify<'_0, '_1, Self, T>(_1: &'_0 mut Self, _2: &'_1 T) -> T
-where
-    TraitClause0: (Self: Modifiable<T>),
-= <method_without_default_body>
-
 // Full name: test_crate::{impl Modifiable<T> for i32}::modify
-fn impl_Modifiable_for_i32::modify<'_0, '_1, T>(self_1: &'_0 mut i32, arg_2: &'_1 T) -> T
+fn modify<'_0, '_1, T>(self_1: &'_0 mut i32, arg_2: &'_1 T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -79,7 +68,7 @@ where
     (*self_1) = move _3
     storage_live(_4)
     _4 = &(*arg_2)
-    _0 = TraitClause1::clone<'6>(move _4)
+    _0 = TraitClause1::clone<'5>(move _4)
     storage_dead(_4)
     return
 }
@@ -97,7 +86,7 @@ where
 
     storage_live(_3)
     _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move _1)
-    _0 = impl_Modifiable_for_i32::modify<'_0, '_1, T>[TraitClause0, TraitClause1](move _3, move _2)
+    _0 = modify<'_0, '_1, T>[TraitClause0, TraitClause1](move _3, move _2)
     return
 }
 
@@ -156,7 +145,7 @@ where
 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    fn modify<'_0_1, '_1_1> = impl_Modifiable_for_i32::modify<'_0_1, '_1_1, T>[TraitClause0, TraitClause1]
+    fn modify<'_0_1, '_1_1> = modify<'_0_1, '_1_1, T>[TraitClause0, TraitClause1]
     vtable: impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]
 }
 

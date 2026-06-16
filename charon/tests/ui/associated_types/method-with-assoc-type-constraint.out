@@ -16,13 +16,9 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: test_crate::IntoIterator
 pub trait IntoIterator<Self, Self_Item>
@@ -37,19 +33,12 @@ pub trait FromIterator<Self, A>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (A: Sized)
-    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator<A>)> = test_crate::FromIterator::from_iter<Self, A, T>[Self, TraitClause0_1, TraitClause1_1]
+    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator<A>)>;
     non-dyn-compatible
 }
 
-pub fn test_crate::FromIterator::from_iter<Self, A, T>(_1: T) -> Self
-where
-    TraitClause0: (Self: FromIterator<A>),
-    TraitClause1: (T: Sized),
-    TraitClause2: (T: IntoIterator<A>),
-= <method_without_default_body>
-
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
-pub fn impl_FromIterator_unit_for_unit::from_iter<I>(iter_1: I)
+pub fn from_iter<I>(iter_1: I)
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: IntoIterator<()>),
@@ -67,7 +56,7 @@ where
 impl "impl_FromIterator_unit_for_unit" FromIterator<()> for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator<()>)> = impl_FromIterator_unit_for_unit::from_iter<T>[TraitClause0_1, TraitClause1_1]
+    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator<()>)> = from_iter<T>[TraitClause0_1, TraitClause1_1]
     non-dyn-compatible
 }
 

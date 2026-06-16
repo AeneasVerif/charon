@@ -16,12 +16,9 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -39,7 +36,7 @@ pub trait FnOnce<Self, Args, Self_Output>
     proof ImpliedClause1: (Args: Sized)
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self_Output: Sized)
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
 }
 
@@ -51,7 +48,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     proof ImpliedClause1: (Self: FnOnce<Args, Self_Clause1_Output>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args, Self_Clause1_Output>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
 
@@ -63,24 +60,9 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     proof ImpliedClause1: (Self: FnMut<Args, Self_Clause1_Clause1_Output>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args, Self_Clause1_Clause1_Output>[Self]
+    fn call<'_0_1>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
-
-pub extern "rust-call" fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause1_Clause1_Output>(_1: &'_0 Self, _2: Args) -> Clause0_Clause1_Clause1_Output
-where
-    TraitClause0: (Self: Fn<Args, Clause0_Clause1_Clause1_Output>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Clause0_Clause1_Output>(_1: &'_0 mut Self, _2: Args) -> Clause0_Clause1_Output
-where
-    TraitClause0: (Self: FnMut<Args, Clause0_Clause1_Output>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args, Clause0_Output>(_1: Self, _2: Args) -> Clause0_Output
-where
-    TraitClause0: (Self: FnOnce<Args, Clause0_Output>),
-= <opaque>
 
 // Full name: test_crate::PrimeField
 pub trait PrimeField<Self, Self_Repr>
@@ -123,7 +105,7 @@ where
 }
 
 // Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_closure::drop_glue<'_0, F, Clause1_Repr>(_1: &'_0 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1])
+unsafe fn drop_glue<'_0, F, Clause1_Repr>(_1: &'_0 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1])
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
@@ -136,7 +118,7 @@ where
 }
 
 // Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl Fn<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call
-fn impl_Fn_tuple_for_closure::call<'_0, F, Clause1_Repr>(_1: &'_0 closure<F, Clause1_Repr>[TraitClause0, TraitClause1], tupled_args_2: ((),))
+fn call<'_0, F, Clause1_Repr>(_1: &'_0 closure<F, Clause1_Repr>[TraitClause0, TraitClause1], tupled_args_2: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
@@ -154,7 +136,7 @@ where
 }
 
 // Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnMut<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call_mut
-fn impl_FnMut_tuple_for_closure::call_mut<'_0, F, Clause1_Repr>(state_1: &'_0 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1], args_2: ((),))
+fn call_mut<'_0, F, Clause1_Repr>(state_1: &'_0 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1], args_2: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
@@ -167,12 +149,12 @@ where
     _0 = ()
     storage_live(_3)
     _3 = &(*state_1)
-    _0 = impl_Fn_tuple_for_closure::call<'2, F, Clause1_Repr>[TraitClause0, TraitClause1](move _3, move args_2)
+    _0 = call<'2, F, Clause1_Repr>[TraitClause0, TraitClause1](move _3, move args_2)
     return
 }
 
 // Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnOnce<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call_once
-fn impl_FnOnce_tuple_for_closure::call_once<F, Clause1_Repr>(_1: closure<F, Clause1_Repr>[TraitClause0, TraitClause1], _2: ((),))
+fn call_once<F, Clause1_Repr>(_1: closure<F, Clause1_Repr>[TraitClause0, TraitClause1], _2: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
@@ -185,8 +167,8 @@ where
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = impl_FnMut_tuple_for_closure::call_mut<'3, F, Clause1_Repr>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[impl_Destruct_for_closure::drop_glue<'5, F, Clause1_Repr>[TraitClause0, TraitClause1]] _1
+    _0 = call_mut<'2, F, Clause1_Repr>[TraitClause0, TraitClause1](move _3, move _2)
+    drop[drop_glue<'4, F, Clause1_Repr>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -200,7 +182,7 @@ where
     proof ImpliedClause1: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause2: (((),): Tuple) = {built_in impl Tuple for ((),)}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
-    fn call_once = impl_FnOnce_tuple_for_closure::call_once<F, Clause1_Repr>[TraitClause0, TraitClause1]
+    fn call_once = call_once<F, Clause1_Repr>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -214,7 +196,7 @@ where
     proof ImpliedClause1: (closure<F, Clause1_Repr>[TraitClause0, TraitClause1]: FnOnce<((),), ()>) = impl_FnOnce_tuple_for_closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
-    fn call_mut<'_0_1> = impl_FnMut_tuple_for_closure::call_mut<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
+    fn call_mut<'_0_1> = call_mut<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -228,7 +210,7 @@ where
     proof ImpliedClause1: (closure<F, Clause1_Repr>[TraitClause0, TraitClause1]: FnMut<((),), ()>) = impl_FnMut_tuple_for_closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
-    fn call<'_0_1> = impl_Fn_tuple_for_closure::call<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
+    fn call<'_0_1> = call<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 
@@ -238,7 +220,7 @@ where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
 {
-    fn drop_glue<'_0_1> = impl_Destruct_for_closure::drop_glue<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
     non-dyn-compatible
 }
 

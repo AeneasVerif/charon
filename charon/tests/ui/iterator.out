@@ -19,7 +19,7 @@ where
     TraitClause0: (T: Sized),
 
 // Full name: core::array::iter::IntoIter::{impl Destruct for IntoIter<T, N>[TraitClause0]}::drop_glue
-unsafe fn impl_Destruct_for_IntoIter::drop_glue<'_0, T, const N : usize>(_1: &'_0 mut IntoIter<T, N>[TraitClause0])
+unsafe fn drop_glue<'_0, T, const N : usize>(_1: &'_0 mut IntoIter<T, N>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -46,7 +46,7 @@ pub trait FromResidual<Self, R>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (R: Sized)
-    fn from_residual = from_residual<Self, R>[Self]
+    fn from_residual;
     non-dyn-compatible
 }
 
@@ -72,8 +72,8 @@ pub trait Try<Self>
     proof ImpliedClause4: (Self::Residual: Residual<Self::Output>)
     type Output
     type Residual
-    fn from_output = from_output<Self>[Self]
-    fn branch = branch<Self>[Self]
+    fn from_output;
+    fn branch;
     non-dyn-compatible
 }
 
@@ -108,7 +108,7 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
@@ -120,7 +120,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -128,7 +128,7 @@ pub trait FnMut<Self, Args>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -137,7 +137,7 @@ pub trait Destruct<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
@@ -370,7 +370,7 @@ where
 pub trait Default<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn default = default<Self>[Self]
+    fn default;
     non-dyn-compatible
 }
 
@@ -386,7 +386,7 @@ pub enum Ordering {
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1> = core::cmp::PartialEq::eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1>;
     fn ne<'_0_1, '_1_1> = core::cmp::PartialEq::ne<'_0_1, '_1_1, Self, Rhs>[Self]
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
@@ -396,7 +396,7 @@ pub trait PartialEq<Self, Rhs>
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1> = core::cmp::PartialOrd::partial_cmp<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn partial_cmp<'_0_1, '_1_1>;
     fn lt<'_0_1, '_1_1> = core::cmp::PartialOrd::lt<'_0_1, '_1_1, Self, Rhs>[Self]
     fn le<'_0_1, '_1_1> = core::cmp::PartialOrd::le<'_0_1, '_1_1, Self, Rhs>[Self]
     fn gt<'_0_1, '_1_1> = core::cmp::PartialOrd::gt<'_0_1, '_1_1, Self, Rhs>[Self]
@@ -424,7 +424,7 @@ pub trait Ord<Self>
 {
     proof ImpliedClause0: (Self: Eq)
     proof ImpliedClause1: (Self: PartialOrd<Self>)
-    fn cmp<'_0_1, '_1_1> = core::cmp::Ord::cmp<'_0_1, '_1_1, Self>[Self]
+    fn cmp<'_0_1, '_1_1>;
     fn max<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct)> = core::cmp::Ord::max<Self>[Self, TraitClause0_1, TraitClause1_1]
     fn min<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct)> = core::cmp::Ord::min<Self>[Self, TraitClause0_1, TraitClause1_1]
     fn clamp<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct)> = clamp<Self>[Self, TraitClause0_1, TraitClause1_1]
@@ -494,7 +494,7 @@ pub trait Sum<Self, A>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (A: Sized)
-    fn sum<I, TraitClause0_1: (I: Sized), TraitClause1_1: (I: Iterator), TypeConstraint0: TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, TraitClause0_1, TraitClause1_1]
+    fn sum<I, TraitClause0_1: (I: Sized), TraitClause1_1: (I: Iterator), TypeConstraint0: TraitClause1_1::Item = A>;
     non-dyn-compatible
 }
 
@@ -503,7 +503,7 @@ pub trait Product<Self, A>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (A: Sized)
-    fn product<I, TraitClause0_1: (I: Sized), TraitClause1_1: (I: Iterator), TypeConstraint0: TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, TraitClause0_1, TraitClause1_1]
+    fn product<I, TraitClause0_1: (I: Sized), TraitClause1_1: (I: Iterator), TypeConstraint0: TraitClause1_1::Item = A>;
     non-dyn-compatible
 }
 
@@ -513,7 +513,7 @@ pub trait FromIterator<Self, A>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (A: Sized)
-    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator), TypeConstraint0: TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, TraitClause0_1, TraitClause1_1]
+    fn from_iter<T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator), TypeConstraint0: TraitClause1_1::Item = A>;
     non-dyn-compatible
 }
 
@@ -529,7 +529,7 @@ where
     proof ImpliedClause3: (Self::IntoIter: Iterator)
     type Item
     type IntoIter
-    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
+    fn into_iter;
     vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
@@ -538,7 +538,7 @@ pub trait Extend<Self, A>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (A: Sized)
-    fn extend<'_0_1, T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator), TypeConstraint0: TraitClause1_1::Item = A> = extend<'_0_1, Self, A, T>[Self, TraitClause0_1, TraitClause1_1]
+    fn extend<'_0_1, T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: IntoIterator), TypeConstraint0: TraitClause1_1::Item = A>;
     fn extend_one<'_0_1> = extend_one<'_0_1, Self, A>[Self]
     fn extend_reserve<'_0_1> = extend_reserve<'_0_1, Self, A>[Self]
     fn extend_one_unchecked<'_0_1, TraitClause0_1: (Self: Sized)> = extend_one_unchecked<'_0_1, Self, A>[Self, TraitClause0_1]
@@ -551,7 +551,7 @@ pub trait DoubleEndedIterator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Iterator)
-    fn next_back<'_0_1> = next_back<'_0_1, Self>[Self]
+    fn next_back<'_0_1>;
     fn advance_back_by<'_0_1> = advance_back_by<'_0_1, Self>[Self]
     fn nth_back<'_0_1> = nth_back<'_0_1, Self>[Self]
     fn try_rfold<'_0_1, B, F, R, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (R: Sized), TraitClause3_1: (Self: Sized), TraitClause4_1: (F: FnMut<(B, Self::ImpliedClause1::Item)>), TraitClause5_1: (F: Destruct), TraitClause6_1: (R: Try), TypeConstraint0: TraitClause4_1::ImpliedClause1::Output = R, TypeConstraint1: TraitClause6_1::Output = B> = try_rfold<'_0_1, Self, B, F, R>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1, TraitClause6_1]
@@ -577,7 +577,7 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1> = core::iter::traits::iterator::Iterator::next<'_0_1, Self>[Self]
+    fn next<'_0_1>;
     fn next_chunk<'_0_1, const N : usize, TraitClause0_1: (Self: Sized)> = core::iter::traits::iterator::Iterator::next_chunk<'_0_1, Self, N>[Self, TraitClause0_1]
     fn size_hint<'_0_1> = core::iter::traits::iterator::Iterator::size_hint<'_0_1, Self>[Self]
     fn count<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Destruct), TraitClause2_1: (Self::Item: Destruct)> = core::iter::traits::iterator::Iterator::count<Self>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
@@ -1508,22 +1508,10 @@ where
     vtable: impl_Iterator_for_IntoIter::{vtable}<T, N>[TraitClause0]
 }
 
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
-
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
     TraitClause1: (Self: Destruct),
-= <opaque>
-
-#[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
-where
-    TraitClause0: (Self: PartialEq<Rhs>),
 = <opaque>
 
 #[lang_item("cmp_partialeq_ne")]
@@ -1543,12 +1531,6 @@ where
 pub fn assert_fields_are_eq<'_0, Self>(_1: &'_0 Self)
 where
     TraitClause0: (Self: Eq),
-= <opaque>
-
-#[lang_item("ord_cmp_method")]
-pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(_1: &'_0 Self, _2: &'_1 Self) -> Ordering
-where
-    TraitClause0: (Self: Ord),
 = <opaque>
 
 #[lang_item("cmp_ord_max")]
@@ -1573,12 +1555,6 @@ where
     TraitClause0: (Self: Ord),
     TraitClause1: (Self: Sized),
     TraitClause2: (Self: Destruct),
-= <opaque>
-
-#[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> Option<Ordering>[{built_in impl Sized for Ordering}]
-where
-    TraitClause0: (Self: PartialOrd<Rhs>),
 = <opaque>
 
 #[lang_item("cmp_partialord_lt")]
@@ -1629,15 +1605,8 @@ where
     TraitClause0: (Self: PartialOrd<Rhs>),
 = <opaque>
 
-// Full name: core::default::Default::default
-#[lang_item("default_fn")]
-pub fn default<Self>() -> Self
-where
-    TraitClause0: (Self: Default),
-= <opaque>
-
 // Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
-pub fn impl_AddAssign_for_i32::add_assign<'_0, '_1>(_1: &'_1 mut i32, _2: &'_0 i32)
+pub fn add_assign<'_0, '_1>(_1: &'_1 mut i32, _2: &'_0 i32)
 = <opaque>
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size
@@ -1647,52 +1616,11 @@ where
     TraitClause1: (Self: Iterator),
 = <opaque>
 
-pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(_1: I) -> Self
-where
-    TraitClause0: (Self: Sum<A>),
-    TraitClause1: (I: Sized),
-    TraitClause2: (I: Iterator),
-    TypeConstraint0: TraitClause2::Item = A,
-= <opaque>
-
-pub fn core::iter::traits::accum::Product::product<Self, A, I>(_1: I) -> Self
-where
-    TraitClause0: (Self: Product<A>),
-    TraitClause1: (I: Sized),
-    TraitClause2: (I: Iterator),
-    TypeConstraint0: TraitClause2::Item = A,
-= <opaque>
-
-// Full name: core::iter::traits::collect::FromIterator::from_iter
-#[lang_item("from_iter_fn")]
-pub fn from_iter<Self, A, T>(_1: T) -> Self
-where
-    TraitClause0: (Self: FromIterator<A>),
-    TraitClause1: (T: Sized),
-    TraitClause2: (T: IntoIterator),
-    TypeConstraint0: TraitClause2::Item = A,
-= <opaque>
-
-#[lang_item("into_iter")]
-pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(_1: Self) -> TraitClause0::IntoIter
-where
-    TraitClause0: (Self: IntoIterator),
-= <opaque>
-
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
 pub fn impl_IntoIterator_for_T::into_iter<I>(_1: I) -> I
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: Iterator),
-= <opaque>
-
-// Full name: core::iter::traits::collect::Extend::extend
-pub fn extend<'_0, Self, A, T>(_1: &'_0 mut Self, _2: T)
-where
-    TraitClause0: (Self: Extend<A>),
-    TraitClause1: (T: Sized),
-    TraitClause2: (T: IntoIterator),
-    TypeConstraint0: TraitClause2::Item = A,
 = <opaque>
 
 // Full name: core::iter::traits::collect::Extend::extend_one
@@ -1712,12 +1640,6 @@ pub unsafe fn extend_one_unchecked<'_0, Self, A>(_1: &'_0 mut Self, _2: A)
 where
     TraitClause0: (Self: Extend<A>),
     TraitClause1: (Self: Sized),
-= <opaque>
-
-// Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
-pub fn next_back<'_0, Self>(_1: &'_0 mut Self) -> Option<TraitClause0::ImpliedClause1::Item>[TraitClause0::ImpliedClause1::ImpliedClause1]
-where
-    TraitClause0: (Self: DoubleEndedIterator),
 = <opaque>
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::advance_back_by
@@ -1780,12 +1702,6 @@ where
 pub fn is_empty<'_0, Self>(_1: &'_0 Self) -> bool
 where
     TraitClause0: (Self: ExactSizeIterator),
-= <opaque>
-
-#[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(_1: &'_0 mut Self) -> Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]
-where
-    TraitClause0: (Self: Iterator),
 = <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize>(_1: &'_0 mut Self) -> Result<[TraitClause0::Item; N], IntoIter<TraitClause0::Item, N>[TraitClause0::ImpliedClause1]>[{built_in impl Sized for [TraitClause0::Item; N]}, {built_in impl Sized for IntoIter<TraitClause0::Item, N>[TraitClause0::ImpliedClause1]}]
@@ -2478,42 +2394,6 @@ pub unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'
 where
     TraitClause0: (Self: Iterator),
     TraitClause1: (Self: TrustedRandomAccessNoCoerce),
-= <opaque>
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
-
-// Full name: core::ops::function::FnMut::call_mut
-pub extern "rust-call" fn call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
-where
-    TraitClause0: (Self: FnMut<Args>),
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once
-pub extern "rust-call" fn call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <opaque>
-
-// Full name: core::ops::try_trait::Try::from_output
-#[lang_item("from_output")]
-pub fn from_output<Self>(_1: TraitClause0::Output) -> Self
-where
-    TraitClause0: (Self: Try),
-= <opaque>
-
-// Full name: core::ops::try_trait::Try::branch
-#[lang_item("branch")]
-pub fn branch<Self>(_1: Self) -> ControlFlow<TraitClause0::Residual, TraitClause0::Output>[TraitClause0::ImpliedClause1::ImpliedClause1, TraitClause0::ImpliedClause2]
-where
-    TraitClause0: (Self: Try),
-= <opaque>
-
-// Full name: core::ops::try_trait::FromResidual::from_residual
-#[lang_item("from_residual")]
-pub fn from_residual<Self, R>(_1: R) -> Self
-where
-    TraitClause0: (Self: FromResidual<R>),
 = <opaque>
 
 // Full name: core::panicking::AssertKind
@@ -5235,9 +5115,9 @@ fn main()
     }
     storage_dead(_9)
     storage_dead(_7)
-    conditional_drop[impl_Destruct_for_IntoIter::drop_glue<'91, i32, 7usize>[{built_in impl Sized for i32}]] iter_6
+    conditional_drop[drop_glue<'91, i32, 7usize>[{built_in impl Sized for i32}]] iter_6
     storage_dead(iter_6)
-    conditional_drop[impl_Destruct_for_IntoIter::drop_glue<'92, i32, 7usize>[{built_in impl Sized for i32}]] _3
+    conditional_drop[drop_glue<'92, i32, 7usize>[{built_in impl Sized for i32}]] _3
     storage_dead(_3)
     storage_live(_13)
     storage_live(_14)
@@ -5274,7 +5154,7 @@ fn main()
         _23 = &two-phase-mut i_2
         storage_live(_24)
         _24 = copy v_21
-        _22 = impl_AddAssign_for_i32::add_assign<'113, '115>(move _23, move _24)
+        _22 = add_assign<'113, '115>(move _23, move _24)
         storage_dead(_24)
         storage_dead(_23)
         storage_dead(_22)

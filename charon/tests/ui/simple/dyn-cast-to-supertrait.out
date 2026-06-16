@@ -10,12 +10,9 @@ pub trait MetaSized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 struct test_crate::Feline::{vtable} {
   size: usize,
@@ -29,14 +26,9 @@ struct test_crate::Feline::{vtable} {
 trait Feline<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn hunt<'_0_1> = test_crate::Feline::hunt<'_0_1, Self>[Self]
+    fn hunt<'_0_1>;
     vtable: test_crate::Feline::{vtable}
 }
-
-fn test_crate::Feline::hunt<'_0, Self>(_1: &'_0 Self)
-where
-    TraitClause0: (Self: Feline),
-= <method_without_default_body>
 
 struct test_crate::Pettable::{vtable} {
   size: usize,
@@ -50,14 +42,9 @@ struct test_crate::Pettable::{vtable} {
 trait Pettable<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn pet<'_0_1> = test_crate::Pettable::pet<'_0_1, Self>[Self]
+    fn pet<'_0_1>;
     vtable: test_crate::Pettable::{vtable}
 }
-
-fn test_crate::Pettable::pet<'_0, Self>(_1: &'_0 Self)
-where
-    TraitClause0: (Self: Pettable),
-= <method_without_default_body>
 
 struct test_crate::Cat::{vtable} {
   size: usize,
@@ -75,20 +62,15 @@ trait Cat<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Feline)
     proof ImpliedClause2: (Self: Pettable)
-    fn meow<'_0_1> = test_crate::Cat::meow<'_0_1, Self>[Self]
+    fn meow<'_0_1>;
     vtable: test_crate::Cat::{vtable}
 }
-
-fn test_crate::Cat::meow<'_0, Self>(_1: &'_0 Self)
-where
-    TraitClause0: (Self: Cat),
-= <method_without_default_body>
 
 // Full name: test_crate::HouseCat
 struct HouseCat {}
 
 // Full name: test_crate::HouseCat::{impl Destruct for HouseCat}::drop_glue
-unsafe fn impl_Destruct_for_HouseCat::drop_glue<'_0>(_1: &'_0 mut HouseCat)
+unsafe fn drop_glue<'_0>(_1: &'_0 mut HouseCat)
 {
     let _0: (); // return
     let _1: &'1 mut HouseCat; // arg #1
@@ -99,12 +81,12 @@ unsafe fn impl_Destruct_for_HouseCat::drop_glue<'_0>(_1: &'_0 mut HouseCat)
 
 // Full name: test_crate::HouseCat::{impl Destruct for HouseCat}
 impl "impl_Destruct_for_HouseCat" Destruct for HouseCat {
-    fn drop_glue<'_0_1> = impl_Destruct_for_HouseCat::drop_glue<'_0_1>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::hunt
-fn impl_Feline_for_HouseCat::hunt<'_0>(self_1: &'_0 HouseCat)
+fn hunt<'_0>(self_1: &'_0 HouseCat)
 {
     let _0: (); // return
     let self_1: &'1 HouseCat; // arg #1
@@ -124,7 +106,7 @@ fn impl_Feline_for_HouseCat::hunt::{vtable_method}<'_0>(_1: &'_0 (dyn Feline))
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Feline + '1), &'_0 HouseCat>(move _1)
-    _0 = impl_Feline_for_HouseCat::hunt<'_0>(move _2)
+    _0 = hunt<'_0>(move _2)
     return
 }
 
@@ -138,7 +120,7 @@ unsafe fn impl_Feline_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self_1: &'_0 mut
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<&'_0 mut (dyn Feline + '1), &'_0 mut HouseCat>(move dyn_self_1)
-    drop[impl_Destruct_for_HouseCat::drop_glue<'3>] (*target_self_2)
+    drop[drop_glue<'3>] (*target_self_2)
     return
 }
 
@@ -169,12 +151,12 @@ static impl_Feline_for_HouseCat::{vtable}: test_crate::Feline::{vtable} = impl_F
 // Full name: test_crate::{impl Feline for HouseCat}
 impl "impl_Feline_for_HouseCat" Feline for HouseCat {
     proof ImpliedClause0: (HouseCat: MetaSized) = {built_in impl MetaSized for HouseCat}
-    fn hunt<'_0_1> = impl_Feline_for_HouseCat::hunt<'_0_1>
+    fn hunt<'_0_1> = hunt<'_0_1>
     vtable: impl_Feline_for_HouseCat::{vtable}
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::pet
-fn impl_Pettable_for_HouseCat::pet<'_0>(self_1: &'_0 HouseCat)
+fn pet<'_0>(self_1: &'_0 HouseCat)
 {
     let _0: (); // return
     let self_1: &'1 HouseCat; // arg #1
@@ -194,7 +176,7 @@ fn impl_Pettable_for_HouseCat::pet::{vtable_method}<'_0>(_1: &'_0 (dyn Pettable)
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Pettable + '1), &'_0 HouseCat>(move _1)
-    _0 = impl_Pettable_for_HouseCat::pet<'_0>(move _2)
+    _0 = pet<'_0>(move _2)
     return
 }
 
@@ -208,7 +190,7 @@ unsafe fn impl_Pettable_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self_1: &'_0 m
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<&'_0 mut (dyn Pettable + '1), &'_0 mut HouseCat>(move dyn_self_1)
-    drop[impl_Destruct_for_HouseCat::drop_glue<'3>] (*target_self_2)
+    drop[drop_glue<'3>] (*target_self_2)
     return
 }
 
@@ -239,12 +221,12 @@ static impl_Pettable_for_HouseCat::{vtable}: test_crate::Pettable::{vtable} = im
 // Full name: test_crate::{impl Pettable for HouseCat}
 impl "impl_Pettable_for_HouseCat" Pettable for HouseCat {
     proof ImpliedClause0: (HouseCat: MetaSized) = {built_in impl MetaSized for HouseCat}
-    fn pet<'_0_1> = impl_Pettable_for_HouseCat::pet<'_0_1>
+    fn pet<'_0_1> = pet<'_0_1>
     vtable: impl_Pettable_for_HouseCat::{vtable}
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::meow
-fn impl_Cat_for_HouseCat::meow<'_0>(self_1: &'_0 HouseCat)
+fn meow<'_0>(self_1: &'_0 HouseCat)
 {
     let _0: (); // return
     let self_1: &'1 HouseCat; // arg #1
@@ -264,7 +246,7 @@ fn impl_Cat_for_HouseCat::meow::{vtable_method}<'_0>(_1: &'_0 (dyn Cat))
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Cat + '1), &'_0 HouseCat>(move _1)
-    _0 = impl_Cat_for_HouseCat::meow<'_0>(move _2)
+    _0 = meow<'_0>(move _2)
     return
 }
 
@@ -278,7 +260,7 @@ unsafe fn impl_Cat_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self_1: &'_0 mut (d
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<&'_0 mut (dyn Cat + '1), &'_0 mut HouseCat>(move dyn_self_1)
-    drop[impl_Destruct_for_HouseCat::drop_glue<'3>] (*target_self_2)
+    drop[drop_glue<'3>] (*target_self_2)
     return
 }
 
@@ -317,7 +299,7 @@ impl "impl_Cat_for_HouseCat" Cat for HouseCat {
     proof ImpliedClause0: (HouseCat: MetaSized) = {built_in impl MetaSized for HouseCat}
     proof ImpliedClause1: (HouseCat: Feline) = impl_Feline_for_HouseCat
     proof ImpliedClause2: (HouseCat: Pettable) = impl_Pettable_for_HouseCat
-    fn meow<'_0_1> = impl_Cat_for_HouseCat::meow<'_0_1>
+    fn meow<'_0_1> = meow<'_0_1>
     vtable: impl_Cat_for_HouseCat::{vtable}
 }
 

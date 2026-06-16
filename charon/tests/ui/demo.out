@@ -457,14 +457,9 @@ where
 pub trait Counter<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn incr<'_0_1> = test_crate::Counter::incr<'_0_1, Self>[Self]
+    fn incr<'_0_1>;
     vtable: test_crate::Counter::{vtable}
 }
-
-pub fn test_crate::Counter::incr<'_0, Self>(_1: &'_0 mut Self) -> usize
-where
-    TraitClause0: (Self: Counter),
-= <method_without_default_body>
 
 // Full name: test_crate::{impl Counter for usize}::incr
 pub fn impl_Counter_for_usize::incr<'_0>(self_1: &'_0 mut usize) -> usize
@@ -503,7 +498,7 @@ where
 
     storage_live(_2)
     _2 = &two-phase-mut (*cnt_1)
-    _0 = TraitClause1::incr<'4>(move _2)
+    _0 = TraitClause1::incr<'3>(move _2)
     storage_dead(_2)
     return
 }

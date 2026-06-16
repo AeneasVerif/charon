@@ -90,7 +90,10 @@ impl TransformPass for Transform {
         // We explore only items with an explicit `Self` clause, namely method and associated const
         // declarations.
         for tdecl in &ctx.translated.trait_decls {
-            let methods = tdecl.methods().map(|m| m.skip_binder.item.id);
+            let methods = tdecl
+                .methods()
+                .filter_map(|m| m.skip_binder.default.as_ref())
+                .map(|fn_ref| fn_ref.id);
             // For consts, we need to explore the corresponding initializer body.
             let consts = tdecl
                 .consts

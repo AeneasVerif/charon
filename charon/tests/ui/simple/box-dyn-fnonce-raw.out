@@ -50,31 +50,18 @@ pub opaque type NonNull<T>
 pub trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn allocate<'_0_1> = core::alloc::Allocator::allocate<'_0_1, Self>[Self]
-    fn deallocate<'_0_1> = core::alloc::Allocator::deallocate<'_0_1, Self>[Self]
+    fn allocate<'_0_1>;
+    fn deallocate<'_0_1>;
     vtable: core::alloc::Allocator::{vtable}
 }
-
-pub fn core::alloc::Allocator::allocate<'_0, Self>(_1: &'_0 Self, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
-where
-    TraitClause0: (Self: Allocator),
-= <opaque>
-
-pub unsafe fn core::alloc::Allocator::deallocate<'_0, Self>(_1: &'_0 Self, _2: NonNull<u8>, _3: Layout)
-where
-    TraitClause0: (Self: Allocator),
-= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -208,14 +195,9 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
-
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <method_without_default_body>
 
 // Full name: core::ptr::non_null::{NonNull<[T]>}::as_mut_ptr
 pub fn as_mut_ptr<T>(_1: NonNull<[T]>) -> *mut T
@@ -227,7 +209,7 @@ where
 pub opaque type Unique<T>
 
 // Full name: core::ptr::non_null::{impl From<Unique<T>> for NonNull<T>}::from
-pub fn impl_From_Unique_for_NonNull::from<T>(_1: Unique<T>) -> NonNull<T>
+pub fn from<T>(_1: Unique<T>) -> NonNull<T>
 = <opaque>
 
 // Full name: core::ptr::unique::{Unique<T>}::as_ptr
@@ -245,18 +227,18 @@ where
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
-pub unsafe fn impl_Allocator_for_Global::deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
+pub unsafe fn deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
-pub fn impl_Allocator_for_Global::allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}
 impl "impl_Allocator_for_Global" Allocator for Global {
     proof ImpliedClause0: (Global: MetaSized) = {built_in impl MetaSized for Global}
-    fn allocate<'_0_1> = impl_Allocator_for_Global::allocate<'_0_1>
-    fn deallocate<'_0_1> = impl_Allocator_for_Global::deallocate<'_0_1>
+    fn allocate<'_0_1> = allocate<'_0_1>
+    fn deallocate<'_0_1> = deallocate<'_0_1>
     vtable: impl_Allocator_for_Global::{vtable}
 }
 
@@ -332,11 +314,11 @@ where
         _14 = copy ptr_2
         _13 = cast<T, u8>[{built_in impl Sized for u8}](move _14)
         storage_dead(_14)
-        _12 = impl_From_Unique_for_NonNull::from<u8>(move _13)
+        _12 = from<u8>(move _13)
         storage_dead(_13)
         storage_live(_15)
         _15 = copy layout_3
-        _10 = TraitClause2::deallocate<'9>(move _11, move _12, move _15)
+        _10 = TraitClause2::deallocate<'8>(move _11, move _12, move _15)
         storage_dead(_15)
         storage_dead(_12)
         storage_dead(_11)
@@ -353,7 +335,7 @@ where
 }
 
 // Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
-unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
+unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -407,7 +389,7 @@ fn box_new_uninit(layout_1: Layout) -> *mut u8
     _3 = &(*_9)
     storage_live(_4)
     _4 = copy layout_1
-    _2 = impl_Allocator_for_Global::allocate<'5>(move _3, move _4)
+    _2 = allocate<'5>(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     match _2 {
@@ -471,7 +453,7 @@ where
 }
 
 // Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::call_once
-pub extern "rust-call" fn impl_FnOnce_for_Box::call_once<Args, F, A>(self_1: Box<F, A>[TraitClause1, TraitClause2, TraitClause5], args_2: Args) -> TraitClause4::Output
+pub extern "rust-call" fn call_once<Args, F, A>(self_1: Box<F, A>[TraitClause1, TraitClause2, TraitClause5], args_2: Args) -> TraitClause4::Output
 where
     TraitClause0: (Args: Sized),
     TraitClause1: (F: MetaSized),
@@ -526,7 +508,7 @@ where
 
     storage_live(_3)
     _3 = concretize<(dyn FnOnce<Args, Output = TraitClause4::Output> + '1), Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>(move _1)
-    _0 = impl_FnOnce_for_Box::call_once<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5](move _3, move _2)
+    _0 = call_once<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5](move _3, move _2)
     return
 }
 
@@ -547,7 +529,7 @@ where
     ret_0 = ()
     storage_live(target_self_2)
     target_self_2 = concretize<&'_0 mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '1), &'_0 mut Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>(move dyn_self_1)
-    drop[impl_Destruct_for_Box::drop_glue<'3, F, A>[TraitClause1, TraitClause2, TraitClause5]] (*target_self_2)
+    drop[drop_glue<'3, F, A>[TraitClause1, TraitClause2, TraitClause5]] (*target_self_2)
     return
 }
 
@@ -605,7 +587,7 @@ where
     proof ImpliedClause2: (Args: Tuple) = TraitClause3
     proof ImpliedClause3: (TraitClause4::Output: Sized) = TraitClause4::ImpliedClause3
     type Output = TraitClause4::Output
-    fn call_once = impl_FnOnce_for_Box::call_once<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
+    fn call_once = call_once<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
     vtable: impl_FnOnce_for_Box::{vtable}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
 }
 
@@ -624,13 +606,13 @@ pub fn box_box(f_1: Box<(dyn FnOnce<(), Output = ()> + 'static), Global>[{built_
     _4 = move f_1
     _3 = new<Box<(dyn FnOnce<(), Output = ()> + '28), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '29)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn FnOnce<(), Output = ()> + '34), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '35)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}](move _4)
     _2 = unsize_cast<Box<Box<(dyn FnOnce<(), Output = ()> + '18), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '19)}, {built_in impl Sized for Global}, impl_Allocator_for_Global], Global>[{built_in impl MetaSized for Box<(dyn FnOnce<(), Output = ()> + '20), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '21)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}, {built_in impl Sized for Global}, impl_Allocator_for_Global], Box<(dyn FnOnce<(), Output = ()> + '52), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '53)}, {built_in impl Sized for Global}, impl_Allocator_for_Global], &impl_FnOnce_for_Box::{vtable}<(), (dyn FnOnce<(), Output = ()> + '72), Global>[{built_in impl Sized for ()}, {built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '74)}, {built_in impl Sized for Global}, {built_in impl Tuple for ()}, FnOnce<(dyn FnOnce<(), Output = ()> + '76), ()>, impl_Allocator_for_Global]>(move _3)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'101, Box<(dyn FnOnce<(), Output = ()> + '93), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '94)}, {built_in impl Sized for Global}, impl_Allocator_for_Global], Global>[{built_in impl MetaSized for Box<(dyn FnOnce<(), Output = ()> + '93), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '94)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _3
+    conditional_drop[drop_glue<'101, Box<(dyn FnOnce<(), Output = ()> + '93), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '94)}, {built_in impl Sized for Global}, impl_Allocator_for_Global], Global>[{built_in impl MetaSized for Box<(dyn FnOnce<(), Output = ()> + '93), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '94)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _3
     storage_dead(_4)
     storage_dead(_3)
     _0 = unsize_cast<Box<(dyn FnOnce<(), Output = ()> + '8), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '9)}, {built_in impl Sized for Global}, impl_Allocator_for_Global], Box<(dyn FnOnce<(), Output = ()> + '112), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '113)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],  at []>(move _2)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'123, (dyn FnOnce<(), Output = ()> + '120), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '120)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
+    conditional_drop[drop_glue<'123, (dyn FnOnce<(), Output = ()> + '120), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '120)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'133, (dyn FnOnce<(), Output = ()> + '130), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '130)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] f_1
+    conditional_drop[drop_glue<'133, (dyn FnOnce<(), Output = ()> + '130), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = ()> + '130)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] f_1
     return
 }
 

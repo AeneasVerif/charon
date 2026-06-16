@@ -1325,7 +1325,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         match x.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(id)) => self.update_item_generics(*id, &mut x.generics),
             FnPtrKind::Fun(FunId::Builtin(_)) => {}
-            FnPtrKind::Trait(trait_ref, method_name, _) => {
+            FnPtrKind::Trait(trait_ref, method_name) => {
                 let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
                 self.update_generics(
                     &mut x.generics,

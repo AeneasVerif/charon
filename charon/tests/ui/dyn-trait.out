@@ -6,16 +6,9 @@ opaque type core::cmp::PartialEq::{vtable}<Rhs>
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
-
-// Full name: core::cmp::PartialEq::eq
-#[lang_item("cmp_partialeq_eq")]
-pub fn eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
-where
-    TraitClause0: (Self: PartialEq<Rhs>),
-= <opaque>
 
 // Full name: core::marker::MetaSized
 #[lang_item("meta_sized")]
@@ -48,7 +41,7 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
@@ -60,7 +53,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = call_mut<'_0_1, Self, Args>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -72,27 +65,9 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1> = call<'_0_1, Self, Args>[Self]
+    fn call<'_0_1>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
-
-// Full name: core::ops::function::Fn::call
-pub extern "rust-call" fn call<'_0, Self, Args>(_1: &'_0 Self, _2: Args) -> TraitClause0::ImpliedClause1::ImpliedClause1::Output
-where
-    TraitClause0: (Self: Fn<Args>),
-= <opaque>
-
-// Full name: core::ops::function::FnMut::call_mut
-pub extern "rust-call" fn call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
-where
-    TraitClause0: (Self: FnMut<Args>),
-= <opaque>
-
-// Full name: core::ops::function::FnOnce::call_once
-pub extern "rust-call" fn call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -113,7 +88,7 @@ pub struct Global {}
 pub opaque type String
 
 // Full name: alloc::string::{impl ToString for T}::to_string
-pub fn impl_ToString_for_T::to_string<'_0, T>(_1: &'_0 T) -> String
+pub fn to_string<'_0, T>(_1: &'_0 T) -> String
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (T: Display),
@@ -136,7 +111,7 @@ fn destruct<'_0>(x_1: &'_0 (dyn Display + '_0)) -> String
 
     storage_live(_2)
     _2 = &(*x_1) with_metadata(copy x_1.metadata)
-    _0 = impl_ToString_for_T::to_string<'15, (dyn Display + '9)>[{built_in impl MetaSized for (dyn Display + '11)}, Display<(dyn Display + '13)>](move _2)
+    _0 = to_string<'15, (dyn Display + '9)>[{built_in impl MetaSized for (dyn Display + '11)}, Display<(dyn Display + '13)>](move _2)
     storage_dead(_2)
     return
 }

@@ -17,28 +17,17 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: test_crate::Trait
 trait Trait<Self>
@@ -71,12 +60,12 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = TraitClause1::LifetimeGat::ImpliedClause1::clone<'10>(move _3)
+    _2 = TraitClause1::LifetimeGat::ImpliedClause1::clone<'9>(move _3)
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'15>}::drop_glue<'16>] _2
+    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'14>}::drop_glue<'15>] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'18>}::drop_glue<'19>] x_1
+    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'17>}::drop_glue<'18>] x_1
     return
 }
 
@@ -95,12 +84,12 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x_1
-    _2 = TraitClause1::NonLifetimeGat::ImpliedClause1::clone<'3>(move _3)
+    _2 = TraitClause1::NonLifetimeGat::ImpliedClause1::clone<'2>(move _3)
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'5>] _2
+    conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'4>] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'6>] x_1
+    conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'5>] x_1
     return
 }
 

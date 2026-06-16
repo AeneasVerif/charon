@@ -16,12 +16,9 @@ pub trait Sized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <missing>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -34,7 +31,7 @@ where
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
-unsafe fn impl_Destruct_for_Option::drop_glue<'_0, T>(_1: &'_0 mut Option<T>[TraitClause0])
+unsafe fn drop_glue<'_0, T>(_1: &'_0 mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 {
@@ -90,7 +87,7 @@ where
     _0 = move _2 != const 0isize
     storage_dead(_2)
     storage_dead(_4)
-    drop[impl_Destruct_for_Option::drop_glue<'6, T>[TraitClause0]] opt_1
+    drop[drop_glue<'6, T>[TraitClause0]] opt_1
     return
 }
 
@@ -110,7 +107,7 @@ where
             _0 = const 1isize
         },
     }
-    drop[impl_Destruct_for_Option::drop_glue<'0, T>[TraitClause0]] opt_1
+    drop[drop_glue<'0, T>[TraitClause0]] opt_1
     return
 }
 

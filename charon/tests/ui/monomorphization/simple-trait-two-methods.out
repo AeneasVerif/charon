@@ -22,9 +22,6 @@ trait Trait<Self>
     vtable: test_crate::Trait::{vtable}
 }
 
-fn test_crate::Trait::consume<'_0>(_1: &'_0 (dyn Trait))
-= <method_without_default_body>
-
 // Full name: test_crate::{impl Trait for i32}::another
 fn another<'_0>(self_1: &'_0 i32)
 {
@@ -51,7 +48,7 @@ fn impl_Trait_for_i32::another::{vtable_method}<'_0>(_1: &'_0 (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for i32}::consume
-fn impl_Trait_for_i32::consume<'_0>(self_1: &'_0 i32)
+fn consume<'_0>(self_1: &'_0 i32)
 {
     let _0: (); // return
     let self_1: &'1 i32; // arg #1
@@ -71,7 +68,7 @@ fn impl_Trait_for_i32::consume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait))
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait + '1), &'_0 i32>(move _1)
-    _0 = impl_Trait_for_i32::consume<'_0>(move _2)
+    _0 = consume<'_0>(move _2)
     return
 }
 
@@ -151,7 +148,7 @@ fn main()
     let _6: &'10 i32; // anonymous local
     let _7: unsafe fn(&'8 (dyn Trait + '9)); // anonymous local
     let _8: &'11 i32; // anonymous local
-    let _9: &'19 i32; // anonymous local
+    let _9: &'18 i32; // anonymous local
     let _10: i32; // anonymous local
 
     storage_live(_8)

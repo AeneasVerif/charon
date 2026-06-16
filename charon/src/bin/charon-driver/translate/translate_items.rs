@@ -407,11 +407,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let method_id = *item_id.as_method().unwrap();
                     self.mark_method_as_used(trait_ref.id, method_id);
                 }
-                ItemSource::TraitDecl {
-                    trait_ref,
-                    item_id,
-                    has_default: assoc.has_value,
-                }
+                debug_assert!(assoc.has_value);
+                ItemSource::TraitDecl { trait_ref, item_id }
             }
         })
     }
@@ -529,13 +526,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
 
-        // Check whether this function is a method declaration for a trait definition.
-        // If this is the case, it shouldn't contain a body.
-        let is_trait_method_decl_without_default = match &src {
-            ItemSource::TraitDecl { has_default, .. } => !has_default,
-            _ => false,
-        };
-
         let intrinsic_name = def
             .def_id()
             .as_real_def_id()
@@ -568,8 +558,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             self.build_drop_glue_body(span, def, &signature)?
         } else if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
-        } else if is_trait_method_decl_without_default {
-            Body::TraitMethodWithoutDefault
         } else {
             // Translate the MIR body for this definition.
             self.translate_def_body(item_meta.span, def)
@@ -709,23 +697,23 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut methods: IndexMap<TraitMethodId, _> = IndexMap::new();
 
         if def.lang_item == Some(sym::destruct) {
-            // Add a `drop_glue(&mut self)` method that contains the drop glue for this type.
-            let (method_id, method_binder) =
-                self.prepare_drop_glue_method(def, span, def.def_id(), trait_decl_id, None)?;
-            let method_name = self.translated.assoc_item_name(trait_decl_id, method_id);
+            // Add a `drop_in_place(*mut self)` method that contains the drop glue for this type.
+            let destruct_trait_def_id = def.def_id();
+            let method_id =
+                self.translate_drop_glue_method_id(destruct_trait_def_id, trait_decl_id)?;
             self.mark_method_as_used(trait_decl_id, method_id);
-            let mut method_item_meta = ItemMeta::dummy_public(
-                span,
-                item_meta.name.clone(),
-                item_meta.is_local,
-                item_meta.opacity,
-            );
-            method_item_meta.name.name.push(PathElem::Ident(
-                method_name.to_string(),
-                Disambiguator::ZERO,
-            ));
-
-            let method = method_binder.map(|fn_ref| {
+            let method = {
+                let method_name = self.translated.assoc_item_name(trait_decl_id, method_id);
+                let mut method_item_meta = ItemMeta::dummy_public(
+                    span,
+                    item_meta.name.clone(),
+                    item_meta.is_local,
+                    item_meta.opacity,
+                );
+                method_item_meta.name.name.push(PathElem::Ident(
+                    method_name.to_string(),
+                    Disambiguator::ZERO,
+                ));
                 let self_ty = if self.monomorphize() {
                     // FIXME: put something real here
                     Ty::mk_unit()
@@ -737,13 +725,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     self_ty,
                     Region::Var(DeBruijnVar::new_at_zero(RegionId::ZERO)),
                 );
-                TraitMethod {
-                    name: method_name,
-                    item: fn_ref,
-                    item_meta: method_item_meta,
-                    signature,
-                }
-            });
+                let method_params = Self::drop_glue_params();
+                Binder::new(
+                    BinderKind::TraitMethod(trait_decl_id, method_id),
+                    method_params,
+                    TraitMethod {
+                        name: method_name,
+                        default: None,
+                        item_meta: method_item_meta,
+                        signature,
+                    },
+                )
+            };
             methods.set_slot_extend(method_id, method);
         }
 
@@ -784,15 +777,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let attr_info = self.translate_attr_info(&item_def);
 
             match item_def.kind() {
-                hax::FullDefKind::AssocFn { sig, .. } => {
+                hax::FullDefKind::AssocFn {
+                    sig,
+                    associated_item,
+                    ..
+                } => {
                     let trait_method_id = *assoc_item_id.as_method().unwrap();
-                    let fun_id = self.register_no_enqueue(item_span, &item_src);
                     let method_name = self.translate_name(&item_src)?;
                     let method_opacity = self.opacity_for_name(&method_name);
                     let method_item_meta =
                         self.translate_item_meta(&item_def, &item_src, method_name, method_opacity);
-                    // Register this method.
-                    self.register_method_impl(trait_decl_id, trait_method_id, fun_id);
                     // By default we only enqueue required methods (those that don't have a default
                     // impl). If the trait is transparent, we enqueue all its methods.
                     if self.options.translate_all_methods
@@ -801,6 +795,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     {
                         self.mark_method_as_used(trait_decl_id, trait_method_id);
                     }
+                    let default_fun_id = associated_item.has_value.then(|| {
+                        let fun_id = self.register_no_enqueue(item_span, &item_src);
+                        // Register this method.
+                        self.register_method_impl(trait_decl_id, trait_method_id, fun_id);
+                        fun_id
+                    });
 
                     let binder_kind = BinderKind::TraitMethod(trait_decl_id, trait_method_id);
                     let mut method = self.translate_binder_for_def(
@@ -809,20 +809,22 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         &item_def,
                         |bt_ctx| {
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
-                            let fun_generics = bt_ctx
-                                .outermost_binder()
-                                .params
-                                .identity_args_at_depth(DeBruijnId::one())
-                                .concat(
-                                    &bt_ctx
-                                        .innermost_binder()
-                                        .params
-                                        .identity_args_at_depth(DeBruijnId::zero()),
-                                );
-                            let fn_ref = FunDeclRef {
-                                id: fun_id,
-                                generics: Box::new(fun_generics),
-                            };
+                            let default = default_fun_id.map(|id| {
+                                let fun_generics = bt_ctx
+                                    .outermost_binder()
+                                    .params
+                                    .identity_args_at_depth(DeBruijnId::one())
+                                    .concat(
+                                        &bt_ctx
+                                            .innermost_binder()
+                                            .params
+                                            .identity_args_at_depth(DeBruijnId::zero()),
+                                    );
+                                FunDeclRef {
+                                    id,
+                                    generics: Box::new(fun_generics),
+                                }
+                            });
                             // `skip_binder` is allowed because `translate_binder_for_def` puts the
                             // late bound params in scope.
                             let signature =
@@ -831,7 +833,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 name: item_name,
                                 item_meta: method_item_meta,
                                 signature,
-                                item: fn_ref,
+                                default,
                             })
                         },
                     )?;
@@ -1117,7 +1119,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             };
                             bound_method
                                 .substitute_with_tref(&self_predicate)
-                                .map(|method| method.item)
+                                .map(|method| {
+                                    method
+                                        .default
+                                        .expect("default method should have a default")
+                                })
                         }
                     };
 

@@ -520,7 +520,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
             FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &mut x.generics),
             // TODO: check builtin generics.
             FnPtrKind::Fun(FunId::Builtin(_)) => {}
-            FnPtrKind::Trait(trait_ref, method_id, _) => {
+            FnPtrKind::Trait(trait_ref, method_id) => {
                 self.assert_matches_method(trait_ref, *method_id, &mut x.generics);
             }
         }

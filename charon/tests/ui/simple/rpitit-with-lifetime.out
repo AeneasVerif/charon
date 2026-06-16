@@ -29,16 +29,9 @@ pub trait Iterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Item: Sized)
     type Item
-    fn next<'_0_1> = next<'_0_1, Self>[Self]
+    fn next<'_0_1>;
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
-
-// Full name: core::iter::traits::iterator::Iterator::next
-#[lang_item("next")]
-pub fn next<'_0, Self>(_1: &'_0 mut Self) -> Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]
-where
-    TraitClause0: (Self: Iterator),
-= <opaque>
 
 // Full name: test_crate::Foo
 trait Foo<Self, T>
@@ -53,16 +46,9 @@ trait Foo<Self, T>
         TypeConstraint0: Self::iter_ty::ImpliedClause1::Item = &'_1_1 T,
         proof ImpliedClause0: (Self::iter_ty<'a, '_1_1>: Sized),
         proof ImpliedClause1: (Self::iter_ty<'a, '_1_1>: Iterator);
-    fn iter<'a, TypeOutlives0: T: 'a> = iter<'a, Self, T>[Self]
+    fn iter<'a, TypeOutlives0: T: 'a>;
     non-dyn-compatible
 }
-
-// Full name: test_crate::Foo::iter
-fn iter<'a, Self, T>(_1: &'a Self) -> TraitClause0::iter_ty<'a, 'a>
-where
-    TraitClause0: (Self: Foo<T>),
-    TypeOutlives0: T: 'a,
-= <method_without_default_body>
 
 
 

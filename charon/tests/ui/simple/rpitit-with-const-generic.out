@@ -19,20 +19,15 @@ pub trait Foo<Self>
     type bar_ty<const N : usize>
     where
         proof ImpliedClause0: (Self::bar_ty<N>: Sized);
-    fn bar<const N : usize> = test_crate::Foo::bar<Self, N>[Self]
+    fn bar<const N : usize>;
     non-dyn-compatible
 }
-
-pub fn test_crate::Foo::bar<Self, const N : usize>() -> TraitClause0::bar_ty<N>
-where
-    TraitClause0: (Self: Foo),
-= <method_without_default_body>
 
 // Full name: test_crate::S
 pub struct S {}
 
 // Full name: test_crate::{impl Foo for S}::bar
-pub fn impl_Foo_for_S::bar<const N : usize>() -> [u8; N]
+pub fn bar<const N : usize>() -> [u8; N]
 {
     let _0: [u8; N]; // return
 
@@ -46,7 +41,7 @@ impl "impl_Foo_for_S" Foo for S {
     type bar_ty<const N : usize> = [u8; N]
     where
         proof ImpliedClause0: ([u8; N]: Sized) = {built_in impl Sized for [u8; N]};
-    fn bar<const N : usize> = impl_Foo_for_S::bar<N>
+    fn bar<const N : usize> = bar<N>
     non-dyn-compatible
 }
 

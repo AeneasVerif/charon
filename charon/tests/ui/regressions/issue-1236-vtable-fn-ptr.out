@@ -10,20 +10,9 @@ pub trait MetaSized<Self>
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct
-#[lang_item("destruct")]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
-    non-dyn-compatible
-}
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 struct test_crate::Foo::{vtable} {
   size: usize,
@@ -40,14 +29,11 @@ trait Foo<Self>
     vtable: test_crate::Foo::{vtable}
 }
 
-fn test_crate::Foo::foo<'_0>(_1: &'_0 (dyn Foo))
-= <method_without_default_body>
-
 // Full name: test_crate::Bar
 struct Bar {}
 
 // Full name: test_crate::Bar::{impl Destruct for Bar}::drop_glue
-unsafe fn impl_Destruct_for_Bar::drop_glue<'_0>(_1: &'_0 mut Bar)
+unsafe fn drop_glue<'_0>(_1: &'_0 mut Bar)
 {
     let _0: (); // return
     let _1: &'1 mut Bar; // arg #1
@@ -60,12 +46,12 @@ unsafe fn impl_Destruct_for_Bar::drop_glue<'_0>(_1: &'_0 mut Bar)
 
 // Full name: test_crate::Bar::{impl Destruct for Bar}
 impl "impl_Destruct_for_Bar" Destruct for Bar {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Bar::drop_glue<'_0_1>
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
     non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Foo for Bar}::foo
-fn impl_Foo_for_Bar::foo<'_0>(self_1: &'_0 Bar)
+fn foo<'_0>(self_1: &'_0 Bar)
 {
     let _0: (); // return
     let self_1: &'1 Bar; // arg #1
@@ -88,7 +74,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
         _0 = ();
         storage_live(_2);
         _2 = concretize<&'_0 (dyn Foo + '1), &'_0 Bar>(move _1);
-        _0 = impl_Foo_for_Bar::foo<'_0>(move _2) -> bb2 (unwind: bb1);
+        _0 = foo<'_0>(move _2) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -111,7 +97,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self_1: &'_0 mut (dyn Foo))
         ret_0 = ();
         storage_live(target_self_2);
         target_self_2 = concretize<&'_0 mut (dyn Foo + '1), &'_0 mut Bar>(move dyn_self_1);
-        drop[impl_Destruct_for_Bar::drop_glue<'3>] (*target_self_2) -> bb2 (unwind: bb1);
+        drop[drop_glue<'3>] (*target_self_2) -> bb2 (unwind: bb1);
     }
 
     bb1: {

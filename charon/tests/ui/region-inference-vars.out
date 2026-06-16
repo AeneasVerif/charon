@@ -30,18 +30,12 @@ pub trait MyTryFrom<Self, T>
     proof ImpliedClause1: (T: Sized)
     proof ImpliedClause2: (Self::Error: Sized)
     type Error
-    fn from<TraitClause0_1: (Self: Sized)> = test_crate::MyTryFrom::from<Self, T>[Self, TraitClause0_1]
+    fn from<TraitClause0_1: (Self: Sized)>;
     vtable: test_crate::MyTryFrom::{vtable}<T, Self::Error>
 }
 
-pub fn test_crate::MyTryFrom::from<Self, T>(_1: T) -> Result<Self, TraitClause0::Error>[TraitClause1, TraitClause0::ImpliedClause2]
-where
-    TraitClause0: (Self: MyTryFrom<T>),
-    TraitClause1: (Self: Sized),
-= <method_without_default_body>
-
 // Full name: test_crate::{impl MyTryFrom<&'_0 bool> for bool}::from
-pub fn impl_MyTryFrom_for_bool::from<'_0>(v_1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
+pub fn from<'_0>(v_1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 {
     let _0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
     let v_1: &'1 bool; // arg #1
@@ -60,7 +54,7 @@ impl<'_0> "impl_MyTryFrom_for_bool" MyTryFrom<&'_0 bool> for bool {
     proof ImpliedClause1: (&'_0 bool: Sized) = {built_in impl Sized for &'_0 bool}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     type Error = ()
-    fn from<TraitClause0_1: (bool: Sized)> = impl_MyTryFrom_for_bool::from<'_0>
+    fn from<TraitClause0_1: (bool: Sized)> = from<'_0>
     vtable: impl_MyTryFrom_for_bool::{vtable}<'_0>
 }
 

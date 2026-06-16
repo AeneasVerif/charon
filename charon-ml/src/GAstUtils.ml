@@ -67,17 +67,18 @@ let lookup_trait_decl_method (tdecl : trait_decl) (id : trait_method_id) :
 
 let lookup_trait_decl_method_ref (tdecl : trait_decl) (id : trait_method_id) :
     fun_decl_ref binder item_binder option =
-  Option.map
-    (fun m ->
-      {
-        item_binder_params = m.item_binder_params;
-        item_binder_value =
+  Option.bind (lookup_trait_decl_method tdecl id) (fun m ->
+      Option.map
+        (fun default ->
           {
-            binder_params = m.item_binder_value.binder_params;
-            binder_value = m.item_binder_value.binder_value.item;
-          };
-      })
-    (lookup_trait_decl_method tdecl id)
+            item_binder_params = m.item_binder_params;
+            item_binder_value =
+              {
+                binder_params = m.item_binder_value.binder_params;
+                binder_value = default;
+              };
+          })
+        m.item_binder_value.binder_value.default)
 
 (** Lookup a method in this trait impl. The two levels of binders in the output
     reflect that there are two binding levels: the impl generics and the method
@@ -167,7 +168,6 @@ let has_body : body -> bool = function
   | IntrinsicBody _
   | ExternBody _
   | OpaqueBody
-  | TraitMethodWithoutDefaultBody
   | TargetDispatchBody _
   | MissingBody
   | ErrorBody _ -> false

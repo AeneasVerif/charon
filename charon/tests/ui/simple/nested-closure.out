@@ -17,27 +17,17 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
 
 // Full name: core::marker::Destruct
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -56,7 +46,7 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
@@ -68,7 +58,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -80,24 +70,9 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args>[Self]
+    fn call<'_0_1>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
-
-pub extern "rust-call" fn core::ops::function::Fn::call<'_0, Self, Args>(_1: &'_0 Self, _2: Args) -> TraitClause0::ImpliedClause1::ImpliedClause1::Output
-where
-    TraitClause0: (Self: Fn<Args>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
-where
-    TraitClause0: (Self: FnMut<Args>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <opaque>
 
 // Full name: test_crate::Foo
 struct Foo<'a, T>
@@ -132,7 +107,7 @@ where
     _z_3 = move tupled_args_2.0
     storage_live(_4)
     _4 = &(*((*_1)).0)
-    _0 = TraitClause1::clone<'6>(move _4)
+    _0 = TraitClause1::clone<'5>(move _4)
     storage_dead(_4)
     return
 }
@@ -216,11 +191,11 @@ where
     let _15: &'43 u32; // anonymous local
     let _16: &'44 u32; // anonymous local
     let _17: &'45 u32; // anonymous local
-    let _18: &'62 u32; // anonymous local
-    let _19: &'78 u32; // anonymous local
-    let _20: &'91 u32; // anonymous local
+    let _18: &'61 u32; // anonymous local
+    let _19: &'76 u32; // anonymous local
+    let _20: &'88 u32; // anonymous local
     let _21: u32; // anonymous local
-    let _22: &'92 u32; // anonymous local
+    let _22: &'89 u32; // anonymous local
     let _23: u32; // anonymous local
 
     storage_live(_16)
@@ -238,7 +213,7 @@ where
     _8 = &clo_2
     storage_live(_9)
     _9 = ()
-    _7 = impl_Fn_unit_for_closure::call<'54, '55, '56, '57, '58, '59, '60, T>[TraitClause0, TraitClause1](move _8, move _9)
+    _7 = impl_Fn_unit_for_closure::call<'53, '54, '55, '56, '57, '58, '59, T>[TraitClause0, TraitClause1](move _8, move _9)
     storage_live(_18)
     storage_live(_20)
     storage_live(_21)
@@ -255,7 +230,7 @@ where
     _12 = &(*_17)
     _11 = &(*_12)
     _10 = (move _11,)
-    _5 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'71, '72, '73, '74, '75, '76, T>[TraitClause0, TraitClause1](move _6, move _10)
+    _5 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'69, '70, '71, '72, '73, '74, T>[TraitClause0, TraitClause1](move _6, move _10)
     storage_live(_19)
     storage_live(_22)
     storage_live(_23)
@@ -273,7 +248,7 @@ where
     _15 = &(*_16)
     _14 = &(*_15)
     _13 = (move _14,)
-    _0 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'87, '88, '89, '90, T>[TraitClause0, TraitClause1](move _4, move _13)
+    _0 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'84, '85, '86, '87, T>[TraitClause0, TraitClause1](move _4, move _13)
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_4)
@@ -328,8 +303,8 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = impl_FnMut_unit_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '15, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '25, T>[TraitClause0, TraitClause1]] _1
+    _0 = impl_FnMut_unit_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '14, T>[TraitClause0, TraitClause1](move _3, move _2)
+    drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '24, T>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -429,8 +404,8 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, '_3, '_4, '18, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '28, T>[TraitClause0, TraitClause1]] _1
+    _0 = {impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, '_3, '_4, '17, T>[TraitClause0, TraitClause1](move _3, move _2)
+    drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '27, T>[TraitClause0, TraitClause1]] _1
     return
 }
 
@@ -530,8 +505,8 @@ where
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, '12, T>[TraitClause0, TraitClause1](move _3, move _2)
-    drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '22, T>[TraitClause0, TraitClause1]] _1
+    _0 = {impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, '11, T>[TraitClause0, TraitClause1](move _3, move _2)
+    drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '21, T>[TraitClause0, TraitClause1]] _1
     return
 }
 

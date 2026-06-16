@@ -10,15 +10,9 @@ pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Borrowed: MetaSized)
-    fn borrow<'_0_1> = borrow<'_0_1, Self, Borrowed>[Self]
+    fn borrow<'_0_1>;
     vtable: core::borrow::Borrow::{vtable}<Borrowed>
 }
-
-// Full name: core::borrow::Borrow::borrow
-pub fn borrow<'_0, Self, Borrowed>(_1: &'_0 Self) -> &'_0 Borrowed
-where
-    TraitClause0: (Self: Borrow<Borrowed>),
-= <opaque>
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -33,15 +27,9 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
 #[lang_item("noop_method_clone")]
@@ -75,13 +63,9 @@ impl<'_0, T> Copy for &'_0 T {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -131,16 +115,9 @@ pub trait ToOwned<Self, Self_Owned>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self_Owned: Sized)
     proof ImpliedClause2: (Self_Owned: Borrow<Self>)
-    fn to_owned<'_0_1> = to_owned<'_0_1, Self, Self_Owned>[Self]
+    fn to_owned<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: alloc::borrow::ToOwned::to_owned
-#[lang_item("to_owned_method")]
-pub fn to_owned<'_0, Self, Clause0_Owned>(_1: &'_0 Self) -> Clause0_Owned
-where
-    TraitClause0: (Self: ToOwned<Clause0_Owned>),
-= <opaque>
 
 trait test_crate::Foo<'a, Self, Self_Item>
 where
@@ -150,15 +127,10 @@ where
     proof ImpliedClause1: (Self: Copy)
     proof ImpliedClause2: (Self_Item: Sized)
     proof ImpliedClause3: (Self_Item: Clone)
-    fn use_item_required = test_crate::Foo::use_item_required<'a, Self, Self_Item>[Self]
+    fn use_item_required;
     fn use_item_provided<Clause0_Item, TraitClause0_1: (Self_Item: test_crate::Foo<'a, Clause0_Item>)> = test_crate::Foo::use_item_provided<'a, Self, Self_Item, Clause0_Item>[Self, TraitClause0_1]
     non-dyn-compatible
 }
-
-fn test_crate::Foo::use_item_required<'a, Self, Clause0_Item>(_1: Clause0_Item) -> Clause0_Item
-where
-    TraitClause0: (Self: test_crate::Foo<'a, Clause0_Item>),
-= <method_without_default_body>
 
 fn test_crate::Foo::use_item_provided<'a, Self, Clause0_Item, Clause1_Item>(x_1: Clause0_Item) -> Clause0_Item
 where
@@ -276,7 +248,7 @@ where
     _3 = TraitClause1::use_item_provided<Clause2_Item>[TraitClause2](move _4)
     _2 = &_3
     storage_dead(_4)
-    _0 = TraitClause2::ImpliedClause1::ImpliedClause1::clone<'18>(move _2)
+    _0 = TraitClause2::ImpliedClause1::ImpliedClause1::clone<'17>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     return

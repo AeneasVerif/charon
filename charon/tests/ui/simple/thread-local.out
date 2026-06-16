@@ -17,24 +17,18 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
-
 // Full name: core::clone::impls::{impl Clone for !}::clone
-pub fn {impl Clone for !}::clone<'_0>(_1: &'_0 !) -> !
+pub fn clone<'_0>(_1: &'_0 !) -> !
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for !}
 impl Clone for ! {
     proof ImpliedClause0: (!: Sized) = {built_in impl Sized for !}
-    fn clone<'_0_1> = {impl Clone for !}::clone<'_0_1>
+    fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -58,12 +52,9 @@ impl Copy for ! {
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = core::marker::Destruct::drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-unsafe fn core::marker::Destruct::drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <opaque>
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -89,7 +80,7 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     proof ImpliedClause3: (Self::Output: Sized)
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+    fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
 }
 
@@ -101,7 +92,7 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause1: (Self: FnOnce<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1> = core::ops::function::FnMut::call_mut<'_0_1, Self, Args>[Self]
+    fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
@@ -113,24 +104,9 @@ pub trait Fn<Self, Args>
     proof ImpliedClause1: (Self: FnMut<Args>)
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1> = core::ops::function::Fn::call<'_0_1, Self, Args>[Self]
+    fn call<'_0_1>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
-
-pub extern "rust-call" fn core::ops::function::Fn::call<'_0, Self, Args>(_1: &'_0 Self, _2: Args) -> TraitClause0::ImpliedClause1::ImpliedClause1::Output
-where
-    TraitClause0: (Self: Fn<Args>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(_1: &'_0 mut Self, _2: Args) -> TraitClause0::ImpliedClause1::Output
-where
-    TraitClause0: (Self: FnMut<Args>),
-= <opaque>
-
-pub extern "rust-call" fn core::ops::function::FnOnce::call_once<Self, Args>(_1: Self, _2: Args) -> TraitClause0::Output
-where
-    TraitClause0: (Self: FnOnce<Args>),
-= <opaque>
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -153,15 +129,9 @@ pub trait DestroyedState<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
-    fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized)> = std::sys::thread_local::native::lazy::DestroyedState::register_dtor<'_0_1, Self, T>[Self, TraitClause0_1]
+    fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized)>;
     non-dyn-compatible
 }
-
-pub fn std::sys::thread_local::native::lazy::DestroyedState::register_dtor<'_0, Self, T>(_1: &'_0 Storage<T, Self>[TraitClause1, TraitClause0::ImpliedClause0])
-where
-    TraitClause0: (Self: DestroyedState),
-    TraitClause1: (T: Sized),
-= <opaque>
 
 // Full name: std::sys::thread_local::native::lazy::{impl DestroyedState for !}::register_dtor
 pub fn {impl DestroyedState for !}::register_dtor<'_0, T>(_1: &'_0 Storage<T, !>[TraitClause0, {built_in impl Sized for !}])
@@ -303,8 +273,8 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure}::call_mut<'_0, '19>(move _3, move _2)
-    drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'21>] _1
+    _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure}::call_mut<'_0, '18>(move _3, move _2)
+    drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'20>] _1
     return
 }
 
@@ -432,8 +402,8 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
 
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure#1}::call_mut<'_0, '19>(move _3, move _2)
-    drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'21>] _1
+    _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure#1}::call_mut<'_0, '18>(move _3, move _2)
+    drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'20>] _1
     return
 }
 

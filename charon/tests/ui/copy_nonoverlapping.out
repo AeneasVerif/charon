@@ -12,7 +12,7 @@ pub unsafe fn from_size_align_unchecked(_1: usize, _2: usize) -> Layout
 #[lang_item("destruct")]
 pub trait Destruct<Self>
 {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
+    fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
@@ -33,20 +33,10 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = core::clone::Clone::clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
     non-dyn-compatible
 }
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <method_without_default_body>
-
-// Full name: core::marker::Destruct::drop_glue
-unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut Self)
-= <missing>
 
 pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self_1: &'_0 mut Self, source_2: &'_1 Self)
 where
@@ -63,9 +53,9 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source_2) with_metadata(copy source_2.metadata)
-    _3 = TraitClause0::clone<'6>(move _4)
+    _3 = TraitClause0::clone<'5>(move _4)
     storage_dead(_4)
-    drop[TraitClause1::drop_glue<'7>] (*self_1)
+    drop[TraitClause1::drop_glue<'6>] (*self_1)
     (*self_1) = move _3
     _0 = ()
     storage_dead(_3)
@@ -73,7 +63,7 @@ where
 }
 
 // Full name: core::clone::impls::{impl Clone for usize}::clone
-pub fn impl_Clone_for_usize::clone<'_0>(self_1: &'_0 usize) -> usize
+pub fn clone<'_0>(self_1: &'_0 usize) -> usize
 {
     let _0: usize; // return
     let self_1: &'1 usize; // arg #1
@@ -97,9 +87,9 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source_2)
-    _3 = impl_Clone_for_usize::clone<'6>(move _4)
+    _3 = clone<'5>(move _4)
     storage_dead(_4)
-    drop[TraitClause0::drop_glue<'7>] (*self_1)
+    drop[TraitClause0::drop_glue<'6>] (*self_1)
     (*self_1) = move _3
     _0 = ()
     storage_dead(_3)
@@ -109,7 +99,7 @@ where
 // Full name: core::clone::impls::{impl Clone for usize}
 impl "impl_Clone_for_usize" Clone for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
-    fn clone<'_0_1> = impl_Clone_for_usize::clone<'_0_1>
+    fn clone<'_0_1> = clone<'_0_1>
     fn clone_from<'_0_1, '_1_1, TraitClause0_1: (usize: Destruct)> = impl_Clone_for_usize::clone_from<'_0_1, '_1_1>[TraitClause0_1]
     non-dyn-compatible
 }

@@ -17,31 +17,17 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1> = clone<'_0_1, Self>[Self]
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(_1: &'_0 Self) -> Self
-where
-    TraitClause0: (Self: Clone),
-= <opaque>
 
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1, Self, Rhs>[Self]
+    fn eq<'_0_1, '_1_1>;
     vtable: core::cmp::PartialEq::{vtable}<Rhs>
 }
-
-// Full name: core::cmp::PartialEq::eq
-#[lang_item("cmp_partialeq_eq")]
-pub fn eq<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
-where
-    TraitClause0: (Self: PartialEq<Rhs>),
-= <opaque>
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
@@ -55,8 +41,8 @@ pub trait Eq<Self>
 pub trait Hasher<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn finish<'_0_1> = finish<'_0_1, Self>[Self]
-    fn write<'_0_1, '_1_1> = write<'_0_1, '_1_1, Self>[Self]
+    fn finish<'_0_1>;
+    fn write<'_0_1, '_1_1>;
     vtable: core::hash::Hasher::{vtable}
 }
 
@@ -64,29 +50,9 @@ pub trait Hasher<Self>
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)> = hash<'_0_1, '_1_1, Self, H>[Self, TraitClause0_1, TraitClause1_1]
+    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
     non-dyn-compatible
 }
-
-// Full name: core::hash::Hash::hash
-pub fn hash<'_0, '_1, Self, H>(_1: &'_0 Self, _2: &'_1 mut H)
-where
-    TraitClause0: (Self: Hash),
-    TraitClause1: (H: Sized),
-    TraitClause2: (H: Hasher),
-= <opaque>
-
-// Full name: core::hash::Hasher::finish
-pub fn finish<'_0, Self>(_1: &'_0 Self) -> u64
-where
-    TraitClause0: (Self: Hasher),
-= <opaque>
-
-// Full name: core::hash::Hasher::write
-pub fn write<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 [u8])
-where
-    TraitClause0: (Self: Hasher),
-= <opaque>
 
 // Full name: core::marker::Send
 #[lang_item("Send")]
