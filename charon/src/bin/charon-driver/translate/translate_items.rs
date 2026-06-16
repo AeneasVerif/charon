@@ -407,11 +407,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let method_id = *item_id.as_method().unwrap();
                     self.mark_method_as_used(trait_ref.id, method_id);
                 }
-                ItemSource::TraitDecl {
-                    trait_ref,
-                    item_id,
-                    has_default: assoc.has_value,
-                }
+                debug_assert!(assoc.has_value);
+                ItemSource::TraitDecl { trait_ref, item_id }
             }
         })
     }
@@ -481,14 +478,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
 
         let src = self.get_item_source(span, def)?;
-
-        // Sanity check.
-        if let ItemSource::TraitDecl { has_default, .. } = &src {
-            assert!(
-                has_default,
-                "trying to translate a method declaration without a default body"
-            );
-        };
 
         if let hax::FullDefKind::Ctor {
             fields, output_ty, ..

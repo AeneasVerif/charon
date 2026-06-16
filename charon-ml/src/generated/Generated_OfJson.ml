@@ -2571,17 +2571,11 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ( "TraitDecl",
-            `Assoc
-              [
-                ("trait_ref", trait_ref);
-                ("item_id", item_id);
-                ("has_default", has_default);
-              ] );
+            `Assoc [ ("trait_ref", trait_ref); ("item_id", item_id) ] );
         ] ->
         let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
         let* item_id = assoc_item_id_of_json ctx item_id in
-        let* has_default = bool_of_json ctx has_default in
-        Ok (TraitDeclItem (trait_ref, item_id, has_default))
+        Ok (TraitDeclItem (trait_ref, item_id))
     | `Assoc
         [
           ( "TraitImpl",

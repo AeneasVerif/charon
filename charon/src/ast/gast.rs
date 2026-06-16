@@ -151,8 +151,7 @@ pub enum ItemSource {
     Closure {
         info: ClosureInfo,
     },
-    /// This is an associated item in a trait declaration. It has a body if and only if the trait
-    /// provided a default implementation.
+    /// This is the default value of an associated const or method in a trait declaration.
     TraitDecl {
         /// The trait declaration this item belongs to.
         trait_ref: TraitDeclRef,
@@ -160,11 +159,8 @@ pub enum ItemSource {
         /// `AssocItemId::Const` if it's the initializer of a trait const.
         // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
         item_id: AssocItemId,
-        /// Whether the trait declaration provides a default implementation.
-        #[drive(skip)]
-        has_default: bool,
     },
-    /// This is an associated item in a trait implementation.
+    /// This is an associated const or method in a trait implementation.
     TraitImpl {
         /// The trait implementation the method belongs to.
         impl_ref: TraitImplRef,

@@ -2199,8 +2199,7 @@ and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 2 ->
          let* trait_ref = trait_decl_ref_of_postcard ctx st in
          let* item_id = assoc_item_id_of_postcard ctx st in
-         let* has_default = bool_of_postcard ctx st in
-         Ok (TraitDeclItem (trait_ref, item_id, has_default))
+         Ok (TraitDeclItem (trait_ref, item_id))
      | 3 ->
          let* impl_ref = trait_impl_ref_of_postcard ctx st in
          let* trait_ref = trait_decl_ref_of_postcard ctx st in

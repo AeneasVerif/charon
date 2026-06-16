@@ -14,12 +14,7 @@ impl Transform {
     ) -> Option<(FunDecl, Binder<GenericArgs>)> {
         let original_method_id = method.skip_binder.id;
         let original_method = ctx.translated.fun_decls.get(original_method_id)?;
-        let ItemSource::TraitDecl {
-            item_id,
-            has_default: true,
-            ..
-        } = &original_method.src
-        else {
+        let ItemSource::TraitDecl { item_id, .. } = &original_method.src else {
             return None;
         };
         let item_id = *item_id;

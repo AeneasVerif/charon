@@ -631,7 +631,6 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
 
             match &fun.src {
                 ItemSource::TraitDecl {
-                    has_default: true,
                     item_id: AssocItemId::Method(_),
                     ..
                 }

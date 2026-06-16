@@ -1037,19 +1037,17 @@ and item_source =
 
           Fields:
           - [info] *)
-  | TraitDeclItem of trait_decl_ref * assoc_item_id * bool
-      (** This is an associated item in a trait declaration. It has a body if
-          and only if the trait provided a default implementation.
+  | TraitDeclItem of trait_decl_ref * assoc_item_id
+      (** This is the default value of an associated const or method in a trait
+          declaration.
 
           Fields:
           - [trait_ref]: The trait declaration this item belongs to.
           - [item_id]: The associated item this corresponds to. Note that a
             function could have [AssocItemId::Const] if it's the initializer of
-            a trait const.
-          - [has_default]: Whether the trait declaration provides a default
-            implementation. *)
+            a trait const. *)
   | TraitImplItem of trait_impl_ref * trait_decl_ref * assoc_item_id * bool
-      (** This is an associated item in a trait implementation.
+      (** This is an associated const or method in a trait implementation.
 
           Fields:
           - [impl_ref]: The trait implementation the method belongs to.

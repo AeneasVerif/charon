@@ -28,7 +28,6 @@ fn normalize_default_method_call_on_known_impl(
     let ItemSource::TraitDecl {
         trait_ref,
         item_id: AssocItemId::Method(method_id),
-        has_default: true,
     } = &fun_decl.src
     else {
         return None;
