@@ -1,5 +1,6 @@
 //@ charon-args=--sysroot default --monomorphize --mir elaborated
-
+// Check that the reconstruct_fallible_operations pass correctly handles check_add usage
+// that spans multiple basic blocks.
 #![feature(core_intrinsics)]
 
 fn other() {}

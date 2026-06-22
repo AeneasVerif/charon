@@ -152,6 +152,12 @@ fn remove_dynamic_checks(
     locals: &mut Locals,
     statements: &mut [Statement],
 ) {
+    // Whether this local was used in another block
+    let used_outside_block = |local: LocalId| {
+        uses.iter_enumerated()
+            .any(|(bid, used)| bid != block_id && used.contains(&local))
+    };
+
     // We return the statements we want to keep, which must be a prefix of `block.statements`.
     let statements_to_keep = match statements {
         // Bounds checks for slices. They look like:
@@ -463,7 +469,7 @@ fn remove_dynamic_checks(
         // ```
         // We replace that with:
         // ```text
-        // z := x + y;
+        // z := x panic.+ y;
         // ```
         //
         // But sometimes, because of constant promotion, we end up with a lone checked operation
@@ -482,7 +488,9 @@ fn remove_dynamic_checks(
                 ..
             },
             rest @ ..,
-        ] if let Some(tuple_local_id) = tuple.as_local() => {
+        ] if let Some(tuple_local_id) = tuple.as_local()
+            && !used_outside_block(tuple_local_id) =>
+        {
             // Check if the result boolean is used in any other way than just getting the integer
             // result.
             let mut uses_of_tuple = 0;
@@ -580,9 +588,7 @@ fn remove_dynamic_checks(
         if let StatementKind::Assign(place, _) = &statements[i].kind
             && let Some(local) = place.as_local()
             && let mut statements_to_keep = statements[removed_len..].as_ref().iter()
-            && let mut other_blocks = uses.iter_enumerated().filter(|(bid, _)| *bid != block_id)
-            && (other_blocks.any(|(_, used)| used.contains(&local))
-                || statements_to_keep.any(|st| uses_local(st, local)))
+            && (used_outside_block(local) || statements_to_keep.any(|st| uses_local(st, local)))
         {
             continue;
         };
