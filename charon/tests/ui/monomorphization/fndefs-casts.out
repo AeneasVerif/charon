@@ -226,7 +226,7 @@ fn main()
     storage_live(_28)
     storage_live(_29)
     storage_live(_30)
-    _30 = const x
+    _30 = const 'x'
     _29 = &_30
     _28 = move _29
     storage_dead(_20)

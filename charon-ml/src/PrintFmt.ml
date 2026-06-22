@@ -101,12 +101,25 @@ let uchar_to_utf8 (c : Uchar.t) : string =
       | 2 -> cont (i lsr 6)
       | _ -> cont i)
 
+(* Mirror Rust's `char::escape_debug` *)
+let escape_char_debug (c : Uchar.t) : string =
+  let i = Uchar.to_int c in
+  match i with
+  | 0x09 -> "\\t"
+  | 0x0a -> "\\n"
+  | 0x0d -> "\\r"
+  | 0x5c -> "\\\\"
+  | 0x27 -> "\\'"
+  | 0x22 -> "\\\""
+  | _ when i >= 0x20 && i <= 0x7e -> uchar_to_utf8 c
+  | _ -> Printf.sprintf "\\u{%x}" i
+
 let pp_literal (fmt : Format.formatter) (lit : literal) : unit =
   match lit with
   | VScalar sv -> pp_scalar_value fmt sv
   | VFloat fv -> pp_float_value fmt fv
   | VBool b -> pp_string fmt (Bool.to_string b)
-  | VChar c -> pp_string fmt (uchar_to_utf8 c)
+  | VChar c -> Format.fprintf fmt "'%s'" (escape_char_debug c)
   | VStr s -> Format.fprintf fmt "\"%s\"" (escape_string s)
   | VByteStr bs ->
       Format.fprintf fmt "[%a]"

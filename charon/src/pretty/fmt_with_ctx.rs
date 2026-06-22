@@ -1119,7 +1119,7 @@ impl Display for Literal {
             Literal::Scalar(v) => write!(f, "{v}"),
             Literal::Float(v) => write!(f, "{v}"),
             Literal::Bool(v) => write!(f, "{v}"),
-            Literal::Char(v) => write!(f, "{v}"),
+            Literal::Char(v) => write!(f, "'{}'", v.escape_debug()),
             Literal::Str(v) => write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n")),
             Literal::ByteStr(v) => write!(f, "{v:?}"),
         }
