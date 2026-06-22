@@ -625,9 +625,10 @@ and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* is_unsafe = bool_of_postcard ctx st in
      let* abi = abi_of_postcard ctx st in
+     let* is_variadic = bool_of_postcard ctx st in
      let* inputs = list_of_postcard ty_of_postcard ctx st in
      let* output = ty_of_postcard ctx st in
-     Ok ({ is_unsafe; abi; inputs; output } : fun_sig))
+     Ok ({ is_unsafe; abi; is_variadic; inputs; output } : fun_sig))
 
 and generic_args_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (generic_args, string) result =

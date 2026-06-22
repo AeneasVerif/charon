@@ -669,14 +669,16 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
         [
           ("is_unsafe", is_unsafe);
           ("abi", abi);
+          ("is_variadic", is_variadic);
           ("inputs", inputs);
           ("output", output);
         ] ->
         let* is_unsafe = bool_of_json ctx is_unsafe in
         let* abi = abi_of_json ctx abi in
+        let* is_variadic = bool_of_json ctx is_variadic in
         let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in
-        Ok ({ is_unsafe; abi; inputs; output } : fun_sig)
+        Ok ({ is_unsafe; abi; is_variadic; inputs; output } : fun_sig)
     | _ -> Error "")
 
 and generic_args_of_json (ctx : of_json_ctx) (js : json) :

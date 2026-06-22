@@ -488,6 +488,9 @@ and fun_id =
 and fun_sig = {
   is_unsafe : bool;  (** Is the function unsafe or not *)
   abi : abi;  (** The calling convention of this function. *)
+  is_variadic : bool;
+      (** Whether this is a C-variadic function (its last parameter is [...]).
+      *)
   inputs : ty list;
   output : ty;
 }

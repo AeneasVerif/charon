@@ -146,6 +146,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         FunSig {
             is_unsafe: true,
             abi: Abi::rust(),
+            is_variadic: false,
             inputs: [self_ref].into(),
             output: Ty::mk_unit(),
         }

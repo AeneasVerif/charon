@@ -1020,6 +1020,9 @@ pub struct FunSig {
     /// The calling convention of this function.
     #[drive(skip)]
     pub abi: Abi,
+    /// Whether this is a C-variadic function (its last parameter is `...`).
+    #[drive(skip)]
+    pub is_variadic: bool,
     pub inputs: Vec<Ty>,
     pub output: Ty,
 }

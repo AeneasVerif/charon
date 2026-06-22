@@ -1024,6 +1024,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         let signature = FunSig {
                             is_unsafe: true,
                             abi: Abi::rust(),
+                            is_variadic: false,
                             inputs: vec![ref_dyn_self.clone()],
                             output: Ty::mk_unit(),
                         };
@@ -1097,6 +1098,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let sig = FunSig {
             is_unsafe: false,
             abi: Abi::rust(),
+            is_variadic: false,
             inputs: vec![],
             output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
         };
