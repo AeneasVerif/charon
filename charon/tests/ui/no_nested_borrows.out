@@ -539,7 +539,7 @@ pub fn test_char() -> char
 {
     let _0: char; // return
 
-    _0 = const a
+    _0 = const 'a'
     return
 }
 

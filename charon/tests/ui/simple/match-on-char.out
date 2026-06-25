@@ -8,9 +8,9 @@ fn main()
 
     _0 = ()
     storage_live(_1)
-    _1 = const x
+    _1 = const 'x'
     switch copy _1 {
-        a => {
+        'a' => {
             _0 = ()
         },
         _ => {

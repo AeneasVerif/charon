@@ -5,7 +5,7 @@ pub fn MAX() -> char
 {
     let _0: char; // return
 
-    _0 = const 􏿿
+    _0 = const '\u{10ffff}'
     return
 }
 
