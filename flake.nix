@@ -28,6 +28,10 @@
         ocamlformat = pkgs.ocamlPackages.ocamlformat_0_27_0;
 
         fullMirSysroots = pkgs.callPackage ./nix/full-mir-sysroots.nix { inherit rustToolchain; };
+        charon-unwrapped = pkgs.callPackage ./nix/charon.nix {
+          inherit craneLib;
+          miriSysroots = fullMirSysroots;
+        };
         charon = pkgs.runCommand "charon"
           {
             nativeBuildInputs = [ makeWrapper ]
@@ -53,10 +57,6 @@
             # Ensures `charon-driver` finds the dylibs correctly.
             install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
           ''));
-        charon-unwrapped = pkgs.callPackage ./nix/charon.nix {
-          inherit craneLib;
-          miriSysroots = fullMirSysroots;
-        };
         charon-portable = pkgs.runCommand "charon-portable" { } ''
           mkdir -p $out/bin
           cp ${charon-unwrapped}/bin/charon $out/bin/charon
