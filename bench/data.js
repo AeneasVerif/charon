@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782386082734,
+  "lastUpdate": 1782386844217,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -6221,6 +6221,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 45.64,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 449.6,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.6,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "59379369c77b1f4014893bda6bd476c00d10179c",
+          "message": "Merge pull request #1293 from soteria-tools/fix-char-prettyy\n\nNicer char pretty-printing",
+          "timestamp": "2026-06-25T11:16:23Z",
+          "tree_id": "8a64bc02a6c3bd43ae1c976874ed5c176281a4b2",
+          "url": "https://github.com/AeneasVerif/charon/commit/59379369c77b1f4014893bda6bd476c00d10179c"
+        },
+        "date": 1782386842922,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 112637758709,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 15.95,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 458.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 406690786235,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 45.47,
             "unit": "wall-clock(s)"
           },
           {
