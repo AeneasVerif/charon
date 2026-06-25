@@ -1,16 +1,26 @@
-//! This library contains utilities to extract the MIR from a Rust project,
-//! by compiling it to an easy-to-use AST called LLBC (Low-Level Borrow Calculus).
-//! This AST is serialized into JSON files.
+//! This library contains the definitions of the "LLBC" (Low-Level Borrow Calculus)
+//! AST, which faithfully captures the full and explicit contents of a Rust crate.
+//! The `charon` binary can translate any Rust crate to this AST, which can then be consumed for
+//! all sorts of purposes (most notably analysis, code generation, and execution).
 //!
-//! A good entry point to explore the project is [`driver`](../charon_driver/index.html),
-//! and in particular [`driver::CharonCallbacks`](../charon_driver/driver/struct.CharonCallbacks.html),
-//! which implements the callback which we provide to Rustc.
+//! The main type of this crate is [`ast::TranslatedCrate`].
+//! To get one, call `charon` to get a serialized crate, then deserialize it using using
+//! [`deserialize_llbc`].
+//! A crate is mainly composed of 5 kinds of items:
+//! - Functions;
+//! - Type definitions;
+//! - Globals (constants and statics);
+//! - Trait declarations;
+//! - Trait implementations.
 //!
-//! The ASTs are in [`ullbc_ast`] (Unstructured LLBC - basically
-//! a cleaned-up version of MIR) and [`llbc_ast`] (same as ULLBC, but
-//! we reconstructed the control-flow to have `if ... then ... else ...`,
-//! loops, etc. instead of `GOTO`s).
-
+//! Each of these items is identified internally by a unique [`ast::ItemId`],
+//! and externally by its [`ast::Name`], such as "`core::result::Result`".
+//! To find an item with a given name, have a look at the name matcher [`name_matcher::Pattern`]s.
+//!
+//! Function bodies come in two forms: "structured" or "unstructured", depending on whether their
+//! control-flow is syntax-like (with blocks and scopes) or control-flow-like (with gotos).
+//! This can be chosen during translation. The corresponding ASTs can be found respectively in
+//! [`llbc_ast`] and [`ullbc_ast`].
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
 #![allow(

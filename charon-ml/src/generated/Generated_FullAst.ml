@@ -291,21 +291,35 @@ and target_info = {
       (** Whether the target platform uses little endian byte order. *)
 }
 
-(** The data of a translated crate. *)
+(** The complete data of a Rust crate.
+
+    A crate is mainly composed of 5 kinds of items:
+    - Functions;
+    - Type definitions;
+    - Globals (constants and statics);
+    - Trait declarations;
+    - Trait implementations.
+
+    These can each be found in the corresponding [IndexVec]. They are in an
+    unspecified (though deterministic) order. If you need a more robust order,
+    see [ordered_decls].
+
+    To get a [TranslatedCrate], run [charon cargo] inside a Rust crate, then
+    deserialize the resulting [crate_name.llbc] file using
+    [[crate::deserialize_llbc]]. *)
 and translated_crate = {
   crate_name : string;  (** The name of the crate. *)
   options : cli_options;
-      (** The options used when calling Charon. It is useful for the
-          applications which consumed the serialized code, to check that Charon
-          was called with the proper options. *)
+      (** The options used when calling Charon. Can be used to check that Charon
+          was called with the options that a given consumer requires. *)
   target_information : (string * target_info) list;
-      (** Information about each target platform. When translating a crate
-          normally this will have a single entry; when using [--targets] this
-          will have one entry per chosen target. *)
+      (** Information about each target platform for which the crate was
+          translated. When translating a crate normally this will have a single
+          entry; when using [--targets] this will have one entry per chosen
+          target. *)
   files : file list;
-      (** The translated files. This field must come before any field containing
-          spans, as the OCaml deserialization of spans requires the files to be
-          deserialized already. *)
+      (** The source files composing the crate and its dependencies. Each
+          [[Span]] refers to a byte range within one of these files. *)
   item_names : (item_id * name) list;
       (** The names of all registered items. Available so we can know the names
           even of items that failed to translate. Invariant: after translation,
@@ -319,16 +333,30 @@ and translated_crate = {
   short_names : (item_id * name) list;
       (** Short names, for items whose last PathElem is unique. *)
   type_decls : type_decl type_decl_id_map;
-      (** The translated type definitions *)
+      (** The type definitions (structs, enums, ...). *)
   fun_decls : fun_decl fun_decl_id_map;
-      (** The translated function definitions *)
+      (** The function definitions.
+
+          Each item with a body becomes a function: actual functions, methods,
+          and unevaluated consts/statics. *)
   global_decls : global_decl global_decl_id_map;
-      (** The translated global definitions *)
-  trait_decls : trait_decl trait_decl_id_map;
-      (** The translated trait declarations *)
-  trait_impls : trait_impl trait_impl_id_map;
-      (** The translated trait declarations *)
+      (** The global definitions, which are constants, statics, and thread
+          locals. *)
+  trait_decls : trait_decl trait_decl_id_map;  (** The trait declarations. *)
+  trait_impls : trait_impl trait_impl_id_map;  (** The trait implementations. *)
   ordered_decls : declaration_group list option;
-      (** The re-ordered groups of declarations, initialized as empty. *)
+      (** This contains a list of all the reachable items in the crate in a
+          stable, logical order based on crate and file order, then further
+          grouped and sorted such that every item comes after the items it
+          depends on. Mutually-dependent groups of items are identified as such.
+          This is meant for code-generation tools that want a stable output
+          order.
+
+          Not all the items in the [TranslatedCrate] are included: some trait
+          impls are never referred to by reachable items so could in principle
+          be removed from the crate, but we keep them around to be able to tell
+          method implementations apart.
+
+          Always [Some] after translation. *)
 }
 [@@deriving show]

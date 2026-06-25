@@ -210,7 +210,21 @@ pub struct AssocItemNames {
     pub consts: IndexVec<AssocConstId, TraitItemName>,
 }
 
-/// The data of a translated crate.
+/// The complete data of a Rust crate.
+///
+/// A crate is mainly composed of 5 kinds of items:
+/// - Functions;
+/// - Type definitions;
+/// - Globals (constants and statics);
+/// - Trait declarations;
+/// - Trait implementations.
+///
+/// These can each be found in the corresponding `IndexVec`. They are in an unspecified (though
+/// deterministic) order.
+/// If you need a more robust order, see `ordered_decls`.
+///
+/// To get a `TranslatedCrate`, run `charon cargo` inside a Rust crate, then deserialize
+/// the resulting `crate_name.llbc` file using [`crate::deserialize_llbc`].
 #[derive(Default, Clone, Drive, DriveMut, SerializeState, DeserializeState)]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub struct TranslatedCrate {
@@ -218,21 +232,23 @@ pub struct TranslatedCrate {
     #[drive(skip)]
     pub crate_name: String,
 
-    /// The options used when calling Charon. It is useful for the applications
-    /// which consumed the serialized code, to check that Charon was called with
-    /// the proper options.
+    /// The options used when calling Charon. Can be used to check that Charon was called with the
+    /// options that a given consumer requires.
     #[drive(skip)]
     #[serde_state(stateless)]
     pub options: crate::options::CliOpts,
 
-    /// Information about each target platform. When translating a crate normally this will have a
-    /// single entry; when using `--targets` this will have one entry per chosen target.
+    /// Information about each target platform for which the crate was translated. When translating
+    /// a crate normally this will have a single entry; when using `--targets` this will have one
+    /// entry per chosen target.
     #[drive(skip)]
     #[serde(with = "SeqHashMapToArray::<TargetTriple, TargetInfo>")]
     pub target_information: SeqHashMap<TargetTriple, TargetInfo>,
 
-    /// The translated files. This field must come before any field containing spans,
-    /// as the OCaml deserialization of spans requires the files to be deserialized already.
+    /// The source files composing the crate and its dependencies. Each [`Span`] refers to a byte
+    /// range within one of these files.
+    // This field must come before any field containing spans, as the OCaml deserialization of
+    // spans requires the files to be deserialized already.
     #[serde_state(stateless)]
     pub files: IndexVec<FileId, File>,
 
@@ -251,17 +267,30 @@ pub struct TranslatedCrate {
     #[serde(with = "SeqHashMapToArray::<ItemId, Name>")]
     pub short_names: SeqHashMap<ItemId, Name>,
 
-    /// The translated type definitions
+    /// The type definitions (structs, enums, ...).
     pub type_decls: IndexMap<TypeDeclId, TypeDecl>,
-    /// The translated function definitions
+    /// The function definitions.
+    ///
+    /// Each item with a body becomes a function: actual functions, methods, and unevaluated
+    /// consts/statics.
     pub fun_decls: IndexMap<FunDeclId, FunDecl>,
-    /// The translated global definitions
+    /// The global definitions, which are constants, statics, and thread locals.
     pub global_decls: IndexMap<GlobalDeclId, GlobalDecl>,
-    /// The translated trait declarations
+    /// The trait declarations.
     pub trait_decls: IndexMap<TraitDeclId, TraitDecl>,
-    /// The translated trait declarations
+    /// The trait implementations.
     pub trait_impls: IndexMap<TraitImplId, TraitImpl>,
-    /// The re-ordered groups of declarations, initialized as empty.
+    /// This contains a list of all the reachable items in the crate in a stable, logical order
+    /// based on crate and file order, then further grouped and sorted such that every item comes
+    /// after the items it depends on.
+    /// Mutually-dependent groups of items are identified as such.
+    /// This is meant for code-generation tools that want a stable output order.
+    ///
+    /// Not all the items in the `TranslatedCrate` are included: some trait impls are never
+    /// referred to by reachable items so could in principle be removed from the crate, but we keep
+    /// them around to be able to tell method implementations apart.
+    ///
+    /// Always `Some` after translation.
     #[drive(skip)]
     #[serde_state(stateless)]
     pub ordered_decls: Option<DeclarationsGroups>,
@@ -311,12 +340,27 @@ impl TranslatedCrate {
             ItemId::TraitImpl(id) => self.trait_impls.get_mut(id).map(ItemRefMut::TraitImpl),
         }
     }
+
+    /// Remove this item from the crate, including the name information about it.
+    ///
+    /// See also [`TranslatedCrate::remove_item_temporarily`].
     pub fn remove_item(&mut self, trans_id: ItemId) -> Option<ItemByVal> {
         self.short_names.swap_remove(&trans_id);
         self.item_names.swap_remove(&trans_id);
         self.remove_item_temporarily(trans_id)
     }
-    /// Remove the item without touching the name maps.
+    /// Insert a new item into a slot, and record its name in the name map.
+    pub fn set_new_item_slot(&mut self, id: ItemId, item: impl Into<ItemByVal>) {
+        let item = item.into();
+        self.item_names
+            .insert(id, item.as_ref().item_meta().name.clone());
+        self.put_item_back(id, item);
+    }
+    /// Remove this item from the crate without touching the name maps.
+    /// Useful for modifying items whilst being able to access the rest of the crate.
+    /// Put the item back using [`TranslatedCrate::put_item_back`].
+    ///
+    /// See also [`TranslatedCrate::remove_item`].
     pub fn remove_item_temporarily(&mut self, trans_id: ItemId) -> Option<ItemByVal> {
         match trans_id {
             ItemId::Type(id) => self.type_decls.remove(id).map(ItemByVal::Type),
@@ -326,15 +370,10 @@ impl TranslatedCrate {
             ItemId::TraitImpl(id) => self.trait_impls.remove(id).map(ItemByVal::TraitImpl),
         }
     }
-    /// Set the item to the corresponding slot, and record its name in the name map.
-    pub fn set_new_item_slot(&mut self, id: ItemId, item: impl Into<ItemByVal>) {
-        let item = item.into();
-        self.item_names
-            .insert(id, item.as_ref().item_meta().name.clone());
-        self.set_item_slot(id, item);
-    }
-    /// Set the item to the corresponding slot.
-    pub fn set_item_slot(&mut self, id: ItemId, item: impl Into<ItemByVal>) {
+    /// Insert the item into the corresponding slot without recording its name in the name map.
+    /// Only use if the item already has its name registered, e.g. if you got it using
+    /// [`TranslatedCrate::remove_item_temporarily`].
+    pub fn put_item_back(&mut self, id: ItemId, item: impl Into<ItemByVal>) {
         match item.into() {
             ItemByVal::Type(decl) => self.type_decls.set_slot(*id.as_type().unwrap(), decl),
             ItemByVal::Fun(decl) => self.fun_decls.set_slot(*id.as_fun().unwrap(), decl),
@@ -381,6 +420,7 @@ impl TranslatedCrate {
 
     /// When translating without `--target`, there's only one target information; this method
     /// retrieves it.
+    /// Panics if this crate was translated in multi-target mode.
     pub fn the_target_information(&self) -> &TargetInfo {
         self.target_information
             .values()

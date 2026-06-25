@@ -559,7 +559,7 @@ impl TransformPass for Transform {
             // partially-monomorphized types.
             visitor.process_item(&mut decl.as_mut());
             // Put the item back.
-            visitor.ctx.translated.set_item_slot(id, decl);
+            visitor.ctx.translated.put_item_back(id, decl);
         }
     }
 }
