@@ -31,7 +31,11 @@
           inherit craneLib rustToolchain;
           miriSysroots = fullMirSysroots;
         };
-        charon-unwrapped = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; enableWrapping = false; };
+        charon-unwrapped = pkgs.callPackage ./nix/charon.nix {
+          inherit craneLib rustToolchain;
+          enableWrapping = false;
+          miriSysroots = fullMirSysroots;
+        };
         charon-portable = pkgs.runCommand "charon-portable" { } ''
           mkdir -p $out/bin
           cp ${charon-unwrapped}/bin/charon $out/bin/charon
