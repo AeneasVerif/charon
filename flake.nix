@@ -21,19 +21,40 @@
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
+        inherit (pkgs) lib stdenv makeWrapper bintools;
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         ocamlformat = pkgs.ocamlPackages.ocamlformat_0_27_0;
 
         fullMirSysroots = pkgs.callPackage ./nix/full-mir-sysroots.nix { inherit rustToolchain; };
-        charon = pkgs.callPackage ./nix/charon.nix {
-          inherit craneLib rustToolchain;
-          miriSysroots = fullMirSysroots;
-        };
+        charon = pkgs.runCommand "charon"
+          {
+            nativeBuildInputs = [ makeWrapper ]
+              # For `install_name_tool`.
+              ++ lib.optionals stdenv.isDarwin [ bintools ];
+            passthru = charon-unwrapped.passthru;
+          }
+          (''
+            cp -r ${charon-unwrapped} $out
+            chmod -R u+w $out
+
+            # Make sure the toolchain is in $PATH so that `cargo` can work
+            # properly. On mac we also have to tell `charon-driver` where to
+            # find the rustc_driver dynamic library; this is done automatically
+            # on linux.
+            wrapProgram $out/bin/charon \
+              --set CHARON_TOOLCHAIN_IS_IN_PATH 1 \
+              --set CHARON_MIRI_SYSROOTS "${fullMirSysroots}" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ rustToolchain ]}" \
+              --prefix PATH : "${lib.makeBinPath [ rustToolchain ]}"
+          ''
+          + (lib.optionalString stdenv.isDarwin ''
+            # Ensures `charon-driver` finds the dylibs correctly.
+            install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
+          ''));
         charon-unwrapped = pkgs.callPackage ./nix/charon.nix {
-          inherit craneLib rustToolchain;
-          enableWrapping = false;
+          inherit craneLib;
           miriSysroots = fullMirSysroots;
         };
         charon-portable = pkgs.runCommand "charon-portable" { } ''
