@@ -23,7 +23,6 @@ runCommand "charon-full-mir-sysroots"
 }
   ''
     builddir=/tmp/charon-full-mir-sysroots-build
-    rm -rf "$builddir"
     export HOME="$builddir/home"
     export CARGO_HOME="$builddir/cargo"
     export TMPDIR="$builddir/tmp"
