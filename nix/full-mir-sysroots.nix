@@ -16,15 +16,17 @@ runCommand "charon-full-mir-sysroots"
   nativeBuildInputs = [ rustToolchain ];
   outputHashMode = "recursive";
   outputHashAlgo = "sha256";
-  outputHash = "sha256-Ha3594AoFhsQWieAa+XdklLV4eBnoL2b4XmfAw2zEBY=";
+  outputHash = "sha256-sbmBXFEOx2v3gIg+yRYpijd2MBouoeD9oFyfEDFGjcs=";
   # Rust metadata records rust-src paths from rustToolchain; charon supplies that toolchain
   # separately.
   unsafeDiscardReferences.out = true;
 }
   ''
-    export HOME="/build/home"
-    export CARGO_HOME="/build/cargo"
-    export TMPDIR="/build/tmp"
+    builddir=/tmp/charon-full-mir-sysroots-build
+    rm -rf "$builddir"
+    export HOME="$builddir/home"
+    export CARGO_HOME="$builddir/cargo"
+    export TMPDIR="$builddir/tmp"
     export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
     unset CHARON_ARGS CHARON_USING_CARGO RUSTC_WORKSPACE_WRAPPER RUSTC_WRAPPER
     mkdir -p "$HOME" "$CARGO_HOME" "$TMPDIR"
@@ -40,4 +42,6 @@ runCommand "charon-full-mir-sysroots"
     # Remove some non-reproducible outputs we don't need
     find "$out" -name '*.d' -delete
     find "$out" -name '*custom_local_sysroot-*' -delete
+
+    rm -rf "$builddir"
   ''
