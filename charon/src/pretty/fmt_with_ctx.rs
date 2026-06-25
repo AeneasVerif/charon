@@ -636,7 +636,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
             args.push(format!("{}: {}", name, ty.with_ctx(ctx)));
         }
         let args = args.join(", ");
-        write!(f, "({args})")?;
+        if self.signature.is_variadic {
+            if args.is_empty() {
+                write!(f, "(...)")?;
+            } else {
+                write!(f, "({args}, ...)")?;
+            }
+        } else {
+            write!(f, "({args})")?;
+        }
 
         // Return type
         if !self.signature.output.is_unit() {
@@ -670,6 +678,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<FunSig> {
         let FunSig {
             is_unsafe,
             abi,
+            is_variadic,
             inputs,
             output,
         } = &self.skip_binder;
@@ -690,8 +699,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<FunSig> {
                 self.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
             )?;
         }
+        let is_empty = inputs.is_empty();
         let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
-        write!(f, "({inputs})")?;
+        if *is_variadic {
+            if is_empty {
+                write!(f, "(...)")?;
+            } else {
+                write!(f, "({inputs}, ...)")?;
+            }
+        } else {
+            write!(f, "({inputs})")?;
+        }
         if !output.is_unit() {
             let output = output.with_ctx(ctx);
             write!(f, " -> {output}")?;

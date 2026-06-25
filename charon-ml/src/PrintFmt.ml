@@ -605,7 +605,9 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
       | RShared -> Format.fprintf fmt "*const %a" (pp_ty env) rty)
   | TFnPtr binder ->
       let env = fmt_env_push_regions env binder.binder_regions in
-      let { inputs; output; is_unsafe; abi } = binder.binder_value in
+      let { inputs; output; is_unsafe; abi; is_variadic } =
+        binder.binder_value
+      in
       let unsafe = if is_unsafe then "unsafe " else "" in
       let abi = abi_prefix abi in
       Format.fprintf fmt "%s%sfn" unsafe abi;
@@ -614,7 +616,10 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
           (pp_sep_list ", " (fun fmt region ->
                pp_string fmt (region_param_to_string env region)))
           binder.binder_regions;
-      Format.fprintf fmt "(%a)" (pp_sep_list ", " (pp_ty env)) inputs;
+      if is_variadic && inputs = [] then Format.fprintf fmt "(...)"
+      else if is_variadic then
+        Format.fprintf fmt "(%a, ...)" (pp_sep_list ", " (pp_ty env)) inputs
+      else Format.fprintf fmt "(%a)" (pp_sep_list ", " (pp_ty env)) inputs;
       if not (ty_is_unit output) then
         Format.fprintf fmt " -> %a" (pp_ty env) output
   | TFnDef f ->
@@ -1523,8 +1528,11 @@ let pp_fun_sig_with_name (env : fmt_env) (indent : string)
     | None -> ""
     | Some name -> " " ^ name
   in
-  Format.fprintf fmt "%s%s%s%sfn%s%s(%t)%s%s" indent attribute unsafe abi name
-    params pp_args ret_ty clauses
+  let variadic =
+    if not sg.is_variadic then "" else if sg.inputs = [] then "..." else ", ..."
+  in
+  Format.fprintf fmt "%s%s%s%sfn%s%s(%t%s)%s%s" indent attribute unsafe abi name
+    params pp_args variadic ret_ty clauses
 
 let pp_fun_sig (env : fmt_env) (indent : string) (indent_incr : string)
     (fmt : Format.formatter) (sg : fun_sig item_binder) : unit =
@@ -1542,6 +1550,8 @@ let pp_fun_sig (env : fmt_env) (indent : string) (indent_incr : string)
   pp_sep_list ", "
     (fun fmt ty -> pp_string fmt (ty_to_string env ty))
     fmt sg.inputs;
+  if sg.is_variadic then
+    pp_string fmt (if sg.inputs = [] then "..." else ", ...");
   pp_string fmt ")";
   if not (ty_is_unit sg.output) then
     Format.fprintf fmt " -> %s" (ty_to_string env sg.output);
@@ -2079,6 +2089,9 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
     (fun fmt (ty, name) ->
       Format.fprintf fmt "%s: %s" name (ty_to_string env ty))
     fmt args;
+  if def.signature.is_variadic then
+    if def.signature.inputs = [] then Format.fprintf fmt "..."
+    else Format.fprintf fmt ", ...";
   pp_string fmt ")";
   if not (ty_is_unit def.signature.output) then
     Format.fprintf fmt " -> %s" (ty_to_string env def.signature.output);

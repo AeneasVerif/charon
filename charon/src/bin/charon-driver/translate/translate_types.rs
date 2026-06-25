@@ -362,6 +362,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(FunSig {
             is_unsafe: sig.safety == hax::Safety::Unsafe,
             abi: Self::translate_abi(&sig.abi),
+            is_variadic: sig.c_variadic,
             inputs,
             output,
         })
