@@ -18,6 +18,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  HAS_CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN != '' }}
+
 jobs:
   select-runner:
     uses: ./.github/workflows/select-runner.yml
@@ -34,6 +37,14 @@ jobs:
           extra_nix_config: |
             extra-substituters = https://hacl.cachix.org
             extra-trusted-public-keys = hacl.cachix.org-1:FzsZ2xsByOwKwIWNPII7yMOelJNDZ12mDAj3d1eGX0c=
+      - &setup_cachix_push
+        name: Set up Cachix push
+        if: ${{ env.HAS_CACHIX_AUTH_TOKEN == 'true' }}
+        uses: cachix/cachix-action@v17
+        with:
+          name: hacl
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipAddingSubstituter: true
       - uses: actions/checkout@v4
       - run: nix build -L .#charon
       - run: nix build -L .#charon-ml
@@ -44,6 +55,7 @@ jobs:
     runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     steps:
       - *install_nix
+      - *setup_cachix_push
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # deep clone in order to get access to other commits
@@ -60,6 +72,7 @@ jobs:
       PR_NUMBER: ${{ github.event.number }}
     steps:
       - *install_nix
+      - *setup_cachix_push
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # deep clone in order to get access to other commits
@@ -83,6 +96,7 @@ jobs:
     runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     steps:
       - *install_nix
+      - *setup_cachix_push
       - uses: actions/checkout@v4
         with:
           repository: Inria-Prosecco/circus-green
@@ -102,6 +116,7 @@ jobs:
     runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     steps:
       - *install_nix
+      - *setup_cachix_push
       - uses: actions/checkout@v4
         with:
           repository: Inria-Prosecco/circus-green
