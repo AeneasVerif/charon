@@ -3,10 +3,31 @@ on:
     - cron: '0 0 * * 0'
   workflow_dispatch:
 
+env:
+  HAS_CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN != '' }}
+
 jobs:
+  select-runner:
+    uses: ./.github/workflows/select-runner.yml
+
   rustc-tests:
-    runs-on: [self-hosted, linux, nix]
+    needs: [select-runner]
+    runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     steps:
+      - name: Install Nix
+        if: ${{ runner.environment == 'github-hosted' }}
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            extra-substituters = https://hacl.cachix.org
+            extra-trusted-public-keys = hacl.cachix.org-1:FzsZ2xsByOwKwIWNPII7yMOelJNDZ12mDAj3d1eGX0c=
+      - name: Set up Cachix push
+        if: ${{ env.HAS_CACHIX_AUTH_TOKEN == 'true' }}
+        uses: cachix/cachix-action@v17
+        with:
+          name: hacl
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipAddingSubstituter: true
       - uses: actions/checkout@v4
       - run: |
           nix build -L '.#rustc-tests'

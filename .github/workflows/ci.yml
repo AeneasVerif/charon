@@ -18,20 +18,44 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  HAS_CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN != '' }}
+
 jobs:
+  select-runner:
+    uses: ./.github/workflows/select-runner.yml
+
   charon:
-    #runs-on: ubuntu-latest
-    runs-on: [self-hosted, linux, nix]
+    needs: [select-runner]
+    runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     steps:
-      #- uses: cachix/install-nix-action@v22
+      - &install_nix # YAML anchor for deduplication
+        name: Install Nix
+        if: ${{ runner.environment == 'github-hosted' }}
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            extra-substituters = https://hacl.cachix.org
+            extra-trusted-public-keys = hacl.cachix.org-1:FzsZ2xsByOwKwIWNPII7yMOelJNDZ12mDAj3d1eGX0c=
+      - &setup_cachix_push
+        name: Set up Cachix push
+        if: ${{ env.HAS_CACHIX_AUTH_TOKEN == 'true' }}
+        uses: cachix/cachix-action@v17
+        with:
+          name: hacl
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipAddingSubstituter: true
       - uses: actions/checkout@v4
       - run: nix build -L .#charon
       - run: nix build -L .#charon-ml
       - run: nix flake check -L
 
   check-version-number:
-    runs-on: [self-hosted, linux, nix]
+    needs: [select-runner]
+    runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     steps:
+      - *install_nix
+      - *setup_cachix_push
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # deep clone in order to get access to other commits
@@ -41,12 +65,14 @@ jobs:
   # from the main branch, but this can be overridden with a command in the PR
   # description.
   select-dep-versions:
-    needs: [charon]
-    runs-on: [self-hosted, linux, nix]
+    needs: [select-runner, charon]
+    runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     env:
       CI_EVENT: ${{ github.event_name }}
       PR_NUMBER: ${{ github.event.number }}
     steps:
+      - *install_nix
+      - *setup_cachix_push
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # deep clone in order to get access to other commits
@@ -66,9 +92,11 @@ jobs:
       libcrux: ${{ steps.select.outputs.libcrux }}
 
   aeneas:
-    needs: [charon, select-dep-versions]
-    runs-on: [self-hosted, linux, nix]
+    needs: [select-runner, charon, select-dep-versions]
+    runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     steps:
+      - *install_nix
+      - *setup_cachix_push
       - uses: actions/checkout@v4
         with:
           repository: Inria-Prosecco/circus-green
@@ -84,9 +112,11 @@ jobs:
           ./check.sh aeneas
 
   eurydice:
-    needs: [charon, select-dep-versions]
-    runs-on: [self-hosted, linux, nix]
+    needs: [select-runner, charon, select-dep-versions]
+    runs-on: ${{ fromJSON(needs.select-runner.outputs.runs_on) }}
     steps:
+      - *install_nix
+      - *setup_cachix_push
       - uses: actions/checkout@v4
         with:
           repository: Inria-Prosecco/circus-green
