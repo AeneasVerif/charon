@@ -146,7 +146,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_predicate(
         &mut self,
         pred: &hax::GenericPredicate,
-        origin: PredicateOrigin,
+        mut origin: PredicateOrigin,
         // Either put clauses there or in the innermost binder.
         mut trait_clauses: Option<&mut IndexVec<TraitClauseId, TraitParam>>,
     ) -> Result<(), Error> {
@@ -156,6 +156,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let span = self.translate_span(&pred.span);
         match clause.kind.hax_skip_binder_ref() {
             ClauseKind::Trait(trait_pred) => {
+                if matches!(pred.id, hax::GenericPredicateId::TraitSelf) {
+                    origin = PredicateOrigin::TraitSelf;
+                }
                 let trait_pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     ctx.translate_trait_predicate(span, trait_pred)
                 })?;

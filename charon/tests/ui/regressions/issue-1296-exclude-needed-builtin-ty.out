@@ -1,0 +1,41 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // anonymous local
+    let _2: alloc::boxed::Box<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let _3: alloc::boxed::Box<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let ret_4: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
+    let b_5: alloc::boxed::Box<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]; // local
+    let x_6: alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}]; // local
+    let y_7: alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // local
+
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = new_uninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]()
+    ((((*_3)).1).0).0 = [const 42i32]
+    _2 = move _3
+    conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'0>] _3
+    storage_dead(_3)
+    storage_live(ret_4)
+    storage_live(b_5)
+    b_5 = move _2
+    storage_live(x_6)
+    storage_live(y_7)
+    x_6 = assume_init<[i32; 1usize], Global>[{built_in impl Sized for [i32; 1usize]}, {built_in impl Sized for Global}](move b_5)
+    y_7 = unsize_cast<alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 1usize>(move x_6)
+    ret_4 = into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move y_7)
+    _1 = move ret_4
+    storage_dead(_2)
+    conditional_drop[{impl#1}<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]::drop_glue<'2>] _1
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+

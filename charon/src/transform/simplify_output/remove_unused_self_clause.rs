@@ -24,10 +24,10 @@ impl VisitAst for UsesClauseVisitor {
             Continue(())
         }
     }
-    fn visit_trait_param(&mut self, _: &TraitParam) -> ControlFlow<Self::Break> {
-        // Don't look inside the clause declaration as this will always contain the
-        // `TraitClauseId`.
-        Continue(())
+    fn visit_trait_param(&mut self, x: &TraitParam) -> ControlFlow<Self::Break> {
+        // Don't look at the clause's own id, as this would make every clause count as used.
+        // Do look inside the predicate, because another clause may depend on this one.
+        self.visit_inner(&x.trait_)
     }
     fn visit_fun_decl(&mut self, x: &FunDecl) -> ControlFlow<Self::Break> {
         if !x.body.has_contents() {
@@ -80,31 +80,19 @@ impl VisitAstMut for RemoveSelfVisitor<'_> {
 
 pub struct Transform;
 impl TransformPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.remove_unused_self_clauses
+    }
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        if !ctx.options.remove_unused_self_clauses {
-            return;
-        }
         let self_clause_id = TraitClauseId::from_raw(0);
         let mut doesnt_use_self: HashSet<ItemId> = Default::default();
 
         // We explore only items with an explicit `Self` clause, namely method and associated const
         // declarations.
-        for tdecl in &ctx.translated.trait_decls {
-            let methods = tdecl
-                .methods()
-                .filter_map(|m| m.skip_binder.default.as_ref())
-                .map(|fn_ref| fn_ref.id);
-            // For consts, we need to explore the corresponding initializer body.
-            let consts = tdecl
-                .consts
-                .iter()
-                .filter_map(|cst| cst.default.as_ref())
-                .filter_map(|gref| ctx.translated.global_decls.get(gref.id))
-                .filter_map(|gdecl| gdecl.init_fun_id());
-            let funs = methods
-                .chain(consts)
-                .filter_map(|id: FunDeclId| ctx.translated.fun_decls.get(id));
-            for fun in funs {
+        for fun in &ctx.translated.fun_decls {
+            if let Some(clause) = fun.generics.trait_clauses.get(self_clause_id)
+                && clause.origin == PredicateOrigin::TraitSelf
+            {
                 match fun.drive(&mut UsesClauseVisitor(self_clause_id)) {
                     Continue(()) => {
                         doesnt_use_self.insert(fun.def_id.into());
