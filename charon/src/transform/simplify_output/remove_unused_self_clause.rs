@@ -24,10 +24,10 @@ impl VisitAst for UsesClauseVisitor {
             Continue(())
         }
     }
-    fn visit_trait_param(&mut self, _: &TraitParam) -> ControlFlow<Self::Break> {
-        // Don't look inside the clause declaration as this will always contain the
-        // `TraitClauseId`.
-        Continue(())
+    fn visit_trait_param(&mut self, x: &TraitParam) -> ControlFlow<Self::Break> {
+        // Don't look at the clause's own id, as this would make every clause count as used.
+        // Do look inside the predicate, because another clause may depend on this one.
+        self.visit_inner(&x.trait_)
     }
     fn visit_fun_decl(&mut self, x: &FunDecl) -> ControlFlow<Self::Break> {
         if !x.body.has_contents() {
