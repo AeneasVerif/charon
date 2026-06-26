@@ -835,15 +835,15 @@ type Depth = usize;
 
 #[derive(Debug, Clone, Copy)]
 enum SpecialJumpKind {
-    /// When encountering this block, `continue` to the given depth.
+    /// This block can be reached by a `continue` to the given depth.
     LoopContinue(Depth),
-    /// When encountering this block, `break` to the given depth. This comes from a loop.
+    /// This block can be reached by a `break` to the given depth. This comes from a loop.
     LoopBreak(Depth),
-    /// When encountering this block, `break` to the given depth. This is a `loop` context
+    /// This block can be reached by a `break` to the given depth. This is a `loop` context
     /// introduced only for forward jumps.
     ForwardBreak(Depth),
-    /// When encountering this block, do nothing, as this is the next block that will be
-    /// translated.
+    /// This block can be reached by doing nothing as this is the next block that will be
+    /// translated. Only applies if this block is at the top of the stack.
     NextBlock,
 }
 
@@ -938,7 +938,7 @@ impl<'a> ReconstructCtx<'a> {
     fn translate_jump(&mut self, span: Span, target_block: src::BlockId) -> tgt::Block {
         match self
             .special_jump_stack
-            .iter_mut()
+            .iter()
             .rev()
             .enumerate()
             .find(|(_, j)| j.target_block == target_block)
@@ -947,8 +947,10 @@ impl<'a> ReconstructCtx<'a> {
                 let mk_block = |kind| tgt::Statement::new(span, kind).into_block();
                 match jump_target.kind {
                     // The top of the stack is where control-flow goes naturally, no need to add a
-                    // `break`/`continue`.
-                    SpecialJumpKind::LoopContinue(_) | SpecialJumpKind::ForwardBreak(_)
+                    // `break`/`continue`. We only do that in `ForwardBreak` mode to avoid breaking aeneas.
+                    SpecialJumpKind::LoopContinue(_)
+                    | SpecialJumpKind::ForwardBreak(_)
+                    | SpecialJumpKind::NextBlock
                         if i == 0 && matches!(self.mode, ReconstructMode::ForwardBreak) =>
                     {
                         mk_block(tgt::StatementKind::Nop)
@@ -959,11 +961,13 @@ impl<'a> ReconstructCtx<'a> {
                     SpecialJumpKind::ForwardBreak(depth) | SpecialJumpKind::LoopBreak(depth) => {
                         mk_block(tgt::StatementKind::Break(self.break_context_depth - depth))
                     }
-                    SpecialJumpKind::NextBlock => mk_block(tgt::StatementKind::Nop),
+                    SpecialJumpKind::NextBlock if i == 0 => mk_block(tgt::StatementKind::Nop),
+                    // Translate the block without a jump.
+                    SpecialJumpKind::NextBlock => self.translate_block(target_block),
                 }
             }
             // Translate the block without a jump.
-            None => return self.translate_block(target_block),
+            None => self.translate_block(target_block),
         }
     }
 

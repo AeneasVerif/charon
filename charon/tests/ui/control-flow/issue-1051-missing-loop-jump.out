@@ -1,0 +1,262 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl "impl_Clone_for_i32" Clone for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::cmp::PartialEq
+#[lang_item("eq")]
+pub trait PartialEq<Self, Rhs>
+{
+    fn eq<'_0_1, '_1_1>;
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
+}
+
+// Full name: core::cmp::Ordering
+#[lang_item("Ordering")]
+pub enum Ordering {
+  Less,
+  Equal,
+  Greater,
+}
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::cmp::PartialOrd
+#[lang_item("partial_ord")]
+pub trait PartialOrd<Self, Rhs>
+{
+    proof ImpliedClause0: (Self: PartialEq<Rhs>)
+    fn partial_cmp<'_0_1, '_1_1>;
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
+}
+
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}::eq
+pub fn impl_PartialEq_i32_for_i32::eq<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> bool
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
+impl "impl_PartialEq_i32_for_i32" PartialEq<i32> for i32 {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_i32_for_i32::eq<'_0_1, '_1_1>
+    vtable: impl_PartialEq_i32_for_i32::{vtable}
+}
+
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
+pub fn impl_PartialOrd_i32_for_i32::partial_cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}
+impl "impl_PartialOrd_i32_for_i32" PartialOrd<i32> for i32 {
+    proof ImpliedClause0: (i32: PartialEq<i32>) = impl_PartialEq_i32_for_i32
+    fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_i32_for_i32::partial_cmp<'_0_1, '_1_1>
+    vtable: impl_PartialOrd_i32_for_i32::{vtable}
+}
+
+// Full name: core::iter::range::Step
+#[lang_item("range_step")]
+pub trait Step<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (Self: Clone)
+    proof ImpliedClause2: (Self: PartialOrd<Self>)
+    fn steps_between<'_0_1, '_1_1>;
+    fn forward_checked;
+    fn backward_checked;
+    non-dyn-compatible
+}
+
+// Full name: core::iter::range::{impl Step for i32}::backward_checked
+pub fn backward_checked(_1: i32, _2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for i32}::forward_checked
+pub fn forward_checked(_1: i32, _2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for i32}::steps_between
+pub fn steps_between<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for i32}
+impl "impl_Step_for_i32" Step for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
+    proof ImpliedClause2: (i32: PartialOrd<i32>) = impl_PartialOrd_i32_for_i32
+    fn steps_between<'_0_1, '_1_1> = steps_between<'_0_1, '_1_1>
+    fn forward_checked = forward_checked
+    fn backward_checked = backward_checked
+    non-dyn-compatible
+}
+
+// Full name: core::ops::range::Range
+#[lang_item("Range")]
+pub struct Range<Idx>
+where
+    TraitClause0: (Idx: Sized),
+{
+  start: Idx,
+  end: Idx,
+}
+
+// Full name: core::iter::traits::iterator::Iterator
+#[lang_item("iterator")]
+pub trait Iterator<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
+    type Item
+    fn next<'_0_1>;
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
+
+// Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}::next
+pub fn next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClause0]
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Step),
+= <opaque>
+
+// Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}
+impl<A> "impl_Iterator_for_Range" Iterator for Range<A>[TraitClause0]
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Step),
+{
+    proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
+    proof ImpliedClause1: (A: Sized) = TraitClause0
+    type Item = A
+    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1]
+    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0, TraitClause1]
+}
+
+// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
+pub fn into_iter<I>(_1: I) -> I
+where
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: Iterator),
+= <opaque>
+
+// Full name: test_crate::f
+pub fn f()
+{
+    let _0: (); // return
+    let _x_1: i32; // local
+    let _2: bool; // anonymous local
+    let _3: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let iter_5: Range<i32>[{built_in impl Sized for i32}]; // local
+    let _6: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _7: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _8: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let v_9: i32; // local
+    let _10: bool; // anonymous local
+    let _11: i32; // anonymous local
+
+    _0 = ()
+    storage_live(_x_1)
+    _x_1 = const 0i32
+    storage_live(_2)
+    _2 = const false
+    if move _2 {
+        _0 = ()
+        storage_dead(_2)
+    } else {
+        storage_dead(_2)
+        storage_live(_3)
+        storage_live(_4)
+        _4 = Range { start: const 0i32, end: const 1i32 }
+        _3 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32]](move _4)
+        storage_dead(_4)
+        storage_live(iter_5)
+        iter_5 = move _3
+        loop {
+            storage_live(_6)
+            storage_live(_7)
+            storage_live(_8)
+            _8 = &mut iter_5
+            _7 = &two-phase-mut (*_8)
+            _6 = next<'4, i32>[{built_in impl Sized for i32}, impl_Step_for_i32](move _7)
+            storage_dead(_7)
+            match _6 {
+                Option::None => {
+                    break 0
+                },
+                Option::Some => {
+                },
+            }
+            storage_live(v_9)
+            v_9 = copy (_6 as variant Option::Some).0
+            storage_live(_10)
+            storage_live(_11)
+            _11 = copy v_9
+            _10 = move _11 == const 0i32
+            if move _10 {
+                storage_dead(_11)
+                _0 = ()
+                storage_dead(_10)
+                storage_dead(v_9)
+                storage_dead(_8)
+                storage_dead(_6)
+                storage_dead(iter_5)
+                storage_dead(_3)
+                storage_dead(_x_1)
+                return
+            } else {
+                storage_dead(_11)
+                storage_dead(_10)
+                storage_dead(v_9)
+                storage_dead(_8)
+                storage_dead(_6)
+                continue 0
+            }
+        }
+        _0 = ()
+        storage_dead(_8)
+        storage_dead(_6)
+        storage_dead(iter_5)
+        storage_dead(_3)
+        storage_dead(_x_1)
+        return
+    }
+    storage_dead(_x_1)
+    return
+}
+
+
+
