@@ -179,7 +179,7 @@ impl TransformCtx {
         for id in self.translated.all_ids() {
             if let Some(mut decl) = self.translated.remove_item_temporarily(id) {
                 f(self, decl.as_mut());
-                self.translated.set_item_slot(id, decl);
+                self.translated.put_item_back(id, decl);
             }
         }
     }
