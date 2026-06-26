@@ -39,6 +39,9 @@ pub fn f(y_1: u32) -> bool
                 if move _7 {
                     storage_dead(_8)
                     storage_dead(_7)
+                    storage_dead(_2)
+                    _0 = const false
+                    return
                 } else {
                     storage_dead(_8)
                     storage_dead(_7)
