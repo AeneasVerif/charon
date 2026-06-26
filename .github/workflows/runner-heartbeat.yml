@@ -1,0 +1,13 @@
+# Run a dummy job on the self-hosted runner regularly to be able to know if it is up.
+name: Runner heartbeat
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  heartbeat:
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - run: echo "self-hosted runner is alive"
