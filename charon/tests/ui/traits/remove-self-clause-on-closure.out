@@ -1,0 +1,223 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args, Self_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self_Output: Sized)
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args, Self_Clause1_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args, Self_Clause1_Output>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call_mut<'_0_1>;
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
+}
+
+// Full name: core::ops::function::Fn
+#[lang_item("fn")]
+pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args, Self_Clause1_Clause1_Output>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call<'_0_1>;
+    vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
+}
+
+// Full name: test_crate::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn method<'_0_1> = test_crate::Trait::method<'_0_1, Self>[Self]
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::Trait::method::closure
+struct closure<Self> {}
+
+pub fn test_crate::Trait::method<'_0, Self>(self_1: &'_0 Self)
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+    let self_1: &'1 Self; // arg #1
+    let _2: closure<Self>; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    _2 = closure {  }
+    storage_dead(_2)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::Trait::method::closure::{impl Destruct for closure<Self>}::drop_glue
+unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut closure<Self>)
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+    let _1: &'1 mut closure<Self>; // arg #1
+
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::Trait::method::{impl Fn<(), usize> for closure<Self>}::call
+fn call<'_0, Self>(_1: &'_0 closure<Self>, tupled_args_2: ()) -> usize
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: usize; // return
+    let _1: &'1 closure<Self>; // arg #1
+    let tupled_args_2: (); // arg #2
+
+    _0 = const 0usize
+    return
+}
+
+// Full name: test_crate::Trait::method::{impl FnMut<(), usize> for closure<Self>}::call_mut
+fn call_mut<'_0, Self>(state_1: &'_0 mut closure<Self>, args_2: ()) -> usize
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: usize; // return
+    let state_1: &'_0 mut closure<Self>; // arg #1
+    let args_2: (); // arg #2
+    let _3: &'0 closure<Self>; // anonymous local
+
+    storage_live(_3)
+    _3 = &(*state_1)
+    _0 = call<'2, Self>[TraitClause0](move _3, move args_2)
+    return
+}
+
+// Full name: test_crate::Trait::method::{impl FnOnce<(), usize> for closure<Self>}::call_once
+fn call_once<Self>(_1: closure<Self>, _2: ()) -> usize
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: usize; // return
+    let _1: closure<Self>; // arg #1
+    let _2: (); // arg #2
+    let _3: &'1 mut closure<Self>; // anonymous local
+
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = call_mut<'2, Self>[TraitClause0](move _3, move _2)
+    drop[drop_glue<'4, Self>[TraitClause0]] _1
+    return
+}
+
+// Full name: test_crate::Trait::method::{impl FnOnce<(), usize> for closure<Self>}
+impl<Self> "impl_FnOnce_unit_for_closure" FnOnce<(), usize> for closure<Self>
+where
+    TraitClause0: (Self: Trait),
+{
+    proof ImpliedClause0: (closure<Self>: MetaSized) = {built_in impl MetaSized for closure<Self>}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
+    proof ImpliedClause3: (usize: Sized) = {built_in impl Sized for usize}
+    fn call_once = call_once<Self>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Trait::method::{impl FnMut<(), usize> for closure<Self>}
+impl<Self> "impl_FnMut_unit_for_closure" FnMut<(), usize> for closure<Self>
+where
+    TraitClause0: (Self: Trait),
+{
+    proof ImpliedClause0: (closure<Self>: MetaSized) = {built_in impl MetaSized for closure<Self>}
+    proof ImpliedClause1: (closure<Self>: FnOnce<(), usize>) = impl_FnOnce_unit_for_closure<Self>[TraitClause0]
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call_mut<'_0_1> = call_mut<'_0_1, Self>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Trait::method::{impl Fn<(), usize> for closure<Self>}
+impl<Self> "impl_Fn_unit_for_closure" Fn<(), usize> for closure<Self>
+where
+    TraitClause0: (Self: Trait),
+{
+    proof ImpliedClause0: (closure<Self>: MetaSized) = {built_in impl MetaSized for closure<Self>}
+    proof ImpliedClause1: (closure<Self>: FnMut<(), usize>) = impl_FnMut_unit_for_closure<Self>[TraitClause0]
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call<'_0_1> = call<'_0_1, Self>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Trait::method::closure::{impl Destruct for closure<Self>}
+impl<Self> "impl_Destruct_for_closure" Destruct for closure<Self>
+where
+    TraitClause0: (Self: Trait),
+{
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Trait for ()}::method
+pub fn impl_Trait_for_unit::method<'_0>(self_1: &'_0 ())
+{
+    let _0: (); // return
+    let self_1: &'1 (); // arg #1
+    let _2: closure<()>; // anonymous local
+
+    _0 = ()
+    storage_live(_2)
+    _2 = closure {  }
+    storage_dead(_2)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}
+impl "impl_Trait_for_unit" Trait for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    fn method<'_0_1> = impl_Trait_for_unit::method<'_0_1>
+    vtable: impl_Trait_for_unit::{vtable}
+}
+
+
+
