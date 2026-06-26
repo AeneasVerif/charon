@@ -491,6 +491,124 @@ mod wrappers {
         }
     }
 
+    /// Visitor wrapper that catches references to top-level items.
+    #[repr(transparent)]
+    pub struct VisitWithItemRef<V>(V);
+
+    impl<V> VisitWithItemRef<V> {
+        pub fn new(v: &mut V) -> &mut Self {
+            // SAFETY: `repr(transparent)`
+            unsafe { std::mem::transmute(v) }
+        }
+        pub fn inner(&mut self) -> &mut V {
+            // SAFETY: `repr(transparent)`
+            unsafe { std::mem::transmute(self) }
+        }
+    }
+
+    pub trait VisitorWithItemRef: VisitAst {
+        fn enter_item_ref(&mut self, _item_id: ItemId, _args: &GenericArgs) {}
+        fn exit_item_ref(&mut self, _item_id: ItemId, _args: &GenericArgs) {}
+        fn visit_item_ref(
+            &mut self,
+            item_id: ItemId,
+            args: &GenericArgs,
+        ) -> ControlFlow<Self::Break> {
+            self.enter_item_ref(item_id, args);
+            self.visit_inner(args)?;
+            self.exit_item_ref(item_id, args);
+            Continue(())
+        }
+    }
+    pub trait VisitorWithItemRefMut: VisitAstMut {
+        fn enter_item_ref(&mut self, _item_id: ItemId, _args: &mut GenericArgs) {}
+        fn exit_item_ref(&mut self, _item_id: ItemId, _args: &mut GenericArgs) {}
+        fn visit_item_ref(
+            &mut self,
+            item_id: ItemId,
+            args: &mut GenericArgs,
+        ) -> ControlFlow<Self::Break> {
+            self.enter_item_ref(item_id, args);
+            self.visit_inner(args)?;
+            self.exit_item_ref(item_id, args);
+            Continue(())
+        }
+    }
+
+    impl<V: Visitor> Visitor for VisitWithItemRef<V> {
+        type Break = V::Break;
+    }
+    impl<V: VisitAst + VisitorWithItemRef> VisitAst for VisitWithItemRef<V> {
+        fn visit_inner<T>(&mut self, x: &T) -> ControlFlow<Self::Break>
+        where
+            T: AstVisitable,
+        {
+            x.drive(self.inner())
+        }
+        fn visit_type_decl_ref(&mut self, x: &TypeDeclRef) -> ControlFlow<Self::Break> {
+            match x.id {
+                TypeId::Adt(id) => self.0.visit_item_ref(ItemId::Type(id), &x.generics),
+                TypeId::Tuple | TypeId::Builtin(_) => self.visit_inner(x),
+            }
+        }
+        fn visit_fun_decl_ref(&mut self, x: &FunDeclRef) -> ControlFlow<Self::Break> {
+            self.0.visit_item_ref(ItemId::Fun(x.id), &x.generics)
+        }
+        fn visit_global_decl_ref(&mut self, x: &GlobalDeclRef) -> ControlFlow<Self::Break> {
+            self.0.visit_item_ref(ItemId::Global(x.id), &x.generics)
+        }
+        fn visit_trait_decl_ref(&mut self, x: &TraitDeclRef) -> ControlFlow<Self::Break> {
+            self.0.visit_item_ref(ItemId::TraitDecl(x.id), &x.generics)
+        }
+        fn visit_trait_impl_ref(&mut self, x: &TraitImplRef) -> ControlFlow<Self::Break> {
+            self.0.visit_item_ref(ItemId::TraitImpl(x.id), &x.generics)
+        }
+        fn visit_fn_ptr(&mut self, x: &FnPtr) -> ControlFlow<Self::Break> {
+            match x.kind.as_ref() {
+                FnPtrKind::Fun(FunId::Regular(id)) => {
+                    self.0.visit_item_ref(ItemId::Fun(*id), &x.generics)
+                }
+                FnPtrKind::Fun(FunId::Builtin(_)) | FnPtrKind::Trait(..) => self.visit_inner(x),
+            }
+        }
+    }
+    impl<V: VisitAstMut + VisitorWithItemRefMut> VisitAstMut for VisitWithItemRef<V> {
+        fn visit_inner<T>(&mut self, x: &mut T) -> ControlFlow<Self::Break>
+        where
+            T: AstVisitable,
+        {
+            x.drive_mut(self.inner())
+        }
+        fn visit_type_decl_ref(&mut self, x: &mut TypeDeclRef) -> ControlFlow<Self::Break> {
+            match x.id {
+                TypeId::Adt(id) => self.0.visit_item_ref(ItemId::Type(id), &mut x.generics),
+                TypeId::Tuple | TypeId::Builtin(_) => self.visit_inner(x),
+            }
+        }
+        fn visit_fun_decl_ref(&mut self, x: &mut FunDeclRef) -> ControlFlow<Self::Break> {
+            self.0.visit_item_ref(ItemId::Fun(x.id), &mut x.generics)
+        }
+        fn visit_global_decl_ref(&mut self, x: &mut GlobalDeclRef) -> ControlFlow<Self::Break> {
+            self.0.visit_item_ref(ItemId::Global(x.id), &mut x.generics)
+        }
+        fn visit_trait_decl_ref(&mut self, x: &mut TraitDeclRef) -> ControlFlow<Self::Break> {
+            self.0
+                .visit_item_ref(ItemId::TraitDecl(x.id), &mut x.generics)
+        }
+        fn visit_trait_impl_ref(&mut self, x: &mut TraitImplRef) -> ControlFlow<Self::Break> {
+            self.0
+                .visit_item_ref(ItemId::TraitImpl(x.id), &mut x.generics)
+        }
+        fn visit_fn_ptr(&mut self, x: &mut FnPtr) -> ControlFlow<Self::Break> {
+            match x.kind.as_ref() {
+                FnPtrKind::Fun(FunId::Regular(id)) => {
+                    self.0.visit_item_ref(ItemId::Fun(*id), &mut x.generics)
+                }
+                FnPtrKind::Fun(FunId::Builtin(_)) | FnPtrKind::Trait(..) => self.visit_inner(x),
+            }
+        }
+    }
+
     /// Visitor wrapper that tracks the stack of binders seen so far. See [`VisitWithBinderDepth`] for how to use.
     #[repr(transparent)]
     pub struct VisitWithBinderStack<V>(V);
@@ -744,7 +862,7 @@ mod wrappers {
         }
     }
 
-    /// Combo impl to be able to use `VisitWithSpan` and `VisitWithBinderStack` together.
+    /// Combo impls to be able to use some wrappers together.
     impl<V: VisitorWithSpan> VisitorWithSpan for VisitWithBinderStack<V> {
         fn current_span(&mut self) -> &mut Span {
             self.0.current_span()
@@ -758,6 +876,11 @@ mod wrappers {
     impl<V: VisitorWithSpan> VisitorWithSpan for DontLeakImplDetails<V> {
         fn current_span(&mut self) -> &mut Span {
             self.0.current_span()
+        }
+    }
+    impl<V: VisitorWithBinderDepth> VisitorWithBinderDepth for VisitWithItemRef<V> {
+        fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+            self.0.binder_depth_mut()
         }
     }
 }

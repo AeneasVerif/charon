@@ -1,3 +1,4 @@
+//@ charon-args=--remove-unused-clauses
 trait Trait {}
 
 fn callee<T: Trait>() {}

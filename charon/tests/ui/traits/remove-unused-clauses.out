@@ -12,24 +12,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::clone::Clone
-#[lang_item("clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item("copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
@@ -39,9 +21,6 @@ trait Trait<Self>
 
 // Full name: test_crate::callee
 fn callee<T>()
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Trait),
 {
     let _0: (); // return
 
@@ -52,16 +31,13 @@ where
 
 // Full name: test_crate::caller
 pub fn caller<T>()
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Trait),
 {
     let _0: (); // return
     let _1: (); // anonymous local
 
     _0 = ()
     storage_live(_1)
-    _1 = callee<T>[TraitClause0, TraitClause1]()
+    _1 = callee<T>()
     storage_dead(_1)
     _0 = ()
     return
@@ -69,9 +45,6 @@ where
 
 // Full name: test_crate::recursive
 pub fn recursive<T>()
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Trait),
 {
     let _0: (); // return
     let _1: bool; // anonymous local
@@ -82,7 +55,7 @@ where
     _1 = const false
     if move _1 {
         storage_live(_2)
-        _2 = recursive<T>[TraitClause0, TraitClause1]()
+        _2 = recursive<T>()
         storage_dead(_2)
         _0 = ()
     } else {
@@ -94,11 +67,6 @@ where
 
 // Full name: test_crate::swap_recursive
 pub fn swap_recursive<T, U>()
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (U: Sized),
-    TraitClause2: (T: Copy),
-    TraitClause3: (U: Copy),
 {
     let _0: (); // return
     let _1: bool; // anonymous local
@@ -109,7 +77,7 @@ where
     _1 = const false
     if move _1 {
         storage_live(_2)
-        _2 = swap_recursive<U, T>[TraitClause1, TraitClause0, TraitClause3, TraitClause2]()
+        _2 = swap_recursive<U, T>()
         storage_dead(_2)
         _0 = ()
     } else {
@@ -130,10 +98,6 @@ trait HasAssoc<Self>
 
 // Full name: test_crate::clause_dep
 pub fn clause_dep<T>()
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: HasAssoc),
-    TraitClause2: (TraitClause1::Assoc: Trait),
 {
     let _0: (); // return
     let _1: bool; // anonymous local
@@ -142,7 +106,7 @@ where
     storage_live(_1)
     _1 = const false
     if move _1 {
-        _0 = clause_dep<T>[TraitClause0, TraitClause1, TraitClause2]()
+        _0 = clause_dep<T>()
     } else {
         _0 = ()
     }

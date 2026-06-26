@@ -137,20 +137,24 @@ and cli_options = {
       (** Whether to hide various marker traits such as [Sized], [Sync], and
           [Send] anywhere they show up. This can considerably speed up
           translation. *)
-  remove_adt_clauses : bool;
-      (** Remove trait clauses from type declarations. Must be combined with
-          [--lift-associated-types] for type declarations that use trait
-          associated types in their fields, otherwise this will result in
-          errors. *)
   hide_allocator : bool;
       (** Hide the [A] type parameter on standard library containers ([Box],
           [Vec], etc). *)
+  remove_unused_clauses : bool;
+      (** Remove trait clauses that aren't ultimately used anywhere. This is
+          potentially incorrect as sometimes the mere presence of a trait clause
+          is used to justify an operation, e.g. copying [Copy] data using
+          [unsafe]. *)
   remove_unused_self_clauses : bool;
-      (** Trait method declarations take a [Self: Trait] clause as parameter, so
-          that they can be reused by multiple trait impls. This however causes
-          trait definitions to be mutually recursive with their method
-          declarations. This flag removes [Self] clauses that aren't used to
-          break this mutual recursion when possible. *)
+      (** Trait method default bodies take a [Self: Trait] clause as parameter,
+          so that they can be reused by multiple trait impls. This however
+          causes trait definitions to be mutually recursive with their default
+          methods. This flag removes [Self] clauses that aren't used to break
+          this mutual recursion when possible. *)
+  remove_adt_clauses : bool;
+      (** Remove trait clauses from type declarations. Best combined with
+          [--lift-associated-types] for type declarations that use trait
+          associated types in their fields. *)
   desugar_drops : bool;
       (** Transform precise drops to the equivalent [drop_glue(&mut p)] call. *)
   ops_to_function_calls : bool;

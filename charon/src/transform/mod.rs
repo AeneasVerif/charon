@@ -55,8 +55,8 @@ pub mod simplify_output {
     pub mod remove_adt_clauses;
     pub mod remove_nops;
     pub mod remove_unit_locals;
+    pub mod remove_unused_clauses;
     pub mod remove_unused_locals;
-    pub mod remove_unused_self_clause;
     pub mod simplify_constants;
     pub mod unbind_item_vars;
     pub mod update_block_indices;
@@ -216,7 +216,7 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         global(&normalize::expand_associated_types::Transform),
         // Remove the explicit `Self: Trait` clause of methods/assoc const declaration items if
         // they're not used. This simplifies the graph of dependencies between definitions.
-        global(&simplify_output::remove_unused_self_clause::Transform),
+        global(&simplify_output::remove_unused_clauses::Transform),
         // `--remove-adt-clauses`: Remove all trait clauses from type declarations.
         global(&simplify_output::remove_adt_clauses::Transform),
         // Remove the locals which are never used.
