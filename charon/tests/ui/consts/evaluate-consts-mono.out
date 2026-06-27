@@ -1,0 +1,89 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized::{vtable}
+opaque type {vtable}
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: test_crate::HasLen
+trait HasLen<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl HasLen for [u8; 4usize]}
+impl "impl_HasLen_for_array" HasLen for [u8; 4usize] {
+    proof ImpliedClause0: ([u8; 4usize]: MetaSized) = {built_in impl MetaSized for [u8; 4usize]}
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl HasLen for [u8; 4usize]}::LEN::<u8, 4usize>
+const LEN::<u8, 4usize>: usize = 4usize
+
+// Full name: test_crate::use_len
+pub fn use_len() -> usize
+{
+    let _0: usize; // return
+
+    _0 = copy LEN::<u8, 4usize>
+    return
+}
+
+// Full name: test_crate::HasSize
+trait HasSize<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl HasSize for u8}
+impl "impl_HasSize_for_u8" HasSize for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl HasSize for u64}
+impl "impl_HasSize_for_u64" HasSize for u64 {
+    proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl HasSize for [u32; 3usize]}
+impl "impl_HasSize_for_array" HasSize for [u32; 3usize] {
+    proof ImpliedClause0: ([u32; 3usize]: MetaSized) = {built_in impl MetaSized for [u32; 3usize]}
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl HasSize for u8}::SIZE::<u8>
+const impl_HasSize_for_u8::SIZE::<u8>: usize = 1usize
+
+// Full name: test_crate::{impl HasSize for u64}::SIZE::<u64>
+const impl_HasSize_for_u64::SIZE::<u64>: usize = 8usize
+
+// Full name: test_crate::{impl HasSize for [u32; 3usize]}::SIZE::<[u32; 3usize]>
+const impl_HasSize_for_array::SIZE::<[u32; 3usize]>: usize = 12usize
+
+// Full name: test_crate::use_size
+pub fn use_size() -> usize
+{
+    let _0: usize; // return
+    let _1: usize; // anonymous local
+    let _2: usize; // anonymous local
+    let _3: usize; // anonymous local
+
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_1)
+    _2 = copy impl_HasSize_for_u8::SIZE::<u8> panic.+ copy impl_HasSize_for_u64::SIZE::<u64>
+    _1 = move _2
+    _3 = copy _1 panic.+ copy impl_HasSize_for_array::SIZE::<[u32; 3usize]>
+    _0 = move _3
+    storage_dead(_1)
+    return
+}
+
+
+

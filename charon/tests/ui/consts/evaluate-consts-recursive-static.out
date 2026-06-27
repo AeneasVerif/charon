@@ -1,0 +1,105 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::cell::Cell
+#[lang_item("Cell")]
+pub opaque type Cell<T>
+where
+    TraitClause0: (T: MetaSized),
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::cell::{Cell<T>[TraitClause0::ImpliedClause0]}::new
+pub fn new<T>(_1: T) -> Cell<T>[TraitClause0::ImpliedClause0]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::marker::Sync
+#[lang_item("sync")]
+pub trait Sync<Self>
+
+// Full name: test_crate::Node
+pub struct Node {
+  value: u32,
+  next: Cell<&'static Node>[{built_in impl MetaSized for &'static Node}],
+}
+
+// Full name: test_crate::{impl Sync for Node}
+impl "impl_Sync_for_Node" Sync for Node {
+    vtable: impl_Sync_for_Node::{vtable}
+}
+
+// Full name: test_crate::CYCLE_A
+pub fn CYCLE_A() -> Node
+{
+    let _0: Node; // return
+    let _1: Cell<&'4 Node>[{built_in impl MetaSized for &'4 Node}]; // anonymous local
+    let _2: &'6 Node; // anonymous local
+    let _3: &'7 Node; // anonymous local
+    let _4: &'8 Node; // anonymous local
+    let _5: &'9 Node; // anonymous local
+
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &CYCLE_B
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &(*_3)
+    _1 = new<&'11 Node>[{built_in impl Sized for &'11 Node}](move _2)
+    storage_dead(_2)
+    _0 = Node { value: const 1u32, next: move _1 }
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::CYCLE_A
+pub static CYCLE_A: Node = CYCLE_A()
+
+// Full name: test_crate::CYCLE_B
+pub fn CYCLE_B() -> Node
+{
+    let _0: Node; // return
+    let _1: Cell<&'4 Node>[{built_in impl MetaSized for &'4 Node}]; // anonymous local
+    let _2: &'6 Node; // anonymous local
+    let _3: &'7 Node; // anonymous local
+    let _4: &'8 Node; // anonymous local
+    let _5: &'9 Node; // anonymous local
+
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &CYCLE_A
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &(*_3)
+    _1 = new<&'11 Node>[{built_in impl Sized for &'11 Node}](move _2)
+    storage_dead(_2)
+    _0 = Node { value: const 2u32, next: move _1 }
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::CYCLE_B
+pub static CYCLE_B: Node = CYCLE_B()
+
+
+
