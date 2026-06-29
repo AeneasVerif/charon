@@ -47,6 +47,7 @@ jobs:
           skipAddingSubstituter: true
       - uses: actions/checkout@v4
       - run: nix build -L .#charon
+      - run: nix build -L .#charon-portable
       - run: nix build -L .#charon-ml
       - run: nix flake check -L
 

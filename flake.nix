@@ -21,30 +21,54 @@
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
+        inherit (pkgs) lib stdenv makeWrapper bintools;
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         ocamlformat = pkgs.ocamlPackages.ocamlformat_0_27_0;
 
         fullMirSysroots = pkgs.callPackage ./nix/full-mir-sysroots.nix { inherit rustToolchain; };
-        charon = pkgs.callPackage ./nix/charon.nix {
-          inherit craneLib rustToolchain;
+        charon-unwrapped = pkgs.callPackage ./nix/charon.nix {
+          inherit craneLib;
           miriSysroots = fullMirSysroots;
         };
-        charon-unwrapped = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; enableWrapping = false; };
-        charon-portable = pkgs.runCommand "charon-portable" { } ''
+        charon = pkgs.runCommand "charon"
+          {
+            nativeBuildInputs = [ makeWrapper ]
+              # For `install_name_tool`.
+              ++ lib.optionals stdenv.isDarwin [ bintools ];
+            passthru = charon-unwrapped.passthru;
+          }
+          (''
+            cp -r ${charon-unwrapped} $out
+            chmod -R u+w $out
+
+            # Make sure the toolchain is in $PATH so that `cargo` can work
+            # properly. On mac we also have to tell `charon-driver` where to
+            # find the rustc_driver dynamic library; this is done automatically
+            # on linux.
+            wrapProgram $out/bin/charon \
+              --set CHARON_TOOLCHAIN_IS_IN_PATH 1 \
+              --set CHARON_MIRI_SYSROOTS "${fullMirSysroots}" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ rustToolchain ]}" \
+              --prefix PATH : "${lib.makeBinPath [ rustToolchain ]}"
+          ''
+          + (lib.optionalString stdenv.isDarwin ''
+            # Ensures `charon-driver` finds the dylibs correctly.
+            install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
+          ''));
+        charon-portable = pkgs.runCommand "charon-portable" { } (''
           mkdir -p $out/bin
           cp ${charon-unwrapped}/bin/charon $out/bin/charon
           cp ${charon-unwrapped}/bin/charon-driver $out/bin/charon-driver
-
-          if [[ "${pkgs.stdenv.hostPlatform.system}" == *"linux"* ]]; then
-            for f in $out/bin/*; do
-              chmod +w $f
-              ${pkgs.patchelf}/bin/patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $f || true
-              ${pkgs.patchelf}/bin/patchelf --remove-rpath $f || true
-            done
-          fi
-        '';
+        ''
+        + (lib.optionalString stdenv.isLinux ''
+          for f in $out/bin/*; do
+            chmod +w $f
+            ${pkgs.patchelf}/bin/patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $f || true
+            ${pkgs.patchelf}/bin/patchelf --remove-rpath $f || true
+          done
+        ''));
         charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
 
         # Check rust files are correctly formatted.

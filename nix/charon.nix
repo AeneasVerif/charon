@@ -1,12 +1,7 @@
-{ bintools
-, cargoLock ? ../charon/Cargo.lock
+{ cargoLock ? ../charon/Cargo.lock
 , craneLib
 , lib
-, makeWrapper
 , miriSysroots ? null
-, rustToolchain
-, stdenv
-, enableWrapping ? true
 , zlib
 }:
 
@@ -34,30 +29,10 @@ craneLib.buildPackage (
   craneArgs
     // rec {
     buildInputs = [
-      makeWrapper
       zlib
     ];
-    # For `install_name_tool`.
-    nativeBuildInputs = lib.optionals (stdenv.isDarwin) [ bintools ];
     # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
     cargoArtifacts = craneLib.buildDepsOnly craneArgs;
-    # Make sure the toolchain is in $PATH so that `cargo` can work
-    # properly. On mac we also have to tell `charon-driver` where to find
-    # the rustc_driver dynamic library; this is done automatically on
-    # linux.
-    postFixup = lib.optionalString enableWrapping (
-      ''
-        wrapProgram $out/bin/charon \
-          --set CHARON_TOOLCHAIN_IS_IN_PATH 1 \
-          ${lib.optionalString (miriSysroots != null) ''--set CHARON_MIRI_SYSROOTS "${miriSysroots}" \''}
-          --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ rustToolchain ]}" \
-          --prefix PATH : "${lib.makeBinPath [ rustToolchain ]}"
-      ''
-      + (lib.optionalString stdenv.isDarwin ''
-        # Ensures `charon-driver` finds the dylibs correctly.
-        install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
-      '')
-    );
     checkPhaseCargoCommand = ''
       ${lib.optionalString (miriSysroots != null) ''export CHARON_MIRI_SYSROOTS="${miriSysroots}"''}
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
