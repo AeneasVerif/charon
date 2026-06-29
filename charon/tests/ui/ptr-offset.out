@@ -35,18 +35,18 @@ pub fn checked_mul(_1: isize, _2: isize) -> Option<isize>[{built_in impl Sized f
 = <opaque>
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::runtime_offset_nowrap::runtime
-fn runtime(this_1: *const (), count_2: isize, size_3: usize) -> bool
+fn runtime(this: *const (), count: isize, size: usize) -> bool
 {
     let _0: bool; // return
-    let this_1: *const (); // arg #1
-    let count_2: isize; // arg #2
-    let size_3: usize; // arg #3
-    let byte_offset_4: isize; // local
+    let this: *const (); // arg #1
+    let count: isize; // arg #2
+    let size: usize; // arg #3
+    let byte_offset: isize; // local
     let _5: Option<isize>[{built_in impl Sized for isize}]; // anonymous local
     let _6: isize; // anonymous local
     let _7: isize; // anonymous local
     let _8: usize; // anonymous local
-    let overflow_9: bool; // local
+    let overflow: bool; // local
     let _10: (usize, bool); // anonymous local
     let _11: usize; // anonymous local
     let _12: *const (); // anonymous local
@@ -55,10 +55,10 @@ fn runtime(this_1: *const (), count_2: isize, size_3: usize) -> bool
 
     storage_live(_5)
     storage_live(_6)
-    _6 = copy count_2
+    _6 = copy count
     storage_live(_7)
     storage_live(_8)
-    _8 = copy size_3
+    _8 = copy size
     _7 = cast<usize, isize>(move _8)
     storage_dead(_8)
     _5 = checked_mul(move _6, move _7)
@@ -73,29 +73,29 @@ fn runtime(this_1: *const (), count_2: isize, size_3: usize) -> bool
             return
         },
     }
-    storage_live(byte_offset_4)
-    byte_offset_4 = copy (_5 as variant Option::Some).0
+    storage_live(byte_offset)
+    byte_offset = copy (_5 as variant Option::Some).0
     storage_dead(_5)
     storage_live(_10)
     storage_live(_11)
     storage_live(_12)
-    _12 = copy this_1
+    _12 = copy this
     _11 = addr<()>(move _12)
     storage_dead(_12)
     storage_live(_13)
-    _13 = copy byte_offset_4
+    _13 = copy byte_offset
     _10 = overflowing_add_signed(move _11, move _13)
     storage_dead(_13)
     storage_dead(_11)
-    storage_live(overflow_9)
-    overflow_9 = copy _10.1
+    storage_live(overflow)
+    overflow = copy _10.1
     storage_dead(_10)
     storage_live(_14)
-    _14 = copy overflow_9
+    _14 = copy overflow
     _0 = ~(move _14)
     storage_dead(_14)
-    storage_dead(overflow_9)
-    storage_dead(byte_offset_4)
+    storage_dead(overflow)
+    storage_dead(byte_offset)
     return
 }
 
@@ -115,12 +115,12 @@ fn check_language_ub() -> bool
 = <opaque>
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::runtime_offset_nowrap
-fn runtime_offset_nowrap(this_1: *const (), count_2: isize, size_3: usize) -> bool
+fn runtime_offset_nowrap(this: *const (), count: isize, size: usize) -> bool
 {
     let _0: bool; // return
-    let this_1: *const (); // arg #1
-    let count_2: isize; // arg #2
-    let size_3: usize; // arg #3
+    let this: *const (); // arg #1
+    let count: isize; // arg #2
+    let size: usize; // arg #3
     let _4: (*const (), isize, usize); // anonymous local
     let _5: *const (); // anonymous local
     let _6: isize; // anonymous local
@@ -128,11 +128,11 @@ fn runtime_offset_nowrap(this_1: *const (), count_2: isize, size_3: usize) -> bo
 
     storage_live(_4)
     storage_live(_5)
-    _5 = copy this_1
+    _5 = copy this
     storage_live(_6)
-    _6 = copy count_2
+    _6 = copy count
     storage_live(_7)
-    _7 = copy size_3
+    _7 = copy size
     _4 = (move _5, move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
@@ -143,17 +143,17 @@ fn runtime_offset_nowrap(this_1: *const (), count_2: isize, size_3: usize) -> bo
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::precondition_check
-fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
+fn precondition_check(this: *const (), count: isize, size: usize)
 {
     let _0: (); // return
-    let this_1: *const (); // arg #1
-    let count_2: isize; // arg #2
-    let size_3: usize; // arg #3
+    let this: *const (); // arg #1
+    let count: isize; // arg #2
+    let size: usize; // arg #3
     let _4: bool; // anonymous local
     let _5: *const (); // anonymous local
     let _6: isize; // anonymous local
     let _7: usize; // anonymous local
-    let msg_8: &'1 str; // local
+    let msg: &'1 str; // local
     let _9: !; // anonymous local
     let _10: Arguments<'3>; // anonymous local
     let _11: &'4 str; // anonymous local
@@ -161,23 +161,23 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
     _0 = ()
     storage_live(_4)
     storage_live(_5)
-    _5 = copy this_1
+    _5 = copy this
     storage_live(_6)
-    _6 = copy count_2
+    _6 = copy count
     storage_live(_7)
-    _7 = copy size_3
+    _7 = copy size
     _4 = runtime_offset_nowrap(move _5, move _6, move _7)
     if move _4 {
     } else {
         storage_dead(_7)
         storage_dead(_6)
         storage_dead(_5)
-        storage_live(msg_8)
-        msg_8 = const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        storage_live(msg)
+        msg = const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
         storage_live(_9)
         storage_live(_10)
         storage_live(_11)
-        _11 = &(*msg_8) with_metadata(copy msg_8.metadata)
+        _11 = &(*msg) with_metadata(copy msg.metadata)
         _10 = from_str<'6>(move _11)
         storage_dead(_11)
         _9 = panic_nounwind_fmt<'8>(move _10, const false)
@@ -191,13 +191,13 @@ fn precondition_check(this_1: *const (), count_2: isize, size_3: usize)
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset
-pub unsafe fn offset<T>(self_1: *const T, count_2: isize) -> *const T
+pub unsafe fn offset<T>(self: *const T, count: isize) -> *const T
 where
     TraitClause0: (T: Sized),
 {
     let _0: *const T; // return
-    let self_1: *const T; // arg #1
-    let count_2: isize; // arg #2
+    let self: *const T; // arg #1
+    let count: isize; // arg #2
     let _3: bool; // anonymous local
     let _4: (); // anonymous local
     let _5: *const (); // anonymous local
@@ -213,11 +213,11 @@ where
         storage_live(_4)
         storage_live(_5)
         storage_live(_6)
-        _6 = copy self_1
+        _6 = copy self
         _5 = cast<*const T, *const ()>(move _6)
         storage_dead(_6)
         storage_live(_7)
-        _7 = copy count_2
+        _7 = copy count
         storage_live(_8)
         _8 = size_of<T>[TraitClause0]()
         _4 = precondition_check(move _5, move _7, move _8)
@@ -229,9 +229,9 @@ where
     }
     storage_dead(_3)
     storage_live(_9)
-    _9 = copy self_1
+    _9 = copy self
     storage_live(_10)
-    _10 = copy count_2
+    _10 = copy count
     _0 = move _9 offset move _10
     storage_dead(_10)
     storage_dead(_9)
@@ -248,8 +248,8 @@ where
 fn main()
 {
     let _0: (); // return
-    let s_1: [i32; 2usize]; // local
-    let ptr_2: *const i32; // local
+    let s: [i32; 2usize]; // local
+    let ptr: *const i32; // local
     let _3: &'1 [i32]; // anonymous local
     let _4: &'3 [i32; 2usize]; // anonymous local
     let _5: bool; // anonymous local
@@ -258,21 +258,21 @@ fn main()
     let _8: *const i32; // anonymous local
 
     _0 = ()
-    storage_live(s_1)
-    s_1 = [const 11i32, const 42i32]
-    storage_live(ptr_2)
+    storage_live(s)
+    s = [const 11i32, const 42i32]
+    storage_live(ptr)
     storage_live(_3)
     storage_live(_4)
-    _4 = &s_1
+    _4 = &s
     _3 = @ArrayToSliceShared<'_, i32, 2usize>(move _4)
     storage_dead(_4)
-    ptr_2 = as_ptr<'6, i32>[{built_in impl Sized for i32}](move _3)
+    ptr = as_ptr<'6, i32>[{built_in impl Sized for i32}](move _3)
     storage_dead(_3)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = copy ptr_2
+    _8 = copy ptr
     _7 = offset<i32>[{built_in impl Sized for i32}](move _8, const 1isize)
     storage_dead(_8)
     _6 = copy (*_7)
@@ -287,8 +287,8 @@ fn main()
     storage_dead(_7)
     storage_dead(_5)
     _0 = ()
-    storage_dead(ptr_2)
-    storage_dead(s_1)
+    storage_dead(ptr)
+    storage_dead(s)
     return
 }
 

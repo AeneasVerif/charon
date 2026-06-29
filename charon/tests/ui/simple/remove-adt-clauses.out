@@ -33,10 +33,10 @@ struct Foo<T, Clause1_Type> {
 }
 
 // Full name: test_crate::foo
-fn foo(_x_1: Foo<u32, bool>)
+fn foo(_x: Foo<u32, bool>)
 {
     let _0: (); // return
-    let _x_1: Foo<u32, bool>; // arg #1
+    let _x: Foo<u32, bool>; // arg #1
 
     _0 = ()
     _0 = ()

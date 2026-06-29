@@ -242,13 +242,13 @@ where
 fn main()
 {
     let _0: (); // return
-    let ptr_1: *const (); // local
+    let ptr: *const (); // local
 
     _0 = ()
-    storage_live(ptr_1)
-    ptr_1 = null<()>[impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
+    storage_live(ptr)
+    ptr = null<()>[impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
     _0 = ()
-    storage_dead(ptr_1)
+    storage_dead(ptr)
     return
 }
 

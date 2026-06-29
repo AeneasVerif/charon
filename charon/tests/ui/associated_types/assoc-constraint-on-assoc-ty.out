@@ -29,17 +29,17 @@ trait Trait<Self, Self_Assoc>
 }
 
 // Full name: test_crate::takes_trait
-fn takes_trait<I, Clause1_Assoc>(it_1: I)
+fn takes_trait<I, Clause1_Assoc>(it: I)
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: Trait<Clause1_Assoc>),
 {
     let _0: (); // return
-    let it_1: I; // arg #1
+    let it: I; // arg #1
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] it_1
+    conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] it
     return
 }
 
@@ -53,21 +53,21 @@ trait IntoIterator<Self, Self_IntoIter>
 }
 
 // Full name: test_crate::collect
-fn collect<I, Clause1_IntoIter>(it_1: Clause1_IntoIter)
+fn collect<I, Clause1_IntoIter>(it: Clause1_IntoIter)
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: IntoIterator<Clause1_IntoIter>),
 {
     let _0: (); // return
-    let it_1: Clause1_IntoIter; // arg #1
+    let it: Clause1_IntoIter; // arg #1
     let _2: Clause1_IntoIter; // anonymous local
 
     _0 = ()
     storage_live(_2)
-    _2 = move it_1
+    _2 = move it
     _0 = takes_trait<Clause1_IntoIter, ()>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2](move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'1>] it_1
+    conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'1>] it
     return
 }
 

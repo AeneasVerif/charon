@@ -85,10 +85,10 @@ pub trait Foo<Self>
 }
 
 // Full name: test_crate::{impl Foo for ()}::get_ty
-pub fn get_ty<'_0>(self_1: &'_0 ()) -> &'_0 u32
+pub fn get_ty<'_0>(self: &'_0 ()) -> &'_0 u32
 {
     let _0: &'1 u32; // return
-    let self_1: &'3 (); // arg #1
+    let self: &'3 (); // arg #1
     let _2: &'4 u32; // anonymous local
     let _3: &'5 u32; // anonymous local
     let _4: &'6 u32; // anonymous local
@@ -134,20 +134,20 @@ fn mk_foo()
 fn use_foo()
 {
     let _0: (); // return
-    let foo_1: (); // local
+    let foo: (); // local
     let _2: u32; // anonymous local
     let _3: &'1 u32; // anonymous local
     let _4: &'2 u32; // anonymous local
     let _5: &'4 (); // anonymous local
 
     _0 = ()
-    storage_live(foo_1)
-    foo_1 = mk_foo()
+    storage_live(foo)
+    foo = mk_foo()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = &foo_1
+    _5 = &foo
     _4 = get_ty<'6>(move _5)
     _3 = &(*_4)
     storage_dead(_5)
@@ -156,7 +156,7 @@ fn use_foo()
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
-    storage_dead(foo_1)
+    storage_dead(foo)
     return
 }
 
@@ -209,20 +209,20 @@ where
     TraitClause1: (T: RPITIT),
 {
     let _0: (); // return
-    let foo_1: TraitClause1::make_foo_ty; // local
+    let foo: TraitClause1::make_foo_ty; // local
     let _2: TraitClause1::ImpliedClause2::Type; // anonymous local
     let _3: &'1 TraitClause1::ImpliedClause2::Type; // anonymous local
     let _4: &'2 TraitClause1::ImpliedClause2::Type; // anonymous local
     let _5: &'4 TraitClause1::make_foo_ty; // anonymous local
 
     _0 = ()
-    storage_live(foo_1)
-    foo_1 = TraitClause1::make_foo()
+    storage_live(foo)
+    foo = TraitClause1::make_foo()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = &foo_1
+    _5 = &foo
     _4 = TraitClause1::ImpliedClause2::get_ty<'5>(move _5)
     _3 = &(*_4) with_metadata(copy _4.metadata)
     storage_dead(_5)
@@ -232,8 +232,8 @@ where
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'9>] foo_1
-    storage_dead(foo_1)
+    conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'9>] foo
+    storage_dead(foo)
     return
 }
 
@@ -264,20 +264,20 @@ where
 }
 
 // Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for closure<U>[TraitClause0]}::call_once
-fn call_once<'_0, U>(_1: closure<U>[TraitClause0], tupled_args_2: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
+fn call_once<'_0, U>(_1: closure<U>[TraitClause0], tupled_args: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
 where
     TraitClause0: (U: Sized),
 {
     let _0: WrapClone<&'8 U>[{built_in impl Sized for &'8 U}, {impl Clone for &'_0 T}<'8, U>]; // return
     let _1: closure<U>[TraitClause0]; // arg #1
-    let tupled_args_2: (&'_0 U,); // arg #2
-    let x_3: &'13 U; // local
+    let tupled_args: (&'_0 U,); // arg #2
+    let x: &'13 U; // local
     let _4: &'14 U; // anonymous local
 
-    storage_live(x_3)
-    x_3 = move tupled_args_2.0
+    storage_live(x)
+    x = move tupled_args.0
     storage_live(_4)
-    _4 = &(*x_3)
+    _4 = &(*x)
     _0 = WrapClone { 0: move _4 }
     storage_dead(_4)
     return
@@ -322,7 +322,7 @@ where
 pub fn use_wrap()
 {
     let _0: (); // return
-    let f_1: closure<u32>[{built_in impl Sized for u32}]; // local
+    let f: closure<u32>[{built_in impl Sized for u32}]; // local
     let _2: WrapClone<&'9 u32>[{built_in impl Sized for &'9 u32}, {impl Clone for &'_0 T}<'9, u32>]; // anonymous local
     let _3: closure<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _4: (&'15 u32,); // anonymous local
@@ -335,8 +335,8 @@ pub fn use_wrap()
 
     storage_live(_7)
     _0 = ()
-    storage_live(f_1)
-    f_1 = wrap<u32>[{built_in impl Sized for u32}]()
+    storage_live(f)
+    f = wrap<u32>[{built_in impl Sized for u32}]()
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
@@ -345,7 +345,7 @@ pub fn use_wrap()
     _8 = move _9
     storage_live(_2)
     storage_live(_3)
-    _3 = move f_1
+    _3 = move f
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -360,8 +360,8 @@ pub fn use_wrap()
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[drop_glue<'25, u32>[{built_in impl Sized for u32}]] f_1
-    storage_dead(f_1)
+    conditional_drop[drop_glue<'25, u32>[{built_in impl Sized for u32}]] f
+    storage_dead(f)
     return
 }
 

@@ -87,15 +87,15 @@ trait GenericTrait<Self, T>
     non-dyn-compatible
 }
 
-fn test_crate::GenericTrait::provided<Self, T, U>(x_1: T, y_2: U)
+fn test_crate::GenericTrait::provided<Self, T, U>(x: T, y: U)
 where
     TraitClause0: (Self: GenericTrait<T>),
     TraitClause1: (U: Sized),
     TraitClause2: (U: PartialEq<T>),
 {
     let _0: (); // return
-    let x_1: T; // arg #1
-    let y_2: U; // arg #2
+    let x: T; // arg #1
+    let y: U; // arg #2
     let _3: bool; // anonymous local
     let _4: &'1 U; // anonymous local
     let _5: &'3 T; // anonymous local
@@ -103,9 +103,9 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &y_2
+    _4 = &y
     storage_live(_5)
-    _5 = &x_1
+    _5 = &x
     _3 = TraitClause2::eq<'4, '5>(move _4, move _5)
     if move _3 {
         storage_dead(_5)
@@ -117,8 +117,8 @@ where
         _0 = ()
     }
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y_2
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] x_1
+    conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] x
     return
 }
 
@@ -144,7 +144,7 @@ where
 }
 
 // Full name: test_crate::{impl GenericTrait<Option<T>[TraitClause0]> for Override<T>[TraitClause0]}::provided
-fn impl_GenericTrait_Option_for_Override::provided<T, U>(x_1: Option<T>[TraitClause0], y_2: U)
+fn impl_GenericTrait_Option_for_Override::provided<T, U>(x: Option<T>[TraitClause0], y: U)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
@@ -152,8 +152,8 @@ where
     TraitClause3: (U: PartialEq<Option<T>[TraitClause0]>),
 {
     let _0: (); // return
-    let x_1: Option<T>[TraitClause0]; // arg #1
-    let y_2: U; // arg #2
+    let x: Option<T>[TraitClause0]; // arg #1
+    let y: U; // arg #2
     let _3: bool; // anonymous local
     let _4: &'1 U; // anonymous local
     let _5: &'3 Option<T>[TraitClause0]; // anonymous local
@@ -161,9 +161,9 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &y_2
+    _4 = &y
     storage_live(_5)
-    _5 = &x_1
+    _5 = &x
     _3 = TraitClause3::eq<'4, '5>(move _4, move _5)
     if move _3 {
         storage_dead(_5)
@@ -175,7 +175,7 @@ where
         _0 = ()
     }
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for U}::drop_glue<'7>] y_2
+    conditional_drop[{built_in impl Destruct for U}::drop_glue<'7>] y
     return
 }
 
@@ -215,7 +215,7 @@ where
 }
 
 // Full name: test_crate::{impl GenericTrait<Option<T>[TraitClause0]> for NoOverride<T>[TraitClause0]}::provided
-fn impl_GenericTrait_Option_for_NoOverride::provided<T, U>(x_1: Option<T>[TraitClause0], y_2: U)
+fn impl_GenericTrait_Option_for_NoOverride::provided<T, U>(x: Option<T>[TraitClause0], y: U)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
@@ -223,8 +223,8 @@ where
     TraitClause3: (U: PartialEq<Option<T>[TraitClause0]>),
 {
     let _0: (); // return
-    let x_1: Option<T>[TraitClause0]; // arg #1
-    let y_2: U; // arg #2
+    let x: Option<T>[TraitClause0]; // arg #1
+    let y: U; // arg #2
     let _3: bool; // anonymous local
     let _4: &'1 U; // anonymous local
     let _5: &'3 Option<T>[TraitClause0]; // anonymous local
@@ -232,9 +232,9 @@ where
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &y_2
+    _4 = &y
     storage_live(_5)
-    _5 = &x_1
+    _5 = &x
     _3 = TraitClause3::eq<'4, '5>(move _4, move _5)
     if move _3 {
         storage_dead(_5)
@@ -246,8 +246,8 @@ where
         _0 = ()
     }
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y_2
-    conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'9>] x_1
+    conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
+    conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'9>] x
     return
 }
 

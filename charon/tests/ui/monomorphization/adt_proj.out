@@ -11,24 +11,24 @@ pub enum Result::<u32, u32> {
 fn main()
 {
     let _0: (); // return
-    let res_1: Result::<u32, u32>; // local
-    let n_2: u32; // local
+    let res: Result::<u32, u32>; // local
+    let n: u32; // local
 
     _0 = ()
-    storage_live(res_1)
-    res_1 = Result::<u32, u32>::Ok { 0: const 0u32 }
-    match res_1 {
+    storage_live(res)
+    res = Result::<u32, u32>::Ok { 0: const 0u32 }
+    match res {
         Result::<u32, u32>::Ok => {
         },
         _ => {
             panic(core::panicking::panic)
         },
     }
-    storage_live(n_2)
-    n_2 = copy (res_1 as variant Result::<u32, u32>::Ok).0
+    storage_live(n)
+    n = copy (res as variant Result::<u32, u32>::Ok).0
     _0 = ()
-    storage_dead(n_2)
-    storage_dead(res_1)
+    storage_dead(n)
+    storage_dead(res)
     return
 }
 

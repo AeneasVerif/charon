@@ -48,26 +48,26 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::{impl Trait for ()}::method2
-fn method2<T>(self_1: (), _other_2: T)
+fn method2<T>(self: (), _other: T)
 where
     TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let self_1: (); // arg #1
-    let _other_2: T; // arg #2
+    let self: (); // arg #1
+    let _other: T; // arg #2
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _other_2
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _other
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}::method1
-fn method1(self_1: (), _other_2: &'static u32) -> bool
+fn method1(self: (), _other: &'static u32) -> bool
 {
     let _0: bool; // return
-    let self_1: (); // arg #1
-    let _other_2: &'1 u32; // arg #2
+    let self: (); // arg #1
+    let _other: &'1 u32; // arg #2
 
     _0 = const true
     return
@@ -91,11 +91,11 @@ trait MyCompare<Self, Other>
 }
 
 // Full name: test_crate::{impl MyCompare<&'a ()> for &'a ()}::compare
-fn compare<'a>(self_1: &'a (), _other_2: &'a ()) -> bool
+fn compare<'a>(self: &'a (), _other: &'a ()) -> bool
 {
     let _0: bool; // return
-    let self_1: &'1 (); // arg #1
-    let _other_2: &'2 (); // arg #2
+    let self: &'1 (); // arg #1
+    let _other: &'2 (); // arg #2
 
     _0 = const true
     return
@@ -206,13 +206,13 @@ trait Foo<Self>
 }
 
 // Full name: test_crate::{impl Foo for ()}::foo
-fn foo<'a, 'b>(x_1: &'a (), y_2: &'b ()) -> &'a ()
+fn foo<'a, 'b>(x: &'a (), y: &'b ()) -> &'a ()
 {
     let _0: &'1 (); // return
-    let x_1: &'2 (); // arg #1
-    let y_2: &'3 (); // arg #2
+    let x: &'2 (); // arg #1
+    let y: &'3 (); // arg #2
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
@@ -224,10 +224,10 @@ impl "impl_Foo_for_unit" Foo for () {
 }
 
 // Full name: test_crate::call_foo
-fn call_foo<'e>(x_1: &'e ()) -> &'e ()
+fn call_foo<'e>(x: &'e ()) -> &'e ()
 {
     let _0: &'1 (); // return
-    let x_1: &'2 (); // arg #1
+    let x: &'2 (); // arg #1
     let _2: &'3 (); // anonymous local
     let _3: &'4 (); // anonymous local
     let _4: &'5 (); // anonymous local
@@ -247,7 +247,7 @@ fn call_foo<'e>(x_1: &'e ()) -> &'e ()
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*x_1)
+    _3 = &(*x)
     storage_live(_4)
     storage_live(_5)
     _6 = move _7

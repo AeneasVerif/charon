@@ -101,15 +101,15 @@ impl<'_0, '_1> "impl_Fn_tuple_for_closure" Fn<(u8, u8)> for closure<'_0, '_1> {
 }
 
 // Full name: test_crate::apply_to::<closure<'_, '_>>
-fn apply_to::<closure<'_, '_>><'_0>(f_1: &'_0 closure<'_, '_>) -> u8
+fn apply_to::<closure<'_, '_>><'_0>(f: &'_0 closure<'_, '_>) -> u8
 {
     let _0: u8; // return
-    let f_1: &'3 closure<'4, '5>; // arg #1
+    let f: &'3 closure<'4, '5>; // arg #1
     let _2: &'6 closure<'7, '8>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 = &(*f_1)
+    _2 = &(*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_Fn_tuple_for_closure<'15, '16>::call<'17>(move _2, move _3)
@@ -119,15 +119,15 @@ fn apply_to::<closure<'_, '_>><'_0>(f_1: &'_0 closure<'_, '_>) -> u8
 }
 
 // Full name: test_crate::apply_to_mut::<closure<'_, '_>>
-fn apply_to_mut::<closure<'_, '_>><'_0>(f_1: &'_0 mut closure<'_, '_>) -> u8
+fn apply_to_mut::<closure<'_, '_>><'_0>(f: &'_0 mut closure<'_, '_>) -> u8
 {
     let _0: u8; // return
-    let f_1: &'3 mut closure<'4, '5>; // arg #1
+    let f: &'3 mut closure<'4, '5>; // arg #1
     let _2: &'6 mut closure<'7, '8>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 = &mut (*f_1)
+    _2 = &mut (*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_FnMut_tuple_for_closure<'15, '16>::call_mut<'17>(move _2, move _3)
@@ -147,21 +147,21 @@ unsafe fn drop_glue<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0, '_1>)
 }
 
 // Full name: test_crate::apply_to_once::<closure<'_, '_>>
-fn apply_to_once::<closure<'_, '_>>(f_1: closure<'_, '_>) -> u8
+fn apply_to_once::<closure<'_, '_>>(f: closure<'_, '_>) -> u8
 {
     let _0: u8; // return
-    let f_1: closure<'0, '1>; // arg #1
+    let f: closure<'0, '1>; // arg #1
     let _2: closure<'2, '3>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 = move f_1
+    _2 = move f
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_FnOnce_tuple_for_closure<'8, '9>::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[drop_glue<'21, '22, '23>] f_1
+    conditional_drop[drop_glue<'21, '22, '23>] f
     return
 }
 
@@ -169,9 +169,9 @@ fn apply_to_once::<closure<'_, '_>>(f_1: closure<'_, '_>) -> u8
 fn main()
 {
     let _0: (); // return
-    let v_1: u8; // local
-    let z_2: u8; // local
-    let f_3: closure<'2, '3>; // local
+    let v: u8; // local
+    let z: u8; // local
+    let f: closure<'2, '3>; // local
     let _4: &'5 u8; // anonymous local
     let _5: &'6 u8; // anonymous local
     let _6: u8; // anonymous local
@@ -187,21 +187,21 @@ fn main()
     let _16: closure<'28, '29>; // anonymous local
 
     _0 = ()
-    storage_live(v_1)
-    v_1 = const 5u8
-    storage_live(z_2)
-    z_2 = const 1u8
-    storage_live(f_3)
+    storage_live(v)
+    v = const 5u8
+    storage_live(z)
+    z = const 1u8
+    storage_live(f)
     storage_live(_4)
-    _4 = &v_1
+    _4 = &v
     storage_live(_5)
-    _5 = &z_2
-    f_3 = closure { 0: move _4, 1: move _5 }
+    _5 = &z
+    f = closure { 0: move _4, 1: move _5 }
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
     storage_live(_7)
-    _7 = &f_3
+    _7 = &f
     storage_live(_8)
     _8 = (const 10u8, const 20u8)
     _6 = impl_Fn_tuple_for_closure<'36, '37>::call<'38>(move _7, move _8)
@@ -211,7 +211,7 @@ fn main()
     storage_live(_9)
     storage_live(_10)
     storage_live(_11)
-    _11 = &f_3
+    _11 = &f
     _10 = &(*_11)
     _9 = apply_to::<closure<'_, '_>><'42>(move _10)
     storage_dead(_10)
@@ -220,7 +220,7 @@ fn main()
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
-    _14 = &mut f_3
+    _14 = &mut f
     _13 = &two-phase-mut (*_14)
     _12 = apply_to_mut::<closure<'_, '_>><'46>(move _13)
     storage_dead(_13)
@@ -228,14 +228,14 @@ fn main()
     storage_dead(_12)
     storage_live(_15)
     storage_live(_16)
-    _16 = copy f_3
+    _16 = copy f
     _15 = apply_to_once::<closure<'_, '_>>(move _16)
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
-    storage_dead(f_3)
-    storage_dead(z_2)
-    storage_dead(v_1)
+    storage_dead(f)
+    storage_dead(z)
+    storage_dead(v)
     return
 }
 

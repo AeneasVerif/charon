@@ -601,11 +601,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
         // Arguments
         let n_args = self.signature.inputs.len();
         let args_of_locals = |l: &Locals| {
+            let ctx = ctx.set_locals(l);
             l.locals
                 .iter()
                 .skip(1)
                 .take(n_args)
-                .map(|l| format!("{l}"))
+                .map(|l| format!("{}", l.index.with_ctx(&ctx)))
                 .collect::<Vec<String>>()
         };
 
@@ -896,7 +897,7 @@ impl<T> GExprBody<T> {
         // Format the local variables
         for v in &self.locals.locals {
             write!(f, "{tab}")?;
-            write!(f, "let {v}: {};", v.ty.with_ctx(ctx))?;
+            write!(f, "let {}: {};", v.index.with_ctx(ctx), v.ty.with_ctx(ctx))?;
 
             write!(f, " // ")?;
             if v.index.is_zero() {

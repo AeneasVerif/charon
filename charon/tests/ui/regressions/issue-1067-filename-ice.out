@@ -74,7 +74,7 @@ where
 fn main()
 {
     let _0: (); // return
-    let buf_1: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let buf: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
     let _2: (); // anonymous local
     let _3: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
     let _4: &'1 mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
@@ -85,12 +85,12 @@ fn main()
     let _9: &'7 [u8; 5usize]; // anonymous local
 
     _0 = ()
-    storage_live(buf_1)
-    buf_1 = new<u8>[{built_in impl Sized for u8}]()
+    storage_live(buf)
+    buf = new<u8>[{built_in impl Sized for u8}]()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &two-phase-mut buf_1
+    _4 = &two-phase-mut buf
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
@@ -110,8 +110,8 @@ fn main()
     storage_dead(_7)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<'15, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf_1
-    storage_dead(buf_1)
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'15, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
+    storage_dead(buf)
     return
 }
 

@@ -96,17 +96,17 @@ pub trait T7<Self>
 }
 
 // Full name: test_crate::T6::f
-pub fn f<Self, T>(x_1: u64)
+pub fn f<Self, T>(x: u64)
 where
     TraitClause0: (Self: T6<T>),
 {
     let _0: (); // return
-    let x_1: u64; // arg #1
+    let x: u64; // arg #1
     let _2: u64; // anonymous local
 
     _0 = ()
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _0 = TraitClause0::ImpliedClause2::g(move _2)
     storage_dead(_2)
     return

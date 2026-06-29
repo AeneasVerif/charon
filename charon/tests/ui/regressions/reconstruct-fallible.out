@@ -11,10 +11,10 @@ fn other()
 }
 
 // Full name: test_crate::sink_tuple
-fn sink_tuple(_x_1: (usize, bool))
+fn sink_tuple(_x: (usize, bool))
 {
     let _0: (); // return
-    let _x_1: (usize, bool); // arg #1
+    let _x: (usize, bool); // arg #1
 
     _0 = ()
     _0 = ()
@@ -22,10 +22,10 @@ fn sink_tuple(_x_1: (usize, bool))
 }
 
 // Full name: test_crate::sink_int
-fn sink_int(_x_1: usize)
+fn sink_int(_x: usize)
 {
     let _0: (); // return
-    let _x_1: usize; // arg #1
+    let _x: usize; // arg #1
 
     _0 = ()
     _0 = ()
@@ -33,10 +33,10 @@ fn sink_int(_x_1: usize)
 }
 
 // Full name: test_crate::sink_bool
-fn sink_bool(_x_1: bool)
+fn sink_bool(_x: bool)
 {
     let _0: (); // return
-    let _x_1: bool; // arg #1
+    let _x: bool; // arg #1
 
     _0 = ()
     _0 = ()
@@ -47,25 +47,25 @@ fn sink_bool(_x_1: bool)
 fn must_preserve_tuple()
 {
     let _0: (); // return
-    let z_1: (usize, bool); // local
+    let z: (usize, bool); // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
     let _4: (usize, bool); // anonymous local
 
     _0 = ()
-    storage_live(z_1)
-    z_1 = const 0usize checked.+ const 0usize
+    storage_live(z)
+    z = const 0usize checked.+ const 0usize
     storage_live(_2)
     _2 = other()
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z_1
+    _4 = copy z
     _3 = sink_tuple(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
-    storage_dead(z_1)
+    storage_dead(z)
     return
 }
 
@@ -73,25 +73,25 @@ fn must_preserve_tuple()
 fn can_erase_check()
 {
     let _0: (); // return
-    let z_1: (usize, bool); // local
+    let z: (usize, bool); // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
     let _4: usize; // anonymous local
 
     _0 = ()
-    storage_live(z_1)
-    z_1 = const 0usize checked.+ const 0usize
+    storage_live(z)
+    z = const 0usize checked.+ const 0usize
     storage_live(_2)
     _2 = other()
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z_1.0
+    _4 = copy z.0
     _3 = sink_int(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
-    storage_dead(z_1)
+    storage_dead(z)
     return
 }
 
@@ -99,25 +99,25 @@ fn can_erase_check()
 fn must_preserve_overflow_flag()
 {
     let _0: (); // return
-    let z_1: (usize, bool); // local
+    let z: (usize, bool); // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
     let _4: bool; // anonymous local
 
     _0 = ()
-    storage_live(z_1)
-    z_1 = const 0usize checked.+ const 0usize
+    storage_live(z)
+    z = const 0usize checked.+ const 0usize
     storage_live(_2)
     _2 = other()
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z_1.1
+    _4 = copy z.1
     _3 = sink_bool(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
-    storage_dead(z_1)
+    storage_dead(z)
     return
 }
 
@@ -125,7 +125,7 @@ fn must_preserve_overflow_flag()
 fn mixed_field0_and_cross_block_tuple()
 {
     let _0: (); // return
-    let z_1: (usize, bool); // local
+    let z: (usize, bool); // local
     let _2: (); // anonymous local
     let _3: usize; // anonymous local
     let _4: (); // anonymous local
@@ -133,11 +133,11 @@ fn mixed_field0_and_cross_block_tuple()
     let _6: (usize, bool); // anonymous local
 
     _0 = ()
-    storage_live(z_1)
-    z_1 = const 0usize checked.+ const 0usize
+    storage_live(z)
+    z = const 0usize checked.+ const 0usize
     storage_live(_2)
     storage_live(_3)
-    _3 = copy z_1.0
+    _3 = copy z.0
     _2 = sink_int(move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -146,12 +146,12 @@ fn mixed_field0_and_cross_block_tuple()
     storage_dead(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = copy z_1
+    _6 = copy z
     _5 = sink_tuple(move _6)
     storage_dead(_6)
     storage_dead(_5)
     _0 = ()
-    storage_dead(z_1)
+    storage_dead(z)
     return
 }
 
@@ -159,7 +159,7 @@ fn mixed_field0_and_cross_block_tuple()
 fn can_erase_check_multi_block()
 {
     let _0: (); // return
-    let z_1: (usize, bool); // local
+    let z: (usize, bool); // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
     let _4: usize; // anonymous local
@@ -168,14 +168,14 @@ fn can_erase_check_multi_block()
     let _7: usize; // anonymous local
 
     _0 = ()
-    storage_live(z_1)
-    z_1 = const 0usize checked.+ const 0usize
+    storage_live(z)
+    z = const 0usize checked.+ const 0usize
     storage_live(_2)
     _2 = other()
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z_1.0
+    _4 = copy z.0
     _3 = sink_int(move _4)
     storage_dead(_4)
     storage_dead(_3)
@@ -184,12 +184,12 @@ fn can_erase_check_multi_block()
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy z_1.0
+    _7 = copy z.0
     _6 = sink_int(move _7)
     storage_dead(_7)
     storage_dead(_6)
     _0 = ()
-    storage_dead(z_1)
+    storage_dead(z)
     return
 }
 

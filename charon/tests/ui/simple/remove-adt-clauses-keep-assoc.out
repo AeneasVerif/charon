@@ -157,7 +157,7 @@ where
 }
 
 // Full name: test_crate::use_all
-fn use_all<T, U, V>(_x_1: Direct<T>[TraitClause0, TraitClause3], _y_2: Transitive<U>[TraitClause1, TraitClause4], _z_3: Marker<V>)
+fn use_all<T, U, V>(_x: Direct<T>[TraitClause0, TraitClause3], _y: Transitive<U>[TraitClause1, TraitClause4], _z: Marker<V>)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
@@ -167,15 +167,15 @@ where
     TraitClause5: (V: MarkerChild),
 {
     let _0: (); // return
-    let _x_1: Direct<T>[TraitClause0, TraitClause3]; // arg #1
-    let _y_2: Transitive<U>[TraitClause1, TraitClause4]; // arg #2
-    let _z_3: Marker<V>; // arg #3
+    let _x: Direct<T>[TraitClause0, TraitClause3]; // arg #1
+    let _y: Transitive<U>[TraitClause1, TraitClause4]; // arg #2
+    let _z: Marker<V>; // arg #3
 
     _0 = ()
     _0 = ()
-    conditional_drop[impl_Destruct_for_Marker::drop_glue<'0, V>[TraitClause2, TraitClause5]] _z_3
-    conditional_drop[impl_Destruct_for_Transitive::drop_glue<'1, U>[TraitClause1, TraitClause4]] _y_2
-    conditional_drop[impl_Destruct_for_Direct::drop_glue<'3, T>[TraitClause0, TraitClause3]] _x_1
+    conditional_drop[impl_Destruct_for_Marker::drop_glue<'0, V>[TraitClause2, TraitClause5]] _z
+    conditional_drop[impl_Destruct_for_Transitive::drop_glue<'1, U>[TraitClause1, TraitClause4]] _y
+    conditional_drop[impl_Destruct_for_Direct::drop_glue<'3, T>[TraitClause0, TraitClause3]] _x
     return
 }
 

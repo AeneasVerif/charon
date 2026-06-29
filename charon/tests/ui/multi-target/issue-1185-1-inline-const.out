@@ -3,10 +3,10 @@ pub fn core::num::{u32}::MAX() -> u32
 
 pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
 
-pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a_1: &'_0 mut [u8; N])
+pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut [u8; N])
 {
     let _0: (); // return
-    let _a_1: &'1 mut [u8; N]; // arg #1
+    let _a: &'1 mut [u8; N]; // arg #1
     let _2: bool; // anonymous local
     let _3: usize; // anonymous local
 

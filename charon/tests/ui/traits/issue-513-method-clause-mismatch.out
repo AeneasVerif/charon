@@ -47,17 +47,17 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::{impl Trait for ()}::method
-fn method<T>(self_1: (), _other_2: T)
+fn method<T>(self: (), _other: T)
 where
     TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let self_1: (); // arg #1
-    let _other_2: T; // arg #2
+    let self: (); // arg #1
+    let _other: T; // arg #2
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _other_2
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _other
     return
 }
 

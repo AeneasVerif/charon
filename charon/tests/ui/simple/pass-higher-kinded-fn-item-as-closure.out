@@ -65,12 +65,12 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 }
 
 // Full name: test_crate::flabada
-pub fn flabada<'a>(x_1: &'a ()) -> &'a ()
+pub fn flabada<'a>(x: &'a ()) -> &'a ()
 {
     let _0: &'1 (); // return
-    let x_1: &'2 (); // arg #1
+    let x: &'2 (); // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 

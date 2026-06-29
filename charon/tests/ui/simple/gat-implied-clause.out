@@ -46,50 +46,50 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::lifetime_gat_bound
-fn lifetime_gat_bound<'_0, X>(x_1: TraitClause1::LifetimeGat<'_0>)
+fn lifetime_gat_bound<'_0, X>(x: TraitClause1::LifetimeGat<'_0>)
 where
     TraitClause0: (X: Sized),
     TraitClause1: (X: Trait),
 {
     let _0: (); // return
-    let x_1: TraitClause1::LifetimeGat<'1>; // arg #1
+    let x: TraitClause1::LifetimeGat<'1>; // arg #1
     let _2: TraitClause1::LifetimeGat<'2>; // anonymous local
     let _3: &'5 TraitClause1::LifetimeGat<'6>; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &x_1
+    _3 = &x
     _2 = TraitClause1::LifetimeGat::ImpliedClause1::clone<'9>(move _3)
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'14>}::drop_glue<'15>] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'17>}::drop_glue<'18>] x_1
+    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'17>}::drop_glue<'18>] x
     return
 }
 
 // Full name: test_crate::non_lifetime_gat_bound
-fn non_lifetime_gat_bound<X>(x_1: TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}])
+fn non_lifetime_gat_bound<X>(x: TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}])
 where
     TraitClause0: (X: Sized),
     TraitClause1: (X: Trait),
 {
     let _0: (); // return
-    let x_1: TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // arg #1
+    let x: TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // arg #1
     let _2: TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // anonymous local
     let _3: &'1 TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &x_1
+    _3 = &x
     _2 = TraitClause1::NonLifetimeGat::ImpliedClause1::clone<'2>(move _3)
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'4>] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'5>] x_1
+    conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'5>] x
     return
 }
 

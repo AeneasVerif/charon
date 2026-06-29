@@ -54,13 +54,13 @@ pub trait Trait<Self>
     vtable: test_crate::Trait::{vtable}<Self::Item>
 }
 
-pub fn test_crate::Trait::defaulted<'_0, Self>(self_1: &'_0 Self)
+pub fn test_crate::Trait::defaulted<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
     TraitClause1: (Self: Copy),
 {
     let _0: (); // return
-    let self_1: &'1 Self; // arg #1
+    let self: &'1 Self; // arg #1
 
     _0 = ()
     _0 = ()
@@ -68,13 +68,13 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Option<T>[TraitClause0]}::defaulted
-pub fn impl_Trait_for_Option::defaulted<'_0, T>(self_1: &'_0 Option<T>[TraitClause0])
+pub fn impl_Trait_for_Option::defaulted<'_0, T>(self: &'_0 Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Option<T>[TraitClause0]: Copy),
 {
     let _0: (); // return
-    let self_1: &'1 Option<T>[TraitClause0]; // arg #1
+    let self: &'1 Option<T>[TraitClause0]; // arg #1
 
     _0 = ()
     _0 = ()
@@ -94,12 +94,12 @@ where
 }
 
 // Full name: test_crate::{impl Trait for String}::defaulted
-pub fn impl_Trait_for_String::defaulted<'_0>(self_1: &'_0 String)
+pub fn impl_Trait_for_String::defaulted<'_0>(self: &'_0 String)
 where
     TraitClause0: (String: Copy),
 {
     let _0: (); // return
-    let self_1: &'1 String; // arg #1
+    let self: &'1 String; // arg #1
 
     _0 = ()
     _0 = ()

@@ -133,30 +133,30 @@ where
 }
 
 // Full name: alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::as_mut_ptr
-pub fn as_mut_ptr<'_0, T, A>(self_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1]) -> *mut T
+pub fn as_mut_ptr<'_0, T, A>(self: &'_0 mut Vec<T>[TraitClause0, TraitClause1]) -> *mut T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
 {
     let _0: *mut T; // return
-    let self_1: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
+    let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
     let _2: &'3 RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_2)
-    _2 = &((*self_1)).buf
+    _2 = &((*self)).buf
     _0 = ptr<'5, T, A>[TraitClause0, TraitClause1](move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: alloc::vec::{impl Drop for Vec<T>[TraitClause0, TraitClause1]}::drop
-pub fn impl_Drop_for_Vec::drop<'_0, T, A>(self_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
+pub fn impl_Drop_for_Vec::drop<'_0, T, A>(self: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
 {
     let _0: (); // return
-    let self_1: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
+    let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
     let _2: *mut [T]; // anonymous local
     let _3: *mut T; // anonymous local
     let _4: &'2 mut Vec<T>[TraitClause0, TraitClause1]; // anonymous local
@@ -166,11 +166,11 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &two-phase-mut (*self_1)
+    _4 = &two-phase-mut (*self)
     _3 = as_mut_ptr<'4, T, A>[TraitClause0, TraitClause1](move _4)
     storage_dead(_4)
     storage_live(_5)
-    _5 = copy ((*self_1)).len
+    _5 = copy ((*self)).len
     _2 = cast_slice<T>[TraitClause0](move _3, move _5)
     storage_dead(_5)
     storage_dead(_3)
@@ -199,24 +199,24 @@ where
     return
 }
 
-pub fn alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::with_capacity_in<T, A>(capacity_1: usize, alloc_2: A) -> Vec<T>[TraitClause0, TraitClause1]
+pub fn alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::with_capacity_in<T, A>(capacity: usize, alloc: A) -> Vec<T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Destruct),
 {
     let _0: Vec<T>[TraitClause0, TraitClause1]; // return
-    let capacity_1: usize; // arg #1
-    let alloc_2: A; // arg #2
+    let capacity: usize; // arg #1
+    let alloc: A; // arg #2
     let _3: RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
     let _4: usize; // anonymous local
     let _5: A; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy capacity_1
+    _4 = copy capacity
     storage_live(_5)
-    _5 = move alloc_2
+    _5 = move alloc
     _3 = alloc::raw_vec::{RawVec<T, A>[TraitClause0, TraitClause1]}::with_capacity_in<T, A>[TraitClause0, TraitClause1, TraitClause2](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
@@ -227,17 +227,17 @@ where
 
 // Full name: alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::with_capacity
 #[lang_item("vec_with_capacity")]
-pub fn with_capacity<T>(capacity_1: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
+pub fn with_capacity<T>(capacity: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 {
     let _0: Vec<T>[TraitClause0, {built_in impl Sized for Global}]; // return
-    let capacity_1: usize; // arg #1
+    let capacity: usize; // arg #1
     let _2: usize; // anonymous local
     let _3: Global; // anonymous local
 
     storage_live(_2)
-    _2 = copy capacity_1
+    _2 = copy capacity
     storage_live(_3)
     _3 = Global {  }
     _0 = alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::with_capacity_in<T, Global>[TraitClause0, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, move _3)

@@ -8,10 +8,10 @@ struct Point::<i32> {
 }
 
 // Full name: test_crate::{impl SomeTrait for Point::<i32>}::some_method
-fn some_method<'_0>(self_1: &'_0 Point::<i32>)
+fn some_method<'_0>(self: &'_0 Point::<i32>)
 {
     let _0: (); // return
-    let self_1: &'1 Point::<i32>; // arg #1
+    let self: &'1 Point::<i32>; // arg #1
     let _2: bool; // anonymous local
     let _3: i32; // anonymous local
     let _4: bool; // anonymous local
@@ -22,19 +22,19 @@ fn some_method<'_0>(self_1: &'_0 Point::<i32>)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = copy ((*self_1)).x
+    _3 = copy ((*self)).x
     _2 = move _3 > const 0i32
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         storage_live(_5)
-        _5 = copy ((*self_1)).y
+        _5 = copy ((*self)).y
         _4 = move _5 < const 100u64
         if move _4 {
             storage_dead(_5)
             storage_live(_6)
             storage_live(_7)
-            _7 = copy ((*self_1)).z
+            _7 = copy ((*self)).z
             _6 = move _7 != const 0i32
             if move _6 {
                 storage_dead(_7)
@@ -59,21 +59,21 @@ fn some_method<'_0>(self_1: &'_0 Point::<i32>)
 fn main()
 {
     let _0: (); // return
-    let p_1: Point::<i32>; // local
+    let p: Point::<i32>; // local
     let _2: (); // anonymous local
     let _3: &'1 Point::<i32>; // anonymous local
 
     _0 = ()
-    storage_live(p_1)
-    p_1 = Point::<i32> { x: const 10i32, y: const 50u64, z: const 1i32 }
+    storage_live(p)
+    p = Point::<i32> { x: const 10i32, y: const 50u64, z: const 1i32 }
     storage_live(_2)
     storage_live(_3)
-    _3 = &p_1
+    _3 = &p
     _2 = some_method<'3>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    storage_dead(p_1)
+    storage_dead(p)
     return
 }
 

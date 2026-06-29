@@ -83,10 +83,10 @@ unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
 where
     TraitClause0: (T: Destruct),
 {
-    let ret_0: (); // return
+    let ret: (); // return
     let _1: &'_0 mut T; // arg #1
 
-    ret_0 = ()
+    ret = ()
     drop[TraitClause0::drop_glue<'0>] (*_1)
     return
 }
@@ -306,49 +306,49 @@ pub enum AB {
 }
 
 // Full name: test_crate::incr
-pub fn incr<'_0>(x_1: &'_0 mut u32)
+pub fn incr<'_0>(x: &'_0 mut u32)
 {
     let _0: (); // return
-    let x_1: &'1 mut u32; // arg #1
+    let x: &'1 mut u32; // arg #1
     let _2: u32; // anonymous local
 
     storage_live(_2)
     _0 = ()
-    _2 = copy (*x_1) panic.+ const 1u32
-    (*x_1) = move _2
+    _2 = copy (*x) panic.+ const 1u32
+    (*x) = move _2
     _0 = ()
     return
 }
 
 // Full name: test_crate::array_to_shared_slice_
-pub fn array_to_shared_slice_<'_0, T>(s_1: &'_0 [T; 32usize]) -> &'_0 [T]
+pub fn array_to_shared_slice_<'_0, T>(s: &'_0 [T; 32usize]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 [T]; // return
-    let s_1: &'3 [T; 32usize]; // arg #1
+    let s: &'3 [T; 32usize]; // arg #1
     let _2: &'4 [T; 32usize]; // anonymous local
 
     storage_live(_2)
-    _2 = &(*s_1)
+    _2 = &(*s)
     _0 = @ArrayToSliceShared<'_, T, 32usize>(move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::array_to_mut_slice_
-pub fn array_to_mut_slice_<'_0, T>(s_1: &'_0 mut [T; 32usize]) -> &'_0 mut [T]
+pub fn array_to_mut_slice_<'_0, T>(s: &'_0 mut [T; 32usize]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 mut [T]; // return
-    let s_1: &'3 mut [T; 32usize]; // arg #1
+    let s: &'3 mut [T; 32usize]; // arg #1
     let _2: &'4 mut [T]; // anonymous local
     let _3: &'5 mut [T; 32usize]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    _3 = &mut (*s_1)
+    _3 = &mut (*s)
     _2 = @ArrayToSliceMut<'_, T, 32usize>(move _3)
     storage_dead(_3)
     _0 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -357,39 +357,39 @@ where
 }
 
 // Full name: test_crate::array_len
-pub fn array_len<T>(s_1: [T; 32usize]) -> usize
+pub fn array_len<T>(s: [T; 32usize]) -> usize
 where
     TraitClause0: (T: Sized),
 {
     let _0: usize; // return
-    let s_1: [T; 32usize]; // arg #1
+    let s: [T; 32usize]; // arg #1
     let _2: &'1 [T]; // anonymous local
     let _3: &'3 [T; 32usize]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    _3 = &s_1
+    _3 = &s
     _2 = @ArrayToSliceShared<'_, T, 32usize>(move _3)
     storage_dead(_3)
     _0 = len<'6, T>[TraitClause0](move _2)
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_array::drop_glue<'8, T, 32usize>[TraitClause0]] s_1
+    conditional_drop[impl_Destruct_for_array::drop_glue<'8, T, 32usize>[TraitClause0]] s
     return
 }
 
 // Full name: test_crate::shared_array_len
-pub fn shared_array_len<'_0, T>(s_1: &'_0 [T; 32usize]) -> usize
+pub fn shared_array_len<'_0, T>(s: &'_0 [T; 32usize]) -> usize
 where
     TraitClause0: (T: Sized),
 {
     let _0: usize; // return
-    let s_1: &'1 [T; 32usize]; // arg #1
+    let s: &'1 [T; 32usize]; // arg #1
     let _2: &'3 [T]; // anonymous local
     let _3: &'4 [T; 32usize]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*s_1)
+    _3 = &(*s)
     _2 = @ArrayToSliceShared<'_, T, 32usize>(move _3)
     storage_dead(_3)
     _0 = len<'7, T>[TraitClause0](move _2)
@@ -398,29 +398,29 @@ where
 }
 
 // Full name: test_crate::shared_slice_len
-pub fn shared_slice_len<'_0, T>(s_1: &'_0 [T]) -> usize
+pub fn shared_slice_len<'_0, T>(s: &'_0 [T]) -> usize
 where
     TraitClause0: (T: Sized),
 {
     let _0: usize; // return
-    let s_1: &'1 [T]; // arg #1
+    let s: &'1 [T]; // arg #1
     let _2: &'2 [T]; // anonymous local
 
     storage_live(_2)
-    _2 = &(*s_1) with_metadata(copy s_1.metadata)
+    _2 = &(*s) with_metadata(copy s.metadata)
     _0 = len<'4, T>[TraitClause0](move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::index_array_shared
-pub fn index_array_shared<'_0, T>(s_1: &'_0 [T; 32usize], i_2: usize) -> &'_0 T
+pub fn index_array_shared<'_0, T>(s: &'_0 [T; 32usize], i: usize) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 T; // return
-    let s_1: &'3 [T; 32usize]; // arg #1
-    let i_2: usize; // arg #2
+    let s: &'3 [T; 32usize]; // arg #1
+    let i: usize; // arg #2
     let _3: &'4 T; // anonymous local
     let _4: usize; // anonymous local
     let _5: &'_ [T; 32usize]; // anonymous local
@@ -428,9 +428,9 @@ where
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy i_2
+    _4 = copy i
     storage_live(_5)
-    _5 = &(*s_1)
+    _5 = &(*s)
     storage_live(_6)
     _6 = @ArrayIndexShared<'_, T, 32usize>(move _5, copy _4)
     _3 = &(*_6)
@@ -441,19 +441,19 @@ where
 }
 
 // Full name: test_crate::index_array_u32
-pub fn index_array_u32(s_1: [u32; 32usize], i_2: usize) -> u32
+pub fn index_array_u32(s: [u32; 32usize], i: usize) -> u32
 {
     let _0: u32; // return
-    let s_1: [u32; 32usize]; // arg #1
-    let i_2: usize; // arg #2
+    let s: [u32; 32usize]; // arg #1
+    let i: usize; // arg #2
     let _3: usize; // anonymous local
     let _4: &'_ [u32; 32usize]; // anonymous local
     let _5: &'_ u32; // anonymous local
 
     storage_live(_3)
-    _3 = copy i_2
+    _3 = copy i
     storage_live(_4)
-    _4 = &s_1
+    _4 = &s
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, 32usize>(move _4, copy _3)
     _0 = copy (*_5)
@@ -462,10 +462,10 @@ pub fn index_array_u32(s_1: [u32; 32usize], i_2: usize) -> u32
 }
 
 // Full name: test_crate::index_array_copy
-pub fn index_array_copy<'_0>(x_1: &'_0 [u32; 32usize]) -> u32
+pub fn index_array_copy<'_0>(x: &'_0 [u32; 32usize]) -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 [u32; 32usize]; // arg #1
+    let x: &'1 [u32; 32usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 32usize]; // anonymous local
     let _4: &'_ u32; // anonymous local
@@ -473,7 +473,7 @@ pub fn index_array_copy<'_0>(x_1: &'_0 [u32; 32usize]) -> u32
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &(*x_1)
+    _3 = &(*x)
     storage_live(_4)
     _4 = @ArrayIndexShared<'_, u32, 32usize>(move _3, copy _2)
     _0 = copy (*_4)
@@ -482,13 +482,13 @@ pub fn index_array_copy<'_0>(x_1: &'_0 [u32; 32usize]) -> u32
 }
 
 // Full name: test_crate::index_mut_array
-pub fn index_mut_array<'_0, T>(s_1: &'_0 mut [T; 32usize], i_2: usize) -> &'_0 mut T
+pub fn index_mut_array<'_0, T>(s: &'_0 mut [T; 32usize], i: usize) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 mut T; // return
-    let s_1: &'3 mut [T; 32usize]; // arg #1
-    let i_2: usize; // arg #2
+    let s: &'3 mut [T; 32usize]; // arg #1
+    let i: usize; // arg #2
     let _3: &'4 mut T; // anonymous local
     let _4: &'5 mut T; // anonymous local
     let _5: usize; // anonymous local
@@ -498,9 +498,9 @@ where
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy i_2
+    _5 = copy i
     storage_live(_6)
-    _6 = &mut (*s_1)
+    _6 = &mut (*s)
     storage_live(_7)
     _7 = @ArrayIndexMut<'_, T, 32usize>(move _6, copy _5)
     _4 = &mut (*_7)
@@ -513,13 +513,13 @@ where
 }
 
 // Full name: test_crate::index_slice
-pub fn index_slice<'_0, T>(s_1: &'_0 [T], i_2: usize) -> &'_0 T
+pub fn index_slice<'_0, T>(s: &'_0 [T], i: usize) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 T; // return
-    let s_1: &'3 [T]; // arg #1
-    let i_2: usize; // arg #2
+    let s: &'3 [T]; // arg #1
+    let i: usize; // arg #2
     let _3: &'4 T; // anonymous local
     let _4: usize; // anonymous local
     let _5: &'_ [T]; // anonymous local
@@ -527,9 +527,9 @@ where
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy i_2
+    _4 = copy i
     storage_live(_5)
-    _5 = &(*s_1) with_metadata(copy s_1.metadata)
+    _5 = &(*s) with_metadata(copy s.metadata)
     storage_live(_6)
     _6 = @SliceIndexShared<'_, T>(move _5, copy _4)
     _3 = &(*_6)
@@ -540,13 +540,13 @@ where
 }
 
 // Full name: test_crate::index_mut_slice
-pub fn index_mut_slice<'_0, T>(s_1: &'_0 mut [T], i_2: usize) -> &'_0 mut T
+pub fn index_mut_slice<'_0, T>(s: &'_0 mut [T], i: usize) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 mut T; // return
-    let s_1: &'3 mut [T]; // arg #1
-    let i_2: usize; // arg #2
+    let s: &'3 mut [T]; // arg #1
+    let i: usize; // arg #2
     let _3: &'4 mut T; // anonymous local
     let _4: &'5 mut T; // anonymous local
     let _5: usize; // anonymous local
@@ -556,9 +556,9 @@ where
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy i_2
+    _5 = copy i
     storage_live(_6)
-    _6 = &mut (*s_1) with_metadata(copy s_1.metadata)
+    _6 = &mut (*s) with_metadata(copy s.metadata)
     storage_live(_7)
     _7 = @SliceIndexMut<'_, T>(move _6, copy _5)
     _4 = &mut (*_7)
@@ -571,12 +571,12 @@ where
 }
 
 // Full name: test_crate::slice_subslice_shared_
-pub fn slice_subslice_shared_<'_0>(x_1: &'_0 [u32], y_2: usize, z_3: usize) -> &'_0 [u32]
+pub fn slice_subslice_shared_<'_0>(x: &'_0 [u32], y: usize, z: usize) -> &'_0 [u32]
 {
     let _0: &'1 [u32]; // return
-    let x_1: &'2 [u32]; // arg #1
-    let y_2: usize; // arg #2
-    let z_3: usize; // arg #3
+    let x: &'2 [u32]; // arg #1
+    let y: usize; // arg #2
+    let z: usize; // arg #3
     let _4: &'3 [u32]; // anonymous local
     let _5: &'4 [u32]; // anonymous local
     let _6: &'5 [u32]; // anonymous local
@@ -587,12 +587,12 @@ pub fn slice_subslice_shared_<'_0>(x_1: &'_0 [u32], y_2: usize, z_3: usize) -> &
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &(*x_1) with_metadata(copy x_1.metadata)
+    _6 = &(*x) with_metadata(copy x.metadata)
     storage_live(_7)
     storage_live(_8)
-    _8 = copy y_2
+    _8 = copy y
     storage_live(_9)
-    _9 = copy z_3
+    _9 = copy z
     _7 = Range { start: move _8, end: move _9 }
     storage_dead(_9)
     storage_dead(_8)
@@ -607,12 +607,12 @@ pub fn slice_subslice_shared_<'_0>(x_1: &'_0 [u32], y_2: usize, z_3: usize) -> &
 }
 
 // Full name: test_crate::slice_subslice_mut_
-pub fn slice_subslice_mut_<'_0>(x_1: &'_0 mut [u32], y_2: usize, z_3: usize) -> &'_0 mut [u32]
+pub fn slice_subslice_mut_<'_0>(x: &'_0 mut [u32], y: usize, z: usize) -> &'_0 mut [u32]
 {
     let _0: &'1 mut [u32]; // return
-    let x_1: &'2 mut [u32]; // arg #1
-    let y_2: usize; // arg #2
-    let z_3: usize; // arg #3
+    let x: &'2 mut [u32]; // arg #1
+    let y: usize; // arg #2
+    let z: usize; // arg #3
     let _4: &'3 mut [u32]; // anonymous local
     let _5: &'4 mut [u32]; // anonymous local
     let _6: &'5 mut [u32]; // anonymous local
@@ -625,12 +625,12 @@ pub fn slice_subslice_mut_<'_0>(x_1: &'_0 mut [u32], y_2: usize, z_3: usize) -> 
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = &mut (*x_1) with_metadata(copy x_1.metadata)
+    _7 = &mut (*x) with_metadata(copy x.metadata)
     storage_live(_8)
     storage_live(_9)
-    _9 = copy y_2
+    _9 = copy y
     storage_live(_10)
-    _10 = copy z_3
+    _10 = copy z
     _8 = Range { start: move _9, end: move _10 }
     storage_dead(_10)
     storage_dead(_9)
@@ -647,30 +647,30 @@ pub fn slice_subslice_mut_<'_0>(x_1: &'_0 mut [u32], y_2: usize, z_3: usize) -> 
 }
 
 // Full name: test_crate::array_to_slice_shared_
-pub fn array_to_slice_shared_<'_0>(x_1: &'_0 [u32; 32usize]) -> &'_0 [u32]
+pub fn array_to_slice_shared_<'_0>(x: &'_0 [u32; 32usize]) -> &'_0 [u32]
 {
     let _0: &'1 [u32]; // return
-    let x_1: &'3 [u32; 32usize]; // arg #1
+    let x: &'3 [u32; 32usize]; // arg #1
     let _2: &'4 [u32; 32usize]; // anonymous local
 
     storage_live(_2)
-    _2 = &(*x_1)
+    _2 = &(*x)
     _0 = @ArrayToSliceShared<'_, u32, 32usize>(move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::array_to_slice_mut_
-pub fn array_to_slice_mut_<'_0>(x_1: &'_0 mut [u32; 32usize]) -> &'_0 mut [u32]
+pub fn array_to_slice_mut_<'_0>(x: &'_0 mut [u32; 32usize]) -> &'_0 mut [u32]
 {
     let _0: &'1 mut [u32]; // return
-    let x_1: &'3 mut [u32; 32usize]; // arg #1
+    let x: &'3 mut [u32; 32usize]; // arg #1
     let _2: &'4 mut [u32]; // anonymous local
     let _3: &'5 mut [u32; 32usize]; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    _3 = &mut (*x_1)
+    _3 = &mut (*x)
     _2 = @ArrayToSliceMut<'_, u32, 32usize>(move _3)
     storage_dead(_3)
     _0 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -679,12 +679,12 @@ pub fn array_to_slice_mut_<'_0>(x_1: &'_0 mut [u32; 32usize]) -> &'_0 mut [u32]
 }
 
 // Full name: test_crate::array_subslice_shared_
-pub fn array_subslice_shared_<'_0>(x_1: &'_0 [u32; 32usize], y_2: usize, z_3: usize) -> &'_0 [u32]
+pub fn array_subslice_shared_<'_0>(x: &'_0 [u32; 32usize], y: usize, z: usize) -> &'_0 [u32]
 {
     let _0: &'1 [u32]; // return
-    let x_1: &'3 [u32; 32usize]; // arg #1
-    let y_2: usize; // arg #2
-    let z_3: usize; // arg #3
+    let x: &'3 [u32; 32usize]; // arg #1
+    let y: usize; // arg #2
+    let z: usize; // arg #3
     let _4: &'4 [u32]; // anonymous local
     let _5: &'5 [u32]; // anonymous local
     let _6: &'6 [u32; 32usize]; // anonymous local
@@ -695,12 +695,12 @@ pub fn array_subslice_shared_<'_0>(x_1: &'_0 [u32; 32usize], y_2: usize, z_3: us
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &(*x_1)
+    _6 = &(*x)
     storage_live(_7)
     storage_live(_8)
-    _8 = copy y_2
+    _8 = copy y
     storage_live(_9)
-    _9 = copy z_3
+    _9 = copy z
     _7 = Range { start: move _8, end: move _9 }
     storage_dead(_9)
     storage_dead(_8)
@@ -715,12 +715,12 @@ pub fn array_subslice_shared_<'_0>(x_1: &'_0 [u32; 32usize], y_2: usize, z_3: us
 }
 
 // Full name: test_crate::array_subslice_mut_
-pub fn array_subslice_mut_<'_0>(x_1: &'_0 mut [u32; 32usize], y_2: usize, z_3: usize) -> &'_0 mut [u32]
+pub fn array_subslice_mut_<'_0>(x: &'_0 mut [u32; 32usize], y: usize, z: usize) -> &'_0 mut [u32]
 {
     let _0: &'1 mut [u32]; // return
-    let x_1: &'3 mut [u32; 32usize]; // arg #1
-    let y_2: usize; // arg #2
-    let z_3: usize; // arg #3
+    let x: &'3 mut [u32; 32usize]; // arg #1
+    let y: usize; // arg #2
+    let z: usize; // arg #3
     let _4: &'4 mut [u32]; // anonymous local
     let _5: &'5 mut [u32]; // anonymous local
     let _6: &'6 mut [u32]; // anonymous local
@@ -733,12 +733,12 @@ pub fn array_subslice_mut_<'_0>(x_1: &'_0 mut [u32; 32usize], y_2: usize, z_3: u
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = &mut (*x_1)
+    _7 = &mut (*x)
     storage_live(_8)
     storage_live(_9)
-    _9 = copy y_2
+    _9 = copy y
     storage_live(_10)
-    _10 = copy z_3
+    _10 = copy z
     _8 = Range { start: move _9, end: move _10 }
     storage_dead(_10)
     storage_dead(_9)
@@ -755,12 +755,12 @@ pub fn array_subslice_mut_<'_0>(x_1: &'_0 mut [u32; 32usize], y_2: usize, z_3: u
 }
 
 // Full name: test_crate::index_slice_0
-pub fn index_slice_0<'_0, T>(s_1: &'_0 [T]) -> &'_0 T
+pub fn index_slice_0<'_0, T>(s: &'_0 [T]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 T; // return
-    let s_1: &'3 [T]; // arg #1
+    let s: &'3 [T]; // arg #1
     let _2: &'4 T; // anonymous local
     let _3: usize; // anonymous local
     let _4: &'_ [T]; // anonymous local
@@ -770,7 +770,7 @@ where
     storage_live(_3)
     _3 = const 0usize
     storage_live(_4)
-    _4 = &(*s_1) with_metadata(copy s_1.metadata)
+    _4 = &(*s) with_metadata(copy s.metadata)
     storage_live(_5)
     _5 = @SliceIndexShared<'_, T>(move _4, copy _3)
     _2 = &(*_5)
@@ -781,12 +781,12 @@ where
 }
 
 // Full name: test_crate::index_array_0
-pub fn index_array_0<'_0, T>(s_1: &'_0 [T; 32usize]) -> &'_0 T
+pub fn index_array_0<'_0, T>(s: &'_0 [T; 32usize]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 T; // return
-    let s_1: &'3 [T; 32usize]; // arg #1
+    let s: &'3 [T; 32usize]; // arg #1
     let _2: &'4 T; // anonymous local
     let _3: usize; // anonymous local
     let _4: &'_ [T; 32usize]; // anonymous local
@@ -796,7 +796,7 @@ where
     storage_live(_3)
     _3 = const 0usize
     storage_live(_4)
-    _4 = &(*s_1)
+    _4 = &(*s)
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, T, 32usize>(move _4, copy _3)
     _2 = &(*_5)
@@ -807,12 +807,12 @@ where
 }
 
 // Full name: test_crate::index_index_array
-pub fn index_index_array(s_1: [[u32; 32usize]; 32usize], i_2: usize, j_3: usize) -> u32
+pub fn index_index_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize) -> u32
 {
     let _0: u32; // return
-    let s_1: [[u32; 32usize]; 32usize]; // arg #1
-    let i_2: usize; // arg #2
-    let j_3: usize; // arg #3
+    let s: [[u32; 32usize]; 32usize]; // arg #1
+    let i: usize; // arg #2
+    let j: usize; // arg #3
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: &'_ [[u32; 32usize]; 32usize]; // anonymous local
@@ -821,11 +821,11 @@ pub fn index_index_array(s_1: [[u32; 32usize]; 32usize], i_2: usize, j_3: usize)
     let _9: &'_ u32; // anonymous local
 
     storage_live(_4)
-    _4 = copy i_2
+    _4 = copy i
     storage_live(_5)
-    _5 = copy j_3
+    _5 = copy j
     storage_live(_6)
-    _6 = &s_1
+    _6 = &s
     storage_live(_7)
     _7 = @ArrayIndexShared<'_, [u32; 32usize], 32usize>(move _6, copy _4)
     storage_live(_8)
@@ -839,12 +839,12 @@ pub fn index_index_array(s_1: [[u32; 32usize]; 32usize], i_2: usize, j_3: usize)
 }
 
 // Full name: test_crate::update_update_array
-pub fn update_update_array(s_1: [[u32; 32usize]; 32usize], i_2: usize, j_3: usize)
+pub fn update_update_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize)
 {
     let _0: (); // return
-    let s_1: [[u32; 32usize]; 32usize]; // arg #1
-    let i_2: usize; // arg #2
-    let j_3: usize; // arg #3
+    let s: [[u32; 32usize]; 32usize]; // arg #1
+    let i: usize; // arg #2
+    let j: usize; // arg #3
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: &'_ mut [[u32; 32usize]; 32usize]; // anonymous local
@@ -854,11 +854,11 @@ pub fn update_update_array(s_1: [[u32; 32usize]; 32usize], i_2: usize, j_3: usiz
 
     _0 = ()
     storage_live(_4)
-    _4 = copy i_2
+    _4 = copy i
     storage_live(_5)
-    _5 = copy j_3
+    _5 = copy j
     storage_live(_6)
-    _6 = &mut s_1
+    _6 = &mut s
     storage_live(_7)
     _7 = @ArrayIndexMut<'_, [u32; 32usize], 32usize>(move _6, copy _4)
     storage_live(_8)
@@ -873,10 +873,10 @@ pub fn update_update_array(s_1: [[u32; 32usize]; 32usize], i_2: usize, j_3: usiz
 }
 
 // Full name: test_crate::incr_array_self
-pub fn incr_array_self<'_0>(s_1: &'_0 mut [u32; 2usize])
+pub fn incr_array_self<'_0>(s: &'_0 mut [u32; 2usize])
 {
     let _0: (); // return
-    let s_1: &'1 mut [u32; 2usize]; // arg #1
+    let s: &'1 mut [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: u32; // anonymous local
     let _4: &'_ [u32; 2usize]; // anonymous local
@@ -889,12 +889,12 @@ pub fn incr_array_self<'_0>(s_1: &'_0 mut [u32; 2usize])
     storage_live(_2)
     _2 = const 0usize
     storage_live(_4)
-    _4 = &(*s_1)
+    _4 = &(*s)
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, 2usize>(move _4, copy _2)
     _3 = copy (*_5) panic.+ const 1u32
     storage_live(_6)
-    _6 = &mut (*s_1)
+    _6 = &mut (*s)
     storage_live(_7)
     _7 = @ArrayIndexMut<'_, u32, 2usize>(move _6, copy _2)
     (*_7) = move _3
@@ -904,10 +904,10 @@ pub fn incr_array_self<'_0>(s_1: &'_0 mut [u32; 2usize])
 }
 
 // Full name: test_crate::incr_slice_self
-pub fn incr_slice_self<'_0>(s_1: &'_0 mut [u32])
+pub fn incr_slice_self<'_0>(s: &'_0 mut [u32])
 {
     let _0: (); // return
-    let s_1: &'1 mut [u32]; // arg #1
+    let s: &'1 mut [u32]; // arg #1
     let _2: usize; // anonymous local
     let _3: u32; // anonymous local
     let _4: &'_ [u32]; // anonymous local
@@ -920,12 +920,12 @@ pub fn incr_slice_self<'_0>(s_1: &'_0 mut [u32])
     storage_live(_2)
     _2 = const 0usize
     storage_live(_4)
-    _4 = &(*s_1) with_metadata(copy s_1.metadata)
+    _4 = &(*s) with_metadata(copy s.metadata)
     storage_live(_5)
     _5 = @SliceIndexShared<'_, u32>(move _4, copy _2)
     _3 = copy (*_5) panic.+ const 1u32
     storage_live(_6)
-    _6 = &mut (*s_1) with_metadata(copy s_1.metadata)
+    _6 = &mut (*s) with_metadata(copy s.metadata)
     storage_live(_7)
     _7 = @SliceIndexMut<'_, u32>(move _6, copy _2)
     (*_7) = move _3
@@ -935,17 +935,17 @@ pub fn incr_slice_self<'_0>(s_1: &'_0 mut [u32])
 }
 
 // Full name: test_crate::array_local_deep_copy
-pub fn array_local_deep_copy<'_0>(x_1: &'_0 [u32; 32usize])
+pub fn array_local_deep_copy<'_0>(x: &'_0 [u32; 32usize])
 {
     let _0: (); // return
-    let x_1: &'1 [u32; 32usize]; // arg #1
-    let _y_2: [u32; 32usize]; // local
+    let x: &'1 [u32; 32usize]; // arg #1
+    let _y: [u32; 32usize]; // local
 
     _0 = ()
-    storage_live(_y_2)
-    _y_2 = copy (*x_1)
+    storage_live(_y)
+    _y = copy (*x)
     _0 = ()
-    storage_dead(_y_2)
+    storage_dead(_y)
     return
 }
 
@@ -1040,7 +1040,7 @@ pub fn const_slice()
 pub fn take_all()
 {
     let _0: (); // return
-    let x_1: [u32; 2usize]; // local
+    let x: [u32; 2usize]; // local
     let _2: (); // anonymous local
     let _3: [u32; 2usize]; // anonymous local
     let _4: (); // anonymous local
@@ -1058,18 +1058,18 @@ pub fn take_all()
     let _16: &'11 mut [u32; 2usize]; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = @ArrayRepeat<u32, 2usize>(const 0u32)
+    storage_live(x)
+    x = @ArrayRepeat<u32, 2usize>(const 0u32)
     storage_live(_2)
     storage_live(_3)
     // x is deep copied (copy node appears in Charon, followed by a move)
-    _3 = copy x_1
+    _3 = copy x
     _2 = take_array(move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy x_1
+    _5 = copy x
     _4 = take_array(move _5)
     storage_dead(_5)
     storage_dead(_4)
@@ -1077,7 +1077,7 @@ pub fn take_all()
     storage_live(_7)
     storage_live(_8)
     // x passed by address, there is a reborrow here
-    _8 = &x_1
+    _8 = &x
     _7 = &(*_8)
     _6 = take_array_borrow<'13>(move _7)
     storage_dead(_7)
@@ -1088,7 +1088,7 @@ pub fn take_all()
     storage_live(_11)
     storage_live(_12)
     // automatic cast from array to slice (spanning entire array)
-    _12 = &x_1
+    _12 = &x
     _11 = &(*_12)
     _10 = @ArrayToSliceShared<'_, u32, 2usize>(move _11)
     storage_dead(_11)
@@ -1102,7 +1102,7 @@ pub fn take_all()
     storage_live(_16)
     // note that both appear as SliceNew expressions, meaning the SliceNew UnOp is overloaded for
     // mut and non-mut cases
-    _16 = &mut x_1
+    _16 = &mut x
     _15 = &mut (*_16)
     _14 = @ArrayToSliceMut<'_, u32, 2usize>(move _15)
     storage_dead(_15)
@@ -1111,15 +1111,15 @@ pub fn take_all()
     storage_dead(_16)
     storage_dead(_13)
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
 // Full name: test_crate::index_array
-pub fn index_array(x_1: [u32; 2usize]) -> u32
+pub fn index_array(x: [u32; 2usize]) -> u32
 {
     let _0: u32; // return
-    let x_1: [u32; 2usize]; // arg #1
+    let x: [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 2usize]; // anonymous local
     let _4: &'_ u32; // anonymous local
@@ -1127,7 +1127,7 @@ pub fn index_array(x_1: [u32; 2usize]) -> u32
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &x_1
+    _3 = &x
     storage_live(_4)
     _4 = @ArrayIndexShared<'_, u32, 2usize>(move _3, copy _2)
     _0 = copy (*_4)
@@ -1136,10 +1136,10 @@ pub fn index_array(x_1: [u32; 2usize]) -> u32
 }
 
 // Full name: test_crate::index_array_borrow
-pub fn index_array_borrow<'_0>(x_1: &'_0 [u32; 2usize]) -> u32
+pub fn index_array_borrow<'_0>(x: &'_0 [u32; 2usize]) -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 [u32; 2usize]; // arg #1
+    let x: &'1 [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 2usize]; // anonymous local
     let _4: &'_ u32; // anonymous local
@@ -1147,7 +1147,7 @@ pub fn index_array_borrow<'_0>(x_1: &'_0 [u32; 2usize]) -> u32
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &(*x_1)
+    _3 = &(*x)
     storage_live(_4)
     _4 = @ArrayIndexShared<'_, u32, 2usize>(move _3, copy _2)
     _0 = copy (*_4)
@@ -1156,10 +1156,10 @@ pub fn index_array_borrow<'_0>(x_1: &'_0 [u32; 2usize]) -> u32
 }
 
 // Full name: test_crate::index_slice_u32_0
-pub fn index_slice_u32_0<'_0>(x_1: &'_0 [u32]) -> u32
+pub fn index_slice_u32_0<'_0>(x: &'_0 [u32]) -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 [u32]; // arg #1
+    let x: &'1 [u32]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32]; // anonymous local
     let _4: &'_ u32; // anonymous local
@@ -1167,7 +1167,7 @@ pub fn index_slice_u32_0<'_0>(x_1: &'_0 [u32]) -> u32
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &(*x_1) with_metadata(copy x_1.metadata)
+    _3 = &(*x) with_metadata(copy x.metadata)
     storage_live(_4)
     _4 = @SliceIndexShared<'_, u32>(move _3, copy _2)
     _0 = copy (*_4)
@@ -1176,10 +1176,10 @@ pub fn index_slice_u32_0<'_0>(x_1: &'_0 [u32]) -> u32
 }
 
 // Full name: test_crate::index_mut_slice_u32_0
-pub fn index_mut_slice_u32_0<'_0>(x_1: &'_0 mut [u32]) -> u32
+pub fn index_mut_slice_u32_0<'_0>(x: &'_0 mut [u32]) -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 mut [u32]; // arg #1
+    let x: &'1 mut [u32]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32]; // anonymous local
     let _4: &'_ u32; // anonymous local
@@ -1187,7 +1187,7 @@ pub fn index_mut_slice_u32_0<'_0>(x_1: &'_0 mut [u32]) -> u32
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &(*x_1) with_metadata(copy x_1.metadata)
+    _3 = &(*x) with_metadata(copy x.metadata)
     storage_live(_4)
     _4 = @SliceIndexShared<'_, u32>(move _3, copy _2)
     _0 = copy (*_4)
@@ -1199,10 +1199,10 @@ pub fn index_mut_slice_u32_0<'_0>(x_1: &'_0 mut [u32]) -> u32
 pub fn index_all() -> u32
 {
     let _0: u32; // return
-    let x_1: [u32; 2usize]; // local
+    let x: [u32; 2usize]; // local
     let _2: bool; // anonymous local
-    let _y_3: [u32; 2usize]; // local
-    let _z_4: [u32; 1usize]; // local
+    let _y: [u32; 2usize]; // local
+    let _z: [u32; 1usize]; // local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
@@ -1230,18 +1230,18 @@ pub fn index_all() -> u32
     storage_live(_16)
     storage_live(_21)
     storage_live(_26)
-    storage_live(x_1)
-    x_1 = @ArrayRepeat<u32, 2usize>(const 0u32)
+    storage_live(x)
+    x = @ArrayRepeat<u32, 2usize>(const 0u32)
     storage_live(_2)
     _2 = const true
     if move _2 {
-        storage_live(_y_3)
-        _y_3 = @ArrayRepeat<u32, 2usize>(const 0u32)
-        storage_dead(_y_3)
+        storage_live(_y)
+        _y = @ArrayRepeat<u32, 2usize>(const 0u32)
+        storage_dead(_y)
     } else {
-        storage_live(_z_4)
-        _z_4 = [const 0u32]
-        storage_dead(_z_4)
+        storage_live(_z)
+        _z = [const 0u32]
+        storage_dead(_z)
     }
     storage_dead(_2)
     storage_live(_5)
@@ -1249,12 +1249,12 @@ pub fn index_all() -> u32
     storage_live(_7)
     storage_live(_8)
     storage_live(_9)
-    _9 = copy x_1
+    _9 = copy x
     _8 = index_array(move _9)
     storage_dead(_9)
     storage_live(_10)
     storage_live(_11)
-    _11 = copy x_1
+    _11 = copy x
     _10 = index_array(move _11)
     storage_dead(_11)
     _12 = copy _8 panic.+ copy _10
@@ -1264,7 +1264,7 @@ pub fn index_all() -> u32
     storage_live(_13)
     storage_live(_14)
     storage_live(_15)
-    _15 = &x_1
+    _15 = &x
     _14 = &(*_15)
     _13 = index_array_borrow<'13>(move _14)
     storage_dead(_14)
@@ -1276,7 +1276,7 @@ pub fn index_all() -> u32
     storage_live(_18)
     storage_live(_19)
     storage_live(_20)
-    _20 = &x_1
+    _20 = &x
     _19 = &(*_20)
     _18 = @ArrayToSliceShared<'_, u32, 2usize>(move _19)
     storage_dead(_19)
@@ -1290,7 +1290,7 @@ pub fn index_all() -> u32
     storage_live(_23)
     storage_live(_24)
     storage_live(_25)
-    _25 = &mut x_1
+    _25 = &mut x
     _24 = &mut (*_25)
     _23 = @ArrayToSliceMut<'_, u32, 2usize>(move _24)
     storage_dead(_24)
@@ -1300,7 +1300,7 @@ pub fn index_all() -> u32
     _0 = move _26
     storage_dead(_22)
     storage_dead(_5)
-    storage_dead(x_1)
+    storage_dead(x)
     storage_dead(_25)
     storage_dead(_20)
     storage_dead(_15)
@@ -1308,10 +1308,10 @@ pub fn index_all() -> u32
 }
 
 // Full name: test_crate::update_array
-pub fn update_array(x_1: [u32; 2usize])
+pub fn update_array(x: [u32; 2usize])
 {
     let _0: (); // return
-    let x_1: [u32; 2usize]; // arg #1
+    let x: [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ mut [u32; 2usize]; // anonymous local
     let _4: &'_ mut u32; // anonymous local
@@ -1320,7 +1320,7 @@ pub fn update_array(x_1: [u32; 2usize])
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &mut x_1
+    _3 = &mut x
     storage_live(_4)
     _4 = @ArrayIndexMut<'_, u32, 2usize>(move _3, copy _2)
     (*_4) = const 1u32
@@ -1330,10 +1330,10 @@ pub fn update_array(x_1: [u32; 2usize])
 }
 
 // Full name: test_crate::update_array_mut_borrow
-pub fn update_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2usize])
+pub fn update_array_mut_borrow<'_0>(x: &'_0 mut [u32; 2usize])
 {
     let _0: (); // return
-    let x_1: &'1 mut [u32; 2usize]; // arg #1
+    let x: &'1 mut [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ mut [u32; 2usize]; // anonymous local
     let _4: &'_ mut u32; // anonymous local
@@ -1342,7 +1342,7 @@ pub fn update_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2usize])
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &mut (*x_1)
+    _3 = &mut (*x)
     storage_live(_4)
     _4 = @ArrayIndexMut<'_, u32, 2usize>(move _3, copy _2)
     (*_4) = const 1u32
@@ -1352,10 +1352,10 @@ pub fn update_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2usize])
 }
 
 // Full name: test_crate::update_mut_slice
-pub fn update_mut_slice<'_0>(x_1: &'_0 mut [u32])
+pub fn update_mut_slice<'_0>(x: &'_0 mut [u32])
 {
     let _0: (); // return
-    let x_1: &'1 mut [u32]; // arg #1
+    let x: &'1 mut [u32]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ mut [u32]; // anonymous local
     let _4: &'_ mut u32; // anonymous local
@@ -1364,7 +1364,7 @@ pub fn update_mut_slice<'_0>(x_1: &'_0 mut [u32])
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &mut (*x_1) with_metadata(copy x_1.metadata)
+    _3 = &mut (*x) with_metadata(copy x.metadata)
     storage_live(_4)
     _4 = @SliceIndexMut<'_, u32>(move _3, copy _2)
     (*_4) = const 1u32
@@ -1377,7 +1377,7 @@ pub fn update_mut_slice<'_0>(x_1: &'_0 mut [u32])
 pub fn update_all()
 {
     let _0: (); // return
-    let x_1: [u32; 2usize]; // local
+    let x: [u32; 2usize]; // local
     let _2: (); // anonymous local
     let _3: [u32; 2usize]; // anonymous local
     let _4: (); // anonymous local
@@ -1391,24 +1391,24 @@ pub fn update_all()
     let _12: &'6 mut [u32; 2usize]; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = @ArrayRepeat<u32, 2usize>(const 0u32)
+    storage_live(x)
+    x = @ArrayRepeat<u32, 2usize>(const 0u32)
     storage_live(_2)
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     _2 = update_array(move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy x_1
+    _5 = copy x
     _4 = update_array(move _5)
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = &mut x_1
+    _8 = &mut x
     _7 = &two-phase-mut (*_8)
     _6 = update_array_mut_borrow<'8>(move _7)
     storage_dead(_7)
@@ -1418,7 +1418,7 @@ pub fn update_all()
     storage_live(_10)
     storage_live(_11)
     storage_live(_12)
-    _12 = &mut x_1
+    _12 = &mut x
     _11 = &mut (*_12)
     _10 = @ArrayToSliceMut<'_, u32, 2usize>(move _11)
     storage_dead(_11)
@@ -1427,7 +1427,7 @@ pub fn update_all()
     storage_dead(_12)
     storage_dead(_9)
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -1435,7 +1435,7 @@ pub fn update_all()
 pub fn range_all()
 {
     let _0: (); // return
-    let x_1: [u32; 4usize]; // local
+    let x: [u32; 4usize]; // local
     let _2: (); // anonymous local
     let _3: &'1 mut [u32]; // anonymous local
     let _4: &'2 mut [u32]; // anonymous local
@@ -1444,15 +1444,15 @@ pub fn range_all()
     let _7: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = @ArrayRepeat<u32, 4usize>(const 0u32)
+    storage_live(x)
+    x = @ArrayRepeat<u32, 4usize>(const 0u32)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     // CONFIRM: there is no way to shrink [T;N] into [T;M] with M<N?
-    _6 = &mut x_1
+    _6 = &mut x
     storage_live(_7)
     _7 = Range { start: const 1usize, end: const 3usize }
     _5 = impl_IndexMut_for_array::index_mut<'7, u32, Range<usize>[{built_in impl Sized for usize}], [u32], 4usize>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_IndexMut_for_slice<u32, Range<usize>[{built_in impl Sized for usize}], [u32]>[{built_in impl Sized for u32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_Range_usize<u32>[{built_in impl Sized for u32}]]](move _6, move _7)
@@ -1466,7 +1466,7 @@ pub fn range_all()
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -1533,43 +1533,43 @@ pub fn take_array_t(_1: [AB; 2usize])
 pub fn non_copyable_array()
 {
     let _0: (); // return
-    let x_1: [AB; 2usize]; // local
+    let x: [AB; 2usize]; // local
     let _2: AB; // anonymous local
     let _3: AB; // anonymous local
     let _4: (); // anonymous local
     let _5: [AB; 2usize]; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
+    storage_live(x)
     storage_live(_2)
     _2 = AB::A {  }
     storage_live(_3)
     _3 = AB::B {  }
-    x_1 = [move _2, move _3]
+    x = [move _2, move _3]
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
     // x is moved (not deep copied!)
     // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy
-    _5 = move x_1
+    _5 = move x
     _4 = take_array_t(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
     // this fails, naturally:
     // take_array_t(x);
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
 // Full name: test_crate::sum
-pub fn sum<'_0>(s_1: &'_0 [u32]) -> u32
+pub fn sum<'_0>(s: &'_0 [u32]) -> u32
 {
     let _0: u32; // return
-    let s_1: &'1 [u32]; // arg #1
-    let sum_2: u32; // local
-    let i_3: usize; // local
+    let s: &'1 [u32]; // arg #1
+    let sum: u32; // local
+    let i: usize; // local
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
@@ -1583,17 +1583,17 @@ pub fn sum<'_0>(s_1: &'_0 [u32]) -> u32
 
     storage_live(_10)
     storage_live(_11)
-    storage_live(sum_2)
-    sum_2 = const 0u32
-    storage_live(i_3)
-    i_3 = const 0usize
+    storage_live(sum)
+    sum = const 0u32
+    storage_live(i)
+    i = const 0usize
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy i_3
+        _5 = copy i
         storage_live(_6)
         storage_live(_7)
-        _7 = &(*s_1) with_metadata(copy s_1.metadata)
+        _7 = &(*s) with_metadata(copy s.metadata)
         _6 = len<'4, u32>[{built_in impl Sized for u32}](move _7)
         storage_dead(_7)
         _4 = move _5 < move _6
@@ -1605,43 +1605,43 @@ pub fn sum<'_0>(s_1: &'_0 [u32]) -> u32
         storage_dead(_5)
         storage_live(_8)
         storage_live(_9)
-        _9 = copy i_3
+        _9 = copy i
         storage_live(_12)
-        _12 = &(*s_1) with_metadata(copy s_1.metadata)
+        _12 = &(*s) with_metadata(copy s.metadata)
         storage_live(_13)
         _13 = @SliceIndexShared<'_, u32>(move _12, copy _9)
         _8 = copy (*_13)
-        _10 = copy sum_2 panic.+ copy _8
-        sum_2 = move _10
+        _10 = copy sum panic.+ copy _8
+        sum = move _10
         storage_dead(_8)
         storage_dead(_9)
-        _11 = copy i_3 panic.+ const 1usize
-        i_3 = move _11
+        _11 = copy i panic.+ const 1usize
+        i = move _11
         storage_dead(_4)
         continue 0
     }
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = copy sum_2
-    storage_dead(i_3)
-    storage_dead(sum_2)
+    _0 = copy sum
+    storage_dead(i)
+    storage_dead(sum)
     return
 }
 
 // Full name: test_crate::sum2
-pub fn sum2<'_0, '_1>(s_1: &'_0 [u32], s2_2: &'_1 [u32]) -> u32
+pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
 {
     let _0: u32; // return
-    let s_1: &'1 [u32]; // arg #1
-    let s2_2: &'2 [u32]; // arg #2
-    let sum_3: u32; // local
+    let s: &'1 [u32]; // arg #1
+    let s2: &'2 [u32]; // arg #2
+    let sum: u32; // local
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: &'3 [u32]; // anonymous local
     let _7: usize; // anonymous local
     let _8: &'4 [u32]; // anonymous local
-    let i_9: usize; // local
+    let i: usize; // local
     let _10: bool; // anonymous local
     let _11: usize; // anonymous local
     let _12: usize; // anonymous local
@@ -1662,17 +1662,17 @@ pub fn sum2<'_0, '_1>(s_1: &'_0 [u32], s2_2: &'_1 [u32]) -> u32
     storage_live(_19)
     storage_live(_20)
     storage_live(_21)
-    storage_live(sum_3)
-    sum_3 = const 0u32
+    storage_live(sum)
+    sum = const 0u32
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &(*s_1) with_metadata(copy s_1.metadata)
+    _6 = &(*s) with_metadata(copy s.metadata)
     _5 = len<'7, u32>[{built_in impl Sized for u32}](move _6)
     storage_dead(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = &(*s2_2) with_metadata(copy s2_2.metadata)
+    _8 = &(*s2) with_metadata(copy s2.metadata)
     _7 = len<'9, u32>[{built_in impl Sized for u32}](move _8)
     storage_dead(_8)
     _4 = move _5 == move _7
@@ -1685,15 +1685,15 @@ pub fn sum2<'_0, '_1>(s_1: &'_0 [u32], s2_2: &'_1 [u32]) -> u32
     storage_dead(_7)
     storage_dead(_5)
     storage_dead(_4)
-    storage_live(i_9)
-    i_9 = const 0usize
+    storage_live(i)
+    i = const 0usize
     loop {
         storage_live(_10)
         storage_live(_11)
-        _11 = copy i_9
+        _11 = copy i
         storage_live(_12)
         storage_live(_13)
-        _13 = &(*s_1) with_metadata(copy s_1.metadata)
+        _13 = &(*s) with_metadata(copy s.metadata)
         _12 = len<'11, u32>[{built_in impl Sized for u32}](move _13)
         storage_dead(_13)
         _10 = move _11 < move _12
@@ -1706,17 +1706,17 @@ pub fn sum2<'_0, '_1>(s_1: &'_0 [u32], s2_2: &'_1 [u32]) -> u32
         storage_live(_14)
         storage_live(_15)
         storage_live(_16)
-        _16 = copy i_9
+        _16 = copy i
         storage_live(_22)
-        _22 = &(*s_1) with_metadata(copy s_1.metadata)
+        _22 = &(*s) with_metadata(copy s.metadata)
         storage_live(_23)
         _23 = @SliceIndexShared<'_, u32>(move _22, copy _16)
         _15 = copy (*_23)
         storage_live(_17)
         storage_live(_18)
-        _18 = copy i_9
+        _18 = copy i
         storage_live(_24)
-        _24 = &(*s2_2) with_metadata(copy s2_2.metadata)
+        _24 = &(*s2) with_metadata(copy s2.metadata)
         storage_live(_25)
         _25 = @SliceIndexShared<'_, u32>(move _24, copy _18)
         _17 = copy (*_25)
@@ -1724,22 +1724,22 @@ pub fn sum2<'_0, '_1>(s_1: &'_0 [u32], s2_2: &'_1 [u32]) -> u32
         _14 = move _19
         storage_dead(_17)
         storage_dead(_15)
-        _20 = copy sum_3 panic.+ copy _14
-        sum_3 = move _20
+        _20 = copy sum panic.+ copy _14
+        sum = move _20
         storage_dead(_14)
         storage_dead(_18)
         storage_dead(_16)
-        _21 = copy i_9 panic.+ const 1usize
-        i_9 = move _21
+        _21 = copy i panic.+ const 1usize
+        i = move _21
         storage_dead(_10)
         continue 0
     }
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
-    _0 = copy sum_3
-    storage_dead(i_9)
-    storage_dead(sum_3)
+    _0 = copy sum
+    storage_dead(i)
+    storage_dead(sum)
     return
 }
 
@@ -1747,7 +1747,7 @@ pub fn sum2<'_0, '_1>(s_1: &'_0 [u32], s2_2: &'_1 [u32]) -> u32
 pub fn f0()
 {
     let _0: (); // return
-    let s_1: &'1 mut [u32]; // local
+    let s: &'1 mut [u32]; // local
     let _2: &'3 mut [u32; 2usize]; // anonymous local
     let _3: &'4 mut [u32; 2usize]; // anonymous local
     let _4: [u32; 2usize]; // anonymous local
@@ -1756,27 +1756,27 @@ pub fn f0()
     let _7: &'_ mut u32; // anonymous local
 
     _0 = ()
-    storage_live(s_1)
+    storage_live(s)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = [const 1u32, const 2u32]
     _3 = &mut _4
     _2 = &mut (*_3)
-    s_1 = @ArrayToSliceMut<'_, u32, 2usize>(move _2)
+    s = @ArrayToSliceMut<'_, u32, 2usize>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_5)
     _5 = const 0usize
     storage_live(_6)
-    _6 = &mut (*s_1) with_metadata(copy s_1.metadata)
+    _6 = &mut (*s) with_metadata(copy s.metadata)
     storage_live(_7)
     _7 = @SliceIndexMut<'_, u32>(move _6, copy _5)
     (*_7) = const 1u32
     storage_dead(_5)
     _0 = ()
     storage_dead(_4)
-    storage_dead(s_1)
+    storage_dead(s)
     return
 }
 
@@ -1784,24 +1784,24 @@ pub fn f0()
 pub fn f1()
 {
     let _0: (); // return
-    let s_1: [u32; 2usize]; // local
+    let s: [u32; 2usize]; // local
     let _2: usize; // anonymous local
     let _3: &'_ mut [u32; 2usize]; // anonymous local
     let _4: &'_ mut u32; // anonymous local
 
     _0 = ()
-    storage_live(s_1)
-    s_1 = [const 1u32, const 2u32]
+    storage_live(s)
+    s = [const 1u32, const 2u32]
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &mut s_1
+    _3 = &mut s
     storage_live(_4)
     _4 = @ArrayIndexMut<'_, u32, 2usize>(move _3, copy _2)
     (*_4) = const 1u32
     storage_dead(_2)
     _0 = ()
-    storage_dead(s_1)
+    storage_dead(s)
     return
 }
 
@@ -1817,12 +1817,12 @@ pub fn f2(_1: u32)
 }
 
 // Full name: test_crate::f4
-pub fn f4<'_0>(x_1: &'_0 [u32; 32usize], y_2: usize, z_3: usize) -> &'_0 [u32]
+pub fn f4<'_0>(x: &'_0 [u32; 32usize], y: usize, z: usize) -> &'_0 [u32]
 {
     let _0: &'1 [u32]; // return
-    let x_1: &'3 [u32; 32usize]; // arg #1
-    let y_2: usize; // arg #2
-    let z_3: usize; // arg #3
+    let x: &'3 [u32; 32usize]; // arg #1
+    let y: usize; // arg #2
+    let z: usize; // arg #3
     let _4: &'4 [u32]; // anonymous local
     let _5: &'5 [u32]; // anonymous local
     let _6: &'6 [u32; 32usize]; // anonymous local
@@ -1833,12 +1833,12 @@ pub fn f4<'_0>(x_1: &'_0 [u32; 32usize], y_2: usize, z_3: usize) -> &'_0 [u32]
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &(*x_1)
+    _6 = &(*x)
     storage_live(_7)
     storage_live(_8)
-    _8 = copy y_2
+    _8 = copy y
     storage_live(_9)
-    _9 = copy z_3
+    _9 = copy z
     _7 = Range { start: move _8, end: move _9 }
     storage_dead(_9)
     storage_dead(_8)
@@ -1856,11 +1856,11 @@ pub fn f4<'_0>(x_1: &'_0 [u32; 32usize], y_2: usize, z_3: usize) -> &'_0 [u32]
 pub fn f3() -> u32
 {
     let _0: u32; // return
-    let a_1: [u32; 2usize]; // local
+    let a: [u32; 2usize]; // local
     let _2: (); // anonymous local
     let _3: u32; // anonymous local
     let _4: usize; // anonymous local
-    let b_5: [u32; 32usize]; // local
+    let b: [u32; 32usize]; // local
     let _6: &'1 [u32]; // anonymous local
     let _7: &'3 [u32; 2usize]; // anonymous local
     let _8: &'4 [u32; 2usize]; // anonymous local
@@ -1871,14 +1871,14 @@ pub fn f3() -> u32
     let _13: &'_ [u32; 2usize]; // anonymous local
     let _14: &'_ u32; // anonymous local
 
-    storage_live(a_1)
-    a_1 = [const 1u32, const 2u32]
+    storage_live(a)
+    a = [const 1u32, const 2u32]
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = const 0usize
     storage_live(_13)
-    _13 = &a_1
+    _13 = &a
     storage_live(_14)
     _14 = @ArrayIndexShared<'_, u32, 2usize>(move _13, copy _4)
     _3 = copy (*_14)
@@ -1886,12 +1886,12 @@ pub fn f3() -> u32
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
-    storage_live(b_5)
-    b_5 = @ArrayRepeat<u32, 32usize>(const 0u32)
+    storage_live(b)
+    b = @ArrayRepeat<u32, 32usize>(const 0u32)
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = &a_1
+    _8 = &a
     _7 = &(*_8)
     _6 = @ArrayToSliceShared<'_, u32, 2usize>(move _7)
     storage_dead(_7)
@@ -1899,7 +1899,7 @@ pub fn f3() -> u32
     storage_live(_10)
     storage_live(_11)
     storage_live(_12)
-    _12 = &b_5
+    _12 = &b
     _11 = &(*_12)
     _10 = f4<'12>(move _11, const 16usize, const 18usize)
     _9 = &(*_10) with_metadata(copy _10.metadata)
@@ -1907,8 +1907,8 @@ pub fn f3() -> u32
     _0 = sum2<'15, '16>(move _6, move _9)
     storage_dead(_9)
     storage_dead(_6)
-    storage_dead(b_5)
-    storage_dead(a_1)
+    storage_dead(b)
+    storage_dead(a)
     storage_dead(_12)
     storage_dead(_10)
     storage_dead(_8)
@@ -1928,10 +1928,10 @@ pub fn SZ() -> usize
 pub const SZ: usize = SZ()
 
 // Full name: test_crate::f5
-pub fn f5<'_0>(x_1: &'_0 [u32; 32usize]) -> u32
+pub fn f5<'_0>(x: &'_0 [u32; 32usize]) -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 [u32; 32usize]; // arg #1
+    let x: &'1 [u32; 32usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 32usize]; // anonymous local
     let _4: &'_ u32; // anonymous local
@@ -1939,7 +1939,7 @@ pub fn f5<'_0>(x_1: &'_0 [u32; 32usize]) -> u32
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
-    _3 = &(*x_1)
+    _3 = &(*x)
     storage_live(_4)
     _4 = @ArrayIndexShared<'_, u32, 32usize>(move _3, copy _2)
     _0 = copy (*_4)
@@ -1951,9 +1951,9 @@ pub fn f5<'_0>(x_1: &'_0 [u32; 32usize]) -> u32
 pub fn ite()
 {
     let _0: (); // return
-    let x_1: [u32; 2usize]; // local
+    let x: [u32; 2usize]; // local
     let _2: bool; // anonymous local
-    let y_3: [u32; 2usize]; // local
+    let y: [u32; 2usize]; // local
     let _4: u32; // anonymous local
     let _5: &'1 mut [u32]; // anonymous local
     let _6: &'3 mut [u32; 2usize]; // anonymous local
@@ -1964,18 +1964,18 @@ pub fn ite()
     let _11: &'7 mut [u32; 2usize]; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = @ArrayRepeat<u32, 2usize>(const 0u32)
+    storage_live(x)
+    x = @ArrayRepeat<u32, 2usize>(const 0u32)
     storage_live(_2)
     _2 = const true
     if move _2 {
-        storage_live(y_3)
-        y_3 = @ArrayRepeat<u32, 2usize>(const 0u32)
+        storage_live(y)
+        y = @ArrayRepeat<u32, 2usize>(const 0u32)
         storage_live(_4)
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
-        _7 = &mut x_1
+        _7 = &mut x
         _6 = &mut (*_7)
         _5 = @ArrayToSliceMut<'_, u32, 2usize>(move _6)
         storage_dead(_6)
@@ -1987,7 +1987,7 @@ pub fn ite()
         storage_live(_9)
         storage_live(_10)
         storage_live(_11)
-        _11 = &mut y_3
+        _11 = &mut y
         _10 = &mut (*_11)
         _9 = @ArrayToSliceMut<'_, u32, 2usize>(move _10)
         storage_dead(_10)
@@ -1996,22 +1996,22 @@ pub fn ite()
         storage_dead(_11)
         storage_dead(_8)
         _0 = ()
-        storage_dead(y_3)
+        storage_dead(y)
     } else {
         _0 = ()
     }
     storage_dead(_2)
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
 // Full name: test_crate::zero_slice
-pub fn zero_slice<'_0>(a_1: &'_0 mut [u8])
+pub fn zero_slice<'_0>(a: &'_0 mut [u8])
 {
     let _0: (); // return
-    let a_1: &'1 mut [u8]; // arg #1
-    let i_2: usize; // local
-    let len_3: usize; // local
+    let a: &'1 mut [u8]; // arg #1
+    let i: usize; // local
+    let len: usize; // local
     let _4: &'3 [u8]; // anonymous local
     let _5: bool; // anonymous local
     let _6: usize; // anonymous local
@@ -2023,33 +2023,33 @@ pub fn zero_slice<'_0>(a_1: &'_0 mut [u8])
 
     storage_live(_9)
     _0 = ()
-    storage_live(i_2)
-    i_2 = const 0usize
-    storage_live(len_3)
+    storage_live(i)
+    i = const 0usize
+    storage_live(len)
     storage_live(_4)
-    _4 = &(*a_1) with_metadata(copy a_1.metadata)
-    len_3 = len<'5, u8>[{built_in impl Sized for u8}](move _4)
+    _4 = &(*a) with_metadata(copy a.metadata)
+    len = len<'5, u8>[{built_in impl Sized for u8}](move _4)
     storage_dead(_4)
     loop {
         storage_live(_5)
         storage_live(_6)
-        _6 = copy i_2
+        _6 = copy i
         storage_live(_7)
-        _7 = copy len_3
+        _7 = copy len
         _5 = move _6 < move _7
         if move _5 {
             storage_dead(_7)
             storage_dead(_6)
             storage_live(_8)
-            _8 = copy i_2
+            _8 = copy i
             storage_live(_10)
-            _10 = &mut (*a_1) with_metadata(copy a_1.metadata)
+            _10 = &mut (*a) with_metadata(copy a.metadata)
             storage_live(_11)
             _11 = @SliceIndexMut<'_, u8>(move _10, copy _8)
             (*_11) = const 0u8
             storage_dead(_8)
-            _9 = copy i_2 panic.+ const 1usize
-            i_2 = move _9
+            _9 = copy i panic.+ const 1usize
+            i = move _9
             storage_dead(_5)
             continue 0
         } else {
@@ -2060,19 +2060,19 @@ pub fn zero_slice<'_0>(a_1: &'_0 mut [u8])
     storage_dead(_6)
     _0 = ()
     storage_dead(_5)
-    storage_dead(len_3)
-    storage_dead(i_2)
+    storage_dead(len)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::iter_mut_slice
-pub fn iter_mut_slice<'_0>(a_1: &'_0 mut [u8])
+pub fn iter_mut_slice<'_0>(a: &'_0 mut [u8])
 {
     let _0: (); // return
-    let a_1: &'1 mut [u8]; // arg #1
-    let len_2: usize; // local
+    let a: &'1 mut [u8]; // arg #1
+    let len: usize; // local
     let _3: &'3 [u8]; // anonymous local
-    let i_4: usize; // local
+    let i: usize; // local
     let _5: bool; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
@@ -2080,25 +2080,25 @@ pub fn iter_mut_slice<'_0>(a_1: &'_0 mut [u8])
 
     storage_live(_8)
     _0 = ()
-    storage_live(len_2)
+    storage_live(len)
     storage_live(_3)
-    _3 = &(*a_1) with_metadata(copy a_1.metadata)
-    len_2 = len<'5, u8>[{built_in impl Sized for u8}](move _3)
+    _3 = &(*a) with_metadata(copy a.metadata)
+    len = len<'5, u8>[{built_in impl Sized for u8}](move _3)
     storage_dead(_3)
-    storage_live(i_4)
-    i_4 = const 0usize
+    storage_live(i)
+    i = const 0usize
     loop {
         storage_live(_5)
         storage_live(_6)
-        _6 = copy i_4
+        _6 = copy i
         storage_live(_7)
-        _7 = copy len_2
+        _7 = copy len
         _5 = move _6 < move _7
         if move _5 {
             storage_dead(_7)
             storage_dead(_6)
-            _8 = copy i_4 panic.+ const 1usize
-            i_4 = move _8
+            _8 = copy i panic.+ const 1usize
+            i = move _8
             storage_dead(_5)
             continue 0
         } else {
@@ -2109,18 +2109,18 @@ pub fn iter_mut_slice<'_0>(a_1: &'_0 mut [u8])
     storage_dead(_6)
     _0 = ()
     storage_dead(_5)
-    storage_dead(i_4)
-    storage_dead(len_2)
+    storage_dead(i)
+    storage_dead(len)
     return
 }
 
 // Full name: test_crate::sum_mut_slice
-pub fn sum_mut_slice<'_0>(a_1: &'_0 mut [u32]) -> u32
+pub fn sum_mut_slice<'_0>(a: &'_0 mut [u32]) -> u32
 {
     let _0: u32; // return
-    let a_1: &'1 mut [u32]; // arg #1
-    let i_2: usize; // local
-    let s_3: u32; // local
+    let a: &'1 mut [u32]; // arg #1
+    let i: usize; // local
+    let s: u32; // local
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
@@ -2134,17 +2134,17 @@ pub fn sum_mut_slice<'_0>(a_1: &'_0 mut [u32]) -> u32
 
     storage_live(_10)
     storage_live(_11)
-    storage_live(i_2)
-    i_2 = const 0usize
-    storage_live(s_3)
-    s_3 = const 0u32
+    storage_live(i)
+    i = const 0usize
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy i_2
+        _5 = copy i
         storage_live(_6)
         storage_live(_7)
-        _7 = &(*a_1) with_metadata(copy a_1.metadata)
+        _7 = &(*a) with_metadata(copy a.metadata)
         _6 = len<'5, u32>[{built_in impl Sized for u32}](move _7)
         storage_dead(_7)
         _4 = move _5 < move _6
@@ -2156,61 +2156,61 @@ pub fn sum_mut_slice<'_0>(a_1: &'_0 mut [u32]) -> u32
         storage_dead(_5)
         storage_live(_8)
         storage_live(_9)
-        _9 = copy i_2
+        _9 = copy i
         storage_live(_12)
-        _12 = &(*a_1) with_metadata(copy a_1.metadata)
+        _12 = &(*a) with_metadata(copy a.metadata)
         storage_live(_13)
         _13 = @SliceIndexShared<'_, u32>(move _12, copy _9)
         _8 = copy (*_13)
-        _10 = copy s_3 panic.+ copy _8
-        s_3 = move _10
+        _10 = copy s panic.+ copy _8
+        s = move _10
         storage_dead(_8)
         storage_dead(_9)
-        _11 = copy i_2 panic.+ const 1usize
-        i_2 = move _11
+        _11 = copy i panic.+ const 1usize
+        i = move _11
         storage_dead(_4)
         continue 0
     }
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = copy s_3
-    storage_dead(s_3)
-    storage_dead(i_2)
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::slice_pattern_1
-fn slice_pattern_1(x_1: [(); 1usize])
+fn slice_pattern_1(x: [(); 1usize])
 {
     let _0: (); // return
-    let x_1: [(); 1usize]; // arg #1
-    let _named_2: (); // local
+    let x: [(); 1usize]; // arg #1
+    let _named: (); // local
     let _3: &'_ [(); 1usize]; // anonymous local
     let _4: &'_ (); // anonymous local
 
     _0 = ()
-    storage_live(_named_2)
+    storage_live(_named)
     storage_live(_3)
-    _3 = &x_1
+    _3 = &x
     storage_live(_4)
     _4 = @ArrayIndexShared<'_, (), 1usize>(move _3, const 0usize)
-    _named_2 = copy (*_4)
+    _named = copy (*_4)
     _0 = ()
-    storage_dead(_named_2)
+    storage_dead(_named)
     return
 }
 
 // Full name: test_crate::slice_pattern_2
-fn slice_pattern_2<'_0, T>(x_1: [&'_0 mut T; 3usize])
+fn slice_pattern_2<'_0, T>(x: [&'_0 mut T; 3usize])
 where
     TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let x_1: [&'2 mut T; 3usize]; // arg #1
-    let _a_2: &'3 mut T; // local
-    let _b_3: &'4 mut T; // local
-    let _c_4: &'5 mut T; // local
+    let x: [&'2 mut T; 3usize]; // arg #1
+    let _a: &'3 mut T; // local
+    let _b: &'4 mut T; // local
+    let _c: &'5 mut T; // local
     let _5: &'_ mut [&'2 mut T; 3usize]; // anonymous local
     let _6: &'_ mut &'2 mut T; // anonymous local
     let _7: &'_ mut [&'2 mut T; 3usize]; // anonymous local
@@ -2219,62 +2219,62 @@ where
     let _10: &'_ mut &'2 mut T; // anonymous local
 
     _0 = ()
-    storage_live(_a_2)
+    storage_live(_a)
     storage_live(_5)
-    _5 = &mut x_1
+    _5 = &mut x
     storage_live(_6)
     _6 = @ArrayIndexMut<'_, &'2 mut T, 3usize>(move _5, const 0usize)
-    _a_2 = move (*_6)
-    storage_live(_b_3)
+    _a = move (*_6)
+    storage_live(_b)
     storage_live(_7)
-    _7 = &mut x_1
+    _7 = &mut x
     storage_live(_8)
     _8 = @ArrayIndexMut<'_, &'2 mut T, 3usize>(move _7, const 1usize)
-    _b_3 = move (*_8)
-    storage_live(_c_4)
+    _b = move (*_8)
+    storage_live(_c)
     storage_live(_9)
-    _9 = &mut x_1
+    _9 = &mut x
     storage_live(_10)
     _10 = @ArrayIndexMut<'_, &'2 mut T, 3usize>(move _9, const 2usize)
-    _c_4 = move (*_10)
+    _c = move (*_10)
     _0 = ()
-    storage_dead(_c_4)
-    storage_dead(_b_3)
-    storage_dead(_a_2)
+    storage_dead(_c)
+    storage_dead(_b)
+    storage_dead(_a)
     return
 }
 
 // Full name: test_crate::slice_pattern_3
-fn slice_pattern_3<'_0>(x_1: &'_0 [(); 1usize])
+fn slice_pattern_3<'_0>(x: &'_0 [(); 1usize])
 {
     let _0: (); // return
-    let x_1: &'1 [(); 1usize]; // arg #1
-    let _named_2: &'3 (); // local
+    let x: &'1 [(); 1usize]; // arg #1
+    let _named: &'3 (); // local
     let _3: &'_ [(); 1usize]; // anonymous local
     let _4: &'_ (); // anonymous local
 
     _0 = ()
-    storage_live(_named_2)
+    storage_live(_named)
     storage_live(_3)
-    _3 = &(*x_1)
+    _3 = &(*x)
     storage_live(_4)
     _4 = @ArrayIndexShared<'_, (), 1usize>(move _3, const 0usize)
-    _named_2 = &(*_4)
+    _named = &(*_4)
     _0 = ()
-    storage_dead(_named_2)
+    storage_dead(_named)
     return
 }
 
 // Full name: test_crate::slice_pattern_4
-fn slice_pattern_4<'_0>(x_1: &'_0 [()])
+fn slice_pattern_4<'_0>(x: &'_0 [()])
 {
     let _0: (); // return
-    let x_1: &'1 [()]; // arg #1
+    let x: &'1 [()]; // arg #1
     let _2: usize; // anonymous local
     let _3: usize; // anonymous local
     let _4: usize; // anonymous local
     let _5: bool; // anonymous local
-    let _named_6: &'3 (); // local
+    let _named: &'3 (); // local
     let _7: &'_ [()]; // anonymous local
     let _8: &'_ (); // anonymous local
 
@@ -2283,7 +2283,7 @@ fn slice_pattern_4<'_0>(x_1: &'_0 [()])
     storage_live(_4)
     storage_live(_5)
     _0 = ()
-    _3 = copy x_1.metadata
+    _3 = copy x.metadata
     _2 = move _3
     _4 = const 1usize
     _5 = move _2 == move _4
@@ -2292,14 +2292,14 @@ fn slice_pattern_4<'_0>(x_1: &'_0 [()])
         _0 = ()
         return
     }
-    storage_live(_named_6)
+    storage_live(_named)
     storage_live(_7)
-    _7 = &(*x_1) with_metadata(copy x_1.metadata)
+    _7 = &(*x) with_metadata(copy x.metadata)
     storage_live(_8)
     _8 = @SliceIndexShared<'_, ()>(move _7, const 0usize)
-    _named_6 = &(*_8)
+    _named = &(*_8)
     _0 = ()
-    storage_dead(_named_6)
+    storage_dead(_named)
     return
 }
 

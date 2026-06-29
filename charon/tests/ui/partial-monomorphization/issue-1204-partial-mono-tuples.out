@@ -38,42 +38,42 @@ pub trait core::marker::Destruct::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 }
 
 // Full name: test_crate::id
-fn id<T>(x_1: T) -> T
+fn id<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
     let _0: T; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
     return
 }
 
-fn test_crate::id::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>(x_1: (&'_0 mut T0, &'_1 mut T1)) -> (&'_0 mut T0, &'_1 mut T1)
+fn test_crate::id::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>(x: (&'_0 mut T0, &'_1 mut T1)) -> (&'_0 mut T0, &'_1 mut T1)
 where
     TraitClause0: (T0: core::marker::Sized::<(&_ mut _, &_ mut _)><'_0, '_1, T1>),
 {
     let _0: (&'_0 mut T0, &'_1 mut T1); // return
-    let x_1: (&'_0 mut T0, &'_1 mut T1); // arg #1
+    let x: (&'_0 mut T0, &'_1 mut T1); // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<(&_ mut _, &_ mut _)><'_0, '_1, T1> for T0}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<(&_ mut _, &_ mut _)><'_0, '_1, T1> for T0}::drop_glue<'0>] x
     return
 }
 
 // Full name: test_crate::call_id_pair_mut
-fn call_id_pair_mut<'a, T, U>(x_1: (&'a mut T, &'a mut U)) -> (&'a mut T, &'a mut U)
+fn call_id_pair_mut<'a, T, U>(x: (&'a mut T, &'a mut U)) -> (&'a mut T, &'a mut U)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
 {
     let _0: (&'4 mut T, &'5 mut U); // return
-    let x_1: (&'6 mut T, &'7 mut U); // arg #1
+    let x: (&'6 mut T, &'7 mut U); // arg #1
     let _2: (&'8 mut T, &'9 mut U); // anonymous local
 
     storage_live(_2)
-    _2 = move x_1
+    _2 = move x
     _0 = test_crate::id::<(&_ mut _, &_ mut _)><'14, '15, T, U>[{built_in impl core::marker::Sized::<(&_ mut _, &_ mut _)><'14, '15, U> for T}](move _2)
     storage_dead(_2)
     return

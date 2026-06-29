@@ -1,22 +1,22 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::rust_id
-pub fn rust_id(x_1: u32) -> u32
+pub fn rust_id(x: u32) -> u32
 {
     let _0: u32; // return
-    let x_1: u32; // arg #1
+    let x: u32; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::c_id
-pub extern "C" fn c_id(x_1: u32) -> u32
+pub extern "C" fn c_id(x: u32) -> u32
 {
     let _0: u32; // return
-    let x_1: u32; // arg #1
+    let x: u32; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 

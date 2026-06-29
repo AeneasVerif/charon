@@ -16,24 +16,24 @@ pub fn cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> Ordering
 fn main()
 {
     let _0: (); // return
-    let x_1: i32; // local
-    let y_2: i32; // local
+    let x: i32; // local
+    let y: i32; // local
     let _3: Ordering; // anonymous local
     let _4: &'1 i32; // anonymous local
     let _5: &'2 i32; // anonymous local
     let _6: &'3 i32; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 11i32
-    storage_live(y_2)
-    y_2 = const 22i32
+    storage_live(x)
+    x = const 11i32
+    storage_live(y)
+    y = const 22i32
     storage_live(_3)
     storage_live(_4)
-    _4 = &x_1
+    _4 = &x
     storage_live(_5)
     storage_live(_6)
-    _6 = &y_2
+    _6 = &y
     _5 = &(*_6)
     _3 = cmp<'6, '7>(move _4, move _5)
     storage_dead(_5)
@@ -41,8 +41,8 @@ fn main()
     storage_dead(_6)
     storage_dead(_3)
     _0 = ()
-    storage_dead(y_2)
-    storage_dead(x_1)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 

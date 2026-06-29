@@ -25,10 +25,10 @@ trait MyIterator<Self>
 struct A {}
 
 // Full name: test_crate::MyIterator::method::<A>
-fn method::<A><'_0>(self_1: &'_0 A)
+fn method::<A><'_0>(self: &'_0 A)
 {
     let _0: (); // return
-    let self_1: &'1 A; // arg #1
+    let self: &'1 A; // arg #1
 
     _0 = ()
     _0 = ()
@@ -39,10 +39,10 @@ fn method::<A><'_0>(self_1: &'_0 A)
 struct B {}
 
 // Full name: test_crate::MyIterator::method::<B>
-fn method::<B><'_0>(self_1: &'_0 B)
+fn method::<B><'_0>(self: &'_0 B)
 {
     let _0: (); // return
-    let self_1: &'1 B; // arg #1
+    let self: &'1 B; // arg #1
 
     _0 = ()
     _0 = ()

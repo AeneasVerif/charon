@@ -28,13 +28,13 @@ where
 }
 
 // Full name: test_crate::{AVLTree<T>[TraitClause0]}::insert
-pub fn insert<'_0, T>(self_1: &'_0 mut AVLTree<T>[TraitClause0])
+pub fn insert<'_0, T>(self: &'_0 mut AVLTree<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ord),
 {
     let _0: (); // return
-    let self_1: &'1 mut AVLTree<T>[TraitClause0]; // arg #1
+    let self: &'1 mut AVLTree<T>[TraitClause0]; // arg #1
 
     _0 = ()
     panic(core::panicking::panic)
@@ -47,17 +47,17 @@ impl "impl_Ord_for_u32" Ord for u32 {
 }
 
 // Full name: test_crate::test
-pub fn test(tree_1: AVLTree<u32>[{built_in impl Sized for u32}])
+pub fn test(tree: AVLTree<u32>[{built_in impl Sized for u32}])
 {
     let _0: (); // return
-    let tree_1: AVLTree<u32>[{built_in impl Sized for u32}]; // arg #1
+    let tree: AVLTree<u32>[{built_in impl Sized for u32}]; // arg #1
     let _2: (); // anonymous local
     let _3: &'1 mut AVLTree<u32>[{built_in impl Sized for u32}]; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &two-phase-mut tree_1
+    _3 = &two-phase-mut tree
     _2 = insert<'3, u32>[{built_in impl Sized for u32}, impl_Ord_for_u32](move _3)
     storage_dead(_3)
     storage_dead(_2)

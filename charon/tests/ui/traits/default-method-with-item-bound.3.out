@@ -40,7 +40,7 @@ trait Exact<Self>
     non-dyn-compatible
 }
 
-fn test_crate::Trait::defaulted<'_0, Self, P>(self_1: &'_0 Self)
+fn test_crate::Trait::defaulted<'_0, Self, P>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
     TraitClause1: (P: Sized),
@@ -49,7 +49,7 @@ where
     TypeConstraint0: TraitClause2::Assoc = bool,
 {
     let _0: (); // return
-    let self_1: &'1 Self; // arg #1
+    let self: &'1 Self; // arg #1
 
     _0 = ()
     _0 = ()
@@ -65,7 +65,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}::defaulted
-fn impl_Trait_for_Empty::defaulted<'_0, T, P>(self_1: &'_0 Empty<T>[TraitClause0])
+fn impl_Trait_for_Empty::defaulted<'_0, T, P>(self: &'_0 Empty<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (P: Sized),
@@ -74,7 +74,7 @@ where
     TypeConstraint0: TraitClause2::Assoc = bool,
 {
     let _0: (); // return
-    let self_1: &'1 Empty<T>[TraitClause0]; // arg #1
+    let self: &'1 Empty<T>[TraitClause0]; // arg #1
 
     _0 = ()
     _0 = ()

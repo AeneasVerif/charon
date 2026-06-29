@@ -394,12 +394,12 @@ where
 = <opaque>
 
 // Full name: test_crate::test_loop1
-pub fn test_loop1(max_1: u32) -> u32
+pub fn test_loop1(max: u32) -> u32
 {
     let _0: u32; // return
-    let max_1: u32; // arg #1
-    let i_2: u32; // local
-    let s_3: u32; // local
+    let max: u32; // arg #1
+    let i: u32; // local
+    let s: u32; // local
     let _4: bool; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
@@ -411,27 +411,27 @@ pub fn test_loop1(max_1: u32) -> u32
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
-    storage_live(i_2)
-    i_2 = const 0u32
-    storage_live(s_3)
-    s_3 = const 0u32
+    storage_live(i)
+    i = const 0u32
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy i_2
+        _5 = copy i
         storage_live(_6)
-        _6 = copy max_1
+        _6 = copy max
         _4 = move _5 < move _6
         if move _4 {
             storage_dead(_6)
             storage_dead(_5)
             storage_live(_7)
-            _7 = copy i_2
-            _8 = copy s_3 panic.+ copy _7
-            s_3 = move _8
+            _7 = copy i
+            _8 = copy s panic.+ copy _7
+            s = move _8
             storage_dead(_7)
-            _9 = copy i_2 panic.+ const 1u32
-            i_2 = move _9
+            _9 = copy i panic.+ const 1u32
+            i = move _9
             storage_dead(_4)
             continue 0
         } else {
@@ -441,21 +441,21 @@ pub fn test_loop1(max_1: u32) -> u32
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
-    _10 = copy s_3 panic.* const 2u32
-    s_3 = move _10
-    _0 = copy s_3
-    storage_dead(s_3)
-    storage_dead(i_2)
+    _10 = copy s panic.* const 2u32
+    s = move _10
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::test_loop2
-pub fn test_loop2(max_1: u32) -> u32
+pub fn test_loop2(max: u32) -> u32
 {
     let _0: u32; // return
-    let max_1: u32; // arg #1
-    let i_2: u32; // local
-    let s_3: u32; // local
+    let max: u32; // arg #1
+    let i: u32; // local
+    let s: u32; // local
     let _4: bool; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
@@ -467,23 +467,23 @@ pub fn test_loop2(max_1: u32) -> u32
 
     storage_live(_10)
     storage_live(_11)
-    storage_live(i_2)
-    i_2 = const 0u32
-    storage_live(s_3)
-    s_3 = const 0u32
+    storage_live(i)
+    i = const 0u32
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy i_2
+        _5 = copy i
         storage_live(_6)
-        _6 = copy max_1
+        _6 = copy max
         _4 = move _5 < move _6
         if move _4 {
             storage_dead(_6)
             storage_dead(_5)
             storage_live(_7)
             storage_live(_8)
-            _8 = copy i_2
+            _8 = copy i
             _7 = move _8 == const 17u32
             if move _7 {
                 storage_dead(_8)
@@ -494,12 +494,12 @@ pub fn test_loop2(max_1: u32) -> u32
             storage_dead(_8)
             storage_dead(_7)
             storage_live(_9)
-            _9 = copy i_2
-            _10 = copy s_3 panic.+ copy _9
-            s_3 = move _10
+            _9 = copy i
+            _10 = copy s panic.+ copy _9
+            s = move _10
             storage_dead(_9)
-            _11 = copy i_2 panic.+ const 1u32
-            i_2 = move _11
+            _11 = copy i panic.+ const 1u32
+            i = move _11
             storage_dead(_4)
             continue 0
         } else {
@@ -509,20 +509,20 @@ pub fn test_loop2(max_1: u32) -> u32
         }
     }
     storage_dead(_4)
-    _0 = copy s_3
-    storage_dead(s_3)
-    storage_dead(i_2)
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::test_loop3
-pub fn test_loop3(max_1: u32) -> u32
+pub fn test_loop3(max: u32) -> u32
 {
     let _0: u32; // return
-    let max_1: u32; // arg #1
-    let i_2: u32; // local
-    let j_3: u32; // local
-    let s_4: u32; // local
+    let max: u32; // arg #1
+    let i: u32; // local
+    let j: u32; // local
+    let s: u32; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
@@ -546,18 +546,18 @@ pub fn test_loop3(max_1: u32) -> u32
     storage_live(_18)
     storage_live(_20)
     storage_live(_21)
-    storage_live(i_2)
-    i_2 = const 0u32
-    storage_live(j_3)
-    j_3 = const 0u32
-    storage_live(s_4)
-    s_4 = const 0u32
+    storage_live(i)
+    i = const 0u32
+    storage_live(j)
+    j = const 0u32
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_5)
         storage_live(_6)
-        _6 = copy i_2
+        _6 = copy i
         storage_live(_7)
-        _7 = copy max_1
+        _7 = copy max
         _5 = move _6 < move _7
         if move _5 {
             storage_dead(_7)
@@ -565,9 +565,9 @@ pub fn test_loop3(max_1: u32) -> u32
             loop {
                 storage_live(_8)
                 storage_live(_9)
-                _9 = copy j_3
+                _9 = copy j
                 storage_live(_10)
-                _10 = copy max_1
+                _10 = copy max
                 _8 = move _9 < move _10
                 if move _8 {
                     storage_dead(_10)
@@ -575,9 +575,9 @@ pub fn test_loop3(max_1: u32) -> u32
                     storage_live(_11)
                     storage_live(_12)
                     storage_live(_13)
-                    _13 = copy i_2
+                    _13 = copy i
                     storage_live(_14)
-                    _14 = copy j_3
+                    _14 = copy j
                     _15 = copy _13 panic.+ copy _14
                     _12 = move _15
                     storage_dead(_14)
@@ -588,12 +588,12 @@ pub fn test_loop3(max_1: u32) -> u32
                         storage_dead(_12)
                         storage_dead(_11)
                         storage_live(_16)
-                        _16 = copy i_2
-                        _17 = copy s_4 panic.+ copy _16
-                        s_4 = move _17
+                        _16 = copy i
+                        _17 = copy s panic.+ copy _16
+                        s = move _17
                         storage_dead(_16)
-                        _18 = copy j_3 panic.+ const 1u32
-                        j_3 = move _18
+                        _18 = copy j panic.+ const 1u32
+                        j = move _18
                         storage_dead(_8)
                         storage_dead(_5)
                         continue 1
@@ -609,14 +609,14 @@ pub fn test_loop3(max_1: u32) -> u32
             storage_dead(_10)
             storage_dead(_9)
             storage_dead(_8)
-            j_3 = const 0u32
+            j = const 0u32
             storage_live(_19)
-            _19 = copy i_2
-            _20 = copy s_4 panic.+ copy _19
-            s_4 = move _20
+            _19 = copy i
+            _20 = copy s panic.+ copy _19
+            s = move _20
             storage_dead(_19)
-            _21 = copy i_2 panic.+ const 1u32
-            i_2 = move _21
+            _21 = copy i panic.+ const 1u32
+            i = move _21
             storage_dead(_5)
             continue 0
         } else {
@@ -626,21 +626,21 @@ pub fn test_loop3(max_1: u32) -> u32
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
-    _0 = copy s_4
-    storage_dead(s_4)
-    storage_dead(j_3)
-    storage_dead(i_2)
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(j)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::test_loop4
-pub fn test_loop4(max_1: u32) -> u32
+pub fn test_loop4(max: u32) -> u32
 {
     let _0: u32; // return
-    let max_1: u32; // arg #1
-    let i_2: u32; // local
-    let j_3: u32; // local
-    let s_4: u32; // local
+    let max: u32; // arg #1
+    let i: u32; // local
+    let j: u32; // local
+    let s: u32; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
@@ -664,18 +664,18 @@ pub fn test_loop4(max_1: u32) -> u32
     storage_live(_18)
     storage_live(_20)
     storage_live(_21)
-    storage_live(i_2)
-    i_2 = const 1u32
-    storage_live(j_3)
-    j_3 = const 0u32
-    storage_live(s_4)
-    s_4 = const 0u32
+    storage_live(i)
+    i = const 1u32
+    storage_live(j)
+    j = const 0u32
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_5)
         storage_live(_6)
-        _6 = copy i_2
+        _6 = copy i
         storage_live(_7)
-        _7 = copy max_1
+        _7 = copy max
         _5 = move _6 < move _7
         if move _5 {
             storage_dead(_7)
@@ -683,9 +683,9 @@ pub fn test_loop4(max_1: u32) -> u32
             loop {
                 storage_live(_8)
                 storage_live(_9)
-                _9 = copy j_3
+                _9 = copy j
                 storage_live(_10)
-                _10 = copy max_1
+                _10 = copy max
                 _8 = move _9 < move _10
                 if move _8 {
                     storage_dead(_10)
@@ -693,9 +693,9 @@ pub fn test_loop4(max_1: u32) -> u32
                     storage_live(_11)
                     storage_live(_12)
                     storage_live(_13)
-                    _13 = copy i_2
+                    _13 = copy i
                     storage_live(_14)
-                    _14 = copy j_3
+                    _14 = copy j
                     _15 = copy _13 panic.+ copy _14
                     _12 = move _15
                     storage_dead(_14)
@@ -706,12 +706,12 @@ pub fn test_loop4(max_1: u32) -> u32
                         storage_dead(_12)
                         storage_dead(_11)
                         storage_live(_16)
-                        _16 = copy i_2
-                        _17 = copy s_4 panic.+ copy _16
-                        s_4 = move _17
+                        _16 = copy i
+                        _17 = copy s panic.+ copy _16
+                        s = move _17
                         storage_dead(_16)
-                        _18 = copy j_3 panic.+ const 1u32
-                        j_3 = move _18
+                        _18 = copy j panic.+ const 1u32
+                        j = move _18
                         storage_dead(_8)
                         break 1
                     }
@@ -726,14 +726,14 @@ pub fn test_loop4(max_1: u32) -> u32
             storage_dead(_10)
             storage_dead(_9)
             storage_dead(_8)
-            j_3 = const 0u32
+            j = const 0u32
             storage_live(_19)
-            _19 = copy i_2
-            _20 = copy s_4 panic.+ copy _19
-            s_4 = move _20
+            _19 = copy i
+            _20 = copy s panic.+ copy _19
+            s = move _20
             storage_dead(_19)
-            _21 = copy i_2 panic.+ const 1u32
-            i_2 = move _21
+            _21 = copy i panic.+ const 1u32
+            i = move _21
             storage_dead(_5)
             continue 0
         } else {
@@ -743,21 +743,21 @@ pub fn test_loop4(max_1: u32) -> u32
         }
     }
     storage_dead(_5)
-    _0 = copy s_4
-    storage_dead(s_4)
-    storage_dead(j_3)
-    storage_dead(i_2)
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(j)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::test_loop5
-pub fn test_loop5(max_1: u32) -> u32
+pub fn test_loop5(max: u32) -> u32
 {
     let _0: u32; // return
-    let max_1: u32; // arg #1
-    let i_2: u32; // local
-    let j_3: u32; // local
-    let s_4: u32; // local
+    let max: u32; // arg #1
+    let i: u32; // local
+    let j: u32; // local
+    let s: u32; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
@@ -775,18 +775,18 @@ pub fn test_loop5(max_1: u32) -> u32
     storage_live(_13)
     storage_live(_15)
     storage_live(_16)
-    storage_live(i_2)
-    i_2 = const 0u32
-    storage_live(j_3)
-    j_3 = const 0u32
-    storage_live(s_4)
-    s_4 = const 0u32
+    storage_live(i)
+    i = const 0u32
+    storage_live(j)
+    j = const 0u32
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_5)
         storage_live(_6)
-        _6 = copy i_2
+        _6 = copy i
         storage_live(_7)
-        _7 = copy max_1
+        _7 = copy max
         _5 = move _6 < move _7
         if move _5 {
             storage_dead(_7)
@@ -794,20 +794,20 @@ pub fn test_loop5(max_1: u32) -> u32
             loop {
                 storage_live(_8)
                 storage_live(_9)
-                _9 = copy j_3
+                _9 = copy j
                 storage_live(_10)
-                _10 = copy max_1
+                _10 = copy max
                 _8 = move _9 < move _10
                 if move _8 {
                     storage_dead(_10)
                     storage_dead(_9)
                     storage_live(_11)
-                    _11 = copy j_3
-                    _12 = copy s_4 panic.+ copy _11
-                    s_4 = move _12
+                    _11 = copy j
+                    _12 = copy s panic.+ copy _11
+                    s = move _12
                     storage_dead(_11)
-                    _13 = copy j_3 panic.+ const 1u32
-                    j_3 = move _13
+                    _13 = copy j panic.+ const 1u32
+                    j = move _13
                     storage_dead(_8)
                     continue 0
                 } else {
@@ -818,12 +818,12 @@ pub fn test_loop5(max_1: u32) -> u32
             storage_dead(_9)
             storage_dead(_8)
             storage_live(_14)
-            _14 = copy i_2
-            _15 = copy s_4 panic.+ copy _14
-            s_4 = move _15
+            _14 = copy i
+            _15 = copy s panic.+ copy _14
+            s = move _15
             storage_dead(_14)
-            _16 = copy i_2 panic.+ const 1u32
-            i_2 = move _16
+            _16 = copy i panic.+ const 1u32
+            i = move _16
             storage_dead(_5)
             continue 0
         } else {
@@ -833,20 +833,20 @@ pub fn test_loop5(max_1: u32) -> u32
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
-    _0 = copy s_4
-    storage_dead(s_4)
-    storage_dead(j_3)
-    storage_dead(i_2)
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(j)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::test_loop6
-pub fn test_loop6(max_1: u32) -> u32
+pub fn test_loop6(max: u32) -> u32
 {
     let _0: u32; // return
-    let max_1: u32; // arg #1
-    let i_2: u32; // local
-    let s_3: u32; // local
+    let max: u32; // arg #1
+    let i: u32; // local
+    let s: u32; // local
     let _4: bool; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
@@ -860,23 +860,23 @@ pub fn test_loop6(max_1: u32) -> u32
     storage_live(_10)
     storage_live(_11)
     storage_live(_12)
-    storage_live(i_2)
-    i_2 = const 0u32
-    storage_live(s_3)
-    s_3 = const 0u32
+    storage_live(i)
+    i = const 0u32
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy i_2
+        _5 = copy i
         storage_live(_6)
-        _6 = copy max_1
+        _6 = copy max
         _4 = move _5 < move _6
         if move _4 {
             storage_dead(_6)
             storage_dead(_5)
             storage_live(_7)
             storage_live(_8)
-            _8 = copy i_2
+            _8 = copy i
             _7 = move _8 > const 3u32
             if move _7 {
                 storage_dead(_8)
@@ -887,12 +887,12 @@ pub fn test_loop6(max_1: u32) -> u32
             storage_dead(_8)
             storage_dead(_7)
             storage_live(_9)
-            _9 = copy i_2
-            _10 = copy s_3 panic.+ copy _9
-            s_3 = move _10
+            _9 = copy i
+            _10 = copy s panic.+ copy _9
+            s = move _10
             storage_dead(_9)
-            _11 = copy i_2 panic.+ const 1u32
-            i_2 = move _11
+            _11 = copy i panic.+ const 1u32
+            i = move _11
             storage_dead(_4)
             continue 0
         } else {
@@ -903,21 +903,21 @@ pub fn test_loop6(max_1: u32) -> u32
     }
     storage_dead(_4)
     // All the below nodes are exit candidates (each of them is referenced twice)
-    _12 = copy s_3 panic.+ const 1u32
-    s_3 = move _12
-    _0 = copy s_3
-    storage_dead(s_3)
-    storage_dead(i_2)
+    _12 = copy s panic.+ const 1u32
+    s = move _12
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::test_loop7
-pub fn test_loop7(max_1: u32) -> u32
+pub fn test_loop7(max: u32) -> u32
 {
     let _0: u32; // return
-    let max_1: u32; // arg #1
-    let i_2: u32; // local
-    let s_3: u32; // local
+    let max: u32; // arg #1
+    let i: u32; // local
+    let s: u32; // local
     let _4: bool; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
@@ -934,15 +934,15 @@ pub fn test_loop7(max_1: u32) -> u32
     storage_live(_13)
     storage_live(_14)
     storage_live(_15)
-    storage_live(i_2)
-    i_2 = const 0u32
-    storage_live(s_3)
-    s_3 = const 0u32
+    storage_live(i)
+    i = const 0u32
+    storage_live(s)
+    s = const 0u32
     storage_live(_4)
     storage_live(_5)
-    _5 = copy i_2
+    _5 = copy i
     storage_live(_6)
-    _6 = copy max_1
+    _6 = copy max
     _4 = move _5 < move _6
     if move _4 {
         storage_dead(_6)
@@ -950,16 +950,16 @@ pub fn test_loop7(max_1: u32) -> u32
         loop {
             storage_live(_7)
             storage_live(_8)
-            _8 = copy i_2
+            _8 = copy i
             storage_live(_9)
-            _9 = copy max_1
+            _9 = copy max
             _7 = move _8 < move _9
             if move _7 {
                 storage_dead(_9)
                 storage_dead(_8)
                 storage_live(_10)
                 storage_live(_11)
-                _11 = copy i_2
+                _11 = copy i
                 _10 = move _11 > const 3u32
                 if move _10 {
                     storage_dead(_11)
@@ -969,12 +969,12 @@ pub fn test_loop7(max_1: u32) -> u32
                     storage_dead(_11)
                     storage_dead(_10)
                     storage_live(_12)
-                    _12 = copy i_2
-                    _13 = copy s_3 panic.+ copy _12
-                    s_3 = move _13
+                    _12 = copy i
+                    _13 = copy s panic.+ copy _12
+                    s = move _13
                     storage_dead(_12)
-                    _14 = copy i_2 panic.+ const 1u32
-                    i_2 = move _14
+                    _14 = copy i panic.+ const 1u32
+                    i = move _14
                     storage_dead(_7)
                     continue 0
                 }
@@ -988,14 +988,14 @@ pub fn test_loop7(max_1: u32) -> u32
     } else {
         storage_dead(_6)
         storage_dead(_5)
-        s_3 = const 2u32
+        s = const 2u32
     }
     storage_dead(_4)
-    _15 = copy s_3 panic.+ const 1u32
-    s_3 = move _15
-    _0 = copy s_3
-    storage_dead(s_3)
-    storage_dead(i_2)
+    _15 = copy s panic.+ const 1u32
+    s = move _15
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(i)
     return
 }
 
@@ -1112,12 +1112,12 @@ pub fn test_loops()
 }
 
 // Full name: test_crate::nested_loops_enum
-pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
+pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
 {
     let _0: usize; // return
-    let step_out_1: usize; // arg #1
-    let step_in_2: usize; // arg #2
-    let s_3: usize; // local
+    let step_out: usize; // arg #1
+    let step_in: usize; // arg #2
+    let s: usize; // local
     let _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let iter_6: Range<i32>[{built_in impl Sized for i32}]; // local
@@ -1143,8 +1143,8 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
 
     storage_live(_10)
     storage_live(_25)
-    storage_live(s_3)
-    s_3 = const 0usize
+    storage_live(s)
+    s = const 0usize
     storage_live(_4)
     storage_live(_5)
     _5 = Range { start: const 0i32, end: const 128i32 }
@@ -1167,8 +1167,8 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
             Option::Some => {
             },
         }
-        _10 = copy s_3 panic.+ const 1usize
-        s_3 = move _10
+        _10 = copy s panic.+ const 1usize
+        s = move _10
         storage_dead(_9)
         storage_dead(_7)
         continue 0
@@ -1180,7 +1180,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
-    _13 = copy step_out_1
+    _13 = copy step_out
     _12 = Range { start: const 0usize, end: move _13 }
     storage_dead(_13)
     _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _12)
@@ -1205,7 +1205,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_18)
         storage_live(_19)
         storage_live(_20)
-        _20 = copy step_in_2
+        _20 = copy step_in
         _19 = Range { start: const 0usize, end: move _20 }
         storage_dead(_20)
         _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _19)
@@ -1227,8 +1227,8 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
                 Option::Some => {
                 },
             }
-            _25 = copy s_3 panic.+ const 1usize
-            s_3 = move _25
+            _25 = copy s panic.+ const 1usize
+            s = move _25
             storage_dead(_24)
             storage_dead(_22)
             continue 0
@@ -1245,51 +1245,51 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
     storage_dead(_15)
     storage_dead(iter_14)
     storage_dead(_11)
-    _0 = copy s_3
-    storage_dead(s_3)
+    _0 = copy s
+    storage_dead(s)
     return
 }
 
 // Full name: test_crate::loop_inside_if
-pub fn loop_inside_if(b_1: bool, n_2: u32) -> u32
+pub fn loop_inside_if(b: bool, n: u32) -> u32
 {
     let _0: u32; // return
-    let b_1: bool; // arg #1
-    let n_2: u32; // arg #2
+    let b: bool; // arg #1
+    let n: u32; // arg #2
     let _3: bool; // anonymous local
-    let s_4: u32; // local
+    let s: u32; // local
     let _5: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _6: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _7: u32; // anonymous local
-    let iter_8: Range<u32>[{built_in impl Sized for u32}]; // local
+    let iter: Range<u32>[{built_in impl Sized for u32}]; // local
     let _9: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _10: &'1 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _11: &'2 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let i_12: u32; // local
+    let i: u32; // local
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
 
     storage_live(_14)
     storage_live(_3)
-    _3 = copy b_1
+    _3 = copy b
     if move _3 {
-        storage_live(s_4)
-        s_4 = const 0u32
+        storage_live(s)
+        s = const 0u32
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
-        _7 = copy n_2
+        _7 = copy n
         _6 = Range { start: const 0u32, end: move _7 }
         storage_dead(_7)
         _5 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32]](move _6)
         storage_dead(_6)
-        storage_live(iter_8)
-        iter_8 = move _5
+        storage_live(iter)
+        iter = move _5
         loop {
             storage_live(_9)
             storage_live(_10)
             storage_live(_11)
-            _11 = &mut iter_8
+            _11 = &mut iter
             _10 = &two-phase-mut (*_11)
             _9 = next<'4, u32>[{built_in impl Sized for u32}, impl_Step_for_u32](move _10)
             storage_dead(_10)
@@ -1298,14 +1298,14 @@ pub fn loop_inside_if(b_1: bool, n_2: u32) -> u32
                     break 0
                 },
                 Option::Some => {
-                    storage_live(i_12)
-                    i_12 = copy (_9 as variant Option::Some).0
+                    storage_live(i)
+                    i = copy (_9 as variant Option::Some).0
                     storage_live(_13)
-                    _13 = copy i_12
-                    _14 = copy s_4 panic.+ copy _13
-                    s_4 = move _14
+                    _13 = copy i
+                    _14 = copy s panic.+ copy _13
+                    s = move _14
                     storage_dead(_13)
-                    storage_dead(i_12)
+                    storage_dead(i)
                     storage_dead(_11)
                     storage_dead(_9)
                     continue 0
@@ -1314,10 +1314,10 @@ pub fn loop_inside_if(b_1: bool, n_2: u32) -> u32
         }
         storage_dead(_11)
         storage_dead(_9)
-        storage_dead(iter_8)
+        storage_dead(iter)
         storage_dead(_5)
-        _0 = copy s_4
-        storage_dead(s_4)
+        _0 = copy s
+        storage_dead(s)
     } else {
         _0 = const 0u32
     }
@@ -1325,12 +1325,12 @@ pub fn loop_inside_if(b_1: bool, n_2: u32) -> u32
     return
 }
 
-pub fn test_crate::sum(max_1: u32) -> u32
+pub fn test_crate::sum(max: u32) -> u32
 {
     let _0: u32; // return
-    let max_1: u32; // arg #1
-    let i_2: u32; // local
-    let s_3: u32; // local
+    let max: u32; // arg #1
+    let i: u32; // local
+    let s: u32; // local
     let _4: bool; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
@@ -1342,27 +1342,27 @@ pub fn test_crate::sum(max_1: u32) -> u32
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
-    storage_live(i_2)
-    i_2 = const 0u32
-    storage_live(s_3)
-    s_3 = const 0u32
+    storage_live(i)
+    i = const 0u32
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy i_2
+        _5 = copy i
         storage_live(_6)
-        _6 = copy max_1
+        _6 = copy max
         _4 = move _5 < move _6
         if move _4 {
             storage_dead(_6)
             storage_dead(_5)
             storage_live(_7)
-            _7 = copy i_2
-            _8 = copy s_3 panic.+ copy _7
-            s_3 = move _8
+            _7 = copy i
+            _8 = copy s panic.+ copy _7
+            s = move _8
             storage_dead(_7)
-            _9 = copy i_2 panic.+ const 1u32
-            i_2 = move _9
+            _9 = copy i panic.+ const 1u32
+            i = move _9
             storage_dead(_4)
             continue 0
         } else {
@@ -1372,21 +1372,21 @@ pub fn test_crate::sum(max_1: u32) -> u32
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
-    _10 = copy s_3 panic.* const 2u32
-    s_3 = move _10
-    _0 = copy s_3
-    storage_dead(s_3)
-    storage_dead(i_2)
+    _10 = copy s panic.* const 2u32
+    s = move _10
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::sum_array
-pub fn sum_array<const N : usize>(a_1: [u32; N]) -> u32
+pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
 {
     let _0: u32; // return
-    let a_1: [u32; N]; // arg #1
-    let i_2: usize; // local
-    let s_3: u32; // local
+    let a: [u32; N]; // arg #1
+    let i: usize; // local
+    let s: u32; // local
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: u32; // anonymous local
@@ -1398,31 +1398,31 @@ pub fn sum_array<const N : usize>(a_1: [u32; N]) -> u32
 
     storage_live(_8)
     storage_live(_9)
-    storage_live(i_2)
-    i_2 = const 0usize
-    storage_live(s_3)
-    s_3 = const 0u32
+    storage_live(i)
+    i = const 0usize
+    storage_live(s)
+    s = const 0u32
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy i_2
+        _5 = copy i
         _4 = move _5 < const N
         if move _4 {
             storage_dead(_5)
             storage_live(_6)
             storage_live(_7)
-            _7 = copy i_2
+            _7 = copy i
             storage_live(_10)
-            _10 = &a_1
+            _10 = &a
             storage_live(_11)
             _11 = @ArrayIndexShared<'_, u32, N>(move _10, copy _7)
             _6 = copy (*_11)
-            _8 = copy s_3 panic.+ copy _6
-            s_3 = move _8
+            _8 = copy s panic.+ copy _6
+            s = move _8
             storage_dead(_6)
             storage_dead(_7)
-            _9 = copy i_2 panic.+ const 1usize
-            i_2 = move _9
+            _9 = copy i panic.+ const 1usize
+            i = move _9
             storage_dead(_4)
             continue 0
         } else {
@@ -1431,18 +1431,18 @@ pub fn sum_array<const N : usize>(a_1: [u32; N]) -> u32
     }
     storage_dead(_5)
     storage_dead(_4)
-    _0 = copy s_3
-    storage_dead(s_3)
-    storage_dead(i_2)
+    _0 = copy s
+    storage_dead(s)
+    storage_dead(i)
     return
 }
 
 // Full name: test_crate::clear
-pub fn clear<'_0>(v_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
+pub fn clear<'_0>(v: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
-    let v_1: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
-    let i_2: usize; // local
+    let v: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
+    let i: usize; // local
     let _3: bool; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
@@ -1454,15 +1454,15 @@ pub fn clear<'_0>(v_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_i
 
     storage_live(_10)
     _0 = ()
-    storage_live(i_2)
-    i_2 = const 0usize
+    storage_live(i)
+    i = const 0usize
     loop {
         storage_live(_3)
         storage_live(_4)
-        _4 = copy i_2
+        _4 = copy i
         storage_live(_5)
         storage_live(_6)
-        _6 = &(*v_1)
+        _6 = &(*v)
         _5 = alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::len<'8, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _6)
         storage_dead(_6)
         _3 = move _4 < move _5
@@ -1474,16 +1474,16 @@ pub fn clear<'_0>(v_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_i
         storage_dead(_4)
         storage_live(_7)
         storage_live(_8)
-        _8 = &mut (*v_1)
+        _8 = &mut (*v)
         storage_live(_9)
-        _9 = copy i_2
+        _9 = copy i
         _7 = impl_IndexMut_for_Vec::index_mut<'10, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, impl_SliceIndex_slice_for_usize<u32>[{built_in impl Sized for u32}]](move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
         (*_7) = const 0u32
         storage_dead(_7)
-        _10 = copy i_2 panic.+ const 1usize
-        i_2 = move _10
+        _10 = copy i panic.+ const 1usize
+        i = move _10
         storage_dead(_3)
         continue 0
     }
@@ -1491,7 +1491,7 @@ pub fn clear<'_0>(v_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_i
     storage_dead(_4)
     _0 = ()
     storage_dead(_3)
-    storage_dead(i_2)
+    storage_dead(i)
     return
 }
 
@@ -1505,50 +1505,50 @@ where
 }
 
 // Full name: test_crate::get_elem_mut
-pub fn get_elem_mut<'_0>(ls_1: &'_0 mut List<usize>[{built_in impl Sized for usize}], x_2: usize) -> &'_0 mut usize
+pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize}], x: usize) -> &'_0 mut usize
 {
     let _0: &'1 mut usize; // return
-    let ls_1: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
-    let x_2: usize; // arg #2
-    let y_3: &'4 mut usize; // local
-    let tl_4: &'6 mut alloc::boxed::Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
+    let ls: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
+    let x: usize; // arg #2
+    let y: &'4 mut usize; // local
+    let tl: &'6 mut alloc::boxed::Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
     let _8: &'7 mut List<usize>[{built_in impl Sized for usize}]; // anonymous local
 
     loop {
-        match (*ls_1) {
+        match (*ls) {
             List::Cons => {
-                storage_live(y_3)
-                y_3 = &mut ((*ls_1) as variant List::Cons).0
-                storage_live(tl_4)
-                tl_4 = &mut ((*ls_1) as variant List::Cons).1
+                storage_live(y)
+                y = &mut ((*ls) as variant List::Cons).0
+                storage_live(tl)
+                tl = &mut ((*ls) as variant List::Cons).1
                 storage_live(_5)
                 storage_live(_6)
-                _6 = copy (*y_3)
+                _6 = copy (*y)
                 storage_live(_7)
-                _7 = copy x_2
+                _7 = copy x
                 _5 = move _6 == move _7
                 if move _5 {
                     storage_dead(_7)
                     storage_dead(_6)
-                    _0 = &mut (*y_3)
+                    _0 = &mut (*y)
                     storage_dead(_5)
-                    storage_dead(tl_4)
-                    storage_dead(y_3)
+                    storage_dead(tl)
+                    storage_dead(y)
                     return
                 } else {
                 }
                 storage_dead(_7)
                 storage_dead(_6)
                 storage_live(_8)
-                _8 = &mut (*(*tl_4))
-                ls_1 = move _8
+                _8 = &mut (*(*tl))
+                ls = move _8
                 storage_dead(_8)
                 storage_dead(_5)
-                storage_dead(tl_4)
-                storage_dead(y_3)
+                storage_dead(tl)
+                storage_dead(y)
                 continue 0
             },
             List::Nil => {
@@ -1559,15 +1559,15 @@ pub fn get_elem_mut<'_0>(ls_1: &'_0 mut List<usize>[{built_in impl Sized for usi
 }
 
 // Full name: test_crate::list_nth_mut_loop_with_id
-pub fn list_nth_mut_loop_with_id<'_0, T>(ls_1: &'_0 mut List<T>[TraitClause0], i_2: u32) -> &'_0 mut T
+pub fn list_nth_mut_loop_with_id<'_0, T>(ls: &'_0 mut List<T>[TraitClause0], i: u32) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 mut T; // return
-    let ls_1: &'3 mut List<T>[TraitClause0]; // arg #1
-    let i_2: u32; // arg #2
-    let x_3: &'4 mut T; // local
-    let tl_4: &'6 mut alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let ls: &'3 mut List<T>[TraitClause0]; // arg #1
+    let i: u32; // arg #2
+    let x: &'4 mut T; // local
+    let tl: &'6 mut alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
     let _7: &'7 mut List<T>[TraitClause0]; // anonymous local
@@ -1575,35 +1575,35 @@ where
 
     storage_live(_8)
     loop {
-        match (*ls_1) {
+        match (*ls) {
             List::Cons => {
-                storage_live(x_3)
-                x_3 = &mut ((*ls_1) as variant List::Cons).0
-                storage_live(tl_4)
-                tl_4 = &mut ((*ls_1) as variant List::Cons).1
+                storage_live(x)
+                x = &mut ((*ls) as variant List::Cons).0
+                storage_live(tl)
+                tl = &mut ((*ls) as variant List::Cons).1
                 storage_live(_5)
                 storage_live(_6)
-                _6 = copy i_2
+                _6 = copy i
                 _5 = move _6 == const 0u32
                 if move _5 {
                     storage_dead(_6)
-                    _0 = &mut (*x_3)
+                    _0 = &mut (*x)
                     storage_dead(_5)
-                    storage_dead(tl_4)
-                    storage_dead(x_3)
+                    storage_dead(tl)
+                    storage_dead(x)
                     return
                 } else {
                 }
                 storage_dead(_6)
                 storage_live(_7)
-                _7 = &mut (*(*tl_4))
-                ls_1 = move _7
+                _7 = &mut (*(*tl))
+                ls = move _7
                 storage_dead(_7)
-                _8 = copy i_2 panic.- const 1u32
-                i_2 = move _8
+                _8 = copy i panic.- const 1u32
+                i = move _8
                 storage_dead(_5)
-                storage_dead(tl_4)
-                storage_dead(x_3)
+                storage_dead(tl)
+                storage_dead(x)
                 continue 0
             },
             _ => {
@@ -1618,29 +1618,29 @@ where
 pub fn loop_break_1()
 {
     let _0: (); // return
-    let x_1: i32; // local
+    let x: i32; // local
     let _2: bool; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 0i32
+    storage_live(x)
+    x = const 0i32
     loop {
-        x_1 = const 1i32
+        x = const 1i32
         storage_live(_2)
         _2 = const true
         if move _2 {
             break 0
         } else {
             storage_dead(_2)
-            x_1 = const 3i32
+            x = const 3i32
             continue 0
         }
     }
-    x_1 = const 2i32
+    x = const 2i32
     storage_dead(_2)
-    x_1 = const 4i32
+    x = const 4i32
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -1648,29 +1648,29 @@ pub fn loop_break_1()
 pub fn loop_break_2()
 {
     let _0: (); // return
-    let x_1: i32; // local
+    let x: i32; // local
     let _2: bool; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 0i32
+    storage_live(x)
+    x = const 0i32
     loop {
-        x_1 = const 1i32
+        x = const 1i32
         storage_live(_2)
         _2 = const true
         if move _2 {
             break 0
         } else {
             storage_dead(_2)
-            x_1 = const 3i32
+            x = const 3i32
             continue 0
         }
     }
     storage_dead(_2)
-    x_1 = const 2i32
-    x_1 = const 4i32
+    x = const 2i32
+    x = const 4i32
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -1678,44 +1678,44 @@ pub fn loop_break_2()
 pub fn interleaved_loops()
 {
     let _0: (); // return
-    let x_1: i32; // local
+    let x: i32; // local
     let _2: bool; // anonymous local
     let _3: bool; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 0i32
+    storage_live(x)
+    x = const 0i32
     loop {
-        x_1 = const 1i32
+        x = const 1i32
         loop {
-            x_1 = const 2i32
+            x = const 2i32
             storage_live(_2)
             _2 = const true
             if move _2 {
                 break 0
             } else {
                 storage_dead(_2)
-                x_1 = const 4i32
+                x = const 4i32
                 storage_live(_3)
                 _3 = const true
                 if move _3 {
                 } else {
                     break 1
                 }
-                x_1 = const 5i32
+                x = const 5i32
                 storage_dead(_3)
                 continue 0
             }
         }
-        x_1 = const 3i32
+        x = const 3i32
         storage_dead(_2)
         continue 0
     }
     storage_dead(_3)
-    x_1 = const 6i32
-    x_1 = const 8i32
+    x = const 6i32
+    x = const 8i32
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -1723,17 +1723,17 @@ pub fn interleaved_loops()
 pub fn interleaved_loops2()
 {
     let _0: (); // return
-    let x_1: i32; // local
+    let x: i32; // local
     let _2: bool; // anonymous local
     let _3: bool; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 0i32
+    storage_live(x)
+    x = const 0i32
     loop {
-        x_1 = const 1i32
+        x = const 1i32
         loop {
-            x_1 = const 2i32
+            x = const 2i32
             storage_live(_2)
             _2 = const true
             if move _2 {
@@ -1742,7 +1742,7 @@ pub fn interleaved_loops2()
                 // This node is interesting: it can reach a backward edge to 'b in the forward
                 // graph, but not one to 'a. If we're not careful, we could think it's an exit node
                 // for 'a.
-                x_1 = const 4i32
+                x = const 4i32
                 storage_live(_3)
                 _3 = const true
                 if move _3 {
@@ -1751,19 +1751,19 @@ pub fn interleaved_loops2()
                 }
                 storage_dead(_3)
                 storage_dead(_2)
-                x_1 = const 5i32
+                x = const 5i32
                 continue 0
             }
         }
-        x_1 = const 3i32
+        x = const 3i32
         storage_dead(_2)
         continue 0
     }
     storage_dead(_3)
     storage_dead(_2)
-    x_1 = const 7i32
+    x = const 7i32
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -1771,23 +1771,23 @@ pub fn interleaved_loops2()
 pub fn loop_after_loop()
 {
     let _0: (); // return
-    let x_1: i32; // local
+    let x: i32; // local
     let _2: bool; // anonymous local
     let _3: i32; // anonymous local
     let _4: bool; // anonymous local
     let _5: i32; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 0i32
+    storage_live(x)
+    x = const 0i32
     loop {
         storage_live(_2)
         storage_live(_3)
-        _3 = copy x_1
+        _3 = copy x
         _2 = move _3 > const 13i32
         if move _2 {
             storage_dead(_3)
-            x_1 = const 1i32
+            x = const 1i32
             storage_dead(_2)
             continue 0
         } else {
@@ -1796,15 +1796,15 @@ pub fn loop_after_loop()
     }
     storage_dead(_3)
     storage_dead(_2)
-    x_1 = const 2i32
+    x = const 2i32
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy x_1
+        _5 = copy x
         _4 = move _5 > const 13i32
         if move _4 {
             storage_dead(_5)
-            x_1 = const 3i32
+            x = const 3i32
             storage_dead(_4)
             continue 0
         } else {
@@ -1813,9 +1813,9 @@ pub fn loop_after_loop()
     }
     storage_dead(_5)
     storage_dead(_4)
-    x_1 = const 4i32
+    x = const 4i32
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -1823,59 +1823,59 @@ pub fn loop_after_loop()
 pub fn trick_exit_computation()
 {
     let _0: (); // return
-    let x_1: i32; // local
+    let x: i32; // local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 0i32
+    storage_live(x)
+    x = const 0i32
     loop {
-        x_1 = const 1i32
+        x = const 1i32
         loop {
-            x_1 = const 2i32
-            switch copy x_1 {
+            x = const 2i32
+            switch copy x {
                 0i32 => {
                     // This makes the algorithm pick the outer break as loop exit, making the reconstructed
                     // cfg much worse than with fewer branches.
-                    x_1 = const 3i32
+                    x = const 3i32
                     break 0
                 },
                 1i32 => {
-                    x_1 = const 4i32
+                    x = const 4i32
                     break 0
                 },
                 2i32 => {
-                    x_1 = const 5i32
+                    x = const 5i32
                     break 0
                 },
                 3i32 => {
-                    x_1 = const 6i32
+                    x = const 6i32
                     break 0
                 },
                 4i32 => {
-                    x_1 = const 7i32
+                    x = const 7i32
                     break 0
                 },
                 5i32 => {
-                    x_1 = const 8i32
-                    x_1 = const 11i32
+                    x = const 8i32
+                    x = const 11i32
                     continue 1
                 },
                 6i32 => {
-                    x_1 = const 9i32
-                    x_1 = const 11i32
+                    x = const 9i32
+                    x = const 11i32
                     continue 1
                 },
                 _ => {
-                    x_1 = const 10i32
+                    x = const 10i32
                     continue 0
                 },
             }
         }
         break 0
     }
-    x_1 = const 12i32
+    x = const 12i32
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 

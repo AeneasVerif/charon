@@ -43,12 +43,12 @@ pub trait Copy<Self>
 struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
-pub fn clone<'_0>(self_1: &'_0 Foo) -> Foo
+pub fn clone<'_0>(self: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return
-    let self_1: &'1 Foo; // arg #1
+    let self: &'1 Foo; // arg #1
 
-    _0 = copy (*self_1)
+    _0 = copy (*self)
     return
 }
 
@@ -74,43 +74,43 @@ impl "impl_Copy_for_Foo" Copy for Foo {
 }
 
 // Full name: test_crate::copy_foo
-fn copy_foo(x_1: Foo)
+fn copy_foo(x: Foo)
 {
     let _0: (); // return
-    let x_1: Foo; // arg #1
-    let y_2: Foo; // local
-    let z_3: Foo; // local
+    let x: Foo; // arg #1
+    let y: Foo; // local
+    let z: Foo; // local
 
     _0 = ()
-    storage_live(y_2)
-    y_2 = copy x_1
-    storage_live(z_3)
-    z_3 = copy x_1
+    storage_live(y)
+    y = copy x
+    storage_live(z)
+    z = copy x
     _0 = ()
-    storage_dead(z_3)
-    storage_dead(y_2)
+    storage_dead(z)
+    storage_dead(y)
     return
 }
 
 // Full name: test_crate::copy_generic
-fn copy_generic<T>(x_1: T)
+fn copy_generic<T>(x: T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
 {
     let _0: (); // return
-    let x_1: T; // arg #1
-    let y_2: T; // local
-    let z_3: T; // local
+    let x: T; // arg #1
+    let y: T; // local
+    let z: T; // local
 
     _0 = ()
-    storage_live(y_2)
-    y_2 = copy x_1
-    storage_live(z_3)
-    z_3 = copy x_1
+    storage_live(y)
+    y = copy x
+    storage_live(z)
+    z = copy x
     _0 = ()
-    storage_dead(z_3)
-    storage_dead(y_2)
+    storage_dead(z)
+    storage_dead(y)
     return
 }
 
@@ -125,24 +125,24 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::copy_assoc_ty
-fn copy_assoc_ty<T>(x_1: TraitClause1::Ty)
+fn copy_assoc_ty<T>(x: TraitClause1::Ty)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
 {
     let _0: (); // return
-    let x_1: TraitClause1::Ty; // arg #1
-    let y_2: TraitClause1::Ty; // local
-    let z_3: TraitClause1::Ty; // local
+    let x: TraitClause1::Ty; // arg #1
+    let y: TraitClause1::Ty; // local
+    let z: TraitClause1::Ty; // local
 
     _0 = ()
-    storage_live(y_2)
-    y_2 = copy x_1
-    storage_live(z_3)
-    z_3 = copy x_1
+    storage_live(y)
+    y = copy x
+    storage_live(z)
+    z = copy x
     _0 = ()
-    storage_dead(z_3)
-    storage_dead(y_2)
+    storage_dead(z)
+    storage_dead(y)
     return
 }
 

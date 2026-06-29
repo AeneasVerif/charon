@@ -23,15 +23,15 @@ where
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::is_some
-pub fn is_some<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
+pub fn is_some<'_0, T>(self: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
 {
     let _0: bool; // return
-    let self_1: &'1 Option<T>[TraitClause0]; // arg #1
+    let self: &'1 Option<T>[TraitClause0]; // arg #1
 
-    _ = (*self_1)
-    match (*self_1) {
+    _ = (*self)
+    match (*self) {
         Option::Some => {
         },
         _ => {

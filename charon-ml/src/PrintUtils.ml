@@ -19,7 +19,8 @@ type fmt_env = {
       (** We have a stack of generic parameters, because we can dive into
           binders (for instance because of the arrow type). *)
   locals : (local_id * string option) list;
-      (** The local variables don't need to be ordered (same as the generics) *)
+      (** The local variable display names don't need to be ordered (same as the
+          generics). *)
 }
 
 let of_crate (crate : crate) : fmt_env = { crate; generics = []; locals = [] }

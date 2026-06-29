@@ -23,18 +23,18 @@ pub trait From<Self, T>
 }
 
 // Full name: core::convert::{impl Into<U> for T}::into
-pub fn into<T, U>(self_1: T) -> U
+pub fn into<T, U>(self: T) -> U
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
     TraitClause2: (U: From<T>),
 {
     let _0: U; // return
-    let self_1: T; // arg #1
+    let self: T; // arg #1
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move self_1
+    _2 = move self
     _0 = TraitClause2::from(move _2)
     storage_dead(_2)
     return
@@ -61,10 +61,10 @@ pub fn core::num::{u64}::MIN() -> u64
 pub const core::num::{u64}::MIN: u64 = core::num::{u64}::MIN()
 
 // Full name: core::convert::num::{impl From<u32> for u64}::from
-pub fn from(small_1: u32) -> u64
+pub fn from(small: u32) -> u64
 {
     let _0: u64; // return
-    let small_1: u32; // arg #1
+    let small: u32; // arg #1
     let _2: bool; // anonymous local
     let _3: bool; // anonymous local
     let _4: i128; // anonymous local
@@ -118,7 +118,7 @@ pub fn from(small_1: u32) -> u64
     }
     storage_dead(_6)
     storage_live(_10)
-    _10 = copy small_1
+    _10 = copy small
     _0 = cast<u32, u64>(move _10)
     storage_dead(_10)
     return
@@ -143,15 +143,15 @@ where
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::is_some
-pub fn is_some<'_0, T>(self_1: &'_0 Option<T>[TraitClause0]) -> bool
+pub fn is_some<'_0, T>(self: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
 {
     let _0: bool; // return
-    let self_1: &'1 Option<T>[TraitClause0]; // arg #1
+    let self: &'1 Option<T>[TraitClause0]; // arg #1
 
-    _ = (*self_1)
-    match (*self_1) {
+    _ = (*self)
+    match (*self) {
         Option::Some => {
         },
         _ => {

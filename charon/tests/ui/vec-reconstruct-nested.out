@@ -41,7 +41,7 @@ where
 fn nested_vecs()
 {
     let _0: (); // return
-    let _nested_1: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
+    let _nested: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
     let _2: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
     let _3: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
     let ret_4: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
@@ -61,7 +61,7 @@ fn nested_vecs()
     let _18: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     _0 = ()
-    storage_live(_nested_1)
+    storage_live(_nested)
     storage_live(_2)
     storage_live(_15)
     _15 = [const 1u8]
@@ -106,10 +106,10 @@ fn nested_vecs()
     storage_dead(_14)
     y_12 = unsize_cast<alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 2usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]}, {built_in impl Sized for Global}], 2usize>(move x_11)
     ret_10 = into_vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}](move y_12)
-    _nested_1 = move ret_10
+    _nested = move ret_10
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<'10, Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]] _nested_1
-    storage_dead(_nested_1)
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'10, Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]] _nested
+    storage_dead(_nested)
     return
 }
 
@@ -117,7 +117,7 @@ fn nested_vecs()
 fn nested_single()
 {
     let _0: (); // return
-    let _nested_1: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
+    let _nested: Vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]; // local
     let _2: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
     let ret_3: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
     let x_4: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // local
@@ -131,7 +131,7 @@ fn nested_single()
     let _12: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
     _0 = ()
-    storage_live(_nested_1)
+    storage_live(_nested)
     storage_live(_2)
     storage_live(_11)
     _11 = [const 1u8]
@@ -160,10 +160,10 @@ fn nested_single()
     storage_dead(_10)
     y_8 = unsize_cast<alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]>[{built_in impl MetaSized for [Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]]}, {built_in impl Sized for Global}], 1usize>(move x_7)
     ret_6 = into_vec<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}](move y_8)
-    _nested_1 = move ret_6
+    _nested = move ret_6
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<'6, Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]] _nested_1
-    storage_dead(_nested_1)
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'6, Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]] _nested
+    storage_dead(_nested)
     return
 }
 

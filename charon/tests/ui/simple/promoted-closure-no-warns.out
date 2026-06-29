@@ -108,30 +108,30 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
 }
 
 // Full name: test_crate::foo::{impl Fn<(u32,)> for closure}::call
-fn call<'_0>(_1: &'_0 closure, tupled_args_2: (u32,)) -> u32
+fn call<'_0>(_1: &'_0 closure, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 closure; // arg #1
-    let tupled_args_2: (u32,); // arg #2
-    let x_3: u32; // local
+    let tupled_args: (u32,); // arg #2
+    let x: u32; // local
 
-    storage_live(x_3)
-    x_3 = move tupled_args_2.0
-    _0 = copy x_3
+    storage_live(x)
+    x = move tupled_args.0
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::foo::{impl FnMut<(u32,)> for closure}::call_mut
-fn call_mut<'_0>(state_1: &'_0 mut closure, args_2: (u32,)) -> u32
+fn call_mut<'_0>(state: &'_0 mut closure, args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_0 mut closure; // arg #1
-    let args_2: (u32,); // arg #2
+    let state: &'_0 mut closure; // arg #1
+    let args: (u32,); // arg #2
     let _3: &'0 closure; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = call<'2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = call<'2>(move _3, move args)
     return
 }
 

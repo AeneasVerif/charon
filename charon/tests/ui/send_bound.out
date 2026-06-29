@@ -25,17 +25,17 @@ pub trait Destruct<Self>
 }
 
 // Full name: test_crate::foo
-fn foo<M>(_msg_1: M)
+fn foo<M>(_msg: M)
 where
     TraitClause0: (M: Sized),
     TraitClause1: (M: Send),
 {
     let _0: (); // return
-    let _msg_1: M; // arg #1
+    let _msg: M; // arg #1
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for M}::drop_glue<'0>] _msg_1
+    conditional_drop[{built_in impl Destruct for M}::drop_glue<'0>] _msg
     return
 }
 

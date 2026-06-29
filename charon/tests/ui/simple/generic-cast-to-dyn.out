@@ -30,13 +30,13 @@ pub trait Sized<Self>
 }
 
 // Full name: test_crate::foo
-fn foo<'_0, T>(x_1: &'_0 T) -> &'_0 (dyn Any + 'static)
+fn foo<'_0, T>(x: &'_0 T) -> &'_0 (dyn Any + 'static)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Any),
 {
     let _0: &'3 (dyn Any + '4); // return
-    let x_1: &'6 T; // arg #1
+    let x: &'6 T; // arg #1
     let _2: &'7 (dyn Any + '8); // anonymous local
     let _3: &'9 (dyn Any + '10); // anonymous local
     let _4: &'11 T; // anonymous local
@@ -44,7 +44,7 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*x_1)
+    _4 = &(*x)
     _3 = unsize_cast<&'11 T, &'12 (dyn Any + '13), &vtable_of(TraitClause1)>(move _4)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)

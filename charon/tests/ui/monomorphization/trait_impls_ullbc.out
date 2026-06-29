@@ -5,11 +5,11 @@ pub fn eq<'_0, '_1>(_1: &'_0 bool, _2: &'_1 bool) -> bool
 = <opaque>
 
 // Full name: test_crate::do_test::<bool>
-fn do_test::<bool>(init_1: bool, expected_2: bool)
+fn do_test::<bool>(init: bool, expected: bool)
 {
     let _0: (); // return
-    let init_1: bool; // arg #1
-    let expected_2: bool; // arg #2
+    let init: bool; // arg #1
+    let expected: bool; // arg #2
     let _3: bool; // anonymous local
     let _4: &'1 bool; // anonymous local
     let _5: &'2 bool; // anonymous local
@@ -18,9 +18,9 @@ fn do_test::<bool>(init_1: bool, expected_2: bool)
         _0 = ();
         storage_live(_3);
         storage_live(_4);
-        _4 = &expected_2;
+        _4 = &expected;
         storage_live(_5);
-        _5 = &init_1;
+        _5 = &init;
         _3 = eq<'5, '6>(move _4, move _5) -> bb2 (unwind: bb1);
     }
 

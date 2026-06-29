@@ -21,11 +21,11 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::{impl Trait for ()}::method
-fn method(self_1: (), _other_2: &'static u32)
+fn method(self: (), _other: &'static u32)
 {
     let _0: (); // return
-    let self_1: (); // arg #1
-    let _other_2: &'1 u32; // arg #2
+    let self: (); // arg #1
+    let _other: &'1 u32; // arg #2
 
     _0 = ()
     _0 = ()

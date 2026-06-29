@@ -130,16 +130,16 @@ impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
 }
 
 // Full name: test_crate::incr_u32
-pub fn incr_u32(x_1: u32) -> u32
+pub fn incr_u32(x: u32) -> u32
 {
     let _0: u32; // return
-    let x_1: u32; // arg #1
+    let x: u32; // arg #1
     let _2: u32; // anonymous local
     let _3: u32; // anonymous local
 
     storage_live(_3)
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _3 = copy _2 panic.+ const 1u32
     _0 = move _3
     storage_dead(_2)
@@ -147,7 +147,7 @@ pub fn incr_u32(x_1: u32) -> u32
 }
 
 // Full name: test_crate::map_option
-pub fn map_option<T, F>(x_1: Option<T>[TraitClause0], f_2: F) -> Option<T>[TraitClause0]
+pub fn map_option<T, F>(x_1: Option<T>[TraitClause0], f: F) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
@@ -155,7 +155,7 @@ where
 {
     let _0: Option<T>[TraitClause0]; // return
     let x_1: Option<T>[TraitClause0]; // arg #1
-    let f_2: F; // arg #2
+    let f: F; // arg #2
     let x_3: T; // local
     let _4: T; // anonymous local
     let _5: &'1 F; // anonymous local
@@ -171,7 +171,7 @@ where
             x_3 = move (x_1 as variant Option::Some).0
             storage_live(_4)
             storage_live(_5)
-            _5 = &f_2
+            _5 = &f
             storage_live(_6)
             storage_live(_7)
             _7 = move x_3
@@ -188,20 +188,20 @@ where
             storage_dead(x_3)
         },
     }
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'5>] f_2
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'5>] f
     conditional_drop[impl_Destruct_for_Option::drop_glue<'9, T>[TraitClause0]] x_1
     return
 }
 
 // Full name: test_crate::map_option_pointer_ref
-pub fn map_option_pointer_ref<'a, T, F>(x_1: &'a Option<T>[TraitClause0], f_2: fn<'_0_1>(&'_0_1 T) -> T) -> Option<T>[TraitClause0]
+pub fn map_option_pointer_ref<'a, T, F>(x_1: &'a Option<T>[TraitClause0], f: fn<'_0_1>(&'_0_1 T) -> T) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
 {
     let _0: Option<T>[TraitClause0]; // return
     let x_1: &'1 Option<T>[TraitClause0]; // arg #1
-    let f_2: fn<'_0_1>(&'_0_1 T) -> T; // arg #2
+    let f: fn<'_0_1>(&'_0_1 T) -> T; // arg #2
     let x_3: &'3 T; // local
     let _4: T; // anonymous local
     let _5: fn<'_0_1>(&'_0_1 T) -> T; // anonymous local
@@ -215,7 +215,7 @@ where
             x_3 = &((*x_1) as variant Option::Some).0
             storage_live(_4)
             storage_live(_5)
-            _5 = copy f_2
+            _5 = copy f
             storage_live(_6)
             _6 = &(*x_3)
             _4 = (move _5)(move _6)
@@ -233,14 +233,14 @@ where
 }
 
 // Full name: test_crate::test_map_option1
-pub fn test_map_option1(x_1: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
+pub fn test_map_option1(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
 {
     let _0: Option<u32>[{built_in impl Sized for u32}]; // return
-    let x_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1
+    let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
     let _2: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _0 = map_option<u32, incr_u32>[{built_in impl Sized for u32}, {built_in impl Sized for incr_u32}, {built_in impl Fn<(u32,), u32> for incr_u32}](move _2, const incr_u32)
     storage_dead(_2)
     return
@@ -259,30 +259,30 @@ unsafe fn {impl Destruct for test_crate::test_closure_u32::closure}::drop_glue<'
 }
 
 // Full name: test_crate::test_closure_u32::{impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}::call
-fn {impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}::call<'_0>(_1: &'_0 test_crate::test_closure_u32::closure, tupled_args_2: (u32,)) -> u32
+fn {impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}::call<'_0>(_1: &'_0 test_crate::test_closure_u32::closure, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_closure_u32::closure; // arg #1
-    let tupled_args_2: (u32,); // arg #2
-    let x_3: u32; // local
+    let tupled_args: (u32,); // arg #2
+    let x: u32; // local
 
-    storage_live(x_3)
-    x_3 = move tupled_args_2.0
-    _0 = copy x_3
+    storage_live(x)
+    x = move tupled_args.0
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::test_closure_u32::{impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}::call_mut
-fn {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}::call_mut<'_0>(state_1: &'_0 mut test_crate::test_closure_u32::closure, args_2: (u32,)) -> u32
+fn {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}::call_mut<'_0>(state: &'_0 mut test_crate::test_closure_u32::closure, args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_0 mut test_crate::test_closure_u32::closure; // arg #1
-    let args_2: (u32,); // arg #2
+    let state: &'_0 mut test_crate::test_closure_u32::closure; // arg #1
+    let args: (u32,); // arg #2
     let _3: &'0 test_crate::test_closure_u32::closure; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}::call<'2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}::call<'2>(move _3, move args)
     return
 }
 
@@ -301,44 +301,44 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::closure}::call_on
     return
 }
 
-fn test_crate::test_closure_u32::closure::as_fn(arg1_1: u32) -> u32
+fn test_crate::test_closure_u32::closure::as_fn(arg1: u32) -> u32
 {
     let _0: u32; // return
-    let arg1_1: u32; // arg #1
-    let args_2: (u32,); // local
-    let state_3: test_crate::test_closure_u32::closure; // local
+    let arg1: u32; // arg #1
+    let args: (u32,); // local
+    let state: test_crate::test_closure_u32::closure; // local
 
-    storage_live(args_2)
-    storage_live(state_3)
-    args_2 = (move arg1_1,)
-    state_3 = test_crate::test_closure_u32::closure {  }
-    _0 = {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::closure}::call_once(move state_3, move args_2)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1,)
+    state = test_crate::test_closure_u32::closure {  }
+    _0 = {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::closure}::call_once(move state, move args)
     return
 }
 
 // Full name: test_crate::test_closure_u32
-pub fn test_closure_u32(x_1: u32) -> u32
+pub fn test_closure_u32(x: u32) -> u32
 {
     let _0: u32; // return
-    let x_1: u32; // arg #1
-    let f_2: fn(u32) -> u32; // local
+    let x: u32; // arg #1
+    let f: fn(u32) -> u32; // local
     let _3: test_crate::test_closure_u32::closure; // anonymous local
     let _4: fn(u32) -> u32; // anonymous local
     let _5: u32; // anonymous local
 
-    storage_live(f_2)
+    storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_closure_u32::closure {  }
-    f_2 = cast<test_crate::test_closure_u32::closure::as_fn, fn(u32) -> u32>(const test_crate::test_closure_u32::closure::as_fn)
+    f = cast<test_crate::test_closure_u32::closure::as_fn, fn(u32) -> u32>(const test_crate::test_closure_u32::closure::as_fn)
     storage_dead(_3)
     storage_live(_4)
-    _4 = copy f_2
+    _4 = copy f
     storage_live(_5)
-    _5 = copy x_1
+    _5 = copy x
     _0 = (move _4)(move _5)
     storage_dead(_5)
     storage_dead(_4)
-    storage_dead(f_2)
+    storage_dead(f)
     return
 }
 
@@ -391,26 +391,26 @@ unsafe fn {impl Destruct for test_crate::test_closure_u32s::closure}::drop_glue<
 }
 
 // Full name: test_crate::test_closure_u32s::{impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call
-fn {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call<'_0>(_1: &'_0 test_crate::test_closure_u32s::closure, tupled_args_2: (u32, u32)) -> u32
+fn {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call<'_0>(_1: &'_0 test_crate::test_closure_u32s::closure, tupled_args: (u32, u32)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_closure_u32s::closure; // arg #1
-    let tupled_args_2: (u32, u32); // arg #2
-    let x_3: u32; // local
-    let y_4: u32; // local
+    let tupled_args: (u32, u32); // arg #2
+    let x: u32; // local
+    let y: u32; // local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
 
-    storage_live(x_3)
-    storage_live(y_4)
+    storage_live(x)
+    storage_live(y)
     storage_live(_7)
-    x_3 = move tupled_args_2.0
-    y_4 = move tupled_args_2.1
+    x = move tupled_args.0
+    y = move tupled_args.1
     storage_live(_5)
-    _5 = copy x_3
+    _5 = copy x
     storage_live(_6)
-    _6 = copy y_4
+    _6 = copy y
     _7 = copy _5 panic.+ copy _6
     _0 = move _7
     storage_dead(_6)
@@ -419,16 +419,16 @@ fn {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call<'
 }
 
 // Full name: test_crate::test_closure_u32s::{impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut
-fn {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut<'_0>(state_1: &'_0 mut test_crate::test_closure_u32s::closure, args_2: (u32, u32)) -> u32
+fn {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut<'_0>(state: &'_0 mut test_crate::test_closure_u32s::closure, args: (u32, u32)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_0 mut test_crate::test_closure_u32s::closure; // arg #1
-    let args_2: (u32, u32); // arg #2
+    let state: &'_0 mut test_crate::test_closure_u32s::closure; // arg #1
+    let args: (u32, u32); // arg #2
     let _3: &'0 test_crate::test_closure_u32s::closure; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call<'2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call<'2>(move _3, move args)
     return
 }
 
@@ -447,49 +447,49 @@ fn {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::ca
     return
 }
 
-fn test_crate::test_closure_u32s::closure::as_fn(arg1_1: u32, arg2_2: u32) -> u32
+fn test_crate::test_closure_u32s::closure::as_fn(arg1: u32, arg2: u32) -> u32
 {
     let _0: u32; // return
-    let arg1_1: u32; // arg #1
-    let arg2_2: u32; // arg #2
-    let args_3: (u32, u32); // local
-    let state_4: test_crate::test_closure_u32s::closure; // local
+    let arg1: u32; // arg #1
+    let arg2: u32; // arg #2
+    let args: (u32, u32); // local
+    let state: test_crate::test_closure_u32s::closure; // local
 
-    storage_live(args_3)
-    storage_live(state_4)
-    args_3 = (move arg1_1, move arg2_2)
-    state_4 = test_crate::test_closure_u32s::closure {  }
-    _0 = {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_once(move state_4, move args_3)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1, move arg2)
+    state = test_crate::test_closure_u32s::closure {  }
+    _0 = {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_once(move state, move args)
     return
 }
 
 // Full name: test_crate::test_closure_u32s
-pub fn test_closure_u32s(x_1: u32) -> u32
+pub fn test_closure_u32s(x: u32) -> u32
 {
     let _0: u32; // return
-    let x_1: u32; // arg #1
-    let f_2: fn(u32, u32) -> u32; // local
+    let x: u32; // arg #1
+    let f: fn(u32, u32) -> u32; // local
     let _3: test_crate::test_closure_u32s::closure; // anonymous local
     let _4: fn(u32, u32) -> u32; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
 
-    storage_live(f_2)
+    storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_closure_u32s::closure {  }
-    f_2 = cast<test_crate::test_closure_u32s::closure::as_fn, fn(u32, u32) -> u32>(const test_crate::test_closure_u32s::closure::as_fn)
+    f = cast<test_crate::test_closure_u32s::closure::as_fn, fn(u32, u32) -> u32>(const test_crate::test_closure_u32s::closure::as_fn)
     storage_dead(_3)
     storage_live(_4)
-    _4 = copy f_2
+    _4 = copy f
     storage_live(_5)
-    _5 = copy x_1
+    _5 = copy x
     storage_live(_6)
-    _6 = copy x_1
+    _6 = copy x
     _0 = (move _4)(move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
-    storage_dead(f_2)
+    storage_dead(f)
     return
 }
 
@@ -542,30 +542,30 @@ unsafe fn {impl Destruct for test_crate::test_closure_ref_u32::closure}::drop_gl
 }
 
 // Full name: test_crate::test_closure_ref_u32::{impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call
-fn {impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call<'_0, '_1>(_1: &'_1 test_crate::test_closure_ref_u32::closure, tupled_args_2: (&'_0 u32,)) -> &'_0 u32
+fn {impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call<'_0, '_1>(_1: &'_1 test_crate::test_closure_ref_u32::closure, tupled_args: (&'_0 u32,)) -> &'_0 u32
 {
     let _0: &'0 u32; // return
     let _1: &'2 test_crate::test_closure_ref_u32::closure; // arg #1
-    let tupled_args_2: (&'_0 u32,); // arg #2
-    let y_3: &'3 u32; // local
+    let tupled_args: (&'_0 u32,); // arg #2
+    let y: &'3 u32; // local
 
-    storage_live(y_3)
-    y_3 = move tupled_args_2.0
-    _0 = copy y_3
+    storage_live(y)
+    y = move tupled_args.0
+    _0 = copy y
     return
 }
 
 // Full name: test_crate::test_closure_ref_u32::{impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_mut
-fn {impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_mut<'_0, '_1>(state_1: &'_1 mut test_crate::test_closure_ref_u32::closure, args_2: (&'_0 u32,)) -> &'_0 u32
+fn {impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::test_closure_ref_u32::closure, args: (&'_0 u32,)) -> &'_0 u32
 {
     let _0: &'_0 u32; // return
-    let state_1: &'_1 mut test_crate::test_closure_ref_u32::closure; // arg #1
-    let args_2: (&'_0 u32,); // arg #2
+    let state: &'_1 mut test_crate::test_closure_ref_u32::closure; // arg #1
+    let args: (&'_0 u32,); // arg #2
     let _3: &'0 test_crate::test_closure_ref_u32::closure; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call<'_0, '2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call<'_0, '2>(move _3, move args)
     return
 }
 
@@ -584,47 +584,47 @@ fn {impl FnOnce<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closu
     return
 }
 
-fn test_crate::test_closure_ref_u32::closure::as_fn<'_0>(arg1_1: &'_0 u32) -> &'_0 u32
+fn test_crate::test_closure_ref_u32::closure::as_fn<'_0>(arg1: &'_0 u32) -> &'_0 u32
 {
     let _0: &'_0 u32; // return
-    let arg1_1: &'_0 u32; // arg #1
-    let args_2: (&'_0 u32,); // local
-    let state_3: test_crate::test_closure_ref_u32::closure; // local
+    let arg1: &'_0 u32; // arg #1
+    let args: (&'_0 u32,); // local
+    let state: test_crate::test_closure_ref_u32::closure; // local
 
-    storage_live(args_2)
-    storage_live(state_3)
-    args_2 = (move arg1_1,)
-    state_3 = test_crate::test_closure_ref_u32::closure {  }
-    _0 = {impl FnOnce<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_once<'_0>(move state_3, move args_2)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1,)
+    state = test_crate::test_closure_ref_u32::closure {  }
+    _0 = {impl FnOnce<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_once<'_0>(move state, move args)
     return
 }
 
 // Full name: test_crate::test_closure_ref_u32
-pub fn test_closure_ref_u32<'a>(x_1: &'a u32) -> &'a u32
+pub fn test_closure_ref_u32<'a>(x: &'a u32) -> &'a u32
 {
     let _0: &'1 u32; // return
-    let x_1: &'2 u32; // arg #1
-    let f_2: fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32; // local
+    let x: &'2 u32; // arg #1
+    let f: fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32; // local
     let _3: test_crate::test_closure_ref_u32::closure; // anonymous local
     let _4: &'3 u32; // anonymous local
     let _5: fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32; // anonymous local
     let _6: &'4 u32; // anonymous local
 
-    storage_live(f_2)
+    storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_closure_ref_u32::closure {  }
-    f_2 = cast<for<'_0_1> test_crate::test_closure_ref_u32::closure::as_fn<'_0_1>, fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32>(const test_crate::test_closure_ref_u32::closure::as_fn<'6>)
+    f = cast<for<'_0_1> test_crate::test_closure_ref_u32::closure::as_fn<'_0_1>, fn<'_0_1>(&'_0_1 u32) -> &'_0_1 u32>(const test_crate::test_closure_ref_u32::closure::as_fn<'6>)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy f_2
+    _5 = copy f
     storage_live(_6)
-    _6 = &(*x_1)
+    _6 = &(*x)
     _4 = (move _5)(move _6)
     _0 = &(*_4)
     storage_dead(_6)
     storage_dead(_5)
-    storage_dead(f_2)
+    storage_dead(f)
     storage_dead(_4)
     return
 }
@@ -683,34 +683,34 @@ where
 }
 
 // Full name: test_crate::test_closure_ref_param::{impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call
-fn {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call<'_0, '_1, T>(_1: &'_1 test_crate::test_closure_ref_param::closure<T>[TraitClause0], tupled_args_2: (&'_0 T,)) -> &'_0 T
+fn {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call<'_0, '_1, T>(_1: &'_1 test_crate::test_closure_ref_param::closure<T>[TraitClause0], tupled_args: (&'_0 T,)) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'0 T; // return
     let _1: &'2 test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // arg #1
-    let tupled_args_2: (&'_0 T,); // arg #2
-    let x_3: &'3 T; // local
+    let tupled_args: (&'_0 T,); // arg #2
+    let x: &'3 T; // local
 
-    storage_live(x_3)
-    x_3 = move tupled_args_2.0
-    _0 = copy x_3
+    storage_live(x)
+    x = move tupled_args.0
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::test_closure_ref_param::{impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_mut
-fn {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_mut<'_0, '_1, T>(state_1: &'_1 mut test_crate::test_closure_ref_param::closure<T>[TraitClause0], args_2: (&'_0 T,)) -> &'_0 T
+fn {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_mut<'_0, '_1, T>(state: &'_1 mut test_crate::test_closure_ref_param::closure<T>[TraitClause0], args: (&'_0 T,)) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'_0 T; // return
-    let state_1: &'_1 mut test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // arg #1
-    let args_2: (&'_0 T,); // arg #2
+    let state: &'_1 mut test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // arg #1
+    let args: (&'_0 T,); // arg #2
     let _3: &'0 test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call<'_0, '2, T>[TraitClause0](move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call<'_0, '2, T>[TraitClause0](move _3, move args)
     return
 }
 
@@ -731,51 +731,51 @@ where
     return
 }
 
-fn test_crate::test_closure_ref_param::closure::as_fn<'_0, T>(arg1_1: &'_0 T) -> &'_0 T
+fn test_crate::test_closure_ref_param::closure::as_fn<'_0, T>(arg1: &'_0 T) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'_0 T; // return
-    let arg1_1: &'_0 T; // arg #1
-    let args_2: (&'_0 T,); // local
-    let state_3: test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // local
+    let arg1: &'_0 T; // arg #1
+    let args: (&'_0 T,); // local
+    let state: test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // local
 
-    storage_live(args_2)
-    storage_live(state_3)
-    args_2 = (move arg1_1,)
-    state_3 = test_crate::test_closure_ref_param::closure {  }
-    _0 = {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_once<'_0, T>[TraitClause0](move state_3, move args_2)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1,)
+    state = test_crate::test_closure_ref_param::closure {  }
+    _0 = {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_once<'_0, T>[TraitClause0](move state, move args)
     return
 }
 
 // Full name: test_crate::test_closure_ref_param
-pub fn test_closure_ref_param<'_0, T>(x_1: &'_0 T) -> &'_0 T
+pub fn test_closure_ref_param<'_0, T>(x: &'_0 T) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 T; // return
-    let x_1: &'2 T; // arg #1
-    let f_2: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // local
+    let x: &'2 T; // arg #1
+    let f: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // local
     let _3: test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // anonymous local
     let _4: &'3 T; // anonymous local
     let _5: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // anonymous local
     let _6: &'4 T; // anonymous local
 
-    storage_live(f_2)
+    storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_closure_ref_param::closure {  }
-    f_2 = cast<for<'_0_1> test_crate::test_closure_ref_param::closure::as_fn<'_0_1, T>[TraitClause0], fn<'_0_1>(&'_0_1 T) -> &'_0_1 T>(const test_crate::test_closure_ref_param::closure::as_fn<'6, T>[TraitClause0])
+    f = cast<for<'_0_1> test_crate::test_closure_ref_param::closure::as_fn<'_0_1, T>[TraitClause0], fn<'_0_1>(&'_0_1 T) -> &'_0_1 T>(const test_crate::test_closure_ref_param::closure::as_fn<'6, T>[TraitClause0])
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy f_2
+    _5 = copy f
     storage_live(_6)
-    _6 = &(*x_1)
+    _6 = &(*x)
     _4 = (move _5)(move _6)
     _0 = &(*_4)
     storage_dead(_6)
     storage_dead(_5)
-    storage_dead(f_2)
+    storage_dead(f)
     storage_dead(_4)
     return
 }
@@ -855,36 +855,36 @@ where
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call
-fn {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, T>(_1: &'_2 test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1], tupled_args_2: (&'_1 T,)) -> &'_1 T
+fn {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, T>(_1: &'_2 test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1], tupled_args: (&'_1 T,)) -> &'_1 T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
 {
     let _0: &'0 T; // return
     let _1: &'3 test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args_2: (&'_1 T,); // arg #2
-    let y_3: &'5 T; // local
+    let tupled_args: (&'_1 T,); // arg #2
+    let y: &'5 T; // local
 
-    storage_live(y_3)
-    y_3 = move tupled_args_2.0
-    _0 = copy y_3
+    storage_live(y)
+    y = move tupled_args.0
+    _0 = copy y
     return
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_mut
-fn {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, T>(state_1: &'_2 mut test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1], args_2: (&'_1 T,)) -> &'_1 T
+fn {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, T>(state: &'_2 mut test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1], args: (&'_1 T,)) -> &'_1 T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
 {
     let _0: &'_1 T; // return
-    let state_1: &'_2 mut test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // arg #1
-    let args_2: (&'_1 T,); // arg #2
+    let state: &'_2 mut test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // arg #1
+    let args: (&'_1 T,); // arg #2
     let _3: &'1 test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '7, T>[TraitClause0, TraitClause1](move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '7, T>[TraitClause0, TraitClause1](move _3, move args)
     return
 }
 
@@ -906,53 +906,53 @@ where
     return
 }
 
-fn test_crate::test_closure_ref_early_bound::closure::as_fn<'a, '_1, T>(arg1_1: &'_1 T) -> &'_1 T
+fn test_crate::test_closure_ref_early_bound::closure::as_fn<'a, '_1, T>(arg1: &'_1 T) -> &'_1 T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
 {
     let _0: &'_1 T; // return
-    let arg1_1: &'_1 T; // arg #1
-    let args_2: (&'_1 T,); // local
-    let state_3: test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // local
+    let arg1: &'_1 T; // arg #1
+    let args: (&'_1 T,); // local
+    let state: test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // local
 
-    storage_live(args_2)
-    storage_live(state_3)
-    args_2 = (move arg1_1,)
-    state_3 = test_crate::test_closure_ref_early_bound::closure {  }
-    _0 = {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_once<'a, '_1, T>[TraitClause0, TraitClause1](move state_3, move args_2)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1,)
+    state = test_crate::test_closure_ref_early_bound::closure {  }
+    _0 = {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_once<'a, '_1, T>[TraitClause0, TraitClause1](move state, move args)
     return
 }
 
 // Full name: test_crate::test_closure_ref_early_bound
-pub fn test_closure_ref_early_bound<'a, T>(x_1: &'a T) -> &'a T
+pub fn test_closure_ref_early_bound<'a, T>(x: &'a T) -> &'a T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
 {
     let _0: &'1 T; // return
-    let x_1: &'2 T; // arg #1
-    let f_2: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // local
+    let x: &'2 T; // arg #1
+    let f: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // local
     let _3: test_crate::test_closure_ref_early_bound::closure<'5, T>[TraitClause0, TraitClause1]; // anonymous local
     let _4: &'7 T; // anonymous local
     let _5: fn<'_0_1>(&'_0_1 T) -> &'_0_1 T; // anonymous local
     let _6: &'8 T; // anonymous local
 
-    storage_live(f_2)
+    storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_closure_ref_early_bound::closure {  }
-    f_2 = cast<for<'_0_1> test_crate::test_closure_ref_early_bound::closure::as_fn<'11, '_0_1, T>[TraitClause0, TraitClause1], fn<'_0_1>(&'_0_1 T) -> &'_0_1 T>(const test_crate::test_closure_ref_early_bound::closure::as_fn<'11, '14, T>[TraitClause0, TraitClause1])
+    f = cast<for<'_0_1> test_crate::test_closure_ref_early_bound::closure::as_fn<'11, '_0_1, T>[TraitClause0, TraitClause1], fn<'_0_1>(&'_0_1 T) -> &'_0_1 T>(const test_crate::test_closure_ref_early_bound::closure::as_fn<'11, '14, T>[TraitClause0, TraitClause1])
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy f_2
+    _5 = copy f
     storage_live(_6)
-    _6 = &(*x_1)
+    _6 = &(*x)
     _4 = (move _5)(move _6)
     _0 = &(*_4)
     storage_dead(_6)
     storage_dead(_5)
-    storage_dead(f_2)
+    storage_dead(f)
     storage_dead(_4)
     return
 }
@@ -1022,20 +1022,20 @@ unsafe fn {impl Destruct for test_crate::test_map_option2::closure}::drop_glue<'
 }
 
 // Full name: test_crate::test_map_option2::{impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call
-fn {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call<'_0>(_1: &'_0 test_crate::test_map_option2::closure, tupled_args_2: (u32,)) -> u32
+fn {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call<'_0>(_1: &'_0 test_crate::test_map_option2::closure, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_map_option2::closure; // arg #1
-    let tupled_args_2: (u32,); // arg #2
-    let x_3: u32; // local
+    let tupled_args: (u32,); // arg #2
+    let x: u32; // local
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
 
-    storage_live(x_3)
+    storage_live(x)
     storage_live(_5)
-    x_3 = move tupled_args_2.0
+    x = move tupled_args.0
     storage_live(_4)
-    _4 = copy x_3
+    _4 = copy x
     _5 = copy _4 panic.+ const 1u32
     _0 = move _5
     storage_dead(_4)
@@ -1043,16 +1043,16 @@ fn {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call<'_0>(_
 }
 
 // Full name: test_crate::test_map_option2::{impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}::call_mut
-fn {impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}::call_mut<'_0>(state_1: &'_0 mut test_crate::test_map_option2::closure, args_2: (u32,)) -> u32
+fn {impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}::call_mut<'_0>(state: &'_0 mut test_crate::test_map_option2::closure, args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_0 mut test_crate::test_map_option2::closure; // arg #1
-    let args_2: (u32,); // arg #2
+    let state: &'_0 mut test_crate::test_map_option2::closure; // arg #1
+    let args: (u32,); // arg #2
     let _3: &'0 test_crate::test_map_option2::closure; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call<'2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call<'2>(move _3, move args)
     return
 }
 
@@ -1071,44 +1071,44 @@ fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::closure}::call_on
     return
 }
 
-fn test_crate::test_map_option2::closure::as_fn(arg1_1: u32) -> u32
+fn test_crate::test_map_option2::closure::as_fn(arg1: u32) -> u32
 {
     let _0: u32; // return
-    let arg1_1: u32; // arg #1
-    let args_2: (u32,); // local
-    let state_3: test_crate::test_map_option2::closure; // local
+    let arg1: u32; // arg #1
+    let args: (u32,); // local
+    let state: test_crate::test_map_option2::closure; // local
 
-    storage_live(args_2)
-    storage_live(state_3)
-    args_2 = (move arg1_1,)
-    state_3 = test_crate::test_map_option2::closure {  }
-    _0 = {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::closure}::call_once(move state_3, move args_2)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1,)
+    state = test_crate::test_map_option2::closure {  }
+    _0 = {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::closure}::call_once(move state, move args)
     return
 }
 
 // Full name: test_crate::test_map_option2
-pub fn test_map_option2(x_1: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
+pub fn test_map_option2(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
 {
     let _0: Option<u32>[{built_in impl Sized for u32}]; // return
-    let x_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1
-    let f_2: fn(u32) -> u32; // local
+    let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
+    let f: fn(u32) -> u32; // local
     let _3: test_crate::test_map_option2::closure; // anonymous local
     let _4: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _5: fn(u32) -> u32; // anonymous local
 
-    storage_live(f_2)
+    storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_map_option2::closure {  }
-    f_2 = cast<test_crate::test_map_option2::closure::as_fn, fn(u32) -> u32>(const test_crate::test_map_option2::closure::as_fn)
+    f = cast<test_crate::test_map_option2::closure::as_fn, fn(u32) -> u32>(const test_crate::test_map_option2::closure::as_fn)
     storage_dead(_3)
     storage_live(_4)
-    _4 = copy x_1
+    _4 = copy x
     storage_live(_5)
-    _5 = copy f_2
+    _5 = copy f
     _0 = map_option<u32, fn(u32) -> u32>[{built_in impl Sized for u32}, {built_in impl Sized for fn(u32) -> u32}, {built_in impl Fn<(u32,), u32> for fn(u32) -> u32}](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    storage_dead(f_2)
+    storage_dead(f)
     return
 }
 
@@ -1149,129 +1149,129 @@ impl Destruct for test_crate::test_map_option2::closure {
 }
 
 // Full name: test_crate::id
-pub fn id<T>(x_1: T) -> T
+pub fn id<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
     let _0: T; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
     return
 }
 
 // Full name: test_crate::test_map_option_id1
-pub fn test_map_option_id1(x_1: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
+pub fn test_map_option_id1(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
 {
     let _0: Option<u32>[{built_in impl Sized for u32}]; // return
-    let x_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1
+    let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
     let _2: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _0 = map_option<u32, id<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for u32}, {built_in impl Sized for id<u32>[{built_in impl Sized for u32}]}, {built_in impl Fn<(u32,), u32> for id<u32>[{built_in impl Sized for u32}]}](move _2, const id<u32>[{built_in impl Sized for u32}])
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::test_map_option_id2
-pub fn test_map_option_id2(x_1: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
+pub fn test_map_option_id2(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
 {
     let _0: Option<u32>[{built_in impl Sized for u32}]; // return
-    let x_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1
-    let f_2: id<u32>[{built_in impl Sized for u32}]; // local
+    let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
+    let f: id<u32>[{built_in impl Sized for u32}]; // local
     let _3: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _4: id<u32>[{built_in impl Sized for u32}]; // anonymous local
 
-    storage_live(f_2)
-    f_2 = const id<u32>[{built_in impl Sized for u32}]
+    storage_live(f)
+    f = const id<u32>[{built_in impl Sized for u32}]
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     storage_live(_4)
-    _4 = copy f_2
+    _4 = copy f
     _0 = map_option<u32, id<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for u32}, {built_in impl Sized for id<u32>[{built_in impl Sized for u32}]}, {built_in impl Fn<(u32,), u32> for id<u32>[{built_in impl Sized for u32}]}](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
-    storage_dead(f_2)
+    storage_dead(f)
     return
 }
 
 // Full name: test_crate::id_clone
-pub fn id_clone<T>(x_1: T) -> T
+pub fn id_clone<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
     let _0: T; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
     let _2: &'1 T; // anonymous local
 
     storage_live(_2)
-    _2 = &x_1
+    _2 = &x
     _0 = TraitClause1::clone<'2>(move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
     return
 }
 
 // Full name: test_crate::test_id_clone
-pub fn test_id_clone(x_1: u32) -> u32
+pub fn test_id_clone(x: u32) -> u32
 {
     let _0: u32; // return
-    let x_1: u32; // arg #1
-    let f_2: fn(u32) -> u32; // local
+    let x: u32; // arg #1
+    let f: fn(u32) -> u32; // local
     let _3: fn(u32) -> u32; // anonymous local
     let _4: u32; // anonymous local
 
-    storage_live(f_2)
-    f_2 = cast<id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32], fn(u32) -> u32>(const id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32])
+    storage_live(f)
+    f = cast<id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32], fn(u32) -> u32>(const id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32])
     storage_live(_3)
-    _3 = copy f_2
+    _3 = copy f
     storage_live(_4)
-    _4 = copy x_1
+    _4 = copy x
     _0 = (move _3)(move _4)
     storage_dead(_4)
     storage_dead(_3)
-    storage_dead(f_2)
+    storage_dead(f)
     return
 }
 
 // Full name: test_crate::test_id_clone_param
-pub fn test_id_clone_param<T>(x_1: T) -> T
+pub fn test_id_clone_param<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
     let _0: T; // return
-    let x_1: T; // arg #1
-    let f_2: fn(T) -> T; // local
+    let x: T; // arg #1
+    let f: fn(T) -> T; // local
     let _3: fn(T) -> T; // anonymous local
     let _4: T; // anonymous local
 
-    storage_live(f_2)
-    f_2 = cast<id_clone<T>[TraitClause0, TraitClause1], fn(T) -> T>(const id_clone<T>[TraitClause0, TraitClause1])
+    storage_live(f)
+    f = cast<id_clone<T>[TraitClause0, TraitClause1], fn(T) -> T>(const id_clone<T>[TraitClause0, TraitClause1])
     storage_live(_3)
-    _3 = copy f_2
+    _3 = copy f
     storage_live(_4)
-    _4 = move x_1
+    _4 = move x
     _0 = (move _3)(move _4)
     storage_dead(_4)
     storage_dead(_3)
-    storage_dead(f_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x_1
+    storage_dead(f)
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x
     return
 }
 
 // Full name: test_crate::test_map_option_id_clone
-pub fn test_map_option_id_clone(x_1: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
+pub fn test_map_option_id_clone(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
 {
     let _0: Option<u32>[{built_in impl Sized for u32}]; // return
-    let x_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1
+    let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
     let _2: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _0 = map_option<u32, id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]>[{built_in impl Sized for u32}, {built_in impl Sized for id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]}, {built_in impl Fn<(u32,), u32> for id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]}](move _2, const id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32])
     storage_dead(_2)
     return
@@ -1280,20 +1280,20 @@ pub fn test_map_option_id_clone(x_1: Option<u32>[{built_in impl Sized for u32}])
 struct test_crate::test_map_option3::closure {}
 
 // Full name: test_crate::test_map_option3::{impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call
-fn {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call<'_0>(_1: &'_0 test_crate::test_map_option3::closure, tupled_args_2: (u32,)) -> u32
+fn {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call<'_0>(_1: &'_0 test_crate::test_map_option3::closure, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_map_option3::closure; // arg #1
-    let tupled_args_2: (u32,); // arg #2
-    let x_3: u32; // local
+    let tupled_args: (u32,); // arg #2
+    let x: u32; // local
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
 
-    storage_live(x_3)
+    storage_live(x)
     storage_live(_5)
-    x_3 = move tupled_args_2.0
+    x = move tupled_args.0
     storage_live(_4)
-    _4 = copy x_3
+    _4 = copy x
     _5 = copy _4 panic.+ const 1u32
     _0 = move _5
     storage_dead(_4)
@@ -1301,16 +1301,16 @@ fn {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call<'_0>(_
 }
 
 // Full name: test_crate::test_map_option3::{impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::call_mut
-fn {impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::call_mut<'_0>(state_1: &'_0 mut test_crate::test_map_option3::closure, args_2: (u32,)) -> u32
+fn {impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::call_mut<'_0>(state: &'_0 mut test_crate::test_map_option3::closure, args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_0 mut test_crate::test_map_option3::closure; // arg #1
-    let args_2: (u32,); // arg #2
+    let state: &'_0 mut test_crate::test_map_option3::closure; // arg #1
+    let args: (u32,); // arg #2
     let _3: &'0 test_crate::test_map_option3::closure; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call<'2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call<'2>(move _3, move args)
     return
 }
 
@@ -1370,15 +1370,15 @@ impl Fn<(u32,), u32> for test_crate::test_map_option3::closure {
 }
 
 // Full name: test_crate::test_map_option3
-pub fn test_map_option3(x_1: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
+pub fn test_map_option3(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
 {
     let _0: Option<u32>[{built_in impl Sized for u32}]; // return
-    let x_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1
+    let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
     let _2: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _3: test_crate::test_map_option3::closure; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     storage_live(_3)
     _3 = test_crate::test_map_option3::closure {  }
     _0 = map_option<u32, test_crate::test_map_option3::closure>[{built_in impl Sized for u32}, {built_in impl Sized for test_crate::test_map_option3::closure}, {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}](move _2, move _3)
@@ -1396,45 +1396,45 @@ impl Destruct for test_crate::test_map_option3::closure {
 struct test_crate::test_regions::closure {}
 
 // Full name: test_crate::test_regions::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call
-fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions::closure, tupled_args_2: (&'_0 &'_1 u32,)) -> u32
+fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions::closure, tupled_args: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_regions::closure; // arg #1
-    let tupled_args_2: (&'_0 &'_1 u32,); // arg #2
-    let x_3: &'2 &'3 u32; // local
+    let tupled_args: (&'_0 &'_1 u32,); // arg #2
+    let x: &'2 &'3 u32; // local
 
-    storage_live(x_3)
-    x_3 = move tupled_args_2.0
-    _0 = copy (*(*x_3))
+    storage_live(x)
+    x = move tupled_args.0
+    _0 = copy (*(*x))
     return
 }
 
 // Full name: test_crate::test_regions
-pub fn test_regions<'a>(x_1: &'a u32) -> u32
+pub fn test_regions<'a>(x: &'a u32) -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 u32; // arg #1
-    let f_2: test_crate::test_regions::closure; // local
+    let x: &'1 u32; // arg #1
+    let f: test_crate::test_regions::closure; // local
     let _3: &'3 test_crate::test_regions::closure; // anonymous local
     let _4: (&'8 &'9 u32,); // anonymous local
     let _5: &'10 &'11 u32; // anonymous local
     let _6: &'12 &'13 u32; // anonymous local
 
-    storage_live(f_2)
-    f_2 = test_crate::test_regions::closure {  }
+    storage_live(f)
+    f = test_crate::test_regions::closure {  }
     storage_live(_3)
-    _3 = &f_2
+    _3 = &f
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &x_1
+    _6 = &x
     _5 = &(*_6)
     _4 = (move _5,)
     _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'22, '23, '24>(move _3, move _4)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    storage_dead(f_2)
+    storage_dead(f)
     storage_dead(_6)
     return
 }
@@ -1450,16 +1450,16 @@ unsafe fn {impl Destruct for test_crate::test_regions::closure}::drop_glue<'_0>(
 }
 
 // Full name: test_crate::test_regions::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut
-fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '_2>(state_1: &'_2 mut test_crate::test_regions::closure, args_2: (&'_0 &'_1 u32,)) -> u32
+fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::test_regions::closure, args: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_2 mut test_crate::test_regions::closure; // arg #1
-    let args_2: (&'_0 &'_1 u32,); // arg #2
+    let state: &'_2 mut test_crate::test_regions::closure; // arg #1
+    let args: (&'_0 &'_1 u32,); // arg #2
     let _3: &'0 test_crate::test_regions::closure; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '2>(move _3, move args)
     return
 }
 
@@ -1527,30 +1527,30 @@ unsafe fn {impl Destruct for test_crate::test_regions_casted::closure}::drop_glu
 }
 
 // Full name: test_crate::test_regions_casted::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call
-fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions_casted::closure, tupled_args_2: (&'_0 &'_1 u32,)) -> u32
+fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions_casted::closure, tupled_args: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_regions_casted::closure; // arg #1
-    let tupled_args_2: (&'_0 &'_1 u32,); // arg #2
-    let x_3: &'2 &'3 u32; // local
+    let tupled_args: (&'_0 &'_1 u32,); // arg #2
+    let x: &'2 &'3 u32; // local
 
-    storage_live(x_3)
-    x_3 = move tupled_args_2.0
-    _0 = copy (*(*x_3))
+    storage_live(x)
+    x = move tupled_args.0
+    _0 = copy (*(*x))
     return
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut
-fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '_2>(state_1: &'_2 mut test_crate::test_regions_casted::closure, args_2: (&'_0 &'_1 u32,)) -> u32
+fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::test_regions_casted::closure, args: (&'_0 &'_1 u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_2 mut test_crate::test_regions_casted::closure; // arg #1
-    let args_2: (&'_0 &'_1 u32,); // arg #2
+    let state: &'_2 mut test_crate::test_regions_casted::closure; // arg #1
+    let args: (&'_0 &'_1 u32,); // arg #2
     let _3: &'0 test_crate::test_regions_casted::closure; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '2>(move _3, move args)
     return
 }
 
@@ -1569,47 +1569,47 @@ fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closur
     return
 }
 
-fn test_crate::test_regions_casted::closure::as_fn<'_0, '_1>(arg1_1: &'_0 &'_1 u32) -> u32
+fn test_crate::test_regions_casted::closure::as_fn<'_0, '_1>(arg1: &'_0 &'_1 u32) -> u32
 {
     let _0: u32; // return
-    let arg1_1: &'_0 &'_1 u32; // arg #1
-    let args_2: (&'_0 &'_1 u32,); // local
-    let state_3: test_crate::test_regions_casted::closure; // local
+    let arg1: &'_0 &'_1 u32; // arg #1
+    let args: (&'_0 &'_1 u32,); // local
+    let state: test_crate::test_regions_casted::closure; // local
 
-    storage_live(args_2)
-    storage_live(state_3)
-    args_2 = (move arg1_1,)
-    state_3 = test_crate::test_regions_casted::closure {  }
-    _0 = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0, '_1>(move state_3, move args_2)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1,)
+    state = test_crate::test_regions_casted::closure {  }
+    _0 = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0, '_1>(move state, move args)
     return
 }
 
 // Full name: test_crate::test_regions_casted
-pub fn test_regions_casted<'a>(x_1: &'a u32) -> u32
+pub fn test_regions_casted<'a>(x: &'a u32) -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 u32; // arg #1
-    let f_2: fn<'_0_1>(&'_0_1 &'5 u32) -> u32; // local
+    let x: &'1 u32; // arg #1
+    let f: fn<'_0_1>(&'_0_1 &'5 u32) -> u32; // local
     let _3: test_crate::test_regions_casted::closure; // anonymous local
     let _4: fn<'_0_1>(&'_0_1 &'6 u32) -> u32; // anonymous local
     let _5: &'9 &'10 u32; // anonymous local
     let _6: &'11 &'12 u32; // anonymous local
 
-    storage_live(f_2)
+    storage_live(f)
     storage_live(_3)
     _3 = test_crate::test_regions_casted::closure {  }
-    f_2 = cast<for<'_0_1, '_1_1> test_crate::test_regions_casted::closure::as_fn<'_0_1, '_1_1>, fn<'_0_1>(&'_0_1 &'13 u32) -> u32>(const test_crate::test_regions_casted::closure::as_fn<'16, '17>)
+    f = cast<for<'_0_1, '_1_1> test_crate::test_regions_casted::closure::as_fn<'_0_1, '_1_1>, fn<'_0_1>(&'_0_1 &'13 u32) -> u32>(const test_crate::test_regions_casted::closure::as_fn<'16, '17>)
     storage_dead(_3)
     storage_live(_4)
-    _4 = copy f_2
+    _4 = copy f
     storage_live(_5)
     storage_live(_6)
-    _6 = &x_1
+    _6 = &x
     _5 = &(*_6)
     _0 = (move _4)(move _5)
     storage_dead(_5)
     storage_dead(_4)
-    storage_dead(f_2)
+    storage_dead(f)
     storage_dead(_6)
     return
 }
@@ -1656,12 +1656,12 @@ struct test_crate::test_closure_capture::closure<'_0, '_1> {
 }
 
 // Full name: test_crate::test_closure_capture::{impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call
-fn {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_closure_capture::closure<'_0, '_1>, tupled_args_2: (u32,)) -> u32
+fn {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_closure_capture::closure<'_0, '_1>, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
-    let tupled_args_2: (u32,); // arg #2
-    let z_3: u32; // local
+    let tupled_args: (u32,); // arg #2
+    let z: u32; // local
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
@@ -1669,10 +1669,10 @@ fn {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>
     let _8: u32; // anonymous local
     let _9: u32; // anonymous local
 
-    storage_live(z_3)
+    storage_live(z)
     storage_live(_7)
     storage_live(_9)
-    z_3 = move tupled_args_2.0
+    z = move tupled_args.0
     storage_live(_4)
     storage_live(_5)
     _5 = copy (*((*_1)).0)
@@ -1683,7 +1683,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>
     storage_dead(_6)
     storage_dead(_5)
     storage_live(_8)
-    _8 = copy z_3
+    _8 = copy z
     _9 = copy _4 panic.+ copy _8
     _0 = move _9
     storage_dead(_8)
@@ -1692,37 +1692,37 @@ fn {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>
 }
 
 // Full name: test_crate::test_closure_capture
-pub fn test_closure_capture(x_1: u32, y_2: u32) -> u32
+pub fn test_closure_capture(x: u32, y: u32) -> u32
 {
     let _0: u32; // return
-    let x_1: u32; // arg #1
-    let y_2: u32; // arg #2
-    let f_3: &'5 test_crate::test_closure_capture::closure<'6, '7>; // local
+    let x: u32; // arg #1
+    let y: u32; // arg #2
+    let f: &'5 test_crate::test_closure_capture::closure<'6, '7>; // local
     let _4: test_crate::test_closure_capture::closure<'8, '9>; // anonymous local
     let _5: &'11 u32; // anonymous local
     let _6: &'12 u32; // anonymous local
     let _7: &'13 test_crate::test_closure_capture::closure<'14, '15>; // anonymous local
     let _8: (u32,); // anonymous local
 
-    storage_live(f_3)
+    storage_live(f)
     storage_live(_4)
     storage_live(_5)
-    _5 = &x_1
+    _5 = &x
     storage_live(_6)
-    _6 = &y_2
+    _6 = &y
     _4 = test_crate::test_closure_capture::closure { 0: move _5, 1: move _6 }
     storage_dead(_6)
     storage_dead(_5)
-    f_3 = &_4
+    f = &_4
     storage_live(_7)
-    _7 = &(*f_3)
+    _7 = &(*f)
     storage_live(_8)
     _8 = (const 0u32,)
     _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'24, '25, '26>(move _7, move _8)
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_4)
-    storage_dead(f_3)
+    storage_dead(f)
     return
 }
 
@@ -1737,16 +1737,16 @@ unsafe fn {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>
 }
 
 // Full name: test_crate::test_closure_capture::{impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut
-fn {impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(state_1: &'_2 mut test_crate::test_closure_capture::closure<'_0, '_1>, args_2: (u32,)) -> u32
+fn {impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::test_closure_capture::closure<'_0, '_1>, args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let state_1: &'_2 mut test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
-    let args_2: (u32,); // arg #2
+    let state: &'_2 mut test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
+    let args: (u32,); // arg #2
     let _3: &'0 test_crate::test_closure_capture::closure<'_0, '_1>; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '2>(move _3, move args)
     return
 }
 
@@ -1808,59 +1808,59 @@ where
 {}
 
 // Full name: test_crate::test_closure_clone::{impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call
-fn {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'_0, T>(_1: &'_0 test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1], tupled_args_2: (T,)) -> T
+fn {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'_0, T>(_1: &'_0 test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1], tupled_args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
     let _0: T; // return
     let _1: &'1 test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args_2: (T,); // arg #2
-    let x_3: T; // local
+    let tupled_args: (T,); // arg #2
+    let x: T; // local
     let _4: &'3 T; // anonymous local
 
-    storage_live(x_3)
-    x_3 = move tupled_args_2.0
+    storage_live(x)
+    x = move tupled_args.0
     storage_live(_4)
-    _4 = &x_3
+    _4 = &x
     _0 = TraitClause1::clone<'4>(move _4)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x_3
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] x
     return
 }
 
 // Full name: test_crate::test_closure_clone
-pub fn test_closure_clone<T>(x_1: T) -> T
+pub fn test_closure_clone<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
     let _0: T; // return
-    let x_1: T; // arg #1
-    let f_2: test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // local
+    let x: T; // arg #1
+    let f: test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // local
     let _3: &'1 test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // anonymous local
     let _4: &'2 test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // anonymous local
     let _5: (T,); // anonymous local
     let _6: T; // anonymous local
 
-    storage_live(f_2)
-    f_2 = test_crate::test_closure_clone::closure {  }
+    storage_live(f)
+    f = test_crate::test_closure_clone::closure {  }
     storage_live(_3)
     storage_live(_4)
-    _4 = &f_2
+    _4 = &f
     _3 = &(*_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = move x_1
+    _6 = move x
     _5 = (move _6,)
     _0 = {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'3, T>[TraitClause0, TraitClause1](move _3, move _5)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _6
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_3)
-    storage_dead(f_2)
+    storage_dead(f)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] x
     return
 }
 
@@ -1878,19 +1878,19 @@ where
 }
 
 // Full name: test_crate::test_closure_clone::{impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call_mut
-fn {impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call_mut<'_0, T>(state_1: &'_0 mut test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1], args_2: (T,)) -> T
+fn {impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call_mut<'_0, T>(state: &'_0 mut test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
     let _0: T; // return
-    let state_1: &'_0 mut test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // arg #1
-    let args_2: (T,); // arg #2
+    let state: &'_0 mut test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // arg #1
+    let args: (T,); // arg #2
     let _3: &'0 test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'2, T>[TraitClause0, TraitClause1](move _3, move args_2)
+    _3 = &(*state)
+    _0 = {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'2, T>[TraitClause0, TraitClause1](move _3, move args)
     return
 }
 
@@ -1983,16 +1983,16 @@ impl Destruct for test_crate::test_array_map::closure {
 }
 
 // Full name: test_crate::test_array_map::{impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut
-fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'_0>(_1: &'_0 mut test_crate::test_array_map::closure, tupled_args_2: (i32,)) -> i32
+fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'_0>(_1: &'_0 mut test_crate::test_array_map::closure, tupled_args: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: &'1 mut test_crate::test_array_map::closure; // arg #1
-    let tupled_args_2: (i32,); // arg #2
-    let v_3: i32; // local
+    let tupled_args: (i32,); // arg #2
+    let v: i32; // local
 
-    storage_live(v_3)
-    v_3 = move tupled_args_2.0
-    _0 = copy v_3
+    storage_live(v)
+    v = move tupled_args.0
+    _0 = copy v
     return
 }
 
@@ -2032,15 +2032,15 @@ impl FnMut<(i32,), i32> for test_crate::test_array_map::closure {
 }
 
 // Full name: test_crate::test_array_map
-pub fn test_array_map(x_1: [i32; 256usize]) -> [i32; 256usize]
+pub fn test_array_map(x: [i32; 256usize]) -> [i32; 256usize]
 {
     let _0: [i32; 256usize]; // return
-    let x_1: [i32; 256usize]; // arg #1
+    let x: [i32; 256usize]; // arg #1
     let _2: [i32; 256usize]; // anonymous local
     let _3: test_crate::test_array_map::closure; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     storage_live(_3)
     _3 = test_crate::test_array_map::closure {  }
     _0 = map<i32, test_crate::test_array_map::closure, i32, 256usize>[{built_in impl Sized for i32}, {built_in impl Sized for test_crate::test_array_map::closure}, {built_in impl Sized for i32}, {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}, {impl Destruct for test_crate::test_array_map::closure}, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
@@ -2054,21 +2054,21 @@ struct test_crate::test_fnmut_with_ref::closure<'_0> {
 }
 
 // Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut
-fn {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut test_crate::test_fnmut_with_ref::closure<'_0>, tupled_args_2: (&'_1 usize,))
+fn {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut test_crate::test_fnmut_with_ref::closure<'_0>, tupled_args: (&'_1 usize,))
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_fnmut_with_ref::closure<'_0>; // arg #1
-    let tupled_args_2: (&'_1 usize,); // arg #2
-    let x_3: &'2 usize; // local
+    let tupled_args: (&'_1 usize,); // arg #2
+    let x: &'2 usize; // local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
 
-    storage_live(x_3)
+    storage_live(x)
     storage_live(_5)
     _0 = ()
-    x_3 = move tupled_args_2.0
+    x = move tupled_args.0
     storage_live(_4)
-    _4 = copy (*x_3)
+    _4 = copy (*x)
     _5 = copy (*((*_1)).0) panic.+ copy _4
     (*((*_1)).0) = move _5
     _0 = ()
@@ -2080,8 +2080,8 @@ fn {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_
 fn test_fnmut_with_ref()
 {
     let _0: (); // return
-    let sum_1: usize; // local
-    let closure_2: test_crate::test_fnmut_with_ref::closure<'1>; // local
+    let sum: usize; // local
+    let closure: test_crate::test_fnmut_with_ref::closure<'1>; // local
     let _3: &'3 mut usize; // anonymous local
     let _4: (); // anonymous local
     let _5: &'6 mut test_crate::test_fnmut_with_ref::closure<'7>; // anonymous local
@@ -2101,16 +2101,16 @@ fn test_fnmut_with_ref()
     _10 = move _11
     storage_live(_9)
     _0 = ()
-    storage_live(sum_1)
-    sum_1 = const 0usize
-    storage_live(closure_2)
+    storage_live(sum)
+    sum = const 0usize
+    storage_live(closure)
     storage_live(_3)
-    _3 = &mut sum_1
-    closure_2 = test_crate::test_fnmut_with_ref::closure { 0: move _3 }
+    _3 = &mut sum
+    closure = test_crate::test_fnmut_with_ref::closure { 0: move _3 }
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = &mut closure_2
+    _5 = &mut closure
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
@@ -2125,8 +2125,8 @@ fn test_fnmut_with_ref()
     storage_dead(_8)
     storage_dead(_4)
     _0 = ()
-    storage_dead(closure_2)
-    storage_dead(sum_1)
+    storage_dead(closure)
+    storage_dead(sum)
     return
 }
 

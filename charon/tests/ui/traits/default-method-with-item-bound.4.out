@@ -47,7 +47,7 @@ where
 }
 
 // Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}::provided
-fn provided<'_0, T, P>(self_1: &'_0 mut Empty<T>[TraitClause0])
+fn provided<'_0, T, P>(self: &'_0 mut Empty<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (P: Sized),
@@ -55,7 +55,7 @@ where
     TraitClause3: (Empty<T>[TraitClause0]: Exact),
 {
     let _0: (); // return
-    let self_1: &'1 mut Empty<T>[TraitClause0]; // arg #1
+    let self: &'1 mut Empty<T>[TraitClause0]; // arg #1
 
     _0 = ()
     _0 = ()

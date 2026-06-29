@@ -22,10 +22,10 @@ pub trait Trait<Self>
 }
 
 // Full name: test_crate::{impl Trait for &'_ u32}::method::<'_, u32>
-pub fn method::<'_, u32><'_0>(self_1: &'_0 &'_ u32)
+pub fn method::<'_, u32><'_0>(self: &'_0 &'_ u32)
 {
     let _0: (); // return
-    let self_1: &'2 &'3 u32; // arg #1
+    let self: &'2 &'3 u32; // arg #1
 
     _0 = ()
     _0 = ()
@@ -47,48 +47,48 @@ fn {vtable_method}::<'_, u32><'_0>(_1: &'_0 (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for &'_ u32}::{vtable_drop_shim}::<'_, u32>
-unsafe fn {vtable_drop_shim}::<'_, u32><'_0>(dyn_self_1: &'_0 mut (dyn Trait))
+unsafe fn {vtable_drop_shim}::<'_, u32><'_0>(dyn_self: &'_0 mut (dyn Trait))
 {
-    let ret_0: (); // return
-    let dyn_self_1: &'_0 mut (dyn Trait + '0); // arg #1
-    let target_self_2: &'_0 mut &'1 u32; // local
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn Trait + '0); // arg #1
+    let target_self: &'_0 mut &'1 u32; // local
 
-    ret_0 = ()
-    storage_live(target_self_2)
-    target_self_2 = concretize<&'_0 mut (dyn Trait + '3), &'_0 mut &'4 u32>(move dyn_self_1)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn Trait + '3), &'_0 mut &'4 u32>(move dyn_self)
     return
 }
 
 // Full name: test_crate::{impl Trait for &'_ u32}::{vtable}::<'_, u32>
 fn {impl Trait for &'_ u32}::{vtable}::<'_, u32>() -> test_crate::Trait::{vtable}
 {
-    let ret_0: test_crate::Trait::{vtable}; // return
-    let size_1: usize; // local
-    let align_2: usize; // local
-    let drop_3: unsafe fn(*mut (dyn Trait + '0)); // local
-    let erased_drop_4: *const (); // local
-    let method_5: fn<'_0_1>(&'_0_1 (dyn Trait + '1)); // local
-    let erased_method_6: *const (); // local
+    let ret: test_crate::Trait::{vtable}; // return
+    let size: usize; // local
+    let align: usize; // local
+    let drop: unsafe fn(*mut (dyn Trait + '0)); // local
+    let erased_drop: *const (); // local
+    let method: fn<'_0_1>(&'_0_1 (dyn Trait + '1)); // local
+    let erased_method: *const (); // local
     let _7: unsafe fn(*mut (dyn Trait + '6)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Trait + '11)); // anonymous local
 
-    storage_live(size_1)
-    size_1 = size_of<&'2 u32>
-    storage_live(align_2)
-    align_2 = align_of<&'3 u32>
-    storage_live(drop_3)
-    storage_live(erased_drop_4)
+    storage_live(size)
+    size = size_of<&'2 u32>
+    storage_live(align)
+    align = align_of<&'3 u32>
+    storage_live(drop)
+    storage_live(erased_drop)
     storage_live(_7)
     _7 = cast<{vtable_drop_shim}::<'_, u32><'5>, unsafe fn(*mut (dyn Trait + '6))>(const {vtable_drop_shim}::<'_, u32><'5>)
-    drop_3 = move _7
-    erased_drop_4 = cast<unsafe fn(*mut (dyn Trait + '7)), *const ()>(move drop_3)
-    storage_live(method_5)
-    storage_live(erased_method_6)
+    drop = move _7
+    erased_drop = cast<unsafe fn(*mut (dyn Trait + '7)), *const ()>(move drop)
+    storage_live(method)
+    storage_live(erased_method)
     storage_live(_8)
     _8 = cast<for<'_0_1> {vtable_method}::<'_, u32><'10>, fn<'_0_1>(&'_0_1 (dyn Trait + '11))>(const {vtable_method}::<'_, u32><'10>)
-    method_5 = move _8
-    erased_method_6 = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '12)), *const ()>(move method_5)
-    ret_0 = test_crate::Trait::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_method: move erased_method_6, super_trait_0: const &vtable_of({built_in impl MetaSized for &'14 u32}) }
+    method = move _8
+    erased_method = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '12)), *const ()>(move method)
+    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_method: move erased_method, super_trait_0: const &vtable_of({built_in impl MetaSized for &'14 u32}) }
     return
 }
 
@@ -102,10 +102,10 @@ impl Trait for &'_ u32 {
 }
 
 // Full name: test_crate::f
-pub fn f<'a>(x_1: &'a &'a u32) -> &'a (dyn Trait + 'a)
+pub fn f<'a>(x: &'a &'a u32) -> &'a (dyn Trait + 'a)
 {
     let _0: &'3 (dyn Trait + '4); // return
-    let x_1: &'8 &'9 u32; // arg #1
+    let x: &'8 &'9 u32; // arg #1
     let _2: &'10 (dyn Trait + '11); // anonymous local
     let _3: &'12 (dyn Trait + '13); // anonymous local
     let _4: &'14 &'15 u32; // anonymous local
@@ -113,7 +113,7 @@ pub fn f<'a>(x_1: &'a &'a u32) -> &'a (dyn Trait + 'a)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*x_1)
+    _4 = &(*x)
     _3 = unsize_cast<&'14 &'15 u32, &'17 (dyn Trait + '18), &{impl Trait for &'_ u32}::{vtable}::<'_, u32>>(move _4)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)

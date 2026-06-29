@@ -20,8 +20,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::ullbc_ast::StatementKind;
 use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use charon_lib::ast::*;
-use charon_lib::formatter::FmtCtx;
-use charon_lib::formatter::IntoFormatter;
+use charon_lib::formatter::{FmtCtx, IntoFormatter, compute_local_names};
 use charon_lib::ids::IndexMap;
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::pretty::FmtWithCtx;
@@ -1698,7 +1697,7 @@ impl<'a> IntoFormatter for &'a BodyTransCtx<'_, '_, '_> {
     type C = FmtCtx<'a>;
     fn into_fmt(self) -> Self::C {
         FmtCtx {
-            locals: Some(&self.locals),
+            local_names: Some(compute_local_names(&self.locals)),
             ..self.i_ctx.into_fmt()
         }
     }

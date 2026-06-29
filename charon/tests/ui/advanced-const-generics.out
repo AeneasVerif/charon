@@ -70,10 +70,10 @@ enum Foo {
 }
 
 // Full name: test_crate::{impl Eq for Foo}::assert_fields_are_eq
-pub fn impl_Eq_for_Foo::assert_fields_are_eq<'_0>(self_1: &'_0 Foo)
+pub fn impl_Eq_for_Foo::assert_fields_are_eq<'_0>(self: &'_0 Foo)
 {
     let _0: (); // return
-    let self_1: &'1 Foo; // arg #1
+    let self: &'1 Foo; // arg #1
 
     _0 = ()
     _0 = ()
@@ -81,37 +81,37 @@ pub fn impl_Eq_for_Foo::assert_fields_are_eq<'_0>(self_1: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
-pub fn eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
+pub fn eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
 {
     let _0: bool; // return
-    let self_1: &'1 Foo; // arg #1
-    let other_2: &'2 Foo; // arg #2
-    let __self_discr_3: isize; // local
+    let self: &'1 Foo; // arg #1
+    let other: &'2 Foo; // arg #2
+    let __self_discr: isize; // local
     let _4: &'3 Foo; // anonymous local
-    let __arg1_discr_5: isize; // local
+    let __arg1_discr: isize; // local
     let _6: &'4 Foo; // anonymous local
     let _7: isize; // anonymous local
     let _8: isize; // anonymous local
 
-    storage_live(__self_discr_3)
+    storage_live(__self_discr)
     storage_live(_4)
-    _4 = &(*self_1)
-    __self_discr_3 = @discriminant((*_4))
+    _4 = &(*self)
+    __self_discr = @discriminant((*_4))
     storage_dead(_4)
-    storage_live(__arg1_discr_5)
+    storage_live(__arg1_discr)
     storage_live(_6)
-    _6 = &(*other_2)
-    __arg1_discr_5 = @discriminant((*_6))
+    _6 = &(*other)
+    __arg1_discr = @discriminant((*_6))
     storage_dead(_6)
     storage_live(_7)
-    _7 = copy __self_discr_3
+    _7 = copy __self_discr
     storage_live(_8)
-    _8 = copy __arg1_discr_5
+    _8 = copy __arg1_discr
     _0 = move _7 == move _8
     storage_dead(_8)
     storage_dead(_7)
-    storage_dead(__arg1_discr_5)
-    storage_dead(__self_discr_3)
+    storage_dead(__arg1_discr)
+    storage_dead(__self_discr)
     return
 }
 
@@ -143,20 +143,20 @@ impl "impl_ConstParamTy__for_Foo" ConstParamTy_ for Foo {
 }
 
 // Full name: test_crate::{impl Debug for Foo}::fmt
-pub fn fmt<'_0, '_1, '_2>(self_1: &'_0 Foo, f_2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+pub fn fmt<'_0, '_1, '_2>(self: &'_0 Foo, f: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 {
     let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
-    let self_1: &'1 Foo; // arg #1
-    let f_2: &'5 mut Formatter<'6>; // arg #2
+    let self: &'1 Foo; // arg #1
+    let f: &'5 mut Formatter<'6>; // arg #2
     let _3: &'7 mut Formatter<'8>; // anonymous local
     let _4: &'10 str; // anonymous local
     let _5: &'11 str; // anonymous local
     let _6: &'12 str; // anonymous local
 
     storage_live(_3)
-    _3 = &two-phase-mut (*f_2) with_metadata(copy f_2.metadata)
+    _3 = &two-phase-mut (*f) with_metadata(copy f.metadata)
     storage_live(_4)
-    match (*self_1) {
+    match (*self) {
         Foo::A => {
             storage_live(_5)
             _5 = const "A"

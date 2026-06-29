@@ -205,21 +205,21 @@ where
 fn call_unsafe_fn()
 {
     let _0: (); // return
-    let x_1: *const u32; // local
+    let x: *const u32; // local
     let _2: u32; // anonymous local
     let _3: *const u32; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
+    storage_live(x)
+    x = null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     storage_live(_2)
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     _2 = read<u32>[{built_in impl Sized for u32}](move _3)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -227,17 +227,17 @@ fn call_unsafe_fn()
 fn deref_raw_ptr()
 {
     let _0: (); // return
-    let x_1: *const u32; // local
+    let x: *const u32; // local
     let _2: u32; // anonymous local
 
     _0 = ()
-    storage_live(x_1)
-    x_1 = null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
+    storage_live(x)
+    x = null<u32>[{impl#1}<u32>[{built_in impl Pointee for u32 where Metadata  = ()}]]()
     storage_live(_2)
-    _2 = copy (*x_1)
+    _2 = copy (*x)
     storage_dead(_2)
     _0 = ()
-    storage_dead(x_1)
+    storage_dead(x)
     return
 }
 
@@ -297,17 +297,17 @@ union Foo {
 fn access_union_field()
 {
     let _0: (); // return
-    let one_1: Foo; // local
-    let _two_2: [u32; 2usize]; // local
+    let one: Foo; // local
+    let _two: [u32; 2usize]; // local
 
     _0 = ()
-    storage_live(one_1)
-    one_1 = Foo { one: const 42u64 }
-    storage_live(_two_2)
-    _two_2 = copy (one_1).two
+    storage_live(one)
+    one = Foo { one: const 42u64 }
+    storage_live(_two)
+    _two = copy (one).two
     _0 = ()
-    storage_dead(_two_2)
-    storage_dead(one_1)
+    storage_dead(_two)
+    storage_dead(one)
     return
 }
 

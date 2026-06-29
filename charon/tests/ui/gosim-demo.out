@@ -47,20 +47,20 @@ pub fn _eprint<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
 // Full name: test_crate::debug_slice
-fn debug_slice<'_0, T>(slice_1: &'_0 [T])
+fn debug_slice<'_0, T>(slice: &'_0 [T])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Debug),
 {
     let _0: (); // return
-    let slice_1: &'1 [T]; // arg #1
+    let slice: &'1 [T]; // arg #1
     let _2: Iter<'3, T>[TraitClause0]; // anonymous local
     let _3: &'4 [T]; // anonymous local
-    let iter_4: Iter<'5, T>[TraitClause0]; // local
+    let iter: Iter<'5, T>[TraitClause0]; // local
     let _5: Option<&'12 T>[{built_in impl Sized for &'12 T}]; // anonymous local
     let _6: &'17 mut Iter<'18, T>[TraitClause0]; // anonymous local
     let _7: &'19 mut Iter<'20, T>[TraitClause0]; // anonymous local
-    let x_8: &'21 T; // local
+    let x: &'21 T; // local
     let _9: (); // anonymous local
     let _10: Arguments<'23>; // anonymous local
     let args_11: (&'28 &'29 T,); // local
@@ -78,16 +78,16 @@ where
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = copy slice_1
+    _3 = copy slice
     _2 = into_iter<'47, T>[TraitClause0](move _3)
     storage_dead(_3)
-    storage_live(iter_4)
-    iter_4 = move _2
+    storage_live(iter)
+    iter = move _2
     loop {
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
-        _7 = &mut iter_4
+        _7 = &mut iter
         _6 = &two-phase-mut (*_7)
         _5 = next<'49, '51, T>[TraitClause0](move _6)
         storage_dead(_6)
@@ -98,13 +98,13 @@ where
             Option::Some => {
             },
         }
-        storage_live(x_8)
-        x_8 = copy (_5 as variant Option::Some).0
+        storage_live(x)
+        x = copy (_5 as variant Option::Some).0
         storage_live(_9)
         storage_live(_10)
         storage_live(args_11)
         storage_live(_12)
-        _12 = &x_8
+        _12 = &x
         args_11 = (move _12,)
         storage_dead(_12)
         storage_live(args_13)
@@ -137,7 +137,7 @@ where
         storage_dead(args_13)
         storage_dead(args_11)
         storage_dead(_9)
-        storage_dead(x_8)
+        storage_dead(x)
         storage_dead(_7)
         storage_dead(_5)
         continue 0
@@ -145,7 +145,7 @@ where
     _0 = ()
     storage_dead(_7)
     storage_dead(_5)
-    storage_dead(iter_4)
+    storage_dead(iter)
     storage_dead(_2)
     return
 }

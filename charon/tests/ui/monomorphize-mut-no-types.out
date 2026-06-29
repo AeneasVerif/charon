@@ -79,62 +79,62 @@ pub trait core::marker::Destruct::<Option<Option<&_ mut _>>><'_0, T0>
 }
 
 // Full name: test_crate::identity
-fn identity<T>(x_1: T) -> T
+fn identity<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
     let _0: T; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
     return
 }
 
-fn test_crate::identity::<&_ mut _><'_0, T0>(x_1: &'_0 mut T0) -> &'_0 mut T0
+fn test_crate::identity::<&_ mut _><'_0, T0>(x: &'_0 mut T0) -> &'_0 mut T0
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
     let _0: &'_0 mut T0; // return
-    let x_1: &'_0 mut T0; // arg #1
+    let x: &'_0 mut T0; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x
     return
 }
 
-fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(x_1: Option<&'_0 mut T0>) -> Option<&'_0 mut T0>
+fn test_crate::identity::<Option<&_ mut _>><'_0, T0>(x: Option<&'_0 mut T0>) -> Option<&'_0 mut T0>
 where
     TraitClause0: (T0: core::marker::Sized::<Option<&_ mut _>><'_0>),
 {
     let _0: Option<&'_0 mut T0>; // return
-    let x_1: Option<&'_0 mut T0>; // arg #1
+    let x: Option<&'_0 mut T0>; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}::drop_glue<'0>] x
     return
 }
 
-fn test_crate::identity::<Option<Option<&_ mut _>>><'_0, T0>(x_1: Option<Option<&'_0 mut T0>>) -> Option<Option<&'_0 mut T0>>
+fn test_crate::identity::<Option<Option<&_ mut _>>><'_0, T0>(x: Option<Option<&'_0 mut T0>>) -> Option<Option<&'_0 mut T0>>
 where
     TraitClause0: (T0: core::marker::Sized::<Option<Option<&_ mut _>>><'_0>),
 {
     let _0: Option<Option<&'_0 mut T0>>; // return
-    let x_1: Option<Option<&'_0 mut T0>>; // arg #1
+    let x: Option<Option<&'_0 mut T0>>; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut _>>><'_0> for T0}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut _>>><'_0> for T0}::drop_glue<'0>] x
     return
 }
 
 // Full name: test_crate::use_id_mut
-fn use_id_mut<X, A>(x_1: A)
+fn use_id_mut<X, A>(x: A)
 where
     TraitClause0: (X: Sized),
     TraitClause1: (A: Sized),
 {
     let _0: (); // return
-    let x_1: A; // arg #1
+    let x: A; // arg #1
     let _2: &'1 u32; // anonymous local
     let _3: &'2 u32; // anonymous local
     let _4: &'4 mut u32; // anonymous local
@@ -193,7 +193,7 @@ where
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
-    _14 = &mut x_1
+    _14 = &mut x
     _13 = Option::Some { 0: move _14 }
     storage_dead(_14)
     _12 = Option::Some { 0: move _13 }
@@ -202,7 +202,7 @@ where
     storage_dead(_12)
     storage_dead(_11)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for A}::drop_glue<'248>] x_1
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'248>] x
     return
 }
 

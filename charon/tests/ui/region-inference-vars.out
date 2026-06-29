@@ -35,14 +35,14 @@ pub trait MyTryFrom<Self, T>
 }
 
 // Full name: test_crate::{impl MyTryFrom<&'_0 bool> for bool}::from
-pub fn from<'_0>(v_1: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
+pub fn from<'_0>(v: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 {
     let _0: Result<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]; // return
-    let v_1: &'1 bool; // arg #1
+    let v: &'1 bool; // arg #1
     let _2: bool; // anonymous local
 
     storage_live(_2)
-    _2 = copy (*v_1)
+    _2 = copy (*v)
     _0 = Result::Ok { 0: move _2 }
     storage_dead(_2)
     return

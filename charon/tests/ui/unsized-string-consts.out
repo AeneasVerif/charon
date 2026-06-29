@@ -70,7 +70,7 @@ static BAR: &'static [u8] = BAR()
 fn main()
 {
     let _0: (); // return
-    let _s_1: String; // local
+    let _s: String; // local
     let _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local
     let _4: [u8; 5usize]; // anonymous local
@@ -78,7 +78,7 @@ fn main()
     let _6: &'3 str; // anonymous local
 
     _0 = ()
-    storage_live(_s_1)
+    storage_live(_s)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -89,12 +89,12 @@ fn main()
     _6 = unsize_cast<&'_ [u8; 5usize], &'3 str, 5usize>(move _5)
     _3 = move _6
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    _s_1 = to_string<'5, str>[{built_in impl MetaSized for str}, {impl#1}](move _2)
+    _s = to_string<'5, str>[{built_in impl MetaSized for str}, {impl#1}](move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[drop_glue<'6>] _s_1
-    storage_dead(_s_1)
+    conditional_drop[drop_glue<'6>] _s
+    storage_dead(_s)
     return
 }
 

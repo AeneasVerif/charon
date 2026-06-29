@@ -1,10 +1,10 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::f
-pub fn f(y_1: u32) -> bool
+pub fn f(y: u32) -> bool
 {
     let _0: bool; // return
-    let y_1: u32; // arg #1
+    let y: u32; // arg #1
     let _2: bool; // anonymous local
     let _3: u32; // anonymous local
     let _4: bool; // anonymous local
@@ -16,25 +16,25 @@ pub fn f(y_1: u32) -> bool
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
-    _3 = copy y_1
+    _3 = copy y
     _2 = move _3 > const 0u32
     if move _2 {
         storage_dead(_3)
         loop {
             storage_live(_4)
             storage_live(_5)
-            _5 = copy y_1
+            _5 = copy y
             _4 = move _5 == const 0u32
             if move _4 {
                 break 0
             } else {
                 storage_dead(_5)
                 storage_dead(_4)
-                _6 = copy y_1 panic.- const 1u32
-                y_1 = move _6
+                _6 = copy y panic.- const 1u32
+                y = move _6
                 storage_live(_7)
                 storage_live(_8)
-                _8 = copy y_1
+                _8 = copy y
                 _7 = move _8 == const 0u32
                 if move _7 {
                     storage_dead(_8)

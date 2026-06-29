@@ -1,28 +1,28 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::test_float
-fn test_float(x_1: f64) -> f64
+fn test_float(x: f64) -> f64
 {
     let _0: f64; // return
-    let x_1: f64; // arg #1
+    let x: f64; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::sum_float
-fn sum_float(x_1: f64, y_2: f64) -> f64
+fn sum_float(x: f64, y: f64) -> f64
 {
     let _0: f64; // return
-    let x_1: f64; // arg #1
-    let y_2: f64; // arg #2
+    let x: f64; // arg #1
+    let y: f64; // arg #2
     let _3: f64; // anonymous local
     let _4: f64; // anonymous local
 
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     storage_live(_4)
-    _4 = copy y_2
+    _4 = copy y
     _0 = move _3 wrap.+ move _4
     storage_dead(_4)
     storage_dead(_3)
@@ -33,24 +33,24 @@ fn sum_float(x_1: f64, y_2: f64) -> f64
 fn literal_float() -> f64
 {
     let _0: f64; // return
-    let x_1: f64; // local
-    let y_2: f64; // local
+    let x: f64; // local
+    let y: f64; // local
     let _3: f64; // anonymous local
     let _4: f64; // anonymous local
 
-    storage_live(x_1)
-    x_1 = const 1f64
-    storage_live(y_2)
-    y_2 = const 1.5f64
+    storage_live(x)
+    x = const 1f64
+    storage_live(y)
+    y = const 1.5f64
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     storage_live(_4)
-    _4 = copy y_2
+    _4 = copy y
     _0 = move _3 wrap.+ move _4
     storage_dead(_4)
     storage_dead(_3)
-    storage_dead(y_2)
-    storage_dead(x_1)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 

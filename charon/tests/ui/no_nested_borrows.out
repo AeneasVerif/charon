@@ -137,30 +137,30 @@ where
 }
 
 // Full name: test_crate::use_tuple_struct
-pub fn use_tuple_struct<'_0>(x_1: &'_0 mut Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}])
+pub fn use_tuple_struct<'_0>(x: &'_0 mut Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}])
 {
     let _0: (); // return
-    let x_1: &'1 mut Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
+    let x: &'1 mut Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
 
     _0 = ()
-    ((*x_1)).0 = const 1u32
+    ((*x)).0 = const 1u32
     _0 = ()
     return
 }
 
 // Full name: test_crate::create_tuple_struct
-pub fn create_tuple_struct(x_1: u32, y_2: u64) -> Tuple<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]
+pub fn create_tuple_struct(x: u32, y: u64) -> Tuple<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]
 {
     let _0: Tuple<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]; // return
-    let x_1: u32; // arg #1
-    let y_2: u64; // arg #2
+    let x: u32; // arg #1
+    let y: u64; // arg #2
     let _3: u32; // anonymous local
     let _4: u64; // anonymous local
 
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     storage_live(_4)
-    _4 = copy y_2
+    _4 = copy y
     _0 = Tuple { 0: move _3, 1: move _4 }
     storage_dead(_4)
     storage_dead(_3)
@@ -168,18 +168,18 @@ pub fn create_tuple_struct(x_1: u32, y_2: u64) -> Tuple<u32, u64>[{built_in impl
 }
 
 // Full name: test_crate::create_pair
-pub fn create_pair(x_1: u32, y_2: u64) -> Pair<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]
+pub fn create_pair(x: u32, y: u64) -> Pair<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]
 {
     let _0: Pair<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}]; // return
-    let x_1: u32; // arg #1
-    let y_2: u64; // arg #2
+    let x: u32; // arg #1
+    let y: u64; // arg #2
     let _3: u32; // anonymous local
     let _4: u64; // anonymous local
 
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     storage_live(_4)
-    _4 = copy y_2
+    _4 = copy y
     _0 = Pair { x: move _3, y: move _4 }
     storage_dead(_4)
     storage_dead(_3)
@@ -217,71 +217,71 @@ where
 }
 
 // Full name: test_crate::use_id_type
-pub fn use_id_type<T>(x_1: IdType<T>[TraitClause0]) -> T
+pub fn use_id_type<T>(x: IdType<T>[TraitClause0]) -> T
 where
     TraitClause0: (T: Sized),
 {
     let _0: T; // return
-    let x_1: IdType<T>[TraitClause0]; // arg #1
+    let x: IdType<T>[TraitClause0]; // arg #1
 
-    _0 = move (x_1).0
-    conditional_drop[impl_Destruct_for_IdType::drop_glue<'0, T>[TraitClause0]] x_1
+    _0 = move (x).0
+    conditional_drop[impl_Destruct_for_IdType::drop_glue<'0, T>[TraitClause0]] x
     return
 }
 
 // Full name: test_crate::create_id_type
-pub fn create_id_type<T>(x_1: T) -> IdType<T>[TraitClause0]
+pub fn create_id_type<T>(x: T) -> IdType<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     let _0: IdType<T>[TraitClause0]; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move x_1
+    _2 = move x
     _0 = IdType { 0: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x
     return
 }
 
 // Full name: test_crate::cast_u32_to_i32
-pub fn cast_u32_to_i32(x_1: u32) -> i32
+pub fn cast_u32_to_i32(x: u32) -> i32
 {
     let _0: i32; // return
-    let x_1: u32; // arg #1
+    let x: u32; // arg #1
     let _2: u32; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _0 = cast<u32, i32>(move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::cast_bool_to_i32
-pub fn cast_bool_to_i32(x_1: bool) -> i32
+pub fn cast_bool_to_i32(x: bool) -> i32
 {
     let _0: i32; // return
-    let x_1: bool; // arg #1
+    let x: bool; // arg #1
     let _2: bool; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _0 = cast<bool, i32>(move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::cast_bool_to_bool
-pub fn cast_bool_to_bool(x_1: bool) -> bool
+pub fn cast_bool_to_bool(x: bool) -> bool
 {
     let _0: bool; // return
-    let x_1: bool; // arg #1
+    let x: bool; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
@@ -289,91 +289,91 @@ pub fn cast_bool_to_bool(x_1: bool) -> bool
 pub fn test2()
 {
     let _0: (); // return
-    let x_1: u32; // local
-    let y_2: u32; // local
-    let z_3: u32; // local
+    let x: u32; // local
+    let y: u32; // local
+    let z: u32; // local
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
-    let p_7: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // local
+    let p: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // local
     let _8: u32; // anonymous local
     let _9: u32; // anonymous local
-    let s_10: Sum<u32, bool>[{built_in impl Sized for u32}, {built_in impl Sized for bool}]; // local
-    let o_11: One<u64>[{built_in impl Sized for u64}]; // local
-    let e0_12: EmptyEnum; // local
-    let e1_13: EmptyEnum; // local
-    let enum0_14: Enum; // local
+    let s: Sum<u32, bool>[{built_in impl Sized for u32}, {built_in impl Sized for bool}]; // local
+    let o: One<u64>[{built_in impl Sized for u64}]; // local
+    let e0: EmptyEnum; // local
+    let e1: EmptyEnum; // local
+    let enum0: Enum; // local
 
     storage_live(_6)
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 23u32
-    storage_live(y_2)
-    y_2 = const 44u32
-    storage_live(z_3)
+    storage_live(x)
+    x = const 23u32
+    storage_live(y)
+    y = const 44u32
+    storage_live(z)
     storage_live(_4)
-    _4 = copy x_1
+    _4 = copy x
     storage_live(_5)
-    _5 = copy y_2
+    _5 = copy y
     _6 = copy _4 panic.+ copy _5
-    z_3 = move _6
+    z = move _6
     storage_dead(_5)
     storage_dead(_4)
-    storage_live(p_7)
+    storage_live(p)
     storage_live(_8)
-    _8 = copy x_1
+    _8 = copy x
     storage_live(_9)
-    _9 = copy z_3
-    p_7 = Pair { x: move _8, y: move _9 }
+    _9 = copy z
+    p = Pair { x: move _8, y: move _9 }
     storage_dead(_9)
     storage_dead(_8)
-    storage_live(s_10)
-    s_10 = Sum::Right { 0: const true }
-    storage_live(o_11)
-    o_11 = One::One { 0: const 3u64 }
-    storage_live(e0_12)
-    e0_12 = EmptyEnum::Empty {  }
-    storage_live(e1_13)
-    e1_13 = move e0_12
-    storage_live(enum0_14)
-    enum0_14 = Enum::Variant1 {  }
+    storage_live(s)
+    s = Sum::Right { 0: const true }
+    storage_live(o)
+    o = One::One { 0: const 3u64 }
+    storage_live(e0)
+    e0 = EmptyEnum::Empty {  }
+    storage_live(e1)
+    e1 = move e0
+    storage_live(enum0)
+    enum0 = Enum::Variant1 {  }
     _0 = ()
-    storage_dead(enum0_14)
-    storage_dead(e1_13)
-    storage_dead(e0_12)
-    storage_dead(o_11)
-    storage_dead(s_10)
-    storage_dead(p_7)
-    storage_dead(z_3)
-    storage_dead(y_2)
-    storage_dead(x_1)
+    storage_dead(enum0)
+    storage_dead(e1)
+    storage_dead(e0)
+    storage_dead(o)
+    storage_dead(s)
+    storage_dead(p)
+    storage_dead(z)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
 // Full name: test_crate::get_max
-pub fn get_max(x_1: u32, y_2: u32) -> u32
+pub fn get_max(x: u32, y: u32) -> u32
 {
     let _0: u32; // return
-    let x_1: u32; // arg #1
-    let y_2: u32; // arg #2
+    let x: u32; // arg #1
+    let y: u32; // arg #2
     let _3: bool; // anonymous local
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy x_1
+    _4 = copy x
     storage_live(_5)
-    _5 = copy y_2
+    _5 = copy y
     _3 = move _4 >= move _5
     if move _3 {
         storage_dead(_5)
         storage_dead(_4)
-        _0 = copy x_1
+        _0 = copy x
     } else {
         storage_dead(_5)
         storage_dead(_4)
-        _0 = copy y_2
+        _0 = copy y
     }
     storage_dead(_3)
     return
@@ -383,23 +383,23 @@ pub fn get_max(x_1: u32, y_2: u32) -> u32
 pub fn test_list1()
 {
     let _0: (); // return
-    let l_1: List<i32>[{built_in impl Sized for i32}]; // local
+    let l: List<i32>[{built_in impl Sized for i32}]; // local
     let _2: alloc::boxed::Box<List<i32>[{built_in impl Sized for i32}]>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]; // anonymous local
     let _3: List<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     _0 = ()
-    storage_live(l_1)
+    storage_live(l)
     storage_live(_2)
     storage_live(_3)
     _3 = List::Nil {  }
     _2 = @BoxNew<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move _3)
     storage_dead(_3)
-    l_1 = List::Cons { 0: const 0i32, 1: move _2 }
+    l = List::Cons { 0: const 0i32, 1: move _2 }
     conditional_drop[impl_Destruct_for_Box::drop_glue<'1, List<i32>[{built_in impl Sized for i32}], Global>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[impl_Destruct_for_List::drop_glue<'2, i32>[{built_in impl Sized for i32}]] l_1
-    storage_dead(l_1)
+    conditional_drop[impl_Destruct_for_List::drop_glue<'2, i32>[{built_in impl Sized for i32}]] l
+    storage_dead(l)
     return
 }
 
@@ -407,7 +407,7 @@ pub fn test_list1()
 pub fn test_box1()
 {
     let _0: (); // return
-    let b_1: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // local
+    let b: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // local
     let x_2: &'1 mut i32; // local
     let _3: &'3 mut alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // anonymous local
     let x_4: &'5 i32; // local
@@ -416,17 +416,17 @@ pub fn test_box1()
     let _7: i32; // anonymous local
 
     _0 = ()
-    storage_live(b_1)
-    b_1 = @BoxNew<i32>[{built_in impl Sized for i32}](const 0i32)
+    storage_live(b)
+    b = @BoxNew<i32>[{built_in impl Sized for i32}](const 0i32)
     storage_live(x_2)
     storage_live(_3)
-    _3 = &two-phase-mut b_1
+    _3 = &two-phase-mut b
     x_2 = deref_mut<'9, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _3)
     storage_dead(_3)
     (*x_2) = const 1i32
     storage_live(x_4)
     storage_live(_5)
-    _5 = &b_1
+    _5 = &b
     x_4 = deref<'12, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}](move _5)
     storage_dead(_5)
     storage_live(_6)
@@ -443,31 +443,31 @@ pub fn test_box1()
     _0 = ()
     storage_dead(x_4)
     storage_dead(x_2)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'13, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b_1
-    storage_dead(b_1)
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'13, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] b
+    storage_dead(b)
     return
 }
 
 // Full name: test_crate::copy_int
-pub fn copy_int(x_1: i32) -> i32
+pub fn copy_int(x: i32) -> i32
 {
     let _0: i32; // return
-    let x_1: i32; // arg #1
+    let x: i32; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::test_unreachable
-pub fn test_unreachable(b_1: bool)
+pub fn test_unreachable(b: bool)
 {
     let _0: (); // return
-    let b_1: bool; // arg #1
+    let b: bool; // arg #1
     let _2: bool; // anonymous local
 
     _0 = ()
     storage_live(_2)
-    _2 = copy b_1
+    _2 = copy b
     assert(move _2 == false) else panic(core::panicking::panic)
     _0 = ()
     storage_dead(_2)
@@ -475,14 +475,14 @@ pub fn test_unreachable(b_1: bool)
 }
 
 // Full name: test_crate::is_cons
-pub fn is_cons<'_0, T>(l_1: &'_0 List<T>[TraitClause0]) -> bool
+pub fn is_cons<'_0, T>(l: &'_0 List<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
 {
     let _0: bool; // return
-    let l_1: &'1 List<T>[TraitClause0]; // arg #1
+    let l: &'1 List<T>[TraitClause0]; // arg #1
 
-    match (*l_1) {
+    match (*l) {
         List::Cons => {
         },
         List::Nil => {
@@ -495,42 +495,42 @@ where
 }
 
 // Full name: test_crate::split_list
-pub fn split_list<T>(l_1: List<T>[TraitClause0]) -> (T, List<T>[TraitClause0])
+pub fn split_list<T>(l: List<T>[TraitClause0]) -> (T, List<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 {
     let _0: (T, List<T>[TraitClause0]); // return
-    let l_1: List<T>[TraitClause0]; // arg #1
-    let hd_2: T; // local
-    let tl_3: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let l: List<T>[TraitClause0]; // arg #1
+    let hd: T; // local
+    let tl: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _4: T; // anonymous local
     let _5: List<T>[TraitClause0]; // anonymous local
 
-    match l_1 {
+    match l {
         List::Cons => {
         },
         _ => {
             panic(core::panicking::panic)
         },
     }
-    storage_live(hd_2)
-    hd_2 = move (l_1 as variant List::Cons).0
-    storage_live(tl_3)
-    tl_3 = move (l_1 as variant List::Cons).1
+    storage_live(hd)
+    hd = move (l as variant List::Cons).0
+    storage_live(tl)
+    tl = move (l as variant List::Cons).1
     storage_live(_4)
-    _4 = move hd_2
+    _4 = move hd
     storage_live(_5)
-    _5 = move (*tl_3)
+    _5 = move (*tl)
     _0 = (move _4, move _5)
     conditional_drop[impl_Destruct_for_List::drop_glue<'0, T>[TraitClause0]] _5
     storage_dead(_5)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] _4
     storage_dead(_4)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl_3
-    storage_dead(tl_3)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] hd_2
-    storage_dead(hd_2)
-    conditional_drop[impl_Destruct_for_List::drop_glue<'8, T>[TraitClause0]] l_1
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
+    storage_dead(tl)
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] hd
+    storage_dead(hd)
+    conditional_drop[impl_Destruct_for_List::drop_glue<'8, T>[TraitClause0]] l
     return
 }
 
@@ -562,10 +562,10 @@ where
 }
 
 // Full name: test_crate::even
-pub fn even(x_1: u32) -> bool
+pub fn even(x: u32) -> bool
 {
     let _0: bool; // return
-    let x_1: u32; // arg #1
+    let x: u32; // arg #1
     let _2: bool; // anonymous local
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
@@ -575,7 +575,7 @@ pub fn even(x_1: u32) -> bool
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     _2 = move _3 == const 0u32
     if move _2 {
         storage_dead(_3)
@@ -584,7 +584,7 @@ pub fn even(x_1: u32) -> bool
         storage_dead(_3)
         storage_live(_4)
         storage_live(_5)
-        _5 = copy x_1
+        _5 = copy x
         _6 = copy _5 panic.- const 1u32
         _4 = move _6
         storage_dead(_5)
@@ -596,10 +596,10 @@ pub fn even(x_1: u32) -> bool
 }
 
 // Full name: test_crate::odd
-pub fn odd(x_1: u32) -> bool
+pub fn odd(x: u32) -> bool
 {
     let _0: bool; // return
-    let x_1: u32; // arg #1
+    let x: u32; // arg #1
     let _2: bool; // anonymous local
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
@@ -609,7 +609,7 @@ pub fn odd(x_1: u32) -> bool
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
-    _3 = copy x_1
+    _3 = copy x
     _2 = move _3 == const 0u32
     if move _2 {
         storage_dead(_3)
@@ -618,7 +618,7 @@ pub fn odd(x_1: u32) -> bool
         storage_dead(_3)
         storage_live(_4)
         storage_live(_5)
-        _5 = copy x_1
+        _5 = copy x
         _6 = copy _5 panic.- const 1u32
         _4 = move _6
         storage_dead(_5)
@@ -732,35 +732,35 @@ pub fn new_pair1() -> StructWithPair<u32, u32>[{built_in impl Sized for u32}, {b
 }
 
 // Full name: test_crate::incr
-pub fn incr<'_0>(x_1: &'_0 mut u32)
+pub fn incr<'_0>(x: &'_0 mut u32)
 {
     let _0: (); // return
-    let x_1: &'1 mut u32; // arg #1
+    let x: &'1 mut u32; // arg #1
     let _2: u32; // anonymous local
 
     storage_live(_2)
     _0 = ()
-    _2 = copy (*x_1) panic.+ const 1u32
-    (*x_1) = move _2
+    _2 = copy (*x) panic.+ const 1u32
+    (*x) = move _2
     _0 = ()
     return
 }
 
 // Full name: test_crate::read_then_incr
-pub fn read_then_incr<'_0>(x_1: &'_0 mut u32) -> u32
+pub fn read_then_incr<'_0>(x: &'_0 mut u32) -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 mut u32; // arg #1
-    let r_2: u32; // local
+    let x: &'1 mut u32; // arg #1
+    let r: u32; // local
     let _3: u32; // anonymous local
 
     storage_live(_3)
-    storage_live(r_2)
-    r_2 = copy (*x_1)
-    _3 = copy (*x_1) panic.+ const 1u32
-    (*x_1) = move _3
-    _0 = copy r_2
-    storage_dead(r_2)
+    storage_live(r)
+    r = copy (*x)
+    _3 = copy (*x) panic.+ const 1u32
+    (*x) = move _3
+    _0 = copy r
+    storage_dead(r)
     return
 }
 

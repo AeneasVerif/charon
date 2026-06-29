@@ -53,10 +53,10 @@ fn do_something_at_the_end()
 }
 
 // Full name: test_crate::foo
-fn foo(opt_1: Option<u32>[{built_in impl Sized for u32}])
+fn foo(opt: Option<u32>[{built_in impl Sized for u32}])
 {
     let _0: (); // return
-    let opt_1: Option<u32>[{built_in impl Sized for u32}]; // arg #1
+    let opt: Option<u32>[{built_in impl Sized for u32}]; // arg #1
     let _2: (); // anonymous local
     let _3: &'1 Option<u32>[{built_in impl Sized for u32}]; // anonymous local
     let x_4: u32; // local
@@ -67,11 +67,11 @@ fn foo(opt_1: Option<u32>[{built_in impl Sized for u32}])
     storage_live(_3)
     _0 = ()
     storage_live(_2)
-    match opt_1 {
+    match opt {
         Option::Some => {
             storage_live(x_5)
-            x_5 = &(opt_1 as variant Option::Some).0
-            _3 = &shallow opt_1
+            x_5 = &(opt as variant Option::Some).0
+            _3 = &shallow opt
             storage_live(_6)
             storage_live(_7)
             _7 = copy (*x_5)
@@ -80,7 +80,7 @@ fn foo(opt_1: Option<u32>[{built_in impl Sized for u32}])
                 storage_dead(_7)
                 storage_dead(_6)
                 storage_live(x_4)
-                x_4 = copy (opt_1 as variant Option::Some).0
+                x_4 = copy (opt as variant Option::Some).0
                 _2 = do_something()
                 storage_dead(x_4)
                 storage_dead(x_5)

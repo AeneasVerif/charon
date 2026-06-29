@@ -51,10 +51,10 @@ impl "impl_Destruct_for_Bar" Destruct for Bar {
 }
 
 // Full name: test_crate::{impl Foo for Bar}::foo
-fn foo<'_0>(self_1: &'_0 Bar)
+fn foo<'_0>(self: &'_0 Bar)
 {
     let _0: (); // return
-    let self_1: &'1 Bar; // arg #1
+    let self: &'1 Bar; // arg #1
 
     bb0: {
         _0 = ();
@@ -87,17 +87,17 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
 }
 
 // Full name: test_crate::{impl Foo for Bar}::{vtable_drop_shim}
-unsafe fn {vtable_drop_shim}<'_0>(dyn_self_1: &'_0 mut (dyn Foo))
+unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Foo))
 {
-    let ret_0: (); // return
-    let dyn_self_1: &'_0 mut (dyn Foo + '0); // arg #1
-    let target_self_2: &'_0 mut Bar; // local
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn Foo + '0); // arg #1
+    let target_self: &'_0 mut Bar; // local
 
     bb0: {
-        ret_0 = ();
-        storage_live(target_self_2);
-        target_self_2 = concretize<&'_0 mut (dyn Foo + '1), &'_0 mut Bar>(move dyn_self_1);
-        drop[drop_glue<'3>] (*target_self_2) -> bb2 (unwind: bb1);
+        ret = ();
+        storage_live(target_self);
+        target_self = concretize<&'_0 mut (dyn Foo + '1), &'_0 mut Bar>(move dyn_self);
+        drop[drop_glue<'3>] (*target_self) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -112,34 +112,34 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self_1: &'_0 mut (dyn Foo))
 // Full name: test_crate::{impl Foo for Bar}::{vtable}
 fn impl_Foo_for_Bar::{vtable}() -> test_crate::Foo::{vtable}
 {
-    let ret_0: test_crate::Foo::{vtable}; // return
-    let size_1: usize; // local
-    let align_2: usize; // local
-    let drop_3: unsafe fn(*mut (dyn Foo + '0)); // local
-    let erased_drop_4: *const (); // local
-    let foo_5: fn<'_0_1>(&'_0_1 (dyn Foo + '1)); // local
-    let erased_foo_6: *const (); // local
+    let ret: test_crate::Foo::{vtable}; // return
+    let size: usize; // local
+    let align: usize; // local
+    let drop: unsafe fn(*mut (dyn Foo + '0)); // local
+    let erased_drop: *const (); // local
+    let foo: fn<'_0_1>(&'_0_1 (dyn Foo + '1)); // local
+    let erased_foo: *const (); // local
     let _7: unsafe fn(*mut (dyn Foo + '4)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Foo + '9)); // anonymous local
 
     bb0: {
-        storage_live(size_1);
-        size_1 = size_of<Bar>;
-        storage_live(align_2);
-        align_2 = align_of<Bar>;
-        storage_live(drop_3);
-        storage_live(erased_drop_4);
+        storage_live(size);
+        size = size_of<Bar>;
+        storage_live(align);
+        align = align_of<Bar>;
+        storage_live(drop);
+        storage_live(erased_drop);
         storage_live(_7);
         _7 = cast<{vtable_drop_shim}<'3>, unsafe fn(*mut (dyn Foo + '4))>(const {vtable_drop_shim}<'3>);
-        drop_3 = move _7;
-        erased_drop_4 = cast<unsafe fn(*mut (dyn Foo + '5)), *const ()>(move drop_3);
-        storage_live(foo_5);
-        storage_live(erased_foo_6);
+        drop = move _7;
+        erased_drop = cast<unsafe fn(*mut (dyn Foo + '5)), *const ()>(move drop);
+        storage_live(foo);
+        storage_live(erased_foo);
         storage_live(_8);
         _8 = cast<for<'_0_1> {vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Foo + '9))>(const {vtable_method}<'8>);
-        foo_5 = move _8;
-        erased_foo_6 = cast<fn<'_0_1>(&'_0_1 (dyn Foo + '10)), *const ()>(move foo_5);
-        ret_0 = test_crate::Foo::{vtable} { size: move size_1, align: move align_2, drop: move erased_drop_4, method_foo: move erased_foo_6, super_trait_0: const &vtable_of({built_in impl MetaSized for Bar}) };
+        foo = move _8;
+        erased_foo = cast<fn<'_0_1>(&'_0_1 (dyn Foo + '10)), *const ()>(move foo);
+        ret = test_crate::Foo::{vtable} { size: move size, align: move align, drop: move erased_drop, method_foo: move erased_foo, super_trait_0: const &vtable_of({built_in impl MetaSized for Bar}) };
         return;
     }
 }
@@ -157,8 +157,8 @@ impl "impl_Foo_for_Bar" Foo for Bar {
 fn main()
 {
     let _0: (); // return
-    let bar_1: Bar; // local
-    let some_foo_2: &'3 (dyn Foo + '4); // local
+    let bar: Bar; // local
+    let some_foo: &'3 (dyn Foo + '4); // local
     let _3: &'6 Bar; // anonymous local
     let _4: &'7 Bar; // anonymous local
     let _5: (); // anonymous local
@@ -167,19 +167,19 @@ fn main()
 
     bb0: {
         _0 = ();
-        storage_live(bar_1);
-        bar_1 = Bar {  };
-        storage_live(some_foo_2);
+        storage_live(bar);
+        bar = Bar {  };
+        storage_live(some_foo);
         storage_live(_3);
         storage_live(_4);
-        _4 = &bar_1;
+        _4 = &bar;
         _3 = &(*_4);
-        some_foo_2 = unsize_cast<&'6 Bar, &'10 (dyn Foo + '11), &impl_Foo_for_Bar::{vtable}>(move _3);
+        some_foo = unsize_cast<&'6 Bar, &'10 (dyn Foo + '11), &impl_Foo_for_Bar::{vtable}>(move _3);
         storage_dead(_3);
         storage_dead(_4);
         storage_live(_5);
         storage_live(_6);
-        _6 = &(*some_foo_2) with_metadata(copy some_foo_2.metadata);
+        _6 = &(*some_foo) with_metadata(copy some_foo.metadata);
         storage_live(_7);
         _7 = cast<*const (), unsafe fn(&'8 (dyn Foo + '9))>(copy ((*_6.metadata)).method_foo);
         _5 = (copy _7)(move _6) -> bb2 (unwind: bb1);
@@ -193,8 +193,8 @@ fn main()
         storage_dead(_6);
         storage_dead(_5);
         _0 = ();
-        storage_dead(some_foo_2);
-        storage_dead(bar_1);
+        storage_dead(some_foo);
+        storage_dead(bar);
         return;
     }
 }

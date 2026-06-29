@@ -1,16 +1,16 @@
 # Final LLBC before serialization:
 
 // Full name: core::ptr::metadata::from_raw_parts::<u8, ()>
-pub fn from_raw_parts::<u8, ()>(data_pointer_1: *const (), metadata_2: ()) -> *const u8
+pub fn from_raw_parts::<u8, ()>(data_pointer: *const (), metadata: ()) -> *const u8
 {
     let _0: *const u8; // return
-    let data_pointer_1: *const (); // arg #1
-    let metadata_2: (); // arg #2
+    let data_pointer: *const (); // arg #1
+    let metadata: (); // arg #2
     let _3: *const (); // anonymous local
     let _4: (); // anonymous local
 
     storage_live(_3)
-    _3 = copy data_pointer_1
+    _3 = copy data_pointer
     storage_live(_4)
     _4 = ()
     _0 = *const (move _3, move _4)
@@ -21,14 +21,14 @@ pub fn from_raw_parts::<u8, ()>(data_pointer_1: *const (), metadata_2: ()) -> *c
 
 // Full name: core::ptr::without_provenance_mut::<()>
 #[lang_item("ptr_without_provenance_mut")]
-pub fn without_provenance_mut::<()>(addr_1: usize) -> *mut ()
+pub fn without_provenance_mut::<()>(addr: usize) -> *mut ()
 {
     let _0: *mut (); // return
-    let addr_1: usize; // arg #1
+    let addr: usize; // arg #1
     let _2: usize; // anonymous local
 
     storage_live(_2)
-    _2 = copy addr_1
+    _2 = copy addr
     _0 = transmute<usize, *mut ()>(move _2)
     storage_dead(_2)
     return
@@ -36,16 +36,16 @@ pub fn without_provenance_mut::<()>(addr_1: usize) -> *mut ()
 
 // Full name: core::ptr::without_provenance::<()>
 #[lang_item("ptr_without_provenance")]
-pub fn without_provenance::<()>(addr_1: usize) -> *const ()
+pub fn without_provenance::<()>(addr: usize) -> *const ()
 {
     let _0: *const (); // return
-    let addr_1: usize; // arg #1
+    let addr: usize; // arg #1
     let _2: *mut (); // anonymous local
     let _3: usize; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    _3 = copy addr_1
+    _3 = copy addr
     _2 = without_provenance_mut::<()>(move _3)
     _0 = cast<*mut (), *const ()>(move _2)
     storage_dead(_3)

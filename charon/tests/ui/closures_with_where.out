@@ -103,21 +103,21 @@ where
 }
 
 // Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_mut
-fn call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[TraitClause0, TraitClause1], tupled_args_2: (usize,)) -> T
+fn call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[TraitClause0, TraitClause1], tupled_args: (usize,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {
     let _0: T; // return
     let _1: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args_2: (usize,); // arg #2
-    let i_3: usize; // local
+    let tupled_args: (usize,); // arg #2
+    let i: usize; // local
     let _4: usize; // anonymous local
 
-    storage_live(i_3)
-    i_3 = move tupled_args_2.0
+    storage_live(i)
+    i = move tupled_args.0
     storage_live(_4)
-    _4 = copy i_3
+    _4 = copy i
     _0 = TraitClause1::of_usize(move _4)
     storage_dead(_4)
     return
