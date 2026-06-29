@@ -1,0 +1,26 @@
+#[lang_item("meta_sized")]
+pub trait core::marker::MetaSized<Self>
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    non-dyn-compatible
+}
+
+#[lang_item("clone")]
+pub trait core::clone::Clone<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::Sized)
+    non-dyn-compatible
+}
+
+pub struct test_crate::Foo {}
+
+// Full name: test_crate::{impl core::clone::Clone for test_crate::Foo}
+impl core::clone::Clone for test_crate::Foo {
+    proof ImpliedClause0: (test_crate::Foo: core::marker::Sized) = {built_in impl core::marker::Sized for test_crate::Foo}
+    non-dyn-compatible
+}
+
+
