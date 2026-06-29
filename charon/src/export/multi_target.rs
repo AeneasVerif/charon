@@ -651,6 +651,14 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
             }));
         }
 
+        for trait_decl in krate.trait_decls.iter() {
+            for (method_id, method) in trait_decl.methods.iter_enumerated() {
+                if method.skip_binder.default.is_none() {
+                    graph.add_edge(Root, Method((trait_decl.def_id, method_id)), ());
+                }
+            }
+        }
+
         graph
     };
 

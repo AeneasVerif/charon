@@ -23,6 +23,7 @@ pub trait core::marker::Sized<Self>
 pub trait core::clone::Clone<Self>
 {
     proof ImpliedClause0: (Self: core::marker::Sized)
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
 
@@ -36,9 +37,13 @@ pub trait core::marker::Copy<Self>
 
 pub opaque type core::core_arch::x86::__m128i
 
+pub fn core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}::clone<'_0>(_1: &'_0 core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
+= <opaque>
+
 // Full name: core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}
 impl core::clone::Clone for core::core_arch::x86::__m128i {
     proof ImpliedClause0: (core::core_arch::x86::__m128i: core::marker::Sized) = {built_in impl core::marker::Sized for core::core_arch::x86::__m128i}
+    fn clone<'_0_1> = core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -49,9 +54,13 @@ impl core::marker::Copy for core::core_arch::x86::__m128i {
     non-dyn-compatible
 }
 
+pub fn core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}::clone<'_0>(_1: &'_0 core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
+= <opaque>
+
 // Full name: core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}
 impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t {
     proof ImpliedClause0: (core::core_arch::arm_shared::neon::uint16x8_t: core::marker::Sized) = {built_in impl core::marker::Sized for core::core_arch::arm_shared::neon::uint16x8_t}
+    fn clone<'_0_1> = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -71,30 +80,63 @@ pub unsafe fn core::core_arch::x86::sse2::_mm_loadu_si128(_1: *const core::core_
 pub unsafe fn core::core_arch::x86::sse2::_mm_storeu_si128(_1: *mut core::core_arch::x86::__m128i, _2: core::core_arch::x86::__m128i)
 = <opaque>
 
+pub fn core::clone::impls::{impl core::clone::Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
+= <opaque>
+
 // Full name: core::clone::impls::{impl core::clone::Clone for usize}
 impl core::clone::Clone for usize {
     proof ImpliedClause0: (usize: core::marker::Sized) = {built_in impl core::marker::Sized for usize}
+    fn clone<'_0_1> = core::clone::impls::{impl core::clone::Clone for usize}::clone<'_0_1>
     non-dyn-compatible
 }
 
 #[lang_item("eq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
+{
+    fn eq<'_0_1, '_1_1>;
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
+}
+
+#[lang_item("Ordering")]
+pub enum core::cmp::Ordering {
+  Less,
+  Equal,
+  Greater,
+}
+
+#[lang_item("Option")]
+pub enum core::option::Option<T>
+where
+    TraitClause0: (T: core::marker::Sized),
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: core::cmp::PartialEq<Rhs>)
+    fn partial_cmp<'_0_1, '_1_1>;
     vtable: core::cmp::PartialOrd::{vtable}<Rhs>
 }
 
+pub fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}::eq<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> bool
+= <opaque>
+
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}
 impl core::cmp::PartialEq<usize> for usize {
+    fn eq<'_0_1, '_1_1> = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}::eq<'_0_1, '_1_1>
     vtable: core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}::{vtable}
 }
+
+pub fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> core::option::Option<core::cmp::Ordering>[{built_in impl core::marker::Sized for core::cmp::Ordering}]
+= <opaque>
 
 // Full name: core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}
 impl core::cmp::PartialOrd<usize> for usize {
     proof ImpliedClause0: (usize: core::cmp::PartialEq<usize>) = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}
+    fn partial_cmp<'_0_1, '_1_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
     vtable: core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::{vtable}
 }
 
@@ -104,14 +146,29 @@ pub trait core::iter::range::Step<Self>
     proof ImpliedClause0: (Self: core::marker::Sized)
     proof ImpliedClause1: (Self: core::clone::Clone)
     proof ImpliedClause2: (Self: core::cmp::PartialOrd<Self>)
+    fn steps_between<'_0_1, '_1_1>;
+    fn forward_checked;
+    fn backward_checked;
     non-dyn-compatible
 }
+
+pub fn core::iter::range::{impl core::iter::range::Step for usize}::backward_checked(_1: usize, _2: usize) -> core::option::Option<usize>[{built_in impl core::marker::Sized for usize}]
+= <opaque>
+
+pub fn core::iter::range::{impl core::iter::range::Step for usize}::forward_checked(_1: usize, _2: usize) -> core::option::Option<usize>[{built_in impl core::marker::Sized for usize}]
+= <opaque>
+
+pub fn core::iter::range::{impl core::iter::range::Step for usize}::steps_between<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> (usize, core::option::Option<usize>[{built_in impl core::marker::Sized for usize}])
+= <opaque>
 
 // Full name: core::iter::range::{impl core::iter::range::Step for usize}
 impl core::iter::range::Step for usize {
     proof ImpliedClause0: (usize: core::marker::Sized) = {built_in impl core::marker::Sized for usize}
     proof ImpliedClause1: (usize: core::clone::Clone) = core::clone::impls::{impl core::clone::Clone for usize}
     proof ImpliedClause2: (usize: core::cmp::PartialOrd<usize>) = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}
+    fn steps_between<'_0_1, '_1_1> = core::iter::range::{impl core::iter::range::Step for usize}::steps_between<'_0_1, '_1_1>
+    fn forward_checked = core::iter::range::{impl core::iter::range::Step for usize}::forward_checked
+    fn backward_checked = core::iter::range::{impl core::iter::range::Step for usize}::backward_checked
     non-dyn-compatible
 }
 
@@ -122,15 +179,6 @@ where
 {
   start: Idx,
   end: Idx,
-}
-
-#[lang_item("Option")]
-pub enum core::option::Option<T>
-where
-    TraitClause0: (T: core::marker::Sized),
-{
-  None,
-  Some(T),
 }
 
 #[lang_item("iterator")]
