@@ -12,14 +12,26 @@ pub trait core::marker::Sized<Self>
 pub trait core::clone::Clone<Self>
 {
     proof ImpliedClause0: (Self: core::marker::Sized)
+    fn clone<'_0_1>;
     non-dyn-compatible
 }
 
 pub struct test_crate::Foo {}
 
+pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(self_1: &'_0 test_crate::Foo) -> test_crate::Foo
+{
+    let _0: test_crate::Foo; // return
+    let self_1: &'1 test_crate::Foo; // arg #1
+
+    loop {
+        continue 0
+    }
+}
+
 // Full name: test_crate::{impl core::clone::Clone for test_crate::Foo}
 impl core::clone::Clone for test_crate::Foo {
     proof ImpliedClause0: (test_crate::Foo: core::marker::Sized) = {built_in impl core::marker::Sized for test_crate::Foo}
+    fn clone<'_0_1> = test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0_1>
     non-dyn-compatible
 }
 
