@@ -265,7 +265,7 @@ fn call_fn()
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }
-    _1 = external_use_item<'19, &'19 bool, Option<&'19 bool>[{built_in impl Sized for &'19 bool}], &'34 bool>[{built_in impl Sized for &'19 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'19, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'19, &'34 bool>[{built_in impl Sized for &'34 bool}, {impl Copy for &'_0 T}<'34, bool>]](move _2)
+    _1 = external_use_item<'19, &'19 bool, Option<&'19 bool>[{built_in impl Sized for &'19 bool}], &'19 bool>[{built_in impl Sized for &'19 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'19, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'19, &'19 bool>[{built_in impl Sized for &'19 bool}, {impl Copy for &'_0 T}<'19, bool>]](move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
