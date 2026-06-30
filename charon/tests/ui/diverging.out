@@ -1,10 +1,10 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::my_panic
-fn my_panic(_x_1: u32) -> !
+fn my_panic(_x: u32) -> !
 {
     let _0: !; // return
-    let _x_1: u32; // arg #1
+    let _x: u32; // arg #1
 
     panic(core::panicking::panic)
 }

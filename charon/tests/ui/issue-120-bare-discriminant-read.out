@@ -51,28 +51,28 @@ where
 }
 
 // Full name: test_crate::discriminant_value
-fn discriminant_value<'_0, T>(opt_1: &'_0 Option<T>[TraitClause0]) -> isize
+fn discriminant_value<'_0, T>(opt: &'_0 Option<T>[TraitClause0]) -> isize
 where
     TraitClause0: (T: Sized),
 {
     let _0: isize; // return
-    let opt_1: &'1 Option<T>[TraitClause0]; // arg #1
+    let opt: &'1 Option<T>[TraitClause0]; // arg #1
     let _2: &'2 Option<T>[TraitClause0]; // anonymous local
 
     storage_live(_2)
-    _2 = &(*opt_1)
+    _2 = &(*opt)
     _0 = @discriminant((*_2))
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::is_some
-fn is_some<T>(opt_1: Option<T>[TraitClause0]) -> bool
+fn is_some<T>(opt: Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
 {
     let _0: bool; // return
-    let opt_1: Option<T>[TraitClause0]; // arg #1
+    let opt: Option<T>[TraitClause0]; // arg #1
     let _2: isize; // anonymous local
     let _3: &'1 Option<T>[TraitClause0]; // anonymous local
     let _4: &'2 Option<T>[TraitClause0]; // anonymous local
@@ -80,26 +80,26 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &opt_1
+    _4 = &opt
     _3 = &(*_4)
     _2 = discriminant_value<'4, T>[TraitClause0](move _3)
     storage_dead(_3)
     _0 = move _2 != const 0isize
     storage_dead(_2)
     storage_dead(_4)
-    drop[drop_glue<'6, T>[TraitClause0]] opt_1
+    drop[drop_glue<'6, T>[TraitClause0]] opt
     return
 }
 
 // Full name: test_crate::my_is_some
-fn my_is_some<T>(opt_1: Option<T>[TraitClause0]) -> isize
+fn my_is_some<T>(opt: Option<T>[TraitClause0]) -> isize
 where
     TraitClause0: (T: Sized),
 {
     let _0: isize; // return
-    let opt_1: Option<T>[TraitClause0]; // arg #1
+    let opt: Option<T>[TraitClause0]; // arg #1
 
-    match opt_1 {
+    match opt {
         Option::None => {
             _0 = const 0isize
         },
@@ -107,7 +107,7 @@ where
             _0 = const 1isize
         },
     }
-    drop[drop_glue<'0, T>[TraitClause0]] opt_1
+    drop[drop_glue<'0, T>[TraitClause0]] opt
     return
 }
 

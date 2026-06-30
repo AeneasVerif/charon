@@ -66,19 +66,19 @@ pub trait Fn<Self, Args>
 }
 
 // Full name: test_crate::apply_to
-fn apply_to<'_0, T0>(f_1: &'_0 T0) -> u8
+fn apply_to<'_0, T0>(f: &'_0 T0) -> u8
 where
     TraitClause0: (T0: Sized),
     TraitClause1: (T0: Fn<(u8, u8)>),
     TypeConstraint0: TraitClause1::ImpliedClause1::ImpliedClause1::Output = u8,
 {
     let _0: u8; // return
-    let f_1: &'1 T0; // arg #1
+    let f: &'1 T0; // arg #1
     let _2: &'2 T0; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 = &(*f_1)
+    _2 = &(*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call<'3>(move _2, move _3)
@@ -88,19 +88,19 @@ where
 }
 
 // Full name: test_crate::apply_to_mut
-fn apply_to_mut<'_0, T0>(f_1: &'_0 mut T0) -> u8
+fn apply_to_mut<'_0, T0>(f: &'_0 mut T0) -> u8
 where
     TraitClause0: (T0: Sized),
     TraitClause1: (T0: FnMut<(u8, u8)>),
     TypeConstraint0: TraitClause1::ImpliedClause1::Output = u8,
 {
     let _0: u8; // return
-    let f_1: &'1 mut T0; // arg #1
+    let f: &'1 mut T0; // arg #1
     let _2: &'2 mut T0; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 = &mut (*f_1)
+    _2 = &mut (*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call_mut<'3>(move _2, move _3)
@@ -110,25 +110,25 @@ where
 }
 
 // Full name: test_crate::apply_to_once
-fn apply_to_once<T0>(f_1: T0) -> u8
+fn apply_to_once<T0>(f: T0) -> u8
 where
     TraitClause0: (T0: Sized),
     TraitClause1: (T0: FnOnce<(u8, u8)>),
     TypeConstraint0: TraitClause1::Output = u8,
 {
     let _0: u8; // return
-    let f_1: T0; // arg #1
+    let f: T0; // arg #1
     let _2: T0; // anonymous local
     let _3: (u8, u8); // anonymous local
 
     storage_live(_2)
-    _2 = move f_1
+    _2 = move f
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call_once(move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T0}::drop_glue<'1>] f_1
+    conditional_drop[{built_in impl Destruct for T0}::drop_glue<'1>] f
     return
 }
 
@@ -139,13 +139,13 @@ struct closure<'_0, '_1> {
 }
 
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}::call
-fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args_2: (u8, u8)) -> u8
+fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args: (u8, u8)) -> u8
 {
     let _0: u8; // return
     let _1: &'1 closure<'_0, '_1>; // arg #1
-    let tupled_args_2: (u8, u8); // arg #2
-    let x_3: u8; // local
-    let y_4: u8; // local
+    let tupled_args: (u8, u8); // arg #2
+    let x: u8; // local
+    let y: u8; // local
     let _5: u8; // anonymous local
     let _6: u8; // anonymous local
     let _7: u8; // anonymous local
@@ -156,25 +156,25 @@ fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args_2: (u8, u8)) -> u
     let _12: u8; // anonymous local
     let _13: u8; // anonymous local
 
-    storage_live(x_3)
-    storage_live(y_4)
+    storage_live(x)
+    storage_live(y)
     storage_live(_9)
     storage_live(_11)
     storage_live(_13)
-    x_3 = move tupled_args_2.0
-    y_4 = move tupled_args_2.1
+    x = move tupled_args.0
+    y = move tupled_args.1
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
     _7 = copy (*((*_1)).0)
     storage_live(_8)
-    _8 = copy x_3
+    _8 = copy x
     _9 = copy _7 panic.+ copy _8
     _6 = move _9
     storage_dead(_8)
     storage_dead(_7)
     storage_live(_10)
-    _10 = copy y_4
+    _10 = copy y
     _11 = copy _6 panic.+ copy _10
     _5 = move _11
     storage_dead(_10)
@@ -189,16 +189,16 @@ fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args_2: (u8, u8)) -> u
 }
 
 // Full name: test_crate::main::{impl FnMut<(u8, u8)> for closure<'_0, '_1>}::call_mut
-fn call_mut<'_0, '_1, '_2>(state_1: &'_2 mut closure<'_0, '_1>, args_2: (u8, u8)) -> u8
+fn call_mut<'_0, '_1, '_2>(state: &'_2 mut closure<'_0, '_1>, args: (u8, u8)) -> u8
 {
     let _0: u8; // return
-    let state_1: &'_2 mut closure<'_0, '_1>; // arg #1
-    let args_2: (u8, u8); // arg #2
+    let state: &'_2 mut closure<'_0, '_1>; // arg #1
+    let args: (u8, u8); // arg #2
     let _3: &'0 closure<'_0, '_1>; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = call<'_0, '_1, '2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = call<'_0, '_1, '2>(move _3, move args)
     return
 }
 
@@ -262,9 +262,9 @@ impl<'_0, '_1> "impl_Fn_tuple_for_closure" Fn<(u8, u8)> for closure<'_0, '_1> {
 fn main()
 {
     let _0: (); // return
-    let v_1: u8; // local
-    let z_2: u8; // local
-    let f_3: closure<'2, '3>; // local
+    let v: u8; // local
+    let z: u8; // local
+    let f: closure<'2, '3>; // local
     let _4: &'5 u8; // anonymous local
     let _5: &'6 u8; // anonymous local
     let _6: u8; // anonymous local
@@ -280,21 +280,21 @@ fn main()
     let _16: closure<'28, '29>; // anonymous local
 
     _0 = ()
-    storage_live(v_1)
-    v_1 = const 5u8
-    storage_live(z_2)
-    z_2 = const 1u8
-    storage_live(f_3)
+    storage_live(v)
+    v = const 5u8
+    storage_live(z)
+    z = const 1u8
+    storage_live(f)
     storage_live(_4)
-    _4 = &v_1
+    _4 = &v
     storage_live(_5)
-    _5 = &z_2
-    f_3 = closure { 0: move _4, 1: move _5 }
+    _5 = &z
+    f = closure { 0: move _4, 1: move _5 }
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
     storage_live(_7)
-    _7 = &f_3
+    _7 = &f
     storage_live(_8)
     _8 = (const 10u8, const 20u8)
     _6 = call<'36, '37, '38>(move _7, move _8)
@@ -304,7 +304,7 @@ fn main()
     storage_live(_9)
     storage_live(_10)
     storage_live(_11)
-    _11 = &f_3
+    _11 = &f
     _10 = &(*_11)
     _9 = apply_to<'60, closure<'43, '44>>[{built_in impl Sized for closure<'43, '44>}, impl_Fn_tuple_for_closure<'43, '44>](move _10)
     storage_dead(_10)
@@ -313,7 +313,7 @@ fn main()
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
-    _14 = &mut f_3
+    _14 = &mut f
     _13 = &two-phase-mut (*_14)
     _12 = apply_to_mut<'82, closure<'65, '66>>[{built_in impl Sized for closure<'65, '66>}, impl_FnMut_tuple_for_closure<'65, '66>](move _13)
     storage_dead(_13)
@@ -321,14 +321,14 @@ fn main()
     storage_dead(_12)
     storage_live(_15)
     storage_live(_16)
-    _16 = copy f_3
+    _16 = copy f
     _15 = apply_to_once<closure<'85, '86>>[{built_in impl Sized for closure<'85, '86>}, impl_FnOnce_tuple_for_closure<'85, '86>](move _16)
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
-    storage_dead(f_3)
-    storage_dead(z_2)
-    storage_dead(v_1)
+    storage_dead(f)
+    storage_dead(z)
+    storage_dead(v)
     return
 }
 

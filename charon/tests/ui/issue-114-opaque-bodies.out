@@ -31,14 +31,14 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::bool::{bool}::then_some
-pub fn then_some<T>(self_1: bool, t_2: T) -> Option<T>[TraitClause0]
+pub fn then_some<T>(self: bool, t: T) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
 {
     let _0: Option<T>[TraitClause0]; // return
-    let self_1: bool; // arg #1
-    let t_2: T; // arg #2
+    let self: bool; // arg #1
+    let t: T; // arg #2
     let _3: bool; // anonymous local
     let _4: T; // anonymous local
     let _5: bool; // anonymous local
@@ -47,11 +47,11 @@ where
     _5 = const false
     _5 = const true
     storage_live(_3)
-    _3 = copy self_1
+    _3 = copy self
     if move _3 {
         storage_live(_4)
         _5 = const false
-        _4 = move t_2
+        _4 = move t
         _0 = Option::Some { 0: move _4 }
         storage_dead(_4)
     } else {
@@ -62,7 +62,7 @@ where
     } else {
         return
     }
-    drop[TraitClause1::drop_glue<'0>] t_2
+    drop[TraitClause1::drop_glue<'0>] t
     return
 }
 
@@ -77,22 +77,22 @@ pub trait PartialEq<Self, Rhs>
 
 // Full name: core::cmp::PartialEq::ne
 #[lang_item("cmp_partialeq_ne")]
-pub fn ne<'_0, '_1, Self, Rhs>(self_1: &'_0 Self, other_2: &'_1 Rhs) -> bool
+pub fn ne<'_0, '_1, Self, Rhs>(self: &'_0 Self, other: &'_1 Rhs) -> bool
 where
     TraitClause0: (Self: PartialEq<Rhs>),
 {
     let _0: bool; // return
-    let self_1: &'1 Self; // arg #1
-    let other_2: &'3 Rhs; // arg #2
+    let self: &'1 Self; // arg #1
+    let other: &'3 Rhs; // arg #2
     let _3: bool; // anonymous local
     let _4: &'4 Self; // anonymous local
     let _5: &'5 Rhs; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*self_1) with_metadata(copy self_1.metadata)
+    _4 = &(*self) with_metadata(copy self.metadata)
     storage_live(_5)
-    _5 = &(*other_2) with_metadata(copy other_2.metadata)
+    _5 = &(*other) with_metadata(copy other.metadata)
     _3 = TraitClause0::eq<'6, '7>(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
@@ -170,10 +170,10 @@ pub fn core::num::{i64}::MIN() -> i64
 pub const core::num::{i64}::MIN: i64 = core::num::{i64}::MIN()
 
 // Full name: core::convert::num::{impl From<i32> for i64}::from
-pub fn from(small_1: i32) -> i64
+pub fn from(small: i32) -> i64
 {
     let _0: i64; // return
-    let small_1: i32; // arg #1
+    let small: i32; // arg #1
     let _2: bool; // anonymous local
     let _3: bool; // anonymous local
     let _4: i128; // anonymous local
@@ -227,7 +227,7 @@ pub fn from(small_1: i32) -> i64
     }
     storage_dead(_6)
     storage_live(_10)
-    _10 = copy small_1
+    _10 = copy small
     _0 = cast<i32, i64>(move _10)
     storage_dead(_10)
     return
@@ -387,15 +387,15 @@ fn use_inlines() -> u32
 }
 
 // Full name: test_crate::bool_to_opt
-fn bool_to_opt(b_1: bool) -> Option<()>[{built_in impl Sized for ()}]
+fn bool_to_opt(b: bool) -> Option<()>[{built_in impl Sized for ()}]
 {
     let _0: Option<()>[{built_in impl Sized for ()}]; // return
-    let b_1: bool; // arg #1
+    let b: bool; // arg #1
     let _2: bool; // anonymous local
     let _3: (); // anonymous local
 
     storage_live(_2)
-    _2 = copy b_1
+    _2 = copy b
     storage_live(_3)
     _3 = ()
     _0 = then_some<()>[{built_in impl Sized for ()}, {built_in impl Destruct for ()}](move _2, move _3)
@@ -405,28 +405,28 @@ fn bool_to_opt(b_1: bool) -> Option<()>[{built_in impl Sized for ()}]
 }
 
 // Full name: test_crate::convert
-fn convert(x_1: i32) -> i64
+fn convert(x: i32) -> i64
 {
     let _0: i64; // return
-    let x_1: i32; // arg #1
+    let x: i32; // arg #1
     let _2: i32; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _0 = from(move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::vec
-fn vec(_x_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
+fn vec(_x: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
-    let _x_1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
+    let _x: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
 
     _0 = ()
     _0 = ()
-    conditional_drop[drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x_1
+    conditional_drop[drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x
     return
 }
 
@@ -440,17 +440,17 @@ fn max() -> usize
 }
 
 // Full name: test_crate::partial_eq
-fn partial_eq<T>(_x_1: T)
+fn partial_eq<T>(_x: T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: PartialEq<T>),
 {
     let _0: (); // return
-    let _x_1: T; // arg #1
+    let _x: T; // arg #1
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _x
     return
 }
 

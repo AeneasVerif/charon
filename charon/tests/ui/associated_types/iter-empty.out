@@ -49,7 +49,7 @@ trait Iter<Self, Self_Item>
     non-dyn-compatible
 }
 
-fn test_crate::Iter::map<'_0, Self, B, F, Clause0_Item>(self_1: &'_0 mut Self, _f_2: F)
+fn test_crate::Iter::map<'_0, Self, B, F, Clause0_Item>(self: &'_0 mut Self, _f: F)
 where
     TraitClause0: (Self: Iter<Clause0_Item>),
     TraitClause1: (B: Sized),
@@ -57,12 +57,12 @@ where
     TraitClause3: (F: Apply<Clause0_Item, B>),
 {
     let _0: (); // return
-    let self_1: &'1 mut Self; // arg #1
-    let _f_2: F; // arg #2
+    let self: &'1 mut Self; // arg #1
+    let _f: F; // arg #2
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f_2
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f
     return
 }
 
@@ -75,7 +75,7 @@ where
 }
 
 // Full name: test_crate::{impl Iter<T> for Empty<T>[TraitClause0]}::map
-fn impl_Iter_for_Empty::map<'_0, T, B, F>(self_1: &'_0 mut Empty<T>[TraitClause0], _f_2: F)
+fn impl_Iter_for_Empty::map<'_0, T, B, F>(self: &'_0 mut Empty<T>[TraitClause0], _f: F)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (B: Sized),
@@ -83,12 +83,12 @@ where
     TraitClause3: (F: Apply<T, B>),
 {
     let _0: (); // return
-    let self_1: &'1 mut Empty<T>[TraitClause0]; // arg #1
-    let _f_2: F; // arg #2
+    let self: &'1 mut Empty<T>[TraitClause0]; // arg #1
+    let _f: F; // arg #2
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f_2
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f
     return
 }
 

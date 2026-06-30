@@ -29,14 +29,14 @@ pub fn {impl ToString for (dyn Display)}::to_string::<(dyn Display)><'_0>(_1: &'
 = <opaque>
 
 // Full name: test_crate::dyn_to_string
-fn dyn_to_string<'_0>(x_1: &'_0 (dyn Display + '_0)) -> String
+fn dyn_to_string<'_0>(x: &'_0 (dyn Display + '_0)) -> String
 {
     let _0: String; // return
-    let x_1: &'3 (dyn Display + '4); // arg #1
+    let x: &'3 (dyn Display + '4); // arg #1
     let _2: &'5 (dyn Display + '6); // anonymous local
 
     storage_live(_2)
-    _2 = &(*x_1) with_metadata(copy x_1.metadata)
+    _2 = &(*x) with_metadata(copy x.metadata)
     _0 = {impl ToString for (dyn Display)}::to_string::<(dyn Display)><'9>(move _2)
     storage_dead(_2)
     return
@@ -46,7 +46,7 @@ fn dyn_to_string<'_0>(x_1: &'_0 (dyn Display + '_0)) -> String
 fn main()
 {
     let _0: (); // return
-    let str_1: String; // local
+    let str: String; // local
     let _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local
     let _4: String; // anonymous local
@@ -55,19 +55,19 @@ fn main()
     let _7: &'10 String; // anonymous local
 
     _0 = ()
-    storage_live(str_1)
+    storage_live(str)
     storage_live(_2)
     storage_live(_3)
     _3 = const "hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    str_1 = impl_ToString_for_str::to_string::<str><'13>(move _2)
+    str = impl_ToString_for_str::to_string::<str><'13>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = &str_1
+    _7 = &str
     _6 = &(*_7)
     _5 = unsize_cast<&'9 String, &'14 (dyn Display + '15), &impl_Display_for_String::{vtable}>(move _6)
     storage_dead(_6)
@@ -77,8 +77,8 @@ fn main()
     storage_dead(_7)
     storage_dead(_4)
     _0 = ()
-    conditional_drop[drop_glue<'20>] str_1
-    storage_dead(str_1)
+    conditional_drop[drop_glue<'20>] str
+    storage_dead(str)
     return
 }
 

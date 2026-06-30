@@ -38,17 +38,17 @@ pub trait FromIterator<Self, A>
 }
 
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
-pub fn from_iter<I>(iter_1: I)
+pub fn from_iter<I>(iter: I)
 where
     TraitClause0: (I: Sized),
     TraitClause1: (I: IntoIterator<()>),
 {
     let _0: (); // return
-    let iter_1: I; // arg #1
+    let iter: I; // arg #1
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] iter_1
+    conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] iter
     return
 }
 

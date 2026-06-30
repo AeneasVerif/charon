@@ -25,24 +25,24 @@ impl<H> core::marker::Destruct for test_crate::State<H> {
     non-dyn-compatible
 }
 
-pub fn test_crate::caller<H>(h_1: H)
+pub fn test_crate::caller<H>(h: H)
 {
     let _0: (); // return
-    let h_1: H; // arg #1
+    let h: H; // arg #1
     let _2: test_crate::State<H>; // anonymous local
     let _3: H; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = move h_1
+    _3 = move h
     _2 = test_crate::State { _h: move _3 }
     conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'0>] _3
     storage_dead(_3)
     conditional_drop[test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<'1, H>] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'3>] h_1
+    conditional_drop[{built_in impl core::marker::Destruct for H}::drop_glue<'3>] h
     return
 }
 

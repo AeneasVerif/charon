@@ -4,8 +4,8 @@
 fn main()
 {
     let _0: (); // return
-    let y_1: &'1 [u8]; // local
-    let z_2: *const u8; // local
+    let y: &'1 [u8]; // local
+    let z: *const u8; // local
     let _3: *const [u8]; // anonymous local
     let _4: usize; // anonymous local
     let _5: *const u8; // anonymous local
@@ -14,28 +14,28 @@ fn main()
     let _8: &'2 [u8]; // anonymous local
 
     _0 = ()
-    storage_live(y_1)
+    storage_live(y)
     storage_live(_6)
     _6 = [const 0u8, const 1u8, const 2u8]
     storage_live(_7)
     _7 = &_6
     storage_live(_8)
     _8 = @ArrayToSliceShared<'_, u8, 3usize>(move _7)
-    y_1 = move _8
-    storage_live(z_2)
+    y = move _8
+    storage_live(z)
     storage_live(_3)
-    _3 = &raw const (*y_1) with_metadata(copy y_1.metadata)
-    z_2 = cast<*const [u8], *const u8>(move _3)
+    _3 = &raw const (*y) with_metadata(copy y.metadata)
+    z = cast<*const [u8], *const u8>(move _3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy z_2
+    _5 = copy z
     _4 = cast<*const u8, usize>(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
-    storage_dead(z_2)
-    storage_dead(y_1)
+    storage_dead(z)
+    storage_dead(y)
     return
 }
 

@@ -120,18 +120,18 @@ where
 }
 
 // Full name: test_crate::foo
-fn foo<F>(_f_1: F)
+fn foo<F>(_f: F)
 where
     TraitClause0: (F: Sized),
     TraitClause1: for<'a> (F: FnMut<(&'a (),)>),
     TypeConstraint0: for<'a> TraitClause1::ImpliedClause1::Output = (),
 {
     let _0: (); // return
-    let _f_1: F; // arg #1
+    let _f: F; // arg #1
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _f_1
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _f
     return
 }
 

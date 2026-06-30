@@ -42,10 +42,10 @@ pub fn _print<'_0>(_1: Arguments<'_0>)
 struct Foo {}
 
 // Full name: test_crate::{impl Drop for Foo}::drop
-pub fn impl_Drop_for_Foo::drop<'_0>(self_1: &'_0 mut Foo)
+pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
 {
     let _0: (); // return
-    let self_1: &'1 mut Foo; // arg #1
+    let self: &'1 mut Foo; // arg #1
     let _2: (); // anonymous local
     let _3: Arguments<'3>; // anonymous local
 
@@ -114,33 +114,33 @@ impl "impl_Drop_for_Foo" Drop for Foo {
 fn main()
 {
     let _0: (); // return
-    let f_1: Foo; // local
+    let f: Foo; // local
     let _2: u8; // anonymous local
     let _3: (u8, bool); // anonymous local
-    let f_ref_4: &'1 Foo; // local
+    let f_ref: &'1 Foo; // local
 
     bb0: {
         storage_live(_3);
         _0 = ();
-        storage_live(f_1);
-        f_1 = Foo {  };
+        storage_live(f);
+        f = Foo {  };
         storage_live(_2);
         _3 = const 255u8 checked.+ const 1u8;
         assert assert(move _3.1 == false) (overflow) -> bb2 (unwind: bb1);
     }
 
     bb1: {
-        conditional_drop[drop_glue<'2>] f_1 -> bb3 (unwind: bb4);
+        conditional_drop[drop_glue<'2>] f -> bb3 (unwind: bb4);
     }
 
     bb2: {
         _2 = move _3.0;
         storage_dead(_2);
-        storage_live(f_ref_4);
-        f_ref_4 = &f_1;
+        storage_live(f_ref);
+        f_ref = &f;
         _0 = ();
-        storage_dead(f_ref_4);
-        conditional_drop[drop_glue<'3>] f_1 -> bb5 (unwind: bb3);
+        storage_dead(f_ref);
+        conditional_drop[drop_glue<'3>] f -> bb5 (unwind: bb3);
     }
 
     bb3: {
@@ -152,7 +152,7 @@ fn main()
     }
 
     bb5: {
-        storage_dead(f_1);
+        storage_dead(f);
         return;
     }
 }

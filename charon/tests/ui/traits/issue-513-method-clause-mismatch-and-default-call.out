@@ -39,28 +39,28 @@ trait Trait<Self>
     vtable: test_crate::Trait::{vtable}
 }
 
-fn test_crate::Trait::method<'_0, Self>(self_1: &'_0 Self)
+fn test_crate::Trait::method<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
     TraitClause1: (Self: Copy),
 {
     let _0: (); // return
-    let self_1: &'1 Self; // arg #1
+    let self: &'1 Self; // arg #1
     let _2: &'2 Self; // anonymous local
 
     _0 = ()
     storage_live(_2)
-    _2 = &(*self_1) with_metadata(copy self_1.metadata)
+    _2 = &(*self) with_metadata(copy self.metadata)
     _0 = TraitClause0::fold<'3>[TraitClause1](move _2)
     storage_dead(_2)
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}::fold
-fn fold<'_0>(self_1: &'_0 ())
+fn fold<'_0>(self: &'_0 ())
 {
     let _0: (); // return
-    let self_1: &'1 (); // arg #1
+    let self: &'1 (); // arg #1
 
     _0 = ()
     _0 = ()
@@ -68,17 +68,17 @@ fn fold<'_0>(self_1: &'_0 ())
 }
 
 // Full name: test_crate::{impl Trait for ()}::method
-fn impl_Trait_for_unit::method<'_0>(self_1: &'_0 ())
+fn impl_Trait_for_unit::method<'_0>(self: &'_0 ())
 where
     TraitClause0: ((): Copy),
 {
     let _0: (); // return
-    let self_1: &'1 (); // arg #1
+    let self: &'1 (); // arg #1
     let _2: &'2 (); // anonymous local
 
     _0 = ()
     storage_live(_2)
-    _2 = &(*self_1)
+    _2 = &(*self)
     _0 = fold<'3>(move _2)
     storage_dead(_2)
     return

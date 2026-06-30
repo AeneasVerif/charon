@@ -189,14 +189,14 @@ where
     TraitClause0: (T: core::marker::Sized),
 = <opaque>
 
-fn test_crate::f<'_0>(blocks_1: &'_0 mut [u8])
+fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
 {
     let _0: (); // return
-    let blocks_1: &'1 mut [u8]; // arg #1
+    let blocks: &'1 mut [u8]; // arg #1
     let _2: core::slice::iter::IterMut<'3, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
     let _3: core::slice::iter::IterMut<'4, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
     let _4: &'5 mut [u8]; // anonymous local
-    let iter_5: core::slice::iter::IterMut<'6, u8>[{built_in impl core::marker::Sized for u8}]; // local
+    let iter: core::slice::iter::IterMut<'6, u8>[{built_in impl core::marker::Sized for u8}]; // local
     let _6: core::option::Option<&'13 mut u8>[{built_in impl core::marker::Sized for &'13 mut u8}]; // anonymous local
     let _7: &'18 mut core::slice::iter::IterMut<'19, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
     let _8: &'20 mut core::slice::iter::IterMut<'21, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
@@ -205,18 +205,18 @@ fn test_crate::f<'_0>(blocks_1: &'_0 mut [u8])
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &two-phase-mut (*blocks_1) with_metadata(copy blocks_1.metadata)
+    _4 = &two-phase-mut (*blocks) with_metadata(copy blocks.metadata)
     _3 = core::slice::{[T]}::iter_mut<'23, u8>[{built_in impl core::marker::Sized for u8}](move _4)
     storage_dead(_4)
     _2 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::IterMut<'25, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::IterMut<'25, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}<'25, u8>[{built_in impl core::marker::Sized for u8}]](move _3)
     storage_dead(_3)
-    storage_live(iter_5)
-    iter_5 = move _2
+    storage_live(iter)
+    iter = move _2
     loop {
         storage_live(_6)
         storage_live(_7)
         storage_live(_8)
-        _8 = &mut iter_5
+        _8 = &mut iter
         _7 = &two-phase-mut (*_8)
         _6 = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'34, '36, u8>[{built_in impl core::marker::Sized for u8}](move _7)
         storage_dead(_7)
@@ -234,23 +234,23 @@ fn test_crate::f<'_0>(blocks_1: &'_0 mut [u8])
     _0 = ()
     storage_dead(_8)
     storage_dead(_6)
-    storage_dead(iter_5)
+    storage_dead(iter)
     storage_dead(_2)
     return
 }
 
-fn test_crate::g<'_0, '_1>(s0_1: &'_0 [u8], s1_2: &'_1 [u8])
+fn test_crate::g<'_0, '_1>(s0: &'_0 [u8], s1: &'_1 [u8])
 {
     let _0: (); // return
-    let s0_1: &'1 [u8]; // arg #1
-    let s1_2: &'2 [u8]; // arg #2
+    let s0: &'1 [u8]; // arg #1
+    let s1: &'2 [u8]; // arg #2
     let _3: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'14, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'15, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'14, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'15, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
     let _4: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'20, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'21, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'20, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'21, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
     let _5: core::slice::iter::Iter<'26, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
     let _6: &'27 [u8]; // anonymous local
     let _7: core::slice::iter::Iter<'28, u8>[{built_in impl core::marker::Sized for u8}]; // anonymous local
     let _8: &'29 [u8]; // anonymous local
-    let iter_9: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'30, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'31, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'30, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'31, u8>[{built_in impl core::marker::Sized for u8}]}]; // local
+    let iter: core::iter::adapters::zip::Zip<core::slice::iter::Iter<'30, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'31, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'30, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'31, u8>[{built_in impl core::marker::Sized for u8}]}]; // local
     let _10: core::option::Option<(&'51 u8, &'52 u8)>[{built_in impl core::marker::Sized for (&'51 u8, &'52 u8)}]; // anonymous local
     let _11: &'64 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'65, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'66, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'65, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'66, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
     let _12: &'71 mut core::iter::adapters::zip::Zip<core::slice::iter::Iter<'72, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'73, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'72, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'73, u8>[{built_in impl core::marker::Sized for u8}]}]; // anonymous local
@@ -260,12 +260,12 @@ fn test_crate::g<'_0, '_1>(s0_1: &'_0 [u8], s1_2: &'_1 [u8])
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &(*s0_1) with_metadata(copy s0_1.metadata)
+    _6 = &(*s0) with_metadata(copy s0.metadata)
     _5 = core::slice::{[T]}::iter<'79, u8>[{built_in impl core::marker::Sized for u8}](move _6)
     storage_dead(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = &(*s1_2) with_metadata(copy s1_2.metadata)
+    _8 = &(*s1) with_metadata(copy s1.metadata)
     _7 = core::slice::{[T]}::iter<'81, u8>[{built_in impl core::marker::Sized for u8}](move _8)
     storage_dead(_8)
     _4 = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'83, u8, core::slice::iter::Iter<'84, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for u8}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'84, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'83, u8>[{built_in impl core::marker::Sized for u8}]}, core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::slice::iter::Iter<'84, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'84, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'84, u8>[{built_in impl core::marker::Sized for u8}]]](move _5, move _7)
@@ -273,13 +273,13 @@ fn test_crate::g<'_0, '_1>(s0_1: &'_0 [u8], s1_2: &'_1 [u8])
     storage_dead(_5)
     _3 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::iter::adapters::zip::Zip<core::slice::iter::Iter<'120, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'122, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'120, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'122, u8>[{built_in impl core::marker::Sized for u8}]}]>[{built_in impl core::marker::Sized for core::iter::adapters::zip::Zip<core::slice::iter::Iter<'120, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'122, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'120, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'122, u8>[{built_in impl core::marker::Sized for u8}]}]}, core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}<core::slice::iter::Iter<'120, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'122, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'120, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'122, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'120, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'122, u8>[{built_in impl core::marker::Sized for u8}]]](move _4)
     storage_dead(_4)
-    storage_live(iter_9)
-    iter_9 = move _3
+    storage_live(iter)
+    iter = move _3
     loop {
         storage_live(_10)
         storage_live(_11)
         storage_live(_12)
-        _12 = &mut iter_9
+        _12 = &mut iter
         _11 = &two-phase-mut (*_12)
         _10 = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::next<'214, core::slice::iter::Iter<'197, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::Iter<'198, u8>[{built_in impl core::marker::Sized for u8}]>[{built_in impl core::marker::Sized for core::slice::iter::Iter<'197, u8>[{built_in impl core::marker::Sized for u8}]}, {built_in impl core::marker::Sized for core::slice::iter::Iter<'198, u8>[{built_in impl core::marker::Sized for u8}]}, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'197, u8>[{built_in impl core::marker::Sized for u8}], core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}<'198, u8>[{built_in impl core::marker::Sized for u8}]](move _11)
         storage_dead(_11)
@@ -297,7 +297,7 @@ fn test_crate::g<'_0, '_1>(s0_1: &'_0 [u8], s1_2: &'_1 [u8])
     _0 = ()
     storage_dead(_12)
     storage_dead(_10)
-    storage_dead(iter_9)
+    storage_dead(iter)
     storage_dead(_3)
     return
 }

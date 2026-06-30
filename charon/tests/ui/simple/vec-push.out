@@ -186,7 +186,7 @@ where
 }
 
 // Full name: alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::push_mut
-pub fn push_mut<'_0, T, A>(self_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1], value_2: T) -> &'_0 mut T
+pub fn push_mut<'_0, T, A>(self_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1], value: T) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -194,22 +194,22 @@ where
 {
     let _0: &'1 mut T; // return
     let self_1: &'3 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
-    let value_2: T; // arg #2
-    let len_3: usize; // local
+    let value: T; // arg #2
+    let len: usize; // local
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: (); // anonymous local
     let _7: &'7 mut RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
-    let end_8: *mut T; // local
+    let end: *mut T; // local
     let self_9: *mut T; // local
-    let src_10: T; // local
+    let src: T; // local
     let self_11: UsizeNoHighBit; // local
     let _12: NonNull<u8>; // anonymous local
 
     storage_live(_6)
-    storage_live(end_8)
-    storage_live(len_3)
-    len_3 = copy ((*self_1)).len
+    storage_live(end)
+    storage_live(len)
+    len = copy ((*self_1)).len
     storage_live(_4)
     storage_live(_5)
     switch copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]] {
@@ -223,7 +223,7 @@ where
             storage_dead(self_11)
         },
     }
-    _4 = copy len_3 == move _5
+    _4 = copy len == move _5
     if move _4 {
         storage_dead(_5)
         storage_live(_7)
@@ -239,47 +239,47 @@ where
     _12 = copy (((((*self_1)).buf).0).0).0
     self_9 = transmute<NonNull<u8>, *mut T>(copy _12)
     storage_dead(_12)
-    end_8 = copy self_9 offset copy len_3
+    end = copy self_9 offset copy len
     storage_dead(self_9)
-    storage_live(src_10)
-    src_10 = move value_2
-    (*end_8) = move src_10
-    storage_dead(src_10)
-    ((*self_1)).len = copy len_3 wrap.+ const 1usize
-    _0 = &mut (*end_8)
-    storage_dead(len_3)
+    storage_live(src)
+    src = move value
+    (*end) = move src
+    storage_dead(src)
+    ((*self_1)).len = copy len wrap.+ const 1usize
+    _0 = &mut (*end)
+    storage_dead(len)
     return
 }
 
 // Full name: alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::push
-pub fn push<'_0, T, A>(self_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1], value_2: T)
+pub fn push<'_0, T, A>(self: &'_0 mut Vec<T>[TraitClause0, TraitClause1], value: T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Destruct),
 {
     let _0: (); // return
-    let self_1: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
-    let value_2: T; // arg #2
+    let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
+    let value: T; // arg #2
     let _3: &'3 mut T; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = push_mut<'5, T, A>[TraitClause0, TraitClause1, TraitClause2](move self_1, move value_2)
+    _3 = push_mut<'5, T, A>[TraitClause0, TraitClause1, TraitClause2](move self, move value)
     storage_dead(_3)
     return
 }
 
 // Full name: test_crate::vec
-fn vec<'_0>(x_1: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
+fn vec<'_0>(x: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
-    let x_1: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
+    let x: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'2 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
     _0 = ()
     storage_live(_2)
-    _2 = &two-phase-mut (*x_1)
+    _2 = &two-phase-mut (*x)
     _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, const 42u32)
     storage_dead(_2)
     return

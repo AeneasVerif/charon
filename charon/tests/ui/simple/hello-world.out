@@ -16,22 +16,22 @@ pub fn to_string::<str><'_0>(_1: &'_0 str) -> String
 fn main()
 {
     let _0: (); // return
-    let a_1: String; // local
+    let a: String; // local
     let _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local
 
     _0 = ()
-    storage_live(a_1)
+    storage_live(a)
     storage_live(_2)
     storage_live(_3)
     _3 = const "Hello, world!"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    a_1 = to_string::<str><'5>(move _2)
+    a = to_string::<str><'5>(move _2)
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()
-    conditional_drop[drop_glue<'6>] a_1
-    storage_dead(a_1)
+    conditional_drop[drop_glue<'6>] a
+    storage_dead(a)
     return
 }
 

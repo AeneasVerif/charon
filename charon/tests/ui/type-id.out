@@ -15,9 +15,9 @@ pub fn type_id<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
 {
-    let ret_0: TypeId; // return
+    let ret: TypeId; // return
 
-    ret_0 = const TypeId(T)
+    ret = const TypeId(T)
     return
 }
 

@@ -30,59 +30,59 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
-pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self_1: &'_0 mut Self, source_2: &'_1 Self)
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self: &'_0 mut Self, source: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
     TraitClause1: (Self: Destruct),
 {
     let _0: (); // return
-    let self_1: &'1 mut Self; // arg #1
-    let source_2: &'3 Self; // arg #2
+    let self: &'1 mut Self; // arg #1
+    let source: &'3 Self; // arg #2
     let _3: Self; // anonymous local
     let _4: &'4 Self; // anonymous local
 
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*source_2) with_metadata(copy source_2.metadata)
+    _4 = &(*source) with_metadata(copy source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
     storage_dead(_4)
-    drop[TraitClause1::drop_glue<'6>] (*self_1)
-    (*self_1) = move _3
+    drop[TraitClause1::drop_glue<'6>] (*self)
+    (*self) = move _3
     _0 = ()
     storage_dead(_3)
     return
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn clone<'_0>(self_1: &'_0 u8) -> u8
+pub fn clone<'_0>(self: &'_0 u8) -> u8
 {
     let _0: u8; // return
-    let self_1: &'1 u8; // arg #1
+    let self: &'1 u8; // arg #1
 
-    _0 = copy (*self_1)
+    _0 = copy (*self)
     return
 }
 
 // Full name: core::clone::impls::{impl Clone for u8}::clone_from
-pub fn impl_Clone_for_u8::clone_from<'_0, '_1>(self_1: &'_0 mut u8, source_2: &'_1 u8)
+pub fn impl_Clone_for_u8::clone_from<'_0, '_1>(self: &'_0 mut u8, source: &'_1 u8)
 where
     TraitClause0: (u8: Destruct),
 {
     let _0: (); // return
-    let self_1: &'1 mut u8; // arg #1
-    let source_2: &'3 u8; // arg #2
+    let self: &'1 mut u8; // arg #1
+    let source: &'3 u8; // arg #2
     let _3: u8; // anonymous local
     let _4: &'4 u8; // anonymous local
 
     _0 = ()
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*source_2)
+    _4 = &(*source)
     _3 = clone<'5>(move _4)
     storage_dead(_4)
-    drop[TraitClause0::drop_glue<'6>] (*self_1)
-    (*self_1) = move _3
+    drop[TraitClause0::drop_glue<'6>] (*self)
+    (*self) = move _3
     _0 = ()
     storage_dead(_3)
     return
@@ -118,18 +118,18 @@ impl "impl_Copy_for_u8" Copy for u8 {
     non-dyn-compatible
 }
 
-pub fn core::num::{u8}::saturating_add(self_1: u8, rhs_2: u8) -> u8
+pub fn core::num::{u8}::saturating_add(self: u8, rhs: u8) -> u8
 {
     let _0: u8; // return
-    let self_1: u8; // arg #1
-    let rhs_2: u8; // arg #2
+    let self: u8; // arg #1
+    let rhs: u8; // arg #2
     let _3: u8; // anonymous local
     let _4: u8; // anonymous local
 
     storage_live(_3)
-    _3 = copy self_1
+    _3 = copy self
     storage_live(_4)
-    _4 = copy rhs_2
+    _4 = copy rhs
     _0 = core::intrinsics::saturating_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
@@ -137,18 +137,18 @@ pub fn core::num::{u8}::saturating_add(self_1: u8, rhs_2: u8) -> u8
 }
 
 // Full name: core::num::{u8}::wrapping_add
-pub fn wrapping_add(self_1: u8, rhs_2: u8) -> u8
+pub fn wrapping_add(self: u8, rhs: u8) -> u8
 {
     let _0: u8; // return
-    let self_1: u8; // arg #1
-    let rhs_2: u8; // arg #2
+    let self: u8; // arg #1
+    let rhs: u8; // arg #2
     let _3: u8; // anonymous local
     let _4: u8; // anonymous local
 
     storage_live(_3)
-    _3 = copy self_1
+    _3 = copy self
     storage_live(_4)
-    _4 = copy rhs_2
+    _4 = copy rhs
     _0 = move _3 wrap.+ move _4
     storage_dead(_4)
     storage_dead(_3)
@@ -156,13 +156,13 @@ pub fn wrapping_add(self_1: u8, rhs_2: u8) -> u8
 }
 
 // Full name: core::num::{u8}::overflowing_add
-pub fn overflowing_add(self_1: u8, rhs_2: u8) -> (u8, bool)
+pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
 {
     let _0: (u8, bool); // return
-    let self_1: u8; // arg #1
-    let rhs_2: u8; // arg #2
-    let a_3: u8; // local
-    let b_4: bool; // local
+    let self: u8; // arg #1
+    let rhs: u8; // arg #2
+    let a: u8; // local
+    let b: bool; // local
     let _5: (u8, bool); // anonymous local
     let _6: u8; // anonymous local
     let _7: u8; // anonymous local
@@ -171,26 +171,26 @@ pub fn overflowing_add(self_1: u8, rhs_2: u8) -> (u8, bool)
 
     storage_live(_5)
     storage_live(_6)
-    _6 = copy self_1
+    _6 = copy self
     storage_live(_7)
-    _7 = copy rhs_2
+    _7 = copy rhs
     _5 = move _6 checked.+ move _7
     storage_dead(_7)
     storage_dead(_6)
-    storage_live(a_3)
-    a_3 = copy _5.0
-    storage_live(b_4)
-    b_4 = copy _5.1
+    storage_live(a)
+    a = copy _5.0
+    storage_live(b)
+    b = copy _5.1
     storage_dead(_5)
     storage_live(_8)
-    _8 = copy a_3
+    _8 = copy a
     storage_live(_9)
-    _9 = copy b_4
+    _9 = copy b
     _0 = (move _8, move _9)
     storage_dead(_9)
     storage_dead(_8)
-    storage_dead(b_4)
-    storage_dead(a_3)
+    storage_dead(b)
+    storage_dead(a)
     return
 }
 

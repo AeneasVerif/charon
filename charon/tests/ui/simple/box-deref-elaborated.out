@@ -39,61 +39,61 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: test_crate::into_inner
-fn into_inner(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]) -> String
+fn into_inner(b: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]) -> String
 {
     let _0: String; // return
-    let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
+    let b: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let _3: (); // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    _0 = move (*b_1)
-    _2 = &mut b_1
+    _0 = move (*b)
+    _2 = &mut b
     _3 = impl_Drop_for_Box::drop<'4, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _2)
     return
 }
 
 // Full name: test_crate::write
-fn write(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], s_2: String)
+fn write(b: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], s: String)
 {
     let _0: (); // return
-    let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
-    let s_2: String; // arg #2
+    let b: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
+    let s: String; // arg #2
     let _3: String; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = move s_2
-    drop[impl_Destruct_for_String::drop_glue<'0>] (*b_1)
-    (*b_1) = move _3
+    _3 = move s
+    drop[impl_Destruct_for_String::drop_glue<'0>] (*b)
+    (*b) = move _3
     storage_dead(_3)
     _0 = ()
-    drop[impl_Destruct_for_Box::drop_glue<'1, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
+    drop[impl_Destruct_for_Box::drop_glue<'1, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b
     return
 }
 
 // Full name: test_crate::borrow
-fn borrow(b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}])
+fn borrow(b: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}])
 {
     let _0: (); // return
-    let b_1: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
+    let b: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut String; // anonymous local
 
     _0 = ()
     storage_live(_2)
-    _2 = &mut (*b_1)
+    _2 = &mut (*b)
     storage_dead(_2)
     _0 = ()
-    drop[impl_Destruct_for_Box::drop_glue<'2, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b_1
+    drop[impl_Destruct_for_Box::drop_glue<'2, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b
     return
 }
 
 // Full name: test_crate::reborrow
-fn reborrow<'_0>(b_1: &'_0 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]) -> &'_0 mut String
+fn reborrow<'_0>(b: &'_0 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]) -> &'_0 mut String
 {
     let _0: &'1 mut String; // return
-    let b_1: &'3 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
+    let b: &'3 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'4 mut String; // anonymous local
     let _3: &'5 mut alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let _4: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
@@ -101,7 +101,7 @@ fn reborrow<'_0>(b_1: &'_0 mut alloc::boxed::Box<String>[{built_in impl MetaSize
     storage_live(_4)
     storage_live(_2)
     storage_live(_3)
-    _3 = &mut (*b_1)
+    _3 = &mut (*b)
     _4 = copy (*_3)
     _2 = &mut (*_4)
     _0 = &mut (*_2)
@@ -117,17 +117,17 @@ struct Struct {
 }
 
 // Full name: test_crate::field
-fn field(b_1: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]) -> String
+fn field(b: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]) -> String
 {
     let _0: String; // return
-    let b_1: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // arg #1
+    let b: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'1 mut alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}]; // anonymous local
     let _3: (); // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    _0 = move ((*b_1)).b
-    _2 = &mut b_1
+    _0 = move ((*b)).b
+    _2 = &mut b
     _3 = impl_Drop_for_Box::drop<'4, Struct, Global>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}](move _2)
     return
 }

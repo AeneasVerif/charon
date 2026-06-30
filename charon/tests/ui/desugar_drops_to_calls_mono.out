@@ -76,15 +76,15 @@ fn use_string(_1: String)
 {
     let _0: (); // return
     let _1: String; // arg #1
-    let drop_arg_2: &'_ mut String; // local
-    let drop_ret_3: (); // local
+    let drop_arg: &'_ mut String; // local
+    let drop_ret: (); // local
 
     _0 = ()
     _0 = ()
-    storage_live(drop_arg_2)
-    drop_arg_2 = &mut _1
-    storage_live(drop_ret_3)
-    drop_ret_3 = impl_Destruct_for_String::drop_glue<'0>(move drop_arg_2)
+    storage_live(drop_arg)
+    drop_arg = &mut _1
+    storage_live(drop_ret)
+    drop_ret = impl_Destruct_for_String::drop_glue<'0>(move drop_arg)
     return
 }
 
@@ -93,15 +93,15 @@ fn use_vec(_1: Vec::<i32, Global>)
 {
     let _0: (); // return
     let _1: Vec::<i32, Global>; // arg #1
-    let drop_arg_2: &'_ mut Vec::<i32, Global>; // local
-    let drop_ret_3: (); // local
+    let drop_arg: &'_ mut Vec::<i32, Global>; // local
+    let drop_ret: (); // local
 
     _0 = ()
     _0 = ()
-    storage_live(drop_arg_2)
-    drop_arg_2 = &mut _1
-    storage_live(drop_ret_3)
-    drop_ret_3 = {impl Destruct for Vec::<i32, Global>}::drop_glue::<i32, Global><'0>(move drop_arg_2)
+    storage_live(drop_arg)
+    drop_arg = &mut _1
+    storage_live(drop_ret)
+    drop_ret = {impl Destruct for Vec::<i32, Global>}::drop_glue::<i32, Global><'0>(move drop_arg)
     return
 }
 
@@ -123,10 +123,10 @@ struct Point {
 }
 
 // Full name: test_crate::{impl Drop for Point}::drop
-pub fn drop<'_0>(self_1: &'_0 mut Point)
+pub fn drop<'_0>(self: &'_0 mut Point)
 {
     let _0: (); // return
-    let self_1: &'1 mut Point; // arg #1
+    let self: &'1 mut Point; // arg #1
     let _2: (); // anonymous local
     let _3: Arguments::<'_>; // anonymous local
 
@@ -186,27 +186,27 @@ impl "impl_Drop_for_Point" Drop for Point {
 fn main()
 {
     let _0: (); // return
-    let p_1: Point; // local
+    let p: Point; // local
     let _2: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
     let _3: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
-    let drop_arg_4: &'_ mut Point; // local
-    let drop_ret_5: (); // local
+    let drop_arg: &'_ mut Point; // local
+    let drop_ret: (); // local
 
     _0 = ()
-    storage_live(p_1)
+    storage_live(p)
     storage_live(_2)
     _2 = @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const 1i32)
     storage_live(_3)
     _3 = @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const 2i32)
-    p_1 = Point { x: move _2, y: move _3 }
+    p = Point { x: move _2, y: move _3 }
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    storage_live(drop_arg_4)
-    drop_arg_4 = &mut p_1
-    storage_live(drop_ret_5)
-    drop_ret_5 = impl_Destruct_for_Point::drop_glue<'1>(move drop_arg_4)
-    storage_dead(p_1)
+    storage_live(drop_arg)
+    drop_arg = &mut p
+    storage_live(drop_ret)
+    drop_ret = impl_Destruct_for_Point::drop_glue<'1>(move drop_arg)
+    storage_dead(p)
     return
 }
 

@@ -101,18 +101,18 @@ where
 
 // Full name: core::mem::discriminant
 #[lang_item("mem_discriminant")]
-pub fn discriminant<'_0, T>(v_1: &'_0 T) -> Discriminant<T>[TraitClause0]
+pub fn discriminant<'_0, T>(v: &'_0 T) -> Discriminant<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     let _0: Discriminant<T>[TraitClause0]; // return
-    let v_1: &'1 T; // arg #1
+    let v: &'1 T; // arg #1
     let _2: {built_in impl DiscriminantKind for T}::Discriminant; // anonymous local
     let _3: &'2 T; // anonymous local
 
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*v_1)
+    _3 = &(*v)
     _2 = @discriminant((*_3))
     storage_dead(_3)
     _0 = Discriminant { 0: move _2 }
@@ -121,16 +121,16 @@ where
 }
 
 // Full name: test_crate::f
-pub fn f<'_0, T>(x_1: &'_0 T) -> Discriminant<T>[TraitClause0]
+pub fn f<'_0, T>(x: &'_0 T) -> Discriminant<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     let _0: Discriminant<T>[TraitClause0]; // return
-    let x_1: &'1 T; // arg #1
+    let x: &'1 T; // arg #1
     let _2: &'2 T; // anonymous local
 
     storage_live(_2)
-    _2 = &(*x_1)
+    _2 = &(*x)
     _0 = discriminant<'4, T>[TraitClause0](move _2)
     storage_dead(_2)
     return

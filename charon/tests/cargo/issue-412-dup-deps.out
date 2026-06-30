@@ -53,8 +53,8 @@ pub fn mydup#1::hello() -> u32
 fn main()
 {
     let _0: (); // return
-    let a_1: u32; // local
-    let b_2: u32; // local
+    let a: u32; // local
+    let b: u32; // local
     let _3: (&'3 u32, &'4 u32); // anonymous local
     let _4: &'5 u32; // anonymous local
     let _5: u32; // anonymous local
@@ -62,12 +62,12 @@ fn main()
     let _7: u32; // anonymous local
     let _8: (u32, bool); // anonymous local
     let _9: &'6 u32; // anonymous local
-    let left_val_10: &'7 u32; // local
-    let right_val_11: &'8 u32; // local
+    let left_val: &'7 u32; // local
+    let right_val: &'8 u32; // local
     let _12: bool; // anonymous local
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
-    let kind_15: AssertKind; // local
+    let kind: AssertKind; // local
     let _16: AssertKind; // anonymous local
     let _17: &'9 u32; // anonymous local
     let _18: &'10 u32; // anonymous local
@@ -82,17 +82,17 @@ fn main()
     storage_live(_8)
     storage_live(_22)
     _0 = ()
-    storage_live(a_1)
-    a_1 = mydup::hello()
-    storage_live(b_2)
-    b_2 = mydup#1::hello()
+    storage_live(a)
+    a = mydup::hello()
+    storage_live(b)
+    b = mydup#1::hello()
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = copy a_1
+    _6 = copy a
     storage_live(_7)
-    _7 = copy b_2
+    _7 = copy b
     _8 = copy _6 checked.+ copy _7
     assert(move _8.1 == false) (overflow) else panic
     storage_live(_23)
@@ -111,31 +111,31 @@ fn main()
     _3 = (move _4, move _9)
     storage_dead(_9)
     storage_dead(_4)
-    storage_live(left_val_10)
-    left_val_10 = copy _3.0
-    storage_live(right_val_11)
-    right_val_11 = copy _3.1
+    storage_live(left_val)
+    left_val = copy _3.0
+    storage_live(right_val)
+    right_val = copy _3.1
     storage_live(_12)
     storage_live(_13)
-    _13 = copy (*left_val_10)
+    _13 = copy (*left_val)
     storage_live(_14)
-    _14 = copy (*right_val_11)
+    _14 = copy (*right_val)
     _12 = move _13 == move _14
     if move _12 {
     } else {
         storage_dead(_14)
         storage_dead(_13)
-        storage_live(kind_15)
-        kind_15 = AssertKind::Eq {  }
+        storage_live(kind)
+        kind = AssertKind::Eq {  }
         storage_live(_16)
-        _16 = move kind_15
+        _16 = move kind
         storage_live(_17)
         storage_live(_18)
-        _18 = &(*left_val_10)
+        _18 = &(*left_val)
         _17 = &(*_18)
         storage_live(_19)
         storage_live(_20)
-        _20 = &(*right_val_11)
+        _20 = &(*right_val)
         _19 = &(*_20)
         storage_live(_21)
         _21 = Option::None {  }
@@ -144,13 +144,13 @@ fn main()
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(right_val_11)
-    storage_dead(left_val_10)
+    storage_dead(right_val)
+    storage_dead(left_val)
     storage_dead(_5)
     storage_dead(_3)
     _0 = ()
-    storage_dead(b_2)
-    storage_dead(a_1)
+    storage_dead(b)
+    storage_dead(a)
     return
 }
 

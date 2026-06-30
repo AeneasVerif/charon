@@ -1,17 +1,17 @@
-pub fn multi_targets::no_os(left_1: u64, right_2: u64) -> u64
+pub fn multi_targets::no_os(left: u64, right: u64) -> u64
 {
     let _0: u64; // return
-    let left_1: u64; // arg #1
-    let right_2: u64; // arg #2
+    let left: u64; // arg #1
+    let right: u64; // arg #2
     let _3: u64; // anonymous local
     let _4: u64; // anonymous local
     let _5: (u64, bool); // anonymous local
 
     storage_live(_5)
     storage_live(_3)
-    _3 = copy left_1
+    _3 = copy left
     storage_live(_4)
-    _4 = copy right_2
+    _4 = copy right
     _5 = copy _3 checked.+ copy _4
     assert(move _5.1 == false) (overflow) else panic
     _0 = move _5.0
@@ -20,20 +20,20 @@ pub fn multi_targets::no_os(left_1: u64, right_2: u64) -> u64
     return
 }
 
-pub fn multi_targets::on_unix(left_1: u64, right_2: u64) -> u64
+pub fn multi_targets::on_unix(left: u64, right: u64) -> u64
 {
     let _0: u64; // return
-    let left_1: u64; // arg #1
-    let right_2: u64; // arg #2
+    let left: u64; // arg #1
+    let right: u64; // arg #2
     let _3: u64; // anonymous local
     let _4: u64; // anonymous local
     let _5: (u64, bool); // anonymous local
 
     storage_live(_5)
     storage_live(_3)
-    _3 = copy left_1
+    _3 = copy left
     storage_live(_4)
-    _4 = copy right_2
+    _4 = copy right
     _5 = copy _3 checked.+ copy _4
     assert(move _5.1 == false) (overflow) else panic
     _0 = move _5.0

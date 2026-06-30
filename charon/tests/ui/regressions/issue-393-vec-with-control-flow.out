@@ -74,27 +74,27 @@ where
 = <opaque>
 
 // Full name: test_crate::next
-pub fn next(b_1: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]
+pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]
 {
     let _0: Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]; // return
-    let b_1: bool; // arg #1
-    let vec_2: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let b: bool; // arg #1
+    let vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
     let _3: alloc::boxed::Box<MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]; // anonymous local
     let _4: u8; // anonymous local
     let _5: bool; // anonymous local
     let _6: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // anonymous local
-    let ret_7: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
-    let x_8: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // local
-    let y_9: alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}]; // local
+    let ret: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]; // local
+    let x: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // local
+    let y: alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}]; // local
     let _10: [u8; 1usize]; // anonymous local
     let _11: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
-    storage_live(vec_2)
+    storage_live(vec)
     storage_live(_3)
     _3 = new_uninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]()
     storage_live(_4)
     storage_live(_5)
-    _5 = copy b_1
+    _5 = copy b
     if move _5 {
     } else {
         _0 = Option::None {  }
@@ -102,7 +102,7 @@ pub fn next(b_1: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in
         storage_dead(_4)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _3
         storage_dead(_3)
-        storage_dead(vec_2)
+        storage_dead(vec)
         return
     }
     _4 = const 42u8
@@ -113,22 +113,22 @@ pub fn next(b_1: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in
     storage_live(_11)
     _11 = write<[u8; 1usize], Global>[{built_in impl Sized for [u8; 1usize]}, {built_in impl Sized for Global}](move _3, move _10)
     storage_dead(_3)
-    storage_live(ret_7)
-    storage_live(x_8)
-    storage_live(y_9)
+    storage_live(ret)
+    storage_live(x)
+    storage_live(y)
     storage_dead(_10)
-    x_8 = move _11
+    x = move _11
     storage_dead(_11)
-    y_9 = unsize_cast<alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x_8)
-    ret_7 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_9)
-    vec_2 = move ret_7
+    y = unsize_cast<alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x)
+    ret = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y)
+    vec = move ret
     storage_live(_6)
-    _6 = move vec_2
+    _6 = move vec
     _0 = Option::Some { 0: move _6 }
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _6
     storage_dead(_6)
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<'4, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] vec_2
-    storage_dead(vec_2)
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'4, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] vec
+    storage_dead(vec)
     return
 }
 

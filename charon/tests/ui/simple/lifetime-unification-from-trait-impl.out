@@ -37,10 +37,10 @@ trait Convert<Self, T>
 }
 
 // Full name: test_crate::{impl Convert<&'a [u8; 4usize]> for &'a u32}::method
-fn method<'a>(self_1: &'a u32) -> &'a [u8; 4usize]
+fn method<'a>(self: &'a u32) -> &'a [u8; 4usize]
 {
     let _0: &'1 [u8; 4usize]; // return
-    let self_1: &'3 u32; // arg #1
+    let self: &'3 u32; // arg #1
     let _2: &'4 [u8; 4usize]; // anonymous local
     let _3: *const [u8; 4usize]; // anonymous local
     let _4: *const u32; // anonymous local
@@ -48,7 +48,7 @@ fn method<'a>(self_1: &'a u32) -> &'a [u8; 4usize]
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &raw const (*self_1)
+    _4 = &raw const (*self)
     _3 = cast<u32, [u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}](move _4)
     storage_dead(_4)
     _2 = &(*_3)
@@ -67,29 +67,29 @@ impl<'a> Convert<&'a [u8; 4usize]> for &'a u32 {
 }
 
 // Full name: test_crate::convert
-fn convert<T, U>(x_1: T) -> U
+fn convert<T, U>(x: T) -> U
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
     TraitClause2: (T: Convert<U>),
 {
     let _0: U; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move x_1
+    _2 = move x
     _0 = TraitClause2::method(move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x
     return
 }
 
 // Full name: test_crate::to_bytes_by_ref
-pub fn to_bytes_by_ref<'b>(s_1: &'b u32) -> &'b [u8; 4usize]
+pub fn to_bytes_by_ref<'b>(s: &'b u32) -> &'b [u8; 4usize]
 {
     let _0: &'1 [u8; 4usize]; // return
-    let s_1: &'3 u32; // arg #1
+    let s: &'3 u32; // arg #1
     let _2: &'4 [u8; 4usize]; // anonymous local
     let _3: &'5 u32; // anonymous local
 
@@ -97,7 +97,7 @@ pub fn to_bytes_by_ref<'b>(s_1: &'b u32) -> &'b [u8; 4usize]
     storage_live(_3)
     // Here `convert` is given generics `<&'_ u32, &'_ [u8; 4]>`, which loses the information
     // that the lifetime is the same by virtue of the trait impl.
-    _3 = copy s_1
+    _3 = copy s
     _2 = convert<&'9 u32, &'9 [u8; 4usize]>[{built_in impl Sized for &'9 u32}, {built_in impl Sized for &'9 [u8; 4usize]}, {impl Convert<&'a [u8; 4usize]> for &'a u32}<'9>](move _3)
     _0 = &(*_2)
     storage_dead(_3)

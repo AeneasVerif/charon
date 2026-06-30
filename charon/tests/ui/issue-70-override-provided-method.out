@@ -134,18 +134,18 @@ impl "impl_StructuralPartialEq_for_Foo" StructuralPartialEq for Foo {
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
-pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> bool
+pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
 {
     let _0: bool; // return
-    let self_1: &'1 Foo; // arg #1
-    let other_2: &'2 Foo; // arg #2
+    let self: &'1 Foo; // arg #1
+    let other: &'2 Foo; // arg #2
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
     storage_live(_3)
-    _3 = copy ((*self_1)).0
+    _3 = copy ((*self)).0
     storage_live(_4)
-    _4 = copy ((*other_2)).0
+    _4 = copy ((*other)).0
     _0 = move _3 == move _4
     storage_dead(_4)
     storage_dead(_3)
@@ -159,11 +159,11 @@ impl "impl_PartialEq_Foo_for_Foo" PartialEq<Foo> for Foo {
 }
 
 // Full name: test_crate::{impl PartialOrd<Foo> for Foo}::partial_cmp
-pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self_1: &'_0 Foo, other_2: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
     let _0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return
-    let self_1: &'1 Foo; // arg #1
-    let other_2: &'2 Foo; // arg #2
+    let self: &'1 Foo; // arg #1
+    let other: &'2 Foo; // arg #2
     let _3: &'4 u32; // anonymous local
     let _4: &'5 u32; // anonymous local
     let _5: &'6 u32; // anonymous local
@@ -171,11 +171,11 @@ pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self_1: &'_0 Foo, othe
 
     storage_live(_3)
     storage_live(_4)
-    _4 = &((*self_1)).0
+    _4 = &((*self)).0
     _3 = &(*_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &((*other_2)).0
+    _6 = &((*other)).0
     _5 = &(*_6)
     _0 = impl_PartialOrd_u32_for_u32::partial_cmp<'10, '11>(move _3, move _5)
     storage_dead(_6)

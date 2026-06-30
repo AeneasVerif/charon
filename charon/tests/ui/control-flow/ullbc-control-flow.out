@@ -228,12 +228,12 @@ where
 = <opaque>
 
 // Full name: test_crate::nested_loops_enum
-pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
+pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
 {
     let _0: usize; // return
-    let step_out_1: usize; // arg #1
-    let step_in_2: usize; // arg #2
-    let s_3: usize; // local
+    let step_out: usize; // arg #1
+    let step_in: usize; // arg #2
+    let s: usize; // local
     let _4: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _5: Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let iter_6: Range<i32>[{built_in impl Sized for i32}]; // local
@@ -268,8 +268,8 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_19);
         storage_live(_27);
         storage_live(_28);
-        storage_live(s_3);
-        s_3 = const 0usize;
+        storage_live(s);
+        s = const 0usize;
         storage_live(_4);
         storage_live(_5);
         _5 = Range { start: const 0i32, end: const 128i32 };
@@ -310,15 +310,15 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_12);
         storage_live(_13);
         storage_live(_14);
-        _14 = copy step_out_1;
+        _14 = copy step_out;
         _13 = Range { start: const 0usize, end: move _14 };
         storage_dead(_14);
         _12 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _13) -> bb8 (unwind: bb1);
     }
 
     bb6: {
-        _11 = copy s_3 panic.+ const 1usize;
-        s_3 = move _11;
+        _11 = copy s panic.+ const 1usize;
+        s = move _11;
         storage_dead(_9);
         storage_dead(_7);
         goto bb3;
@@ -356,8 +356,8 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_dead(_16);
         storage_dead(iter_15);
         storage_dead(_12);
-        _0 = copy s_3;
-        storage_dead(s_3);
+        _0 = copy s;
+        storage_dead(s);
         return;
     }
 
@@ -365,7 +365,7 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
         storage_live(_20);
         storage_live(_21);
         storage_live(_22);
-        _22 = copy step_in_2;
+        _22 = copy step_in;
         _21 = Range { start: const 0usize, end: move _22 };
         storage_dead(_22);
         _20 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _21) -> bb14 (unwind: bb1);
@@ -408,11 +408,11 @@ pub fn nested_loops_enum(step_out_1: usize, step_in_2: usize) -> usize
     }
 
     bb18: {
-        _28 = copy s_3 panic.+ const 1usize;
-        s_3 = move _28;
+        _28 = copy s panic.+ const 1usize;
+        s = move _28;
         storage_live(_29);
         storage_live(_30);
-        _30 = copy s_3;
+        _30 = copy s;
         _29 = move _30 >= const 1usize;
         if move _29 -> bb20 else -> bb21;
     }

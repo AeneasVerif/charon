@@ -73,7 +73,7 @@ where
 }
 
 // Full name: test_crate::{impl Iterator for Iter<'a, T>[TraitClause0]}::rposition
-fn rposition<'a, '_1, T, P>(self_1: &'_1 mut Iter<'a, T>[TraitClause0])
+fn rposition<'a, '_1, T, P>(self: &'_1 mut Iter<'a, T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (P: Sized),
@@ -82,7 +82,7 @@ where
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = (),
 {
     let _0: (); // return
-    let self_1: &'3 mut Iter<'4, T>[TraitClause0]; // arg #1
+    let self: &'3 mut Iter<'4, T>[TraitClause0]; // arg #1
 
     _0 = ()
     _0 = ()

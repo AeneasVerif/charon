@@ -5009,8 +5009,8 @@ where
 fn main()
 {
     let _0: (); // return
-    let a_1: [i32; 7usize]; // local
-    let i_2: i32; // local
+    let a: [i32; 7usize]; // local
+    let i: i32; // local
     let _3: IntoIter<i32, 7usize>[{built_in impl Sized for i32}]; // anonymous local
     let _4: IntoIter<i32, 7usize>[{built_in impl Sized for i32}]; // anonymous local
     let _5: [i32; 7usize]; // anonymous local
@@ -5051,16 +5051,16 @@ fn main()
     let _40: &'61 mut ChunksExact<'62, i32>[{built_in impl Sized for i32}]; // anonymous local
     let _41: &'63 mut ChunksExact<'64, i32>[{built_in impl Sized for i32}]; // anonymous local
     let _42: i32; // anonymous local
-    let expected_43: i32; // local
+    let expected: i32; // local
     let _44: (&'67 i32, &'68 i32); // anonymous local
     let _45: &'69 i32; // anonymous local
     let _46: &'70 i32; // anonymous local
-    let left_val_47: &'71 i32; // local
-    let right_val_48: &'72 i32; // local
+    let left_val: &'71 i32; // local
+    let right_val: &'72 i32; // local
     let _49: bool; // anonymous local
     let _50: i32; // anonymous local
     let _51: i32; // anonymous local
-    let kind_52: AssertKind; // local
+    let kind: AssertKind; // local
     let _53: AssertKind; // anonymous local
     let _54: &'73 i32; // anonymous local
     let _55: &'74 i32; // anonymous local
@@ -5072,14 +5072,14 @@ fn main()
     storage_live(_33)
     storage_live(_42)
     _0 = ()
-    storage_live(a_1)
-    a_1 = [const 0i32, const 1i32, const 2i32, const 3i32, const 4i32, const 5i32, const 6i32]
-    storage_live(i_2)
-    i_2 = const 0i32
+    storage_live(a)
+    a = [const 0i32, const 1i32, const 2i32, const 3i32, const 4i32, const 5i32, const 6i32]
+    storage_live(i)
+    i = const 0i32
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = copy a_1
+    _5 = copy a
     _4 = impl_IntoIterator_for_array::into_iter<i32, 7usize>[{built_in impl Sized for i32}](move _5)
     storage_dead(_5)
     _3 = impl_IntoIterator_for_T::into_iter<IntoIter<i32, 7usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7usize>[{built_in impl Sized for i32}]}, impl_Iterator_for_IntoIter<i32, 7usize>[{built_in impl Sized for i32}]](move _4)
@@ -5105,8 +5105,8 @@ fn main()
         v_10 = copy (_7 as variant Option::Some).0
         storage_live(_11)
         _11 = copy v_10
-        _12 = copy i_2 panic.+ copy _11
-        i_2 = move _12
+        _12 = copy i panic.+ copy _11
+        i = move _12
         storage_dead(_11)
         storage_dead(v_10)
         storage_dead(_9)
@@ -5123,7 +5123,7 @@ fn main()
     storage_live(_14)
     storage_live(_15)
     storage_live(_16)
-    _16 = &a_1
+    _16 = &a
     _15 = @ArrayToSliceShared<'_, i32, 7usize>(move _16)
     storage_dead(_16)
     _14 = iter<'95, i32>[{built_in impl Sized for i32}](move _15)
@@ -5151,7 +5151,7 @@ fn main()
         v_21 = copy (_18 as variant Option::Some).0
         storage_live(_22)
         storage_live(_23)
-        _23 = &two-phase-mut i_2
+        _23 = &two-phase-mut i
         storage_live(_24)
         _24 = copy v_21
         _22 = add_assign<'113, '115>(move _23, move _24)
@@ -5171,7 +5171,7 @@ fn main()
     storage_live(_26)
     storage_live(_27)
     storage_live(_28)
-    _28 = &a_1
+    _28 = &a
     _27 = @ArrayToSliceShared<'_, i32, 7usize>(move _28)
     storage_dead(_28)
     _26 = chunks<'118, i32>[{built_in impl Sized for i32}](move _27, const 2usize)
@@ -5195,8 +5195,8 @@ fn main()
             Option::Some => {
             },
         }
-        _33 = copy i_2 panic.+ const 1i32
-        i_2 = move _33
+        _33 = copy i panic.+ const 1i32
+        i = move _33
         storage_dead(_32)
         storage_dead(_30)
         continue 0
@@ -5209,7 +5209,7 @@ fn main()
     storage_live(_35)
     storage_live(_36)
     storage_live(_37)
-    _37 = &a_1
+    _37 = &a
     _36 = @ArrayToSliceShared<'_, i32, 7usize>(move _37)
     storage_dead(_37)
     _35 = chunks_exact<'134, i32>[{built_in impl Sized for i32}](move _36, const 2usize)
@@ -5233,8 +5233,8 @@ fn main()
             Option::Some => {
             },
         }
-        _42 = copy i_2 panic.+ const 1i32
-        i_2 = move _42
+        _42 = copy i panic.+ const 1i32
+        i = move _42
         storage_dead(_41)
         storage_dead(_39)
         continue 0
@@ -5243,41 +5243,41 @@ fn main()
     storage_dead(_39)
     storage_dead(iter_38)
     storage_dead(_34)
-    storage_live(expected_43)
-    expected_43 = const 28i32
+    storage_live(expected)
+    expected = const 28i32
     storage_live(_44)
     storage_live(_45)
-    _45 = &i_2
+    _45 = &i
     storage_live(_46)
-    _46 = &expected_43
+    _46 = &expected
     _44 = (move _45, move _46)
     storage_dead(_46)
     storage_dead(_45)
-    storage_live(left_val_47)
-    left_val_47 = copy _44.0
-    storage_live(right_val_48)
-    right_val_48 = copy _44.1
+    storage_live(left_val)
+    left_val = copy _44.0
+    storage_live(right_val)
+    right_val = copy _44.1
     storage_live(_49)
     storage_live(_50)
-    _50 = copy (*left_val_47)
+    _50 = copy (*left_val)
     storage_live(_51)
-    _51 = copy (*right_val_48)
+    _51 = copy (*right_val)
     _49 = move _50 == move _51
     if move _49 {
     } else {
         storage_dead(_51)
         storage_dead(_50)
-        storage_live(kind_52)
-        kind_52 = AssertKind::Eq {  }
+        storage_live(kind)
+        kind = AssertKind::Eq {  }
         storage_live(_53)
-        _53 = move kind_52
+        _53 = move kind
         storage_live(_54)
         storage_live(_55)
-        _55 = &(*left_val_47)
+        _55 = &(*left_val)
         _54 = &(*_55)
         storage_live(_56)
         storage_live(_57)
-        _57 = &(*right_val_48)
+        _57 = &(*right_val)
         _56 = &(*_57)
         storage_live(_58)
         _58 = Option::None {  }
@@ -5286,13 +5286,13 @@ fn main()
     storage_dead(_51)
     storage_dead(_50)
     storage_dead(_49)
-    storage_dead(right_val_48)
-    storage_dead(left_val_47)
+    storage_dead(right_val)
+    storage_dead(left_val)
     storage_dead(_44)
     _0 = ()
-    storage_dead(expected_43)
-    storage_dead(i_2)
-    storage_dead(a_1)
+    storage_dead(expected)
+    storage_dead(i)
+    storage_dead(a)
     return
 }
 

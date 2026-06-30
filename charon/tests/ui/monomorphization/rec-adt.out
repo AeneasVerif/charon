@@ -33,13 +33,13 @@ fn new::<u8>() -> LinkedList::<u8>
 fn main()
 {
     let _0: (); // return
-    let list_1: LinkedList::<u8>; // local
+    let list: LinkedList::<u8>; // local
 
     _0 = ()
-    storage_live(list_1)
-    list_1 = new::<u8>()
+    storage_live(list)
+    list = new::<u8>()
     _0 = ()
-    storage_dead(list_1)
+    storage_dead(list)
     return
 }
 

@@ -29,14 +29,14 @@ fn use_string(_1: String)
 fn main()
 {
     let _0: (); // return
-    let _s_1: String; // local
+    let _s: String; // local
 
     _0 = ()
-    storage_live(_s_1)
-    _s_1 = new()
+    storage_live(_s)
+    _s = new()
     _0 = ()
-    conditional_drop[drop_glue<'0>] _s_1
-    storage_dead(_s_1)
+    conditional_drop[drop_glue<'0>] _s
+    storage_dead(_s)
     return
 }
 

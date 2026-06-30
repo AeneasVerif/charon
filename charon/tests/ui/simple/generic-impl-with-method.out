@@ -21,12 +21,12 @@ pub trait Trait<Self>
 }
 
 // Full name: test_crate::{impl Trait for T}::method
-pub fn method<'_0, T>(self_1: &'_0 T)
+pub fn method<'_0, T>(self: &'_0 T)
 where
     TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let self_1: &'1 T; // arg #1
+    let self: &'1 T; // arg #1
 
     _0 = ()
     _0 = ()

@@ -23,10 +23,10 @@ trait Trait<Self>
 }
 
 // Full name: test_crate::foo
-fn foo<'_0>(x_1: &'_0 (dyn Trait + '_0))
+fn foo<'_0>(x: &'_0 (dyn Trait + '_0))
 {
     let _0: (); // return
-    let x_1: &'3 (dyn Trait + '4); // arg #1
+    let x: &'3 (dyn Trait + '4); // arg #1
 
     _0 = ()
     _0 = ()

@@ -155,16 +155,16 @@ pub const {impl MyConfig for Concrete}::SLICE_HOLDER: Option::<&'_ [u64]> = {imp
 pub const {impl MyConfig for Concrete}::SLICE_HOLDER: Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}] = {impl MyConfig for Concrete}::SLICE_HOLDER()
 
 // Full name: test_crate::{impl MyConfig for Concrete}::op
-pub fn {impl MyConfig for Concrete}::op(x_1: u64) -> u64
+pub fn {impl MyConfig for Concrete}::op(x: u64) -> u64
 {
     let _0: u64; // return
-    let x_1: u64; // arg #1
+    let x: u64; // arg #1
     let _2: u64; // anonymous local
     let _3: u64; // anonymous local
 
     storage_live(_3)
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _3 = copy _2 panic.+ const 1u64
     _0 = move _3
     storage_dead(_2)
@@ -172,16 +172,16 @@ pub fn {impl MyConfig for Concrete}::op(x_1: u64) -> u64
 }
 
 // Full name: test_crate::{impl MyConfig for Concrete}::op
-pub fn {impl MyConfig for Concrete}::op(x_1: u64) -> u64
+pub fn {impl MyConfig for Concrete}::op(x: u64) -> u64
 {
     let _0: u64; // return
-    let x_1: u64; // arg #1
+    let x: u64; // arg #1
     let _2: u64; // anonymous local
     let _3: u64; // anonymous local
 
     storage_live(_3)
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _3 = copy _2 panic.+ const 1u64
     _0 = move _3
     storage_dead(_2)
@@ -189,14 +189,14 @@ pub fn {impl MyConfig for Concrete}::op(x_1: u64) -> u64
 }
 
 // Full name: test_crate::entry
-pub fn entry(x_1: u64) -> u64
+pub fn entry(x: u64) -> u64
 {
     let _0: u64; // return
-    let x_1: u64; // arg #1
+    let x: u64; // arg #1
     let _2: u64; // anonymous local
 
     storage_live(_2)
-    _2 = copy x_1
+    _2 = copy x
     _0 = {impl MyConfig for Concrete}::op(move _2)
     storage_dead(_2)
     return

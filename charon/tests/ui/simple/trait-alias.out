@@ -52,10 +52,10 @@ trait Trait<Self, T, Self_Item>
 struct Struct {}
 
 // Full name: test_crate::{impl Clone for Struct}::clone
-pub fn clone<'_0>(self_1: &'_0 Struct) -> Struct
+pub fn clone<'_0>(self: &'_0 Struct) -> Struct
 {
     let _0: Struct; // return
-    let self_1: &'1 Struct; // arg #1
+    let self: &'1 Struct; // arg #1
 
     _0 = Struct {  }
     return
@@ -105,26 +105,26 @@ where
 }
 
 // Full name: test_crate::takes_alias
-fn takes_alias<T>(x_1: T)
+fn takes_alias<T>(x: T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Alias<()>),
 {
     let _0: (); // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
     let _2: T; // anonymous local
     let _3: &'1 T; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &x_1
+    _3 = &x
     _2 = TraitClause1::ImpliedClause2::clone<'2>(move _3)
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _2
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x
     return
 }
 

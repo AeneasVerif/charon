@@ -46,12 +46,12 @@ enum Foo {
 }
 
 // Full name: test_crate::{impl Clone for Foo}::clone
-pub fn clone<'_0>(self_1: &'_0 Foo) -> Foo
+pub fn clone<'_0>(self: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return
-    let self_1: &'1 Foo; // arg #1
+    let self: &'1 Foo; // arg #1
 
-    _0 = copy (*self_1)
+    _0 = copy (*self)
     return
 }
 

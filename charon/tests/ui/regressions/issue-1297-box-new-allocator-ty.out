@@ -42,9 +42,9 @@ fn main()
 {
     let _0: (); // return
     let _1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // anonymous local
-    let ret_2: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
-    let x_3: alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}]; // local
-    let y_4: alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // local
+    let ret: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
+    let x: alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}]; // local
+    let y: alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // local
     let _5: [i32; 1usize]; // anonymous local
     let _6: alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
@@ -54,15 +54,15 @@ fn main()
     _5 = [const 42i32]
     storage_live(_6)
     _6 = @BoxNew<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}](move _5)
-    storage_live(ret_2)
-    storage_live(x_3)
-    storage_live(y_4)
+    storage_live(ret)
+    storage_live(x)
+    storage_live(y)
     storage_dead(_5)
-    x_3 = move _6
+    x = move _6
     storage_dead(_6)
-    y_4 = unsize_cast<alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 1usize>(move x_3)
-    ret_2 = into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move y_4)
-    _1 = move ret_2
+    y = unsize_cast<alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 1usize>(move x)
+    ret = into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move y)
+    _1 = move ret
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _1
     storage_dead(_1)
     _0 = ()

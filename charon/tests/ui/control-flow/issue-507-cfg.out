@@ -18,7 +18,7 @@ fn f0()
     let _0: (); // return
     let _1: bool; // anonymous local
     let _2: bool; // anonymous local
-    let x_3: u8; // local
+    let x: u8; // local
 
     _0 = ()
     storage_live(_1)
@@ -30,10 +30,10 @@ fn f0()
         } else {
         }
         storage_dead(_2)
-        storage_live(x_3)
-        x_3 = copy CONST
+        storage_live(x)
+        x = copy CONST
         _0 = ()
-        storage_dead(x_3)
+        storage_dead(x)
     } else {
         _0 = ()
     }
@@ -42,30 +42,30 @@ fn f0()
 }
 
 // Full name: test_crate::f1
-fn f1<'_0>(serialized_1: &'_0 [u8; 1usize])
+fn f1<'_0>(serialized: &'_0 [u8; 1usize])
 {
     let _0: (); // return
-    let serialized_1: &'1 [u8; 1usize]; // arg #1
-    let previous_true_hints_seen_2: usize; // local
-    let i_3: i32; // local
+    let serialized: &'1 [u8; 1usize]; // arg #1
+    let previous_true_hints_seen: usize; // local
+    let i: i32; // local
     let _4: bool; // anonymous local
     let _5: i32; // anonymous local
     let _6: bool; // anonymous local
     let _7: bool; // anonymous local
-    let j_8: i32; // local
+    let j: i32; // local
     let _9: bool; // anonymous local
     let _10: i32; // anonymous local
-    let x_11: u8; // local
+    let x: u8; // local
 
     _0 = ()
-    storage_live(previous_true_hints_seen_2)
-    previous_true_hints_seen_2 = const 0usize
-    storage_live(i_3)
-    i_3 = const 0i32
+    storage_live(previous_true_hints_seen)
+    previous_true_hints_seen = const 0usize
+    storage_live(i)
+    i = const 0i32
     loop {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy i_3
+        _5 = copy i
         _4 = move _5 < const 1i32
         if move _4 {
             storage_dead(_5)
@@ -81,18 +81,18 @@ fn f1<'_0>(serialized_1: &'_0 [u8; 1usize])
             }
             storage_dead(_7)
             storage_dead(_6)
-            storage_live(j_8)
-            j_8 = const 0i32
+            storage_live(j)
+            j = const 0i32
             loop {
                 storage_live(_9)
                 storage_live(_10)
-                _10 = copy j_8
+                _10 = copy j
                 _9 = move _10 < const 1i32
                 if move _9 {
                     storage_dead(_10)
-                    storage_live(x_11)
-                    x_11 = copy CONST
-                    storage_dead(x_11)
+                    storage_live(x)
+                    x = copy CONST
+                    storage_dead(x)
                     storage_dead(_9)
                     continue 0
                 } else {
@@ -101,7 +101,7 @@ fn f1<'_0>(serialized_1: &'_0 [u8; 1usize])
             }
             storage_dead(_10)
             storage_dead(_9)
-            storage_dead(j_8)
+            storage_dead(j)
             storage_dead(_4)
             continue 0
         } else {
@@ -111,8 +111,8 @@ fn f1<'_0>(serialized_1: &'_0 [u8; 1usize])
     storage_dead(_5)
     _0 = ()
     storage_dead(_4)
-    storage_dead(i_3)
-    storage_dead(previous_true_hints_seen_2)
+    storage_dead(i)
+    storage_dead(previous_true_hints_seen)
     return
 }
 

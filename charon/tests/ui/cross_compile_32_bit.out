@@ -25,44 +25,44 @@ enum HasPointerNiche {
 fn main()
 {
     let _0: (); // return
-    let x_1: usize; // local
-    let y_2: usize; // local
-    let z_3: usize; // local
+    let x: usize; // local
+    let y: usize; // local
+    let z: usize; // local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
-    let a_7: HasPointerNiche; // local
+    let a: HasPointerNiche; // local
     let _8: NonNull<usize>; // anonymous local
     let _9: *mut usize; // anonymous local
 
     storage_live(_6)
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 52usize
-    storage_live(y_2)
-    y_2 = copy MAX
-    storage_live(z_3)
+    storage_live(x)
+    x = const 52usize
+    storage_live(y)
+    y = copy MAX
+    storage_live(z)
     storage_live(_4)
-    _4 = copy y_2
+    _4 = copy y
     storage_live(_5)
-    _5 = copy x_1
+    _5 = copy x
     _6 = copy _4 panic.- copy _5
-    z_3 = move _6
+    z = move _6
     storage_dead(_5)
     storage_dead(_4)
-    storage_live(a_7)
+    storage_live(a)
     storage_live(_8)
     storage_live(_9)
-    _9 = &raw mut x_1
+    _9 = &raw mut x
     _8 = new_unchecked<usize>(move _9)
     storage_dead(_9)
-    a_7 = HasPointerNiche::Second { 0: move _8 }
+    a = HasPointerNiche::Second { 0: move _8 }
     storage_dead(_8)
     _0 = ()
-    storage_dead(a_7)
-    storage_dead(z_3)
-    storage_dead(y_2)
-    storage_dead(x_1)
+    storage_dead(a)
+    storage_dead(z)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 

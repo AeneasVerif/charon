@@ -10,18 +10,18 @@ union Foo {
 fn use_union()
 {
     let _0: (); // return
-    let one_1: Foo; // local
-    let _two_2: [u32; 2usize]; // local
+    let one: Foo; // local
+    let _two: [u32; 2usize]; // local
 
     _0 = ()
-    storage_live(one_1)
-    one_1 = Foo { one: const 42u64 }
-    (one_1).one = const 43u64
-    storage_live(_two_2)
-    _two_2 = copy (one_1).two
+    storage_live(one)
+    one = Foo { one: const 42u64 }
+    (one).one = const 43u64
+    storage_live(_two)
+    _two = copy (one).two
     _0 = ()
-    storage_dead(_two_2)
-    storage_dead(one_1)
+    storage_dead(_two)
+    storage_dead(one)
     return
 }
 

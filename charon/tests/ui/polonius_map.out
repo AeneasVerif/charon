@@ -219,15 +219,15 @@ impl "impl_BuildHasher_for_RandomState" BuildHasher for RandomState {
 pub struct Global {}
 
 // Full name: test_crate::get_or_insert
-pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32
+pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32
 {
     let _0: &'1 u32; // return
-    let map_1: &'3 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // arg #1
+    let map: &'3 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // arg #1
     let _2: Option<&'9 u32>[{built_in impl Sized for &'9 u32}]; // anonymous local
     let _3: &'13 HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // anonymous local
     let _4: &'14 u32; // anonymous local
     let _5: &'15 u32; // anonymous local
-    let v_6: &'16 u32; // local
+    let v: &'16 u32; // local
     let _7: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _8: &'17 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]; // anonymous local
     let _9: &'18 u32; // anonymous local
@@ -254,7 +254,7 @@ pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>
     storage_live(_15)
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*map_1)
+    _3 = &(*map)
     storage_live(_4)
     storage_live(_5)
     _15 = move _16
@@ -267,7 +267,7 @@ pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>
         Option::None => {
             storage_live(_7)
             storage_live(_8)
-            _8 = &two-phase-mut (*map_1)
+            _8 = &two-phase-mut (*map)
             _7 = insert<'31, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _8, const 22u32, const 33u32)
             storage_live(_17)
             storage_live(_20)
@@ -280,7 +280,7 @@ pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>
             storage_live(_9)
             storage_live(_10)
             storage_live(_11)
-            _11 = &(*map_1)
+            _11 = &(*map)
             storage_live(_12)
             storage_live(_13)
             _14 = move _17
@@ -296,10 +296,10 @@ pub fn get_or_insert<'_0>(map_1: &'_0 mut HashMap<u32, u32, RandomState, Global>
             storage_dead(_9)
         },
         Option::Some => {
-            storage_live(v_6)
-            v_6 = copy (_2 as variant Option::Some).0
-            _0 = &(*v_6)
-            storage_dead(v_6)
+            storage_live(v)
+            v = copy (_2 as variant Option::Some).0
+            _0 = &(*v)
+            storage_dead(v)
         },
     }
     storage_dead(_5)

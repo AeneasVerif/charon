@@ -66,46 +66,46 @@ where
 }
 
 // Full name: test_crate::{HashMap<S>[TraitClause0]}::get
-pub fn get<S, Q, Clause2_Type>(_x_1: HashMap<S>[TraitClause0], _k_2: Q)
+pub fn get<S, Q, Clause2_Type>(_x: HashMap<S>[TraitClause0], _k: Q)
 where
     TraitClause0: (S: Sized),
     TraitClause1: (Q: Sized),
     TraitClause2: (Q: Trait<Clause2_Type>),
 {
     let _0: (); // return
-    let _x_1: HashMap<S>[TraitClause0]; // arg #1
-    let _k_2: Q; // arg #2
+    let _x: HashMap<S>[TraitClause0]; // arg #1
+    let _k: Q; // arg #2
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for Q}::drop_glue<'0>] _k_2
-    conditional_drop[drop_glue<'1, S>[TraitClause0]] _x_1
+    conditional_drop[{built_in impl Destruct for Q}::drop_glue<'0>] _k
+    conditional_drop[drop_glue<'1, S>[TraitClause0]] _x
     return
 }
 
 // Full name: test_crate::top_level_get
-pub fn top_level_get<S, Q, Clause2_Type>(_x_1: HashMap<S>[TraitClause0], _k_2: Q)
+pub fn top_level_get<S, Q, Clause2_Type>(_x: HashMap<S>[TraitClause0], _k: Q)
 where
     TraitClause0: (S: Sized),
     TraitClause1: (Q: Sized),
     TraitClause2: (Q: Trait<Clause2_Type>),
 {
     let _0: (); // return
-    let _x_1: HashMap<S>[TraitClause0]; // arg #1
-    let _k_2: Q; // arg #2
+    let _x: HashMap<S>[TraitClause0]; // arg #1
+    let _k: Q; // arg #2
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for Q}::drop_glue<'0>] _k_2
-    conditional_drop[drop_glue<'1, S>[TraitClause0]] _x_1
+    conditional_drop[{built_in impl Destruct for Q}::drop_glue<'0>] _k
+    conditional_drop[drop_glue<'1, S>[TraitClause0]] _x
     return
 }
 
 // Full name: test_crate::test1
-pub fn test1(map_1: HashMap<()>[{built_in impl Sized for ()}])
+pub fn test1(map: HashMap<()>[{built_in impl Sized for ()}])
 {
     let _0: (); // return
-    let map_1: HashMap<()>[{built_in impl Sized for ()}]; // arg #1
+    let map: HashMap<()>[{built_in impl Sized for ()}]; // arg #1
     let _2: (); // anonymous local
     let _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
     let _4: (); // anonymous local
@@ -113,7 +113,7 @@ pub fn test1(map_1: HashMap<()>[{built_in impl Sized for ()}])
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = move map_1
+    _3 = move map
     storage_live(_4)
     _4 = ()
     _2 = top_level_get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, impl_Trait_for_unit](move _3, move _4)
@@ -125,10 +125,10 @@ pub fn test1(map_1: HashMap<()>[{built_in impl Sized for ()}])
 }
 
 // Full name: test_crate::test2
-pub fn test2(map_1: HashMap<()>[{built_in impl Sized for ()}])
+pub fn test2(map: HashMap<()>[{built_in impl Sized for ()}])
 {
     let _0: (); // return
-    let map_1: HashMap<()>[{built_in impl Sized for ()}]; // arg #1
+    let map: HashMap<()>[{built_in impl Sized for ()}]; // arg #1
     let _2: (); // anonymous local
     let _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
     let _4: (); // anonymous local
@@ -136,7 +136,7 @@ pub fn test2(map_1: HashMap<()>[{built_in impl Sized for ()}])
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = move map_1
+    _3 = move map
     storage_live(_4)
     _4 = ()
     _2 = get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, impl_Trait_for_unit](move _3, move _4)

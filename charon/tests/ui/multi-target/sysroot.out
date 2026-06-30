@@ -3,14 +3,14 @@ pub opaque type core::ascii::EscapeDefault
 fn core::ascii::{core::ascii::EscapeDefault}::new(_1: u8) -> core::ascii::EscapeDefault
 = <opaque>
 
-pub fn core::ascii::escape_default(c_1: u8) -> core::ascii::EscapeDefault
+pub fn core::ascii::escape_default(c: u8) -> core::ascii::EscapeDefault
 {
     let _0: core::ascii::EscapeDefault; // return
-    let c_1: u8; // arg #1
+    let c: u8; // arg #1
     let _2: u8; // anonymous local
 
     storage_live(_2)
-    _2 = copy c_1
+    _2 = copy c
     _0 = core::ascii::{core::ascii::EscapeDefault}::new(move _2)
     storage_dead(_2)
     return

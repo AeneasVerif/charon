@@ -8,9 +8,9 @@ pub fn add<'_0, '_1>(_1: &'_1 u32, _2: &'_0 u32) -> u32
 fn six() -> u32
 {
     let _0: u32; // return
-    let x_1: &'1 u32; // local
+    let x: &'1 u32; // local
     let _2: u32; // anonymous local
-    let y_3: &'2 u32; // local
+    let y: &'2 u32; // local
     let _4: u32; // anonymous local
     let _5: &'3 u32; // anonymous local
     let _6: &'4 u32; // anonymous local
@@ -29,7 +29,7 @@ fn six() -> u32
     storage_live(_4)
     storage_live(_7)
     storage_live(_8)
-    storage_live(x_1)
+    storage_live(x)
     _2 = const 0u32 panic.+ const 1u32
     storage_live(_9)
     storage_live(_11)
@@ -40,8 +40,8 @@ fn six() -> u32
     _11 = &_12
     _9 = move _11
     _8 = move _9
-    x_1 = &(*_8)
-    storage_live(y_3)
+    x = &(*_8)
+    storage_live(y)
     _4 = const 2u32 panic.+ const 3u32
     storage_live(_10)
     storage_live(_14)
@@ -52,16 +52,16 @@ fn six() -> u32
     _14 = &_15
     _10 = move _14
     _7 = move _10
-    y_3 = &(*_7)
+    y = &(*_7)
     storage_live(_5)
-    _5 = copy x_1
+    _5 = copy x
     storage_live(_6)
-    _6 = copy y_3
+    _6 = copy y
     _0 = add<'9, '10>(move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
-    storage_dead(y_3)
-    storage_dead(x_1)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 

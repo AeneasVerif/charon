@@ -285,13 +285,13 @@ where
 pub struct Global {}
 
 // Full name: test_crate::option_mut
-fn option_mut<X, A>(x_1: A)
+fn option_mut<X, A>(x: A)
 where
     TraitClause0: (X: Sized),
     TraitClause1: (A: Sized),
 {
     let _0: (); // return
-    let x_1: A; // arg #1
+    let x: A; // arg #1
     let _2: core::option::Option::<&_ mut _><'6, u32>[{built_in impl core::marker::Sized::<&_ mut _><'6> for u32}]; // anonymous local
     let _3: &'9 mut u32; // anonymous local
     let _4: u32; // anonymous local
@@ -316,14 +316,14 @@ where
     storage_dead(_2)
     storage_live(_5)
     storage_live(_6)
-    _6 = &mut x_1
+    _6 = &mut x
     _5 = core::option::Option::<&_ mut _>::Some { 0: move _6 }
     storage_dead(_6)
     storage_dead(_5)
     storage_live(_7)
     storage_live(_8)
     storage_live(_9)
-    _9 = &mut x_1
+    _9 = &mut x
     _8 = core::option::Option::<&_ mut _>::Some { 0: move _9 }
     storage_dead(_9)
     _7 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]>::Some { 0: move _8 }
@@ -343,63 +343,63 @@ where
     storage_dead(_13)
     storage_dead(_12)
     storage_dead(_4)
-    conditional_drop[{built_in impl Destruct for A}::drop_glue<'125>] x_1
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'125>] x
     return
 }
 
 // Full name: test_crate::identity
-fn identity<T>(x_1: T) -> T
+fn identity<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
     let _0: T; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
     return
 }
 
-fn test_crate::identity::<&_ mut _><'_0, T0>(x_1: &'_0 mut T0) -> &'_0 mut T0
+fn test_crate::identity::<&_ mut _><'_0, T0>(x: &'_0 mut T0) -> &'_0 mut T0
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
     let _0: &'_0 mut T0; // return
-    let x_1: &'_0 mut T0; // arg #1
+    let x: &'_0 mut T0; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x
     return
 }
 
-fn test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>(x_1: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]) -> core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]
+fn test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>(x: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]) -> core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]
 where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
     let _0: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]; // return
-    let x_1: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]; // arg #1
+    let x: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x
     return
 }
 
-fn test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'_0, T0>(x_1: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]) -> core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]
+fn test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'_0, T0>(x: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]) -> core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]
 where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2]),
     TraitClause1: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause2]),
     TraitClause2: (T0: core::marker::Sized::<&_ mut _><'_0>),
 {
     let _0: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]; // return
-    let x_1: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]; // arg #1
+    let x: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2] for T0}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2] for T0}::drop_glue<'0>] x
     return
 }
 
-fn test_crate::identity::<IterMut<_, _>[TraitClause1]><'_0, T0>(x_1: IterMut<'_0, T0>[TraitClause1]) -> IterMut<'_0, T0>[TraitClause1]
+fn test_crate::identity::<IterMut<_, _>[TraitClause1]><'_0, T0>(x: IterMut<'_0, T0>[TraitClause1]) -> IterMut<'_0, T0>[TraitClause1]
 where
     TraitClause0: (T0: core::marker::Sized::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: Sized),
@@ -407,20 +407,20 @@ where
     TypeOutlives1: T0: '_0,
 {
     let _0: IterMut<'_0, T0>[TraitClause1]; // return
-    let x_1: IterMut<'_0, T0>[TraitClause1]; // arg #1
+    let x: IterMut<'_0, T0>[TraitClause1]; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x
     return
 }
 
 // Full name: test_crate::mutable_identity
-fn mutable_identity<'_0, T>(x_1: &'_0 mut T) -> &'_0 mut T
+fn mutable_identity<'_0, T>(x: &'_0 mut T) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 mut T; // return
-    let x_1: &'2 mut T; // arg #1
+    let x: &'2 mut T; // arg #1
     let _2: &'3 mut T; // anonymous local
     let _3: &'4 mut T; // anonymous local
     let _4: &'5 mut T; // anonymous local
@@ -428,7 +428,7 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &two-phase-mut (*x_1)
+    _4 = &two-phase-mut (*x)
     _3 = test_crate::identity::<&_ mut _><'7, T>[{built_in impl core::marker::Sized::<&_ mut _><'7> for T}](move _4)
     _2 = &mut (*_3)
     storage_dead(_4)
@@ -439,13 +439,13 @@ where
 }
 
 // Full name: test_crate::use_id_mut
-fn use_id_mut<X, A>(x_1: A)
+fn use_id_mut<X, A>(x: A)
 where
     TraitClause0: (X: Sized),
     TraitClause1: (A: Sized),
 {
     let _0: (); // return
-    let x_1: A; // arg #1
+    let x: A; // arg #1
     let _2: &'1 u32; // anonymous local
     let _3: &'2 u32; // anonymous local
     let _4: &'4 mut u32; // anonymous local
@@ -513,7 +513,7 @@ where
     storage_live(_13)
     storage_live(_14)
     // Make sure we do generics right.
-    _14 = &mut x_1
+    _14 = &mut x
     _13 = core::option::Option::<&_ mut _>::Some { 0: move _14 }
     storage_dead(_14)
     _12 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]>::Some { 0: move _13 }
@@ -542,7 +542,7 @@ where
     // These cause errors because of missing normalization :'(
     // let _ = Some(&mut 0u32).map(identity);
     // let _ = Some(&mut 0u32).map(mutable_identity);
-    conditional_drop[{built_in impl Destruct for A}::drop_glue<'367>] x_1
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'367>] x
     return
 }
 
@@ -772,19 +772,19 @@ fn use_const_generic<'_0, '_1>(_1: test_crate::ArrayWrapper::<&_ mut _, 1usize><
 }
 
 // Full name: test_crate::use_opaque_iter
-fn use_opaque_iter<'a, 'b, T>(x_1: IterMut<'a, bool>[{built_in impl Sized for bool}])
+fn use_opaque_iter<'a, 'b, T>(x: IterMut<'a, bool>[{built_in impl Sized for bool}])
 where
     TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let x_1: IterMut<'1, bool>[{built_in impl Sized for bool}]; // arg #1
+    let x: IterMut<'1, bool>[{built_in impl Sized for bool}]; // arg #1
     let _2: IterMut<'2, bool>[{built_in impl Sized for bool}]; // anonymous local
     let _3: IterMut<'3, bool>[{built_in impl Sized for bool}]; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = move x_1
+    _3 = move x
     _2 = test_crate::identity::<IterMut<_, _>[TraitClause1]><'5, bool>[{built_in impl core::marker::Sized::<IterMut<_, _>[TraitClause0]><'5>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}](move _3)
     storage_dead(_3)
     storage_dead(_2)

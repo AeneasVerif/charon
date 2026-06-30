@@ -38,20 +38,20 @@ static FooBool: Foo::<bool> = FooBool()
 fn main()
 {
     let _0: (); // return
-    let _b_1: bool; // local
+    let _b: bool; // local
     let _2: &'1 Foo::<bool>; // anonymous local
     let _3: &'2 Foo::<bool>; // anonymous local
 
     _0 = ()
-    storage_live(_b_1)
+    storage_live(_b)
     storage_live(_2)
     storage_live(_3)
     _3 = &FooBool
     _2 = move _3
-    _b_1 = copy ((*_2)).value
+    _b = copy ((*_2)).value
     storage_dead(_2)
     _0 = ()
-    storage_dead(_b_1)
+    storage_dead(_b)
     return
 }
 

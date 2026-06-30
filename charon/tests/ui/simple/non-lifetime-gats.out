@@ -78,19 +78,19 @@ pub trait PointerFamily<Self>
 pub struct BoxFamily {}
 
 // Full name: test_crate::{impl PointerFamily for BoxFamily}::new
-pub fn new<T>(value_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+pub fn new<T>(value: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 {
     let _0: alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]; // return
-    let value_1: T; // arg #1
+    let value: T; // arg #1
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move value_1
+    _2 = move value
     _0 = @BoxNew<T>[TraitClause0](move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value
     return
 }
 
@@ -107,21 +107,21 @@ impl "impl_PointerFamily_for_BoxFamily" PointerFamily for BoxFamily {
 }
 
 // Full name: test_crate::make_pointer
-pub fn make_pointer<F, T>(x_1: T) -> TraitClause2::Pointer<T>[TraitClause1]
+pub fn make_pointer<F, T>(x: T) -> TraitClause2::Pointer<T>[TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
     TraitClause2: (F: PointerFamily),
 {
     let _0: TraitClause2::Pointer<T>[TraitClause1]; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move x_1
+    _2 = move x
     _0 = TraitClause2::new<T>[TraitClause1](move _2)
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x
     return
 }
 

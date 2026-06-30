@@ -91,7 +91,7 @@ fn impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(_1: usize,
 = <opaque>
 
 // Full name: core::slice::{[T]}::binary_search_by
-pub fn binary_search_by<'a, T, F>(self_1: &'a [T], f_2: F) -> Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]
+pub fn binary_search_by<'a, T, F>(self: &'a [T], f: F) -> Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
@@ -99,16 +99,16 @@ where
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = Ordering,
 {
     let _0: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // return
-    let self_1: &'1 [T]; // arg #1
-    let f_2: F; // arg #2
-    let size_3: usize; // local
+    let self: &'1 [T]; // arg #1
+    let f: F; // arg #2
+    let size: usize; // local
     let _4: usize; // anonymous local
-    let base_5: usize; // local
+    let base: usize; // local
     let _6: bool; // anonymous local
     let _7: usize; // anonymous local
-    let half_8: usize; // local
+    let half: usize; // local
     let _9: usize; // anonymous local
-    let mid_10: usize; // local
+    let mid: usize; // local
     let _11: usize; // anonymous local
     let cmp_12: Ordering; // local
     let _13: &'3 mut F; // anonymous local
@@ -120,10 +120,10 @@ where
     let _19: &'10 mut F; // anonymous local
     let _20: (&'11 T,); // anonymous local
     let _21: &'12 T; // anonymous local
-    let index_22: usize; // local
+    let index: usize; // local
     let cond_23: bool; // local
     let _24: usize; // anonymous local
-    let result_25: usize; // local
+    let result: usize; // local
     let _26: usize; // anonymous local
     let _27: bool; // anonymous local
     let cond_28: bool; // local
@@ -147,7 +147,7 @@ where
     let _46: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // anonymous local
 
     bb0: {
-        storage_live(base_5);
+        storage_live(base);
         storage_live(_15);
         storage_live(_21);
         storage_live(_30);
@@ -156,10 +156,10 @@ where
         storage_live(_39);
         storage_live(_40);
         storage_live(_41);
-        storage_live(size_3);
-        size_3 = copy self_1.metadata;
+        storage_live(size);
+        size = copy self.metadata;
         storage_live(_4);
-        _4 = copy size_3;
+        _4 = copy size;
         switch copy _4 -> 0usize: bb1, otherwise: bb2;
     }
 
@@ -168,13 +168,13 @@ where
         storage_live(_46);
         _46 = Result::Err { 0: const 0usize };
         _0 = move _46;
-        storage_dead(size_3);
-        drop[{built_in impl Destruct for F}::drop_glue<'15>] f_2 -> bb31 (unwind: bb3);
+        storage_dead(size);
+        drop[{built_in impl Destruct for F}::drop_glue<'15>] f -> bb31 (unwind: bb3);
     }
 
     bb2: {
         storage_dead(_4);
-        base_5 = const 0usize;
+        base = const 0usize;
         goto bb4;
     }
 
@@ -185,26 +185,26 @@ where
     bb4: {
         storage_live(_6);
         storage_live(_7);
-        _7 = copy size_3;
+        _7 = copy size;
         _6 = move _7 > const 1usize;
         if move _6 -> bb5 else -> bb6;
     }
 
     bb5: {
         storage_dead(_7);
-        storage_live(half_8);
+        storage_live(half);
         storage_live(_9);
-        _9 = copy size_3;
-        half_8 = move _9 ub./ const 2usize;
+        _9 = copy size;
+        half = move _9 ub./ const 2usize;
         storage_dead(_9);
-        storage_live(mid_10);
+        storage_live(mid);
         storage_live(_11);
-        _11 = copy base_5;
-        mid_10 = move _11 wrap.+ copy half_8;
+        _11 = copy base;
+        mid = move _11 wrap.+ copy half;
         storage_dead(_11);
         storage_live(cmp_12);
         storage_live(_13);
-        _13 = &mut f_2;
+        _13 = &mut f;
         storage_live(_14);
         storage_live(_29);
         storage_live(_42);
@@ -217,10 +217,10 @@ where
         storage_dead(_6);
         storage_live(cmp_18);
         storage_live(_19);
-        _19 = &mut f_2;
+        _19 = &mut f;
         storage_live(_20);
-        storage_live(index_22);
-        index_22 = copy base_5;
+        storage_live(index);
+        index = copy base;
         storage_live(_35);
         storage_live(_43);
         _43 = ub_checks<bool>;
@@ -229,19 +229,19 @@ where
 
     bb7: {
         storage_live(_31);
-        _31 = copy self_1.metadata;
-        _30 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy mid_10, move _31) -> bb12 (unwind: bb11);
+        _31 = copy self.metadata;
+        _30 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy mid, move _31) -> bb12 (unwind: bb11);
     }
 
     bb8: {
         storage_live(_32);
         storage_live(_33);
-        _33 = copy self_1.metadata;
-        _32 = copy mid_10 < move _33;
+        _33 = copy self.metadata;
+        _32 = copy mid < move _33;
         storage_dead(_33);
         assert(move _32 == true) else undefined_behavior;
         storage_dead(_32);
-        _29 = &raw const (*self_1)[copy mid_10];
+        _29 = &raw const (*self)[copy mid];
         _15 = &(*_29);
         storage_dead(_29);
         _14 = (copy _15,);
@@ -250,16 +250,16 @@ where
 
     bb9: {
         storage_live(_37);
-        _37 = copy self_1.metadata;
-        _36 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy index_22, move _37) -> bb16 (unwind: bb15);
+        _37 = copy self.metadata;
+        _36 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy index, move _37) -> bb16 (unwind: bb15);
     }
 
     bb10: {
-        _38 = copy self_1.metadata;
-        _35 = &raw const (*self_1)[copy index_22];
+        _38 = copy self.metadata;
+        _35 = &raw const (*self)[copy index];
         _21 = &(*_35);
         storage_dead(_35);
-        storage_dead(index_22);
+        storage_dead(index);
         _20 = (copy _21,);
         cmp_18 = TraitClause2::call_mut<'23>(move _19, move _20) -> bb17 (unwind: bb13);
     }
@@ -274,7 +274,7 @@ where
     }
 
     bb13: {
-        drop[{built_in impl Destruct for F}::drop_glue<'24>] f_2 -> bb18 (unwind: bb19);
+        drop[{built_in impl Destruct for F}::drop_glue<'24>] f -> bb18 (unwind: bb19);
     }
 
     bb14: {
@@ -286,7 +286,7 @@ where
         _34 = @discriminant(cmp_12);
         _17 = copy _34 == const 1i8;
         storage_dead(_34);
-        _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base_5, move mid_10) -> bb20 (unwind: bb13);
+        _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base, move mid) -> bb20 (unwind: bb13);
     }
 
     bb15: {
@@ -315,12 +315,12 @@ where
 
     bb20: {
         storage_dead(_17);
-        base_5 = move _16;
+        base = move _16;
         storage_dead(_16);
-        size_3 = copy size_3 wrap.- copy half_8;
+        size = copy size wrap.- copy half;
         storage_dead(cmp_12);
-        storage_dead(mid_10);
-        storage_dead(half_8);
+        storage_dead(mid);
+        storage_dead(half);
         storage_dead(_6);
         goto bb4;
     }
@@ -328,7 +328,7 @@ where
     bb21: {
         storage_live(cond_23);
         storage_live(_24);
-        _24 = copy base_5;
+        _24 = copy base;
         cond_23 = move _24 < copy _38;
         storage_dead(_24);
         storage_live(_44);
@@ -337,16 +337,16 @@ where
     }
 
     bb22: {
-        storage_live(result_25);
+        storage_live(result);
         storage_live(_26);
         storage_live(_27);
         _27 = copy _39 == const -1i8;
         _26 = cast<bool, usize>(move _27);
         storage_dead(_27);
-        result_25 = move base_5 wrap.+ move _26;
+        result = move base wrap.+ move _26;
         storage_dead(_26);
         storage_live(cond_28);
-        cond_28 = copy result_25 <= copy _38;
+        cond_28 = copy result <= copy _38;
         storage_live(_45);
         _45 = ub_checks<bool>;
         if move _45 -> bb25 else -> bb26;
@@ -359,7 +359,7 @@ where
     bb24: {
         assert(copy cond_23 == true) else undefined_behavior;
         storage_dead(cond_23);
-        _0 = Result::Ok { 0: move base_5 };
+        _0 = Result::Ok { 0: move base };
         goto bb28;
     }
 
@@ -370,8 +370,8 @@ where
     bb26: {
         assert(copy cond_28 == true) else undefined_behavior;
         storage_dead(cond_28);
-        _0 = Result::Err { 0: copy result_25 };
-        storage_dead(result_25);
+        _0 = Result::Err { 0: copy result };
+        storage_dead(result);
         goto bb28;
     }
 
@@ -381,8 +381,8 @@ where
 
     bb28: {
         storage_dead(cmp_18);
-        storage_dead(size_3);
-        drop[{built_in impl Destruct for F}::drop_glue<'25>] f_2 -> bb32 (unwind: bb30);
+        storage_dead(size);
+        drop[{built_in impl Destruct for F}::drop_glue<'25>] f -> bb32 (unwind: bb30);
     }
 
     bb29: {
@@ -406,12 +406,12 @@ where
 struct closure {}
 
 // Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}::call_mut
-fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args_2: (&'_0 u32,)) -> Ordering
+fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: &'1 mut closure; // arg #1
-    let tupled_args_2: (&'_0 u32,); // arg #2
-    let x_3: &'2 u32; // local
+    let tupled_args: (&'_0 u32,); // arg #2
+    let x: &'2 u32; // local
     let _4: &'3 u32; // anonymous local
     let _5: &'4 u32; // anonymous local
     let _6: &'5 u32; // anonymous local
@@ -427,11 +427,11 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args_2: (&'_0 u32,)) -> Order
         _10 = const 3u32;
         _9 = &_10;
         _8 = move _9;
-        storage_live(x_3);
+        storage_live(x);
         storage_live(_7);
-        x_3 = move tupled_args_2.0;
+        x = move tupled_args.0;
         storage_live(_4);
-        _4 = &(*x_3);
+        _4 = &(*x);
         storage_live(_5);
         storage_live(_6);
         _7 = move _8;
@@ -528,36 +528,36 @@ impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_ u32,)> for closure {
 fn main()
 {
     let _0: (); // return
-    let a_1: [u32; 5usize]; // local
-    let b_2: &'1 [u32]; // local
+    let a: [u32; 5usize]; // local
+    let b: &'1 [u32]; // local
     let _3: &'3 [u32; 5usize]; // anonymous local
     let _4: &'4 [u32; 5usize]; // anonymous local
-    let res_5: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
+    let res: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
     let _6: &'5 [u32]; // anonymous local
     let _7: &'6 [u32; 5usize]; // anonymous local
     let _8: closure; // anonymous local
 
     bb0: {
         _0 = ();
-        storage_live(a_1);
-        a_1 = [const 1u32, const 2u32, const 3u32, const 4u32, const 5u32];
-        storage_live(b_2);
+        storage_live(a);
+        a = [const 1u32, const 2u32, const 3u32, const 4u32, const 5u32];
+        storage_live(b);
         storage_live(_3);
         storage_live(_4);
-        _4 = &a_1;
+        _4 = &a;
         _3 = &(*_4);
-        b_2 = unsize_cast<&'3 [u32; 5usize], &'7 [u32], 5usize>(move _3);
+        b = unsize_cast<&'3 [u32; 5usize], &'7 [u32], 5usize>(move _3);
         storage_dead(_3);
         storage_dead(_4);
-        storage_live(res_5);
+        storage_live(res);
         storage_live(_6);
         storage_live(_7);
-        _7 = &a_1;
+        _7 = &a;
         _6 = unsize_cast<&'6 [u32; 5usize], &'8 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
         _8 = closure {  };
-        res_5 = binary_search_by<'9, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnMut_tuple_for_closure<'13>](move _6, move _8) -> bb2 (unwind: bb1);
+        res = binary_search_by<'9, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnMut_tuple_for_closure<'13>](move _6, move _8) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -568,9 +568,9 @@ fn main()
         storage_dead(_8);
         storage_dead(_6);
         _0 = ();
-        storage_dead(res_5);
-        storage_dead(b_2);
-        storage_dead(a_1);
+        storage_dead(res);
+        storage_dead(b);
+        storage_dead(a);
         return;
     }
 }

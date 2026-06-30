@@ -59,24 +59,24 @@ pub trait MyTrait<Self, T>
     non-dyn-compatible
 }
 
-pub fn test_crate::MyTrait::rows<'_0, Self, T>(self_1: &'_0 Self) -> Empty<T>[TraitClause0::ImpliedClause1]
+pub fn test_crate::MyTrait::rows<'_0, Self, T>(self: &'_0 Self) -> Empty<T>[TraitClause0::ImpliedClause1]
 where
     TraitClause0: (Self: MyTrait<T>),
 {
     let _0: Empty<T>[TraitClause0::ImpliedClause1]; // return
-    let self_1: &'1 Self; // arg #1
+    let self: &'1 Self; // arg #1
 
     _0 = empty<T>[TraitClause0::ImpliedClause1]()
     return
 }
 
 // Full name: test_crate::{impl MyTrait<T> for ()}::rows
-pub fn impl_MyTrait_for_unit::rows<'_0, T>(self_1: &'_0 ()) -> Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]
+pub fn impl_MyTrait_for_unit::rows<'_0, T>(self: &'_0 ()) -> Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]
 where
     TraitClause0: (T: Sized),
 {
     let _0: Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]; // return
-    let self_1: &'1 (); // arg #1
+    let self: &'1 (); // arg #1
 
     _0 = empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]()
     return

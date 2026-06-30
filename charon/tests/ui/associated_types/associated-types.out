@@ -132,40 +132,40 @@ where
     non-dyn-compatible
 }
 
-fn test_crate::Foo::use_item_provided<'a, Self, Clause0_Item, Clause1_Item>(x_1: Clause0_Item) -> Clause0_Item
+fn test_crate::Foo::use_item_provided<'a, Self, Clause0_Item, Clause1_Item>(x: Clause0_Item) -> Clause0_Item
 where
     TraitClause0: (Self: test_crate::Foo<'a, Clause0_Item>),
     TraitClause1: (Clause0_Item: test_crate::Foo<'a, Clause1_Item>),
 {
     let _0: Clause0_Item; // return
-    let x_1: Clause0_Item; // arg #1
+    let x: Clause0_Item; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_required
-fn {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_required<'a, T>(x_1: Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
+fn {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_required<'a, T>(x: Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
 {
     let _0: Option<&'6 T>[{built_in impl Sized for &'6 T}]; // return
-    let x_1: Option<&'9 T>[{built_in impl Sized for &'9 T}]; // arg #1
+    let x: Option<&'9 T>[{built_in impl Sized for &'9 T}]; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::{impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_provided
-fn {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_provided<'a, T, Clause1_Item>(x_1: Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
+fn {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_provided<'a, T, Clause1_Item>(x: Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Option<&'a T>[{built_in impl Sized for &'a T}]: test_crate::Foo<'a, Clause1_Item>),
 {
     let _0: Option<&'a T>[{built_in impl Sized for &'a T}]; // return
-    let x_1: Option<&'a T>[{built_in impl Sized for &'a T}]; // arg #1
+    let x: Option<&'a T>[{built_in impl Sized for &'a T}]; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
@@ -184,21 +184,21 @@ where
 }
 
 // Full name: test_crate::{impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}::use_item_required
-fn impl_Foo_for_Option::use_item_required<'a, T>(x_1: T) -> T
+fn impl_Foo_for_Option::use_item_required<'a, T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
     TypeOutlives0: T: 'a,
 {
     let _0: T; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
 // Full name: test_crate::{impl test_crate::Foo<'a, T> for Option<T>[TraitClause0]}::use_item_provided
-fn impl_Foo_for_Option::use_item_provided<'a, T, Clause2_Item>(x_1: T) -> T
+fn impl_Foo_for_Option::use_item_provided<'a, T, Clause2_Item>(x: T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
@@ -206,9 +206,9 @@ where
     TypeOutlives0: T: 'a,
 {
     let _0: T; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 
@@ -229,14 +229,14 @@ where
 }
 
 // Full name: test_crate::external_use_item
-fn external_use_item<'a, T, Clause1_Item, Clause2_Item>(x_1: Clause1_Item) -> Clause1_Item
+fn external_use_item<'a, T, Clause1_Item, Clause2_Item>(x: Clause1_Item) -> Clause1_Item
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: test_crate::Foo<'a, Clause1_Item>),
     TraitClause2: (Clause1_Item: test_crate::Foo<'a, Clause2_Item>),
 {
     let _0: Clause1_Item; // return
-    let x_1: Clause1_Item; // arg #1
+    let x: Clause1_Item; // arg #1
     let _2: &'5 Clause1_Item; // anonymous local
     let _3: Clause1_Item; // anonymous local
     let _4: Clause1_Item; // anonymous local
@@ -244,7 +244,7 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy x_1
+    _4 = copy x
     _3 = TraitClause1::use_item_provided<Clause2_Item>[TraitClause2](move _4)
     _2 = &_3
     storage_dead(_4)
@@ -265,7 +265,7 @@ fn call_fn()
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }
-    _1 = external_use_item<'19, &'19 bool, Option<&'19 bool>[{built_in impl Sized for &'19 bool}], &'34 bool>[{built_in impl Sized for &'19 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'19, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'19, &'34 bool>[{built_in impl Sized for &'34 bool}, {impl Copy for &'_0 T}<'34, bool>]](move _2)
+    _1 = external_use_item<'19, &'19 bool, Option<&'19 bool>[{built_in impl Sized for &'19 bool}], &'19 bool>[{built_in impl Sized for &'19 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'19, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'19, &'19 bool>[{built_in impl Sized for &'19 bool}, {impl Copy for &'_0 T}<'19, bool>]](move _2)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
@@ -273,7 +273,7 @@ fn call_fn()
 }
 
 // Full name: test_crate::type_equality
-fn type_equality<'a, I, J, Clause2_Item>(x_1: Clause2_Item) -> Clause2_Item
+fn type_equality<'a, I, J, Clause2_Item>(x: Clause2_Item) -> Clause2_Item
 where
     TraitClause0: (I: Sized),
     TraitClause1: (J: Sized),
@@ -281,10 +281,10 @@ where
     TraitClause3: (J: test_crate::Foo<'a, Clause2_Item>),
 {
     let _0: Clause2_Item; // return
-    let x_1: Clause2_Item; // arg #1
+    let x: Clause2_Item; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl Destruct for Clause2_Item}::drop_glue<'5>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl Destruct for Clause2_Item}::drop_glue<'5>] x
     return
 }
 

@@ -28,12 +28,12 @@ pub enum E1 {
 }
 
 // Full name: test_crate::test1
-pub fn test1(x_1: E1) -> bool
+pub fn test1(x: E1) -> bool
 {
     let _0: bool; // return
-    let x_1: E1; // arg #1
+    let x: E1; // arg #1
 
-    match x_1 {
+    match x {
         E1::V1 | E1::V2 => {
         },
         E1::V3 => {
@@ -46,15 +46,15 @@ pub fn test1(x_1: E1) -> bool
 }
 
 // Full name: test_crate::id
-pub fn id<T>(x_1: T) -> T
+pub fn id<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),
 {
     let _0: T; // return
-    let x_1: T; // arg #1
+    let x: T; // arg #1
 
-    _0 = move x_1
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x_1
+    _0 = move x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
     return
 }
 
@@ -66,74 +66,74 @@ pub enum E2 {
 }
 
 // Full name: test_crate::test2
-pub fn test2(x_1: E2) -> u32
+pub fn test2(x: E2) -> u32
 {
     let _0: u32; // return
-    let x_1: E2; // arg #1
-    let n_2: u32; // local
+    let x: E2; // arg #1
+    let n: u32; // local
 
-    match x_1 {
+    match x {
         E2::V1 => {
-            storage_live(n_2)
-            n_2 = copy (x_1 as variant E2::V1).0
+            storage_live(n)
+            n = copy (x as variant E2::V1).0
         },
         E2::V2 => {
-            storage_live(n_2)
-            n_2 = copy (x_1 as variant E2::V2).0
+            storage_live(n)
+            n = copy (x as variant E2::V2).0
         },
         E2::V3 => {
             _0 = const 0u32
             return
         },
     }
-    _0 = copy n_2
-    storage_dead(n_2)
+    _0 = copy n
+    storage_dead(n)
     return
 }
 
 // Full name: test_crate::test3
-pub fn test3(x_1: E2) -> u32
+pub fn test3(x: E2) -> u32
 {
     let _0: u32; // return
-    let x_1: E2; // arg #1
-    let y_2: u32; // local
-    let n_3: u32; // local
-    let z_4: u32; // local
+    let x: E2; // arg #1
+    let y: u32; // local
+    let n: u32; // local
+    let z: u32; // local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
 
     storage_live(_7)
-    storage_live(y_2)
-    match x_1 {
+    storage_live(y)
+    match x {
         E2::V1 => {
-            storage_live(n_3)
-            n_3 = copy (x_1 as variant E2::V1).0
-            y_2 = copy n_3
-            storage_dead(n_3)
+            storage_live(n)
+            n = copy (x as variant E2::V1).0
+            y = copy n
+            storage_dead(n)
         },
         E2::V2 => {
-            storage_live(n_3)
-            n_3 = copy (x_1 as variant E2::V2).0
-            y_2 = copy n_3
-            storage_dead(n_3)
+            storage_live(n)
+            n = copy (x as variant E2::V2).0
+            y = copy n
+            storage_dead(n)
         },
         E2::V3 => {
-            y_2 = const 0u32
+            y = const 0u32
         },
     }
-    storage_live(z_4)
-    z_4 = id<u32>[{built_in impl Sized for u32}](const 3u32)
+    storage_live(z)
+    z = id<u32>[{built_in impl Sized for u32}](const 3u32)
     storage_live(_5)
-    _5 = copy y_2
+    _5 = copy y
     storage_live(_6)
-    _6 = copy z_4
+    _6 = copy z
     _7 = copy _5 panic.+ copy _6
     _0 = move _7
     storage_dead(_6)
     storage_dead(_5)
-    storage_dead(z_4)
-    storage_dead(y_2)
+    storage_dead(z)
+    storage_dead(y)
     return
 }
 

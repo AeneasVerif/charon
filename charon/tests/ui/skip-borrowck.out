@@ -13,14 +13,14 @@ pub trait Sized<Self>
 }
 
 // Full name: test_crate::choose
-fn choose<'a, T>(b_1: bool, x_2: &'a mut T, y_3: &'a mut T) -> &'a mut T
+fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 mut T; // return
-    let b_1: bool; // arg #1
-    let x_2: &'2 mut T; // arg #2
-    let y_3: &'3 mut T; // arg #3
+    let b: bool; // arg #1
+    let x: &'2 mut T; // arg #2
+    let y: &'3 mut T; // arg #3
     let _4: &'4 mut T; // anonymous local
     let _5: &'5 mut T; // anonymous local
     let _6: bool; // anonymous local
@@ -29,14 +29,14 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = copy b_1
+    _6 = copy b
     if move _6 {
         storage_live(_7)
-        _7 = &mut (*x_2)
+        _7 = &mut (*x)
         _5 = &mut (*_7)
         storage_dead(_7)
     } else {
-        _5 = &mut (*y_3)
+        _5 = &mut (*y)
     }
     _4 = &mut (*_5)
     storage_dead(_6)
@@ -50,9 +50,9 @@ where
 pub fn choose_test()
 {
     let _0: (); // return
-    let x_1: i32; // local
-    let y_2: i32; // local
-    let z_3: &'1 mut i32; // local
+    let x: i32; // local
+    let y: i32; // local
+    let z: &'1 mut i32; // local
     let _4: &'2 mut i32; // anonymous local
     let _5: &'3 mut i32; // anonymous local
     let _6: &'4 mut i32; // anonymous local
@@ -69,29 +69,29 @@ pub fn choose_test()
 
     storage_live(_8)
     _0 = ()
-    storage_live(x_1)
-    x_1 = const 0i32
-    storage_live(y_2)
-    y_2 = const 0i32
-    storage_live(z_3)
+    storage_live(x)
+    x = const 0i32
+    storage_live(y)
+    y = const 0i32
+    storage_live(z)
     storage_live(_4)
     storage_live(_5)
-    _5 = &mut x_1
+    _5 = &mut x
     _4 = &two-phase-mut (*_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = &mut y_2
+    _7 = &mut y
     _6 = &two-phase-mut (*_7)
-    z_3 = choose<'7, i32>[{built_in impl Sized for i32}](const true, move _4, move _6)
+    z = choose<'7, i32>[{built_in impl Sized for i32}](const true, move _4, move _6)
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_7)
     storage_dead(_5)
-    _8 = copy (*z_3) panic.+ const 1i32
-    (*z_3) = move _8
+    _8 = copy (*z) panic.+ const 1i32
+    (*z) = move _8
     storage_live(_9)
     storage_live(_10)
-    _10 = copy (*z_3)
+    _10 = copy (*z)
     _9 = move _10 == const 1i32
     if move _9 {
     } else {
@@ -103,7 +103,7 @@ pub fn choose_test()
     storage_live(_11)
     storage_live(_12)
     // drop(z)
-    _12 = copy x_1
+    _12 = copy x
     _11 = move _12 == const 1i32
     if move _11 {
     } else {
@@ -114,7 +114,7 @@ pub fn choose_test()
     storage_dead(_11)
     storage_live(_13)
     storage_live(_14)
-    _14 = copy y_2
+    _14 = copy y
     _13 = move _14 == const 0i32
     if move _13 {
     } else {
@@ -125,7 +125,7 @@ pub fn choose_test()
     storage_dead(_13)
     storage_live(_15)
     storage_live(_16)
-    _16 = copy (*z_3)
+    _16 = copy (*z)
     _15 = move _16 == const 1i32
     if move _15 {
     } else {
@@ -135,9 +135,9 @@ pub fn choose_test()
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
-    storage_dead(z_3)
-    storage_dead(y_2)
-    storage_dead(x_1)
+    storage_dead(z)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 

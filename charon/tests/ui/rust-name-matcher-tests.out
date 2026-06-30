@@ -134,34 +134,34 @@ where
 }
 
 // Full name: test_crate::{Generic<T>[TraitClause0]}::new
-fn new<T>(value_1: T) -> Generic<T>[TraitClause0]
+fn new<T>(value: T) -> Generic<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
     let _0: Generic<T>[TraitClause0]; // return
-    let value_1: T; // arg #1
+    let value: T; // arg #1
     let _2: T; // anonymous local
 
     storage_live(_2)
-    _2 = move value_1
+    _2 = move value
     _0 = Generic { value: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value
     return
 }
 
 // Full name: test_crate::{Generic<T>[TraitClause0]}::get
-fn get<'_0, T>(self_1: &'_0 Generic<T>[TraitClause0]) -> &'_0 T
+fn get<'_0, T>(self: &'_0 Generic<T>[TraitClause0]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 T; // return
-    let self_1: &'3 Generic<T>[TraitClause0]; // arg #1
+    let self: &'3 Generic<T>[TraitClause0]; // arg #1
     let _2: &'4 T; // anonymous local
 
     storage_live(_2)
-    _2 = &((*self_1)).value
+    _2 = &((*self)).value
     _0 = &(*_2)
     storage_dead(_2)
     return
@@ -171,25 +171,25 @@ where
 fn use_generic()
 {
     let _0: (); // return
-    let _int_generic_1: Generic<i32>[{built_in impl Sized for i32}]; // local
-    let _str_generic_2: Generic<&'6 str>[{built_in impl Sized for &'6 str}]; // local
+    let _int_generic: Generic<i32>[{built_in impl Sized for i32}]; // local
+    let _str_generic: Generic<&'6 str>[{built_in impl Sized for &'6 str}]; // local
     let _3: &'10 i32; // anonymous local
     let _4: &'12 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
 
     _0 = ()
-    storage_live(_int_generic_1)
-    _int_generic_1 = new<i32>[{built_in impl Sized for i32}](const 42i32)
-    storage_live(_str_generic_2)
-    _str_generic_2 = new<&'14 str>[{built_in impl Sized for &'14 str}](const "hello")
+    storage_live(_int_generic)
+    _int_generic = new<i32>[{built_in impl Sized for i32}](const 42i32)
+    storage_live(_str_generic)
+    _str_generic = new<&'14 str>[{built_in impl Sized for &'14 str}](const "hello")
     storage_live(_3)
     storage_live(_4)
-    _4 = &_int_generic_1
+    _4 = &_int_generic
     _3 = get<'21, i32>[{built_in impl Sized for i32}](move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
-    storage_dead(_str_generic_2)
-    storage_dead(_int_generic_1)
+    storage_dead(_str_generic)
+    storage_dead(_int_generic)
     return
 }
 

@@ -1196,18 +1196,48 @@ let adt_field_to_string (env : fmt_env) (def_id : TypeDeclId.id)
 let local_id_to_pretty_string (id : local_id) : string =
   "_" ^ LocalId.to_string id
 
-let local_to_string (v : local) : string =
+let local_to_string_with_id (v : local) : string =
   match v.name with
   | None -> "_" ^ LocalId.to_string v.index
   | Some name -> name ^ "_" ^ LocalId.to_string v.index
 
+let local_to_string (v : local) : string = local_to_string_with_id v
+
+let compute_local_names (locals : locals) : (local_id * string option) list =
+  let name_counts = Hashtbl.create (List.length locals.locals * 2) in
+  let add_count name =
+    let count =
+      match Hashtbl.find_opt name_counts name with
+      | None -> 0
+      | Some count -> count
+    in
+    Hashtbl.replace name_counts name (count + 1)
+  in
+  List.iter
+    (fun (local : local) ->
+      add_count (local_to_string_with_id local);
+      match local.name with
+      | None -> ()
+      | Some name -> add_count name)
+    locals.locals;
+  List.map
+    (fun (local : local) ->
+      let name =
+        match local.name with
+        | Some name when name <> "" && Hashtbl.find name_counts name = 1 -> name
+        | _ -> local_to_string_with_id local
+      in
+      (local.index, Some name))
+    locals.locals
+
+let fmt_env_set_locals (env : fmt_env) (locals : locals) : fmt_env =
+  { env with locals = compute_local_names locals }
+
 let local_id_to_string (env : fmt_env) (id : LocalId.id) : string =
   match List.find_opt (fun (i, _) -> i = id) env.locals with
   | None -> local_id_to_pretty_string id
-  | Some (_, name) -> (
-      match name with
-      | None -> local_id_to_pretty_string id
-      | Some name -> name ^ "_" ^ LocalId.to_string id)
+  | Some (_, None) -> local_id_to_pretty_string id
+  | Some (_, Some name) -> name
 
 let rec pp_projection_elem (env : fmt_env) (sub : string)
     (fmt : Format.formatter) (pe : projection_elem) : unit =
@@ -1572,6 +1602,7 @@ let pp_fun_sig (env : fmt_env) (indent : string) (indent_incr : string)
 
 let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
     (locals : locals) : unit =
+  let env = fmt_env_set_locals env locals in
   let pp_local_decl fmt var =
     let kind =
       if var.index = LocalId.zero then "return"
@@ -1582,7 +1613,8 @@ let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
         | Some _ -> "local"
         | None -> "anonymous local"
     in
-    Format.fprintf fmt "%slet %s: %s; // %s" indent (local_to_string var)
+    Format.fprintf fmt "%slet %s: %s; // %s" indent
+      (local_id_to_string env var.index)
       (ty_to_string env var.local_ty)
       kind
   in
@@ -2074,9 +2106,10 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
   in
   let n_args = List.length def.signature.inputs in
   let args_of_locals (locals : locals) =
+    let env = fmt_env_set_locals env locals in
     locals.locals |> List.tl
     |> Collections.List.prefix n_args
-    |> List.map local_to_string
+    |> List.map (fun var -> local_id_to_string env var.index)
   in
   let arg_names =
     match def.body with
@@ -2111,8 +2144,7 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
   pp_string fmt clauses;
   match def.body with
   | StructuredBody { locals; body; _ } ->
-      let env_locals = List.map (fun v -> (v.index, v.name)) locals.locals in
-      let env = { env with locals = env_locals } in
+      let env = fmt_env_set_locals env locals in
       let body_indent = indent ^ indent_incr in
       Format.fprintf fmt "\n%s{\n%a\n\n%a%s}" indent
         (pp_locals env body_indent)
@@ -2120,8 +2152,7 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
         (pp_llbc_block env body_indent indent_incr)
         body indent
   | UnstructuredBody { locals; body; _ } ->
-      let env_locals = List.map (fun v -> (v.index, v.name)) locals.locals in
-      let env = { env with locals = env_locals } in
+      let env = fmt_env_set_locals env locals in
       let body_indent = indent ^ indent_incr in
       Format.fprintf fmt "\n%s{\n%a\n\n%a\n%s}" indent
         (pp_locals env body_indent)

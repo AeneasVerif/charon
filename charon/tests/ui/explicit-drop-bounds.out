@@ -48,33 +48,33 @@ trait Trait<Self, T>
     non-dyn-compatible
 }
 
-fn test_crate::Trait::foo<Self, T, U>(x_1: U)
+fn test_crate::Trait::foo<Self, T, U>(x: U)
 where
     TraitClause0: (Self: Trait<T>),
     TraitClause1: (U: Sized),
     TraitClause2: (U: Destruct),
 {
     let _0: (); // return
-    let x_1: U; // arg #1
+    let x: U; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[TraitClause2::drop_glue<'0>] x_1
+    drop[TraitClause2::drop_glue<'0>] x
     return
 }
 
 // Full name: test_crate::{impl Trait<u32> for ()}::foo
-fn impl_Trait_u32_for_unit::foo<U>(x_1: U)
+fn impl_Trait_u32_for_unit::foo<U>(x: U)
 where
     TraitClause0: (U: Sized),
     TraitClause1: (U: Destruct),
 {
     let _0: (); // return
-    let x_1: U; // arg #1
+    let x: U; // arg #1
 
     _0 = ()
     _0 = ()
-    drop[TraitClause1::drop_glue<'0>] x_1
+    drop[TraitClause1::drop_glue<'0>] x
     return
 }
 
@@ -92,7 +92,7 @@ impl "impl_Trait_u32_for_unit" Trait<u32> for () {
 }
 
 // Full name: test_crate::use_trait
-fn use_trait<T, X>(_x_1: T, _y_2: X)
+fn use_trait<T, X>(_x: T, _y: X)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (X: Sized),
@@ -101,13 +101,13 @@ where
     TraitClause4: (X: Destruct),
 {
     let _0: (); // return
-    let _x_1: T; // arg #1
-    let _y_2: X; // arg #2
+    let _x: T; // arg #1
+    let _y: X; // arg #2
 
     _0 = ()
     _0 = ()
-    drop[TraitClause4::drop_glue<'0>] _y_2
-    drop[TraitClause3::drop_glue<'1>] _x_1
+    drop[TraitClause4::drop_glue<'0>] _y
+    drop[TraitClause3::drop_glue<'1>] _x
     return
 }
 

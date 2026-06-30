@@ -18,10 +18,10 @@ pub trait core::clone::Clone<Self>
 
 pub struct test_crate::Foo {}
 
-pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(self_1: &'_0 test_crate::Foo) -> test_crate::Foo
+pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(self: &'_0 test_crate::Foo) -> test_crate::Foo
 {
     let _0: test_crate::Foo; // return
-    let self_1: &'1 test_crate::Foo; // arg #1
+    let self: &'1 test_crate::Foo; // arg #1
 
     loop {
         continue 0

@@ -90,20 +90,20 @@ fn use_string(_1: String)
 fn main()
 {
     let _0: (); // return
-    let s_1: String; // local
+    let s: String; // local
     let _2: String; // anonymous local
 
     _0 = ()
-    storage_live(s_1)
-    s_1 = new()
+    storage_live(s)
+    s = new()
     storage_live(_2)
     _2 = new()
-    drop[impl_Destruct_for_String::drop_glue<'1>] s_1
-    s_1 = move _2
+    drop[impl_Destruct_for_String::drop_glue<'1>] s
+    s = move _2
     storage_dead(_2)
     _0 = ()
-    drop[impl_Destruct_for_String::drop_glue<'2>] s_1
-    storage_dead(s_1)
+    drop[impl_Destruct_for_String::drop_glue<'2>] s
+    storage_dead(s)
     return
 }
 

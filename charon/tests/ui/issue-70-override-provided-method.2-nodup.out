@@ -14,12 +14,12 @@ trait Trait<Self>
     vtable: test_crate::Trait::{vtable}
 }
 
-fn test_crate::Trait::provided1<'_0, Self>(self_1: &'_0 Self)
+fn test_crate::Trait::provided1<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
 {
     let _0: (); // return
-    let self_1: &'1 Self; // arg #1
+    let self: &'1 Self; // arg #1
     let _2: (); // anonymous local
     let _3: &'2 Self; // anonymous local
     let _4: (); // anonymous local
@@ -28,13 +28,13 @@ where
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*self_1) with_metadata(copy self_1.metadata)
+    _3 = &(*self) with_metadata(copy self.metadata)
     _2 = TraitClause0::required<'4>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
-    _5 = &(*self_1) with_metadata(copy self_1.metadata)
+    _5 = &(*self) with_metadata(copy self.metadata)
     _4 = TraitClause0::provided2<'5>(move _5)
     storage_dead(_5)
     storage_dead(_4)
@@ -43,12 +43,12 @@ where
 }
 
 // Full name: test_crate::Trait::provided2
-fn provided2<'_0, Self>(self_1: &'_0 Self)
+fn provided2<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
 {
     let _0: (); // return
-    let self_1: &'1 Self; // arg #1
+    let self: &'1 Self; // arg #1
     let _2: (); // anonymous local
     let _3: &'2 Self; // anonymous local
     let _4: (); // anonymous local
@@ -57,13 +57,13 @@ where
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*self_1) with_metadata(copy self_1.metadata)
+    _3 = &(*self) with_metadata(copy self.metadata)
     _2 = TraitClause0::required<'4>(move _3)
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
-    _5 = &(*self_1) with_metadata(copy self_1.metadata)
+    _5 = &(*self) with_metadata(copy self.metadata)
     _4 = TraitClause0::provided1<'5>(move _5)
     storage_dead(_5)
     storage_dead(_4)
@@ -75,17 +75,17 @@ where
 struct Foo {}
 
 // Full name: test_crate::{impl Trait for Foo}::required
-fn impl_Trait_for_Foo::required<'_0>(self_1: &'_0 Foo)
+fn impl_Trait_for_Foo::required<'_0>(self: &'_0 Foo)
 {
     let _0: (); // return
-    let self_1: &'1 Foo; // arg #1
+    let self: &'1 Foo; // arg #1
     let _2: (); // anonymous local
     let _3: &'2 Foo; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*self_1)
+    _3 = &(*self)
     _2 = test_crate::Trait::provided1<'4, Foo>[impl_Trait_for_Foo](move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -106,17 +106,17 @@ impl "impl_Trait_for_Foo" Trait for Foo {
 struct Bar {}
 
 // Full name: test_crate::{impl Trait for Bar}::provided1
-fn impl_Trait_for_Bar::provided1<'_0>(self_1: &'_0 Bar)
+fn impl_Trait_for_Bar::provided1<'_0>(self: &'_0 Bar)
 {
     let _0: (); // return
-    let self_1: &'1 Bar; // arg #1
+    let self: &'1 Bar; // arg #1
     let _2: (); // anonymous local
     let _3: &'2 Bar; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*self_1)
+    _3 = &(*self)
     _2 = provided2<'4, Bar>[impl_Trait_for_Bar](move _3)
     storage_dead(_3)
     storage_dead(_2)
@@ -125,17 +125,17 @@ fn impl_Trait_for_Bar::provided1<'_0>(self_1: &'_0 Bar)
 }
 
 // Full name: test_crate::{impl Trait for Bar}::required
-fn impl_Trait_for_Bar::required<'_0>(self_1: &'_0 Bar)
+fn impl_Trait_for_Bar::required<'_0>(self: &'_0 Bar)
 {
     let _0: (); // return
-    let self_1: &'1 Bar; // arg #1
+    let self: &'1 Bar; // arg #1
     let _2: (); // anonymous local
     let _3: &'2 Bar; // anonymous local
 
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = &(*self_1)
+    _3 = &(*self)
     _2 = provided2<'4, Bar>[impl_Trait_for_Bar](move _3)
     storage_dead(_3)
     storage_dead(_2)

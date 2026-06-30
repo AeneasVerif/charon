@@ -115,28 +115,28 @@ fn call_once::<()>(_1: closure::<()>, _2: ((),))
 }
 
 // Full name: test_crate::foo::{const}::closure::as_fn::<()>
-fn as_fn::<()>(arg1_1: ())
+fn as_fn::<()>(arg1: ())
 {
     let _0: (); // return
-    let arg1_1: (); // arg #1
-    let args_2: ((),); // local
-    let state_3: closure::<()>; // local
+    let arg1: (); // arg #1
+    let args: ((),); // local
+    let state: closure::<()>; // local
 
     _0 = ()
-    storage_live(args_2)
-    storage_live(state_3)
-    args_2 = (move arg1_1,)
-    state_3 = closure::<()> {  }
-    _0 = call_once::<()>(move state_3, move args_2)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1,)
+    state = closure::<()> {  }
+    _0 = call_once::<()>(move state, move args)
     return
 }
 
 // Full name: test_crate::foo::<()>
-fn foo::<()>(x_1: ())
+fn foo::<()>(x: ())
 {
     let _0: (); // return
-    let x_1: (); // arg #1
-    let f_2: fn(()); // local
+    let x: (); // arg #1
+    let f: fn(()); // local
     let _3: fn(()); // anonymous local
     let _4: (); // anonymous local
     let _5: fn(()); // anonymous local
@@ -151,16 +151,16 @@ fn foo::<()>(x_1: ())
     storage_dead(_7)
     _5 = move _6
     _0 = ()
-    storage_live(f_2)
-    f_2 = move _5
+    storage_live(f)
+    f = move _5
     storage_live(_3)
-    _3 = copy f_2
+    _3 = copy f
     storage_live(_4)
     _4 = ()
     _0 = (move _3)(move _4)
     storage_dead(_4)
     storage_dead(_3)
-    storage_dead(f_2)
+    storage_dead(f)
     return
 }
 

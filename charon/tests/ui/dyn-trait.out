@@ -103,14 +103,14 @@ where
 = <opaque>
 
 // Full name: test_crate::destruct
-fn destruct<'_0>(x_1: &'_0 (dyn Display + '_0)) -> String
+fn destruct<'_0>(x: &'_0 (dyn Display + '_0)) -> String
 {
     let _0: String; // return
-    let x_1: &'3 (dyn Display + '4); // arg #1
+    let x: &'3 (dyn Display + '4); // arg #1
     let _2: &'5 (dyn Display + '6); // anonymous local
 
     storage_live(_2)
-    _2 = &(*x_1) with_metadata(copy x_1.metadata)
+    _2 = &(*x) with_metadata(copy x.metadata)
     _0 = to_string<'15, (dyn Display + '9)>[{built_in impl MetaSized for (dyn Display + '11)}, Display<(dyn Display + '13)>](move _2)
     storage_dead(_2)
     return

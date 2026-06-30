@@ -71,10 +71,10 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
 #[lang_item("drop_glue")]
 unsafe fn core::ptr::drop_glue::<[String]><'_0>(_1: &'_0 mut [String])
 {
-    let ret_0: (); // return
+    let ret: (); // return
     let _1: &'_0 mut [String]; // arg #1
 
-    ret_0 = ()
+    ret = ()
     drop[impl_Destruct_for_slice::drop_glue::<String><'0>] (*_1)
     return
 }

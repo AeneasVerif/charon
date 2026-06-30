@@ -28,14 +28,14 @@ where
 }
 
 // Full name: test_crate::foo
-fn foo<T>(_x_1: T)
+fn foo<T>(_x: T)
 {
     let _0: (); // return
-    let _x_1: T; // arg #1
+    let _x: T; // arg #1
 
     _0 = ()
     _0 = ()
-    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _x_1
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _x
     return
 }
 

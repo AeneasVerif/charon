@@ -61,12 +61,12 @@ where
 }
 
 // Full name: test_crate::{impl Drop for Foo<T>[TraitClause0]}::drop
-pub fn impl_Drop_for_Foo::drop<'_0, T>(self_1: &'_0 mut Foo<T>[TraitClause0])
+pub fn impl_Drop_for_Foo::drop<'_0, T>(self: &'_0 mut Foo<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
 {
     let _0: (); // return
-    let self_1: &'1 mut Foo<T>[TraitClause0]; // arg #1
+    let self: &'1 mut Foo<T>[TraitClause0]; // arg #1
 
     _0 = ()
     _0 = ()

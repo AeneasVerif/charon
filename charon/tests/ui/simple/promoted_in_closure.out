@@ -72,13 +72,13 @@ struct closure {}
 fn main()
 {
     let _0: (); // return
-    let f_1: closure; // local
+    let f: closure; // local
 
     _0 = ()
-    storage_live(f_1)
-    f_1 = closure {  }
+    storage_live(f)
+    f = closure {  }
     _0 = ()
-    storage_dead(f_1)
+    storage_dead(f)
     return
 }
 
@@ -93,11 +93,11 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
 }
 
 // Full name: test_crate::main::{impl Fn<()> for closure}::call
-fn call<'_0>(_1: &'_0 closure, tupled_args_2: ())
+fn call<'_0>(_1: &'_0 closure, tupled_args: ())
 {
     let _0: (); // return
     let _1: &'1 closure; // arg #1
-    let tupled_args_2: (); // arg #2
+    let tupled_args: (); // arg #2
     let _3: &'3 i32; // anonymous local
     let _4: &'4 i32; // anonymous local
     let _5: &'5 i32; // anonymous local
@@ -121,17 +121,17 @@ fn call<'_0>(_1: &'_0 closure, tupled_args_2: ())
 }
 
 // Full name: test_crate::main::{impl FnMut<()> for closure}::call_mut
-fn call_mut<'_0>(state_1: &'_0 mut closure, args_2: ())
+fn call_mut<'_0>(state: &'_0 mut closure, args: ())
 {
     let _0: (); // return
-    let state_1: &'_0 mut closure; // arg #1
-    let args_2: (); // arg #2
+    let state: &'_0 mut closure; // arg #1
+    let args: (); // arg #2
     let _3: &'0 closure; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = call<'2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = call<'2>(move _3, move args)
     return
 }
 

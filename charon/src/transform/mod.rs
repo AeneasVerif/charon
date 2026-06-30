@@ -237,6 +237,10 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // - group the mutually recursive definitions
         // This is done last to account for the final item graph, not the initial one.
         global(&add_missing_info::reorder_decls::Transform),
+        // Check that types are still consistent after the transformation passes.
+        global(&typecheck_and_unify::Check::PostTransformation),
+        // Use `DeBruijnVar::Free` for the variables bound in item signatures.
+        mixed_body(&simplify_output::unbind_item_vars::Check),
     ]);
 
     if options.ullbc {
@@ -251,15 +255,6 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
             "# Final LLBC before serialization".to_string(),
         )));
     }
-
-    // Run the final passes after pretty-printing so that we get some output even if check_generics
-    // fails.
-    ctx.run_passes([
-        // Check that types are still consistent after the transformation passes.
-        global(&typecheck_and_unify::Check::PostTransformation),
-        // Use `DeBruijnVar::Free` for the variables bound in item signatures.
-        mixed_body(&simplify_output::unbind_item_vars::Check),
-    ]);
 }
 
 pub enum CowBox<T: ?Sized + 'static> {

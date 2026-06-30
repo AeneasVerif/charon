@@ -243,29 +243,29 @@ trait test_crate::SimdOps<Self>
 
 pub struct test_crate::x86::Sse2 {}
 
-fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::add(a_1: core::core_arch::x86::__m128i, b_2: core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
+fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::add(a: core::core_arch::x86::__m128i, b: core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
 {
     let _0: core::core_arch::x86::__m128i; // return
-    let a_1: core::core_arch::x86::__m128i; // arg #1
-    let b_2: core::core_arch::x86::__m128i; // arg #2
+    let a: core::core_arch::x86::__m128i; // arg #1
+    let b: core::core_arch::x86::__m128i; // arg #2
     let _3: core::core_arch::x86::__m128i; // anonymous local
     let _4: core::core_arch::x86::__m128i; // anonymous local
 
     storage_live(_3)
-    _3 = copy a_1
+    _3 = copy a
     storage_live(_4)
-    _4 = copy b_2
+    _4 = copy b
     _0 = core::core_arch::x86::sse2::_mm_add_epi16(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return
 }
 
-fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<'_0>(dst_1: &'_0 mut [u16; 8usize], val_2: core::core_arch::x86::__m128i)
+fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<'_0>(dst: &'_0 mut [u16; 8usize], val: core::core_arch::x86::__m128i)
 {
     let _0: (); // return
-    let dst_1: &'1 mut [u16; 8usize]; // arg #1
-    let val_2: core::core_arch::x86::__m128i; // arg #2
+    let dst: &'1 mut [u16; 8usize]; // arg #1
+    let val: core::core_arch::x86::__m128i; // arg #2
     let _3: *mut core::core_arch::x86::__m128i; // anonymous local
     let _4: *mut u16; // anonymous local
     let _5: &'3 mut [u16]; // anonymous local
@@ -277,7 +277,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = &two-phase-mut (*dst_1)
+    _6 = &two-phase-mut (*dst)
     _5 = @ArrayToSliceMut<'_, u16, 8usize>(move _6)
     storage_dead(_6)
     _4 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _5)
@@ -285,17 +285,17 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<
     _3 = cast<*mut u16, *mut core::core_arch::x86::__m128i>(move _4)
     storage_dead(_4)
     storage_live(_7)
-    _7 = copy val_2
+    _7 = copy val
     _0 = core::core_arch::x86::sse2::_mm_storeu_si128(move _3, move _7)
     storage_dead(_7)
     storage_dead(_3)
     return
 }
 
-fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'_0>(src_1: &'_0 [u16; 8usize]) -> core::core_arch::x86::__m128i
+fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'_0>(src: &'_0 [u16; 8usize]) -> core::core_arch::x86::__m128i
 {
     let _0: core::core_arch::x86::__m128i; // return
-    let src_1: &'1 [u16; 8usize]; // arg #1
+    let src: &'1 [u16; 8usize]; // arg #1
     let _2: *const core::core_arch::x86::__m128i; // anonymous local
     let _3: *const u16; // anonymous local
     let _4: &'3 [u16]; // anonymous local
@@ -305,7 +305,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = &(*src_1)
+    _5 = &(*src)
     _4 = @ArrayToSliceShared<'_, u16, 8usize>(move _5)
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
@@ -331,29 +331,29 @@ impl test_crate::SimdOps for test_crate::x86::Sse2 {
 
 pub struct test_crate::arm::Neon {}
 
-fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::add(a_1: core::core_arch::arm_shared::neon::uint16x8_t, b_2: core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
+fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::add(a: core::core_arch::arm_shared::neon::uint16x8_t, b: core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
 {
     let _0: core::core_arch::arm_shared::neon::uint16x8_t; // return
-    let a_1: core::core_arch::arm_shared::neon::uint16x8_t; // arg #1
-    let b_2: core::core_arch::arm_shared::neon::uint16x8_t; // arg #2
+    let a: core::core_arch::arm_shared::neon::uint16x8_t; // arg #1
+    let b: core::core_arch::arm_shared::neon::uint16x8_t; // arg #2
     let _3: core::core_arch::arm_shared::neon::uint16x8_t; // anonymous local
     let _4: core::core_arch::arm_shared::neon::uint16x8_t; // anonymous local
 
     storage_live(_3)
-    _3 = copy a_1
+    _3 = copy a
     storage_live(_4)
-    _4 = copy b_2
+    _4 = copy b
     _0 = core::core_arch::arm_shared::neon::generated::vaddq_u16(move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
     return
 }
 
-fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<'_0>(dst_1: &'_0 mut [u16; 8usize], val_2: core::core_arch::arm_shared::neon::uint16x8_t)
+fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<'_0>(dst: &'_0 mut [u16; 8usize], val: core::core_arch::arm_shared::neon::uint16x8_t)
 {
     let _0: (); // return
-    let dst_1: &'1 mut [u16; 8usize]; // arg #1
-    let val_2: core::core_arch::arm_shared::neon::uint16x8_t; // arg #2
+    let dst: &'1 mut [u16; 8usize]; // arg #1
+    let val: core::core_arch::arm_shared::neon::uint16x8_t; // arg #2
     let _3: *mut u16; // anonymous local
     let _4: &'3 mut [u16]; // anonymous local
     let _5: &'4 mut [u16; 8usize]; // anonymous local
@@ -363,23 +363,23 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = &two-phase-mut (*dst_1)
+    _5 = &two-phase-mut (*dst)
     _4 = @ArrayToSliceMut<'_, u16, 8usize>(move _5)
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
     storage_dead(_4)
     storage_live(_6)
-    _6 = copy val_2
+    _6 = copy val
     _0 = core::core_arch::aarch64::neon::generated::vst1q_u16(move _3, move _6)
     storage_dead(_6)
     storage_dead(_3)
     return
 }
 
-fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'_0>(src_1: &'_0 [u16; 8usize]) -> core::core_arch::arm_shared::neon::uint16x8_t
+fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'_0>(src: &'_0 [u16; 8usize]) -> core::core_arch::arm_shared::neon::uint16x8_t
 {
     let _0: core::core_arch::arm_shared::neon::uint16x8_t; // return
-    let src_1: &'1 [u16; 8usize]; // arg #1
+    let src: &'1 [u16; 8usize]; // arg #1
     let _2: *const u16; // anonymous local
     let _3: &'3 [u16]; // anonymous local
     let _4: &'4 [u16; 8usize]; // anonymous local
@@ -387,7 +387,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &(*src_1)
+    _4 = &(*src)
     _3 = @ArrayToSliceShared<'_, u16, 8usize>(move _4)
     storage_dead(_4)
     _2 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _3)
@@ -409,17 +409,17 @@ impl test_crate::SimdOps for test_crate::arm::Neon {
     non-dyn-compatible
 }
 
-fn test_crate::add_generic<'_0, '_1, T>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16; 8usize])
+fn test_crate::add_generic<'_0, '_1, T>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8usize])
 where
     TraitClause0: (T: core::marker::Sized),
     TraitClause1: (T: test_crate::SimdOps),
 {
     let _0: (); // return
-    let a_1: &'1 mut [u16; 8usize]; // arg #1
-    let b_2: &'3 [u16; 8usize]; // arg #2
-    let va_3: TraitClause1::V128; // local
+    let a: &'1 mut [u16; 8usize]; // arg #1
+    let b: &'3 [u16; 8usize]; // arg #2
+    let va: TraitClause1::V128; // local
     let _4: &'4 [u16; 8usize]; // anonymous local
-    let vb_5: TraitClause1::V128; // local
+    let vb: TraitClause1::V128; // local
     let _6: &'5 [u16; 8usize]; // anonymous local
     let _7: (); // anonymous local
     let _8: &'6 mut [u16; 8usize]; // anonymous local
@@ -428,24 +428,24 @@ where
     let _11: TraitClause1::V128; // anonymous local
 
     _0 = ()
-    storage_live(va_3)
+    storage_live(va)
     storage_live(_4)
-    _4 = &(*a_1)
-    va_3 = TraitClause1::load<'7>(move _4)
+    _4 = &(*a)
+    va = TraitClause1::load<'7>(move _4)
     storage_dead(_4)
-    storage_live(vb_5)
+    storage_live(vb)
     storage_live(_6)
-    _6 = &(*b_2)
-    vb_5 = TraitClause1::load<'8>(move _6)
+    _6 = &(*b)
+    vb = TraitClause1::load<'8>(move _6)
     storage_dead(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = &two-phase-mut (*a_1)
+    _8 = &two-phase-mut (*a)
     storage_live(_9)
     storage_live(_10)
-    _10 = copy va_3
+    _10 = copy va
     storage_live(_11)
-    _11 = copy vb_5
+    _11 = copy vb
     _9 = TraitClause1::add(move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
@@ -454,23 +454,23 @@ where
     storage_dead(_8)
     storage_dead(_7)
     _0 = ()
-    storage_dead(vb_5)
-    storage_dead(va_3)
+    storage_dead(vb)
+    storage_dead(va)
     return
 }
 
-fn test_crate::add_scalar<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16; 8usize])
+fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8usize])
 {
     let _0: (); // return
-    let a_1: &'1 mut [u16; 8usize]; // arg #1
-    let b_2: &'3 [u16; 8usize]; // arg #2
+    let a: &'1 mut [u16; 8usize]; // arg #1
+    let b: &'3 [u16; 8usize]; // arg #2
     let _3: core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // anonymous local
     let _4: core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // anonymous local
-    let iter_5: core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // local
+    let iter: core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // local
     let _6: core::option::Option<usize>[{built_in impl core::marker::Sized for usize}]; // anonymous local
     let _7: &'5 mut core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // anonymous local
     let _8: &'6 mut core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]; // anonymous local
-    let i_9: usize; // local
+    let i: usize; // local
     let _10: u16; // anonymous local
     let _11: u16; // anonymous local
     let _12: usize; // anonymous local
@@ -490,13 +490,13 @@ fn test_crate::add_scalar<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16;
     _4 = core::ops::range::Range { start: const 0usize, end: const 8usize }
     _3 = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]>[{built_in impl core::marker::Sized for core::ops::range::Range<usize>[{built_in impl core::marker::Sized for usize}]}, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}<usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}]](move _4)
     storage_dead(_4)
-    storage_live(iter_5)
-    iter_5 = move _3
+    storage_live(iter)
+    iter = move _3
     loop {
         storage_live(_6)
         storage_live(_7)
         storage_live(_8)
-        _8 = &mut iter_5
+        _8 = &mut iter
         _7 = &two-phase-mut (*_8)
         _6 = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}::next<'8, usize>[{built_in impl core::marker::Sized for usize}, core::iter::range::{impl core::iter::range::Step for usize}](move _7)
         storage_dead(_7)
@@ -507,22 +507,22 @@ fn test_crate::add_scalar<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16;
             core::option::Option::Some => {
             },
         }
-        storage_live(i_9)
-        i_9 = copy (_6 as variant core::option::Option::Some).0
+        storage_live(i)
+        i = copy (_6 as variant core::option::Option::Some).0
         storage_live(_10)
         storage_live(_11)
         storage_live(_12)
-        _12 = copy i_9
+        _12 = copy i
         storage_live(_16)
-        _16 = &(*a_1)
+        _16 = &(*a)
         storage_live(_17)
         _17 = @ArrayIndexShared<'_, u16, 8usize>(move _16, copy _12)
         _11 = copy (*_17)
         storage_live(_13)
         storage_live(_14)
-        _14 = copy i_9
+        _14 = copy i
         storage_live(_18)
-        _18 = &(*b_2)
+        _18 = &(*b)
         storage_live(_19)
         _19 = @ArrayIndexShared<'_, u16, 8usize>(move _18, copy _14)
         _13 = copy (*_19)
@@ -530,9 +530,9 @@ fn test_crate::add_scalar<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16;
         storage_dead(_13)
         storage_dead(_11)
         storage_live(_15)
-        _15 = copy i_9
+        _15 = copy i
         storage_live(_20)
-        _20 = &mut (*a_1)
+        _20 = &mut (*a)
         storage_live(_21)
         _21 = @ArrayIndexMut<'_, u16, 8usize>(move _20, copy _15)
         (*_21) = move _10
@@ -540,7 +540,7 @@ fn test_crate::add_scalar<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16;
         storage_dead(_15)
         storage_dead(_14)
         storage_dead(_12)
-        storage_dead(i_9)
+        storage_dead(i)
         storage_dead(_8)
         storage_dead(_6)
         continue 0
@@ -548,25 +548,25 @@ fn test_crate::add_scalar<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16;
     _0 = ()
     storage_dead(_8)
     storage_dead(_6)
-    storage_dead(iter_5)
+    storage_dead(iter)
     storage_dead(_3)
     return
 }
 
-fn test_crate::cpu_features_present(_mask_1: u32) -> bool
+fn test_crate::cpu_features_present(_mask: u32) -> bool
 {
     let _0: bool; // return
-    let _mask_1: u32; // arg #1
+    let _mask: u32; // arg #1
 
     _0 = const true
     return
 }
 
-fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16; 8usize])
+fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8usize])
 {
     let _0: (); // return
-    let a_1: &'1 mut [u16; 8usize]; // arg #1
-    let b_2: &'3 [u16; 8usize]; // arg #2
+    let a: &'1 mut [u16; 8usize]; // arg #1
+    let b: &'3 [u16; 8usize]; // arg #2
     let _3: bool; // anonymous local
     let _4: (); // anonymous local
     let _5: &'4 mut [u16; 8usize]; // anonymous local
@@ -581,9 +581,9 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8
     if move _3 {
         storage_live(_4)
         storage_live(_5)
-        _5 = &two-phase-mut (*a_1)
+        _5 = &two-phase-mut (*a)
         storage_live(_6)
-        _6 = &(*b_2)
+        _6 = &(*b)
         _4 = test_crate::add_generic<'10, '11, test_crate::x86::Sse2>[{built_in impl core::marker::Sized for test_crate::x86::Sse2}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}](move _5, move _6)
         storage_dead(_6)
         storage_dead(_5)
@@ -592,9 +592,9 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8
     } else {
         storage_live(_7)
         storage_live(_8)
-        _8 = &two-phase-mut (*a_1)
+        _8 = &two-phase-mut (*a)
         storage_live(_9)
-        _9 = &(*b_2)
+        _9 = &(*b)
         _7 = test_crate::add_scalar<'14, '15>(move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)
@@ -605,11 +605,11 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8
     return
 }
 
-fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 8usize], b_2: &'_1 [u16; 8usize])
+fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8usize])
 {
     let _0: (); // return
-    let a_1: &'1 mut [u16; 8usize]; // arg #1
-    let b_2: &'3 [u16; 8usize]; // arg #2
+    let a: &'1 mut [u16; 8usize]; // arg #1
+    let b: &'3 [u16; 8usize]; // arg #2
     let _3: bool; // anonymous local
     let _4: (); // anonymous local
     let _5: &'4 mut [u16; 8usize]; // anonymous local
@@ -624,9 +624,9 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 
     if move _3 {
         storage_live(_4)
         storage_live(_5)
-        _5 = &two-phase-mut (*a_1)
+        _5 = &two-phase-mut (*a)
         storage_live(_6)
-        _6 = &(*b_2)
+        _6 = &(*b)
         _4 = test_crate::add_generic<'10, '11, test_crate::arm::Neon>[{built_in impl core::marker::Sized for test_crate::arm::Neon}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}](move _5, move _6)
         storage_dead(_6)
         storage_dead(_5)
@@ -635,9 +635,9 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a_1: &'_0 mut [u16; 
     } else {
         storage_live(_7)
         storage_live(_8)
-        _8 = &two-phase-mut (*a_1)
+        _8 = &two-phase-mut (*a)
         storage_live(_9)
-        _9 = &(*b_2)
+        _9 = &(*b)
         _7 = test_crate::add_scalar<'14, '15>(move _8, move _9)
         storage_dead(_9)
         storage_dead(_8)

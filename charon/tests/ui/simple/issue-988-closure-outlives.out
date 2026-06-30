@@ -71,20 +71,20 @@ struct closure<'_0> {
 }
 
 // Full name: test_crate::call_fn_shared::{impl Fn<(usize,)> for closure<'_0>}::call
-fn call<'_0, '_1>(_1: &'_1 closure<'_0>, tupled_args_2: (usize,)) -> u8
+fn call<'_0, '_1>(_1: &'_1 closure<'_0>, tupled_args: (usize,)) -> u8
 {
     let _0: u8; // return
     let _1: &'1 closure<'_0>; // arg #1
-    let tupled_args_2: (usize,); // arg #2
-    let i_3: usize; // local
+    let tupled_args: (usize,); // arg #2
+    let i: usize; // local
     let _4: usize; // anonymous local
     let _5: &'_ [u8]; // anonymous local
     let _6: &'_ u8; // anonymous local
 
-    storage_live(i_3)
-    i_3 = move tupled_args_2.0
+    storage_live(i)
+    i = move tupled_args.0
     storage_live(_4)
-    _4 = copy i_3
+    _4 = copy i
     storage_live(_5)
     _5 = &(*((*_1)).0) with_metadata(copy ((*_1)).0.metadata)
     storage_live(_6)
@@ -95,33 +95,33 @@ fn call<'_0, '_1>(_1: &'_1 closure<'_0>, tupled_args_2: (usize,)) -> u8
 }
 
 // Full name: test_crate::call_fn_shared
-pub fn call_fn_shared<'_0>(a_1: &'_0 [u8], i_2: usize) -> u8
+pub fn call_fn_shared<'_0>(a: &'_0 [u8], i: usize) -> u8
 {
     let _0: u8; // return
-    let a_1: &'1 [u8]; // arg #1
-    let i_2: usize; // arg #2
-    let read_3: closure<'3>; // local
+    let a: &'1 [u8]; // arg #1
+    let i: usize; // arg #2
+    let read: closure<'3>; // local
     let _4: &'4 [u8]; // anonymous local
     let _5: &'7 closure<'8>; // anonymous local
     let _6: (usize,); // anonymous local
     let _7: usize; // anonymous local
 
-    storage_live(read_3)
+    storage_live(read)
     storage_live(_4)
-    _4 = &(*a_1) with_metadata(copy a_1.metadata)
-    read_3 = closure { 0: move _4 }
+    _4 = &(*a) with_metadata(copy a.metadata)
+    read = closure { 0: move _4 }
     storage_dead(_4)
     storage_live(_5)
-    _5 = &read_3
+    _5 = &read
     storage_live(_6)
     storage_live(_7)
-    _7 = copy i_2
+    _7 = copy i
     _6 = (move _7,)
     _0 = call<'12, '13>(move _5, move _6)
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
-    storage_dead(read_3)
+    storage_dead(read)
     return
 }
 
@@ -136,16 +136,16 @@ unsafe fn drop_glue<'_0, '_1>(_1: &'_1 mut closure<'_0>)
 }
 
 // Full name: test_crate::call_fn_shared::{impl FnMut<(usize,)> for closure<'_0>}::call_mut
-fn call_mut<'_0, '_1>(state_1: &'_1 mut closure<'_0>, args_2: (usize,)) -> u8
+fn call_mut<'_0, '_1>(state: &'_1 mut closure<'_0>, args: (usize,)) -> u8
 {
     let _0: u8; // return
-    let state_1: &'_1 mut closure<'_0>; // arg #1
-    let args_2: (usize,); // arg #2
+    let state: &'_1 mut closure<'_0>; // arg #1
+    let args: (usize,); // arg #2
     let _3: &'0 closure<'_0>; // anonymous local
 
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = call<'_0, '2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = call<'_0, '2>(move _3, move args)
     return
 }
 

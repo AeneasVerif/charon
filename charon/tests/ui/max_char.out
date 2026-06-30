@@ -16,13 +16,13 @@ pub const MAX: char = MAX()
 fn main()
 {
     let _0: (); // return
-    let _max_char_1: char; // local
+    let _max_char: char; // local
 
     _0 = ()
-    storage_live(_max_char_1)
-    _max_char_1 = copy MAX
+    storage_live(_max_char)
+    _max_char = copy MAX
     _0 = ()
-    storage_dead(_max_char_1)
+    storage_dead(_max_char)
     return
 }
 

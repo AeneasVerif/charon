@@ -32,11 +32,11 @@ where
     TraitClause2: ([T]: Index<I>),
 = <opaque>
 
-fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: usize) -> !
 {
     let _0: !; // return
-    let start_1: usize; // arg #1
-    let len_2: usize; // arg #2
+    let start: usize; // arg #1
+    let len: usize; // arg #2
     let _3: Arguments<'1>; // anonymous local
     let args_4: (&'5 usize, &'6 usize); // local
     let _5: &'7 usize; // anonymous local
@@ -60,9 +60,9 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     storage_live(_3)
     storage_live(args_4)
     storage_live(_5)
-    _5 = &start_1
+    _5 = &start
     storage_live(_6)
-    _6 = &len_2
+    _6 = &len
     args_4 = (move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
@@ -102,11 +102,11 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start_1: usize, len_2
     panic(core::panicking::panic_fmt)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: usize) -> !
 {
     let _0: !; // return
-    let end_1: usize; // arg #1
-    let len_2: usize; // arg #2
+    let end: usize; // arg #1
+    let len: usize; // arg #2
     let _3: Arguments<'1>; // anonymous local
     let args_4: (&'5 usize, &'6 usize); // local
     let _5: &'7 usize; // anonymous local
@@ -130,9 +130,9 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     storage_live(_3)
     storage_live(args_4)
     storage_live(_5)
-    _5 = &end_1
+    _5 = &end
     storage_live(_6)
-    _6 = &len_2
+    _6 = &len
     args_4 = (move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
@@ -172,11 +172,11 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end_1: usize, len_2
     panic(core::panicking::panic_fmt)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end_2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: usize) -> !
 {
     let _0: !; // return
-    let start_1: usize; // arg #1
-    let end_2: usize; // arg #2
+    let start: usize; // arg #1
+    let end: usize; // arg #2
     let _3: Arguments<'1>; // anonymous local
     let args_4: (&'5 usize, &'6 usize); // local
     let _5: &'7 usize; // anonymous local
@@ -200,9 +200,9 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     storage_live(_3)
     storage_live(args_4)
     storage_live(_5)
-    _5 = &start_1
+    _5 = &start
     storage_live(_6)
-    _6 = &end_2
+    _6 = &end
     args_4 = (move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
@@ -242,11 +242,11 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start_1: usize, end
     panic(core::panicking::panic_fmt)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: usize) -> !
 {
     let _0: !; // return
-    let end_1: usize; // arg #1
-    let len_2: usize; // arg #2
+    let end: usize; // arg #1
+    let len: usize; // arg #2
     let _3: Arguments<'1>; // anonymous local
     let args_4: (&'5 usize, &'6 usize); // local
     let _5: &'7 usize; // anonymous local
@@ -270,9 +270,9 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end_1: usize, len_2
     storage_live(_3)
     storage_live(args_4)
     storage_live(_5)
-    _5 = &end_1
+    _5 = &end
     storage_live(_6)
-    _6 = &len_2
+    _6 = &len
     args_4 = (move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
@@ -336,80 +336,80 @@ where
   end: Idx,
 }
 
-fn core::slice::index::slice_index_fail::do_panic(start_1: usize, len_2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
 {
     let _0: !; // return
-    let start_1: usize; // arg #1
-    let len_2: usize; // arg #2
+    let start: usize; // arg #1
+    let len: usize; // arg #2
     let _3: (usize, usize); // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy start_1
+    _4 = copy start
     storage_live(_5)
-    _5 = copy len_2
+    _5 = copy len
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = core::slice::index::slice_index_fail::do_panic::runtime(move _3.0, move _3.1)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#1(end_1: usize, len_2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
 {
     let _0: !; // return
-    let end_1: usize; // arg #1
-    let len_2: usize; // arg #2
+    let end: usize; // arg #1
+    let len: usize; // arg #2
     let _3: (usize, usize); // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy end_1
+    _4 = copy end
     storage_live(_5)
-    _5 = copy len_2
+    _5 = copy len
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = core::slice::index::slice_index_fail::do_panic#1::runtime(move _3.0, move _3.1)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#2(start_1: usize, end_2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) -> !
 {
     let _0: !; // return
-    let start_1: usize; // arg #1
-    let end_2: usize; // arg #2
+    let start: usize; // arg #1
+    let end: usize; // arg #2
     let _3: (usize, usize); // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy start_1
+    _4 = copy start
     storage_live(_5)
-    _5 = copy end_2
+    _5 = copy end
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = core::slice::index::slice_index_fail::do_panic#2::runtime(move _3.0, move _3.1)
 }
 
-fn core::slice::index::slice_index_fail::do_panic#3(end_1: usize, len_2: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
 {
     let _0: !; // return
-    let end_1: usize; // arg #1
-    let len_2: usize; // arg #2
+    let end: usize; // arg #1
+    let len: usize; // arg #2
     let _3: (usize, usize); // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy end_1
+    _4 = copy end
     storage_live(_5)
-    _5 = copy len_2
+    _5 = copy len
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
@@ -456,24 +456,24 @@ pub trait SliceIndex<Self, T>
 }
 
 // Full name: core::slice::index::{impl Index<I> for [T]}::index
-pub fn impl_Index_for_slice::index<'_0, T, I>(self_1: &'_0 [T], index_2: I) -> &'_0 TraitClause2::Output
+pub fn impl_Index_for_slice::index<'_0, T, I>(self: &'_0 [T], index: I) -> &'_0 TraitClause2::Output
 where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: (I: SliceIndex<[T]>),
 {
     let _0: &'1 TraitClause2::Output; // return
-    let self_1: &'3 [T]; // arg #1
-    let index_2: I; // arg #2
+    let self: &'3 [T]; // arg #1
+    let index: I; // arg #2
     let _3: &'4 TraitClause2::Output; // anonymous local
     let _4: I; // anonymous local
     let _5: &'5 [T]; // anonymous local
 
     storage_live(_3)
     storage_live(_4)
-    _4 = move index_2
+    _4 = move index
     storage_live(_5)
-    _5 = &(*self_1) with_metadata(copy self_1.metadata)
+    _5 = &(*self) with_metadata(copy self.metadata)
     _3 = TraitClause2::index<'6>(move _4, move _5)
     _0 = &(*_3) with_metadata(copy _3.metadata)
     storage_dead(_5)
@@ -498,12 +498,12 @@ where
 }
 
 // Full name: core::slice::index::slice_index_fail
-fn slice_index_fail(start_1: usize, end_2: usize, len_3: usize) -> !
+fn slice_index_fail(start: usize, end: usize, len: usize) -> !
 {
     let _0: !; // return
-    let start_1: usize; // arg #1
-    let end_2: usize; // arg #2
-    let len_3: usize; // arg #3
+    let start: usize; // arg #1
+    let end: usize; // arg #2
+    let len: usize; // arg #3
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
@@ -527,9 +527,9 @@ fn slice_index_fail(start_1: usize, end_2: usize, len_3: usize) -> !
 
     storage_live(_4)
     storage_live(_5)
-    _5 = copy start_1
+    _5 = copy start
     storage_live(_6)
-    _6 = copy len_3
+    _6 = copy len
     _4 = move _5 > move _6
     if move _4 {
     } else {
@@ -538,9 +538,9 @@ fn slice_index_fail(start_1: usize, end_2: usize, len_3: usize) -> !
         storage_dead(_4)
         storage_live(_10)
         storage_live(_11)
-        _11 = copy end_2
+        _11 = copy end
         storage_live(_12)
-        _12 = copy len_3
+        _12 = copy len
         _10 = move _11 > move _12
         if move _10 {
         } else {
@@ -549,9 +549,9 @@ fn slice_index_fail(start_1: usize, end_2: usize, len_3: usize) -> !
             storage_dead(_10)
             storage_live(_16)
             storage_live(_17)
-            _17 = copy start_1
+            _17 = copy start
             storage_live(_18)
-            _18 = copy end_2
+            _18 = copy end
             _16 = move _17 > move _18
             if move _16 {
             } else {
@@ -559,48 +559,48 @@ fn slice_index_fail(start_1: usize, end_2: usize, len_3: usize) -> !
                 storage_dead(_17)
                 storage_dead(_16)
                 storage_live(_22)
-                _22 = copy end_2
+                _22 = copy end
                 storage_live(_23)
-                _23 = copy len_3
+                _23 = copy len
                 _0 = core::slice::index::slice_index_fail::do_panic#3(move _22, move _23)
             }
             storage_dead(_18)
             storage_dead(_17)
             storage_live(_19)
             storage_live(_20)
-            _20 = copy start_1
+            _20 = copy start
             storage_live(_21)
-            _21 = copy end_2
+            _21 = copy end
             _19 = core::slice::index::slice_index_fail::do_panic#2(move _20, move _21)
         }
         storage_dead(_12)
         storage_dead(_11)
         storage_live(_13)
         storage_live(_14)
-        _14 = copy end_2
+        _14 = copy end
         storage_live(_15)
-        _15 = copy len_3
+        _15 = copy len
         _13 = core::slice::index::slice_index_fail::do_panic#1(move _14, move _15)
     }
     storage_dead(_6)
     storage_dead(_5)
     storage_live(_7)
     storage_live(_8)
-    _8 = copy start_1
+    _8 = copy start
     storage_live(_9)
-    _9 = copy len_3
+    _9 = copy len
     _7 = core::slice::index::slice_index_fail::do_panic(move _8, move _9)
 }
 
 // Full name: core::slice::index::get_offset_len_noubcheck
-unsafe fn get_offset_len_noubcheck<T>(ptr_1: *const [T], offset_2: usize, len_3: usize) -> *const [T]
+unsafe fn get_offset_len_noubcheck<T>(ptr_1: *const [T], offset: usize, len: usize) -> *const [T]
 where
     TraitClause0: (T: Sized),
 {
     let _0: *const [T]; // return
     let ptr_1: *const [T]; // arg #1
-    let offset_2: usize; // arg #2
-    let len_3: usize; // arg #3
+    let offset: usize; // arg #2
+    let len: usize; // arg #3
     let ptr_4: *const T; // local
     let _5: *const T; // anonymous local
     let _6: *const [T]; // anonymous local
@@ -622,14 +622,14 @@ where
     storage_live(_8)
     _8 = copy ptr_4
     storage_live(_9)
-    _9 = copy offset_2
+    _9 = copy offset
     ptr_7 = move _8 offset move _9
     storage_dead(_9)
     storage_dead(_8)
     storage_live(_10)
     _10 = copy ptr_7
     storage_live(_11)
-    _11 = copy len_3
+    _11 = copy len
     _0 = @PtrFromPartsShared<'_, [T]>(move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
@@ -639,14 +639,14 @@ where
 }
 
 // Full name: core::slice::index::get_offset_len_mut_noubcheck
-unsafe fn get_offset_len_mut_noubcheck<T>(ptr_1: *mut [T], offset_2: usize, len_3: usize) -> *mut [T]
+unsafe fn get_offset_len_mut_noubcheck<T>(ptr_1: *mut [T], offset: usize, len: usize) -> *mut [T]
 where
     TraitClause0: (T: Sized),
 {
     let _0: *mut [T]; // return
     let ptr_1: *mut [T]; // arg #1
-    let offset_2: usize; // arg #2
-    let len_3: usize; // arg #3
+    let offset: usize; // arg #2
+    let len: usize; // arg #3
     let ptr_4: *mut T; // local
     let _5: *mut T; // anonymous local
     let _6: *mut [T]; // anonymous local
@@ -668,14 +668,14 @@ where
     storage_live(_8)
     _8 = copy ptr_4
     storage_live(_9)
-    _9 = copy offset_2
+    _9 = copy offset
     ptr_7 = move _8 offset move _9
     storage_dead(_9)
     storage_dead(_8)
     storage_live(_10)
     _10 = copy ptr_7
     storage_live(_11)
-    _11 = copy len_3
+    _11 = copy len
     _0 = @PtrFromPartsMut<'_, [T]>(move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
@@ -697,19 +697,19 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
-pub fn index_mut<'_0, T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: &'_0 mut [T]) -> &'_0 mut [T]
+pub fn index_mut<'_0, T>(self: Range<usize>[{built_in impl Sized for usize}], slice: &'_0 mut [T]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 mut [T]; // return
-    let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice_2: &'2 mut [T]; // arg #2
+    let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
+    let slice: &'2 mut [T]; // arg #2
     let _3: &'3 mut [T]; // anonymous local
     let _4: &'4 mut [T]; // anonymous local
     let _5: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
-    let new_len_8: usize; // local
+    let new_len: usize; // local
     let _9: bool; // anonymous local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
@@ -731,22 +731,22 @@ where
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = copy (self_1).end
+    _6 = copy (self).end
     storage_live(_7)
-    _7 = copy (self_1).start
+    _7 = copy (self).start
     _5 = checked_sub(move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
     match _5 {
         Option::Some => {
-            storage_live(new_len_8)
-            new_len_8 = copy (_5 as variant Option::Some).0
+            storage_live(new_len)
+            new_len = copy (_5 as variant Option::Some).0
             storage_live(_9)
             storage_live(_10)
-            _10 = copy (self_1).end
+            _10 = copy (self).end
             storage_live(_11)
             storage_live(_12)
-            _12 = &(*slice_2) with_metadata(copy slice_2.metadata)
+            _12 = &(*slice) with_metadata(copy slice.metadata)
             _11 = core::slice::{[T]}::len<'12, T>[TraitClause0](move _12)
             storage_dead(_12)
             _9 = move _10 <= move _11
@@ -758,11 +758,11 @@ where
                 storage_live(_15)
                 storage_live(_16)
                 storage_live(_17)
-                _17 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
+                _17 = &raw mut (*slice) with_metadata(copy slice.metadata)
                 storage_live(_18)
-                _18 = copy (self_1).start
+                _18 = copy (self).start
                 storage_live(_19)
-                _19 = copy new_len_8
+                _19 = copy new_len
                 _16 = get_offset_len_mut_noubcheck<T>[TraitClause0](move _17, move _18, move _19)
                 storage_dead(_19)
                 storage_dead(_18)
@@ -775,7 +775,7 @@ where
                 storage_dead(_14)
                 _4 = &mut (*_13) with_metadata(copy _13.metadata)
                 storage_dead(_13)
-                storage_dead(new_len_8)
+                storage_dead(new_len)
                 storage_dead(_5)
                 _3 = &mut (*_4) with_metadata(copy _4.metadata)
                 storage_dead(_9)
@@ -786,7 +786,7 @@ where
             } else {
                 storage_dead(_11)
                 storage_dead(_10)
-                storage_dead(new_len_8)
+                storage_dead(new_len)
             }
         },
         _ => {
@@ -795,29 +795,29 @@ where
     storage_dead(_5)
     storage_live(_20)
     storage_live(_21)
-    _21 = copy (self_1).start
+    _21 = copy (self).start
     storage_live(_22)
-    _22 = copy (self_1).end
+    _22 = copy (self).end
     storage_live(_23)
     storage_live(_24)
-    _24 = &(*slice_2) with_metadata(copy slice_2.metadata)
+    _24 = &(*slice) with_metadata(copy slice.metadata)
     _23 = core::slice::{[T]}::len<'14, T>[TraitClause0](move _24)
     storage_dead(_24)
     _20 = slice_index_fail(move _21, move _22, move _23)
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index
-pub fn impl_SliceIndex_slice_for_Range_usize::index<'_0, T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: &'_0 [T]) -> &'_0 [T]
+pub fn impl_SliceIndex_slice_for_Range_usize::index<'_0, T>(self: Range<usize>[{built_in impl Sized for usize}], slice: &'_0 [T]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
 {
     let _0: &'1 [T]; // return
-    let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice_2: &'2 [T]; // arg #2
+    let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
+    let slice: &'2 [T]; // arg #2
     let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
-    let new_len_6: usize; // local
+    let new_len: usize; // local
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
@@ -835,22 +835,22 @@ where
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (self_1).end
+    _4 = copy (self).end
     storage_live(_5)
-    _5 = copy (self_1).start
+    _5 = copy (self).start
     _3 = checked_sub(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     match _3 {
         Option::Some => {
-            storage_live(new_len_6)
-            new_len_6 = copy (_3 as variant Option::Some).0
+            storage_live(new_len)
+            new_len = copy (_3 as variant Option::Some).0
             storage_live(_7)
             storage_live(_8)
-            _8 = copy (self_1).end
+            _8 = copy (self).end
             storage_live(_9)
             storage_live(_10)
-            _10 = &(*slice_2) with_metadata(copy slice_2.metadata)
+            _10 = &(*slice) with_metadata(copy slice.metadata)
             _9 = core::slice::{[T]}::len<'7, T>[TraitClause0](move _10)
             storage_dead(_10)
             _7 = move _8 <= move _9
@@ -860,11 +860,11 @@ where
                 storage_live(_11)
                 storage_live(_12)
                 storage_live(_13)
-                _13 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
+                _13 = &raw const (*slice) with_metadata(copy slice.metadata)
                 storage_live(_14)
-                _14 = copy (self_1).start
+                _14 = copy (self).start
                 storage_live(_15)
-                _15 = copy new_len_6
+                _15 = copy new_len
                 _12 = get_offset_len_noubcheck<T>[TraitClause0](move _13, move _14, move _15)
                 storage_dead(_15)
                 storage_dead(_14)
@@ -873,14 +873,14 @@ where
                 _0 = &(*_11) with_metadata(copy _11.metadata)
                 storage_dead(_12)
                 storage_dead(_11)
-                storage_dead(new_len_6)
+                storage_dead(new_len)
                 storage_dead(_3)
                 storage_dead(_7)
                 return
             } else {
                 storage_dead(_9)
                 storage_dead(_8)
-                storage_dead(new_len_6)
+                storage_dead(new_len)
             }
         },
         _ => {
@@ -889,31 +889,31 @@ where
     storage_dead(_3)
     storage_live(_16)
     storage_live(_17)
-    _17 = copy (self_1).start
+    _17 = copy (self).start
     storage_live(_18)
-    _18 = copy (self_1).end
+    _18 = copy (self).end
     storage_live(_19)
     storage_live(_20)
-    _20 = &(*slice_2) with_metadata(copy slice_2.metadata)
+    _20 = &(*slice) with_metadata(copy slice.metadata)
     _19 = core::slice::{[T]}::len<'9, T>[TraitClause0](move _20)
     storage_dead(_20)
     _16 = slice_index_fail(move _17, move _18, move _19)
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check
-fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(start_1: usize, end_2: usize, len_3: usize)
+fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(start: usize, end: usize, len: usize)
 {
     let _0: (); // return
-    let start_1: usize; // arg #1
-    let end_2: usize; // arg #2
-    let len_3: usize; // arg #3
+    let start: usize; // arg #1
+    let end: usize; // arg #2
+    let len: usize; // arg #3
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
-    let msg_10: &'1 str; // local
+    let msg: &'1 str; // local
     let _11: !; // anonymous local
     let _12: Arguments<'3>; // anonymous local
     let _13: &'4 str; // anonymous local
@@ -921,18 +921,18 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
     _0 = ()
     storage_live(_4)
     storage_live(_5)
-    _5 = copy end_2
+    _5 = copy end
     storage_live(_6)
-    _6 = copy start_1
+    _6 = copy start
     _4 = move _5 >= move _6
     if move _4 {
         storage_dead(_6)
         storage_dead(_5)
         storage_live(_7)
         storage_live(_8)
-        _8 = copy end_2
+        _8 = copy end
         storage_live(_9)
-        _9 = copy len_3
+        _9 = copy len
         _7 = move _8 <= move _9
         if move _7 {
             storage_dead(_9)
@@ -949,32 +949,32 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
         storage_dead(_6)
         storage_dead(_5)
     }
-    storage_live(msg_10)
-    msg_10 = const "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+    storage_live(msg)
+    msg = const "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
-    _13 = &(*msg_10) with_metadata(copy msg_10.metadata)
+    _13 = &(*msg) with_metadata(copy msg.metadata)
     _12 = from_str<'6>(move _13)
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'8>(move _12, const false)
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
-pub unsafe fn get_unchecked_mut<T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: *mut [T]) -> *mut [T]
+pub unsafe fn get_unchecked_mut<T>(self: Range<usize>[{built_in impl Sized for usize}], slice: *mut [T]) -> *mut [T]
 where
     TraitClause0: (T: Sized),
 {
     let _0: *mut [T]; // return
-    let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice_2: *mut [T]; // arg #2
+    let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
+    let slice: *mut [T]; // arg #2
     let _3: bool; // anonymous local
     let _4: (); // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
     let _8: *mut [T]; // anonymous local
-    let new_len_9: usize; // local
+    let new_len: usize; // local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
     let _12: *mut [T]; // anonymous local
@@ -989,12 +989,12 @@ where
     if move _3 {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy (self_1).start
+        _5 = copy (self).start
         storage_live(_6)
-        _6 = copy (self_1).end
+        _6 = copy (self).end
         storage_live(_7)
         storage_live(_8)
-        _8 = copy slice_2
+        _8 = copy slice
         _7 = core::ptr::mut_ptr::{*mut [T]}::len<T>[TraitClause0](move _8)
         storage_dead(_8)
         _4 = impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(move _5, move _6, move _7)
@@ -1005,42 +1005,42 @@ where
     } else {
     }
     storage_dead(_3)
-    storage_live(new_len_9)
+    storage_live(new_len)
     storage_live(_10)
-    _10 = copy (self_1).end
+    _10 = copy (self).end
     storage_live(_11)
-    _11 = copy (self_1).start
-    new_len_9 = move _10 ub.- move _11
+    _11 = copy (self).start
+    new_len = move _10 ub.- move _11
     storage_dead(_11)
     storage_dead(_10)
     storage_live(_12)
-    _12 = copy slice_2
+    _12 = copy slice
     storage_live(_13)
-    _13 = copy (self_1).start
+    _13 = copy (self).start
     storage_live(_14)
-    _14 = copy new_len_9
+    _14 = copy new_len
     _0 = get_offset_len_mut_noubcheck<T>[TraitClause0](move _12, move _13, move _14)
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(new_len_9)
+    storage_dead(new_len)
     return
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check
-fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(start_1: usize, end_2: usize, len_3: usize)
+fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(start: usize, end: usize, len: usize)
 {
     let _0: (); // return
-    let start_1: usize; // arg #1
-    let end_2: usize; // arg #2
-    let len_3: usize; // arg #3
+    let start: usize; // arg #1
+    let end: usize; // arg #2
+    let len: usize; // arg #3
     let _4: bool; // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
-    let msg_10: &'1 str; // local
+    let msg: &'1 str; // local
     let _11: !; // anonymous local
     let _12: Arguments<'3>; // anonymous local
     let _13: &'4 str; // anonymous local
@@ -1048,18 +1048,18 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
     _0 = ()
     storage_live(_4)
     storage_live(_5)
-    _5 = copy end_2
+    _5 = copy end
     storage_live(_6)
-    _6 = copy start_1
+    _6 = copy start
     _4 = move _5 >= move _6
     if move _4 {
         storage_dead(_6)
         storage_dead(_5)
         storage_live(_7)
         storage_live(_8)
-        _8 = copy end_2
+        _8 = copy end
         storage_live(_9)
-        _9 = copy len_3
+        _9 = copy len
         _7 = move _8 <= move _9
         if move _7 {
             storage_dead(_9)
@@ -1076,32 +1076,32 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
         storage_dead(_6)
         storage_dead(_5)
     }
-    storage_live(msg_10)
-    msg_10 = const "unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+    storage_live(msg)
+    msg = const "unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
-    _13 = &(*msg_10) with_metadata(copy msg_10.metadata)
+    _13 = &(*msg) with_metadata(copy msg.metadata)
     _12 = from_str<'6>(move _13)
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'8>(move _12, const false)
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
-pub unsafe fn get_unchecked<T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: *const [T]) -> *const [T]
+pub unsafe fn get_unchecked<T>(self: Range<usize>[{built_in impl Sized for usize}], slice: *const [T]) -> *const [T]
 where
     TraitClause0: (T: Sized),
 {
     let _0: *const [T]; // return
-    let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice_2: *const [T]; // arg #2
+    let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
+    let slice: *const [T]; // arg #2
     let _3: bool; // anonymous local
     let _4: (); // anonymous local
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
     let _8: *const [T]; // anonymous local
-    let new_len_9: usize; // local
+    let new_len: usize; // local
     let _10: usize; // anonymous local
     let _11: usize; // anonymous local
     let _12: *const [T]; // anonymous local
@@ -1116,12 +1116,12 @@ where
     if move _3 {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy (self_1).start
+        _5 = copy (self).start
         storage_live(_6)
-        _6 = copy (self_1).end
+        _6 = copy (self).end
         storage_live(_7)
         storage_live(_8)
-        _8 = copy slice_2
+        _8 = copy slice
         _7 = core::ptr::const_ptr::{*const [T]}::len<T>[TraitClause0](move _8)
         storage_dead(_8)
         _4 = impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(move _5, move _6, move _7)
@@ -1132,40 +1132,40 @@ where
     } else {
     }
     storage_dead(_3)
-    storage_live(new_len_9)
+    storage_live(new_len)
     storage_live(_10)
-    _10 = copy (self_1).end
+    _10 = copy (self).end
     storage_live(_11)
-    _11 = copy (self_1).start
-    new_len_9 = move _10 ub.- move _11
+    _11 = copy (self).start
+    new_len = move _10 ub.- move _11
     storage_dead(_11)
     storage_dead(_10)
     storage_live(_12)
-    _12 = copy slice_2
+    _12 = copy slice
     storage_live(_13)
-    _13 = copy (self_1).start
+    _13 = copy (self).start
     storage_live(_14)
-    _14 = copy new_len_9
+    _14 = copy new_len
     _0 = get_offset_len_noubcheck<T>[TraitClause0](move _12, move _13, move _14)
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(new_len_9)
+    storage_dead(new_len)
     return
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
-pub fn get_mut<'_0, T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+pub fn get_mut<'_0, T>(self: Range<usize>[{built_in impl Sized for usize}], slice: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
 {
     let _0: Option<&'6 mut [T]>[{built_in impl Sized for &'6 mut [T]}]; // return
-    let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice_2: &'9 mut [T]; // arg #2
+    let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
+    let slice: &'9 mut [T]; // arg #2
     let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
-    let new_len_6: usize; // local
+    let new_len: usize; // local
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
@@ -1179,22 +1179,22 @@ where
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (self_1).end
+    _4 = copy (self).end
     storage_live(_5)
-    _5 = copy (self_1).start
+    _5 = copy (self).start
     _3 = checked_sub(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     match _3 {
         Option::Some => {
-            storage_live(new_len_6)
-            new_len_6 = copy (_3 as variant Option::Some).0
+            storage_live(new_len)
+            new_len = copy (_3 as variant Option::Some).0
             storage_live(_7)
             storage_live(_8)
-            _8 = copy (self_1).end
+            _8 = copy (self).end
             storage_live(_9)
             storage_live(_10)
-            _10 = &(*slice_2) with_metadata(copy slice_2.metadata)
+            _10 = &(*slice) with_metadata(copy slice.metadata)
             _9 = core::slice::{[T]}::len<'15, T>[TraitClause0](move _10)
             storage_dead(_10)
             _7 = move _8 <= move _9
@@ -1205,11 +1205,11 @@ where
                 storage_live(_12)
                 storage_live(_13)
                 storage_live(_14)
-                _14 = &raw mut (*slice_2) with_metadata(copy slice_2.metadata)
+                _14 = &raw mut (*slice) with_metadata(copy slice.metadata)
                 storage_live(_15)
-                _15 = copy (self_1).start
+                _15 = copy (self).start
                 storage_live(_16)
-                _16 = copy new_len_6
+                _16 = copy new_len
                 _13 = get_offset_len_mut_noubcheck<T>[TraitClause0](move _14, move _15, move _16)
                 storage_dead(_16)
                 storage_dead(_15)
@@ -1220,12 +1220,12 @@ where
                 storage_dead(_13)
                 storage_dead(_12)
                 storage_dead(_11)
-                storage_dead(new_len_6)
+                storage_dead(new_len)
                 storage_dead(_3)
             } else {
                 storage_dead(_9)
                 storage_dead(_8)
-                storage_dead(new_len_6)
+                storage_dead(new_len)
                 storage_dead(_3)
                 _0 = Option::None {  }
             }
@@ -1240,17 +1240,17 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
-pub fn get<'_0, T>(self_1: Range<usize>[{built_in impl Sized for usize}], slice_2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
+pub fn get<'_0, T>(self: Range<usize>[{built_in impl Sized for usize}], slice: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     TraitClause0: (T: Sized),
 {
     let _0: Option<&'6 [T]>[{built_in impl Sized for &'6 [T]}]; // return
-    let self_1: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice_2: &'9 [T]; // arg #2
+    let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
+    let slice: &'9 [T]; // arg #2
     let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
-    let new_len_6: usize; // local
+    let new_len: usize; // local
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
@@ -1264,22 +1264,22 @@ where
 
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (self_1).end
+    _4 = copy (self).end
     storage_live(_5)
-    _5 = copy (self_1).start
+    _5 = copy (self).start
     _3 = checked_sub(move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
     match _3 {
         Option::Some => {
-            storage_live(new_len_6)
-            new_len_6 = copy (_3 as variant Option::Some).0
+            storage_live(new_len)
+            new_len = copy (_3 as variant Option::Some).0
             storage_live(_7)
             storage_live(_8)
-            _8 = copy (self_1).end
+            _8 = copy (self).end
             storage_live(_9)
             storage_live(_10)
-            _10 = &(*slice_2) with_metadata(copy slice_2.metadata)
+            _10 = &(*slice) with_metadata(copy slice.metadata)
             _9 = core::slice::{[T]}::len<'14, T>[TraitClause0](move _10)
             storage_dead(_10)
             _7 = move _8 <= move _9
@@ -1290,11 +1290,11 @@ where
                 storage_live(_12)
                 storage_live(_13)
                 storage_live(_14)
-                _14 = &raw const (*slice_2) with_metadata(copy slice_2.metadata)
+                _14 = &raw const (*slice) with_metadata(copy slice.metadata)
                 storage_live(_15)
-                _15 = copy (self_1).start
+                _15 = copy (self).start
                 storage_live(_16)
-                _16 = copy new_len_6
+                _16 = copy new_len
                 _13 = get_offset_len_noubcheck<T>[TraitClause0](move _14, move _15, move _16)
                 storage_dead(_16)
                 storage_dead(_15)
@@ -1305,12 +1305,12 @@ where
                 storage_dead(_13)
                 storage_dead(_12)
                 storage_dead(_11)
-                storage_dead(new_len_6)
+                storage_dead(new_len)
                 storage_dead(_3)
             } else {
                 storage_dead(_9)
                 storage_dead(_8)
-                storage_dead(new_len_6)
+                storage_dead(new_len)
                 storage_dead(_3)
                 _0 = Option::None {  }
             }
@@ -1347,8 +1347,8 @@ where
 fn main()
 {
     let _0: (); // return
-    let array_1: [i32; 6usize]; // local
-    let slice_2: &'1 [i32]; // local
+    let array: [i32; 6usize]; // local
+    let slice: &'1 [i32]; // local
     let _3: &'2 [i32]; // anonymous local
     let _4: &'4 [i32; 6usize]; // anonymous local
     let _5: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
@@ -1359,24 +1359,24 @@ fn main()
     let _10: &'_ i32; // anonymous local
 
     _0 = ()
-    storage_live(array_1)
-    array_1 = [const 1i32, const 2i32, const 3i32, const 4i32, const 5i32, const 6i32]
-    storage_live(slice_2)
+    storage_live(array)
+    array = [const 1i32, const 2i32, const 3i32, const 4i32, const 5i32, const 6i32]
+    storage_live(slice)
     storage_live(_3)
     storage_live(_4)
-    _4 = &array_1
+    _4 = &array
     storage_live(_5)
     _5 = Range { start: const 2usize, end: const 5usize }
     _3 = impl_Index_for_array::index<'6, i32, Range<usize>[{built_in impl Sized for usize}], 6usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Index_for_slice<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_Range_usize<i32>[{built_in impl Sized for i32}]]](move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    slice_2 = &(*_3) with_metadata(copy _3.metadata)
+    slice = &(*_3) with_metadata(copy _3.metadata)
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
     _8 = const 0usize
     storage_live(_9)
-    _9 = &(*slice_2) with_metadata(copy slice_2.metadata)
+    _9 = &(*slice) with_metadata(copy slice.metadata)
     storage_live(_10)
     _10 = @SliceIndexShared<'_, i32>(move _9, copy _8)
     _7 = copy (*_10)
@@ -1392,8 +1392,8 @@ fn main()
     storage_dead(_6)
     _0 = ()
     storage_dead(_3)
-    storage_dead(slice_2)
-    storage_dead(array_1)
+    storage_dead(slice)
+    storage_dead(array)
     return
 }
 

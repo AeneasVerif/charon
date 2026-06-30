@@ -17,12 +17,12 @@ pub trait Sized<Self>
 pub struct Global {}
 
 // Full name: test_crate::test_static
-fn test_static(x_1: &'static u32) -> &'static u32
+fn test_static(x: &'static u32) -> &'static u32
 {
     let _0: &'1 u32; // return
-    let x_1: &'2 u32; // arg #1
+    let x: &'2 u32; // arg #1
 
-    _0 = copy x_1
+    _0 = copy x
     return
 }
 

@@ -79,11 +79,11 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
 }
 
 // Full name: test_crate::main::{impl Fn<()> for closure}::call
-fn call<'_0>(_1: &'_0 closure, tupled_args_2: ())
+fn call<'_0>(_1: &'_0 closure, tupled_args: ())
 {
     let _0: (); // return
     let _1: &'1 closure; // arg #1
-    let tupled_args_2: (); // arg #2
+    let tupled_args: (); // arg #2
     let _3: i32; // anonymous local
 
     _0 = ()
@@ -95,17 +95,17 @@ fn call<'_0>(_1: &'_0 closure, tupled_args_2: ())
 }
 
 // Full name: test_crate::main::{impl FnMut<()> for closure}::call_mut
-fn call_mut<'_0>(state_1: &'_0 mut closure, args_2: ())
+fn call_mut<'_0>(state: &'_0 mut closure, args: ())
 {
     let _0: (); // return
-    let state_1: &'_0 mut closure; // arg #1
-    let args_2: (); // arg #2
+    let state: &'_0 mut closure; // arg #1
+    let args: (); // arg #2
     let _3: &'0 closure; // anonymous local
 
     _0 = ()
     storage_live(_3)
-    _3 = &(*state_1)
-    _0 = call<'2>(move _3, move args_2)
+    _3 = &(*state)
+    _0 = call<'2>(move _3, move args)
     return
 }
 
@@ -129,15 +129,15 @@ fn call_once(_1: closure, _2: ())
 fn as_fn()
 {
     let _0: (); // return
-    let args_1: (); // local
-    let state_2: closure; // local
+    let args: (); // local
+    let state: closure; // local
 
     _0 = ()
-    storage_live(args_1)
-    storage_live(state_2)
-    args_1 = ()
-    state_2 = closure {  }
-    _0 = call_once(move state_2, move args_1)
+    storage_live(args)
+    storage_live(state)
+    args = ()
+    state = closure {  }
+    _0 = call_once(move state, move args)
     return
 }
 
@@ -145,25 +145,25 @@ fn as_fn()
 fn main()
 {
     let _0: (); // return
-    let f_1: fn(); // local
+    let f: fn(); // local
     let _2: closure; // anonymous local
     let _3: (); // anonymous local
     let _4: fn(); // anonymous local
 
     _0 = ()
-    storage_live(f_1)
+    storage_live(f)
     storage_live(_2)
     _2 = closure {  }
-    f_1 = cast<as_fn, fn()>(const as_fn)
+    f = cast<as_fn, fn()>(const as_fn)
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy f_1
+    _4 = copy f
     _3 = (move _4)()
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
-    storage_dead(f_1)
+    storage_dead(f)
     return
 }
 

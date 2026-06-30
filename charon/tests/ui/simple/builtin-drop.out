@@ -26,10 +26,10 @@ where
     TraitClause0: (T: Destruct),
     TraitClause1: (T: Destruct),
 {
-    let ret_0: (); // return
+    let ret: (); // return
     let _1: &'_0 mut T; // arg #1
 
-    ret_0 = ()
+    ret = ()
     drop[TraitClause0::drop_glue<'0>] (*_1)
     return
 }
