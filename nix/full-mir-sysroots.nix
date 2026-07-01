@@ -21,7 +21,7 @@ runCommand "charon-full-mir-sysroots"
     if stdenv.isDarwin then
       "sha256-UyX+j+F5peb9NUqgkyvb6JItp6xHoAJbpFMoQ1K7MIM="
     else
-      "sha256-UyX+j+F5peb9NUqgkyvb6JItp6xHoAJbpFMoQ1K7MIM=";
+      "sha256-sbmBXFEOx2v3gIg+yRYpijd2MBouoeD9oFyfEDFGjcs=";
   # Rust metadata records rust-src paths from rustToolchain; charon supplies that toolchain
   # separately.
   unsafeDiscardReferences.out = true;
