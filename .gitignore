@@ -29,6 +29,7 @@ nohup.out
 *~
 
 # Other
+__pycache__
 .vscode
 *#
 *.smt2
