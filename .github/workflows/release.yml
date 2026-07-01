@@ -20,7 +20,7 @@ jobs:
           set -eo pipefail
 
           TAG_NAME="nightly-$(date +'%Y.%m.%d')"
-          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -98,12 +98,21 @@ jobs:
         run: |
           set -eo pipefail
 
+          repo="$PWD"
           mkdir staging
           cd staging
           tar xf ../${{ matrix.artifact_name }}.tar.gz
-          ./charon --help > /dev/null
+          if [[ "${{ matrix.nix_machine }}" == "true" ]]; then
+            nix run "$repo#charon-release-smoke-env" -- ./charon --help > /dev/null
+          else
+            ./charon --help > /dev/null
+          fi
           if [ "${{ matrix.artifact_name }}" = "charon-linux-x86_64" ]; then
-            ldd ./charon-driver 2>&1 | grep rustc_driver
+            if [[ "${{ matrix.nix_machine }}" == "true" ]]; then
+              nix run "$repo#charon-release-smoke-env" -- ldd ./charon-driver 2>&1 | grep rustc_driver
+            else
+              ldd ./charon-driver 2>&1 | grep rustc_driver
+            fi
           fi
 
       - name: Upload Artifact

@@ -18,9 +18,10 @@ runCommand "charon-full-mir-sysroots"
   outputHashMode = "recursive";
   outputHashAlgo = "sha256";
   outputHash = {
-    x86_64-linux = "sha256-sbmBXFEOx2v3gIg+yRYpijd2MBouoeD9oFyfEDFGjcs=";
-    aarch64-darwin = "sha256-UyX+j+F5peb9NUqgkyvb6JItp6xHoAJbpFMoQ1K7MIM=";
-    x86_64-darwin = "sha256-IXD96odt+Ss6Fj+oPYeUvwWsbIxS1JUHYLgqBr2N2LU=";
+    x86_64-linux = "sha256-vEow+1ZK6URA5D1zZs2ME8X7ivMwZdF2Z39FXwZJuXI=";
+    aarch64-linux = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    aarch64-darwin = "sha256-VyUIg1L3qiSYqXjAd+vq3RB17b8OF2rFgkBlZixh2a8=";
+    x86_64-darwin = "sha256-4jGqXtMvMWdrnCfsR1FkCqcTC+zlOSeBl6xfsLa6f2o=";
   }.${stdenv.hostPlatform.system};
   # Rust metadata records rust-src paths from rustToolchain; charon supplies that toolchain
   # separately.
