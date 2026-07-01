@@ -102,17 +102,9 @@ jobs:
           mkdir staging
           cd staging
           tar xf ../${{ matrix.artifact_name }}.tar.gz
-          if [[ "${{ matrix.nix_machine }}" == "true" ]]; then
-            nix run "$repo#charon-release-smoke-env" -- ./charon --help > /dev/null
-          else
-            ./charon --help > /dev/null
-          fi
+          ./charon --help > /dev/null
           if [ "${{ matrix.artifact_name }}" = "charon-linux-x86_64" ]; then
-            if [[ "${{ matrix.nix_machine }}" == "true" ]]; then
-              nix run "$repo#charon-release-smoke-env" -- ldd ./charon-driver 2>&1 | grep rustc_driver
-            else
-              ldd ./charon-driver 2>&1 | grep rustc_driver
-            fi
+            nix develop "$repo" --command ldd ./charon-driver 2>&1 | grep rustc_driver
           fi
 
       - name: Upload Artifact
