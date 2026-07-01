@@ -36,69 +36,74 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
+      actions: write
     strategy:
+      fail-fast: false
       matrix:
         # NOTE: We use native runners instead of cross-compiling to work around
         # https://github.com/rust-lang/rust/issues/132728#issuecomment-2462937687
         include:
-          - os: ubuntu-latest
+          - os: [self-hosted, linux, nix]
             artifact_name: charon-linux-x86_64
+            nix_machine: true
           - os: ubuntu-24.04-arm
             artifact_name: charon-linux-aarch64
+            nix_machine: false
           - os: macos-15-intel
             artifact_name: charon-macos-x86_64
+            nix_machine: false
           - os: macos-latest
             artifact_name: charon-macos-aarch64
+            nix_machine: false
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Nix
+        if: ${{ ! matrix.nix_machine }}
+        uses: cachix/install-nix-action@v31
+
+      - name: Set up Cachix push
+        if: ${{ ! matrix.nix_machine }}
+        uses: cachix/cachix-action@v17
         with:
-          submodules: recursive
+          name: hacl
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      # Extract the pinned toolchain from the source of truth.
-      - name: Read toolchain
-        id: toolchain
-        run: |
-          set -eo pipefail
-
-          CHANNEL=$(grep 'channel =' rust-toolchain | cut -d '"' -f 2)
-          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+      - name: Restore Nix Cache
+        if: ${{ ! matrix.nix_machine }}
+        id: restore-nix-cache
+        uses: nix-community/cache-nix-action/restore@v6
         with:
-          toolchain: ${{ steps.toolchain.outputs.channel }}
-          components: rustc-dev, rust-src, llvm-tools-preview
-
-      - name: Build
-        env:
-          # Ensure static linking for OpenSSL to maximize binary portability.
-          OPENSSL_STATIC: 1
-        run: |
-          set -eo pipefail
-
-          cd charon
-          cargo build --release -p charon
+          primary-key: ${{ matrix.artifact_name }}-release-${{ hashFiles('**/flake.lock') }}
+          # if there's no cache hit, restore a cache by this prefix
+          restore-prefixes-first-match: ${{ matrix.artifact_name }}-release
 
       - name: Package
         run: |
           set -eo pipefail
 
-          mkdir -p staging
-          cp charon/target/release/charon staging/
-          cp charon/target/release/charon-driver staging/
-          cd staging
-          tar -czvf ../${{ matrix.artifact_name }}.tar.gz *
+          nix build -L .#charon-release
+          mkdir dist_staging
+          cp -R result/. dist_staging/
+          chmod -R +w dist_staging
 
-      # Verify the binary is functional and correctly statically linked on Linux.
-      # Note that libc (gnu) and `rustc_driver.so` are still dynamically linked.
+          cd dist_staging
+          # Remove existing archive to avoid overwrite failures on macOS.
+          rm -f "../${{ matrix.artifact_name }}.tar.gz"
+          tar -czf "../${{ matrix.artifact_name }}.tar.gz" -- *
+
+      # Verify the binary is functional and still links to `rustc_driver.so` on Linux.
       - name: Smoke Test
         run: |
           set -eo pipefail
 
-          ./staging/charon --help > /dev/null
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            ldd ./staging/charon-driver 2>&1 | grep rustc_driver
+          mkdir staging
+          cd staging
+          tar xf ../${{ matrix.artifact_name }}.tar.gz
+          ./charon --help > /dev/null
+          if [ "${{ matrix.artifact_name }}" = "charon-linux-x86_64" ]; then
+            ldd ./charon-driver 2>&1 | grep rustc_driver
           fi
 
       - name: Upload Artifact
@@ -106,6 +111,15 @@ jobs:
         with:
           tag_name: ${{ needs.prepare.outputs.tag_name }}
           files: ${{ matrix.artifact_name }}.tar.gz
+
+      - name: Save Nix Cache
+        if: ${{ always() && ! matrix.nix_machine }}
+        uses: nix-community/cache-nix-action/save@v6
+        with:
+          primary-key: ${{ steps.restore-nix-cache.outputs.primary-key }}
+          gc-max-store-size: 2G
+          purge: true
+          purge-created: 604800 # 7 * 24 * 3600 = 7 days in seconds
 
   notify:
     name: Notify Zulip
