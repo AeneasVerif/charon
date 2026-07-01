@@ -2,6 +2,7 @@
 , cacert
 , runCommand
 , rustToolchain
+, stdenv
 }:
 
 let
@@ -13,10 +14,14 @@ in
 runCommand "charon-full-mir-sysroots"
 {
   __structuredAttrs = true;
-  nativeBuildInputs = [ rustToolchain ];
+  nativeBuildInputs = [ rustToolchain cacert ];
   outputHashMode = "recursive";
   outputHashAlgo = "sha256";
-  outputHash = "sha256-sbmBXFEOx2v3gIg+yRYpijd2MBouoeD9oFyfEDFGjcs=";
+  outputHash =
+    if stdenv.isDarwin then
+      "sha256-UyX+j+F5peb9NUqgkyvb6JItp6xHoAJbpFMoQ1K7MIM="
+    else
+      "sha256-UyX+j+F5peb9NUqgkyvb6JItp6xHoAJbpFMoQ1K7MIM=";
   # Rust metadata records rust-src paths from rustToolchain; charon supplies that toolchain
   # separately.
   unsafeDiscardReferences.out = true;
