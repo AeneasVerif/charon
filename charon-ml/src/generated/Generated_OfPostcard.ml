@@ -1802,7 +1802,6 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* ullbc = bool_of_postcard ctx st in
      let* precise_drops = bool_of_postcard ctx st in
-     let* skip_borrowck = bool_of_postcard ctx st in
      let* mir = option_of_postcard mir_level_of_postcard ctx st in
      let* rustc_args = list_of_postcard string_of_postcard ctx st in
      let* targets = list_of_postcard string_of_postcard ctx st in
@@ -1848,6 +1847,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        option_of_postcard serialization_format_arg_of_postcard ctx st
      in
      let* no_serialize = bool_of_postcard ctx st in
+     let* skip_borrowck = bool_of_postcard ctx st in
      let* no_typecheck = bool_of_postcard ctx st in
      let* no_normalize = bool_of_postcard ctx st in
      let* no_reorder_decls = bool_of_postcard ctx st in
@@ -1858,7 +1858,6 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({
           ullbc;
           precise_drops;
-          skip_borrowck;
           mir;
           rustc_args;
           targets;
@@ -1900,6 +1899,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           no_dedup_serialized_ast;
           format;
           no_serialize;
+          skip_borrowck;
           no_typecheck;
           no_normalize;
           no_reorder_decls;

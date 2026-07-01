@@ -67,8 +67,6 @@ and cli_options = {
           Without this option, drops may be "conditional" and we may lack
           information about what code is run on drop in a given polymorphic
           function body. *)
-  skip_borrowck : bool;
-      (** If activated, this skips borrow-checking of the crate. *)
   mir : mir_level option;
       (** The MIR stage to extract. This is only relevant for the current crate;
           for dependencies only MIR optimized is available. *)
@@ -214,6 +212,8 @@ and cli_options = {
   format : serialization_format_arg option;
       (** Serialization format for emitted (U)LLBC files. Defaults to json. *)
   no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
+  skip_borrowck : bool;
+      (** If activated, this skips borrow-checking of the crate. *)
   no_typecheck : bool;  (** Skip the typecheck passes. *)
   no_normalize : bool;  (** Don't normalize associated types. *)
   no_reorder_decls : bool;

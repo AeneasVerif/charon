@@ -42,10 +42,6 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub precise_drops: bool,
-    /// If activated, this skips borrow-checking of the crate.
-    #[clap(long)]
-    #[serde(default)]
-    pub skip_borrowck: bool,
     /// The MIR stage to extract. This is only relevant for the current crate; for dependencies only
     /// MIR optimized is available.
     #[arg(long)]
@@ -293,6 +289,15 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_serialize: bool,
+    /// If activated, this skips borrow-checking of the crate.
+    #[clap(
+        long = "skip-borrow-check",
+        alias = "skip-borrowck",
+        visible_alias = "no-borrow-check",
+        alias = "no-borrowck"
+    )]
+    #[serde(default)]
+    pub skip_borrowck: bool,
     /// Skip the typecheck passes.
     #[clap(long)]
     #[serde(default)]
