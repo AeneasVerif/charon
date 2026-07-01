@@ -65,10 +65,21 @@
         + (lib.optionalString stdenv.isLinux ''
           for f in $out/bin/*; do
             chmod +w $f
-            ${pkgs.patchelf}/bin/patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $f || true
+            ${pkgs.patchelf}/bin/patchelf --set-interpreter ${
+              {
+                x86_64-linux = "/lib64/ld-linux-x86-64.so.2";
+                aarch64-linux = "/lib/ld-linux-aarch64.so.1";
+              }.${system}
+            } $f || true
             ${pkgs.patchelf}/bin/patchelf --remove-rpath $f || true
           done
         ''));
+        charon-release = pkgs.runCommand "charon-release" { } ''
+          mkdir $out
+          cd $out
+          cp ${charon-portable}/bin/charon ${charon-portable}/bin/charon-driver .
+          cp ${./charon/rust-toolchain} rust-toolchain
+        '';
         charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
 
         # Check rust files are correctly formatted.
@@ -131,7 +142,7 @@
       in
       {
         packages = {
-          inherit charon charon-unwrapped charon-portable charon-ml rustToolchain;
+          inherit charon charon-unwrapped charon-portable charon-release charon-ml rustToolchain;
           charon-full-mir-sysroots = fullMirSysroots;
           inherit (rustc-tests) rustc-tests;
           default = charon;
