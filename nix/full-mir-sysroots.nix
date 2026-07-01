@@ -19,7 +19,7 @@ runCommand "charon-full-mir-sysroots"
   outputHashAlgo = "sha256";
   outputHash = {
     x86_64-linux = "sha256-vEow+1ZK6URA5D1zZs2ME8X7ivMwZdF2Z39FXwZJuXI=";
-    aarch64-linux = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    aarch64-linux = "sha256-Ii5Q83IZEBj7KmSMWbi8tzj7NPdjWt3zLI0/RhgwzPs=";
     aarch64-darwin = "sha256-VyUIg1L3qiSYqXjAd+vq3RB17b8OF2rFgkBlZixh2a8=";
     x86_64-darwin = "sha256-4jGqXtMvMWdrnCfsR1FkCqcTC+zlOSeBl6xfsLa6f2o=";
   }.${stdenv.hostPlatform.system};
