@@ -80,6 +80,19 @@
           cp ${charon-portable}/bin/charon ${charon-portable}/bin/charon-driver .
           cp ${./charon/rust-toolchain} rust-toolchain
         '';
+        # FHS environment with the right dylibs setup so that we can test the
+        # release binary (which otherwise doesn't work on NixOS).
+        charon-release-smoke-env = pkgs.buildFHSEnv {
+          name = "charon-release-smoke-env";
+          targetPkgs = pkgs: [
+            pkgs.glibc
+            pkgs.glibc.bin
+            pkgs.stdenv.cc.cc.lib
+          ];
+          runScript = pkgs.writeShellScript "charon-release-smoke-env-run" ''
+            exec "$@"
+          '';
+        };
         charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
 
         # Check rust files are correctly formatted.
@@ -146,6 +159,8 @@
           charon-full-mir-sysroots = fullMirSysroots;
           inherit (rustc-tests) rustc-tests;
           default = charon;
+        } // lib.optionalAttrs stdenv.isLinux {
+          inherit charon-release-smoke-env;
         };
         devShells.default = pkgs.mkShell {
           # Tell charon that the right toolchain is in PATH. It is added to PATH by the `charon` in `inputsFrom`.

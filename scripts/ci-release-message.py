@@ -66,8 +66,7 @@ def main():
     success = env("PREPARE_RESULT") == "success" and env("BUILD_RESULT") == "success"
 
     lines = [
-        f"*Charon release {env('TAG_NAME', 'unknown')}*",
-        "",
+        f"## Charon release: {env('TAG_NAME', 'unknown')}",
     ]
 
     if env("TAG_NAME"):
@@ -78,7 +77,7 @@ def main():
         [
             f"run: {env('GITHUB_SERVER_URL')}/{env('GITHUB_REPOSITORY')}/actions/runs/{env('GITHUB_RUN_ID')}",
             "",
-            "*Statuses:*",
+            "### Statuses:",
         ]
     )
 
