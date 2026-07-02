@@ -71,7 +71,7 @@ and cli_options = {
       (** If activated, this skips borrow-checking of the crate. *)
   mir : mir_level option;
       (** The MIR stage to extract. This is only relevant for the current crate;
-          for dpendencies only MIR optimized is available. *)
+          for dependencies only MIR optimized is available. *)
   rustc_args : string list;  (** Extra flags to pass to rustc. *)
   targets : string list;
       (** A list of target architectures to translate for. Charon will run the
@@ -167,6 +167,12 @@ and cli_options = {
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
+  consts : const_handling option;
+      (** How to handle constants and statics: whether they should be
+          represented as a call to their initializer function, or whether we
+          should attempt to evaluate them into a value. When evaluation isn't
+          possible (e.g. the constant is generic, or for recursive statics), we
+          fall back to the initializer call. *)
   unsized_strings : bool;
       (** Replace string literal constants with a constant u8 array that gets
           unsized, expliciting the fact a string constant has a hidden
@@ -215,6 +221,16 @@ and cli_options = {
   error_on_warnings : bool;  (** Consider any warnings to be errors. *)
   preset : preset option;  (** Named builtin sets of options. *)
 }
+
+(** How to handle constants and statics. *)
+and const_handling =
+  | Initializers
+      (** Keep consts as calls to their initializer with
+          [ConstantExprKind::Call], without attempting to do any
+          const-evaluation. This is the default. *)
+  | Values
+      (** Try evaluating consts and statics to their final value. If evaluation
+          fails, we fall back to the initializer call. *)
 
 (** A (group of) top-level declaration(s), properly reordered. *)
 and declaration_group =

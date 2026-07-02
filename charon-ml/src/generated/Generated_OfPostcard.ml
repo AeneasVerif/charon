@@ -1813,6 +1813,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* index_to_function_calls = bool_of_postcard ctx st in
      let* treat_box_as_builtin = bool_of_postcard ctx st in
      let* raw_consts = bool_of_postcard ctx st in
+     let* consts = option_of_postcard const_handling_of_postcard ctx st in
      let* unsized_strings = bool_of_postcard ctx st in
      let* reconstruct_fallible_operations = bool_of_postcard ctx st in
      let* reconstruct_asserts = bool_of_postcard ctx st in
@@ -1865,6 +1866,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           index_to_function_calls;
           treat_box_as_builtin;
           raw_consts;
+          consts;
           unsized_strings;
           reconstruct_fallible_operations;
           reconstruct_asserts;
@@ -1914,6 +1916,15 @@ and closure_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 0 -> Ok Fn
      | 1 -> Ok FnMut
      | 2 -> Ok FnOnce
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and const_handling_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (const_handling, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Initializers
+     | 1 -> Ok Values
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and declaration_group_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)

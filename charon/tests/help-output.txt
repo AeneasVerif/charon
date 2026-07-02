@@ -19,7 +19,7 @@ Options:
           If activated, this skips borrow-checking of the crate
 
       --mir <MIR>
-          The MIR stage to extract. This is only relevant for the current crate; for dpendencies only MIR optimized is available
+          The MIR stage to extract. This is only relevant for the current crate; for dependencies only MIR optimized is available
 
           Possible values:
           - built:      The MIR just after MIR lowering
@@ -128,6 +128,13 @@ Options:
 
       --raw-consts
           Do not inline or evaluate constants
+
+      --consts <CONSTS>
+          How to handle constants and statics: whether they should be represented as a call to their initializer function, or whether we should attempt to evaluate them into a value. When evaluation isn't possible (e.g. the constant is generic, or for recursive statics), we fall back to the initializer call
+
+          Possible values:
+          - initializers: Keep consts as calls to their initializer with `ConstantExprKind::Call`, without attempting to do any const-evaluation. This is the default
+          - values:       Try evaluating consts and statics to their final value. If evaluation fails, we fall back to the initializer call
 
       --unsized-strings
           Replace string literal constants with a constant u8 array that gets unsized, expliciting the fact a string constant has a hidden reference
