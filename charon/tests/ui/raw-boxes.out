@@ -316,7 +316,6 @@ where
     _1 = const TraitClause0::SIZE
     switch copy _1 {
         0usize => {
-            _0 = copy core::num::{usize}::MAX
         },
         _ => {
             storage_live(n)
@@ -332,8 +331,11 @@ where
             storage_dead(_4)
             storage_dead(_3)
             storage_dead(n)
+            storage_dead(_1)
+            return
         },
     }
+    _0 = copy core::num::{usize}::MAX
     storage_dead(_1)
     return
 }
@@ -472,19 +474,21 @@ pub fn core::mem::alignment::{Alignment}::new(align: usize) -> Option<Alignment>
     _2 = is_power_of_two(move _3)
     ↳⚡ unwind_continue
     if move _2 {
-        storage_dead(_3)
-        storage_live(_4)
-        storage_live(_5)
-        _5 = copy align
-        _4 = core::mem::alignment::{Alignment}::new_unchecked(move _5)
-        ↳⚡ unwind_continue
-        storage_dead(_5)
-        _0 = Option::Some { 0: move _4 }
-        storage_dead(_4)
     } else {
         storage_dead(_3)
         _0 = Option::None {  }
+        storage_dead(_2)
+        return
     }
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy align
+    _4 = core::mem::alignment::{Alignment}::new_unchecked(move _5)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
+    _0 = Option::Some { 0: move _4 }
+    storage_dead(_4)
     storage_dead(_2)
     return
 }
@@ -2026,33 +2030,37 @@ where
     storage_dead(_9)
     _7 = move _8 != const 0usize
     if move _7 {
-        storage_dead(_8)
-        storage_live(_10)
-        storage_live(_11)
-        _11 = &((*self)).1 with_metadata(copy self.metadata)
-        storage_live(_12)
-        storage_live(_13)
-        storage_live(_14)
-        _14 = copy ptr
-        _13 = core::ptr::unique::{Unique<T>}::cast<T, u8>[{built_in impl Sized for u8}](move _14)
-        ↳⚡ unwind_continue
-        storage_dead(_14)
-        _12 = from<u8>(move _13)
-        ↳⚡ unwind_continue
-        storage_dead(_13)
-        storage_live(_15)
-        _15 = copy layout
-        _10 = TraitClause2::deallocate<'8>(move _11, move _12, move _15)
-        ↳⚡ unwind_continue
-        storage_dead(_15)
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(_10)
-        _0 = ()
     } else {
         storage_dead(_8)
         _0 = ()
+        storage_dead(_7)
+        storage_dead(layout)
+        storage_dead(ptr)
+        return
     }
+    storage_dead(_8)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = &((*self)).1 with_metadata(copy self.metadata)
+    storage_live(_12)
+    storage_live(_13)
+    storage_live(_14)
+    _14 = copy ptr
+    _13 = core::ptr::unique::{Unique<T>}::cast<T, u8>[{built_in impl Sized for u8}](move _14)
+    ↳⚡ unwind_continue
+    storage_dead(_14)
+    _12 = from<u8>(move _13)
+    ↳⚡ unwind_continue
+    storage_dead(_13)
+    storage_live(_15)
+    _15 = copy layout
+    _10 = TraitClause2::deallocate<'8>(move _11, move _12, move _15)
+    ↳⚡ unwind_continue
+    storage_dead(_15)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    _0 = ()
     storage_dead(_7)
     storage_dead(layout)
     storage_dead(ptr)

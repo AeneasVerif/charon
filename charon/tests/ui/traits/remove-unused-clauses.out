@@ -55,14 +55,16 @@ pub fn recursive<T>()
     storage_live(_1)
     _1 = const false
     if move _1 {
-        storage_live(_2)
-        _2 = recursive<T>()
-        ↳⚡ unwind_continue
-        storage_dead(_2)
-        _0 = ()
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    storage_live(_2)
+    _2 = recursive<T>()
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -78,14 +80,16 @@ pub fn swap_recursive<T, U>()
     storage_live(_1)
     _1 = const false
     if move _1 {
-        storage_live(_2)
-        _2 = swap_recursive<U, T>()
-        ↳⚡ unwind_continue
-        storage_dead(_2)
-        _0 = ()
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    storage_live(_2)
+    _2 = swap_recursive<U, T>()
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -109,11 +113,13 @@ pub fn clause_dep<T>()
     storage_live(_1)
     _1 = const false
     if move _1 {
-        _0 = clause_dep<T>()
-        ↳⚡ unwind_continue
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    _0 = clause_dep<T>()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     return
 }

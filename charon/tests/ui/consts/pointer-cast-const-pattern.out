@@ -29,10 +29,12 @@ pub fn pointer_pattern()
     _1 = cast<usize, *const ()>(const 43usize)
     _2 = const no-provenance 42 == copy _1
     if move _2 {
-        _0 = const ()
     } else {
         _0 = const ()
+        storage_dead(_1)
+        return
     }
+    _0 = const ()
     storage_dead(_1)
     return
 }

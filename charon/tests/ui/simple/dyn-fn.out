@@ -105,18 +105,21 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     _3 = (copy ((*_4.metadata)).method_call)(move _4, move _5)
     ↳⚡ unwind_continue
     if move _3 {
-        storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = ()
     } else {
         storage_dead(_7)
         storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
         _0 = ()
+        storage_dead(_3)
+        storage_dead(counter)
+        return
     }
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
     storage_dead(_3)
     storage_dead(counter)
     return

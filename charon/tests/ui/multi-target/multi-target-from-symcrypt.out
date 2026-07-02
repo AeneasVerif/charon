@@ -628,17 +628,6 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut
     _3 = test_crate::cpu_features_present(copy test_crate::SYMCRYPT_CPU_FEATURE_SSE2)
     ↳⚡ unwind_continue
     if move _3 {
-        storage_live(_4)
-        storage_live(_5)
-        _5 = &two-phase-mut (*a)
-        storage_live(_6)
-        _6 = &(*b)
-        _4 = test_crate::ntt_layer_vec128<'10, '11, test_crate::ntt_xmm::NttIntrinsicsXmm>[{built_in impl core::marker::Sized for test_crate::ntt_xmm::NttIntrinsicsXmm}, test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm}](move _5, move _6)
-        ↳⚡ unwind_continue
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = ()
     } else {
         storage_live(_7)
         storage_live(_8)
@@ -651,7 +640,20 @@ fn test_crate::poly_element_ntt_layer::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut
         storage_dead(_8)
         storage_dead(_7)
         _0 = ()
+        storage_dead(_3)
+        return
     }
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &two-phase-mut (*a)
+    storage_live(_6)
+    _6 = &(*b)
+    _4 = test_crate::ntt_layer_vec128<'10, '11, test_crate::ntt_xmm::NttIntrinsicsXmm>[{built_in impl core::marker::Sized for test_crate::ntt_xmm::NttIntrinsicsXmm}, test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_xmm::NttIntrinsicsXmm}](move _5, move _6)
+    ↳⚡ unwind_continue
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
     storage_dead(_3)
     return
 }
@@ -674,17 +676,6 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mu
     _3 = test_crate::cpu_features_present(copy test_crate::SYMCRYPT_CPU_FEATURE_NEON)
     ↳⚡ unwind_continue
     if move _3 {
-        storage_live(_4)
-        storage_live(_5)
-        _5 = &two-phase-mut (*a)
-        storage_live(_6)
-        _6 = &(*b)
-        _4 = test_crate::ntt_layer_vec128<'10, '11, test_crate::ntt_neon::NttIntrinsicsNeon>[{built_in impl core::marker::Sized for test_crate::ntt_neon::NttIntrinsicsNeon}, test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon}](move _5, move _6)
-        ↳⚡ unwind_continue
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = ()
     } else {
         storage_live(_7)
         storage_live(_8)
@@ -697,7 +688,20 @@ fn test_crate::poly_element_ntt_layer::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mu
         storage_dead(_8)
         storage_dead(_7)
         _0 = ()
+        storage_dead(_3)
+        return
     }
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &two-phase-mut (*a)
+    storage_live(_6)
+    _6 = &(*b)
+    _4 = test_crate::ntt_layer_vec128<'10, '11, test_crate::ntt_neon::NttIntrinsicsNeon>[{built_in impl core::marker::Sized for test_crate::ntt_neon::NttIntrinsicsNeon}, test_crate::ntt_neon::{impl test_crate::NttIntrinsicsInterface for test_crate::ntt_neon::NttIntrinsicsNeon}](move _5, move _6)
+    ↳⚡ unwind_continue
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
     storage_dead(_3)
     return
 }

@@ -377,14 +377,16 @@ pub fn get_max(x: u32, y: u32) -> u32
     _5 = copy y
     _3 = move _4 >= move _5
     if move _3 {
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = copy x
     } else {
         storage_dead(_5)
         storage_dead(_4)
         _0 = copy y
+        storage_dead(_3)
+        return
     }
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = copy x
     storage_dead(_3)
     return
 }
@@ -627,8 +629,6 @@ pub fn even(x: u32) -> bool
     _3 = copy x
     _2 = move _3 == const 0u32
     if move _2 {
-        storage_dead(_3)
-        _0 = const true
     } else {
         storage_dead(_3)
         storage_live(_4)
@@ -640,7 +640,11 @@ pub fn even(x: u32) -> bool
         _0 = odd(move _4)
         ↳⚡ unwind_continue
         storage_dead(_4)
+        storage_dead(_2)
+        return
     }
+    storage_dead(_3)
+    _0 = const true
     storage_dead(_2)
     return
 }
@@ -662,8 +666,6 @@ pub fn odd(x: u32) -> bool
     _3 = copy x
     _2 = move _3 == const 0u32
     if move _2 {
-        storage_dead(_3)
-        _0 = const false
     } else {
         storage_dead(_3)
         storage_live(_4)
@@ -675,7 +677,11 @@ pub fn odd(x: u32) -> bool
         _0 = even(move _4)
         ↳⚡ unwind_continue
         storage_dead(_4)
+        storage_dead(_2)
+        return
     }
+    storage_dead(_3)
+    _0 = const false
     storage_dead(_2)
     return
 }

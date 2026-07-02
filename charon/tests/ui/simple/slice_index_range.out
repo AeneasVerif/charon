@@ -726,19 +726,19 @@ where
                 storage_dead(_11)
                 storage_dead(new_len)
                 storage_dead(_3)
+                storage_dead(_7)
+                return
             } else {
                 storage_dead(_9)
                 storage_dead(_8)
                 storage_dead(new_len)
-                storage_dead(_3)
-                _0 = Option::None {  }
             }
         },
         _ => {
-            storage_dead(_3)
-            _0 = Option::None {  }
         },
     }
+    storage_dead(_3)
+    _0 = Option::None {  }
     storage_dead(_7)
     return
 }
@@ -814,19 +814,19 @@ where
                 storage_dead(_11)
                 storage_dead(new_len)
                 storage_dead(_3)
+                storage_dead(_7)
+                return
             } else {
                 storage_dead(_9)
                 storage_dead(_8)
                 storage_dead(new_len)
-                storage_dead(_3)
-                _0 = Option::None {  }
             }
         },
         _ => {
-            storage_dead(_3)
-            _0 = Option::None {  }
         },
     }
+    storage_dead(_3)
+    _0 = Option::None {  }
     storage_dead(_7)
     return
 }
@@ -1456,10 +1456,6 @@ where
     storage_dead(_8)
     _3 = move _4 >= move _7
     if move _3 {
-        storage_dead(_7)
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = Option::None {  }
     } else {
         storage_dead(_7)
         storage_dead(_5)
@@ -1476,7 +1472,13 @@ where
         ↳⚡ unwind_continue
         storage_dead(_11)
         storage_dead(_9)
+        storage_dead(_3)
+        return
     }
+    storage_dead(_7)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = Option::None {  }
     storage_dead(_3)
     return
 }
@@ -1516,10 +1518,6 @@ where
     storage_dead(_8)
     _3 = move _4 >= move _7
     if move _3 {
-        storage_dead(_7)
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = Option::None {  }
     } else {
         storage_dead(_7)
         storage_dead(_5)
@@ -1536,7 +1534,13 @@ where
         ↳⚡ unwind_continue
         storage_dead(_11)
         storage_dead(_9)
+        storage_dead(_3)
+        return
     }
+    storage_dead(_7)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = Option::None {  }
     storage_dead(_3)
     return
 }

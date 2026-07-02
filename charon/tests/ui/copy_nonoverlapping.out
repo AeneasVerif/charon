@@ -412,12 +412,14 @@ fn check_language_ub() -> bool
     _1 = core::ub_checks::check_language_ub::runtime()
     ↳⚡ unwind_continue
     if move _1 {
-        storage_live(_2)
-        _2 = ub_checks<bool>
-        _0 = move _2
     } else {
         _0 = const false
+        storage_dead(_1)
+        return
     }
+    storage_live(_2)
+    _2 = ub_checks<bool>
+    _0 = move _2
     storage_dead(_1)
     return
 }
@@ -528,19 +530,21 @@ pub fn core::mem::alignment::{Alignment}::new(align: usize) -> Option<Alignment>
     _2 = is_power_of_two(move _3)
     ↳⚡ unwind_continue
     if move _2 {
-        storage_dead(_3)
-        storage_live(_4)
-        storage_live(_5)
-        _5 = copy align
-        _4 = new_unchecked(move _5)
-        ↳⚡ unwind_continue
-        storage_dead(_5)
-        _0 = Option::Some { 0: move _4 }
-        storage_dead(_4)
     } else {
         storage_dead(_3)
         _0 = Option::None {  }
+        storage_dead(_2)
+        return
     }
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy align
+    _4 = new_unchecked(move _5)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
+    _0 = Option::Some { 0: move _4 }
+    storage_dead(_4)
     storage_dead(_2)
     return
 }
@@ -597,7 +601,6 @@ where
     _1 = const TraitClause0::SIZE
     switch copy _1 {
         0usize => {
-            _0 = copy core::num::{usize}::MAX
         },
         _ => {
             storage_live(n)
@@ -610,8 +613,11 @@ where
             storage_dead(_4)
             storage_dead(_3)
             storage_dead(n)
+            storage_dead(_1)
+            return
         },
     }
+    _0 = copy core::num::{usize}::MAX
     storage_dead(_1)
     return
 }

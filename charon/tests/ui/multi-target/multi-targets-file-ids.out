@@ -604,17 +604,6 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8us
     _3 = test_crate::cpu_features_present(const 1u32)
     ↳⚡ unwind_continue
     if move _3 {
-        storage_live(_4)
-        storage_live(_5)
-        _5 = &two-phase-mut (*a)
-        storage_live(_6)
-        _6 = &(*b)
-        _4 = test_crate::add_generic<'10, '11, test_crate::x86::Sse2>[{built_in impl core::marker::Sized for test_crate::x86::Sse2}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}](move _5, move _6)
-        ↳⚡ unwind_continue
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = ()
     } else {
         storage_live(_7)
         storage_live(_8)
@@ -627,7 +616,20 @@ fn test_crate::add_dispatch::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8us
         storage_dead(_8)
         storage_dead(_7)
         _0 = ()
+        storage_dead(_3)
+        return
     }
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &two-phase-mut (*a)
+    storage_live(_6)
+    _6 = &(*b)
+    _4 = test_crate::add_generic<'10, '11, test_crate::x86::Sse2>[{built_in impl core::marker::Sized for test_crate::x86::Sse2}, test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}](move _5, move _6)
+    ↳⚡ unwind_continue
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
     storage_dead(_3)
     return
 }
@@ -650,17 +652,6 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8u
     _3 = test_crate::cpu_features_present(const 2u32)
     ↳⚡ unwind_continue
     if move _3 {
-        storage_live(_4)
-        storage_live(_5)
-        _5 = &two-phase-mut (*a)
-        storage_live(_6)
-        _6 = &(*b)
-        _4 = test_crate::add_generic<'10, '11, test_crate::arm::Neon>[{built_in impl core::marker::Sized for test_crate::arm::Neon}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}](move _5, move _6)
-        ↳⚡ unwind_continue
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = ()
     } else {
         storage_live(_7)
         storage_live(_8)
@@ -673,7 +664,20 @@ fn test_crate::add_dispatch::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16; 8u
         storage_dead(_8)
         storage_dead(_7)
         _0 = ()
+        storage_dead(_3)
+        return
     }
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &two-phase-mut (*a)
+    storage_live(_6)
+    _6 = &(*b)
+    _4 = test_crate::add_generic<'10, '11, test_crate::arm::Neon>[{built_in impl core::marker::Sized for test_crate::arm::Neon}, test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}](move _5, move _6)
+    ↳⚡ unwind_continue
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
     storage_dead(_3)
     return
 }

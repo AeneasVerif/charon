@@ -2087,42 +2087,45 @@ pub fn ite()
     storage_live(_2)
     _2 = const true
     if move _2 {
-        storage_live(y)
-        y = @ArrayRepeat<u32, 2usize>(const 0u32)
-        ↳⚡ undefined_behavior
-        storage_live(_4)
-        storage_live(_5)
-        storage_live(_6)
-        storage_live(_7)
-        _7 = &mut x
-        _6 = &mut (*_7)
-        _5 = @ArrayToSliceMut<'_, u32, 2usize>(move _6)
-        ↳⚡ undefined_behavior
-        storage_dead(_6)
-        _4 = index_mut_slice_u32_0<'10>(move _5)
-        ↳⚡ unwind_continue
-        storage_dead(_5)
-        storage_dead(_7)
-        storage_dead(_4)
-        storage_live(_8)
-        storage_live(_9)
-        storage_live(_10)
-        storage_live(_11)
-        _11 = &mut y
-        _10 = &mut (*_11)
-        _9 = @ArrayToSliceMut<'_, u32, 2usize>(move _10)
-        ↳⚡ undefined_behavior
-        storage_dead(_10)
-        _8 = index_mut_slice_u32_0<'13>(move _9)
-        ↳⚡ unwind_continue
-        storage_dead(_9)
-        storage_dead(_11)
-        storage_dead(_8)
-        _0 = ()
-        storage_dead(y)
     } else {
         _0 = ()
+        storage_dead(_2)
+        storage_dead(x)
+        return
     }
+    storage_live(y)
+    y = @ArrayRepeat<u32, 2usize>(const 0u32)
+    ↳⚡ undefined_behavior
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = &mut x
+    _6 = &mut (*_7)
+    _5 = @ArrayToSliceMut<'_, u32, 2usize>(move _6)
+    ↳⚡ undefined_behavior
+    storage_dead(_6)
+    _4 = index_mut_slice_u32_0<'10>(move _5)
+    ↳⚡ unwind_continue
+    storage_dead(_5)
+    storage_dead(_7)
+    storage_dead(_4)
+    storage_live(_8)
+    storage_live(_9)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = &mut y
+    _10 = &mut (*_11)
+    _9 = @ArrayToSliceMut<'_, u32, 2usize>(move _10)
+    ↳⚡ undefined_behavior
+    storage_dead(_10)
+    _8 = index_mut_slice_u32_0<'13>(move _9)
+    ↳⚡ unwind_continue
+    storage_dead(_9)
+    storage_dead(_11)
+    storage_dead(_8)
+    _0 = ()
+    storage_dead(y)
     storage_dead(_2)
     storage_dead(x)
     return

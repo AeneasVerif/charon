@@ -1285,56 +1285,58 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32
     storage_live(_3)
     _3 = copy b
     if move _3 {
-        storage_live(s)
-        s = const 0u32
-        storage_live(_5)
-        storage_live(_6)
-        storage_live(_7)
-        _7 = copy n
-        _6 = Range { start: const 0u32, end: move _7 }
-        storage_dead(_7)
-        _5 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32]](move _6)
-        ↳⚡ unwind_continue
-        storage_dead(_6)
-        storage_live(iter)
-        iter = move _5
-        loop {
-            storage_live(_9)
-            storage_live(_10)
-            storage_live(_11)
-            _11 = &mut iter
-            _10 = &two-phase-mut (*_11)
-            _9 = next<'4, u32>[{built_in impl Sized for u32}, impl_Step_for_u32](move _10)
-            ↳⚡ unwind_continue
-            storage_dead(_10)
-            match _9 {
-                Option::None => {
-                    break 0
-                },
-                Option::Some => {
-                    storage_live(i)
-                    i = copy (_9 as variant Option::Some).0
-                    storage_live(_13)
-                    _13 = copy i
-                    _14 = copy s panic.+ copy _13
-                    s = move _14
-                    storage_dead(_13)
-                    storage_dead(i)
-                    storage_dead(_11)
-                    storage_dead(_9)
-                    continue 0
-                },
-            }
-        }
-        storage_dead(_11)
-        storage_dead(_9)
-        storage_dead(iter)
-        storage_dead(_5)
-        _0 = copy s
-        storage_dead(s)
     } else {
         _0 = const 0u32
+        storage_dead(_3)
+        return
     }
+    storage_live(s)
+    s = const 0u32
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = copy n
+    _6 = Range { start: const 0u32, end: move _7 }
+    storage_dead(_7)
+    _5 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32]](move _6)
+    ↳⚡ unwind_continue
+    storage_dead(_6)
+    storage_live(iter)
+    iter = move _5
+    loop {
+        storage_live(_9)
+        storage_live(_10)
+        storage_live(_11)
+        _11 = &mut iter
+        _10 = &two-phase-mut (*_11)
+        _9 = next<'4, u32>[{built_in impl Sized for u32}, impl_Step_for_u32](move _10)
+        ↳⚡ unwind_continue
+        storage_dead(_10)
+        match _9 {
+            Option::None => {
+                break 0
+            },
+            Option::Some => {
+            },
+        }
+        storage_live(i)
+        i = copy (_9 as variant Option::Some).0
+        storage_live(_13)
+        _13 = copy i
+        _14 = copy s panic.+ copy _13
+        s = move _14
+        storage_dead(_13)
+        storage_dead(i)
+        storage_dead(_11)
+        storage_dead(_9)
+        continue 0
+    }
+    storage_dead(_11)
+    storage_dead(_9)
+    storage_dead(iter)
+    storage_dead(_5)
+    _0 = copy s
+    storage_dead(s)
     storage_dead(_3)
     return
 }

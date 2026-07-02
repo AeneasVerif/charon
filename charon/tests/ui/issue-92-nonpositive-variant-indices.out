@@ -18,15 +18,19 @@ fn main()
     _1 = Ordering::Less {  }
     match _1 {
         Ordering::Less => {
-            _0 = ()
         },
         Ordering::Equal => {
             _0 = ()
+            storage_dead(_1)
+            return
         },
         Ordering::Greater => {
             _0 = ()
+            storage_dead(_1)
+            return
         },
     }
+    _0 = ()
     storage_dead(_1)
     return
 }

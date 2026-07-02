@@ -307,33 +307,37 @@ where
     storage_dead(_9)
     _7 = move _8 != const 0usize
     if move _7 {
-        storage_dead(_8)
-        storage_live(_10)
-        storage_live(_11)
-        _11 = &((*self)).1
-        storage_live(_12)
-        storage_live(_13)
-        storage_live(_14)
-        _14 = copy ptr
-        _13 = cast<T, u8>[{built_in impl Sized for u8}](move _14)
-        ↳⚡ unwind_continue
-        storage_dead(_14)
-        _12 = from<u8>(move _13)
-        ↳⚡ unwind_continue
-        storage_dead(_13)
-        storage_live(_15)
-        _15 = copy layout
-        _10 = TraitClause2::deallocate<'8>(move _11, move _12, move _15)
-        ↳⚡ unwind_continue
-        storage_dead(_15)
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(_10)
-        _0 = ()
     } else {
         storage_dead(_8)
         _0 = ()
+        storage_dead(_7)
+        storage_dead(layout)
+        storage_dead(ptr)
+        return
     }
+    storage_dead(_8)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = &((*self)).1
+    storage_live(_12)
+    storage_live(_13)
+    storage_live(_14)
+    _14 = copy ptr
+    _13 = cast<T, u8>[{built_in impl Sized for u8}](move _14)
+    ↳⚡ unwind_continue
+    storage_dead(_14)
+    _12 = from<u8>(move _13)
+    ↳⚡ unwind_continue
+    storage_dead(_13)
+    storage_live(_15)
+    _15 = copy layout
+    _10 = TraitClause2::deallocate<'8>(move _11, move _12, move _15)
+    ↳⚡ unwind_continue
+    storage_dead(_15)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    _0 = ()
     storage_dead(_7)
     storage_dead(layout)
     storage_dead(ptr)

@@ -216,8 +216,6 @@ where
     _6 = copy i
     _5 = move _6 == const 0u32
     if move _5 {
-        storage_dead(_6)
-        _0 = &(*x)
     } else {
         storage_dead(_6)
         storage_live(_7)
@@ -235,7 +233,13 @@ where
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
+        storage_dead(_5)
+        storage_dead(tl)
+        storage_dead(x)
+        return
     }
+    storage_dead(_6)
+    _0 = &(*x)
     storage_dead(_5)
     storage_dead(tl)
     storage_dead(x)
@@ -399,8 +403,6 @@ pub fn i32_id(i: i32) -> i32
     _3 = copy i
     _2 = move _3 == const 0i32
     if move _2 {
-        storage_dead(_3)
-        _0 = const 0i32
     } else {
         storage_dead(_3)
         storage_live(_4)
@@ -416,7 +418,11 @@ pub fn i32_id(i: i32) -> i32
         _8 = copy _4 panic.+ const 1i32
         _0 = move _8
         storage_dead(_4)
+        storage_dead(_2)
+        return
     }
+    storage_dead(_3)
+    _0 = const 0i32
     storage_dead(_2)
     return
 }

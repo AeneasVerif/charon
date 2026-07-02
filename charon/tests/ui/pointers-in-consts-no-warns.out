@@ -32,10 +32,12 @@ pub fn bar()
     _3 = cast<usize, *const ()>(const 42usize)
     _2 = move _3 == copy _1
     if move _2 {
-        _0 = ()
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    _0 = ()
     storage_dead(_1)
     return
 }

@@ -130,12 +130,14 @@ fn funs_with_disambiguator(b: bool) -> u32
     storage_live(_2)
     _2 = copy b
     if move _2 {
-        _0 = test_crate::funs_with_disambiguator::f()
-        ↳⚡ unwind_continue
     } else {
         _0 = test_crate::funs_with_disambiguator::f#1()
         ↳⚡ unwind_continue
+        storage_dead(_2)
+        return
     }
+    _0 = test_crate::funs_with_disambiguator::f()
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }

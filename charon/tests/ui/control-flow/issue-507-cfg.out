@@ -24,19 +24,21 @@ fn f0()
     storage_live(_1)
     _1 = const 0i32 < const 1i32
     if move _1 {
-        storage_live(_2)
-        _2 = const 0i32 < const 1i32
-        if move _2 {
-        } else {
-        }
-        storage_dead(_2)
-        storage_live(x)
-        x = copy CONST
-        _0 = ()
-        storage_dead(x)
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    storage_live(_2)
+    _2 = const 0i32 < const 1i32
+    if move _2 {
+    } else {
+    }
+    storage_dead(_2)
+    storage_live(x)
+    x = copy CONST
+    _0 = ()
+    storage_dead(x)
     storage_dead(_1)
     return
 }

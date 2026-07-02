@@ -86,50 +86,54 @@ pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 E
     _9 = copy __arg1_discr
     _7 = move _8 == move _9
     if move _7 {
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_live(_10)
-        storage_live(_11)
-        _11 = copy self
-        storage_live(_12)
-        _12 = copy other
-        _10 = (move _11, move _12)
-        storage_dead(_12)
-        storage_dead(_11)
-        match (*_10.0) {
-            Enum::Some => {
-                match (*_10.1) {
-                    Enum::Some => {
-                        storage_live(__self_0)
-                        __self_0 = &((*_10.0) as variant Enum::Some).0
-                        storage_live(__arg1_0)
-                        __arg1_0 = &((*_10.1) as variant Enum::Some).0
-                        storage_live(_15)
-                        _15 = &__self_0
-                        storage_live(_16)
-                        _16 = &__arg1_0
-                        _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'28, '29, '32, '33, u8, u8>[impl_PartialEq_u8_for_u8](move _15, move _16)
-                        ↳⚡ unwind_continue
-                        storage_dead(_16)
-                        storage_dead(_15)
-                        storage_dead(__arg1_0)
-                        storage_dead(__self_0)
-                    },
-                    _ => {
-                        _0 = const true
-                    },
-                }
-            },
-            _ => {
-                _0 = const true
-            },
-        }
-        storage_dead(_10)
     } else {
         storage_dead(_9)
         storage_dead(_8)
         _0 = const false
+        storage_dead(_7)
+        storage_dead(__arg1_discr)
+        storage_dead(__self_discr)
+        return
     }
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = copy self
+    storage_live(_12)
+    _12 = copy other
+    _10 = (move _11, move _12)
+    storage_dead(_12)
+    storage_dead(_11)
+    match (*_10.0) {
+        Enum::Some => {
+            match (*_10.1) {
+                Enum::Some => {
+                    storage_live(__self_0)
+                    __self_0 = &((*_10.0) as variant Enum::Some).0
+                    storage_live(__arg1_0)
+                    __arg1_0 = &((*_10.1) as variant Enum::Some).0
+                    storage_live(_15)
+                    _15 = &__self_0
+                    storage_live(_16)
+                    _16 = &__arg1_0
+                    _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'28, '29, '32, '33, u8, u8>[impl_PartialEq_u8_for_u8](move _15, move _16)
+                    ↳⚡ unwind_continue
+                    storage_dead(_16)
+                    storage_dead(_15)
+                    storage_dead(__arg1_0)
+                    storage_dead(__self_0)
+                },
+                _ => {
+                    _0 = const true
+                },
+            }
+        },
+        _ => {
+            _0 = const true
+        },
+    }
+    storage_dead(_10)
     storage_dead(_7)
     storage_dead(__arg1_discr)
     storage_dead(__self_discr)
