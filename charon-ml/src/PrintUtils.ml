@@ -8,7 +8,7 @@ let option_to_string (to_string : 'a -> string) (x : 'a option) : string =
   | None -> "None"
 
 let block_id_to_string (id : UllbcAst.BlockId.id) : string =
-  "block@" ^ UllbcAst.BlockId.to_string id
+  "bb" ^ UllbcAst.BlockId.to_string id
 
 (** The formatting environment can be incomplete: if some information is missing
     (for instance we can't find the type variable for a given index) we print

@@ -1970,74 +1970,99 @@ module Ullbc = struct
 
   let rec pp_statement (env : fmt_env) (indent : string)
       (fmt : Format.formatter) (st : statement) : unit =
+    List.iter
+      (fun line -> Format.fprintf fmt "%s// %s\n" indent line)
+      st.comments_before;
     pp_statement_kind env indent fmt st.kind
 
   and pp_statement_kind (env : fmt_env) (indent : string)
       (fmt : Format.formatter) (st : statement_kind) : unit =
     match st with
     | Assign (p, rv) ->
-        Format.fprintf fmt "%s%a := %a" indent (pp_print_place env) p
+        Format.fprintf fmt "%s%a = %a" indent (pp_print_place env) p
           (pp_print_rvalue env) rv
     | SetDiscriminant (p, variant_id) ->
-        (* TODO: improve this to lookup the variant name by using the def id
-           (we are missing the def id here) *)
-        Format.fprintf fmt "%sset_discriminant(%s, %s)" indent
+        Format.fprintf fmt "%s@discriminant(%s) = %s" indent
           (place_to_string env p)
           (variant_id_to_pretty_string variant_id)
     | Assert (asrt, abort_kind) ->
         Format.fprintf fmt "%s%a else %a" indent (pp_print_assertion env) asrt
           (pp_print_abort_kind env) abort_kind
     | StorageLive var_id ->
-        Format.fprintf fmt "%sstorage_live %s" indent
+        Format.fprintf fmt "%sstorage_live(%s)" indent
           (local_id_to_string env var_id)
     | StorageDead var_id ->
-        Format.fprintf fmt "%sstorage_dead %s" indent
+        Format.fprintf fmt "%sstorage_dead(%s)" indent
           (local_id_to_string env var_id)
     | PlaceMention place ->
-        Format.fprintf fmt "%s_ := %s" indent (place_to_string env place)
+        Format.fprintf fmt "%s_ = %s" indent (place_to_string env place)
     | CopyNonOverlapping { src; dst; count } ->
-        Format.fprintf fmt "%scopy_non_overlapping(%s, %s, %s)" indent
+        Format.fprintf fmt "%scopy_nonoverlapping(%s, %s, %s)" indent
           (operand_to_string env src)
           (operand_to_string env dst)
           (operand_to_string env count)
-    | Nop -> pp_string fmt "nop"
+    | Nop -> Format.fprintf fmt "%snop" indent
 
   let pp_switch (indent : string) (fmt : Format.formatter) (tgt : switch) : unit
       =
     match tgt with
     | If (b0, b1) ->
-        Format.fprintf fmt "%s[true -> %s; false -> %s]" indent
+        Format.fprintf fmt "%strue -> %s else -> %s" indent
           (block_id_to_string b0) (block_id_to_string b1)
     | SwitchInt (_int_ty, branches, otherwise) ->
-        Format.fprintf fmt "%s[" indent;
-        List.iter
-          (fun (sv, bid) ->
-            Format.fprintf fmt "%a -> %s; " pp_print_literal sv
-              (block_id_to_string bid))
-          branches;
-        Format.fprintf fmt "_ -> %s]" (block_id_to_string otherwise)
+        let targets =
+          List.map
+            (fun (sv, bid) ->
+              pp_to_string (fun fmt -> pp_print_literal fmt sv)
+              ^ ": " ^ block_id_to_string bid)
+            branches
+          @ [ "otherwise: " ^ block_id_to_string otherwise ]
+        in
+        Format.fprintf fmt "%s%s" indent (String.concat ", " targets)
 
   let rec pp_terminator (env : fmt_env) (indent : string)
       (fmt : Format.formatter) (st : terminator) : unit =
+    List.iter
+      (fun line -> Format.fprintf fmt "%s// %s\n" indent line)
+      st.comments_before;
     pp_terminator_kind env indent fmt st.kind
 
   and pp_terminator_kind (env : fmt_env) (indent : string)
       (fmt : Format.formatter) (st : terminator_kind) : unit =
     match st with
     | Goto bid -> Format.fprintf fmt "%sgoto %s" indent (block_id_to_string bid)
-    | Switch (op, tgts) ->
-        Format.fprintf fmt "%sswitch %s%a" indent (operand_to_string env op)
-          (pp_switch indent) tgts
+    | Switch (op, If (true_block, false_block)) ->
+        Format.fprintf fmt "%sif %s -> %s else -> %s" indent
+          (operand_to_string env op)
+          (block_id_to_string true_block)
+          (block_id_to_string false_block)
+    | Switch (op, SwitchInt (_int_ty, branches, otherwise)) ->
+        let targets =
+          List.map
+            (fun (sv, bid) ->
+              pp_to_string (fun fmt -> pp_print_literal fmt sv)
+              ^ ": " ^ block_id_to_string bid)
+            branches
+          @ [ "otherwise: " ^ block_id_to_string otherwise ]
+        in
+        Format.fprintf fmt "%sswitch %s -> %s" indent (operand_to_string env op)
+          (String.concat ", " targets)
     | Call (call, tgt, unwind) ->
-        Format.fprintf fmt "%a -> %s(unwind:%s)" (pp_print_call env indent) call
+        Format.fprintf fmt "%a -> %s (unwind: %s)" (pp_print_call env indent)
+          call (block_id_to_string tgt)
+          (block_id_to_string unwind)
+    | Drop (kind, p, fn_ptr, tgt, unwind) ->
+        let kind =
+          match kind with
+          | Precise -> "drop"
+          | Conditional -> "conditional_drop"
+        in
+        Format.fprintf fmt "%s%s[%a] %s -> %s (unwind: %s)" indent kind
+          (pp_fn_ptr env) fn_ptr (place_to_string env p)
           (block_id_to_string tgt)
           (block_id_to_string unwind)
-    | Drop (_, p, _, tgt, unwind) ->
-        Format.fprintf fmt "%sdrop %s -> %s(unwind:%s)" indent
-          (place_to_string env p) (block_id_to_string tgt)
-          (block_id_to_string unwind)
     | TAssert (asrt, tgt, unwind) ->
-        Format.fprintf fmt "%s%a -> %s(unwind:%s)" indent
+        Format.fprintf fmt "%sassert %a -> %s (unwind: %s)" indent
           (pp_print_assertion env) asrt (block_id_to_string tgt)
           (block_id_to_string unwind)
     | InlineAsm (asm, targets, on_unwind) ->
@@ -2050,14 +2075,15 @@ module Ullbc = struct
         let targets = targets @ [ "unwind: " ^ block_id_to_string on_unwind ] in
         Format.fprintf fmt "%sasm!(%S) -> %s" indent asm
           (String.concat ", " targets)
-    | Abort _ -> Format.fprintf fmt "%spanic" indent
+    | Abort kind ->
+        Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env) kind
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
 
   let pp_block (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (id : BlockId.id) (block : block) : unit =
     let indent1 = indent ^ indent_incr in
-    Format.fprintf fmt "%s%s {\n" indent (block_id_to_string id);
+    Format.fprintf fmt "%s%s: {\n" indent (block_id_to_string id);
     List.iter
       (fun st -> Format.fprintf fmt "%a;\n" (pp_statement env indent1) st)
       block.statements;
