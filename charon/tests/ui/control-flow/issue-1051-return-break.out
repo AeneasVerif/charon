@@ -13,6 +13,7 @@ pub fn f(y: u32) -> bool
     let _7: bool; // anonymous local
     let _8: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
@@ -41,6 +42,8 @@ pub fn f(y: u32) -> bool
                     storage_dead(_7)
                     storage_dead(_2)
                     _0 = const false
+                    storage_dead(_6)
+                    storage_dead(y)
                     return
                 } else {
                     storage_dead(_8)
@@ -53,12 +56,16 @@ pub fn f(y: u32) -> bool
         _0 = const true
         storage_dead(_4)
         storage_dead(_2)
+        storage_dead(_6)
+        storage_dead(y)
         return
     } else {
         storage_dead(_3)
     }
     storage_dead(_2)
     _0 = const false
+    storage_dead(_6)
+    storage_dead(y)
     return
 }
 

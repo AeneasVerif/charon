@@ -19,6 +19,7 @@ fn main()
     _8 = const 0u8
     _7 = &_8
     _6 = move _7
+    storage_live(_0)
     storage_live(_5)
     _0 = ()
     storage_live(x)
@@ -35,6 +36,10 @@ fn main()
     storage_dead(_3)
     _0 = ()
     storage_dead(x)
+    storage_dead(_5)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
     return
 }
 

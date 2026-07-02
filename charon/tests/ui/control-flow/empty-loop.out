@@ -5,6 +5,7 @@ fn main()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     loop {
         continue 0

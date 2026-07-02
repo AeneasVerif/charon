@@ -5,6 +5,7 @@ fn foo() -> bool
 {
     let _0: bool; // return
 
+    storage_live(_0)
     _0 = const false
     return
 }
@@ -14,6 +15,7 @@ fn bar() -> bool
 {
     let _0: bool; // return
 
+    storage_live(_0)
     _0 = const true
     return
 }
@@ -23,6 +25,7 @@ fn do_something()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -33,6 +36,7 @@ fn do_something_at_the_end()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -47,6 +51,7 @@ fn main()
     let _3: bool; // anonymous local
     let _4: bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     // Needed a few convolutions to make it emit a `break` instead of moving the `return`

@@ -24,6 +24,7 @@ fn callee<T>()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -35,6 +36,7 @@ pub fn caller<T>()
     let _0: (); // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = callee<T>()
@@ -51,6 +53,7 @@ pub fn recursive<T>()
     let _1: bool; // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false
@@ -76,6 +79,7 @@ pub fn swap_recursive<T, U>()
     let _1: bool; // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false
@@ -109,6 +113,7 @@ pub fn clause_dep<T>()
     let _0: (); // return
     let _1: bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false

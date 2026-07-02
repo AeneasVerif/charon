@@ -51,7 +51,9 @@ pub fn clone<'_0>(self: &'_0 Foo) -> Foo
     let _0: Foo; // return
     let self: &'1 Foo; // arg #1
 
+    storage_live(_0)
     _0 = copy (*self)
+    storage_dead(self)
     return
 }
 
@@ -99,6 +101,7 @@ fn main()
     let _10: Ordering; // anonymous local
     let _11: isize; // anonymous local
 
+    storage_live(_0)
     storage_live(_4)
     storage_live(_7)
     storage_live(_11)
@@ -131,6 +134,9 @@ fn main()
     _0 = ()
     storage_dead(x_8)
     storage_dead(x_1)
+    storage_dead(_11)
+    storage_dead(_7)
+    storage_dead(_4)
     return
 }
 

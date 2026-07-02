@@ -108,14 +108,17 @@ fn apply_to::<closure<'_, '_>><'_0>(f: &'_0 closure<'_, '_>) -> u8
     let _2: &'6 closure<'7, '8>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_Fn_tuple_for_closure<'15, '16>::call<'17>(move _2, move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(f)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(f)
     return
 }
 
@@ -127,14 +130,17 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(f: &'_0 mut closure<'_, '_>) -> u8
     let _2: &'6 mut closure<'7, '8>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &mut (*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_FnMut_tuple_for_closure<'15, '16>::call_mut<'17>(move _2, move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(f)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(f)
     return
 }
 
@@ -144,7 +150,9 @@ unsafe fn drop_glue<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0, '_1>)
     let _0: (); // return
     let _1: &'1 mut closure<'_0, '_1>; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -156,20 +164,26 @@ fn apply_to_once::<closure<'_, '_>>(f: closure<'_, '_>) -> u8
     let _2: closure<'2, '3>; // anonymous local
     let _3: (u8, u8); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move f
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_FnOnce_tuple_for_closure<'8, '9>::call_once(move _2, move _3)
     ↳⚡ conditional_drop[drop_glue<'14, '15, '16>] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(f)
+            unwind_terminate
         conditional_drop[drop_glue<'28, '29, '30>] f
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(f)
+            unwind_terminate
+        storage_dead(f)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[drop_glue<'21, '22, '23>] f
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(f)
+        unwind_continue
+    storage_dead(f)
     return
 }
 
@@ -194,6 +208,7 @@ fn main()
     let _15: u8; // anonymous local
     let _16: closure<'28, '29>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(v)
     v = const 5u8
@@ -265,14 +280,27 @@ fn call_once<'_0, '_1>(_1: closure<'_0, '_1>, _2: (u8, u8)) -> u8
     let _2: (u8, u8); // arg #2
     let _3: &'1 mut closure<'_0, '_1>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = impl_FnMut_tuple_for_closure<'_0, '_1>::call_mut<'6>(move _3, move _2)
     ↳⚡ drop[drop_glue<'_0, '_1, '11>] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[drop_glue<'_0, '_1, '16>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -294,6 +322,7 @@ fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args: (u8, u8)) -> u8
     let _12: u8; // anonymous local
     let _13: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(x)
     storage_live(y)
     storage_live(_9)
@@ -323,6 +352,13 @@ fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args: (u8, u8)) -> u8
     _0 = move _13
     storage_dead(_12)
     storage_dead(_5)
+    storage_dead(_13)
+    storage_dead(_11)
+    storage_dead(_9)
+    storage_dead(y)
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -334,10 +370,17 @@ fn call_mut<'_0, '_1, '_2>(state: &'_2 mut closure<'_0, '_1>, args: (u8, u8)) ->
     let args: (u8, u8); // arg #2
     let _3: &'0 closure<'_0, '_1>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'_0, '_1, '2>(move _3, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 

@@ -61,7 +61,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -81,20 +83,26 @@ fn apply_to_zero_once::<closure>(f: closure) -> u8
     let _2: closure; // anonymous local
     let _3: (u8,); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move f
     storage_live(_3)
     _3 = (const 0u8,)
     _0 = impl_FnOnce_tuple_for_closure::call_once(move _2, move _3)
     ↳⚡ conditional_drop[drop_glue<'0>] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(f)
+            unwind_terminate
         conditional_drop[drop_glue<'2>] f
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(f)
+            unwind_terminate
+        storage_dead(f)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[drop_glue<'1>] f
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(f)
+        unwind_continue
+    storage_dead(f)
     return
 }
 
@@ -106,6 +114,7 @@ fn main()
     let _2: u8; // anonymous local
     let _3: closure; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(z)
     z = NotCopy {  }
@@ -139,6 +148,7 @@ fn call_once(_1: closure, tupled_args: (u8,)) -> u8
     let _6: u8; // anonymous local
     let _7: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(x)
     storage_live(_7)
     x = move tupled_args.0
@@ -146,7 +156,11 @@ fn call_once(_1: closure, tupled_args: (u8,)) -> u8
     storage_live(_5)
     _5 = move (_1).0
     _4 = drop::<NotCopy>(move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_7)
+        storage_dead(x)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
@@ -154,6 +168,10 @@ fn call_once(_1: closure, tupled_args: (u8,)) -> u8
     _7 = copy _6 panic.+ const 1u8
     _0 = move _7
     storage_dead(_6)
+    storage_dead(_7)
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 

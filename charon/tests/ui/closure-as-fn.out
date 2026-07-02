@@ -74,7 +74,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -86,11 +88,14 @@ fn call<'_0>(_1: &'_0 closure, tupled_args: ())
     let tupled_args: (); // arg #2
     let _3: i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = const 1i32 panic./ const 0i32
     storage_dead(_3)
     _0 = ()
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -102,11 +107,18 @@ fn call_mut<'_0>(state: &'_0 mut closure, args: ())
     let args: (); // arg #2
     let _3: &'0 closure; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2>(move _3, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -118,15 +130,28 @@ fn call_once(_1: closure, _2: ())
     let _2: (); // arg #2
     let _3: &'1 mut closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
     ↳⚡ drop[drop_glue<'3>] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[drop_glue<'4>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -137,13 +162,18 @@ fn as_fn()
     let args: (); // local
     let state: closure; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(args)
     storage_live(state)
     args = ()
     state = closure {  }
     _0 = call_once(move state, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
     return
 }
 
@@ -156,6 +186,7 @@ fn main()
     let _3: (); // anonymous local
     let _4: fn(); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(f)
     storage_live(_2)

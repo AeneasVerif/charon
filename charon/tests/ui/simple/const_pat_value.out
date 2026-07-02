@@ -8,6 +8,7 @@ fn ONE() -> i32 is 1i32..=2147483647i32
 {
     let _0: i32 is 1i32..=2147483647i32; // return
 
+    storage_live(_0)
     _0 = const 1i32
     return
 }

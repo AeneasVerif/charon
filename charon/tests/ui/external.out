@@ -220,15 +220,20 @@ where
     let _3: &'3 mut T; // anonymous local
     let _4: &'4 mut T; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = &two-phase-mut (*x)
     storage_live(_4)
     _4 = &two-phase-mut (*y)
     _0 = core::mem::swap<'7, '8, T>[TraitClause0](move _3, move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -240,15 +245,19 @@ pub fn test_new_non_zero_u32(x: u32) -> NonZero<u32>[{built_in impl Sized for u3
     let _2: Option<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>[{built_in impl Sized for NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]}]; // anonymous local
     let _3: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = copy x
     _2 = core::num::nonzero::{NonZero<T>[TraitClause0, TraitClause1]}::new<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32](move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_3)
     _0 = unwrap<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>[{built_in impl Sized for NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]}](move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -260,6 +269,7 @@ pub fn test_vec_push()
     let _2: (); // anonymous local
     let _3: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(v)
     v = alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new<u32>[{built_in impl Sized for u32}]()
@@ -287,11 +297,14 @@ pub fn use_get<'_0>(rc: &'_0 Cell<u32>[{built_in impl MetaSized for u32}]) -> u3
     let rc: &'1 Cell<u32>[{built_in impl MetaSized for u32}]; // arg #1
     let _2: &'2 Cell<u32>[{built_in impl MetaSized for u32}]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*rc)
     _0 = get<'4, u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(rc)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(rc)
     return
 }
 
@@ -304,18 +317,23 @@ pub fn incr<'_0>(rc: &'_0 mut Cell<u32>[{built_in impl MetaSized for u32}])
     let _3: &'4 mut Cell<u32>[{built_in impl MetaSized for u32}]; // anonymous local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_4)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut (*rc)
     _2 = get_mut<'6, u32>[{built_in impl MetaSized for u32}](move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_4)
+        storage_dead(rc)
+        unwind_continue
     storage_dead(_3)
     _4 = copy (*_2) panic.+ const 1u32
     (*_2) = move _4
     storage_dead(_2)
     _0 = ()
+    storage_dead(_4)
+    storage_dead(rc)
     return
 }
 

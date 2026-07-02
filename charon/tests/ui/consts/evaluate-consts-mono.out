@@ -28,6 +28,7 @@ pub fn use_len() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy LEN::<u8, 4usize>
     return
 }
@@ -74,6 +75,7 @@ pub fn use_size() -> usize
     let _2: usize; // anonymous local
     let _3: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_1)
@@ -82,6 +84,8 @@ pub fn use_size() -> usize
     _3 = copy _1 panic.+ copy impl_HasSize_for_array::SIZE::<[u32; 3usize]>
     _0 = move _3
     storage_dead(_1)
+    storage_dead(_3)
+    storage_dead(_2)
     return
 }
 

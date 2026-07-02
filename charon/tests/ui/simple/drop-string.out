@@ -64,9 +64,12 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
     let _0: (); // return
     let _1: &'1 mut String; // arg #1
 
+    storage_live(_0)
     _0 = ()
     drop[impl_Destruct_for_Vec::drop_glue<'2, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global]] ((*_1)).vec
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -81,10 +84,13 @@ fn use_string(_1: String)
     let _0: (); // return
     let _1: String; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     drop[impl_Destruct_for_String::drop_glue<'0>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -95,6 +101,7 @@ fn main()
     let s: String; // local
     let _2: String; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(s)
     s = new()

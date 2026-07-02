@@ -66,8 +66,11 @@ where
     let _0: Empty<T>[TraitClause0::ImpliedClause1]; // return
     let self: &'1 Self; // arg #1
 
+    storage_live(_0)
     _0 = empty<T>[TraitClause0::ImpliedClause1]()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(self)
+        unwind_continue
+    storage_dead(self)
     return
 }
 
@@ -79,8 +82,11 @@ where
     let _0: Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]; // return
     let self: &'1 (); // arg #1
 
+    storage_live(_0)
     _0 = empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(self)
+        unwind_continue
+    storage_dead(self)
     return
 }
 

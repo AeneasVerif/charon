@@ -41,6 +41,7 @@ where
     let _3: &'9 (dyn Any + '10); // anonymous local
     let _4: &'11 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -51,6 +52,7 @@ where
     _0 = unsize_cast<&'7 (dyn Any + '8), &'15 (dyn Any + '16),  at []>(move _2)
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 

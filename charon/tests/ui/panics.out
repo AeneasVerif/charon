@@ -5,6 +5,7 @@ fn panic1()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     panic(core::panicking::panic)
 }
@@ -15,10 +16,13 @@ fn panic2()
     let _0: (); // return
     let _1: Arguments<'1>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = from_str<'2>(const "O no!")
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     panic(core::panicking::panic_fmt)
 }
 
@@ -28,10 +32,13 @@ fn panic3()
     let _0: (); // return
     let _1: Arguments<'1>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = from_str_nonconst<'2>(const "O no!")
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     panic(core::panicking::panic_fmt)
 }
 
@@ -41,6 +48,7 @@ fn panic4()
     let _0: (); // return
     let _1: bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false
@@ -58,6 +66,7 @@ fn panic5()
     let _1: bool; // anonymous local
     let _2: Arguments<'1>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false
@@ -65,11 +74,14 @@ fn panic5()
     } else {
         storage_live(_2)
         _2 = from_str<'2>(const "assert failed")
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_2)
+            unwind_continue
+        storage_dead(_2)
         panic(core::panicking::panic_fmt)
     }
     storage_dead(_1)
     _0 = ()
+    storage_dead(_2)
     return
 }
 
@@ -78,6 +90,7 @@ fn panic6()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     panic(core::panicking::panic)
 }
@@ -88,10 +101,13 @@ fn panic7()
     let _0: (); // return
     let _1: Arguments<'1>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = from_str_nonconst<'2>(const "internal error: entered unreachable code: can't reach this")
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     panic(core::panicking::panic_fmt)
 }
 
@@ -100,6 +116,7 @@ fn panic8()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     panic(core::panicking::panic)
 }
@@ -109,6 +126,7 @@ fn panic9()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     panic(std::panicking::begin_panic)
 }

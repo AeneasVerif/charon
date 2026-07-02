@@ -19,6 +19,7 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
     let _13: &'_ [u8]; // anonymous local
     let _14: &'_ u8; // anonymous local
 
+    storage_live(_0)
     storage_live(_9)
     storage_live(_10)
     storage_live(sampled)
@@ -31,7 +32,11 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
     _13 = &(*a) with_metadata(copy a.metadata)
     storage_live(_14)
     _14 = @SliceIndexShared<'_, u8>(move _13, copy _5)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        undefined_behavior
     _4 = copy (*_14)
     _3 = move _4 < const 42u8
     if move _3 {
@@ -45,7 +50,11 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
         _11 = &(*a) with_metadata(copy a.metadata)
         storage_live(_12)
         _12 = @SliceIndexShared<'_, u8>(move _11, copy _8)
-        ↳⚡ undefined_behavior
+        ↳⚡ storage_dead(_14)
+            storage_dead(_13)
+            storage_dead(_12)
+            storage_dead(_11)
+            undefined_behavior
         _7 = copy (*_12)
         _6 = move _7 < const 16u8
         if move _6 {
@@ -70,6 +79,13 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
     storage_dead(_3)
     _0 = copy sampled
     storage_dead(sampled)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(a)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
     return
 }
 

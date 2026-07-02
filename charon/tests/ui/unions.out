@@ -13,6 +13,7 @@ fn use_union()
     let one: Foo; // local
     let _two: [u32; 2usize]; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(one)
     one = Foo { one: const 42u64 }

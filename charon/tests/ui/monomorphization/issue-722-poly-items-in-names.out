@@ -19,6 +19,7 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
     let _6: bool; // anonymous local
     let _7: i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
@@ -42,6 +43,7 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
                 storage_dead(_4)
                 storage_dead(_2)
                 _0 = ()
+                storage_dead(self)
                 return
             } else {
                 storage_dead(_7)
@@ -52,6 +54,7 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
     } else {
         storage_dead(_3)
     }
+    storage_dead(self)
     panic(core::panicking::panic)
 }
 
@@ -63,6 +66,7 @@ fn main()
     let _2: (); // anonymous local
     let _3: &'1 Point::<i32>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(p)
     p = Point::<i32> { x: const 10i32, y: const 50u64, z: const 1i32 }

@@ -15,6 +15,7 @@ fn do_test::<bool>(init: bool, expected: bool)
     let _5: &'2 bool; // anonymous local
 
     bb0: {
+        storage_live(_0);
         _0 = ();
         storage_live(_3);
         storage_live(_4);
@@ -25,6 +26,8 @@ fn do_test::<bool>(init: bool, expected: bool)
     }
 
     bb1: {
+        storage_dead(expected);
+        storage_dead(init);
         unwind_continue;
     }
 
@@ -34,6 +37,8 @@ fn do_test::<bool>(init: bool, expected: bool)
         storage_dead(_4);
         storage_dead(_3);
         _0 = ();
+        storage_dead(expected);
+        storage_dead(init);
         return;
     }
 }
@@ -45,6 +50,7 @@ fn main()
     let _1: (); // anonymous local
 
     bb0: {
+        storage_live(_0);
         _0 = ();
         storage_live(_1);
         _1 = do_test::<bool>(const true, const true) -> bb2 (unwind: bb1);

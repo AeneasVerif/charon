@@ -57,7 +57,9 @@ pub fn clone<'_0>(self: &'_0 Struct) -> Struct
     let _0: Struct; // return
     let self: &'1 Struct; // arg #1
 
+    storage_live(_0)
     _0 = Struct {  }
+    storage_dead(self)
     return
 }
 
@@ -115,23 +117,30 @@ where
     let _2: T; // anonymous local
     let _3: &'1 T; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &x
     _2 = TraitClause1::ImpliedClause2::clone<'2>(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     storage_dead(_2)
     _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -142,6 +151,7 @@ fn use_alias()
     let _1: (); // anonymous local
     let _2: Struct; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)

@@ -36,8 +36,10 @@ fn impl_Trait_usize_for_i32::comsume<'_0>(self: &'_0 i32)
     let _0: (); // return
     let self: &'1 i32; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -48,11 +50,16 @@ fn impl_Trait_usize_for_i32::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<u
     let _1: &'_0 (dyn Trait<usize, Item = bool> + '0); // arg #1
     let _2: &'_0 i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait<usize, Item = bool> + '1), &'_0 i32>(move _1)
     _0 = impl_Trait_usize_for_i32::comsume<'_0>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -63,9 +70,12 @@ unsafe fn impl_Trait_usize_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (
     let dyn_self: &'_0 mut (dyn Trait<usize, Item = bool> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Trait<usize, Item = bool> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -82,6 +92,7 @@ fn impl_Trait_usize_for_i32::{vtable}() -> test_crate::Trait::{vtable}
     let _7: unsafe fn(*mut (dyn Trait<usize, Item = bool> + '4)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Trait<usize, Item = bool> + '9)); // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -118,8 +129,10 @@ fn impl_Trait_bool_for_bool::comsume<'_0>(self: &'_0 bool)
     let _0: (); // return
     let self: &'1 bool; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -130,11 +143,16 @@ fn impl_Trait_bool_for_bool::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<b
     let _1: &'_0 (dyn Trait<bool, Item = usize> + '0); // arg #1
     let _2: &'_0 bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait<bool, Item = usize> + '1), &'_0 bool>(move _1)
     _0 = impl_Trait_bool_for_bool::comsume<'_0>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -145,9 +163,12 @@ unsafe fn impl_Trait_bool_for_bool::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (
     let dyn_self: &'_0 mut (dyn Trait<bool, Item = usize> + '0); // arg #1
     let target_self: &'_0 mut bool; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Trait<bool, Item = usize> + '1), &'_0 mut bool>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -164,6 +185,7 @@ fn impl_Trait_bool_for_bool::{vtable}() -> test_crate::Trait::{vtable}
     let _7: unsafe fn(*mut (dyn Trait<bool, Item = usize> + '4)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Trait<bool, Item = usize> + '9)); // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<bool>
     storage_live(align)
@@ -225,6 +247,7 @@ fn main()
     _18 = const 42i32
     _17 = &_18
     _15 = move _17
+    storage_live(_0)
     storage_live(_11)
     storage_live(_12)
     _0 = ()
@@ -243,7 +266,9 @@ fn main()
     storage_live(_13)
     _13 = cast<*const (), unsafe fn(&'8 (dyn Trait<usize, Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
     _4 = (copy _13)(move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_12)
+        storage_dead(_11)
+        unwind_continue
     storage_live(_16)
     storage_live(_19)
     storage_live(_20)
@@ -267,12 +292,24 @@ fn main()
     storage_live(_14)
     _14 = cast<*const (), unsafe fn(&'18 (dyn Trait<bool, Item = usize> + '19))>(copy ((*_10.metadata)).method_comsume)
     _9 = (copy _14)(move _10)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_12)
+        storage_dead(_11)
+        unwind_continue
     storage_dead(_10)
     storage_dead(_9)
     _0 = ()
     storage_dead(b)
     storage_dead(a)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
     return
 }
 

@@ -27,6 +27,7 @@ fn FOO() -> &'static str
     let _2: &'_ [u8; 5usize]; // anonymous local
     let _3: &'2 str; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = const RawMemory(0x68, 0x65, 0x6c, 0x6c, 0x6f)
     storage_live(_2)
@@ -49,6 +50,7 @@ fn BAR() -> &'static [u8]
     let _3: [u8; 5usize]; // anonymous local
     let _4: &'5 [u8; 5usize]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
@@ -78,6 +80,7 @@ fn main()
     let _5: &'_ [u8; 5usize]; // anonymous local
     let _6: &'3 str; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_s)
     storage_live(_2)
@@ -98,6 +101,9 @@ fn main()
     conditional_drop[drop_glue<'6>] _s
     ↳⚡ unwind_continue
     storage_dead(_s)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 

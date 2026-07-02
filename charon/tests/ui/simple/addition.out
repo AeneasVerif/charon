@@ -7,6 +7,7 @@ fn main()
     let _1: i32; // anonymous local
     let _2: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _0 = ()
     storage_live(_1)
@@ -14,6 +15,7 @@ fn main()
     _1 = move _2
     storage_dead(_1)
     _0 = ()
+    storage_dead(_2)
     return
 }
 

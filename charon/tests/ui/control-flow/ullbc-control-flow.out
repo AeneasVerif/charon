@@ -263,6 +263,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     let _30: usize; // anonymous local
 
     bb0: {
+        storage_live(_0);
         storage_live(_10);
         storage_live(_11);
         storage_live(_19);
@@ -277,6 +278,13 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb1: {
+        storage_dead(_28);
+        storage_dead(_27);
+        storage_dead(_19);
+        storage_dead(_11);
+        storage_dead(_10);
+        storage_dead(step_in);
+        storage_dead(step_out);
         unwind_continue;
     }
 
@@ -325,6 +333,13 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb7: {
+        storage_dead(_28);
+        storage_dead(_27);
+        storage_dead(_19);
+        storage_dead(_11);
+        storage_dead(_10);
+        storage_dead(step_in);
+        storage_dead(step_out);
         undefined_behavior;
     }
 
@@ -358,6 +373,13 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_dead(_12);
         _0 = copy s;
         storage_dead(s);
+        storage_dead(_28);
+        storage_dead(_27);
+        storage_dead(_19);
+        storage_dead(_11);
+        storage_dead(_10);
+        storage_dead(step_in);
+        storage_dead(step_out);
         return;
     }
 
@@ -372,6 +394,13 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb13: {
+        storage_dead(_28);
+        storage_dead(_27);
+        storage_dead(_19);
+        storage_dead(_11);
+        storage_dead(_10);
+        storage_dead(step_in);
+        storage_dead(step_out);
         undefined_behavior;
     }
 
@@ -423,6 +452,13 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb19: {
+        storage_dead(_28);
+        storage_dead(_27);
+        storage_dead(_19);
+        storage_dead(_11);
+        storage_dead(_10);
+        storage_dead(step_in);
+        storage_dead(step_out);
         undefined_behavior;
     }
 }

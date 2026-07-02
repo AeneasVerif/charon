@@ -7,11 +7,14 @@ fn test_crate::clone_it<'_0>(x: &'_0 u32) -> u32
     let x: &'1 u32; // arg #1
     let _2: &'2 u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
     _0 = core::clone::impls::{impl core::clone::Clone for u32}::clone<'4>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -19,6 +22,7 @@ fn test_crate::platform_specific::x86_64-pc-windows-msvc() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -27,6 +31,7 @@ fn test_crate::platform_specific::i686-unknown-linux-gnu() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 44u32
     return
 }
@@ -35,6 +40,7 @@ fn test_crate::platform_specific::aarch64-apple-darwin() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 43u32
     return
 }
@@ -55,20 +61,27 @@ pub fn test_crate::call_both<'_0>(x: &'_0 u32) -> u32
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*x)
     _2 = test_crate::clone_it<'4>(move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_5)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_3)
     storage_live(_4)
     _4 = test_crate::platform_specific()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_5)
+        storage_dead(x)
+        unwind_continue
     _5 = copy _2 panic.+ copy _4
     _0 = move _5
     storage_dead(_4)
     storage_dead(_2)
+    storage_dead(_5)
+    storage_dead(x)
     return
 }
 

@@ -19,10 +19,13 @@ fn use_string(_1: String)
     let _0: (); // return
     let _1: String; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[drop_glue<'0>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -32,6 +35,7 @@ fn main()
     let _0: (); // return
     let _s: String; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_s)
     _s = new()

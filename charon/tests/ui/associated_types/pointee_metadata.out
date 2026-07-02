@@ -155,6 +155,7 @@ fn empty_metadata()
     _7 = const 0u32
     _6 = &_7
     _5 = move _6
+    storage_live(_0)
     storage_live(_4)
     _0 = ()
     storage_live(_1)
@@ -164,11 +165,16 @@ fn empty_metadata()
     _3 = &(*_4)
     _2 = &raw const (*_3)
     _1 = to_raw_parts<u32>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_4)
+        unwind_continue
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_4)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
     return
 }
 
@@ -191,6 +197,7 @@ fn slice_metadata()
     _8 = [const 0u32, const 1u32]
     _7 = &_8
     _6 = move _7
+    storage_live(_0)
     storage_live(_5)
     _0 = ()
     storage_live(_1)
@@ -203,11 +210,16 @@ fn slice_metadata()
     _2 = unsize_cast<*const [u32; 2usize], *const [u32], 2usize>(move _3)
     storage_dead(_3)
     _1 = to_raw_parts<[u32]>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_5)
+        unwind_continue
     storage_dead(_2)
     storage_dead(_4)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_5)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
     return
 }
 

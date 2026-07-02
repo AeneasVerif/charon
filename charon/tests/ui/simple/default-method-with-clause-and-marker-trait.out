@@ -21,6 +21,7 @@ where
 {
     let _0: TraitClause1::Assoc; // return
 
+    storage_live(_0)
     panic(core::panicking::panic)
 }
 
@@ -31,6 +32,7 @@ where
 {
     let _0: TraitClause0::Assoc; // return
 
+    storage_live(_0)
     panic(core::panicking::panic)
 }
 
@@ -45,6 +47,7 @@ fn main()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return

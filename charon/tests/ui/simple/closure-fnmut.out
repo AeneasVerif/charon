@@ -65,18 +65,23 @@ where
     let _2: &'1 mut T0; // anonymous local
     let _3: (u8,); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &mut f
     storage_live(_3)
     _3 = (const 0u8,)
     _0 = TraitClause1::call_mut<'2>(move _2, move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for T0}::drop_glue<'3>] f
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(f)
+            unwind_terminate
+        storage_dead(f)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T0}::drop_glue<'4>] f
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(f)
+        unwind_continue
+    storage_dead(f)
     return
 }
 
@@ -97,6 +102,7 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, tupled_args: (u8,)) -> u8
     let _6: u8; // anonymous local
     let _7: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(x)
     storage_live(_4)
     storage_live(_7)
@@ -111,6 +117,11 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, tupled_args: (u8,)) -> u8
     _0 = move _7
     storage_dead(_6)
     storage_dead(_5)
+    storage_dead(_7)
+    storage_dead(_4)
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -120,7 +131,9 @@ unsafe fn drop_glue<'_0, '_1>(_1: &'_1 mut closure<'_0>)
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -132,14 +145,27 @@ fn call_once<'_0>(_1: closure<'_0>, _2: (u8,)) -> u8
     let _2: (u8,); // arg #2
     let _3: &'1 mut closure<'_0>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '4>(move _3, move _2)
     ↳⚡ drop[drop_glue<'_0, '7>] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[drop_glue<'_0, '10>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -173,6 +199,7 @@ fn main()
     let _3: closure<'1>; // anonymous local
     let _4: &'3 mut u8; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(z)
     z = const 3u8

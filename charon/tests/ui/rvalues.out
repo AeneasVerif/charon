@@ -103,6 +103,7 @@ fn addr_of()
     let _4: *const u32; // anonymous local
     let _5: *mut u32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(x)
     x = const 0u32
@@ -133,6 +134,7 @@ fn literal_casts()
     let _4: u64; // anonymous local
     let _5: f64; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = cast<u64, u8>(const 0u64)
@@ -157,6 +159,7 @@ fn test_crate::ptr_casts::foo()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -191,9 +194,13 @@ fn ptr_casts()
     storage_live(_19)
     storage_live(_20)
     _20 = @ArrayRepeat<u32, 64usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        undefined_behavior
     _19 = &_20
     _18 = move _19
+    storage_live(_0)
     storage_live(_17)
     _0 = ()
     storage_live(array_ptr)
@@ -246,6 +253,10 @@ fn ptr_casts()
     storage_dead(x_6)
     storage_dead(x_5)
     storage_dead(array_ptr)
+    storage_dead(_17)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
     return
 }
 
@@ -258,7 +269,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -270,10 +283,14 @@ fn call<'_0>(_1: &'_0 closure, tupled_args: (u8,))
     let tupled_args: (u8,); // arg #2
     let _3: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     _3 = move tupled_args.0
     _0 = ()
+    storage_dead(_3)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -285,11 +302,18 @@ fn call_mut<'_0>(state: &'_0 mut closure, args: (u8,))
     let args: (u8,); // arg #2
     let _3: &'0 closure; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2>(move _3, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -301,15 +325,28 @@ fn call_once(_1: closure, _2: (u8,))
     let _2: (u8,); // arg #2
     let _3: &'1 mut closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
     ↳⚡ drop[drop_glue<'3>] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[drop_glue<'4>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -321,13 +358,20 @@ fn as_fn(arg1: u8)
     let args: (u8,); // local
     let state: closure; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(args)
     storage_live(state)
     args = (move arg1,)
     state = closure {  }
     _0 = call_once(move state, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        storage_dead(arg1)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    storage_dead(arg1)
     return
 }
 
@@ -336,6 +380,7 @@ unsafe fn bar()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -345,6 +390,7 @@ fn test_crate::fn_casts::foo()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -362,6 +408,7 @@ fn fn_casts()
     let _6: unsafe fn(u8); // anonymous local
     let _7: closure; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = cast<test_crate::fn_casts::foo, fn()>(const test_crate::fn_casts::foo)
@@ -431,6 +478,7 @@ fn STEAL() -> [(); 1usize]
     let _0: [(); 1usize]; // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = ()
     _0 = @ArrayRepeat<(), 1usize>(move _1)
@@ -449,11 +497,13 @@ fn transmute(x: [u32; 2usize]) -> u64
     let x: [u32; 2usize]; // arg #1
     let _2: [u32; 2usize]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     // When optimized, this becomes a built-in cast. Otherwise this is just a call to `transmute`.
     _2 = copy x
     _0 = transmute<[u32; 2usize], u64>(move _2)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -463,6 +513,7 @@ fn STEAL2() -> [(); 13usize]
     let _0: [(); 13usize]; // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = ()
     _0 = @ArrayRepeat<(), 13usize>(move _1)
@@ -507,15 +558,24 @@ where
     let _16: usize; // anonymous local
     let _17: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_9)
     storage_live(_12)
     storage_live(_14)
     storage_live(size)
     size = size_of<T>[TraitClause0]()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_12)
+        storage_dead(_9)
+        unwind_continue
     storage_live(align)
     align = align_of<T>[TraitClause0]()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_12)
+        storage_dead(_9)
+        unwind_continue
     storage_live(_16)
     storage_live(_17)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
@@ -556,6 +616,12 @@ where
     storage_dead(ub)
     storage_dead(align)
     storage_dead(size)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_12)
+    storage_dead(_9)
+    storage_dead(_17)
+    storage_dead(_16)
     return
 }
 

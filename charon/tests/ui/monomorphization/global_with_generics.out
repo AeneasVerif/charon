@@ -15,6 +15,7 @@ fn FooInt() -> Foo::<i32>
 {
     let _0: Foo::<i32>; // return
 
+    storage_live(_0)
     _0 = Foo::<i32> { value: const 0i32 }
     return
 }
@@ -27,6 +28,7 @@ fn FooBool() -> Foo::<bool>
 {
     let _0: Foo::<bool>; // return
 
+    storage_live(_0)
     _0 = Foo::<bool> { value: const false }
     return
 }
@@ -42,6 +44,7 @@ fn main()
     let _2: &'1 Foo::<bool>; // anonymous local
     let _3: &'2 Foo::<bool>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_b)
     storage_live(_2)
@@ -52,6 +55,7 @@ fn main()
     storage_dead(_2)
     _0 = ()
     storage_dead(_b)
+    storage_dead(_3)
     return
 }
 

@@ -23,6 +23,7 @@ pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(sel
     let _0: test_crate::Foo; // return
     let self: &'1 test_crate::Foo; // arg #1
 
+    storage_live(_0)
     loop {
         continue 0
     }

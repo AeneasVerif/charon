@@ -9,6 +9,7 @@ pub fn test_crate::mod_reduce(a: u32) -> u32
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = copy a
@@ -20,8 +21,10 @@ pub fn test_crate::mod_reduce(a: u32) -> u32
     storage_live(_4)
     _4 = copy a
     _0 = core::num::{u32}::wrapping_add(move _4, const 1u32)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(a)
+        unwind_continue
     storage_dead(_4)
+    storage_dead(a)
     return
 }
 

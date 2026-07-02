@@ -11,6 +11,7 @@ pub fn shift_u32(a: u32) -> u32
     let _5: usize; // anonymous local
     let _6: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(i)
     i = const 16usize
     storage_live(t)
@@ -28,6 +29,7 @@ pub fn shift_u32(a: u32) -> u32
     _0 = copy t
     storage_dead(t)
     storage_dead(i)
+    storage_dead(a)
     return
 }
 
@@ -42,6 +44,7 @@ pub fn shift_i32(a: i32) -> i32
     let _5: isize; // anonymous local
     let _6: isize; // anonymous local
 
+    storage_live(_0)
     storage_live(i)
     i = const 16isize
     storage_live(t)
@@ -59,6 +62,7 @@ pub fn shift_i32(a: i32) -> i32
     _0 = copy t
     storage_dead(t)
     storage_dead(i)
+    storage_dead(a)
     return
 }
 
@@ -71,6 +75,7 @@ pub fn xor_u32(a: u32, b: u32) -> u32
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy a
     storage_live(_4)
@@ -78,6 +83,8 @@ pub fn xor_u32(a: u32, b: u32) -> u32
     _0 = move _3 ^ move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(b)
+    storage_dead(a)
     return
 }
 
@@ -90,6 +97,7 @@ pub fn or_u32(a: u32, b: u32) -> u32
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy a
     storage_live(_4)
@@ -97,6 +105,8 @@ pub fn or_u32(a: u32, b: u32) -> u32
     _0 = move _3 | move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(b)
+    storage_dead(a)
     return
 }
 
@@ -109,6 +119,7 @@ pub fn and_u32(a: u32, b: u32) -> u32
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy a
     storage_live(_4)
@@ -116,6 +127,8 @@ pub fn and_u32(a: u32, b: u32) -> u32
     _0 = move _3 & move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(b)
+    storage_dead(a)
     return
 }
 

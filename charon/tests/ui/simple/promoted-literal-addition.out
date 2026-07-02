@@ -12,6 +12,7 @@ fn two() -> &'static u32
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_1)
@@ -28,6 +29,12 @@ fn two() -> &'static u32
     _1 = &(*_3)
     _0 = &(*_1)
     storage_dead(_1)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 

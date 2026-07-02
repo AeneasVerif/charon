@@ -5,6 +5,7 @@ pub fn FOO() -> u8
 {
     let _0: u8; // return
 
+    storage_live(_0)
     _0 = const 42u8
     return
 }
@@ -17,6 +18,7 @@ fn main()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return

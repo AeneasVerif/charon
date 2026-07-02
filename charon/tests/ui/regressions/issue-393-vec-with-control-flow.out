@@ -90,11 +90,13 @@ pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in i
     let _11: [u8; 1usize]; // anonymous local
     let _12: alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}]; // anonymous local
 
+    storage_live(_0)
     storage_live(vec)
     storage_live(_3)
     storage_live(_4)
     _4 = new_uninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(b)
+        unwind_continue
     storage_live(_5)
     storage_live(_6)
     _6 = copy b
@@ -104,10 +106,13 @@ pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in i
         storage_dead(_6)
         storage_dead(_5)
         conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _4
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(b)
+            unwind_continue
         storage_dead(_4)
         storage_dead(_3)
         storage_dead(vec)
+        storage_dead(b)
+        storage_dead(ret)
         return
     }
     _5 = const 42u8
@@ -118,7 +123,10 @@ pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in i
     storage_live(_12)
     _12 = write<[u8; 1usize], Global>[{built_in impl Sized for [u8; 1usize]}, {built_in impl Sized for Global}](move _4, move _11)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _3
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(b)
+            storage_dead(ret)
+            unwind_terminate
+        storage_dead(b)
         unwind_continue
     storage_dead(_4)
     storage_live(ret)
@@ -129,9 +137,16 @@ pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in i
     storage_dead(_12)
     y = unsize_cast<alloc::boxed::Box<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x)
     ret = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y)
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _3
-        ↳⚡ unwind_terminate
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        conditional_drop[impl_Destruct_for_Box::drop_glue<'2, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _3
+        ↳⚡ storage_dead(b)
+            storage_dead(ret)
+            unwind_terminate
+        storage_dead(b)
         unwind_continue
+    storage_dead(y)
+    storage_dead(x)
     vec = move ret
     storage_dead(_3)
     storage_live(_7)
@@ -139,12 +154,18 @@ pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in i
     _0 = Option::Some { 0: move _7 }
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _7
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'5, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] vec
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(b)
+            storage_dead(ret)
+            unwind_terminate
+        storage_dead(b)
         unwind_continue
     storage_dead(_7)
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'4, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] vec
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(b)
+        unwind_continue
     storage_dead(vec)
+    storage_dead(b)
+    storage_dead(ret)
     return
 }
 

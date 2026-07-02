@@ -28,10 +28,13 @@ where
     let _0: (); // return
     let t: T; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] t
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(t)
+        unwind_continue
+    storage_dead(t)
     return
 }
 

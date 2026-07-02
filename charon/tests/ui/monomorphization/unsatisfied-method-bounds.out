@@ -30,8 +30,10 @@ fn method::<A><'_0>(self: &'_0 A)
     let _0: (); // return
     let self: &'1 A; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -44,8 +46,10 @@ fn method::<B><'_0>(self: &'_0 B)
     let _0: (); // return
     let self: &'1 B; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -72,6 +76,7 @@ fn main()
     _10 = A {  }
     _9 = &_10
     _7 = move _9
+    storage_live(_0)
     storage_live(_5)
     storage_live(_6)
     _0 = ()
@@ -80,7 +85,9 @@ fn main()
     _6 = move _7
     _2 = &(*_6)
     _1 = method::<A><'8>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
     storage_live(_8)
     storage_live(_11)
     storage_live(_12)
@@ -94,10 +101,20 @@ fn main()
     _5 = move _8
     _4 = &(*_5)
     _3 = method::<B><'11>(move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_6)
+        storage_dead(_5)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
     return
 }
 

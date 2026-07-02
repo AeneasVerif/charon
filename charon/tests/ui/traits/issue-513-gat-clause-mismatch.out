@@ -61,8 +61,10 @@ where
     let _0: (); // return
     let _1: &'1 TraitClause1::Type[TraitClause2]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -71,6 +73,7 @@ fn main()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return

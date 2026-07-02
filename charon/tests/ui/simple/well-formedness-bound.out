@@ -29,10 +29,12 @@ pub fn get<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
     let x: &'9 u32; // arg #1
     let _2: &'10 u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
     _0 = Option::Some { 0: move _2 }
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 

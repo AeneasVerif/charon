@@ -5,6 +5,7 @@ pub fn hello() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -91,6 +92,7 @@ pub fn hello() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -114,6 +116,7 @@ fn main()
     let _13: [u8; 4usize]; // anonymous local
     let _14: &'25 [u8; 4usize]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
@@ -160,6 +163,8 @@ fn main()
     storage_dead(args_3)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_14)
+    storage_dead(_13)
     return
 }
 

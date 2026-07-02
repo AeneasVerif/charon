@@ -9,15 +9,21 @@ pub fn first(s: [u32; 0usize]) -> u32
     let _3: &'_ [u32; 0usize]; // anonymous local
     let _4: &'_ u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = const 0usize
     storage_live(_3)
     _3 = &s
     storage_live(_4)
     _4 = @ArrayIndexShared<'_, u32, 0usize>(move _3, copy _2)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_4)
+        storage_dead(_3)
+        undefined_behavior
     _0 = copy (*_4)
     storage_dead(_2)
+    storage_dead(s)
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 

@@ -9,6 +9,7 @@ pub fn from_raw_parts::<u8, ()>(data_pointer: *const (), metadata: ()) -> *const
     let _3: *const (); // anonymous local
     let _4: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy data_pointer
     storage_live(_4)
@@ -16,6 +17,8 @@ pub fn from_raw_parts::<u8, ()>(data_pointer: *const (), metadata: ()) -> *const
     _0 = *const (move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(metadata)
+    storage_dead(data_pointer)
     return
 }
 
@@ -27,10 +30,12 @@ pub fn without_provenance_mut::<()>(addr: usize) -> *mut ()
     let addr: usize; // arg #1
     let _2: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy addr
     _0 = transmute<usize, *mut ()>(move _2)
     storage_dead(_2)
+    storage_dead(addr)
     return
 }
 
@@ -43,14 +48,17 @@ pub fn without_provenance::<()>(addr: usize) -> *const ()
     let _2: *mut (); // anonymous local
     let _3: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = copy addr
     _2 = without_provenance_mut::<()>(move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(addr)
+        unwind_continue
     _0 = cast<*mut (), *const ()>(move _2)
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(addr)
     return
 }
 
@@ -62,6 +70,7 @@ pub fn null::<u8>() -> *const u8
     let _1: *const (); // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = without_provenance::<()>(const 0usize)
     ↳⚡ unwind_continue
@@ -80,6 +89,7 @@ pub fn null_ptr()
     let _0: (); // return
     let _1: *const u8; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = null::<u8>()

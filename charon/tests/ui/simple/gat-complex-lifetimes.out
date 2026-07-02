@@ -51,20 +51,26 @@ where
     let _2: &'13 &'14 &'15 (); // anonymous local
     let _3: TraitClause1::Type<'17>; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = move x
     _2 = TraitClause1::Type::ImpliedClause1::foo(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::Type<'35>}::drop_glue<'36>] _3
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for TraitClause1::Type<'47>}::drop_glue<'48>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for TraitClause1::Type<'42>}::drop_glue<'43>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 

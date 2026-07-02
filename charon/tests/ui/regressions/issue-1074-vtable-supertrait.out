@@ -49,7 +49,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut MyStruct)
     let _0: (); // return
     let _1: &'1 mut MyStruct; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -65,8 +67,10 @@ pub fn foo<'_0>(self: &'_0 MyStruct)
     let _0: (); // return
     let self: &'1 MyStruct; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -77,11 +81,16 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn MyTrait))
     let _1: &'_0 (dyn MyTrait + '0); // arg #1
     let _2: &'_0 MyStruct; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn MyTrait + '1), &'_0 MyStruct>(move _1)
     _0 = foo<'_0>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -92,11 +101,16 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn MyTrait))
     let dyn_self: &'_0 mut (dyn MyTrait + '0); // arg #1
     let target_self: &'_0 mut MyStruct; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn MyTrait + '1), &'_0 mut MyStruct>(move dyn_self)
     drop[drop_glue<'3>] (*target_self)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(target_self)
+        storage_dead(dyn_self)
+        unwind_continue
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -109,6 +123,7 @@ fn impl_MyTrait_for_MyStruct::{vtable}() -> test_crate::MyTrait::{vtable}
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1)); // anonymous local
     let _4: fn<'_0_1>(&'_0_1 (dyn MyTrait + '3)); // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<MyStruct>
     storage_live(align)
@@ -152,6 +167,7 @@ fn main()
     _9 = MyStruct {  }
     _8 = &_9
     _7 = move _8
+    storage_live(_0)
     storage_live(_6)
     _0 = ()
     storage_live(x)
@@ -167,11 +183,16 @@ fn main()
     storage_live(_5)
     _5 = &(*x) with_metadata(copy x.metadata)
     _4 = (copy ((*_5.metadata)).method_foo)(move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_6)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
     storage_dead(x)
+    storage_dead(_6)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
     return
 }
 

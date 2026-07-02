@@ -16,12 +16,17 @@ pub fn promoted_scalar() -> &'static i32
     _5 = const 42i32
     _4 = &_5
     _3 = move _4
+    storage_live(_0)
     storage_live(_2)
     storage_live(_1)
     _2 = move _3
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
+    storage_dead(_2)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 
@@ -41,12 +46,17 @@ pub fn promoted_array() -> &'static [i32; 3usize]
     _5 = [const 1i32, const 2i32, const 3i32]
     _4 = &_5
     _3 = move _4
+    storage_live(_0)
     storage_live(_2)
     storage_live(_1)
     _2 = move _3
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
+    storage_dead(_2)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 
@@ -62,6 +72,7 @@ pub fn promoted_local() -> i32
     let _6: i32; // anonymous local
     let _7: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(r)
@@ -78,6 +89,12 @@ pub fn promoted_local() -> i32
     r = &(*_3)
     _0 = copy (*r)
     storage_dead(r)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 
@@ -88,11 +105,14 @@ pub fn inline_ref_scalar() -> &'static i32
     let _1: i32; // anonymous local
     let _2: &'2 i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = const 42i32
     storage_live(_2)
     _2 = &_1
     _0 = move _2
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -103,11 +123,14 @@ pub fn inline_ref_array() -> &'static [i32; 3usize]
     let _1: [i32; 3usize]; // anonymous local
     let _2: &'2 [i32; 3usize]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = [const 1i32, const 2i32, const 3i32]
     storage_live(_2)
     _2 = &_1
     _0 = move _2
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -116,6 +139,7 @@ pub fn inline_block() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 5u32
     return
 }
@@ -126,9 +150,11 @@ pub fn inline_pair() -> (u32, u32)
     let _0: (u32, u32); // return
     let _1: (u32, u32); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = (const 1u32, const 2u32)
     _0 = move _1
+    storage_dead(_1)
     return
 }
 

@@ -45,9 +45,12 @@ where
     let _0: T; // return
     let x: T; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -58,9 +61,12 @@ where
     let _0: (&'_0 mut T0, &'_1 mut T1); // return
     let x: (&'_0 mut T0, &'_1 mut T1); // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<(&_ mut _, &_ mut _)><'_0, '_1, T1> for T0}::drop_glue<'0>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -74,11 +80,14 @@ where
     let x: (&'6 mut T, &'7 mut U); // arg #1
     let _2: (&'8 mut T, &'9 mut U); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move x
     _0 = test_crate::id::<(&_ mut _, &_ mut _)><'14, '15, T, U>[{built_in impl core::marker::Sized::<(&_ mut _, &_ mut _)><'14, '15, U> for T}](move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 

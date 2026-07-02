@@ -6,7 +6,9 @@ fn test_float(x: f64) -> f64
     let _0: f64; // return
     let x: f64; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -19,6 +21,7 @@ fn sum_float(x: f64, y: f64) -> f64
     let _3: f64; // anonymous local
     let _4: f64; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy x
     storage_live(_4)
@@ -26,6 +29,8 @@ fn sum_float(x: f64, y: f64) -> f64
     _0 = move _3 wrap.+ move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -38,6 +43,7 @@ fn literal_float() -> f64
     let _3: f64; // anonymous local
     let _4: f64; // anonymous local
 
+    storage_live(_0)
     storage_live(x)
     x = const 1f64
     storage_live(y)

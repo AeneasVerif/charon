@@ -24,6 +24,7 @@ fn FOO() -> &'static str
 {
     let _0: &'1 str; // return
 
+    storage_live(_0)
     _0 = const "hello"
     return
 }
@@ -40,6 +41,7 @@ fn BAR() -> &'static [u8]
     let _3: [u8; 5usize]; // anonymous local
     let _4: &'5 [u8; 5usize]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
@@ -66,6 +68,7 @@ fn main()
     let _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_s)
     storage_live(_2)

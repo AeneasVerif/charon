@@ -16,6 +16,7 @@ fn S() -> [u8; 16usize]
 {
     let _0: [u8; 16usize]; // return
 
+    storage_live(_0)
     _0 = to_ne_bytes(const 24197857199965561741520400062332047378u128)
     ↳⚡ unwind_continue
     return
@@ -43,6 +44,7 @@ fn main()
     let a: u128; // local
     let b: HasBEDiscr; // local
 
+    storage_live(_0)
     storage_live(_6)
     _0 = ()
     storage_live(x)
@@ -68,6 +70,7 @@ fn main()
     storage_dead(z)
     storage_dead(y)
     storage_dead(x)
+    storage_dead(_6)
     return
 }
 

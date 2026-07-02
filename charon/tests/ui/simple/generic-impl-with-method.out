@@ -28,8 +28,10 @@ where
     let _0: (); // return
     let self: &'1 T; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 

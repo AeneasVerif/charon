@@ -62,8 +62,10 @@ where
     let _0: (); // return
     let self: &'1 T; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -77,11 +79,16 @@ where
     let _1: &'_0 (dyn Broken<Assoc = ()> + '0); // arg #1
     let _2: &'_0 T; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Broken<Assoc = ()> + '1), &'_0 T>(move _1)
     _0 = broken<'_0, T>[TraitClause0, TraitClause1](move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -94,11 +101,16 @@ where
     let dyn_self: &'_0 mut (dyn Broken<Assoc = ()> + '0); // arg #1
     let target_self: &'_0 mut T; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Broken<Assoc = ()> + '1), &'_0 mut T>(move dyn_self)
     drop[{built_in impl Destruct for T}::drop_glue<'3>] (*target_self)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(target_self)
+        storage_dead(dyn_self)
+        unwind_continue
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -113,6 +125,7 @@ where
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Broken<Assoc = ()> + '1)); // anonymous local
     let _4: fn<'_0_1>(&'_0_1 (dyn Broken<Assoc = ()> + '3)); // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<T>
     storage_live(align)
@@ -161,6 +174,7 @@ fn main()
     _7 = ()
     _6 = &_7
     _5 = move _6
+    storage_live(_0)
     storage_live(_4)
     _0 = ()
     storage_live(_m)
@@ -174,6 +188,10 @@ fn main()
     storage_dead(_3)
     _0 = ()
     storage_dead(_m)
+    storage_dead(_4)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
     return
 }
 

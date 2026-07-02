@@ -116,20 +116,20 @@ impl UllbcPass for Transform {
                 .locals
                 .extend(mem::take(&mut inner_body.locals.locals));
 
-            // The inner body assumes the return and arg places are live; allocate them, and
-            // initialize the args.
+            // The inner body assumes the arg places are live; allocate them, and initialize the
+            // args.
             inner_body.body[0].statements.splice(
                 0..0,
-                [StatementKind::StorageLive(return_local)]
-                    .into_iter()
-                    .chain(args.into_iter().enumerate().flat_map(|(i, arg)| {
+                args.into_iter()
+                    .enumerate()
+                    .flat_map(|(i, arg)| {
                         let arg_local = return_local + i + 1;
                         let arg_place = outer_body.locals.place_for_var(arg_local);
                         [
                             StatementKind::StorageLive(arg_local),
                             StatementKind::Assign(arg_place, Rvalue::Use(arg, WithRetag::Yes)),
                         ]
-                    }))
+                    })
                     .map(|kind| Statement::new(span, kind)),
             );
 

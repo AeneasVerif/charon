@@ -5,6 +5,7 @@ fn foo()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -18,6 +19,7 @@ fn main()
     let _2: (); // anonymous local
     let _3: fn(); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(f)
     f = cast<foo, fn()>(const foo)

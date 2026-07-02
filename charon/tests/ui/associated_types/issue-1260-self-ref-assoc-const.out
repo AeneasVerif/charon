@@ -50,6 +50,7 @@ where
     let _0: (); // return
     let _1: TraitClause1::Sub; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const TraitClause1::ImpliedClause2::ImpliedClause1::ZERO

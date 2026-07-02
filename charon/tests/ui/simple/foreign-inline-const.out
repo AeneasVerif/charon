@@ -40,10 +40,15 @@ where
     storage_live(_f)
     _f = closure {  }
     _2 = size_of<T>[TraitClause0]()
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        undefined_behavior
     storage_dead(_f)
     _1 = move _2
+    storage_live(_0)
     _0 = move _1
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -55,6 +60,7 @@ where
     let _0: (); // return
     let _1: usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = foo<T>[TraitClause0]()

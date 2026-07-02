@@ -16,10 +16,13 @@ where
     let _0: (); // return
     let _1: T; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[TraitClause0::drop_glue<'0>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 

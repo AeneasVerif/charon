@@ -17,6 +17,7 @@ pub fn foo() -> &'static [u32]
     _6 = [const 0u32, const 1u32, const 2u32, const 3u32]
     _5 = &_6
     _4 = move _5
+    storage_live(_0)
     storage_live(_3)
     storage_live(_1)
     storage_live(_2)
@@ -24,9 +25,16 @@ pub fn foo() -> &'static [u32]
     _2 = &(*_3)
     _1 = &(*_2)
     _0 = @ArrayToSliceShared<'_, u32, 4usize>(move _1)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_6)
+        storage_dead(_5)
+        storage_dead(_4)
+        undefined_behavior
     storage_dead(_1)
     storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 

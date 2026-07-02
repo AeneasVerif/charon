@@ -43,6 +43,7 @@ where
     let _4: T; // anonymous local
     let _5: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     _5 = const false
     _5 = const true
@@ -60,10 +61,19 @@ where
     storage_dead(_3)
     if copy _5 {
     } else {
+        storage_dead(_5)
+        storage_dead(t)
+        storage_dead(self)
         return
     }
     drop[TraitClause1::drop_glue<'0>] t
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_5)
+        storage_dead(t)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(t)
+    storage_dead(self)
     return
 }
 
@@ -89,17 +99,22 @@ where
     let _4: &'4 Self; // anonymous local
     let _5: &'5 Rhs; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_4)
     _4 = &(*self) with_metadata(copy self.metadata)
     storage_live(_5)
     _5 = &(*other) with_metadata(copy other.metadata)
     _3 = TraitClause0::eq<'6, '7>(move _4, move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(other)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ~(move _3)
     storage_dead(_3)
+    storage_dead(other)
+    storage_dead(self)
     return
 }
 
@@ -107,6 +122,7 @@ pub fn core::num::{u64}::MAX() -> u64
 {
     let _0: u64; // return
 
+    storage_live(_0)
     _0 = ~(const 0u64)
     return
 }
@@ -118,6 +134,7 @@ pub fn core::num::{i64}::MAX() -> i64
     let _0: i64; // return
     let _1: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = copy core::num::{u64}::MAX panic.>> const 1i32
     _0 = cast<u64, i64>(move _1)
@@ -131,6 +148,7 @@ pub fn core::num::{u32}::MAX() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = ~(const 0u32)
     return
 }
@@ -142,6 +160,7 @@ pub fn core::num::{i32}::MAX() -> i32
     let _0: i32; // return
     let _1: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = copy core::num::{u32}::MAX panic.>> const 1i32
     _0 = cast<u32, i32>(move _1)
@@ -155,6 +174,7 @@ pub fn core::num::{i32}::MIN() -> i32
 {
     let _0: i32; // return
 
+    storage_live(_0)
     _0 = ~(copy core::num::{i32}::MAX)
     return
 }
@@ -165,6 +185,7 @@ pub fn core::num::{i64}::MIN() -> i64
 {
     let _0: i64; // return
 
+    storage_live(_0)
     _0 = ~(copy core::num::{i64}::MAX)
     return
 }
@@ -186,6 +207,7 @@ pub fn from(small: i32) -> i64
     let _9: u128; // anonymous local
     let _10: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = const false
     if move _2 {
@@ -224,6 +246,7 @@ pub fn from(small: i32) -> i64
     _10 = copy small
     _0 = cast<i32, i64>(move _10)
     storage_dead(_10)
+    storage_dead(small)
     return
 }
 
@@ -240,6 +263,7 @@ pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = ~(const 0usize)
     return
 }
@@ -305,6 +329,7 @@ pub fn inline_always() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -314,6 +339,7 @@ pub fn inline_sometimes() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -323,6 +349,7 @@ pub fn inline_never() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -334,6 +361,7 @@ where
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -352,6 +380,7 @@ fn use_inlines() -> u32
     let _8: u32; // anonymous local
     let _9: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     storage_live(_7)
     storage_live(_9)
@@ -359,28 +388,43 @@ fn use_inlines() -> u32
     storage_live(_2)
     storage_live(_3)
     _3 = inline_always()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_9)
+        storage_dead(_7)
+        storage_dead(_5)
+        unwind_continue
     storage_live(_4)
     _4 = inline_sometimes()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_9)
+        storage_dead(_7)
+        storage_dead(_5)
+        unwind_continue
     _5 = copy _3 panic.+ copy _4
     _2 = move _5
     storage_dead(_4)
     storage_dead(_3)
     storage_live(_6)
     _6 = inline_never()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_9)
+        storage_dead(_7)
+        storage_dead(_5)
+        unwind_continue
     _7 = copy _2 panic.+ copy _6
     _1 = move _7
     storage_dead(_6)
     storage_dead(_2)
     storage_live(_8)
     _8 = inline_generic<bool>[{built_in impl Sized for bool}]()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_9)
+        storage_dead(_7)
+        storage_dead(_5)
+        unwind_continue
     _9 = copy _1 panic.+ copy _8
     _0 = move _9
     storage_dead(_8)
     storage_dead(_1)
+    storage_dead(_9)
+    storage_dead(_7)
+    storage_dead(_5)
     return
 }
 
@@ -392,14 +436,17 @@ fn bool_to_opt(b: bool) -> Option<()>[{built_in impl Sized for ()}]
     let _2: bool; // anonymous local
     let _3: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy b
     storage_live(_3)
     _3 = ()
     _0 = then_some<()>[{built_in impl Sized for ()}, {built_in impl Destruct for ()}](move _2, move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(b)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(b)
     return
 }
 
@@ -410,11 +457,14 @@ fn convert(x: i32) -> i64
     let x: i32; // arg #1
     let _2: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy x
     _0 = from(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -424,10 +474,13 @@ fn vec(_x: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Glob
     let _0: (); // return
     let _x: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_x)
+        unwind_continue
+    storage_dead(_x)
     return
 }
 
@@ -436,6 +489,7 @@ fn max() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy core::num::{usize}::MAX
     return
 }
@@ -449,10 +503,13 @@ where
     let _0: (); // return
     let _x: T; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_x)
+        unwind_continue
+    storage_dead(_x)
     return
 }
 

@@ -100,6 +100,7 @@ where
     let _4: &'1 U; // anonymous local
     let _5: &'3 T; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
@@ -108,18 +109,30 @@ where
     _5 = &x
     _3 = TraitClause2::eq<'4, '5>(move _4, move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'6>] y
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            storage_dead(x)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            storage_dead(x)
+            unwind_terminate
+        storage_dead(y)
+        storage_dead(x)
         unwind_continue
     if move _3 {
         storage_dead(_5)
         storage_dead(_4)
         _0 = TraitClause0::other_method()
         ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'6>] y
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(y)
+                storage_dead(x)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] x
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(y)
+                storage_dead(x)
+                unwind_terminate
+            storage_dead(y)
+            storage_dead(x)
             unwind_continue
     } else {
         storage_dead(_5)
@@ -129,10 +142,18 @@ where
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            storage_dead(x)
+            unwind_terminate
+        storage_dead(y)
+        storage_dead(x)
         unwind_continue
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'9>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -152,6 +173,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -172,6 +194,7 @@ where
     let _4: &'1 U; // anonymous local
     let _5: &'3 Option<T>[TraitClause0]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
@@ -180,14 +203,22 @@ where
     _5 = &x
     _3 = TraitClause3::eq<'4, '5>(move _4, move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'6>] y
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            storage_dead(x)
+            unwind_terminate
+        storage_dead(y)
+        storage_dead(x)
         unwind_continue
     if move _3 {
         storage_dead(_5)
         storage_dead(_4)
         _0 = impl_GenericTrait_Option_for_Override::other_method<T>[TraitClause0, TraitClause1]()
         ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'6>] y
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(y)
+                storage_dead(x)
+                unwind_terminate
+            storage_dead(y)
+            storage_dead(x)
             unwind_continue
     } else {
         storage_dead(_5)
@@ -196,7 +227,11 @@ where
     }
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for U}::drop_glue<'7>] y
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -230,6 +265,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -250,6 +286,7 @@ where
     let _4: &'1 U; // anonymous local
     let _5: &'3 Option<T>[TraitClause0]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
@@ -258,18 +295,30 @@ where
     _5 = &x
     _3 = TraitClause3::eq<'4, '5>(move _4, move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'6>] y
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            storage_dead(x)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'7>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            storage_dead(x)
+            unwind_terminate
+        storage_dead(y)
+        storage_dead(x)
         unwind_continue
     if move _3 {
         storage_dead(_5)
         storage_dead(_4)
         _0 = impl_GenericTrait_Option_for_NoOverride::other_method<T>[TraitClause0, TraitClause1]()
         ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'6>] y
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(y)
+                storage_dead(x)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'7>] x
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(y)
+                storage_dead(x)
+                unwind_terminate
+            storage_dead(y)
+            storage_dead(x)
             unwind_continue
     } else {
         storage_dead(_5)
@@ -279,10 +328,18 @@ where
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for U}::drop_glue<'8>] y
     ↳⚡ conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'7>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            storage_dead(x)
+            unwind_terminate
+        storage_dead(y)
+        storage_dead(x)
         unwind_continue
     conditional_drop[{built_in impl Destruct for Option<T>[TraitClause0]}::drop_glue<'9>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 

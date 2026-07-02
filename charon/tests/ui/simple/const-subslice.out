@@ -13,6 +13,7 @@ fn main()
     let _7: &'_ [u8; 3usize]; // anonymous local
     let _8: &'2 [u8]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(y)
     storage_live(_6)
@@ -21,7 +22,10 @@ fn main()
     _7 = &_6
     storage_live(_8)
     _8 = @ArrayToSliceShared<'_, u8, 3usize>(move _7)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        undefined_behavior
     y = move _8
     storage_live(z)
     storage_live(_3)
@@ -37,6 +41,9 @@ fn main()
     _0 = ()
     storage_dead(z)
     storage_dead(y)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
     return
 }
 

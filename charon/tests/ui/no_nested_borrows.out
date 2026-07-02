@@ -72,20 +72,26 @@ where
     let _0: (); // return
     let _1: &'1 mut List<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     match (*_1) {
         List::Cons => {
         },
         _ => {
+            storage_dead(_1)
             return
         },
     }
     drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant List::Cons).0
     ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons).1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_1)
+            unwind_terminate
+        storage_dead(_1)
         unwind_continue
     drop[impl_Destruct_for_Box::drop_glue<'3, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons).1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -146,9 +152,11 @@ pub fn use_tuple_struct<'_0>(x: &'_0 mut Tuple<u32, u32>[{built_in impl Sized fo
     let _0: (); // return
     let x: &'1 mut Tuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     ((*x)).0 = const 1u32
     _0 = ()
+    storage_dead(x)
     return
 }
 
@@ -161,6 +169,7 @@ pub fn create_tuple_struct(x: u32, y: u64) -> Tuple<u32, u64>[{built_in impl Siz
     let _3: u32; // anonymous local
     let _4: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy x
     storage_live(_4)
@@ -168,6 +177,8 @@ pub fn create_tuple_struct(x: u32, y: u64) -> Tuple<u32, u64>[{built_in impl Siz
     _0 = Tuple { 0: move _3, 1: move _4 }
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -180,6 +191,7 @@ pub fn create_pair(x: u32, y: u64) -> Pair<u32, u64>[{built_in impl Sized for u3
     let _3: u32; // anonymous local
     let _4: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy x
     storage_live(_4)
@@ -187,6 +199,8 @@ pub fn create_pair(x: u32, y: u64) -> Pair<u32, u64>[{built_in impl Sized for u3
     _0 = Pair { x: move _3, y: move _4 }
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -206,9 +220,12 @@ where
     let _0: (); // return
     let _1: &'1 mut IdType<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -229,9 +246,12 @@ where
     let _0: T; // return
     let x: IdType<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _0 = move (x).0
     conditional_drop[impl_Destruct_for_IdType::drop_glue<'0, T>[TraitClause0]] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -244,16 +264,21 @@ where
     let x: T; // arg #1
     let _2: T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move x
     _0 = IdType { 0: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -264,10 +289,12 @@ pub fn cast_u32_to_i32(x: u32) -> i32
     let x: u32; // arg #1
     let _2: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy x
     _0 = cast<u32, i32>(move _2)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -278,10 +305,12 @@ pub fn cast_bool_to_i32(x: bool) -> i32
     let x: bool; // arg #1
     let _2: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy x
     _0 = cast<bool, i32>(move _2)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -291,7 +320,9 @@ pub fn cast_bool_to_bool(x: bool) -> bool
     let _0: bool; // return
     let x: bool; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -314,6 +345,7 @@ pub fn test2()
     let e1: EmptyEnum; // local
     let enum0: Enum; // local
 
+    storage_live(_0)
     storage_live(_6)
     _0 = ()
     storage_live(x)
@@ -357,6 +389,7 @@ pub fn test2()
     storage_dead(z)
     storage_dead(y)
     storage_dead(x)
+    storage_dead(_6)
     return
 }
 
@@ -370,6 +403,7 @@ pub fn get_max(x: u32, y: u32) -> u32
     let _4: u32; // anonymous local
     let _5: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_4)
     _4 = copy x
@@ -382,12 +416,16 @@ pub fn get_max(x: u32, y: u32) -> u32
         storage_dead(_4)
         _0 = copy y
         storage_dead(_3)
+        storage_dead(y)
+        storage_dead(x)
         return
     }
     storage_dead(_5)
     storage_dead(_4)
     _0 = copy x
     storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -399,6 +437,7 @@ pub fn test_list1()
     let _2: alloc::boxed::Box<List<i32>[{built_in impl Sized for i32}]>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]; // anonymous local
     let _3: List<i32>[{built_in impl Sized for i32}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(l)
     storage_live(_2)
@@ -432,6 +471,7 @@ pub fn test_box1()
     let _6: bool; // anonymous local
     let _7: i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(b)
     b = @BoxNew<i32>[{built_in impl Sized for i32}](const 0i32)
@@ -476,7 +516,9 @@ pub fn copy_int(x: i32) -> i32
     let _0: i32; // return
     let x: i32; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -487,6 +529,7 @@ pub fn test_unreachable(b: bool)
     let b: bool; // arg #1
     let _2: bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = copy b
@@ -494,6 +537,7 @@ pub fn test_unreachable(b: bool)
     ↳⚡ unwind_continue
     _0 = ()
     storage_dead(_2)
+    storage_dead(b)
     return
 }
 
@@ -505,15 +549,18 @@ where
     let _0: bool; // return
     let l: &'1 List<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     match (*l) {
         List::Cons => {
         },
         List::Nil => {
             _0 = const false
+            storage_dead(l)
             return
         },
     }
     _0 = const true
+    storage_dead(l)
     return
 }
 
@@ -529,10 +576,12 @@ where
     let _4: T; // anonymous local
     let _5: List<T>[TraitClause0]; // anonymous local
 
+    storage_live(_0)
     match l {
         List::Cons => {
         },
         _ => {
+            storage_dead(l)
             panic(core::panicking::panic)
         },
     }
@@ -547,38 +596,54 @@ where
     _0 = (move _4, move _5)
     conditional_drop[impl_Destruct_for_List::drop_glue<'0, T>[TraitClause0]] _5
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] _4
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_Box::drop_glue<'5, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] hd
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
+        storage_dead(l)
         unwind_continue
     storage_dead(_5)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] _4
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'5, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] hd
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
+        storage_dead(l)
         unwind_continue
     storage_dead(_4)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] tl
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] hd
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
+        storage_dead(l)
         unwind_continue
     storage_dead(tl)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] hd
     ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(l)
+            unwind_terminate
+        storage_dead(l)
         unwind_continue
     storage_dead(hd)
     conditional_drop[impl_Destruct_for_List::drop_glue<'8, T>[TraitClause0]] l
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(l)
+        unwind_continue
+    storage_dead(l)
     return
 }
 
@@ -587,6 +652,7 @@ pub fn test_char() -> char
 {
     let _0: char; // return
 
+    storage_live(_0)
     _0 = const 'a'
     return
 }
@@ -620,6 +686,7 @@ pub fn even(x: u32) -> bool
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
@@ -635,14 +702,20 @@ pub fn even(x: u32) -> bool
         _4 = move _6
         storage_dead(_5)
         _0 = odd(move _4)
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_6)
+            storage_dead(x)
+            unwind_continue
         storage_dead(_4)
         storage_dead(_2)
+        storage_dead(_6)
+        storage_dead(x)
         return
     }
     storage_dead(_3)
     _0 = const true
     storage_dead(_2)
+    storage_dead(_6)
+    storage_dead(x)
     return
 }
 
@@ -657,6 +730,7 @@ pub fn odd(x: u32) -> bool
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
@@ -672,14 +746,20 @@ pub fn odd(x: u32) -> bool
         _4 = move _6
         storage_dead(_5)
         _0 = even(move _4)
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_6)
+            storage_dead(x)
+            unwind_continue
         storage_dead(_4)
         storage_dead(_2)
+        storage_dead(_6)
+        storage_dead(x)
         return
     }
     storage_dead(_3)
     _0 = const false
     storage_dead(_2)
+    storage_dead(_6)
+    storage_dead(x)
     return
 }
 
@@ -692,6 +772,7 @@ pub fn test_even_odd()
     let _3: bool; // anonymous local
     let _4: bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = even(const 0u32)
@@ -736,6 +817,7 @@ pub fn new_tuple1() -> StructWithTuple<u32, u32>[{built_in impl Sized for u32}, 
     let _0: StructWithTuple<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
     let _1: (u32, u32); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = (const 1u32, const 2u32)
     _0 = StructWithTuple { p: move _1 }
@@ -749,6 +831,7 @@ pub fn new_tuple2() -> StructWithTuple<i16, i16>[{built_in impl Sized for i16}, 
     let _0: StructWithTuple<i16, i16>[{built_in impl Sized for i16}, {built_in impl Sized for i16}]; // return
     let _1: (i16, i16); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = (const 1i16, const 2i16)
     _0 = StructWithTuple { p: move _1 }
@@ -762,6 +845,7 @@ pub fn new_tuple3() -> StructWithTuple<u64, i64>[{built_in impl Sized for u64}, 
     let _0: StructWithTuple<u64, i64>[{built_in impl Sized for u64}, {built_in impl Sized for i64}]; // return
     let _1: (u64, i64); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = (const 1u64, const 2i64)
     _0 = StructWithTuple { p: move _1 }
@@ -784,6 +868,7 @@ pub fn new_pair1() -> StructWithPair<u32, u32>[{built_in impl Sized for u32}, {b
     let _0: StructWithPair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
     let _1: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     // This actually doesn't make rustc generate a constant...
     // I guess it only happens for tuples.
@@ -800,11 +885,14 @@ pub fn incr<'_0>(x: &'_0 mut u32)
     let x: &'1 mut u32; // arg #1
     let _2: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _0 = ()
     _2 = copy (*x) panic.+ const 1u32
     (*x) = move _2
     _0 = ()
+    storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -816,6 +904,7 @@ pub fn read_then_incr<'_0>(x: &'_0 mut u32) -> u32
     let r: u32; // local
     let _3: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(r)
     r = copy (*x)
@@ -823,6 +912,8 @@ pub fn read_then_incr<'_0>(x: &'_0 mut u32) -> u32
     (*x) = move _3
     _0 = copy r
     storage_dead(r)
+    storage_dead(_3)
+    storage_dead(x)
     return
 }
 

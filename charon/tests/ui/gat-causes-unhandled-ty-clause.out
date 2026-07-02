@@ -43,6 +43,7 @@ where
 {
     let _0: TraitClause1::ImpliedClause2::Assoc; // return
 
+    storage_live(_0)
     panic(core::panicking::panic)
 }
 

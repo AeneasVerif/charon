@@ -26,6 +26,7 @@ where
     let _6: bool; // anonymous local
     let _7: &'6 mut T; // anonymous local
 
+    storage_live(_0)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -43,6 +44,9 @@ where
     _0 = &mut (*_4)
     storage_dead(_5)
     storage_dead(_4)
+    storage_dead(y)
+    storage_dead(x)
+    storage_dead(b)
     return
 }
 
@@ -67,6 +71,7 @@ pub fn choose_test()
     let _15: bool; // anonymous local
     let _16: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_8)
     _0 = ()
     storage_live(x)
@@ -83,7 +88,8 @@ pub fn choose_test()
     _7 = &mut y
     _6 = &two-phase-mut (*_7)
     z = choose<'7, i32>[{built_in impl Sized for i32}](const true, move _4, move _6)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_7)
@@ -127,6 +133,7 @@ pub fn choose_test()
     storage_dead(z)
     storage_dead(y)
     storage_dead(x)
+    storage_dead(_8)
     return
 }
 
