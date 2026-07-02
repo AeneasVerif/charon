@@ -77,7 +77,7 @@ def main():
         [
             f"run: {env('GITHUB_SERVER_URL')}/{env('GITHUB_REPOSITORY')}/actions/runs/{env('GITHUB_RUN_ID')}",
             "",
-            "### Statuses:",
+            "*Statuses:*",
         ]
     )
 

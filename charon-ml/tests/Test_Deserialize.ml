@@ -134,29 +134,30 @@ let test_cross_format_errors json postcard =
 
 (* Run the tests *)
 let run_tests (folder : string) : unit =
-  (* List the LLBC files.
-
-     Remark: we do not deserialize the ULLBC files.
-  *)
+  (* List the generated LLBC and ULLBC files. *)
   let json_files =
     dir_contents folder
-    |> List.filter (fun file -> Filename.check_suffix file ".llbc")
+    |> List.filter (fun file ->
+           Filename.check_suffix file ".llbc"
+           || Filename.check_suffix file ".ullbc")
     |> List.sort String.compare
   in
   let postcard_files =
     dir_contents folder
-    |> List.filter (fun file -> Filename.check_suffix file ".llbc.postcard")
+    |> List.filter (fun file ->
+           Filename.check_suffix file ".llbc.postcard"
+           || Filename.check_suffix file ".ullbc.postcard")
     |> List.sort String.compare
   in
 
   let json_time = ref 0.0 in
   let postcard_time = ref 0.0 in
 
-  (* Deserialize LLBC JSON files *)
+  (* Deserialize (U)LLBC JSON files *)
   let () =
     List.iter
       (fun file ->
-        log#ldebug (lazy ("Deserializing LLBC file: " ^ file));
+        log#ldebug (lazy ("Deserializing JSON file: " ^ file));
         (* Load the module *)
         let start_time = Unix.gettimeofday () in
         match OfJson.crate_of_json_file file with
