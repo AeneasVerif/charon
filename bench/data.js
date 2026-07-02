@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782994940934,
+  "lastUpdate": 1782996280455,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -6866,6 +6866,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 438.6,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.6,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "19e3f85a32e02ef00664fa325bbbf157678be530",
+          "message": "Merge pull request #1315 from Nadrieril/fix-1314\n\nFix OCaml pretty-printing of ullbc",
+          "timestamp": "2026-07-02T12:40:30Z",
+          "tree_id": "4897c265397355ac5d58c918e8a7873bd87d3db6",
+          "url": "https://github.com/AeneasVerif/charon/commit/19e3f85a32e02ef00664fa325bbbf157678be530"
+        },
+        "date": 1782996279607,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 112378821471,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 15.75,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 460.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 406154755642,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 45.44,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 439.2,
             "unit": "max-rss(MB)"
           },
           {
