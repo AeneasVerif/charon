@@ -90,12 +90,18 @@ pub trait AstVisitable: Any {
         std::any::type_name::<Self>()
     }
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
-    fn dyn_visit<T: AstVisitable>(&self, f: impl FnMut(&T)) {
-        let _ = self.drive(&mut DynVisitor::new_shared::<T>(f));
+    fn dyn_visit<T: AstVisitable>(&self, f: impl FnMut(&T))
+    where
+        Self: Sized,
+    {
+        let _ = VisitAst::visit(&mut DynVisitor::new_shared::<T>(f), self);
     }
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
-    fn dyn_visit_mut<T: AstVisitable>(&mut self, f: impl FnMut(&mut T)) {
-        let _ = self.drive_mut(&mut DynVisitor::new_mut::<T>(f));
+    fn dyn_visit_mut<T: AstVisitable>(&mut self, f: impl FnMut(&mut T))
+    where
+        Self: Sized,
+    {
+        let _ = VisitAstMut::visit(&mut DynVisitor::new_mut::<T>(f), self);
     }
 }
 
@@ -189,13 +195,19 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
 )]
 pub trait BodyVisitable: Any {
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
-    fn dyn_visit_in_body<T: BodyVisitable>(&self, f: impl FnMut(&T)) {
-        let _ = self.drive_body(&mut DynVisitor::new_shared::<T>(f));
+    fn dyn_visit_in_body<T: BodyVisitable>(&self, f: impl FnMut(&T))
+    where
+        Self: Sized,
+    {
+        let _ = VisitBody::visit(&mut DynVisitor::new_shared::<T>(f), self);
     }
 
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
-    fn dyn_visit_in_body_mut<T: BodyVisitable>(&mut self, f: impl FnMut(&mut T)) {
-        let _ = self.drive_body_mut(&mut DynVisitor::new_mut::<T>(f));
+    fn dyn_visit_in_body_mut<T: BodyVisitable>(&mut self, f: impl FnMut(&mut T))
+    where
+        Self: Sized,
+    {
+        let _ = VisitBodyMut::visit(&mut DynVisitor::new_mut::<T>(f), self);
     }
 }
 
