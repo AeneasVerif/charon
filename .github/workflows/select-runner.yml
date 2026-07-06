@@ -25,7 +25,7 @@ jobs:
 
           self_hosted='["self-hosted","linux","nix"]'
           github_hosted='["ubuntu-latest"]'
-          max_age_seconds=$((3 * 60 * 60))
+          max_age_seconds=$((10 * 60 * 60))
 
           query_error="$(mktemp)"
           if default_branch=$(gh api "repos/${GITHUB_REPOSITORY}" --jq .default_branch 2>"$query_error"); then
