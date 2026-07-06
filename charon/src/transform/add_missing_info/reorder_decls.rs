@@ -7,6 +7,7 @@
 //! to be explicit about mutual recursion. This should come useful for translation to any other
 //! language with these properties.
 use crate::common::*;
+use crate::options::TranslateOptions;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
@@ -426,7 +427,13 @@ fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
         let item_meta = item.item_meta();
         let span = item_meta.span.data;
         let file_name_order = sorted_file_ids.get(span.file_id);
-        (item_meta.is_local, file_name_order, span.beg, item.id())
+        (
+            item_meta.is_local,
+            file_name_order,
+            span.beg,
+            item_meta.name.mono_args().cloned(),
+            item.id(),
+        )
     };
     // We record for each item the order in which we're sorting it, to make `sort_by` cheap.
     let item_sorted_index: HashMap<ItemId, usize> = ctx
@@ -469,6 +476,10 @@ fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
 
 pub struct Transform;
 impl TransformPass for Transform {
+    fn should_run(&self, options: &TranslateOptions) -> bool {
+        !options.no_reorder_decls
+    }
+
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let reordered_decls = compute_reordered_decls(ctx);
         ctx.translated.ordered_decls = Some(reordered_decls);

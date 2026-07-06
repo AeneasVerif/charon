@@ -101,7 +101,9 @@ generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
 
 /// A type variable in a signature or binder.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
+)]
 pub struct TypeParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
@@ -128,7 +130,19 @@ pub struct RegionParam {
 }
 
 /// A const generic variable in a signature or binder.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
 pub struct ConstGenericParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
@@ -159,6 +173,18 @@ impl PartialEq for TraitParam {
     fn eq(&self, other: &Self) -> bool {
         // Skip `span` and `origin`
         self.clause_id == other.clause_id && self.trait_ == other.trait_
+    }
+}
+
+impl PartialOrd for TraitParam {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for TraitParam {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (&self.clause_id, &self.trait_).cmp(&(&other.clause_id, &other.trait_))
     }
 }
 

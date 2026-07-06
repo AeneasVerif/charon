@@ -301,6 +301,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_normalize: bool,
+    /// Don't compute a stable order for declarations.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_reorder_decls: bool,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long)]
     #[serde(default)]
@@ -446,6 +450,7 @@ impl CliOpts {
                     self.ullbc = true;
                     self.no_typecheck = true;
                     self.no_normalize = true;
+                    self.no_reorder_decls = true;
                     self.hide_marker_traits = true;
                     self.raw_consts = true;
                 }
@@ -482,6 +487,7 @@ impl CliOpts {
                     self.mir = Some(MirLevel::Elaborated);
                     self.monomorphize = true;
                     self.no_normalize = true;
+                    self.no_reorder_decls = true;
                     self.precise_drops = true;
                     self.consts = Some(ConstHandling::Values);
                     self.ullbc = true;
@@ -665,6 +671,8 @@ pub struct TranslateOptions {
     pub no_typecheck: bool,
     /// Don't normalize associated types.
     pub no_normalize: bool,
+    /// Don't reorder declarations and compute recursive declaration groups.
+    pub no_reorder_decls: bool,
     /// Transform Drop to Call drop_glue
     pub desugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
@@ -814,6 +822,7 @@ impl TranslateOptions {
             duplicate_defaulted_methods: options.duplicate_defaulted_methods,
             no_typecheck: options.no_typecheck,
             no_normalize: options.no_normalize,
+            no_reorder_decls: options.no_reorder_decls,
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
         }

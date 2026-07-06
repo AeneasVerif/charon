@@ -71,22 +71,22 @@ fn foo::<u8><'a>(x: &'a u8)
     return
 }
 
-// Full name: test_crate::foo::<char>
-fn foo::<char><'a>(x: &'a char)
+// Full name: test_crate::foo::<u32>
+fn foo::<u32><'a>(x: &'a u32)
 {
     let _0: (); // return
-    let x: &'1 char; // arg #1
+    let x: &'1 u32; // arg #1
 
     _0 = ()
     _0 = ()
     return
 }
 
-// Full name: test_crate::foo::<u32>
-fn foo::<u32><'a>(x: &'a u32)
+// Full name: test_crate::foo::<char>
+fn foo::<char><'a>(x: &'a char)
 {
     let _0: (); // return
-    let x: &'1 u32; // arg #1
+    let x: &'1 char; // arg #1
 
     _0 = ()
     _0 = ()
