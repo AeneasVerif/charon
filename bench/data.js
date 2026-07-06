@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783343707297,
+  "lastUpdate": 1783353634000,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -7058,6 +7058,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 451.3,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.6,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "909ff09ad0f144f83d354f2c3d26f631fb9f8e9a",
+          "message": "Merge pull request #1319 from Nadrieril/reorder-mono-decls\n\nGive a robust order to monomorphized declarations",
+          "timestamp": "2026-07-06T15:55:59Z",
+          "tree_id": "c3bc645357a9f5155b33acaac5f15592febe99b4",
+          "url": "https://github.com/AeneasVerif/charon/commit/909ff09ad0f144f83d354f2c3d26f631fb9f8e9a"
+        },
+        "date": 1783353632684,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 104217531935,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 14.95,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 427.1,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.9,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 364645075749,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 42.01,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 451,
             "unit": "max-rss(MB)"
           },
           {
