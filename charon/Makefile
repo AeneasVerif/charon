@@ -10,8 +10,7 @@ format:
 	cargo fmt
 
 .PHONY: test
-test:
-	$(MAKE) test
+test: test-noclippy
 	$(MAKE) clippy
 
 .PHONY: test-noclippy
