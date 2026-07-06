@@ -41,6 +41,7 @@ pub trait AstFormatter: Sized {
     fn binder_depth(&self) -> usize;
 
     fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a>;
+    fn reset_indent<'a>(&'a self) -> Self::Reborrow<'a>;
     fn indent(&self) -> String;
 
     fn format_local_id(&self, f: &mut fmt::Formatter<'_>, id: LocalId) -> fmt::Result;
@@ -207,6 +208,12 @@ impl<'c> AstFormatter for FmtCtx<'c> {
     fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a> {
         FmtCtx {
             indent_level: self.indent_level + 1,
+            ..self.reborrow()
+        }
+    }
+    fn reset_indent<'a>(&'a self) -> Self::Reborrow<'a> {
+        FmtCtx {
+            indent_level: 0,
             ..self.reborrow()
         }
     }

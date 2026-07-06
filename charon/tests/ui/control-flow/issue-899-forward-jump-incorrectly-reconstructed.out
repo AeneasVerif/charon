@@ -45,13 +45,16 @@ fn absorb_full()
     // bb0
     // bb1
     _2 = condition(const 1u32)
+    ↳⚡ unwind_continue
     if move _2 {
         storage_live(_3)
         // bb3
         _3 = condition(const 2u32)
+        ↳⚡ unwind_continue
         if move _3 {
             // bb7
             _1 = foo()
+            ↳⚡ unwind_continue
             // bb8
             storage_dead(_3)
         } else {
@@ -64,6 +67,7 @@ fn absorb_full()
             // unconditional break, the `loop` is only for fwd jumping
             // bb13
             _0 = bar()
+            ↳⚡ unwind_continue
             return
         }
     } else {
@@ -73,10 +77,12 @@ fn absorb_full()
     storage_dead(_1)
     storage_live(_4)
     _4 = condition(const 3u32)
+    ↳⚡ unwind_continue
     if move _4 {
     } else {
         storage_dead(_4)
         _0 = bar()
+        ↳⚡ unwind_continue
         return
     }
     _0 = ()

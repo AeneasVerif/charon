@@ -50,6 +50,7 @@ fn method<'a>(self: &'a u32) -> &'a [u8; 4usize]
     storage_live(_4)
     _4 = &raw const (*self)
     _3 = cast<u32, [u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}](move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     _2 = &(*_3)
     _0 = &(*_2)
@@ -80,8 +81,14 @@ where
     storage_live(_2)
     _2 = move x
     _0 = TraitClause2::method(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
+        ↳⚡ unwind_terminate
+        conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -99,6 +106,7 @@ pub fn to_bytes_by_ref<'b>(s: &'b u32) -> &'b [u8; 4usize]
     // that the lifetime is the same by virtue of the trait impl.
     _3 = copy s
     _2 = convert<&'9 u32, &'9 [u8; 4usize]>[{built_in impl Sized for &'9 u32}, {built_in impl Sized for &'9 [u8; 4usize]}, {impl Convert<&'a [u8; 4usize]> for &'a u32}<'9>](move _3)
+    ↳⚡ unwind_continue
     _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)

@@ -17,6 +17,7 @@ fn S() -> [u8; 16usize]
     let _0: [u8; 16usize]; // return
 
     _0 = to_ne_bytes(const 24197857199965561741520400062332047378u128)
+    ↳⚡ unwind_continue
     return
 }
 

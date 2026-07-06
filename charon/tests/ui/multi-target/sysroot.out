@@ -12,6 +12,7 @@ pub fn core::ascii::escape_default(c: u8) -> core::ascii::EscapeDefault
     storage_live(_2)
     _2 = copy c
     _0 = core::ascii::{core::ascii::EscapeDefault}::new(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }

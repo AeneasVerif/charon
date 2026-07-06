@@ -63,6 +63,7 @@ where
         return
     }
     drop[TraitClause1::drop_glue<'0>] t
+    ↳⚡ unwind_continue
     return
 }
 
@@ -94,6 +95,7 @@ where
     storage_live(_5)
     _5 = &(*other) with_metadata(copy other.metadata)
     _3 = TraitClause0::eq<'6, '7>(move _4, move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ~(move _3)
@@ -365,20 +367,24 @@ fn use_inlines() -> u32
     storage_live(_2)
     storage_live(_3)
     _3 = inline_always()
+    ↳⚡ unwind_continue
     storage_live(_4)
     _4 = inline_sometimes()
+    ↳⚡ unwind_continue
     _5 = copy _3 panic.+ copy _4
     _2 = move _5
     storage_dead(_4)
     storage_dead(_3)
     storage_live(_6)
     _6 = inline_never()
+    ↳⚡ unwind_continue
     _7 = copy _2 panic.+ copy _6
     _1 = move _7
     storage_dead(_6)
     storage_dead(_2)
     storage_live(_8)
     _8 = inline_generic<bool>[{built_in impl Sized for bool}]()
+    ↳⚡ unwind_continue
     _9 = copy _1 panic.+ copy _8
     _0 = move _9
     storage_dead(_8)
@@ -399,6 +405,7 @@ fn bool_to_opt(b: bool) -> Option<()>[{built_in impl Sized for ()}]
     storage_live(_3)
     _3 = ()
     _0 = then_some<()>[{built_in impl Sized for ()}, {built_in impl Destruct for ()}](move _2, move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -414,6 +421,7 @@ fn convert(x: i32) -> i64
     storage_live(_2)
     _2 = copy x
     _0 = from(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }
@@ -427,6 +435,7 @@ fn vec(_x: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Glob
     _0 = ()
     _0 = ()
     conditional_drop[drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -451,6 +460,7 @@ where
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _x
+    ↳⚡ unwind_continue
     return
 }
 

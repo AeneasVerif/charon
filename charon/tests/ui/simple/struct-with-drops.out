@@ -94,8 +94,17 @@ unsafe fn impl_Destruct_for_B::drop_glue<'_0>(_1: &'_0 mut B)
     _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_B::drop<'4>(move _2)
+    ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'5, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] ((*_1)).x
+        ↳⚡ unwind_terminate
+        drop[impl_Destruct_for_Box::drop_glue<'7, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] ((*_1)).y
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[impl_Destruct_for_Box::drop_glue<'6, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] ((*_1)).x
+    ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'7, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] ((*_1)).y
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[impl_Destruct_for_Box::drop_glue<'8, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] ((*_1)).y
+    ↳⚡ unwind_continue
     return
 }
 
@@ -107,7 +116,11 @@ unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
 
     _0 = ()
     drop[impl_Destruct_for_Box::drop_glue<'2, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] ((*_1)).x
+    ↳⚡ drop[impl_Destruct_for_B::drop_glue<'4>] ((*_1)).b
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[impl_Destruct_for_B::drop_glue<'3>] ((*_1)).b
+    ↳⚡ unwind_continue
     return
 }
 
@@ -132,6 +145,7 @@ fn takes_a(_1: A)
     _0 = ()
     _0 = ()
     drop[impl_Destruct_for_A::drop_glue<'0>] _1
+    ↳⚡ unwind_continue
     return
 }
 

@@ -146,7 +146,7 @@ module PatternTest = struct
           (* Find the nth function call in the function body. *)
           let rec list_stmt_calls (statement : statement) : call list =
             match statement.kind with
-            | Call call -> [ call ]
+            | Call (call, _) -> [ call ]
             | Switch (If (_, st1, st2)) ->
                 list_block_calls st1 @ list_block_calls st2
             | Switch _ ->

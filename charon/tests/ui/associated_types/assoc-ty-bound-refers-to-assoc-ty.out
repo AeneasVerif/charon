@@ -57,6 +57,7 @@ where
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] it
+    ↳⚡ unwind_continue
     return
 }
 
@@ -86,10 +87,16 @@ where
     storage_live(_3)
     _3 = move it
     _2 = assert_is_iterator<Clause1_IntoIter>[TraitClause1::ImpliedClause2, impl_IsIterator_for_T<Clause1_IntoIter, Clause1_Item>[TraitClause1::ImpliedClause2, TraitClause1::ImpliedClause3]](move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'0>] _3
+        ↳⚡ unwind_terminate
+        conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'2>] it
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
     conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'1>] it
+    ↳⚡ unwind_continue
     return
 }
 

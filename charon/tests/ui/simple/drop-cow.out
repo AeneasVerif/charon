@@ -77,6 +77,7 @@ where
         },
         _ => {
             drop[TraitClause1::ImpliedClause4::drop_glue<'2>] ((*_1) as variant Cow::Owned).0
+            ↳⚡ unwind_continue
             return
         },
     }
@@ -110,6 +111,7 @@ where
     _0 = ()
     _0 = ()
     drop[drop_glue<'4, '5, B>[TraitClause0, TraitClause1, TraitClause2]] _1
+    ↳⚡ unwind_continue
     return
 }
 

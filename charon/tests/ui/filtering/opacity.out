@@ -36,6 +36,7 @@ where
     storage_live(_2)
     _2 = move self
     _0 = TraitClause2::from(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }
@@ -196,10 +197,12 @@ fn foo()
     _8 = move _9
     _2 = &(*_8)
     _1 = is_some<'11, i32>[{built_in impl Sized for i32}](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_3)
     _3 = into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, impl_From_u32_for_u64](const 42u32)
+    ↳⚡ unwind_continue
     storage_live(_10)
     storage_live(_13)
     storage_live(_14)
@@ -214,6 +217,7 @@ fn foo()
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = from_ref<'14, i32>[{built_in impl Sized for i32}](move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)

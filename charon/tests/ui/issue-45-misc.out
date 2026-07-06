@@ -282,7 +282,11 @@ fn call_once(_1: closure, _2: (i32,)) -> i32
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'3>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'4>] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -319,6 +323,7 @@ pub fn test_crate::map(x: [i32; 256usize]) -> [i32; 256usize]
     storage_live(_3)
     _3 = closure {  }
     _0 = core::array::{[T; N]}::map<i32, closure, i32, 256usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, impl_FnMut_tuple_for_closure, impl_Destruct_for_closure, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -330,6 +335,7 @@ pub fn array<const LEN : usize>() -> [u8; LEN]
     let _0: [u8; LEN]; // return
 
     _0 = @ArrayRepeat<u8, LEN>(const 0u8)
+    ↳⚡ undefined_behavior
     return
 }
 
@@ -355,6 +361,7 @@ fn cbd(prf_input: [u8; 33usize])
     storage_live(_3)
     _3 = Range { start: const 0u8, end: const 3u8 }
     _2 = into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Range<u8>[{built_in impl Sized for u8}, impl_Step_for_u8]](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_live(iter)
     iter = move _2
@@ -365,6 +372,7 @@ fn cbd(prf_input: [u8; 33usize])
         _7 = &mut iter
         _6 = &two-phase-mut (*_7)
         _5 = next<'4, u8>[{built_in impl Sized for u8}, impl_Step_for_u8](move _6)
+        ↳⚡ unwind_continue
         storage_dead(_6)
         match _5 {
             Option::None => {
@@ -383,6 +391,7 @@ fn cbd(prf_input: [u8; 33usize])
         _11 = &mut prf_input
         storage_live(_12)
         _12 = @ArrayIndexMut<'_, u8, 33usize>(move _11, copy _10)
+        ↳⚡ undefined_behavior
         (*_12) = move _9
         storage_dead(_9)
         storage_dead(_10)
@@ -436,6 +445,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_7)
         _7 = &(*lhs) with_metadata(copy lhs.metadata)
         _6 = core::slice::{[T]}::len<'28, u8>[{built_in impl Sized for u8}](move _7)
+        ↳⚡ unwind_continue
         storage_dead(_7)
         _5 = &_6
         storage_live(_8)
@@ -443,6 +453,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_10)
         _10 = &(*rhs) with_metadata(copy rhs.metadata)
         _9 = core::slice::{[T]}::len<'30, u8>[{built_in impl Sized for u8}](move _10)
+        ↳⚡ unwind_continue
         storage_dead(_10)
         _8 = &_9
         _4 = (move _5, move _8)

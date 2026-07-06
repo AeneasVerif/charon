@@ -55,6 +55,7 @@ fn main()
     storage_live(_9)
     _9 = &raw mut x
     _8 = new_unchecked<usize>(move _9)
+    ↳⚡ unwind_continue
     storage_dead(_9)
     a = HasPointerNiche::Second { 0: move _8 }
     storage_dead(_8)

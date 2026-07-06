@@ -83,6 +83,7 @@ pub fn choose_test()
     _7 = &mut y
     _6 = &two-phase-mut (*_7)
     z = choose<'7, i32>[{built_in impl Sized for i32}](const true, move _4, move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_7)

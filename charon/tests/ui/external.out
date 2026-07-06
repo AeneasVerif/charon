@@ -226,6 +226,7 @@ where
     storage_live(_4)
     _4 = &two-phase-mut (*y)
     _0 = core::mem::swap<'7, '8, T>[TraitClause0](move _3, move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -243,8 +244,10 @@ pub fn test_new_non_zero_u32(x: u32) -> NonZero<u32>[{built_in impl Sized for u3
     storage_live(_3)
     _3 = copy x
     _2 = core::num::nonzero::{NonZero<T>[TraitClause0, TraitClause1]}::new<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     _0 = unwrap<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>[{built_in impl Sized for NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]}](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }
@@ -260,14 +263,19 @@ pub fn test_vec_push()
     _0 = ()
     storage_live(v)
     v = alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new<u32>[{built_in impl Sized for u32}]()
+    ↳⚡ unwind_continue
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut v
     _2 = push<'3, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _3, const 0u32)
+    ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'5, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v
+    ↳⚡ unwind_continue
     storage_dead(v)
     return
 }
@@ -282,6 +290,7 @@ pub fn use_get<'_0>(rc: &'_0 Cell<u32>[{built_in impl MetaSized for u32}]) -> u3
     storage_live(_2)
     _2 = &(*rc)
     _0 = get<'4, u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }
@@ -301,6 +310,7 @@ pub fn incr<'_0>(rc: &'_0 mut Cell<u32>[{built_in impl MetaSized for u32}])
     storage_live(_3)
     _3 = &two-phase-mut (*rc)
     _2 = get_mut<'6, u32>[{built_in impl MetaSized for u32}](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     _4 = copy (*_2) panic.+ const 1u32
     (*_2) = move _4

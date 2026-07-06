@@ -112,6 +112,7 @@ fn destruct<'_0>(x: &'_0 (dyn Display + '_0)) -> String
     storage_live(_2)
     _2 = &(*x) with_metadata(copy x.metadata)
     _0 = to_string<'15, (dyn Display + '9)>[{built_in impl MetaSized for (dyn Display + '11)}, Display<(dyn Display + '13)>](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }

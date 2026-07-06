@@ -9,6 +9,7 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = from_str<'2>(const "O no")
+    ↳⚡ unwind_continue
     panic(core::panicking::panic_fmt)
 }
 

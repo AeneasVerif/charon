@@ -35,6 +35,7 @@ pub fn IS_ZST::<()>() -> bool
 
     storage_live(_1)
     _1 = size_of::<()>()
+    ↳⚡ unwind_continue
     _0 = move _1 == const 0usize
     storage_dead(_1)
     return

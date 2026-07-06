@@ -52,6 +52,7 @@ fn use_box(_1: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_
     _0 = ()
     _0 = ()
     drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -71,6 +72,7 @@ fn main()
     storage_live(b)
     _5 = const true
     b = @BoxNew<u32>[{built_in impl Sized for u32}, {built_in impl Destruct for u32}](const 1u32)
+    ↳⚡ unwind_continue
     storage_live(_2)
     _2 = const false
     if move _2 {
@@ -79,6 +81,7 @@ fn main()
         _5 = const false
         _4 = move b
         _3 = use_box(move _4)
+        ↳⚡ unwind_continue
         storage_dead(_4)
         storage_dead(_3)
         _0 = ()
@@ -89,6 +92,7 @@ fn main()
     // `b` is dropped implicitly here
     if copy _5 {
         drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] b
+        ↳⚡ unwind_continue
     } else {
     }
     _5 = const false

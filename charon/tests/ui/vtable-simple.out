@@ -69,6 +69,7 @@ where
     storage_live(_4)
     _4 = &(*arg)
     _0 = TraitClause1::clone<'5>(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     return
 }
@@ -87,6 +88,7 @@ where
     storage_live(_3)
     _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move _1)
     _0 = modify<'_0, '_1, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -179,6 +181,7 @@ where
     storage_live(_7)
     _7 = &(*arg)
     _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -213,6 +216,7 @@ fn main()
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = modify_trait_object<'6, i32>[{built_in impl Sized for i32}, impl_Clone_for_i32](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)

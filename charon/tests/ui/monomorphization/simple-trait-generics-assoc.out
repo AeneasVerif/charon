@@ -52,6 +52,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Trait<usize, Item = bool>))
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait<usize, Item = bool> + '1), &'_0 i32>(move _1)
     _0 = comsume<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -149,6 +150,7 @@ fn main()
     storage_live(_7)
     _7 = cast<*const (), unsafe fn(&'8 (dyn Trait<usize, Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
     _4 = (copy _7)(move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

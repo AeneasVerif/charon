@@ -89,6 +89,7 @@ fn call<'_0, '_1>(_1: &'_1 closure<'_0>, tupled_args: (usize,)) -> u8
     _5 = &(*((*_1)).0) with_metadata(copy ((*_1)).0.metadata)
     storage_live(_6)
     _6 = @SliceIndexShared<'_, u8>(move _5, copy _4)
+    ↳⚡ undefined_behavior
     _0 = copy (*_6)
     storage_dead(_4)
     return
@@ -118,6 +119,7 @@ pub fn call_fn_shared<'_0>(a: &'_0 [u8], i: usize) -> u8
     _7 = copy i
     _6 = (move _7,)
     _0 = call<'12, '13>(move _5, move _6)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -146,6 +148,7 @@ fn call_mut<'_0, '_1>(state: &'_1 mut closure<'_0>, args: (usize,)) -> u8
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'_0, '2>(move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -160,7 +163,11 @@ fn call_once<'_0>(_1: closure<'_0>, _2: (usize,)) -> u8
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '4>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'_0, '7>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'_0, '10>] _1
+    ↳⚡ unwind_continue
     return
 }
 

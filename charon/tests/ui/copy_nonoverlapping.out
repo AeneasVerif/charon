@@ -54,8 +54,11 @@ where
     storage_live(_4)
     _4 = &(*source) with_metadata(copy source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     drop[TraitClause1::drop_glue<'6>] (*self)
+    ↳⚡ (*self) = move _3
+        unwind_continue
     (*self) = move _3
     _0 = ()
     storage_dead(_3)
@@ -88,8 +91,11 @@ where
     storage_live(_4)
     _4 = &(*source)
     _3 = clone<'5>(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     drop[TraitClause0::drop_glue<'6>] (*self)
+    ↳⚡ (*self) = move _3
+        unwind_continue
     (*self) = move _3
     _0 = ()
     storage_dead(_3)
@@ -205,6 +211,7 @@ pub fn caller<'a>() -> &'static Location<'static>
     let _0: &'3 Location<'4>; // return
 
     _0 = caller_location()
+    ↳⚡ undefined_behavior
     return
 }
 
@@ -237,10 +244,12 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         storage_live(_8)
         storage_live(_9)
         _9 = caller<'24>()
+        ↳⚡ unwind_continue
         _8 = &(*_9)
         storage_live(_10)
         _10 = copy force_no_backtrace
         pi = core::panic::panic_info::{PanicInfo<'a>}::new<'26>(move _6, move _8, const false, move _10)
+        ↳⚡ unwind_continue
         storage_dead(_10)
         storage_dead(_8)
         storage_dead(_6)
@@ -251,9 +260,11 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         _12 = &pi
         _11 = &(*_12)
         _0 = panic_impl<'30, '31>(move _11)
+        ↳⚡ unwind_continue
     }
     storage_live(_4)
     _4 = abort()
+    ↳⚡ undefined_behavior
 }
 
 pub fn core::intrinsics::size_of<T>() -> usize
@@ -366,6 +377,7 @@ pub fn count_ones(self: usize) -> u32
     storage_live(_2)
     _2 = copy self
     _0 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](move _2)
+    ↳⚡ undefined_behavior
     storage_dead(_2)
     return
 }
@@ -382,6 +394,7 @@ pub fn is_power_of_two(self: usize) -> bool
     storage_live(_3)
     _3 = copy self
     _2 = count_ones(move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     _0 = move _2 == const 1u32
     storage_dead(_2)
@@ -397,6 +410,7 @@ fn check_language_ub() -> bool
 
     storage_live(_1)
     _1 = core::ub_checks::check_language_ub::runtime()
+    ↳⚡ unwind_continue
     if move _1 {
         storage_live(_2)
         _2 = ub_checks<bool>
@@ -427,6 +441,7 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     storage_dead(_5)
     storage_dead(_4)
     _0 = core::panicking::panic_nounwind_fmt::runtime<'6>(move _3.0, move _3.1)
+    ↳⚡ unwind_terminate
 }
 
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
@@ -445,6 +460,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     storage_live(_3)
     _3 = copy align
     _2 = is_power_of_two(move _3)
+    ↳⚡ unwind_terminate
     if move _2 {
     } else {
         storage_dead(_3)
@@ -455,8 +471,10 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_live(_7)
         _7 = &(*msg) with_metadata(copy msg.metadata)
         _6 = from_str<'6>(move _7)
+        ↳⚡ unwind_terminate
         storage_dead(_7)
         _5 = panic_nounwind_fmt<'8>(move _6, const false)
+        ↳⚡ undefined_behavior
     }
     storage_dead(_3)
     _0 = ()
@@ -476,11 +494,13 @@ pub unsafe fn new_unchecked(align: usize) -> Alignment
 
     storage_live(_2)
     _2 = check_language_ub()
+    ↳⚡ unwind_continue
     if move _2 {
         storage_live(_3)
         storage_live(_4)
         _4 = copy align
         _3 = core::mem::alignment::{Alignment}::new_unchecked::precondition_check(move _4)
+        ↳⚡ undefined_behavior
         storage_dead(_4)
         storage_dead(_3)
     } else {
@@ -506,12 +526,14 @@ pub fn core::mem::alignment::{Alignment}::new(align: usize) -> Option<Alignment>
     storage_live(_3)
     _3 = copy align
     _2 = is_power_of_two(move _3)
+    ↳⚡ unwind_continue
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         storage_live(_5)
         _5 = copy align
         _4 = new_unchecked(move _5)
+        ↳⚡ unwind_continue
         storage_dead(_5)
         _0 = Option::Some { 0: move _4 }
         storage_dead(_4)
@@ -608,6 +630,7 @@ where
     let _0: Layout; // return
 
     _0 = from_size_align_unchecked(const TraitClause0::SIZE, const TraitClause0::ALIGN)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -666,6 +689,7 @@ where
     }
     storage_live(_3)
     _3 = unwrap_failed()
+    ↳⚡ unwind_continue
 }
 
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
@@ -678,7 +702,9 @@ where
 
     storage_live(_1)
     _1 = core::mem::alignment::{Alignment}::new(const TraitClause0::ALIGN)
+    ↳⚡ unwind_continue
     _0 = unwrap<Alignment>[{built_in impl Sized for Alignment}](move _1)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     return
 }
@@ -698,6 +724,7 @@ where
     let _0: usize; // return
 
     _0 = core::intrinsics::align_of<Self>[TraitClause0::ImpliedClause0]()
+    ↳⚡ unwind_continue
     return
 }
 
@@ -717,6 +744,7 @@ where
     let _0: usize; // return
 
     _0 = core::intrinsics::size_of<Self>[TraitClause0::ImpliedClause0]()
+    ↳⚡ unwind_continue
     return
 }
 
@@ -793,6 +821,7 @@ where
     _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
+    ↳⚡ unwind_continue
     if move _4 {
         storage_live(_5)
         storage_live(_6)
@@ -807,11 +836,14 @@ where
         storage_dead(_9)
         storage_live(_10)
         _10 = core::mem::size_of<T>[TraitClause0]()
+        ↳⚡ unwind_continue
         storage_live(_11)
         _11 = core::mem::align_of<T>[TraitClause0]()
+        ↳⚡ unwind_continue
         storage_live(_12)
         _12 = copy count
         _5 = core::ptr::copy_nonoverlapping::precondition_check(move _6, move _8, move _10, move _11, move _12)
+        ↳⚡ undefined_behavior
         storage_dead(_12)
         storage_dead(_11)
         storage_dead(_10)
@@ -853,6 +885,7 @@ where
     storage_live(_5)
     _5 = &raw mut (*x)
     _3 = copy_nonoverlapping<T>[TraitClause0](move _4, move _5, const 1usize)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)

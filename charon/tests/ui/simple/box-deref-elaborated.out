@@ -51,6 +51,7 @@ fn into_inner(b: alloc::boxed::Box<String>[{built_in impl MetaSized for String},
     _0 = move (*b)
     _2 = &mut b
     _3 = impl_Drop_for_Box::drop<'4, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}](move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -66,10 +67,15 @@ fn write(b: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {bui
     storage_live(_3)
     _3 = move s
     drop[impl_Destruct_for_String::drop_glue<'0>] (*b)
+    ↳⚡ (*b) = move _3
+        drop[impl_Destruct_for_Box::drop_glue<'2, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b
+        ↳⚡ unwind_terminate
+        unwind_continue
     (*b) = move _3
     storage_dead(_3)
     _0 = ()
     drop[impl_Destruct_for_Box::drop_glue<'1, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b
+    ↳⚡ unwind_continue
     return
 }
 
@@ -86,6 +92,7 @@ fn borrow(b: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {bu
     storage_dead(_2)
     _0 = ()
     drop[impl_Destruct_for_Box::drop_glue<'2, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] b
+    ↳⚡ unwind_continue
     return
 }
 
@@ -129,6 +136,7 @@ fn field(b: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {bui
     _0 = move ((*b)).b
     _2 = &mut b
     _3 = impl_Drop_for_Box::drop<'4, Struct, Global>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}](move _2)
+    ↳⚡ unwind_continue
     return
 }
 

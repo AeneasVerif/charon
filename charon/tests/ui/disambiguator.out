@@ -29,8 +29,10 @@ fn nonzero_disambiguator()
     _1 = const true
     if move _1 {
         _0 = test_crate::nonzero_disambiguator::my_function()
+        ↳⚡ unwind_continue
     } else {
         _0 = test_crate::nonzero_disambiguator::my_function#1()
+        ↳⚡ unwind_continue
     }
     storage_dead(_1)
     return

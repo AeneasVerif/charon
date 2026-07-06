@@ -47,6 +47,7 @@ pub fn without_provenance::<()>(addr: usize) -> *const ()
     storage_live(_3)
     _3 = copy addr
     _2 = without_provenance_mut::<()>(move _3)
+    ↳⚡ unwind_continue
     _0 = cast<*mut (), *const ()>(move _2)
     storage_dead(_3)
     storage_dead(_2)
@@ -63,9 +64,11 @@ pub fn null::<u8>() -> *const u8
 
     storage_live(_1)
     _1 = without_provenance::<()>(const 0usize)
+    ↳⚡ unwind_continue
     storage_live(_2)
     _2 = ()
     _0 = from_raw_parts::<u8, ()>(move _1, move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -80,6 +83,7 @@ pub fn null_ptr()
     _0 = ()
     storage_live(_1)
     _1 = null::<u8>()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = const ()
     return

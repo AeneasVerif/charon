@@ -48,6 +48,7 @@ unsafe fn impl_Destruct_for_Thing::drop_glue<'_0>(_1: &'_0 mut Thing)
         },
     }
     drop[impl_Destruct_for_Box::drop_glue<'2, (), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_1) as variant Thing::A).0
+    ↳⚡ unwind_continue
     return
 }
 
@@ -66,6 +67,7 @@ fn foo(_1: Thing)
     _0 = ()
     _0 = ()
     conditional_drop[impl_Destruct_for_Thing::drop_glue<'0>] _1
+    ↳⚡ unwind_continue
     return
 }
 

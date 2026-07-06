@@ -38,6 +38,7 @@ fn dyn_to_string<'_0>(x: &'_0 (dyn Display + '_0)) -> String
     storage_live(_2)
     _2 = &(*x) with_metadata(copy x.metadata)
     _0 = {impl ToString for (dyn Display)}::to_string::<(dyn Display)><'9>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }
@@ -61,6 +62,7 @@ fn main()
     _3 = const "hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
     str = impl_ToString_for_str::to_string::<str><'13>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)
@@ -72,12 +74,19 @@ fn main()
     _5 = unsize_cast<&'9 String, &'14 (dyn Display + '15), &impl_Display_for_String::{vtable}>(move _6)
     storage_dead(_6)
     _4 = dyn_to_string<'17>(move _5)
+    ↳⚡ conditional_drop[drop_glue<'18>] str
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_5)
     conditional_drop[drop_glue<'19>] _4
+    ↳⚡ conditional_drop[drop_glue<'18>] str
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_7)
     storage_dead(_4)
     _0 = ()
     conditional_drop[drop_glue<'20>] str
+    ↳⚡ unwind_continue
     storage_dead(str)
     return
 }

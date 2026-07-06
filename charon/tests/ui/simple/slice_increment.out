@@ -20,11 +20,13 @@ pub fn incr<'_0>(s: &'_0 mut [u32])
     _4 = &(*s) with_metadata(copy s.metadata)
     storage_live(_5)
     _5 = @SliceIndexShared<'_, u32>(move _4, copy _2)
+    ↳⚡ undefined_behavior
     _3 = copy (*_5) panic.+ const 1u32
     storage_live(_6)
     _6 = &mut (*s) with_metadata(copy s.metadata)
     storage_live(_7)
     _7 = @SliceIndexMut<'_, u32>(move _6, copy _2)
+    ↳⚡ undefined_behavior
     (*_7) = move _3
     storage_dead(_2)
     _0 = ()

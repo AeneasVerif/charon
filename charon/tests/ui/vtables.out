@@ -150,6 +150,7 @@ fn impl_Super_i32_for_i32::super_method::{vtable_method}<'_0>(_1: &'_0 (dyn Supe
     storage_live(_3)
     _3 = concretize<&'_0 (dyn Super<i32> + '1), &'_0 i32>(move _1)
     _0 = super_method<'_0>(move _3, move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -210,6 +211,7 @@ fn check<'_0>(self: &'_0 i32) -> bool
     storage_live(_3)
     _3 = &(*self)
     _2 = super_method<'4>(move _3, const 10i32)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     _0 = move _2 > const 0i32
     storage_dead(_2)
@@ -226,6 +228,7 @@ fn impl_Checkable_i32_for_i32::check::{vtable_method}<'_0>(_1: &'_0 (dyn Checkab
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Checkable<i32> + '1), &'_0 i32>(move _1)
     _0 = check<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -385,6 +388,7 @@ where
     storage_live(_4)
     _4 = &(*arg)
     _0 = TraitClause1::clone<'5>(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     return
 }
@@ -403,6 +407,7 @@ where
     storage_live(_3)
     _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move _1)
     _0 = modify<'_0, '_1, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -495,6 +500,7 @@ where
     storage_live(_7)
     _7 = &(*arg)
     _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -561,6 +567,7 @@ where
     storage_live(_6)
     _6 = &(*t32)
     _4 = TraitClause0::ImpliedClause1::operate_on<'10, '11>(move _5, move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -570,6 +577,7 @@ where
     storage_live(_9)
     _9 = &(*t64)
     _7 = TraitClause0::ImpliedClause2::operate_on<'12, '13>(move _8, move _9)
+    ↳⚡ unwind_continue
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -619,6 +627,7 @@ fn impl_BaseOn_i32_for_i32::operate_on::{vtable_method}<'_0, '_1>(_1: &'_0 (dyn 
     storage_live(_3)
     _3 = concretize<&'_0 (dyn BaseOn<i32> + '1), &'_0 i32>(move _1)
     _0 = impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(move _3, move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -713,6 +722,7 @@ fn impl_BaseOn_i64_for_i32::operate_on::{vtable_method}<'_0, '_1>(_1: &'_0 (dyn 
     storage_live(_3)
     _3 = concretize<&'_0 (dyn BaseOn<i64> + '1), &'_0 i32>(move _1)
     _0 = impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(move _3, move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -822,6 +832,7 @@ fn impl_Both32And64_for_i32::both_operate<'_0, '_1, '_2>(self: &'_0 i32, t32: &'
     storage_live(_6)
     _6 = &(*t32)
     _4 = impl_Both32And64_for_i32::ImpliedClause1::operate_on<'10, '11>(move _5, move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -831,6 +842,7 @@ fn impl_Both32And64_for_i32::both_operate<'_0, '_1, '_2>(self: &'_0 i32, t32: &'
     storage_live(_9)
     _9 = &(*t64)
     _7 = impl_Both32And64_for_i32::ImpliedClause2::operate_on<'12, '13>(move _8, move _9)
+    ↳⚡ unwind_continue
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -913,6 +925,7 @@ fn impl_LifetimeTrait_for_i32::lifetime_method::{vtable_method}<'a, '_1>(_1: &'_
     storage_live(_3)
     _3 = concretize<&'_1 (dyn LifetimeTrait<Ty = i32> + '1), &'_1 i32>(move _1)
     _0 = lifetime_method<'a, '_1>(move _3, move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -978,6 +991,7 @@ fn use_lifetime_trait<'a, '_1>(x: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), y: &
     storage_live(_5)
     _5 = &(*y)
     _3 = (copy ((*_4.metadata)).method_lifetime_method)(move _4, move _5)
+    ↳⚡ unwind_continue
     _0 = &(*_3)
     storage_dead(_5)
     storage_dead(_4)
@@ -1034,6 +1048,7 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     _7 = &(*_8)
     _6 = &(*_7)
     _2 = (copy ((*_3.metadata)).method_both_operate)(move _3, move _4, move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_3)
@@ -1190,6 +1205,7 @@ fn main()
     storage_live(_5)
     _5 = &(*x) with_metadata(copy x.metadata)
     _4 = (copy ((*_5.metadata)).method_check)(move _5)
+    ↳⚡ unwind_continue
     if move _4 {
     } else {
         storage_dead(_5)
@@ -1218,18 +1234,31 @@ fn main()
     _17 = const "Hello"
     _16 = &(*_17) with_metadata(copy _17.metadata)
     _15 = to_string<'124, str>[{built_in impl MetaSized for str}, {impl#10}](move _16)
+    ↳⚡ unwind_continue
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)
     _12 = modify_trait_object<'126, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
+    ↳⚡ conditional_drop[drop_glue<'127>] _15
+        ↳⚡ unwind_terminate
+        unwind_continue
     _11 = &_12
     storage_dead(_13)
     _10 = is_empty<'129>(move _11)
+    ↳⚡ conditional_drop[drop_glue<'130>] _12
+        ↳⚡ unwind_terminate
+        conditional_drop[drop_glue<'127>] _15
+        ↳⚡ unwind_terminate
+        unwind_continue
     if move _10 {
     } else {
         storage_dead(_11)
         conditional_drop[drop_glue<'132>] _12
+        ↳⚡ conditional_drop[drop_glue<'127>] _15
+            ↳⚡ unwind_terminate
+            unwind_continue
         conditional_drop[drop_glue<'134>] _15
+        ↳⚡ unwind_continue
         storage_dead(_17)
         storage_dead(_15)
         storage_dead(_14)
@@ -1247,6 +1276,7 @@ fn main()
         _23 = &mut _24
         _22 = &(*_23)
         _20 = (copy ((*_21.metadata)).method_modify)(move _21, move _22)
+        ↳⚡ unwind_continue
         storage_live(_87)
         storage_live(_97)
         storage_live(_98)
@@ -1316,6 +1346,7 @@ fn main()
         _42 = &(*_83)
         _41 = &(*_42)
         _40 = to_dyn_obj<'145, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
+        ↳⚡ unwind_continue
         _39 = &(*_40) with_metadata(copy _40.metadata)
         z = unsize_cast<&'55 (dyn NoParam + '56), &'152 (dyn NoParam + '153),  at []>(move _39)
         storage_dead(_41)
@@ -1326,6 +1357,7 @@ fn main()
         storage_live(_44)
         _44 = &(*z) with_metadata(copy z.metadata)
         _43 = (copy ((*_44.metadata)).method_dummy)(move _44)
+        ↳⚡ unwind_continue
         storage_live(_91)
         storage_live(_105)
         storage_live(_106)
@@ -1369,6 +1401,7 @@ fn main()
         _53 = &(*_80)
         _52 = &(*_53)
         _48 = (copy ((*_49.metadata)).method_both_operate)(move _49, move _50, move _52)
+        ↳⚡ unwind_continue
         storage_live(_93)
         storage_live(_109)
         storage_live(_110)
@@ -1410,6 +1443,7 @@ fn main()
         _63 = &(*_78)
         _62 = &(*_63)
         _59 = use_lifetime_trait<'178, '179>(move _60, move _62)
+        ↳⚡ unwind_continue
         storage_live(_94)
         storage_live(_111)
         storage_live(_112)
@@ -1474,7 +1508,11 @@ fn main()
     }
     storage_dead(_11)
     conditional_drop[drop_glue<'131>] _12
+    ↳⚡ conditional_drop[drop_glue<'127>] _15
+        ↳⚡ unwind_terminate
+        unwind_continue
     conditional_drop[drop_glue<'133>] _15
+    ↳⚡ unwind_continue
     storage_dead(_17)
     storage_dead(_15)
     storage_dead(_14)

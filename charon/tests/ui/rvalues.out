@@ -191,6 +191,7 @@ fn ptr_casts()
     storage_live(_19)
     storage_live(_20)
     _20 = @ArrayRepeat<u32, 64usize>(const 0u32)
+    ↳⚡ undefined_behavior
     _19 = &_20
     _18 = move _19
     storage_live(_17)
@@ -288,6 +289,7 @@ fn call_mut<'_0>(state: &'_0 mut closure, args: (u8,))
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2>(move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -303,7 +305,11 @@ fn call_once(_1: closure, _2: (u8,))
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'3>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'4>] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -321,6 +327,7 @@ fn as_fn(arg1: u8)
     args = (move arg1,)
     state = closure {  }
     _0 = call_once(move state, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -427,6 +434,7 @@ fn STEAL() -> [(); 1usize]
     storage_live(_1)
     _1 = ()
     _0 = @ArrayRepeat<(), 1usize>(move _1)
+    ↳⚡ undefined_behavior
     storage_dead(_1)
     return
 }
@@ -458,6 +466,7 @@ fn STEAL2() -> [(); 13usize]
     storage_live(_1)
     _1 = ()
     _0 = @ArrayRepeat<(), 13usize>(move _1)
+    ↳⚡ undefined_behavior
     storage_dead(_1)
     return
 }
@@ -503,8 +512,10 @@ where
     storage_live(_14)
     storage_live(size)
     size = size_of<T>[TraitClause0]()
+    ↳⚡ unwind_continue
     storage_live(align)
     align = align_of<T>[TraitClause0]()
+    ↳⚡ unwind_continue
     storage_live(_16)
     storage_live(_17)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.

@@ -26,7 +26,7 @@ impl Transform {
         }
         if let [
             Statement {
-                kind: StatementKind::Call(call),
+                kind: StatementKind::Call { call, .. },
                 ..
             },
             Statement {

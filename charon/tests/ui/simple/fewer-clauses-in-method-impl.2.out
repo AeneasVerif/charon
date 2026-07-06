@@ -44,6 +44,7 @@ pub fn main()
 
     _0 = ()
     _0 = method()
+    ↳⚡ unwind_continue
     return
 }
 

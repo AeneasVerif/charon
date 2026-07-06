@@ -1025,6 +1025,7 @@ pub fn test_loops()
     _0 = ()
     storage_live(x_1)
     x_1 = test_loop1(const 2u32)
+    ↳⚡ unwind_continue
     storage_live(_2)
     storage_live(_3)
     _3 = copy x_1
@@ -1038,6 +1039,7 @@ pub fn test_loops()
     storage_dead(_2)
     storage_live(x_4)
     x_4 = test_loop2(const 2u32)
+    ↳⚡ unwind_continue
     storage_live(_5)
     storage_live(_6)
     _6 = copy x_4
@@ -1051,6 +1053,7 @@ pub fn test_loops()
     storage_dead(_5)
     storage_live(x_7)
     x_7 = test_loop3(const 2u32)
+    ↳⚡ unwind_continue
     storage_live(_8)
     storage_live(_9)
     _9 = copy x_7
@@ -1064,6 +1067,7 @@ pub fn test_loops()
     storage_dead(_8)
     storage_live(x_10)
     x_10 = test_loop4(const 20u32)
+    ↳⚡ unwind_continue
     storage_live(_11)
     storage_live(_12)
     _12 = copy x_10
@@ -1077,6 +1081,7 @@ pub fn test_loops()
     storage_dead(_11)
     storage_live(x_13)
     x_13 = test_loop5(const 2u32)
+    ↳⚡ unwind_continue
     storage_live(_14)
     storage_live(_15)
     _15 = copy x_13
@@ -1090,6 +1095,7 @@ pub fn test_loops()
     storage_dead(_14)
     storage_live(x_16)
     x_16 = test_loop6(const 2u32)
+    ↳⚡ unwind_continue
     storage_live(_17)
     storage_live(_18)
     _18 = copy x_16
@@ -1149,6 +1155,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     storage_live(_5)
     _5 = Range { start: const 0i32, end: const 128i32 }
     _4 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32]](move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_live(iter_6)
     iter_6 = move _4
@@ -1159,6 +1166,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _9 = &mut iter_6
         _8 = &two-phase-mut (*_9)
         _7 = next<'9, i32>[{built_in impl Sized for i32}, impl_Step_for_i32](move _8)
+        ↳⚡ unwind_continue
         storage_dead(_8)
         match _7 {
             Option::None => {
@@ -1184,6 +1192,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     _12 = Range { start: const 0usize, end: move _13 }
     storage_dead(_13)
     _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _12)
+    ↳⚡ unwind_continue
     storage_dead(_12)
     storage_live(iter_14)
     iter_14 = move _11
@@ -1194,6 +1203,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _17 = &mut iter_14
         _16 = &two-phase-mut (*_17)
         _15 = next<'11, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _16)
+        ↳⚡ unwind_continue
         storage_dead(_16)
         match _15 {
             Option::None => {
@@ -1209,6 +1219,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _19 = Range { start: const 0usize, end: move _20 }
         storage_dead(_20)
         _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _19)
+        ↳⚡ unwind_continue
         storage_dead(_19)
         storage_live(iter_21)
         iter_21 = move _18
@@ -1219,6 +1230,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
             _24 = &mut iter_21
             _23 = &two-phase-mut (*_24)
             _22 = next<'13, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _23)
+            ↳⚡ unwind_continue
             storage_dead(_23)
             match _22 {
                 Option::None => {
@@ -1282,6 +1294,7 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32
         _6 = Range { start: const 0u32, end: move _7 }
         storage_dead(_7)
         _5 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32]](move _6)
+        ↳⚡ unwind_continue
         storage_dead(_6)
         storage_live(iter)
         iter = move _5
@@ -1292,6 +1305,7 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32
             _11 = &mut iter
             _10 = &two-phase-mut (*_11)
             _9 = next<'4, u32>[{built_in impl Sized for u32}, impl_Step_for_u32](move _10)
+            ↳⚡ unwind_continue
             storage_dead(_10)
             match _9 {
                 Option::None => {
@@ -1416,6 +1430,7 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
             _10 = &a
             storage_live(_11)
             _11 = @ArrayIndexShared<'_, u32, N>(move _10, copy _7)
+            ↳⚡ undefined_behavior
             _6 = copy (*_11)
             _8 = copy s panic.+ copy _6
             s = move _8
@@ -1464,6 +1479,7 @@ pub fn clear<'_0>(v: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in 
         storage_live(_6)
         _6 = &(*v)
         _5 = alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::len<'8, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}](move _6)
+        ↳⚡ unwind_continue
         storage_dead(_6)
         _3 = move _4 < move _5
         if move _3 {
@@ -1478,6 +1494,7 @@ pub fn clear<'_0>(v: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in 
         storage_live(_9)
         _9 = copy i
         _7 = impl_IndexMut_for_Vec::index_mut<'10, u32, usize, Global>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, {built_in impl Sized for Global}, impl_SliceIndex_slice_for_usize<u32>[{built_in impl Sized for u32}]](move _8, move _9)
+        ↳⚡ unwind_continue
         storage_dead(_9)
         storage_dead(_8)
         (*_7) = const 0u32

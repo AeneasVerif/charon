@@ -21,6 +21,7 @@ fn main()
     _7 = &_6
     storage_live(_8)
     _8 = @ArrayToSliceShared<'_, u8, 3usize>(move _7)
+    ↳⚡ undefined_behavior
     y = move _8
     storage_live(z)
     storage_live(_3)

@@ -103,6 +103,7 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     _6 = &two-phase-mut (*_7)
     _5 = (move _6,)
     _3 = (copy ((*_4.metadata)).method_call)(move _4, move _5)
+    ↳⚡ unwind_continue
     if move _3 {
         storage_dead(_7)
         storage_dead(_6)
@@ -153,6 +154,7 @@ fn call_mut<'_0, '_1>(state: &'_1 mut closure, args: (&'_0 mut u32,)) -> bool
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'_0, '2>(move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -177,7 +179,11 @@ fn call_once<'_0>(_1: closure, _2: (&'_0 mut u32,)) -> bool
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '7>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'8>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'9>] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -241,6 +247,7 @@ fn gives_fn()
     _1 = unsize_cast<&'11 closure, &'15 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '16), &vtable_of(impl_Fn_tuple_for_closure<'21>)>(move _2)
     storage_dead(_2)
     _0 = takes_fn<'24>(move _1)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     storage_dead(_3)
     return

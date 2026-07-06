@@ -107,6 +107,7 @@ fn impl_Feline_for_HouseCat::hunt::{vtable_method}<'_0>(_1: &'_0 (dyn Feline))
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Feline + '1), &'_0 HouseCat>(move _1)
     _0 = hunt<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -121,6 +122,7 @@ unsafe fn impl_Feline_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Feline + '1), &'_0 mut HouseCat>(move dyn_self)
     drop[drop_glue<'3>] (*target_self)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -177,6 +179,7 @@ fn impl_Pettable_for_HouseCat::pet::{vtable_method}<'_0>(_1: &'_0 (dyn Pettable)
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Pettable + '1), &'_0 HouseCat>(move _1)
     _0 = pet<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -191,6 +194,7 @@ unsafe fn impl_Pettable_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Pettable + '1), &'_0 mut HouseCat>(move dyn_self)
     drop[drop_glue<'3>] (*target_self)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -247,6 +251,7 @@ fn impl_Cat_for_HouseCat::meow::{vtable_method}<'_0>(_1: &'_0 (dyn Cat))
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Cat + '1), &'_0 HouseCat>(move _1)
     _0 = meow<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -261,6 +266,7 @@ unsafe fn impl_Cat_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Cat + '1), &'_0 mut HouseCat>(move dyn_self)
     drop[drop_glue<'3>] (*target_self)
+    ↳⚡ unwind_continue
     return
 }
 

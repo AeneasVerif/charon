@@ -31,6 +31,7 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
     _13 = &(*a) with_metadata(copy a.metadata)
     storage_live(_14)
     _14 = @SliceIndexShared<'_, u8>(move _13, copy _5)
+    ↳⚡ undefined_behavior
     _4 = copy (*_14)
     _3 = move _4 < const 42u8
     if move _3 {
@@ -44,6 +45,7 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
         _11 = &(*a) with_metadata(copy a.metadata)
         storage_live(_12)
         _12 = @SliceIndexShared<'_, u8>(move _11, copy _8)
+        ↳⚡ undefined_behavior
         _7 = copy (*_12)
         _6 = move _7 < const 16u8
         if move _6 {

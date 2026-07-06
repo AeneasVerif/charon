@@ -52,6 +52,7 @@ where
     storage_live(_2)
     _2 = &(*self) with_metadata(copy self.metadata)
     _0 = TraitClause0::fold<'3>[TraitClause1](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }
@@ -80,6 +81,7 @@ where
     storage_live(_2)
     _2 = &(*self)
     _0 = fold<'3>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }

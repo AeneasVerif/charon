@@ -88,7 +88,11 @@ where
     _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Foo::drop<'4, T>[TraitClause0](move _2)
+    ↳⚡ drop[impl_Destruct_for_Vec::drop_glue<'5, T, Global>[TraitClause0, {built_in impl Sized for Global}]] ((*_1)).vec
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[impl_Destruct_for_Vec::drop_glue<'6, T, Global>[TraitClause0, {built_in impl Sized for Global}]] ((*_1)).vec
+    ↳⚡ unwind_continue
     return
 }
 
@@ -120,6 +124,7 @@ fn drop_foo(_1: Foo<u32>[{built_in impl Sized for u32}])
     _0 = ()
     _0 = ()
     conditional_drop[impl_Destruct_for_Foo::drop_glue<'0, u32>[{built_in impl Sized for u32}]] _1
+    ↳⚡ unwind_continue
     return
 }
 

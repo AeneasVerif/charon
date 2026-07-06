@@ -49,6 +49,7 @@ fn BAR() -> &'static [u8]
     _2 = move _4
     _1 = &(*_2)
     _0 = @ArrayToSliceShared<'_, u8, 5usize>(move _1)
+    ↳⚡ undefined_behavior
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -72,10 +73,12 @@ fn main()
     _3 = const "Hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
     _s = to_string<'5, str>[{built_in impl MetaSized for str}, {impl#1}](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_3)
     _0 = ()
     conditional_drop[drop_glue<'6>] _s
+    ↳⚡ unwind_continue
     storage_dead(_s)
     return
 }

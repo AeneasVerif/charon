@@ -30,6 +30,7 @@ fn test_crate::ntt_multiply() -> Portable
     let _0: Portable; // return
 
     _0 = ZERO()
+    ↳⚡ unwind_continue
     return
 }
 
@@ -39,6 +40,7 @@ fn impl_Ops_for_Portable::ntt_multiply() -> Portable
     let _0: Portable; // return
 
     _0 = test_crate::ntt_multiply()
+    ↳⚡ unwind_continue
     return
 }
 

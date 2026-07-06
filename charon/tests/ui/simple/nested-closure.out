@@ -108,6 +108,7 @@ where
     storage_live(_4)
     _4 = &(*((*_1)).0)
     _0 = TraitClause1::clone<'5>(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     return
 }
@@ -214,6 +215,7 @@ where
     storage_live(_9)
     _9 = ()
     _7 = impl_Fn_unit_for_closure::call<'53, '54, '55, '56, '57, '58, '59, T>[TraitClause0, TraitClause1](move _8, move _9)
+    ↳⚡ unwind_continue
     storage_live(_18)
     storage_live(_20)
     storage_live(_21)
@@ -231,6 +233,7 @@ where
     _11 = &(*_12)
     _10 = (move _11,)
     _5 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'69, '70, '71, '72, '73, '74, T>[TraitClause0, TraitClause1](move _6, move _10)
+    ↳⚡ unwind_continue
     storage_live(_19)
     storage_live(_22)
     storage_live(_23)
@@ -249,6 +252,7 @@ where
     _14 = &(*_15)
     _13 = (move _14,)
     _0 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'84, '85, '86, '87, T>[TraitClause0, TraitClause1](move _4, move _13)
+    ↳⚡ unwind_continue
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_4)
@@ -287,6 +291,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = impl_Fn_unit_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '3, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -304,7 +309,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = impl_FnMut_unit_for_closure::call_mut<'a, '_1, '_2, '_3, '_4, '_5, '14, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '19, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '24, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -388,6 +397,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, '3, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -405,7 +415,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, '_3, '_4, '17, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '22, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '27, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -489,6 +503,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '2, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -506,7 +521,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, '11, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '16, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[{impl Destruct for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::drop_glue<'a, '_1, '21, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 

@@ -39,6 +39,7 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     storage_dead(_8)
     storage_live(_10)
     _10 = @SliceIndexShared<'_, ()>(move _7, copy _9)
+    ↳⚡ undefined_behavior
     _named = &(*_10)
     _0 = ()
     storage_dead(_named)

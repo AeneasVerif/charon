@@ -109,6 +109,7 @@ pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 E
                         storage_live(_16)
                         _16 = &__arg1_0
                         _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'28, '29, '32, '33, u8, u8>[impl_PartialEq_u8_for_u8](move _15, move _16)
+                        ↳⚡ unwind_continue
                         storage_dead(_16)
                         storage_dead(_15)
                         storage_dead(__arg1_0)

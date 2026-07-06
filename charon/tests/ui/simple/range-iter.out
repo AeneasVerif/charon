@@ -163,6 +163,7 @@ fn iter(n: usize)
     _3 = Range { start: const 0usize, end: move _4 }
     storage_dead(_4)
     _2 = into_iter<Range<usize>, usize>[impl_Iterator_for_Range<usize>[impl_Step_for_usize]](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_live(iter)
     iter = move _2
@@ -173,6 +174,7 @@ fn iter(n: usize)
         _8 = &mut iter
         _7 = &two-phase-mut (*_8)
         _6 = next<'4, usize>[impl_Step_for_usize](move _7)
+        ↳⚡ unwind_continue
         storage_dead(_7)
         match _6 {
             Option::None => {

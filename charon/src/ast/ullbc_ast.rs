@@ -155,6 +155,7 @@ pub enum TerminatorKind {
     /// Handles panics and impossible cases.
     Abort(AbortKind),
     Return,
+    /// Unwind out of the current function into its caller.
     UnwindResume,
 }
 

@@ -112,11 +112,17 @@ pub unsafe extern "C" fn sum(...) -> i32
     storage_live(_3)
     _3 = &two-phase-mut ap
     a = next_arg<'8, '10, i32>[{built_in impl Sized for i32}, impl_VaArgSafe_for_i32](move _3)
+    ↳⚡ conditional_drop[drop_glue<'13, '14>] ap
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_live(b)
     storage_live(_5)
     _5 = &two-phase-mut ap
     b = next_arg<'15, '17, i32>[{built_in impl Sized for i32}, impl_VaArgSafe_for_i32](move _5)
+    ↳⚡ conditional_drop[drop_glue<'13, '14>] ap
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_5)
     storage_live(_6)
     _6 = copy a
@@ -129,6 +135,7 @@ pub unsafe extern "C" fn sum(...) -> i32
     storage_dead(b)
     storage_dead(a)
     conditional_drop[drop_glue<'20, '21>] ap
+    ↳⚡ unwind_continue
     return
 }
 
@@ -149,9 +156,11 @@ pub fn call()
     _0 = ()
     storage_live(_1)
     _1 = sum(const 1i32, const 2i32)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     storage_live(_2)
     _2 = foo(const 1u32, const 2u64, const 3i32, const 4i32, const 5i32)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_live(fn_ptr)
     fn_ptr = cast<foo, unsafe extern "C" fn(u32, u64, ...)>(const foo)
@@ -159,6 +168,7 @@ pub fn call()
     storage_live(_5)
     _5 = copy fn_ptr
     _4 = (move _5)(const 1u32, const 2u64, const 3i32, const 4i32, const 5i32)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

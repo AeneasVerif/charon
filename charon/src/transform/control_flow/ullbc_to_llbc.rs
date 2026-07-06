@@ -124,6 +124,8 @@ struct BlockData {
     pub is_loop_header: bool,
     /// Whether this block is a switch.
     pub is_switch: bool,
+    /// Whether this block is only reachable by taking an unwind edge.
+    pub is_unwind: bool,
     /// Whether this block has multiple incoming control-flow edges in the forward graph.
     pub is_merge_target: bool,
     /// Order in a reverse postorder numbering. `None` if the block is unreachable.
@@ -213,6 +215,7 @@ impl CfgInfo {
                 span: contents.terminator.span,
                 is_loop_header: false,
                 is_switch: false,
+                is_unwind: false,
                 is_merge_target: false,
                 reverse_postorder: None,
                 immediately_dominates: Default::default(),
@@ -225,12 +228,17 @@ impl CfgInfo {
             })
         });
 
-        // Build the node graph (we ignore unwind paths for now).
+        // Build the node graph.
         let mut cfg = Cfg::new();
+        let mut cfg_without_unwind = Cfg::new();
         for (block_id, block) in body.iter_enumerated() {
             cfg.add_node(block_id);
-            for tgt in block.targets_ignoring_unwind() {
+            cfg_without_unwind.add_node(block_id);
+            for tgt in block.targets() {
                 cfg.add_edge(block_id, tgt, ());
+            }
+            for tgt in block.targets_ignoring_unwind() {
+                cfg_without_unwind.add_edge(block_id, tgt, ());
             }
         }
 
@@ -248,8 +256,7 @@ impl CfgInfo {
             }
         }
 
-        // Compute the forward graph (without backward edges). We do a dfs while keeping track of
-        // the path from the start node.
+        // Compute the forward graph (without backward edges).
         let mut fwd_cfg = Cfg::new();
         let mut loop_entries = HashSet::new();
         let mut switch_blocks = HashSet::new();
@@ -287,11 +294,18 @@ impl CfgInfo {
             }
         }
 
+        let reachable_without_unwind: HashSet<BlockId> = Dfs::new(&cfg_without_unwind, start_block)
+            .iter(&cfg_without_unwind)
+            .collect();
+
         // Finish filling in information.
         for block_id in DfsPostOrder::new(&fwd_cfg, start_block).iter(&fwd_cfg) {
             let block = &body[block_id];
             let targets = cfg.neighbors(block_id).collect_vec();
             let fwd_targets = fwd_cfg.neighbors(block_id).collect_vec();
+
+            // Compute the nodes that are part of unwind paths.
+            block_data[block_id].is_unwind = !reachable_without_unwind.contains(&block_id);
 
             // Compute the nodes that can only reach error nodes.
             // The node can only reach error nodes if:
@@ -312,11 +326,22 @@ impl CfgInfo {
                 mem::take(&mut block_data[block_id].flow);
             // The flow to self is 1.
             flow[block_id] = BigRational::new(1u64.into(), 1u64.into());
+            // If a block has both regular and unwind targets, don't let the unwind path dilute
+            // the normal-control-flow heuristic used to pick switch exits. Unwind-only subgraphs
+            // still flow through their own targets.
+            let mut flow_targets = fwd_targets
+                .iter()
+                .copied()
+                .filter(|&child| !block_data[child].is_unwind)
+                .collect_vec();
+            if flow_targets.is_empty() {
+                flow_targets = fwd_targets;
+            }
             // Divide the flow from each child to a given target block by the number of children.
             // This is a sparse matrix multiplication and could be implemented using a linalg
             // library.
-            let num_children: BigUint = fwd_targets.len().into();
-            for &child in &fwd_targets {
+            let num_children: BigUint = flow_targets.len().into();
+            for child in flow_targets {
                 for grandchild in block_data[child].reachable_including_self() {
                     // Flow from `child` to `grandchild`
                     flow[grandchild] += &block_data[child].flow[grandchild] / &num_children;
@@ -452,6 +477,8 @@ impl BlockData {
 /// See [`ExitInfo::compute_loop_exit_ranks`].
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 struct LoopExitRank {
+    /// Prefer regular blocks over blocks reachable only through unwind edges.
+    is_unwind_block: Reverse<bool>,
     /// Number of paths we found going to this exit.
     path_count: usize,
     /// Distance from the loop header.
@@ -518,6 +545,7 @@ impl ExitInfo {
                 loop_exits
                     .entry(bid)
                     .or_insert_with(|| LoopExitRank {
+                        is_unwind_block: Reverse(cfg.block_data[bid].is_unwind),
                         path_count: 0,
                         distance_from_header: Reverse(
                             cfg.block_data[loop_header].shortest_paths[&bid],
@@ -766,9 +794,10 @@ impl ExitInfo {
                     current_loop.is_none_or(|current_loop| cfg.is_within_loop(current_loop, b))
                 })
                 .max_by_key(|&id| {
+                    let is_unwind_block = Reverse(cfg.block_data[id].is_unwind);
                     let flow = &block_data.flow[id];
                     let rank = Reverse(cfg.topo_rank(id));
-                    ((flow, rank), id)
+                    ((is_unwind_block, flow, rank), id)
                 });
             // We have an exit candidate: we first check that it was not already taken by an
             // external switch.
@@ -913,7 +942,7 @@ impl<'a> ReconstructCtx<'a> {
     }
 
     fn translate_statement(&self, st: &src::Statement) -> tgt::Statement {
-        let src_span = st.span;
+        let span = st.span;
         let st = match st.kind.clone() {
             src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
             src::StatementKind::SetDiscriminant(place, variant_id) => {
@@ -924,13 +953,15 @@ impl<'a> ReconstructCtx<'a> {
             }
             src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
             src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
-            src::StatementKind::Assert { assert, on_failure } => {
-                tgt::StatementKind::Assert { assert, on_failure }
-            }
+            src::StatementKind::Assert { assert, on_failure } => tgt::StatementKind::Assert {
+                assert,
+                on_failure: on_failure.clone(),
+                on_unwind: tgt::Statement::new(span, tgt::StatementKind::UnwindResume).into_block(),
+            },
             src::StatementKind::PlaceMention(place) => tgt::StatementKind::PlaceMention(place),
             src::StatementKind::Nop => tgt::StatementKind::Nop,
         };
-        tgt::Statement::new(src_span, st)
+        tgt::Statement::new(span, st)
     }
 
     /// Translate a jump to the given block. The span is used to create the jump statement, if any.
@@ -982,16 +1013,21 @@ impl<'a> ReconstructCtx<'a> {
                 tgt::Statement::new(src_span, tgt::StatementKind::Return).into_block()
             }
             src::TerminatorKind::UnwindResume => {
-                tgt::Statement::new(src_span, tgt::StatementKind::Abort(AbortKind::Panic(None)))
-                    .into_block()
+                tgt::Statement::new(src_span, tgt::StatementKind::UnwindResume).into_block()
             }
             src::TerminatorKind::Call {
                 call,
                 target,
-                on_unwind: _,
+                on_unwind,
             } => {
-                // TODO: Have unwinds in the LLBC
-                let st = tgt::Statement::new(src_span, tgt::StatementKind::Call(call.clone()));
+                let on_unwind = self.translate_block(*on_unwind);
+                let st = tgt::Statement::new(
+                    src_span,
+                    tgt::StatementKind::Call {
+                        call: call.clone(),
+                        on_unwind,
+                    },
+                );
                 let mut block = self.translate_jump(terminator.span, *target);
                 block.statements.insert(0, st);
                 block
@@ -1001,12 +1037,17 @@ impl<'a> ReconstructCtx<'a> {
                 place,
                 fn_ptr,
                 target,
-                on_unwind: _,
+                on_unwind,
             } => {
-                // TODO: Have unwinds in the LLBC
+                let on_unwind = self.translate_block(*on_unwind);
                 let st = tgt::Statement::new(
                     src_span,
-                    tgt::StatementKind::Drop(place.clone(), fn_ptr.clone(), *kind),
+                    tgt::StatementKind::Drop {
+                        place: place.clone(),
+                        fn_ptr: fn_ptr.clone(),
+                        kind: *kind,
+                        on_unwind,
+                    },
                 );
                 let mut block = self.translate_jump(terminator.span, *target);
                 block.statements.insert(0, st);
@@ -1017,11 +1058,11 @@ impl<'a> ReconstructCtx<'a> {
                 target,
                 on_unwind,
             } => {
-                let unwind_block = &self.body.body[*on_unwind];
-                let on_failure = unwind_block.as_abort().unwrap_or(AbortKind::Panic(None));
+                let on_unwind = self.translate_block(*on_unwind);
                 let st = tgt::StatementKind::Assert {
                     assert: assert.clone(),
-                    on_failure,
+                    on_failure: AbortKind::Panic(None),
+                    on_unwind,
                 };
                 let target = self.translate_jump(terminator.span, *target);
                 tgt::Statement::new(src_span, st).into_block().merge(target)
@@ -1029,16 +1070,17 @@ impl<'a> ReconstructCtx<'a> {
             src::TerminatorKind::InlineAsm {
                 asm,
                 targets,
-                on_unwind: _,
+                on_unwind,
             } => {
-                // TODO: Have unwinds in the LLBC.
                 let targets = targets
                     .iter()
                     .map(|target| self.translate_jump(terminator.span, *target))
                     .collect();
+                let on_unwind = self.translate_block(*on_unwind);
                 let st = tgt::StatementKind::InlineAsm {
                     asm: asm.clone(),
                     targets,
+                    on_unwind,
                 };
                 tgt::Statement::new(src_span, st).into_block()
             }

@@ -30,9 +30,11 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = foo::<10usize>()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     storage_live(_2)
     _2 = bar::<u32>()
+    ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = ()
     return

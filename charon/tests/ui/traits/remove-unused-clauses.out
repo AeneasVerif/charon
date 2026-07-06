@@ -38,6 +38,7 @@ pub fn caller<T>()
     _0 = ()
     storage_live(_1)
     _1 = callee<T>()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return
@@ -56,6 +57,7 @@ pub fn recursive<T>()
     if move _1 {
         storage_live(_2)
         _2 = recursive<T>()
+        ↳⚡ unwind_continue
         storage_dead(_2)
         _0 = ()
     } else {
@@ -78,6 +80,7 @@ pub fn swap_recursive<T, U>()
     if move _1 {
         storage_live(_2)
         _2 = swap_recursive<U, T>()
+        ↳⚡ unwind_continue
         storage_dead(_2)
         _0 = ()
     } else {
@@ -107,6 +110,7 @@ pub fn clause_dep<T>()
     _1 = const false
     if move _1 {
         _0 = clause_dep<T>()
+        ↳⚡ unwind_continue
     } else {
         _0 = ()
     }

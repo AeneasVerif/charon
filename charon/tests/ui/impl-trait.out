@@ -143,15 +143,18 @@ fn use_foo()
     _0 = ()
     storage_live(foo)
     foo = mk_foo()
+    ↳⚡ unwind_continue
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &foo
     _4 = get_ty<'6>(move _5)
+    ↳⚡ unwind_continue
     _3 = &(*_4)
     storage_dead(_5)
     _2 = impl_Clone_for_u32::clone<'9>(move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -218,21 +221,32 @@ where
     _0 = ()
     storage_live(foo)
     foo = TraitClause1::make_foo()
+    ↳⚡ unwind_continue
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &foo
     _4 = TraitClause1::ImpliedClause2::get_ty<'5>(move _5)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'6>] foo
+        ↳⚡ unwind_terminate
+        unwind_continue
     _3 = &(*_4) with_metadata(copy _4.metadata)
     storage_dead(_5)
     _2 = TraitClause1::ImpliedClause2::ImpliedClause2::clone<'7>(move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'6>] foo
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for TraitClause1::ImpliedClause2::Type}::drop_glue<'8>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'6>] foo
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_4)
     storage_dead(_2)
     _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause1::make_foo_ty}::drop_glue<'9>] foo
+    ↳⚡ unwind_continue
     storage_dead(foo)
     return
 }
@@ -337,6 +351,7 @@ pub fn use_wrap()
     _0 = ()
     storage_live(f)
     f = wrap<u32>[{built_in impl Sized for u32}]()
+    ↳⚡ unwind_continue
     storage_live(_8)
     storage_live(_9)
     storage_live(_10)
@@ -354,6 +369,11 @@ pub fn use_wrap()
     _5 = &(*_6)
     _4 = (move _5,)
     _2 = call_once<'23, u32>[{built_in impl Sized for u32}](move _3, move _4)
+    ↳⚡ conditional_drop[drop_glue<'24, u32>[{built_in impl Sized for u32}]] _3
+        ↳⚡ unwind_terminate
+        conditional_drop[drop_glue<'26, u32>[{built_in impl Sized for u32}]] f
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -361,6 +381,7 @@ pub fn use_wrap()
     storage_dead(_2)
     _0 = ()
     conditional_drop[drop_glue<'25, u32>[{built_in impl Sized for u32}]] f
+    ↳⚡ unwind_continue
     storage_dead(f)
     return
 }

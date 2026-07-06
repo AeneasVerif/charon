@@ -214,6 +214,7 @@ where
     _0 = ()
     storage_live(_1)
     _1 = TraitClause1::method1()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     storage_live(_2)
     _2 = const TraitClause1::CONST1

@@ -114,7 +114,7 @@ and terminator_kind =
           - [on_unwind] *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
-  | UnwindResume
+  | UnwindResume  (** Unwind out of the current function into its caller. *)
 [@@deriving
   show,
   eq,
