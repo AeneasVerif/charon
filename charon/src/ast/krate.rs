@@ -290,7 +290,7 @@ pub struct TranslatedCrate {
     /// referred to by reachable items so could in principle be removed from the crate, but we keep
     /// them around to be able to tell method implementations apart.
     ///
-    /// Always `Some` after translation.
+    /// `Some` after translation unless `--no-reorder-decls` is passed.
     #[drive(skip)]
     #[serde_state(stateless)]
     pub ordered_decls: Option<DeclarationsGroups>,

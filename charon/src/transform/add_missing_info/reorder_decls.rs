@@ -7,6 +7,7 @@
 //! to be explicit about mutual recursion. This should come useful for translation to any other
 //! language with these properties.
 use crate::common::*;
+use crate::options::TranslateOptions;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
@@ -475,6 +476,10 @@ fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
 
 pub struct Transform;
 impl TransformPass for Transform {
+    fn should_run(&self, options: &TranslateOptions) -> bool {
+        !options.no_reorder_decls
+    }
+
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let reordered_decls = compute_reordered_decls(ctx);
         ctx.translated.ordered_decls = Some(reordered_decls);

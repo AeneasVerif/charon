@@ -183,6 +183,9 @@ Options:
       --no-normalize
           Don't normalize associated types
 
+      --no-reorder-decls
+          Don't compute a stable order for declarations
+
       --abort-on-error
           Panic on the first error. This is useful for debugging
 

@@ -216,6 +216,8 @@ and cli_options = {
   no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
   no_typecheck : bool;  (** Skip the typecheck passes. *)
   no_normalize : bool;  (** Don't normalize associated types. *)
+  no_reorder_decls : bool;
+      (** Don't compute a stable order for declarations. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Consider any warnings to be errors. *)
@@ -377,6 +379,6 @@ and translated_crate = {
           be removed from the crate, but we keep them around to be able to tell
           method implementations apart.
 
-          Always [Some] after translation. *)
+          [Some] after translation unless [--no-reorder-decls] is passed. *)
 }
 [@@deriving show]
