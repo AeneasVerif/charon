@@ -250,6 +250,8 @@ pub enum CastKind {
     Debug,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
     Clone,
     EnumIsA,
     VariantName,
@@ -375,6 +377,8 @@ pub enum Operand {
     Clone,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
     Hash,
     EnumIsA,
     EnumAsGetters,
@@ -416,6 +420,8 @@ impl From<BuiltinFunId> for FunId {
     Copy,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
     Hash,
     EnumIsA,
     EnumAsGetters,
@@ -457,7 +463,20 @@ pub enum BuiltinFunId {
 }
 
 /// One of 8 built-in indexing operations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
 pub struct BuiltinIndexOp {
     /// Whether this is a slice or array.
     #[drive(skip)]
@@ -485,6 +504,8 @@ pub struct MaybeBuiltinFunDeclRef {
     Clone,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
     EnumAsGetters,
     SerializeState,
     DeserializeState,
@@ -511,7 +532,19 @@ impl From<FunDeclId> for FnPtrKind {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, Hash)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Clone,
+    Hash,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
 pub struct FnPtr {
     pub kind: Box<FnPtrKind>,
     pub generics: BoxedArgs,
@@ -523,7 +556,19 @@ impl From<FunDeclRef> for FnPtr {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, Hash)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Clone,
+    Hash,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Prov"))]
 pub enum Provenance {
     Global(GlobalDeclRef),
@@ -533,7 +578,19 @@ pub enum Provenance {
 
 /// A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8 value,
 /// or part of a pointer with provenance (e.g. to a global or a function)
-#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, Hash)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Clone,
+    Hash,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
 pub enum Byte {
     /// An uninitialized byte
     Uninit,
@@ -575,9 +632,11 @@ pub enum Byte {
 /// reading the constant `a.b` is translated to `{ _1 = const a; _2 = (_1.0) }`.
 #[derive(
     Debug,
-    Hash,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
+    Hash,
     Clone,
     VariantName,
     EnumIsA,
@@ -666,7 +725,19 @@ pub enum ConstantExprKind {
     Opaque(String),
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Clone,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct ConstantExpr {
     pub kind: ConstantExprKind,

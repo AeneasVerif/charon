@@ -1,13 +1,13 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::Foo::<bool>
-struct Foo::<bool> {
-  value: bool,
-}
-
 // Full name: test_crate::Foo::<i32>
 struct Foo::<i32> {
   value: i32,
+}
+
+// Full name: test_crate::Foo::<bool>
+struct Foo::<bool> {
+  value: bool,
 }
 
 // Full name: test_crate::FooInt

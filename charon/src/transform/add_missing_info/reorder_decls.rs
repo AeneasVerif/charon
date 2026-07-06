@@ -426,7 +426,13 @@ fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
         let item_meta = item.item_meta();
         let span = item_meta.span.data;
         let file_name_order = sorted_file_ids.get(span.file_id);
-        (item_meta.is_local, file_name_order, span.beg, item.id())
+        (
+            item_meta.is_local,
+            file_name_order,
+            span.beg,
+            item_meta.name.mono_args().cloned(),
+            item.id(),
+        )
     };
     // We record for each item the order in which we're sorting it, to make `sort_by` cheap.
     let item_sorted_index: HashMap<ItemId, usize> = ctx

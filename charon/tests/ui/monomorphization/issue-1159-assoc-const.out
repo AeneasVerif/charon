@@ -19,13 +19,6 @@ opaque type {vtable}
 #[lang_item("meta_sized")]
 pub trait MetaSized<Self>
 
-// Full name: core::option::Option::<&'_ [u64]>
-#[lang_item("Option")]
-pub enum Option::<&'_ [u64]> {
-  None,
-  Some(&'_ [u64]),
-}
-
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -34,6 +27,13 @@ where
 {
   None,
   Some(T),
+}
+
+// Full name: core::option::Option::<&'_ [u64]>
+#[lang_item("Option")]
+pub enum Option::<&'_ [u64]> {
+  None,
+  Some(&'_ [u64]),
 }
 
 // Full name: test_crate::MyConfig

@@ -27,6 +27,18 @@ impl<T> HashConsed<T> {
     }
 }
 
+impl<T: PartialOrd> PartialOrd for HashConsed<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.inner().partial_cmp(other.inner())
+    }
+}
+
+impl<T: Ord> Ord for HashConsed<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.inner().cmp(other.inner())
+    }
+}
+
 pub trait HashConsable: Hash + PartialEq + Eq + Clone + Mappable {}
 impl<T> HashConsable for T where T: Hash + PartialEq + Eq + Clone + Mappable {}
 
