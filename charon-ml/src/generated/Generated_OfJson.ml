@@ -2672,15 +2672,13 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
     (match js with
     | `Assoc
         [
-          ("size", size);
-          ("align", align);
+          ("size_align", size_align);
           ("discriminator", discriminator);
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
           ("repr", repr);
         ] ->
-        let* size = option_of_json int_of_json ctx size in
-        let* align = option_of_json int_of_json ctx align in
+        let* size_align = symbolic_layout_of_json ctx size_align in
         let* discriminator =
           option_of_json discriminator_of_json ctx discriminator
         in
@@ -2692,7 +2690,7 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
         in
         let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ size; align; discriminator; uninhabited; variant_layouts; repr }
+          ({ size_align; discriminator; uninhabited; variant_layouts; repr }
             : layout)
     | _ -> Error "")
 
@@ -2809,6 +2807,60 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Json" -> Ok Json
     | `String "Postcard" -> Ok Postcard
     | `String "All" -> Ok AllFormats
+    | _ -> Error "")
+
+and sym_layout_atom_of_json (ctx : of_json_ctx) (js : json) :
+    (sym_layout_atom, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("SymSize", sym_size) ] ->
+        let* sym_size = ty_of_json ctx sym_size in
+        Ok (SymSize sym_size)
+    | `Assoc [ ("SymAlign", sym_align) ] ->
+        let* sym_align = ty_of_json ctx sym_align in
+        Ok (SymAlign sym_align)
+    | `Assoc [ ("Concrete", concrete) ] ->
+        let* concrete = int_of_json ctx concrete in
+        Ok (Concrete concrete)
+    | _ -> Error "")
+
+and sym_layout_comp_of_json (ctx : of_json_ctx) (js : json) :
+    (sym_layout_comp, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Atom", atom) ] ->
+        let* atom = sym_layout_atom_of_json ctx atom in
+        Ok (Atom atom)
+    | `Assoc [ ("Sum", sum) ] ->
+        let* sum = list_of_json sym_layout_atom_of_json ctx sum in
+        Ok (Sum sum)
+    | `Assoc
+        [ ("Product", `Assoc [ ("atom", atom); ("multiplier", multiplier) ]) ]
+      ->
+        let* atom = sym_layout_atom_of_json ctx atom in
+        let* multiplier = constant_expr_of_json ctx multiplier in
+        Ok (Product (atom, multiplier))
+    | `Assoc
+        [
+          ( "AlignedTo",
+            `Assoc [ ("base", base); ("target_align", target_align) ] );
+        ] ->
+        let* base = box_of_json sym_layout_comp_of_json ctx base in
+        let* target_align = sym_layout_atom_of_json ctx target_align in
+        Ok (AlignedTo (base, target_align))
+    | `Assoc [ ("Max", max) ] ->
+        let* max = list_of_json sym_layout_comp_of_json ctx max in
+        Ok (Max max)
+    | _ -> Error "")
+
+and symbolic_layout_of_json (ctx : of_json_ctx) (js : json) :
+    (symbolic_layout, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("size", size); ("alignment", alignment) ] ->
+        let* size = sym_layout_comp_of_json ctx size in
+        let* alignment = sym_layout_comp_of_json ctx alignment in
+        Ok ({ size; alignment } : symbolic_layout)
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :

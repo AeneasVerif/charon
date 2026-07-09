@@ -64,8 +64,6 @@ pub enum ItemId {
     EnumAsGetters,
     VariantName,
     VariantIndexArity,
-    Serialize,
-    Deserialize,
     SerializeState,
     DeserializeState,
     Drive,

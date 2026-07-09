@@ -3,8 +3,9 @@ use rustc_middle::ty;
 use rustc_span::sym;
 
 use super::translate_ctx::*;
-use crate::hax::{self, UnderOwnerState};
+use crate::hax::{self, GenericArg, SInto, UnderOwnerState};
 use crate::hax::{HasOwner, Visibility};
+use charon_lib::ast::symbolic_layout::SymbolicLayout;
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
 
@@ -495,6 +496,58 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(ret)
     }
 
+    #[tracing::instrument(skip(self))]
+    /// Translates a layout symbolically, once we failed to obtain a concrete layout for the type.
+    pub fn translate_symbolic_layout(
+        &mut self,
+        def: &hax::FullDef<'tcx>,
+    ) -> Option<SymbolicLayout> {
+        match def.kind() {
+            hax::FullDefKind::Adt { adt_kind, .. } => match adt_kind {
+                hax::AdtKind::Struct => None, // TODO: implement
+                hax::AdtKind::Union => None,  // TODO: implement
+                hax::AdtKind::Enum => None,   // TODO: implement
+                hax::AdtKind::Array => {
+                    let elem_ty = def
+                        .this()
+                        .generic_args
+                        .iter()
+                        .find_map(|arg| {
+                            if let GenericArg::Type(ty) = arg {
+                                Some(ty)
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap();
+                    let elem_ty = self.translate_ty(Span::dummy(), elem_ty).ok()?;
+                    let elem_num = def
+                        .this()
+                        .generic_args
+                        .iter()
+                        .find_map(|arg| {
+                            if let GenericArg::Const(c) = arg {
+                                Some(c)
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap();
+                    let elem_num = self.translate_constant_expr(Span::dummy(), elem_num).ok()?;
+
+                    Some(SymbolicLayout::mk_array(&elem_ty, &elem_num))
+                }
+                hax::AdtKind::Slice => None, // TODO: support DSTs?
+                hax::AdtKind::Tuple => None, // TODO: implement
+            },
+            hax::FullDefKind::TyAlias { ty, .. } => {
+                let ty = self.translate_ty(Span::dummy(), ty).ok()?;
+                Some(SymbolicLayout::mk_symbolic(ty))
+            }
+            _ => None,
+        }
+    }
+
     /// Translate a type layout.
     ///
     /// Translates the layout as queried from rustc into
@@ -572,14 +625,32 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
         // If layout computation returns an error, we return `None`.
-        let layout = tcx.layout_of(pseudo_input).ok()?.layout;
-        let (size, align) = if layout.is_sized() {
-            (
-                Some(layout.size().bytes()),
-                Some(layout.align().abi.bytes()),
-            )
+        let layout = match tcx.layout_of(pseudo_input) {
+            Ok(ty_and_layout) => ty_and_layout.layout,
+            Err(_) => {
+                let size_align = self.translate_symbolic_layout(def)?;
+                let repr = match &def.kind {
+                    hax::FullDefKind::Adt { repr: hax_repr, .. } => {
+                        self.translate_repr_options(hax_repr)
+                    }
+                    _ => ReprOptions::default(),
+                };
+                // TODO: can we get the real information somewhere else?
+                return Some(Layout {
+                    size_align,
+                    discriminator: None,
+                    uninhabited: false,
+                    variant_layouts: IndexVec::new(),
+                    repr,
+                });
+            }
+        };
+        let size_align = if layout.is_sized() {
+            SymbolicLayout::mk_concrete(layout.size().bytes(), layout.align.bytes())
         } else {
-            (None, None)
+            let ty = ty.sinto(hax_state);
+            let ty = self.translate_ty(Span::dummy(), &ty).ok()?;
+            SymbolicLayout::mk_symbolic(ty)
         };
 
         // Build the discriminator tree and variant layouts.
@@ -709,8 +780,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         };
 
         Some(Layout {
-            size,
-            align,
+            size_align,
             discriminator,
             uninhabited: layout.is_uninhabited(),
             variant_layouts,
@@ -738,10 +808,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     align = std::cmp::max(align, size);
                     offset
                 });
+                let size_align = SymbolicLayout::mk_concrete(size, align);
 
                 Ok(Layout {
-                    size: Some(size),
-                    align: Some(align),
+                    size_align,
                     discriminator: None,
                     uninhabited: false,
                     variant_layouts: IndexVec::from([Some(VariantLayout {

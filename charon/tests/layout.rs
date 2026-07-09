@@ -2,7 +2,7 @@ use itertools::Itertools;
 use serde_state::WithState;
 use std::path::PathBuf;
 
-use charon_lib::ast::*;
+use charon_lib::{ast::*, common::serialize_map_to_array::SeqHashMapToArray};
 
 mod util;
 use util::*;
@@ -248,7 +248,10 @@ fn type_layout() -> anyhow::Result<()> {
             Some((name, serializable))
         })
         .collect();
-    let layouts_str = serde_json::to_string_pretty(&layouts)?;
+    let mut buffer: Vec<u8> = Vec::new();
+    let mut serializer = serde_json::Serializer::pretty(&mut buffer);
+    SeqHashMapToArray::serialize_state(&layouts, &(), &mut serializer)?;
+    let layouts_str = str::from_utf8(&buffer)?;
 
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
     Ok(())

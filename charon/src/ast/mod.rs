@@ -11,6 +11,7 @@ pub mod meta;
 pub mod meta_utils;
 pub mod names;
 pub mod names_utils;
+pub mod symbolic_layout;
 pub mod types;
 pub mod types_utils;
 pub mod ullbc_ast;

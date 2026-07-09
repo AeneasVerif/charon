@@ -2252,8 +2252,7 @@ and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (layout, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* size = option_of_postcard u64_of_postcard ctx st in
-     let* align = option_of_postcard u64_of_postcard ctx st in
+    (let* size_align = symbolic_layout_of_postcard ctx st in
      let* discriminator = option_of_postcard discriminator_of_postcard ctx st in
      let* uninhabited = bool_of_postcard ctx st in
      let* variant_layouts =
@@ -2263,7 +2262,7 @@ and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* repr = repr_options_of_postcard ctx st in
      Ok
-       ({ size; align; discriminator; uninhabited; variant_layouts; repr }
+       ({ size_align; discriminator; uninhabited; variant_layouts; repr }
          : layout))
 
 and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2371,6 +2370,53 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      | 1 -> Ok Postcard
      | 2 -> Ok AllFormats
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and sym_layout_atom_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (sym_layout_atom, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = ty_of_postcard ctx st in
+         Ok (SymSize x_0)
+     | 1 ->
+         let* x_0 = ty_of_postcard ctx st in
+         Ok (SymAlign x_0)
+     | 2 ->
+         let* x_0 = u64_of_postcard ctx st in
+         Ok (Concrete x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and sym_layout_comp_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (sym_layout_comp, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = sym_layout_atom_of_postcard ctx st in
+         Ok (Atom x_0)
+     | 1 ->
+         let* x_0 = list_of_postcard sym_layout_atom_of_postcard ctx st in
+         Ok (Sum x_0)
+     | 2 ->
+         let* atom = sym_layout_atom_of_postcard ctx st in
+         let* multiplier = constant_expr_of_postcard ctx st in
+         Ok (Product (atom, multiplier))
+     | 3 ->
+         let* base = box_of_postcard sym_layout_comp_of_postcard ctx st in
+         let* target_align = sym_layout_atom_of_postcard ctx st in
+         Ok (AlignedTo (base, target_align))
+     | 4 ->
+         let* x_0 = list_of_postcard sym_layout_comp_of_postcard ctx st in
+         Ok (Max x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and symbolic_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (symbolic_layout, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* size = sym_layout_comp_of_postcard ctx st in
+     let* alignment = sym_layout_comp_of_postcard ctx st in
+     Ok ({ size; alignment } : symbolic_layout))
 
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (target_info, string) result =

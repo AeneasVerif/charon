@@ -1,4 +1,4 @@
-use crate::ast::*;
+use crate::ast::{symbolic_layout::SymbolicLayout, *};
 use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::ids::IndexVec;
 use derive_generic_visitor::*;
@@ -525,7 +525,20 @@ pub type ByteCount = u64;
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+)]
+#[serde_state(stateless)]
 pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
@@ -542,7 +555,8 @@ pub struct VariantLayout {
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
 /// `Discriminator`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, SerializeState, DeserializeState)]
+#[serde_state(stateless)]
 pub enum Discriminator {
     /// The variant is known.
     Known(VariantId),
@@ -569,12 +583,9 @@ pub enum Discriminator {
 /// some of the layout parts are not available.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Layout {
-    /// The size of the type in bytes.
+    /// The (potentially) symbolic size and alignment of the type.
     #[drive(skip)]
-    pub size: Option<ByteCount>,
-    /// The alignment, in bytes.
-    #[drive(skip)]
-    pub align: Option<ByteCount>,
+    pub size_align: SymbolicLayout,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     #[drive(skip)]
     #[serde_state(stateless)]
@@ -967,8 +978,6 @@ pub struct TypeDeclRef {
     EnumIsA,
     EnumAsGetters,
     VariantIndexArity,
-    Serialize,
-    Deserialize,
     SerializeState,
     DeserializeState,
     Drive,

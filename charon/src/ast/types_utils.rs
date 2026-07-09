@@ -1468,6 +1468,13 @@ impl TypeDecl {
             .iter_enumerated()
             .find(|(_, field)| field.name.as_deref() == Some(field_name))
     }
+
+    /// When translating without `--target`, there can be at most one layout; this method
+    /// retrieves it.
+    /// Returns `None` if this type decl was translated in multi-target mode or has no layout information whatsoever.
+    pub fn the_layout(&self) -> Option<&Layout> {
+        self.layout.values().exactly_one().ok()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
