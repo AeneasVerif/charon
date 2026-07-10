@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783675798819,
+  "lastUpdate": 1783676864476,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -7186,6 +7186,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 451.1,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.6,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c54518ee2d0db7927fdd7ef53bfb007d7ffbabb4",
+          "message": "Merge pull request #1321 from Nadrieril/layout-serialize\n\nRemove the `Serialize` derive on `Layout`",
+          "timestamp": "2026-07-10T09:43:07Z",
+          "tree_id": "06fe1bd76372a90d02769cb7146f6b9a56a9cdb9",
+          "url": "https://github.com/AeneasVerif/charon/commit/c54518ee2d0db7927fdd7ef53bfb007d7ffbabb4"
+        },
+        "date": 1783676863068,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 104313684066,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 14.74,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 423.6,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.9,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 365526554496,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 42.07,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 451,
             "unit": "max-rss(MB)"
           },
           {
