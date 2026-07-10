@@ -2,8 +2,11 @@
 use itertools::Itertools;
 use rustc_middle::mir;
 use rustc_span::RemapPathScopeComponents;
-use std::cmp::Ord;
-use std::path::{Component, PathBuf};
+use std::{
+    cmp::Ord,
+    path::{Component, PathBuf},
+    sync::LazyLock,
+};
 
 use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
@@ -50,6 +53,15 @@ impl<'tcx> TranslateCtx<'tcx> {
                             }
                             normalized
                         };
+                        // Find the cargo home directory: according to cargo docs and having a
+                        // look at the cargo source, it's either the `$CARGO_HOME` var or
+                        // `$HOME/.cargo`
+                        static CARGO_HOME: LazyLock<Option<PathBuf>> = LazyLock::new(|| {
+                            std::env::var("CARGO_HOME")
+                                .map(PathBuf::from)
+                                .ok()
+                                .or_else(|| std::env::home_dir().map(|p| p.join(".cargo")))
+                        });
                         // The path to files in the standard library may be full paths to
                         // somewhere in the sysroot or in the original toolchain source tree. This
                         // may depend on how the toolchain is installed (rustup vs nix), so we
@@ -67,28 +79,18 @@ impl<'tcx> TranslateCtx<'tcx> {
                             let mut rewritten_path: PathBuf = "/toolchain".into();
                             rewritten_path.extend(path);
                             rewritten_path
+                        } else if let Some(cargo_home) = &*CARGO_HOME
+                            && let Ok(path) = path.strip_prefix(cargo_home)
+                        {
+                            let mut rewritten_path: PathBuf = "/cargo".into();
+                            rewritten_path.extend(path);
+                            rewritten_path
+                        } else if let Ok(current_dir) = std::env::current_dir()
+                            && let Ok(path) = path.strip_prefix(current_dir)
+                        {
+                            path.to_path_buf()
                         } else {
-                            // Find the cargo home directory: according to cargo docs and having a
-                            // look at the cargo source, it's either the `$CARGO_HOME` var or
-                            // `$HOME/.cargo`
-                            let cargo_home = std::env::var("CARGO_HOME")
-                                .map(PathBuf::from)
-                                .ok()
-                                .or_else(|| std::env::home_dir().map(|p| p.join(".cargo")));
-                            if let Some(cargo_home) = cargo_home
-                                && let Ok(path) = path.strip_prefix(cargo_home)
-                            {
-                                // Avoid some more machine-dependent paths in the llbc output.
-                                let mut rewritten_path: PathBuf = "/cargo".into();
-                                rewritten_path.extend(path);
-                                rewritten_path
-                            } else if let Ok(current_dir) = std::env::current_dir()
-                                && let Ok(path) = path.strip_prefix(current_dir)
-                            {
-                                path.to_path_buf()
-                            } else {
-                                path
-                            }
+                            path
                         };
                         FileName::Local(path)
                     }
