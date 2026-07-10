@@ -23,6 +23,7 @@ fn main()
     let _5: &'2 i32; // anonymous local
     let _6: &'3 i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(x)
     x = const 11i32

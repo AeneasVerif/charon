@@ -129,10 +129,13 @@ where
     let _0: (); // return
     let _f: F; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _f
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_f)
+        unwind_continue
+    storage_dead(_f)
     return
 }
 
@@ -145,6 +148,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -156,7 +160,9 @@ pub fn f<'a>(_1: &'a ()) -> Option<(&'a u8,)>[{built_in impl Sized for (&'a u8,)
     let _0: Option<(&'9 u8,)>[{built_in impl Sized for (&'9 u8,)}]; // return
     let _1: &'13 (); // arg #1
 
+    storage_live(_0)
     _0 = Option::None {  }
+    storage_dead(_1)
     return
 }
 

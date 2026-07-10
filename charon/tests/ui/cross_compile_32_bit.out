@@ -35,6 +35,7 @@ fn main()
     let _8: NonNull<usize>; // anonymous local
     let _9: *mut usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_6)
     _0 = ()
     storage_live(x)
@@ -55,7 +56,8 @@ fn main()
     storage_live(_9)
     _9 = &raw mut x
     _8 = new_unchecked<usize>(move _9)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_6)
+        unwind_continue
     storage_dead(_9)
     a = HasPointerNiche::Second { 0: move _8 }
     storage_dead(_8)
@@ -64,6 +66,7 @@ fn main()
     storage_dead(z)
     storage_dead(y)
     storage_dead(x)
+    storage_dead(_6)
     return
 }
 

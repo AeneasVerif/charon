@@ -9,6 +9,7 @@ pub fn wrapping_add(self: u8, rhs: u8) -> u8
     let _3: u8; // anonymous local
     let _4: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy self
     storage_live(_4)
@@ -16,6 +17,8 @@ pub fn wrapping_add(self: u8, rhs: u8) -> u8
     _0 = move _3 wrap.+ move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(rhs)
+    storage_dead(self)
     return
 }
 
@@ -28,6 +31,7 @@ pub fn wrapping_sub(self: u8, rhs: u8) -> u8
     let _3: u8; // anonymous local
     let _4: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy self
     storage_live(_4)
@@ -35,6 +39,8 @@ pub fn wrapping_sub(self: u8, rhs: u8) -> u8
     _0 = move _3 wrap.- move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(rhs)
+    storage_dead(self)
     return
 }
 
@@ -47,6 +53,7 @@ pub fn wrapping_mul(self: u8, rhs: u8) -> u8
     let _3: u8; // anonymous local
     let _4: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy self
     storage_live(_4)
@@ -54,6 +61,8 @@ pub fn wrapping_mul(self: u8, rhs: u8) -> u8
     _0 = move _3 wrap.* move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(rhs)
+    storage_dead(self)
     return
 }
 
@@ -68,6 +77,7 @@ fn main()
     let _5: u8; // anonymous local
     let _6: u8; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const 255u8 wrap.+ const 1u8

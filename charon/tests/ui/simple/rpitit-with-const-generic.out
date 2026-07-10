@@ -31,6 +31,7 @@ pub fn bar<const N : usize>() -> [u8; N]
 {
     let _0: [u8; N]; // return
 
+    storage_live(_0)
     _0 = @ArrayRepeat<u8, N>(const 0u8)
     ↳⚡ undefined_behavior
     return

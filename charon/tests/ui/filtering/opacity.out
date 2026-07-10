@@ -33,11 +33,14 @@ where
     let self: T; // arg #1
     let _2: T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move self
     _0 = TraitClause2::from(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -76,6 +79,7 @@ pub fn from(small: u32) -> u64
     let _9: u128; // anonymous local
     let _10: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = const false
     if move _2 {
@@ -85,12 +89,8 @@ pub fn from(small: u32) -> u64
         storage_live(_5)
         _5 = cast<u32, i128>(copy core::num::{u32}::MIN)
         _3 = move _4 <= move _5
-        if move _3 {
-        } else {
-            storage_dead(_5)
-            storage_dead(_4)
-            panic(core::panicking::panic)
-        }
+        assert(move _3 == true) else panic(core::panicking::panic)
+        ↳⚡ unwind_continue
         storage_dead(_5)
         storage_dead(_4)
         storage_dead(_3)
@@ -106,12 +106,8 @@ pub fn from(small: u32) -> u64
         storage_live(_9)
         _9 = cast<u64, u128>(copy core::num::{u64}::MAX)
         _7 = move _8 <= move _9
-        if move _7 {
-        } else {
-            storage_dead(_9)
-            storage_dead(_8)
-            panic(core::panicking::panic)
-        }
+        assert(move _7 == true) else panic(core::panicking::panic)
+        ↳⚡ unwind_continue
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
@@ -122,6 +118,7 @@ pub fn from(small: u32) -> u64
     _10 = copy small
     _0 = cast<u32, u64>(move _10)
     storage_dead(_10)
+    storage_dead(small)
     return
 }
 
@@ -151,16 +148,19 @@ where
     let _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _ = (*self)
     match (*self) {
         Option::Some => {
         },
         _ => {
             _0 = const false
+            storage_dead(self)
             return
         },
     }
     _0 = const true
+    storage_dead(self)
     return
 }
 
@@ -189,6 +189,7 @@ fn foo()
     _12 = Option::Some { 0: const 0i32 }
     _11 = &_12
     _9 = move _11
+    storage_live(_0)
     storage_live(_7)
     storage_live(_8)
     _0 = ()
@@ -197,12 +198,16 @@ fn foo()
     _8 = move _9
     _2 = &(*_8)
     _1 = is_some<'11, i32>[{built_in impl Sized for i32}](move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     storage_live(_3)
     _3 = into<u32, u64>[{built_in impl Sized for u32}, {built_in impl Sized for u64}, impl_From_u32_for_u64](const 42u32)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        unwind_continue
     storage_live(_10)
     storage_live(_13)
     storage_live(_14)
@@ -217,11 +222,21 @@ fn foo()
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = from_ref<'14, i32>[{built_in impl Sized for i32}](move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)
     _0 = ()
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
     return
 }
 

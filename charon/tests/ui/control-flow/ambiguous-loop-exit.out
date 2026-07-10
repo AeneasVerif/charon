@@ -13,6 +13,7 @@ pub fn f(x: u32) -> u32
     let _7: bool; // anonymous local
     let _8: u32; // anonymous local
 
+    storage_live(_0)
     loop {
         storage_live(_2)
         storage_live(_3)
@@ -43,6 +44,7 @@ pub fn f(x: u32) -> u32
                         _ => {
                             _0 = const 2u32
                             storage_dead(_4)
+                            storage_dead(x)
                             return
                         },
                     }
@@ -73,6 +75,7 @@ pub fn f(x: u32) -> u32
                         _ => {
                             _0 = const 2u32
                             storage_dead(_4)
+                            storage_dead(x)
                             return
                         },
                     }
@@ -85,6 +88,7 @@ pub fn f(x: u32) -> u32
     storage_dead(_3)
     _0 = const 3u32
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 

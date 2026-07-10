@@ -1,0 +1,37 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::REF
+fn REF() -> &'static u32
+{
+    let _0: &'1 u32; // return
+    let _1: &'2 u32; // anonymous local
+    let _2: &'3 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_1)
+    _2 = const {promoted_const}
+    _1 = &(*_2)
+    _0 = &(*_1)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::REF
+const REF: &'static u32 = REF()
+
+// Full name: test_crate::REF::{promoted_const}
+fn {promoted_const}() -> &'_ u32
+{
+    let _0: &'0 u32; // return
+    let _1: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = const 42u32
+    _0 = &_1
+    return
+}
+
+
+

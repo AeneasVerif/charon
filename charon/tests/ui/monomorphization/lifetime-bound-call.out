@@ -5,6 +5,7 @@ fn callee::<'_>()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -16,6 +17,7 @@ fn caller::<'_>()
     let _0: (); // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = callee::<'_>()
@@ -30,6 +32,7 @@ pub fn f()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = caller::<'_>()
     ↳⚡ unwind_continue

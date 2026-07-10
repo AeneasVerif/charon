@@ -26,6 +26,7 @@ fn bar()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -59,6 +60,7 @@ fn foo()
     _15 = Option::<i32>::Some { 0: const 0i32 }
     _14 = &_15
     _12 = move _14
+    storage_live(_0)
     storage_live(_10)
     storage_live(_11)
     _0 = ()
@@ -67,7 +69,9 @@ fn foo()
     _11 = move _12
     _2 = &(*_11)
     _1 = is_some::<i32><'14>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_11)
+        storage_dead(_10)
+        unwind_continue
     storage_live(_13)
     storage_live(_16)
     storage_live(_17)
@@ -83,7 +87,13 @@ fn foo()
     _5 = &(*_10)
     _4 = &(*_5)
     slice = @ArrayToSliceShared<'_, bool, 1usize>(move _4)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(_12)
+        undefined_behavior
     storage_dead(_4)
     storage_dead(_5)
     storage_live(_6)
@@ -93,7 +103,9 @@ fn foo()
     storage_live(_9)
     _9 = RangeFrom::<usize> { start: const 1usize }
     _7 = index::<bool, RangeFrom::<usize>><'18>(move _8, move _9)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_11)
+        storage_dead(_10)
+        unwind_continue
     storage_dead(_9)
     storage_dead(_8)
     _6 = &(*_7) with_metadata(copy _7.metadata)
@@ -101,6 +113,14 @@ fn foo()
     _0 = ()
     storage_dead(_7)
     storage_dead(slice)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
     return
 }
 
@@ -108,6 +128,7 @@ fn test_crate::funs_with_disambiguator::f#1() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 1u32
     return
 }
@@ -116,6 +137,7 @@ fn test_crate::funs_with_disambiguator::f() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 0u32
     return
 }
@@ -127,16 +149,23 @@ fn funs_with_disambiguator(b: bool) -> u32
     let b: bool; // arg #1
     let _2: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy b
     if move _2 {
-        _0 = test_crate::funs_with_disambiguator::f()
-        ↳⚡ unwind_continue
     } else {
         _0 = test_crate::funs_with_disambiguator::f#1()
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(b)
+            unwind_continue
+        storage_dead(_2)
+        storage_dead(b)
+        return
     }
+    _0 = test_crate::funs_with_disambiguator::f()
+    ↳⚡ storage_dead(b)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(b)
     return
 }
 
@@ -156,10 +185,12 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(item: i32) -> MonoContainer
     let item: i32; // arg #1
     let _2: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move item
     _0 = MonoContainer::<i32> { item: move _2 }
     storage_dead(_2)
+    storage_dead(item)
     return
 }
 
@@ -169,10 +200,12 @@ fn test_crate::{MonoContainer::<&'_ str>}::create::<&'_ str>(item: &'_ str) -> M
     let item: &'0 str; // arg #1
     let _2: &'1 str; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move item
     _0 = MonoContainer::<&'_ str> { item: move _2 }
     storage_dead(_2)
+    storage_dead(item)
     return
 }
 
@@ -183,6 +216,7 @@ fn mono_usage()
     let _container1: MonoContainer::<i32>; // local
     let _container2: MonoContainer::<&'_ str>; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_container1)
     _container1 = test_crate::{MonoContainer::<i32>}::create::<i32>(const 42i32)

@@ -33,6 +33,7 @@ pub fn IS_ZST::<()>() -> bool
     let _0: bool; // return
     let _1: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = size_of::<()>()
     ↳⚡ unwind_continue
@@ -50,6 +51,7 @@ fn main()
     let _0: (); // return
     let _1: bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = copy IS_ZST::<()>

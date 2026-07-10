@@ -9,6 +9,7 @@ pub fn test_crate::mono() -> u32
     let _0: u32; // return
     let _b: alloc::boxed::Box<u32>; // local
 
+    storage_live(_0)
     storage_live(_b)
     _b = @BoxNew<u32>(const 0u32)
     ↳⚡ unwind_continue

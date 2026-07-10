@@ -51,9 +51,12 @@ where
     let _0: (); // return
     let _1: &'1 mut HashMap<S>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     drop[{built_in impl Destruct for S}::drop_glue<'2>] ((*_1)).0
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -77,14 +80,23 @@ where
     let _x: HashMap<S>[TraitClause0]; // arg #1
     let _k: Q; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for Q}::drop_glue<'0>] _k
     ↳⚡ conditional_drop[drop_glue<'2, S>[TraitClause0]] _x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_k)
+            storage_dead(_x)
+            unwind_terminate
+        storage_dead(_k)
+        storage_dead(_x)
         unwind_continue
     conditional_drop[drop_glue<'1, S>[TraitClause0]] _x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_k)
+        storage_dead(_x)
+        unwind_continue
+    storage_dead(_k)
+    storage_dead(_x)
     return
 }
 
@@ -99,14 +111,23 @@ where
     let _x: HashMap<S>[TraitClause0]; // arg #1
     let _k: Q; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for Q}::drop_glue<'0>] _k
     ↳⚡ conditional_drop[drop_glue<'2, S>[TraitClause0]] _x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_k)
+            storage_dead(_x)
+            unwind_terminate
+        storage_dead(_k)
+        storage_dead(_x)
         unwind_continue
     conditional_drop[drop_glue<'1, S>[TraitClause0]] _x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_k)
+        storage_dead(_x)
+        unwind_continue
+    storage_dead(_k)
+    storage_dead(_x)
     return
 }
 
@@ -119,6 +140,7 @@ pub fn test1(map: HashMap<()>[{built_in impl Sized for ()}])
     let _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
     let _4: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
@@ -126,11 +148,13 @@ pub fn test1(map: HashMap<()>[{built_in impl Sized for ()}])
     storage_live(_4)
     _4 = ()
     _2 = top_level_get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, impl_Trait_for_unit](move _3, move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(map)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
+    storage_dead(map)
     return
 }
 
@@ -143,6 +167,7 @@ pub fn test2(map: HashMap<()>[{built_in impl Sized for ()}])
     let _3: HashMap<()>[{built_in impl Sized for ()}]; // anonymous local
     let _4: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
@@ -150,11 +175,13 @@ pub fn test2(map: HashMap<()>[{built_in impl Sized for ()}])
     storage_live(_4)
     _4 = ()
     _2 = get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, impl_Trait_for_unit](move _3, move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(map)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
+    storage_dead(map)
     return
 }
 

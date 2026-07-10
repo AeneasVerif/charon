@@ -15,6 +15,7 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     let _9: usize; // anonymous local
     let _10: &'_ (); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -27,6 +28,14 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     if move _5 {
     } else {
         _0 = ()
+        storage_dead(_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(x)
+        storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(_7)
         return
     }
     storage_live(_named)
@@ -39,10 +48,21 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     storage_dead(_8)
     storage_live(_10)
     _10 = @SliceIndexShared<'_, ()>(move _7, copy _9)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(_7)
+        undefined_behavior
     _named = &(*_10)
     _0 = ()
     storage_dead(_named)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(x)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_7)
     return
 }
 

@@ -17,6 +17,7 @@ where
 {
     let ret: TypeId; // return
 
+    storage_live(ret)
     ret = const TypeId(T)
     return
 }
@@ -34,9 +35,14 @@ where
     storage_live(_1)
     storage_live(_2)
     _2 = type_id<T>[TraitClause0]()
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        undefined_behavior
     _1 = move _2
+    storage_live(_0)
     _0 = move _1
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -53,6 +59,7 @@ fn type_id_u32() -> TypeId
 {
     let _0: TypeId; // return
 
+    storage_live(_0)
     _0 = of<u32>[{built_in impl MetaSized for u32}]()
     ↳⚡ unwind_continue
     return
@@ -66,6 +73,7 @@ where
 {
     let _0: TypeId; // return
 
+    storage_live(_0)
     _0 = of<T>[TraitClause0::ImpliedClause0]()
     ↳⚡ unwind_continue
     return

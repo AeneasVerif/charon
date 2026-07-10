@@ -88,7 +88,9 @@ where
     let _0: (); // return
     let _1: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -114,13 +116,20 @@ where
     let i: usize; // local
     let _4: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(i)
     i = move tupled_args.0
     storage_live(_4)
     _4 = copy i
     _0 = TraitClause1::of_usize(move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(i)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
     storage_dead(_4)
+    storage_dead(i)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -135,14 +144,27 @@ where
     let _2: (usize,); // arg #2
     let _3: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2, T, K>[TraitClause0, TraitClause1](move _3, move _2)
     ↳⚡ drop[drop_glue<'3, T, K>[TraitClause0, TraitClause1]] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[drop_glue<'4, T, K>[TraitClause0, TraitClause1]] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -184,6 +206,7 @@ where
     let _0: [T; 1usize]; // return
     let _1: closure<T, K>[TraitClause0, TraitClause1]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = closure {  }
     _0 = from_fn<T, closure<T, K>[TraitClause0, TraitClause1], 1usize>[TraitClause0, {built_in impl Sized for closure<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, impl_FnMut_tuple_for_closure<T, K>[TraitClause0, TraitClause1], impl_Destruct_for_closure<T, K>[TraitClause0, TraitClause1]](move _1)

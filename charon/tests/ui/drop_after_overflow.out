@@ -50,6 +50,7 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
     let _3: Arguments<'3>; // anonymous local
 
     bb0: {
+        storage_live(_0);
         _0 = ();
         storage_live(_2);
         storage_live(_3);
@@ -57,6 +58,7 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
     }
 
     bb1: {
+        storage_dead(self);
         unwind_continue;
     }
 
@@ -68,6 +70,7 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
         storage_dead(_3);
         storage_dead(_2);
         _0 = ();
+        storage_dead(self);
         return;
     }
 }
@@ -81,6 +84,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
     let _3: (); // anonymous local
 
     bb0: {
+        storage_live(_0);
         storage_live(_2);
         storage_live(_3);
         _0 = ();
@@ -89,10 +93,16 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
     }
 
     bb1: {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
         unwind_continue;
     }
 
     bb2: {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
         return;
     }
 }
@@ -120,6 +130,7 @@ fn main()
     let f_ref: &'1 Foo; // local
 
     bb0: {
+        storage_live(_0);
         storage_live(_3);
         _0 = ();
         storage_live(f);
@@ -144,15 +155,18 @@ fn main()
     }
 
     bb3: {
+        storage_dead(_3);
         unwind_continue;
     }
 
     bb4: {
+        storage_dead(_3);
         unwind_terminate;
     }
 
     bb5: {
         storage_dead(f);
+        storage_dead(_3);
         return;
     }
 }

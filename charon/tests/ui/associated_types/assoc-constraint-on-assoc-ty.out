@@ -37,10 +37,13 @@ where
     let _0: (); // return
     let it: I; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] it
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(it)
+        unwind_continue
+    storage_dead(it)
     return
 }
 
@@ -63,18 +66,24 @@ where
     let it: Clause1_IntoIter; // arg #1
     let _2: Clause1_IntoIter; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = move it
     _0 = takes_trait<Clause1_IntoIter, ()>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2](move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'0>] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(it)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'2>] it
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(it)
+            unwind_terminate
+        storage_dead(it)
         unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for Clause1_IntoIter}::drop_glue<'1>] it
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(it)
+        unwind_continue
+    storage_dead(it)
     return
 }
 

@@ -48,7 +48,9 @@ pub fn clone<'_0>(self: &'_0 Foo) -> Foo
     let _0: Foo; // return
     let self: &'1 Foo; // arg #1
 
+    storage_live(_0)
     _0 = copy (*self)
+    storage_dead(self)
     return
 }
 
@@ -81,6 +83,7 @@ fn copy_foo(x: Foo)
     let y: Foo; // local
     let z: Foo; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(y)
     y = copy x
@@ -89,6 +92,7 @@ fn copy_foo(x: Foo)
     _0 = ()
     storage_dead(z)
     storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -103,6 +107,7 @@ where
     let y: T; // local
     let z: T; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(y)
     y = copy x
@@ -111,6 +116,7 @@ where
     _0 = ()
     storage_dead(z)
     storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -135,6 +141,7 @@ where
     let y: TraitClause1::Ty; // local
     let z: TraitClause1::Ty; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(y)
     y = copy x
@@ -143,6 +150,7 @@ where
     _0 = ()
     storage_dead(z)
     storage_dead(y)
+    storage_dead(x)
     return
 }
 

@@ -104,13 +104,18 @@ where
     let _0: (); // return
     let _1: &'1 mut (A, B); // arg #1
 
+    storage_live(_0)
     _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1).0
     ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1).1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_1)
+            unwind_terminate
+        storage_dead(_1)
         unwind_continue
     drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1).1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -139,7 +144,9 @@ where
     let _0: bool; // return
     let self: &'1 Self; // arg #1
 
+    storage_live(_0)
     _0 = const true
+    storage_dead(self)
     return
 }
 
@@ -149,7 +156,9 @@ pub fn impl_BoolTrait_for_bool::get_bool<'_0>(self: &'_0 bool) -> bool
     let _0: bool; // return
     let self: &'1 bool; // arg #1
 
+    storage_live(_0)
     _0 = copy (*self)
+    storage_dead(self)
     return
 }
 
@@ -159,7 +168,9 @@ pub fn impl_BoolTrait_for_bool::ret_true<'_0>(self: &'_0 bool) -> bool
     let _0: bool; // return
     let self: &'1 bool; // arg #1
 
+    storage_live(_0)
     _0 = const true
+    storage_dead(self)
     return
 }
 
@@ -180,23 +191,30 @@ pub fn test_bool_trait_bool(x: bool) -> bool
     let _3: &'1 bool; // anonymous local
     let _4: &'2 bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = &x
     _2 = impl_BoolTrait_for_bool::get_bool<'4>(move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     if move _2 {
-        storage_dead(_3)
-        storage_live(_4)
-        _4 = &x
-        _0 = impl_BoolTrait_for_bool::ret_true<'6>(move _4)
-        ↳⚡ unwind_continue
-        storage_dead(_4)
     } else {
         storage_dead(_3)
         _0 = const false
+        storage_dead(_2)
+        storage_dead(x)
+        return
     }
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = &x
+    _0 = impl_BoolTrait_for_bool::ret_true<'6>(move _4)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -208,15 +226,18 @@ where
     let _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     match (*self) {
         Option::None => {
         },
         Option::Some => {
             _0 = const true
+            storage_dead(self)
             return
         },
     }
     _0 = const false
+    storage_dead(self)
     return
 }
 
@@ -228,7 +249,9 @@ where
     let _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _0 = const true
+    storage_dead(self)
     return
 }
 
@@ -254,12 +277,15 @@ where
     let _3: &'1 Option<T>[TraitClause0]; // anonymous local
     let _4: &'2 Option<T>[TraitClause0]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = &x
     _2 = impl_BoolTrait_for_Option::get_bool<'4, T>[TraitClause0](move _3)
     ↳⚡ conditional_drop[impl_Destruct_for_Option::drop_glue<'5, T>[TraitClause0]] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     if move _2 {
         storage_dead(_3)
@@ -267,7 +293,9 @@ where
         _4 = &x
         _0 = impl_BoolTrait_for_Option::ret_true<'7, T>[TraitClause0](move _4)
         ↳⚡ conditional_drop[impl_Destruct_for_Option::drop_glue<'5, T>[TraitClause0]] x
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(x)
+                unwind_terminate
+            storage_dead(x)
             unwind_continue
         storage_dead(_4)
     } else {
@@ -276,7 +304,9 @@ where
     }
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_Option::drop_glue<'8, T>[TraitClause0]] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -290,15 +320,20 @@ where
     let x: T; // arg #1
     let _2: &'1 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &x
     _0 = TraitClause1::get_bool<'2>(move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -316,7 +351,9 @@ pub fn impl_ToU64_for_u64::to_u64(self: u64) -> u64
     let _0: u64; // return
     let self: u64; // arg #1
 
+    storage_live(_0)
     _0 = copy self
+    storage_dead(self)
     return
 }
 
@@ -341,15 +378,22 @@ where
     let _5: A; // anonymous local
     let _6: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
     _3 = move self.0
     _2 = TraitClause1::to_u64(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'0>] _3
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_6)
+            storage_dead(self)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_tuple::drop_glue<'1, A, A>[TraitClause0]] self
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_6)
+            storage_dead(self)
+            unwind_terminate
+        storage_dead(_6)
+        storage_dead(self)
         unwind_continue
     storage_dead(_3)
     storage_live(_4)
@@ -357,9 +401,15 @@ where
     _5 = move self.1
     _4 = TraitClause1::to_u64(move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'2>] _5
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_6)
+            storage_dead(self)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_tuple::drop_glue<'1, A, A>[TraitClause0]] self
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_6)
+            storage_dead(self)
+            unwind_terminate
+        storage_dead(_6)
+        storage_dead(self)
         unwind_continue
     storage_dead(_5)
     _6 = copy _2 panic.+ copy _4
@@ -367,7 +417,11 @@ where
     storage_dead(_4)
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_tuple::drop_glue<'3, A, A>[TraitClause0]] self
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_6)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_6)
+    storage_dead(self)
     return
 }
 
@@ -391,17 +445,23 @@ where
     let x: (T, T); // arg #1
     let _2: (T, T); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move x
     _0 = impl_ToU64_for_tuple::to_u64<T>[TraitClause0, TraitClause1](move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_tuple::drop_glue<'0, T, T>[TraitClause0]] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_tuple::drop_glue<'2, T, T>[TraitClause0]] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_tuple::drop_glue<'1, T, T>[TraitClause0]] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -415,17 +475,23 @@ where
     let x: (T, T); // arg #1
     let _2: (T, T); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move x
     _0 = TraitClause1::to_u64(move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_tuple::drop_glue<'0, T, T>[TraitClause0]] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_tuple::drop_glue<'2, T, T>[TraitClause0]] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_tuple::drop_glue<'1, T, T>[TraitClause0]] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -436,11 +502,14 @@ pub fn h0(x: u64) -> u64
     let x: u64; // arg #1
     let _2: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy x
     _0 = impl_ToU64_for_u64::to_u64(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -460,9 +529,12 @@ where
     let _0: (); // return
     let _1: &'1 mut Wrapper<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -485,17 +557,23 @@ where
     let self: Wrapper<T>[TraitClause0]; // arg #1
     let _2: T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move (self).x
     _0 = TraitClause1::to_u64(move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(self)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'2, T>[TraitClause0]] self
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(self)
+            unwind_terminate
+        storage_dead(self)
         unwind_continue
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'1, T>[TraitClause0]] self
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(self)
+        unwind_continue
+    storage_dead(self)
     return
 }
 
@@ -517,11 +595,14 @@ pub fn h1(x: Wrapper<u64>[{built_in impl Sized for u64}]) -> u64
     let x: Wrapper<u64>[{built_in impl Sized for u64}]; // arg #1
     let _2: Wrapper<u64>[{built_in impl Sized for u64}]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move x
     _0 = impl_ToU64_for_Wrapper::to_u64<u64>[{built_in impl Sized for u64}, impl_ToU64_for_u64](move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -535,17 +616,23 @@ where
     let x: Wrapper<T>[TraitClause0]; // arg #1
     let _2: Wrapper<T>[TraitClause0]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move x
     _0 = impl_ToU64_for_Wrapper::to_u64<T>[TraitClause0, TraitClause1](move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'0, T>[TraitClause0]] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'2, T>[TraitClause0]] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_Wrapper::drop_glue<'1, T>[TraitClause0]] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -565,10 +652,12 @@ pub fn impl_ToType_bool_for_u64::to_type(self: u64) -> bool
     let self: u64; // arg #1
     let _2: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy self
     _0 = move _2 > const 0u64
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -600,17 +689,23 @@ where
     let y: T2; // arg #1
     let _2: T2; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move y
     _0 = TraitClause2::of_type<T2>[TraitClause1, TraitClause3, TraitClause0](move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for T2}::drop_glue<'0>] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for T2}::drop_glue<'2>] y
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            unwind_terminate
+        storage_dead(y)
         unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T2}::drop_glue<'1>] y
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(y)
+        unwind_continue
+    storage_dead(y)
     return
 }
 
@@ -637,17 +732,23 @@ where
     let y: T2; // arg #1
     let _2: T2; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move y
     _0 = TraitClause2::of_type[TraitClause0](move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for T2}::drop_glue<'0>] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for T2}::drop_glue<'2>] y
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(y)
+            unwind_terminate
+        storage_dead(y)
         unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T2}::drop_glue<'1>] y
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(y)
+        unwind_continue
+    storage_dead(y)
     return
 }
 
@@ -671,10 +772,12 @@ fn impl_TestTrait_for_TestType1::test<'_0>(self: &'_0 TestType1) -> bool
     let self: &'1 TestType1; // arg #1
     let _2: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy ((*self)).0
     _0 = move _2 > const 1u64
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -693,6 +796,7 @@ where
     let _7: u64; // anonymous local
     let _8: &'3 TestType1; // anonymous local
 
+    storage_live(_0)
     storage_live(x_3)
     storage_live(_4)
     // Remark: we can't write: impl TestTrait for TestType<T>,
@@ -703,9 +807,15 @@ where
     _4 = move x_2
     x_3 = TraitClause1::to_u64(move _4)
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] _4
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x_2)
+            storage_dead(self)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x_2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x_2)
+            storage_dead(self)
+            unwind_terminate
+        storage_dead(x_2)
+        storage_dead(self)
         unwind_continue
     storage_dead(_4)
     storage_live(y)
@@ -720,7 +830,11 @@ where
         _8 = &y
         _0 = impl_TestTrait_for_TestType1::test<'7>(move _8)
         ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] x_2
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(x_2)
+                storage_dead(self)
+                unwind_terminate
+            storage_dead(x_2)
+            storage_dead(self)
             unwind_continue
         storage_dead(_8)
     } else {
@@ -731,7 +845,11 @@ where
     storage_dead(y)
     storage_dead(x_3)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'8>] x_2
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x_2)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(x_2)
+    storage_dead(self)
     return
 }
 
@@ -765,11 +883,14 @@ where
     let self: BoolWrapper; // arg #1
     let _2: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy (self).0
     _0 = TraitClause1::to_type(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -807,6 +928,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 32usize
     return
 }
@@ -824,8 +946,11 @@ pub fn impl_WithConstTy_for_bool::f<'_0, '_1>(_1: &'_0 mut u64, _2: &'_1 [u8; 32
     let _1: &'1 mut u64; // arg #1
     let _2: &'3 [u8; 32usize]; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -834,6 +959,7 @@ pub fn LEN1() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 12usize
     return
 }
@@ -863,6 +989,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const TraitClause1::LEN1
     return
 }
@@ -876,10 +1003,13 @@ where
     let _0: (); // return
     let _1: TraitClause1::W; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_glue<'0>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -893,17 +1023,23 @@ where
     let x: TraitClause1::W; // arg #1
     let _2: TraitClause1::W; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move x
     _0 = TraitClause1::ImpliedClause3::to_u64(move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_glue<'0>] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_glue<'2>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
         unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for TraitClause1::W}::drop_glue<'1>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -916,8 +1052,10 @@ where
     let _0: (); // return
     let _x: &'1 T; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_x)
     return
 }
 
@@ -931,8 +1069,10 @@ where
     let _0: (); // return
     let _x: u32; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_x)
     return
 }
 
@@ -973,11 +1113,14 @@ where
     let x: &'1 T; // arg #1
     let _2: &'2 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
     _0 = TraitClause1::ImpliedClause1::get_name<'3>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -991,11 +1134,14 @@ where
     let x: &'1 T; // arg #1
     let _2: &'2 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
     _0 = TraitClause1::ImpliedClause1::get_w<'3>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -1010,6 +1156,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -1129,7 +1276,9 @@ pub fn convert(x: u32) -> u32
     let _0: u32; // return
     let x: u32; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -1192,11 +1341,14 @@ where
     let x: &'1 T; // arg #1
     let _2: &'2 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
     _0 = TraitClause1::get_w<'3>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -1215,6 +1367,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const N
     return
 }
@@ -1243,6 +1396,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 0usize
     return
 }
@@ -1273,6 +1427,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy impl_Trait_for_Wrapper::LEN<T>[TraitClause0, TraitClause1]
     return
 }
@@ -1296,6 +1451,7 @@ where
 {
     let _0: Result<T, i32>[TraitClause0, {built_in impl Sized for i32}]; // return
 
+    storage_live(_0)
     _0 = Result::Err { 0: const 0i32 }
     return
 }
@@ -1317,6 +1473,7 @@ where
 {
     let _0: Result<T, i32>[TraitClause0, {built_in impl Sized for i32}]; // return
 
+    storage_live(_0)
     _0 = copy FOO<T, U>[TraitClause0, TraitClause1, TraitClause2]
     return
 }
@@ -1330,6 +1487,7 @@ where
 {
     let _0: Result<U, i32>[TraitClause1, {built_in impl Sized for i32}]; // return
 
+    storage_live(_0)
     _0 = copy FOO<U, T>[TraitClause1, TraitClause0, TraitClause2]
     return
 }
@@ -1359,6 +1517,8 @@ pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
     let _0: Wrapper<(bool, &'9 ())>[{built_in impl Sized for (bool, &'9 ())}]; // return
     let _x: &'12 (); // arg #1
 
+    storage_live(_0)
+    storage_dead(_x)
     panic(core::panicking::panic)
 }
 
@@ -1372,10 +1532,13 @@ where
     let _0: (); // return
     let _1: F; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -1385,6 +1548,7 @@ pub fn flibidi()
     let _0: (); // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 (),)> for for<'a> flabada<'a>}](const flabada<'93>)
@@ -1411,6 +1575,7 @@ where
 {
     let _0: TraitClause1::Output; // return
 
+    storage_live(_0)
     panic(core::panicking::panic)
 }
 

@@ -27,6 +27,7 @@ pub fn test_crate::usize_size::x86_64-unknown-linux-gnu() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy test_crate::{impl test_crate::HasSize for usize}::SIZE::<usize>::x86_64-unknown-linux-gnu
     return
 }
@@ -35,6 +36,7 @@ pub fn test_crate::usize_size::i686-unknown-linux-gnu() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy test_crate::{impl test_crate::HasSize for usize}::SIZE::<usize>::i686-unknown-linux-gnu
     return
 }

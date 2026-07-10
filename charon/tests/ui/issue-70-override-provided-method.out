@@ -104,6 +104,7 @@ fn main()
     _9 = Option::Some { 0: const 1i32 }
     _8 = &_9
     _6 = move _8
+    storage_live(_0)
     storage_live(_4)
     storage_live(_5)
     _0 = ()
@@ -115,11 +116,21 @@ fn main()
     _4 = move _7
     _3 = &(*_4)
     _1 = impl_PartialEq_Option_for_Option::eq<'9, '10, i32>[{built_in impl Sized for i32}, impl_PartialEq_i32_for_i32](move _2, move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_5)
+        storage_dead(_4)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
     return
 }
 
@@ -143,6 +154,7 @@ pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo)
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy ((*self)).0
     storage_live(_4)
@@ -150,6 +162,8 @@ pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo)
     _0 = move _3 == move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(other)
+    storage_dead(self)
     return
 }
 
@@ -170,6 +184,7 @@ pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self: &'_0 Foo, other:
     let _5: &'6 u32; // anonymous local
     let _6: &'7 u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_4)
     _4 = &((*self)).0
@@ -179,11 +194,15 @@ pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self: &'_0 Foo, other:
     _6 = &((*other)).0
     _5 = &(*_6)
     _0 = impl_PartialOrd_u32_for_u32::partial_cmp<'10, '11>(move _3, move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(other)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(other)
+    storage_dead(self)
     return
 }
 

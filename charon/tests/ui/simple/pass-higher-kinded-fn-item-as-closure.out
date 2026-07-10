@@ -70,7 +70,9 @@ pub fn flabada<'a>(x: &'a ()) -> &'a ()
     let _0: &'1 (); // return
     let x: &'2 (); // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -83,10 +85,13 @@ where
     let _0: (); // return
     let _1: F; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -96,6 +101,7 @@ pub fn flibidi()
     let _0: (); // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 (),), &'0 ()> for for<'a> flabada<'a>}](const flabada<'63>)

@@ -12,6 +12,7 @@ fn main()
     let x: alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}]; // local
     let y: alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
@@ -22,29 +23,42 @@ fn main()
     _2 = move _3
     conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'0>] _3
     ↳⚡ conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(ret)
+            unwind_terminate
         unwind_continue
     storage_dead(_3)
-    storage_live(ret)
     storage_live(b)
     b = move _2
+    storage_live(ret)
     storage_live(x)
     storage_live(y)
     x = assume_init<[i32; 1usize], Global>[{built_in impl Sized for [i32; 1usize]}, {built_in impl Sized for Global}](move b)
-    ↳⚡ conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2
-        ↳⚡ unwind_terminate
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        storage_dead(b)
+        conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2
+        ↳⚡ storage_dead(ret)
+            unwind_terminate
         unwind_continue
     y = unsize_cast<alloc::boxed::Box<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 1usize>(move x)
     ret = into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move y)
-    ↳⚡ conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2
-        ↳⚡ unwind_terminate
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        storage_dead(b)
+        conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2
+        ↳⚡ storage_dead(ret)
+            unwind_terminate
         unwind_continue
+    storage_dead(y)
+    storage_dead(x)
+    storage_dead(b)
     _1 = move ret
     storage_dead(_2)
     conditional_drop[{impl#1}<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]::drop_glue<'2>] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
+    storage_dead(ret)
     return
 }
 

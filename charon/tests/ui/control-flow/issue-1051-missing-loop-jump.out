@@ -188,6 +188,7 @@ pub fn f()
     let _10: bool; // anonymous local
     let _11: i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_x)
     _x = const 0i32

@@ -65,6 +65,7 @@ where
 {
     let _0: Wrapper<Clause1_ReaderCore, Clause1_Clause2_BlockSize, Clause1_Clause2_Clause2_Output>[TraitClause1::ImpliedClause1, TraitClause1::ImpliedClause2, TraitClause3]; // return
 
+    storage_live(_0)
     panic(core::panicking::panic)
 }
 

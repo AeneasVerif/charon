@@ -18,12 +18,15 @@ fn init_option()
     let _5: &'_ [Option::<u8>; 6usize]; // anonymous local
     let _6: &'_ Option::<u8>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(a)
     storage_live(_2)
     _2 = Option::<u8>::Some { 0: const 4u8 }
     a = @ArrayRepeat<Option::<u8>, 6usize>(move _2)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_6)
+        storage_dead(_5)
+        undefined_behavior
     storage_dead(_2)
     storage_live(b)
     storage_live(_4)
@@ -32,12 +35,16 @@ fn init_option()
     _5 = &a
     storage_live(_6)
     _6 = @ArrayIndexShared<'_, Option::<u8>, 6usize>(move _5, copy _4)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_6)
+        storage_dead(_5)
+        undefined_behavior
     b = copy (*_6)
     storage_dead(_4)
     _0 = ()
     storage_dead(b)
     storage_dead(a)
+    storage_dead(_6)
+    storage_dead(_5)
     return
 }
 

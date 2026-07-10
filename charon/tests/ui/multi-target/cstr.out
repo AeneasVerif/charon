@@ -15,6 +15,7 @@ fn test_crate::main::x86_64-unknown-linux-gnu()
     let _2: core::ffi::c_str::CStr::x86_64-unknown-linux-gnu; // anonymous local
     let _3: &'2 core::ffi::c_str::CStr::x86_64-unknown-linux-gnu; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
@@ -24,6 +25,8 @@ fn test_crate::main::x86_64-unknown-linux-gnu()
     _1 = move _3
     storage_dead(_1)
     _0 = ()
+    storage_dead(_3)
+    storage_dead(_2)
     return
 }
 
@@ -34,6 +37,7 @@ fn test_crate::main::powerpc64-unknown-linux-gnu()
     let _2: core::ffi::c_str::CStr::powerpc64-unknown-linux-gnu; // anonymous local
     let _3: &'2 core::ffi::c_str::CStr::powerpc64-unknown-linux-gnu; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
@@ -43,6 +47,8 @@ fn test_crate::main::powerpc64-unknown-linux-gnu()
     _1 = move _3
     storage_dead(_1)
     _0 = ()
+    storage_dead(_3)
+    storage_dead(_2)
     return
 }
 

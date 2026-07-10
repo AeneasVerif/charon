@@ -30,16 +30,19 @@ where
     let _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _ = (*self)
     match (*self) {
         Option::Some => {
         },
         _ => {
             _0 = const false
+            storage_dead(self)
             return
         },
     }
     _0 = const true
+    storage_dead(self)
     return
 }
 
@@ -60,6 +63,7 @@ pub fn run()
     _6 = Option::Some { 0: const false }
     _5 = &_6
     _4 = move _5
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     storage_live(_1)
@@ -67,10 +71,15 @@ pub fn run()
     _3 = move _4
     _2 = &(*_3)
     _1 = is_some<'5, bool>[{built_in impl Sized for bool}](move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_3)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 

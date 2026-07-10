@@ -49,6 +49,7 @@ pub fn CYCLE_A() -> Node
     let _4: &'8 Node; // anonymous local
     let _5: &'9 Node; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
@@ -81,6 +82,7 @@ pub fn CYCLE_B() -> Node
     let _4: &'8 Node; // anonymous local
     let _5: &'9 Node; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)

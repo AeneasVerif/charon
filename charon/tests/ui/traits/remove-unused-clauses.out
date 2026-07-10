@@ -24,6 +24,7 @@ fn callee<T>()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -35,6 +36,7 @@ pub fn caller<T>()
     let _0: (); // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = callee<T>()
@@ -51,18 +53,21 @@ pub fn recursive<T>()
     let _1: bool; // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false
     if move _1 {
-        storage_live(_2)
-        _2 = recursive<T>()
-        ↳⚡ unwind_continue
-        storage_dead(_2)
-        _0 = ()
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    storage_live(_2)
+    _2 = recursive<T>()
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -74,18 +79,21 @@ pub fn swap_recursive<T, U>()
     let _1: bool; // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false
     if move _1 {
-        storage_live(_2)
-        _2 = swap_recursive<U, T>()
-        ↳⚡ unwind_continue
-        storage_dead(_2)
-        _0 = ()
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    storage_live(_2)
+    _2 = swap_recursive<U, T>()
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    _0 = ()
     storage_dead(_1)
     return
 }
@@ -105,15 +113,18 @@ pub fn clause_dep<T>()
     let _0: (); // return
     let _1: bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const false
     if move _1 {
-        _0 = clause_dep<T>()
-        ↳⚡ unwind_continue
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    _0 = clause_dep<T>()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     return
 }

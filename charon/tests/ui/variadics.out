@@ -107,13 +107,18 @@ pub unsafe extern "C" fn sum(...) -> i32
     let _7: i32; // anonymous local
     let _8: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_8)
     storage_live(a)
     storage_live(_3)
     _3 = &two-phase-mut ap
     a = next_arg<'8, '10, i32>[{built_in impl Sized for i32}, impl_VaArgSafe_for_i32](move _3)
     ↳⚡ conditional_drop[drop_glue<'13, '14>] ap
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_8)
+            storage_dead(ap)
+            unwind_terminate
+        storage_dead(_8)
+        storage_dead(ap)
         unwind_continue
     storage_dead(_3)
     storage_live(b)
@@ -121,7 +126,11 @@ pub unsafe extern "C" fn sum(...) -> i32
     _5 = &two-phase-mut ap
     b = next_arg<'15, '17, i32>[{built_in impl Sized for i32}, impl_VaArgSafe_for_i32](move _5)
     ↳⚡ conditional_drop[drop_glue<'13, '14>] ap
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_8)
+            storage_dead(ap)
+            unwind_terminate
+        storage_dead(_8)
+        storage_dead(ap)
         unwind_continue
     storage_dead(_5)
     storage_live(_6)
@@ -135,7 +144,11 @@ pub unsafe extern "C" fn sum(...) -> i32
     storage_dead(b)
     storage_dead(a)
     conditional_drop[drop_glue<'20, '21>] ap
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_8)
+        storage_dead(ap)
+        unwind_continue
+    storage_dead(_8)
+    storage_dead(ap)
     return
 }
 
@@ -153,6 +166,7 @@ pub fn call()
     let _4: (); // anonymous local
     let _5: unsafe extern "C" fn(u32, u64, ...); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = sum(const 1i32, const 2i32)

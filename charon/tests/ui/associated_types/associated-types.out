@@ -140,7 +140,9 @@ where
     let _0: Clause0_Item; // return
     let x: Clause0_Item; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -152,7 +154,9 @@ where
     let _0: Option<&'6 T>[{built_in impl Sized for &'6 T}]; // return
     let x: Option<&'9 T>[{built_in impl Sized for &'9 T}]; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -165,7 +169,9 @@ where
     let _0: Option<&'a T>[{built_in impl Sized for &'a T}]; // return
     let x: Option<&'a T>[{built_in impl Sized for &'a T}]; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -193,7 +199,9 @@ where
     let _0: T; // return
     let x: T; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -208,7 +216,9 @@ where
     let _0: T; // return
     let x: T; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -241,18 +251,22 @@ where
     let _3: Clause1_Item; // anonymous local
     let _4: Clause1_Item; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = copy x
     _3 = TraitClause1::use_item_provided<Clause2_Item>[TraitClause2](move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     _2 = &_3
     storage_dead(_4)
     _0 = TraitClause2::ImpliedClause1::ImpliedClause1::clone<'17>(move _2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
     storage_dead(_3)
+    storage_dead(x)
     return
 }
 
@@ -263,6 +277,7 @@ fn call_fn()
     let _1: Option<&'6 bool>[{built_in impl Sized for &'6 bool}]; // anonymous local
     let _2: Option<&'9 bool>[{built_in impl Sized for &'9 bool}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
@@ -286,9 +301,12 @@ where
     let _0: Clause2_Item; // return
     let x: Clause2_Item; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl Destruct for Clause2_Item}::drop_glue<'5>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 

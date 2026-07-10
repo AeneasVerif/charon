@@ -20,6 +20,7 @@ fn main()
     let _2: &'1 str; // anonymous local
     let _3: &'2 str; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(a)
     storage_live(_2)

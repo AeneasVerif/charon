@@ -19,6 +19,7 @@ pub fn bar::<u8>()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -36,6 +37,7 @@ fn main()
     let _0: (); // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = bar::<u8>()

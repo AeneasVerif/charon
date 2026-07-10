@@ -46,10 +46,13 @@ where
     let _0: (); // return
     let iter: I; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for I}::drop_glue<'0>] iter
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(iter)
+        unwind_continue
+    storage_dead(iter)
     return
 }
 

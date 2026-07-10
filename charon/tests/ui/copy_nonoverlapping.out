@@ -49,19 +49,26 @@ where
     let _3: Self; // anonymous local
     let _4: &'4 Self; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(copy source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_4)
     drop[TraitClause1::drop_glue<'6>] (*self)
     ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
         unwind_continue
     (*self) = move _3
     _0 = ()
     storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
     return
 }
 
@@ -71,7 +78,9 @@ pub fn clone<'_0>(self: &'_0 usize) -> usize
     let _0: usize; // return
     let self: &'1 usize; // arg #1
 
+    storage_live(_0)
     _0 = copy (*self)
+    storage_dead(self)
     return
 }
 
@@ -86,19 +95,26 @@ where
     let _3: usize; // anonymous local
     let _4: &'4 usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
     _3 = clone<'5>(move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_4)
     drop[TraitClause0::drop_glue<'6>] (*self)
     ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
         unwind_continue
     (*self) = move _3
     _0 = ()
     storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
     return
 }
 
@@ -157,6 +173,7 @@ fn core::ub_checks::check_language_ub::runtime() -> bool
 {
     let _0: bool; // return
 
+    storage_live(_0)
     _0 = ~(const true)
     return
 }
@@ -189,6 +206,7 @@ fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>,
     let _7: bool; // anonymous local
     let _8: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     _5 = &(*location)
     storage_live(_6)
@@ -202,6 +220,10 @@ fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>,
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
+    storage_dead(force_no_backtrace)
+    storage_dead(can_unwind)
+    storage_dead(location)
+    storage_dead(message)
     return
 }
 
@@ -210,6 +232,7 @@ pub fn caller<'a>() -> &'static Location<'static>
 {
     let _0: &'3 Location<'4>; // return
 
+    storage_live(_0)
     _0 = caller_location()
     ↳⚡ undefined_behavior
     return
@@ -231,6 +254,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
     let _11: &'19 PanicInfo<'20>; // anonymous local
     let _12: &'21 PanicInfo<'22>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = const false
     if move _3 {
@@ -244,12 +268,24 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         storage_live(_8)
         storage_live(_9)
         _9 = caller<'24>()
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_12)
+            storage_dead(_11)
+            storage_dead(pi)
+            storage_dead(_4)
+            storage_dead(force_no_backtrace)
+            storage_dead(fmt)
+            unwind_continue
         _8 = &(*_9)
         storage_live(_10)
         _10 = copy force_no_backtrace
         pi = core::panic::panic_info::{PanicInfo<'a>}::new<'26>(move _6, move _8, const false, move _10)
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_12)
+            storage_dead(_11)
+            storage_dead(pi)
+            storage_dead(_4)
+            storage_dead(force_no_backtrace)
+            storage_dead(fmt)
+            unwind_continue
         storage_dead(_10)
         storage_dead(_8)
         storage_dead(_6)
@@ -260,11 +296,37 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         _12 = &pi
         _11 = &(*_12)
         _0 = panic_impl<'30, '31>(move _11)
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_12)
+            storage_dead(_11)
+            storage_dead(pi)
+            storage_dead(_4)
+            storage_dead(force_no_backtrace)
+            storage_dead(fmt)
+            unwind_continue
+        storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(pi)
+        storage_dead(_4)
+        storage_dead(force_no_backtrace)
+        storage_dead(fmt)
+        undefined_behavior
     }
     storage_live(_4)
     _4 = abort()
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_12)
+        storage_dead(_11)
+        storage_dead(pi)
+        storage_dead(_4)
+        storage_dead(force_no_backtrace)
+        storage_dead(fmt)
+        undefined_behavior
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(pi)
+    storage_dead(_4)
+    storage_dead(force_no_backtrace)
+    storage_dead(fmt)
+    undefined_behavior
 }
 
 pub fn core::intrinsics::size_of<T>() -> usize
@@ -374,11 +436,14 @@ pub fn count_ones(self: usize) -> u32
     let self: usize; // arg #1
     let _2: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy self
     _0 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](move _2)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(self)
+        undefined_behavior
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -390,14 +455,17 @@ pub fn is_power_of_two(self: usize) -> bool
     let _2: u32; // anonymous local
     let _3: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = copy self
     _2 = count_ones(move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_3)
     _0 = move _2 == const 1u32
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -408,17 +476,23 @@ fn check_language_ub() -> bool
     let _1: bool; // anonymous local
     let _2: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = core::ub_checks::check_language_ub::runtime()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_2)
+        unwind_continue
     if move _1 {
-        storage_live(_2)
-        _2 = ub_checks<bool>
-        _0 = move _2
     } else {
         _0 = const false
+        storage_dead(_1)
+        storage_dead(_2)
+        return
     }
+    storage_live(_2)
+    _2 = ub_checks<bool>
+    _0 = move _2
     storage_dead(_1)
+    storage_dead(_2)
     return
 }
 
@@ -432,6 +506,7 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     let _4: Arguments<'4>; // anonymous local
     let _5: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_4)
     _4 = copy fmt
@@ -441,7 +516,14 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
     storage_dead(_5)
     storage_dead(_4)
     _0 = core::panicking::panic_nounwind_fmt::runtime<'6>(move _3.0, move _3.1)
-    ↳⚡ unwind_terminate
+    ↳⚡ storage_dead(_3)
+        storage_dead(force_no_backtrace)
+        storage_dead(fmt)
+        unwind_terminate
+    storage_dead(_3)
+    storage_dead(force_no_backtrace)
+    storage_dead(fmt)
+    undefined_behavior
 }
 
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
@@ -455,12 +537,17 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     let _6: Arguments<'3>; // anonymous local
     let _7: &'4 str; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy align
     _2 = is_power_of_two(move _3)
-    ↳⚡ unwind_terminate
+    ↳⚡ storage_dead(_6)
+        storage_dead(_5)
+        storage_dead(msg)
+        storage_dead(align)
+        unwind_terminate
     if move _2 {
     } else {
         storage_dead(_3)
@@ -471,14 +558,31 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_live(_7)
         _7 = &(*msg) with_metadata(copy msg.metadata)
         _6 = from_str<'6>(move _7)
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_6)
+            storage_dead(_5)
+            storage_dead(msg)
+            storage_dead(align)
+            unwind_terminate
         storage_dead(_7)
         _5 = panic_nounwind_fmt<'8>(move _6, const false)
-        ↳⚡ undefined_behavior
+        ↳⚡ storage_dead(_6)
+            storage_dead(_5)
+            storage_dead(msg)
+            storage_dead(align)
+            undefined_behavior
+        storage_dead(_6)
+        storage_dead(_5)
+        storage_dead(msg)
+        storage_dead(align)
+        undefined_behavior
     }
     storage_dead(_3)
     _0 = ()
     storage_dead(_2)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(msg)
+    storage_dead(align)
     return
 }
 
@@ -492,15 +596,18 @@ pub unsafe fn new_unchecked(align: usize) -> Alignment
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = check_language_ub()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(align)
+        unwind_continue
     if move _2 {
         storage_live(_3)
         storage_live(_4)
         _4 = copy align
         _3 = core::mem::alignment::{Alignment}::new_unchecked::precondition_check(move _4)
-        ↳⚡ undefined_behavior
+        ↳⚡ storage_dead(align)
+            undefined_behavior
         storage_dead(_4)
         storage_dead(_3)
     } else {
@@ -510,6 +617,7 @@ pub unsafe fn new_unchecked(align: usize) -> Alignment
     _5 = copy align
     _0 = transmute<usize, Alignment>(move _5)
     storage_dead(_5)
+    storage_dead(align)
     return
 }
 
@@ -522,26 +630,33 @@ pub fn core::mem::alignment::{Alignment}::new(align: usize) -> Option<Alignment>
     let _4: Alignment; // anonymous local
     let _5: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = copy align
     _2 = is_power_of_two(move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(align)
+        unwind_continue
     if move _2 {
-        storage_dead(_3)
-        storage_live(_4)
-        storage_live(_5)
-        _5 = copy align
-        _4 = new_unchecked(move _5)
-        ↳⚡ unwind_continue
-        storage_dead(_5)
-        _0 = Option::Some { 0: move _4 }
-        storage_dead(_4)
     } else {
         storage_dead(_3)
         _0 = Option::None {  }
+        storage_dead(_2)
+        storage_dead(align)
+        return
     }
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy align
+    _4 = new_unchecked(move _5)
+    ↳⚡ storage_dead(align)
+        unwind_continue
+    storage_dead(_5)
+    _0 = Option::Some { 0: move _4 }
+    storage_dead(_4)
     storage_dead(_2)
+    storage_dead(align)
     return
 }
 
@@ -549,6 +664,7 @@ pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = ~(const 0usize)
     return
 }
@@ -560,6 +676,7 @@ pub fn core::num::{isize}::MAX() -> isize
     let _0: isize; // return
     let _1: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = copy core::num::{usize}::MAX panic.>> const 1i32
     _0 = cast<usize, isize>(move _1)
@@ -593,11 +710,11 @@ where
     let _3: usize; // anonymous local
     let _4: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = const TraitClause0::SIZE
     switch copy _1 {
         0usize => {
-            _0 = copy core::num::{usize}::MAX
         },
         _ => {
             storage_live(n)
@@ -610,8 +727,11 @@ where
             storage_dead(_4)
             storage_dead(_3)
             storage_dead(n)
+            storage_dead(_1)
+            return
         },
     }
+    _0 = copy core::num::{usize}::MAX
     storage_dead(_1)
     return
 }
@@ -629,6 +749,7 @@ where
 {
     let _0: Layout; // return
 
+    storage_live(_0)
     _0 = from_size_align_unchecked(const TraitClause0::SIZE, const TraitClause0::ALIGN)
     ↳⚡ unwind_continue
     return
@@ -647,6 +768,7 @@ where
 {
     let _0: bool; // return
 
+    storage_live(_0)
     _0 = const TraitClause0::SIZE == const 0usize
     return
 }
@@ -662,6 +784,7 @@ fn unwrap_failed() -> !
 {
     let _0: !; // return
 
+    storage_live(_0)
     panic(core::panicking::panic)
 }
 
@@ -676,6 +799,7 @@ where
     let val: T; // local
     let _3: !; // anonymous local
 
+    storage_live(_0)
     match self {
         Option::None => {
         },
@@ -684,12 +808,19 @@ where
             val = move (self as variant Option::Some).0
             _0 = move val
             storage_dead(val)
+            storage_dead(_3)
+            storage_dead(self)
             return
         },
     }
     storage_live(_3)
     _3 = unwrap_failed()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(self)
+    undefined_behavior
 }
 
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
@@ -700,6 +831,7 @@ where
     let _0: Alignment; // return
     let _1: Option<Alignment>[{built_in impl Sized for Alignment}]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = core::mem::alignment::{Alignment}::new(const TraitClause0::ALIGN)
     ↳⚡ unwind_continue
@@ -723,6 +855,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = core::intrinsics::align_of<Self>[TraitClause0::ImpliedClause0]()
     ↳⚡ unwind_continue
     return
@@ -743,6 +876,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = core::intrinsics::size_of<Self>[TraitClause0::ImpliedClause0]()
     ↳⚡ unwind_continue
     return
@@ -777,6 +911,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy SIZE<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     return
 }
@@ -788,6 +923,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy ALIGN<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]]
     return
 }
@@ -818,10 +954,14 @@ where
     let _14: *mut T; // anonymous local
     let _15: usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(count)
+        storage_dead(dst)
+        storage_dead(src)
+        unwind_continue
     if move _4 {
         storage_live(_5)
         storage_live(_6)
@@ -836,14 +976,23 @@ where
         storage_dead(_9)
         storage_live(_10)
         _10 = core::mem::size_of<T>[TraitClause0]()
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(count)
+            storage_dead(dst)
+            storage_dead(src)
+            unwind_continue
         storage_live(_11)
         _11 = core::mem::align_of<T>[TraitClause0]()
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(count)
+            storage_dead(dst)
+            storage_dead(src)
+            unwind_continue
         storage_live(_12)
         _12 = copy count
         _5 = core::ptr::copy_nonoverlapping::precondition_check(move _6, move _8, move _10, move _11, move _12)
-        ↳⚡ undefined_behavior
+        ↳⚡ storage_dead(count)
+            storage_dead(dst)
+            storage_dead(src)
+            undefined_behavior
         storage_dead(_12)
         storage_dead(_11)
         storage_dead(_10)
@@ -863,6 +1012,9 @@ where
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
+    storage_dead(count)
+    storage_dead(dst)
+    storage_dead(src)
     return
 }
 
@@ -878,6 +1030,7 @@ where
     let _4: *const T; // anonymous local
     let _5: *mut T; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
@@ -885,11 +1038,15 @@ where
     storage_live(_5)
     _5 = &raw mut (*x)
     _3 = copy_nonoverlapping<T>[TraitClause0](move _4, move _5, const 1usize)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 

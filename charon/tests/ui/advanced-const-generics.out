@@ -75,8 +75,10 @@ pub fn impl_Eq_for_Foo::assert_fields_are_eq<'_0>(self: &'_0 Foo)
     let _0: (); // return
     let self: &'1 Foo; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -93,6 +95,7 @@ pub fn eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
     let _7: isize; // anonymous local
     let _8: isize; // anonymous local
 
+    storage_live(_0)
     storage_live(__self_discr)
     storage_live(_4)
     _4 = &(*self)
@@ -112,6 +115,8 @@ pub fn eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
     storage_dead(_7)
     storage_dead(__arg1_discr)
     storage_dead(__self_discr)
+    storage_dead(other)
+    storage_dead(self)
     return
 }
 
@@ -153,6 +158,7 @@ pub fn fmt<'_0, '_1, '_2>(self: &'_0 Foo, f: &'_1 mut Formatter<'_2>) -> Result<
     let _5: &'11 str; // anonymous local
     let _6: &'12 str; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &two-phase-mut (*f) with_metadata(copy f.metadata)
     storage_live(_4)
@@ -171,9 +177,13 @@ pub fn fmt<'_0, '_1, '_2>(self: &'_0 Foo, f: &'_1 mut Formatter<'_2>) -> Result<
         },
     }
     _0 = core::fmt::{Formatter<'a>}::write_str<'16, '19, '20>(move _3, move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(f)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(f)
+    storage_dead(self)
     return
 }
 
@@ -188,6 +198,7 @@ fn foo<const X : Foo>() -> Foo
 {
     let _0: Foo; // return
 
+    storage_live(_0)
     _0 = const X
     return
 }
@@ -199,6 +210,7 @@ fn bar<const N : usize>()
     let _1: [(); {const}<N>]; // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)

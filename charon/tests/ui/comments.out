@@ -63,8 +63,10 @@ fn function_call(_1: u32)
     let _0: (); // return
     let _1: u32; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -99,6 +101,7 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
     let _25: &'_ [u32]; // anonymous local
     let _26: &'_ u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_7)
     storage_live(_14)
     storage_live(_15)
@@ -121,7 +124,13 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
     _5 = move _7
     storage_dead(_6)
     _4 = function_call(move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_24)
+        storage_dead(_20)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_7)
+        storage_dead(s)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     // Start of loop
@@ -133,7 +142,13 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         storage_live(_11)
         _11 = &(*s) with_metadata(copy s.metadata)
         _10 = len<'4, u32>[{built_in impl Sized for u32}](move _11)
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(_24)
+            storage_dead(_20)
+            storage_dead(_15)
+            storage_dead(_14)
+            storage_dead(_7)
+            storage_dead(s)
+            unwind_continue
         storage_dead(_11)
         _8 = move _9 < move _10
         if move _8 {
@@ -150,7 +165,9 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         _25 = &(*s) with_metadata(copy s.metadata)
         storage_live(_26)
         _26 = @SliceIndexShared<'_, u32>(move _25, copy _13)
-        ↳⚡ undefined_behavior
+        ↳⚡ storage_dead(_26)
+            storage_dead(_25)
+            undefined_behavior
         _12 = copy (*_26)
         _14 = copy sum panic.+ copy _12
         sum = move _14
@@ -197,13 +214,27 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
     _22 = move _24
     storage_dead(_23)
     _21 = function_call(move _22)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_24)
+        storage_dead(_20)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_7)
+        storage_dead(s)
+        unwind_continue
     storage_dead(_22)
     storage_dead(_21)
     // Return final value
     _0 = copy sum
     storage_dead(i)
     storage_dead(sum)
+    storage_dead(_24)
+    storage_dead(_20)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_7)
+    storage_dead(s)
+    storage_dead(_26)
+    storage_dead(_25)
     return
 }
 
@@ -220,6 +251,7 @@ pub fn impl_Default_for_Foo::default() -> Foo
     let _1: u32; // anonymous local
     let _2: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = impl_Default_for_u32::default()
     ↳⚡ unwind_continue
@@ -252,6 +284,7 @@ pub fn impl_Default_for_Bar::default() -> Bar
     let _1: u32; // anonymous local
     let _2: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = impl_Default_for_u32::default()
     ↳⚡ unwind_continue
@@ -279,10 +312,13 @@ where
     let _0: (); // return
     let _1: T; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -328,12 +364,21 @@ fn foo()
     let _36: &'_ [u32; 10usize]; // anonymous local
     let _37: &'_ u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_32)
     _0 = ()
     storage_live(_3)
     // Call `default` and destructure the result
     _3 = impl_Default_for_Foo::default()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_32)
+        storage_dead(_31)
+        storage_dead(_30)
+        storage_dead(_29)
+        storage_dead(_28)
+        storage_dead(_27)
+        storage_dead(_26)
+        storage_dead(kind)
+        unwind_continue
     storage_live(x_1)
     x_1 = copy (_3).x
     storage_live(y)
@@ -350,14 +395,30 @@ fn foo()
     storage_dead(_7)
     storage_dead(_6)
     _4 = eat<Foo>[{built_in impl Sized for Foo}](move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_32)
+        storage_dead(_31)
+        storage_dead(_30)
+        storage_dead(_29)
+        storage_dead(_28)
+        storage_dead(_27)
+        storage_dead(_26)
+        storage_dead(kind)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_10)
     // Call `default` and destructure the result
     // This is the long field
     _10 = impl_Default_for_Bar::default()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_32)
+        storage_dead(_31)
+        storage_dead(_30)
+        storage_dead(_29)
+        storage_dead(_28)
+        storage_dead(_27)
+        storage_dead(_26)
+        storage_dead(kind)
+        unwind_continue
     storage_live(x_8)
     x_8 = copy (_10).x
     storage_live(super_long_field_name)
@@ -375,13 +436,26 @@ fn foo()
     storage_dead(_14)
     storage_dead(_13)
     _11 = eat<Bar>[{built_in impl Sized for Bar}](move _12)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_32)
+        storage_dead(_31)
+        storage_dead(_30)
+        storage_dead(_29)
+        storage_dead(_28)
+        storage_dead(_27)
+        storage_dead(_26)
+        storage_dead(kind)
+        unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_live(a)
     // Build an array
     a = @ArrayRepeat<u32, 10usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        undefined_behavior
     storage_live(_16)
     storage_live(_17)
     storage_live(_18)
@@ -397,7 +471,12 @@ fn foo()
     _36 = &a
     storage_live(_37)
     _37 = @ArrayIndexShared<'_, u32, 10usize>(move _36, copy _18)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        undefined_behavior
     _17 = &(*_37)
     storage_live(_19)
     _32 = move _33
@@ -433,6 +512,19 @@ fn foo()
         _29 = &(*_30)
         storage_live(_31)
         _31 = Option::None {  }
+        storage_dead(_32)
+        storage_dead(_31)
+        storage_dead(_30)
+        storage_dead(_29)
+        storage_dead(_28)
+        storage_dead(_27)
+        storage_dead(_26)
+        storage_dead(kind)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
         panic(core::panicking::assert_failed)
     }
     storage_dead(_24)
@@ -448,6 +540,19 @@ fn foo()
     storage_dead(x_8)
     storage_dead(y)
     storage_dead(x_1)
+    storage_dead(_32)
+    storage_dead(_31)
+    storage_dead(_30)
+    storage_dead(_29)
+    storage_dead(_28)
+    storage_dead(_27)
+    storage_dead(_26)
+    storage_dead(kind)
+    storage_dead(_37)
+    storage_dead(_36)
+    storage_dead(_35)
+    storage_dead(_34)
+    storage_dead(_33)
     return
 }
 
@@ -456,6 +561,7 @@ fn CONSTANT() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -473,6 +579,7 @@ pub fn thing()
     let _4: (); // anonymous local
     let _5: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     storage_live(x)
@@ -486,11 +593,13 @@ pub fn thing()
     storage_live(_5)
     _5 = copy x
     _4 = function_call(move _5)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
     storage_dead(x)
+    storage_dead(_3)
     return
 }
 
@@ -500,9 +609,11 @@ pub fn fake_read(x: u32)
     let _0: (); // return
     let x: u32; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     // This statement is translated to a `fake_read`.
+    storage_dead(x)
     return
 }
 
@@ -512,6 +623,7 @@ fn fool()
     let _0: (); // return
     let _1: &'1 str; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const "\n    // Fooled ya"

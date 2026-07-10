@@ -77,7 +77,9 @@ unsafe fn drop_glue::<()><'_0>(_1: &'_0 mut closure::<()>)
     let _0: (); // return
     let _1: &'1 mut closure::<()>; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -106,15 +108,28 @@ fn call_once::<()>(_1: closure::<()>, _2: ((),))
     let _2: ((),); // arg #2
     let _3: &'1 mut closure::<()>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<((),)> for closure::<()>}::call_mut<'2>(move _3, move _2)
     ↳⚡ drop[drop_glue::<()><'3>] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[drop_glue::<()><'4>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -126,13 +141,20 @@ fn as_fn::<()>(arg1: ())
     let args: ((),); // local
     let state: closure::<()>; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(args)
     storage_live(state)
     args = (move arg1,)
     state = closure::<()> {  }
     _0 = call_once::<()>(move state, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        storage_dead(arg1)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    storage_dead(arg1)
     return
 }
 
@@ -155,6 +177,7 @@ fn foo::<()>(x: ())
     _6 = cast<as_fn::<()>, fn(())>(const as_fn::<()>)
     storage_dead(_7)
     _5 = move _6
+    storage_live(_0)
     _0 = ()
     storage_live(f)
     f = move _5
@@ -163,10 +186,14 @@ fn foo::<()>(x: ())
     storage_live(_4)
     _4 = ()
     _0 = (move _3)(move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(f)
+    storage_dead(x)
+    storage_dead(_6)
+    storage_dead(_5)
     return
 }
 
@@ -193,10 +220,14 @@ fn call::<()><'_0>(_1: &'_0 closure::<()>, tupled_args: ((),))
     let tupled_args: ((),); // arg #2
     let x: (); // local
 
+    storage_live(_0)
     storage_live(x)
     _0 = ()
     x = move tupled_args.0
     _0 = ()
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -208,11 +239,18 @@ fn call_mut::<()><'_0>(state: &'_0 mut closure::<()>, args: ((),))
     let args: ((),); // arg #2
     let _3: &'0 closure::<()>; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = &(*state)
     _0 = call::<()><'2>(move _3, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -223,6 +261,7 @@ pub fn main()
     let _1: (); // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)

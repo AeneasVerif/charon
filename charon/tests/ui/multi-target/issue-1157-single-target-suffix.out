@@ -2,6 +2,7 @@ fn test_crate::aarch64_only() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 1u32
     return
 }
@@ -10,6 +11,7 @@ fn test_crate::x86_64_only() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 2u32
     return
 }

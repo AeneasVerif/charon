@@ -305,6 +305,7 @@ where
     let _12: &'76 mut u32; // anonymous local
     let _13: u32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
@@ -344,7 +345,9 @@ where
     storage_dead(_12)
     storage_dead(_4)
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'125>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -356,9 +359,12 @@ where
     let _0: T; // return
     let x: T; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -369,9 +375,12 @@ where
     let _0: &'_0 mut T0; // return
     let x: &'_0 mut T0; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -383,9 +392,12 @@ where
     let _0: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]; // return
     let x: core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -398,9 +410,12 @@ where
     let _0: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]; // return
     let x: core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>[TraitClause1, TraitClause2]; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2] for T0}::drop_glue<'0>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -414,9 +429,12 @@ where
     let _0: IterMut<'_0, T0>[TraitClause1]; // return
     let x: IterMut<'_0, T0>[TraitClause1]; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -431,17 +449,20 @@ where
     let _3: &'4 mut T; // anonymous local
     let _4: &'5 mut T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*x)
     _3 = test_crate::identity::<&_ mut _><'7, T>[{built_in impl core::marker::Sized::<&_ mut _><'7> for T}](move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     _2 = &mut (*_3)
     storage_dead(_4)
     _0 = &mut (*_2)
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -484,6 +505,7 @@ where
     _23 = const 0u32
     _22 = &_23
     _20 = move _22
+    storage_live(_0)
     storage_live(_18)
     storage_live(_19)
     _0 = ()
@@ -498,7 +520,19 @@ where
         // let _ = Some(&mut 0u32).map(identity);
         // let _ = Some(&mut 0u32).map(mutable_identity);
         conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(x)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            unwind_terminate
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(x)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -509,7 +543,19 @@ where
     _5 = &mut _6
     _4 = test_crate::identity::<&_ mut _><'90, u32>[{built_in impl core::marker::Sized::<&_ mut _><'90> for u32}](move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(x)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            unwind_terminate
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(x)
         unwind_continue
     storage_dead(_5)
     storage_dead(_6)
@@ -524,7 +570,19 @@ where
     storage_dead(_9)
     _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'106, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'106>[{built_in impl core::marker::Sized::<&_ mut _><'106> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'106> for u32}](move _8)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(x)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            unwind_terminate
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(x)
         unwind_continue
     storage_dead(_8)
     storage_dead(_10)
@@ -540,7 +598,19 @@ where
     storage_dead(_13)
     _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'180, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'180>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'180>[{built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'180>[{built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'180> for A}](move _12)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(x)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            unwind_terminate
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(x)
         unwind_continue
     storage_live(_21)
     storage_live(_24)
@@ -559,13 +629,37 @@ where
     storage_dead(_17)
     _15 = map<&'268 u32, &'269 u32, identity<&'276 u32>[{built_in impl Sized for &'276 u32}]>[{built_in impl Sized for &'268 u32}, {built_in impl Sized for &'269 u32}, {built_in impl Sized for identity<&'293 u32>[{built_in impl Sized for &'293 u32}]}, {built_in impl FnOnce<(&'268 u32,)> for identity<&'311 u32>[{built_in impl Sized for &'311 u32}] where Output  = &'338 u32}, {built_in impl Destruct for identity<&'349 u32>[{built_in impl Sized for &'349 u32}]}](move _16, const identity<&'362 u32>[{built_in impl Sized for &'362 u32}])
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(x)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            unwind_terminate
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(x)
         unwind_continue
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'367>] x
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(x)
+    storage_dead(_25)
+    storage_dead(_24)
+    storage_dead(_23)
+    storage_dead(_22)
+    storage_dead(_21)
+    storage_dead(_20)
     return
 }
 
@@ -620,8 +714,10 @@ fn use_foo<'_0>(_1: test_crate::Foo3::<&_ mut _><'_0, u32>[{built_in impl core::
     let _0: (); // return
     let _1: test_crate::Foo3::<&_ mut _><'6, u32>[{built_in impl core::marker::Sized::<&_ mut _><'6> for u32}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -662,8 +758,10 @@ where
     let _0: (); // return
     let _1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'42, '43, '44, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'42, '43> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'44>[{built_in impl core::marker::Sized::<&_ mut _><'44> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'44> for bool}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -707,8 +805,10 @@ fn use_list_mut<'_0, '_1>(_1: &'_0 test_crate::List::<&_ mut _><'_1, u32>[{built
     let _0: (); // return
     let _1: &'10 test_crate::List::<&_ mut _><'11, u32>[{built_in impl core::marker::Sized::<&_ mut _><'11> for u32}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -729,8 +829,10 @@ where
     let _0: (); // return
     let _1: core::option::Option::<Iter<_, _>[TraitClause1]><'6, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[TraitClause0]><'6>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -742,8 +844,10 @@ where
     let _0: (); // return
     let _1: test_crate::Iter::<_, &_ mut _><'7, '8, T>[{built_in impl core::marker::Sized::<&_ mut _><'8> for T}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -755,8 +859,10 @@ where
     let _0: (); // return
     let _1: core::option::Option::<IterWrapper<_, _>[TraitClause1]><'6, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'6>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -789,8 +895,11 @@ fn use_const_generic<'_0, '_1>(_1: test_crate::ArrayWrapper::<&_ mut _, 1usize><
     let _1: test_crate::ArrayWrapper::<&_ mut _, 1usize><'6, u32>[{built_in impl core::marker::Sized::<&_ mut _><'6> for u32}]; // arg #1
     let _2: test_crate::ArrayWrapper::<&_ mut _, 2usize><'14, u32>[{built_in impl core::marker::Sized::<&_ mut _><'14> for u32}]; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -804,15 +913,18 @@ where
     let _2: IterMut<'2, bool>[{built_in impl Sized for bool}]; // anonymous local
     let _3: IterMut<'3, bool>[{built_in impl Sized for bool}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = move x
     _2 = test_crate::identity::<IterMut<_, _>[TraitClause1]><'5, bool>[{built_in impl core::marker::Sized::<IterMut<_, _>[TraitClause0]><'5>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}](move _3)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
+    storage_dead(x)
     return
 }
 

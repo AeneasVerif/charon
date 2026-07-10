@@ -35,6 +35,7 @@ pub fn LEN2<Self, Clause0_W, const LEN : usize>() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 32usize
     return
 }

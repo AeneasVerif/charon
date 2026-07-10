@@ -41,19 +41,26 @@ where
     let _3: Self; // anonymous local
     let _4: &'4 Self; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source) with_metadata(copy source.metadata)
     _3 = TraitClause0::clone<'5>(move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_4)
     drop[TraitClause1::drop_glue<'6>] (*self)
     ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
         unwind_continue
     (*self) = move _3
     _0 = ()
     storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
     return
 }
 
@@ -63,7 +70,9 @@ pub fn clone<'_0>(self: &'_0 u8) -> u8
     let _0: u8; // return
     let self: &'1 u8; // arg #1
 
+    storage_live(_0)
     _0 = copy (*self)
+    storage_dead(self)
     return
 }
 
@@ -78,19 +87,26 @@ where
     let _3: u8; // anonymous local
     let _4: &'4 u8; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
     _4 = &(*source)
     _3 = clone<'5>(move _4)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_4)
     drop[TraitClause0::drop_glue<'6>] (*self)
     ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
         unwind_continue
     (*self) = move _3
     _0 = ()
     storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
     return
 }
 
@@ -132,14 +148,19 @@ pub fn core::num::{u8}::saturating_add(self: u8, rhs: u8) -> u8
     let _3: u8; // anonymous local
     let _4: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy self
     storage_live(_4)
     _4 = copy rhs
     _0 = core::intrinsics::saturating_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](move _3, move _4)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(rhs)
+        storage_dead(self)
+        undefined_behavior
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(rhs)
+    storage_dead(self)
     return
 }
 
@@ -152,6 +173,7 @@ pub fn wrapping_add(self: u8, rhs: u8) -> u8
     let _3: u8; // anonymous local
     let _4: u8; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy self
     storage_live(_4)
@@ -159,6 +181,8 @@ pub fn wrapping_add(self: u8, rhs: u8) -> u8
     _0 = move _3 wrap.+ move _4
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(rhs)
+    storage_dead(self)
     return
 }
 
@@ -176,6 +200,7 @@ pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
     let _8: u8; // anonymous local
     let _9: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     storage_live(_6)
     _6 = copy self
@@ -198,6 +223,8 @@ pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
     storage_dead(_8)
     storage_dead(b)
     storage_dead(a)
+    storage_dead(rhs)
+    storage_dead(self)
     return
 }
 
@@ -209,6 +236,7 @@ fn main()
     let _2: (u8, bool); // anonymous local
     let _3: u8; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = wrapping_add(const 255u8, const 1u8)

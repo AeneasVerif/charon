@@ -206,6 +206,7 @@ where
     let self_11: UsizeNoHighBit; // local
     let _12: NonNull<u8>; // anonymous local
 
+    storage_live(_0)
     storage_live(_6)
     storage_live(end)
     storage_live(len)
@@ -230,7 +231,15 @@ where
         _7 = &two-phase-mut ((*self_1)).buf
         _6 = grow_one<'11, T, A>[TraitClause0, TraitClause1, TraitClause2](move _7)
         ↳⚡ drop[{built_in impl Destruct for T}::drop_glue<'12>] value
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(end)
+                storage_dead(_6)
+                storage_dead(value)
+                storage_dead(self_1)
+                unwind_terminate
+            storage_dead(end)
+            storage_dead(_6)
+            storage_dead(value)
+            storage_dead(self_1)
             unwind_continue
         storage_dead(_7)
     } else {
@@ -251,6 +260,10 @@ where
     ((*self_1)).len = copy len wrap.+ const 1usize
     _0 = &mut (*end)
     storage_dead(len)
+    storage_dead(end)
+    storage_dead(_6)
+    storage_dead(value)
+    storage_dead(self_1)
     return
 }
 
@@ -266,11 +279,16 @@ where
     let value: T; // arg #2
     let _3: &'3 mut T; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = push_mut<'5, T, A>[TraitClause0, TraitClause1, TraitClause2](move self, move value)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(value)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_3)
+    storage_dead(value)
+    storage_dead(self)
     return
 }
 
@@ -281,12 +299,15 @@ fn vec<'_0>(x: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl S
     let x: &'1 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // arg #1
     let _2: &'2 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = &two-phase-mut (*x)
     _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, const 42u32)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 

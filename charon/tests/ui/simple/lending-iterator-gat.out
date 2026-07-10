@@ -82,9 +82,12 @@ unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
 
+    storage_live(_0)
     _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1).0
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -118,11 +121,13 @@ where
     let _4: Option<&'22 T>[{built_in impl Sized for &'22 T}]; // anonymous local
     let _5: &'25 T; // anonymous local
 
+    storage_live(_0)
     match (*self) {
         Option::Some => {
         },
         _ => {
             _0 = Option::None {  }
+            storage_dead(self)
             return
         },
     }
@@ -140,6 +145,7 @@ where
     storage_dead(_5)
     storage_dead(item_3)
     storage_dead(item_2)
+    storage_dead(self)
     return
 }
 
@@ -177,6 +183,7 @@ where
     let _8: (TraitClause2::Item<'12>,); // anonymous local
     let _9: TraitClause2::Item<'13>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     loop {
@@ -185,9 +192,18 @@ where
         _5 = &two-phase-mut iter
         _4 = TraitClause2::next<'14>(move _5)
         ↳⚡ conditional_drop[{built_in impl Destruct for T1}::drop_glue<'15>] f
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] iter
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
+            storage_dead(_3)
+            storage_dead(f)
+            storage_dead(iter)
             unwind_continue
         storage_dead(_5)
         match _4 {
@@ -207,45 +223,102 @@ where
         _8 = (move _9,)
         _3 = TraitClause3::call_mut<'33>(move _7, move _8)
         ↳⚡ conditional_drop[impl_Destruct_for_tuple::drop_glue<'39, TraitClause2::Item<'38>>] _8
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for TraitClause2::Item<'45>}::drop_glue<'46>] _9
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for TraitClause2::Item<'51>}::drop_glue<'52>] item
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[impl_Destruct_for_Option::drop_glue<'72, TraitClause2::Item<'69>>[TraitClause2::Item::ImpliedClause0]] _4
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for T1}::drop_glue<'15>] f
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] iter
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
+            storage_dead(_3)
+            storage_dead(f)
+            storage_dead(iter)
             unwind_continue
         conditional_drop[{built_in impl Destruct for TraitClause2::Item<'41>}::drop_glue<'42>] _9
         ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause2::Item<'51>}::drop_glue<'52>] item
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[impl_Destruct_for_Option::drop_glue<'72, TraitClause2::Item<'69>>[TraitClause2::Item::ImpliedClause0]] _4
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for T1}::drop_glue<'15>] f
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] iter
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
+            storage_dead(_3)
+            storage_dead(f)
+            storage_dead(iter)
             unwind_continue
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
         conditional_drop[{built_in impl Destruct for TraitClause2::Item<'48>}::drop_glue<'49>] item
         ↳⚡ conditional_drop[impl_Destruct_for_Option::drop_glue<'72, TraitClause2::Item<'69>>[TraitClause2::Item::ImpliedClause0]] _4
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for T1}::drop_glue<'15>] f
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] iter
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
+            storage_dead(_3)
+            storage_dead(f)
+            storage_dead(iter)
             unwind_continue
         storage_dead(item)
         conditional_drop[impl_Destruct_for_Option::drop_glue<'62, TraitClause2::Item<'59>>[TraitClause2::Item::ImpliedClause0]] _4
         ↳⚡ conditional_drop[{built_in impl Destruct for T1}::drop_glue<'15>] f
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
             conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] iter
-            ↳⚡ unwind_terminate
+            ↳⚡ storage_dead(_3)
+                storage_dead(f)
+                storage_dead(iter)
+                unwind_terminate
+            storage_dead(_3)
+            storage_dead(f)
+            storage_dead(iter)
             unwind_continue
         storage_dead(_4)
         continue 0
@@ -253,17 +326,38 @@ where
     _0 = ()
     conditional_drop[impl_Destruct_for_Option::drop_glue<'26, TraitClause2::Item<'23>>[TraitClause2::Item::ImpliedClause0]] _4
     ↳⚡ conditional_drop[{built_in impl Destruct for T1}::drop_glue<'15>] f
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(f)
+            storage_dead(iter)
+            unwind_terminate
         conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] iter
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(f)
+            storage_dead(iter)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(f)
+        storage_dead(iter)
         unwind_continue
     storage_dead(_4)
     conditional_drop[{built_in impl Destruct for T1}::drop_glue<'34>] f
     ↳⚡ conditional_drop[{built_in impl Destruct for I}::drop_glue<'16>] iter
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(f)
+            storage_dead(iter)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(f)
+        storage_dead(iter)
         unwind_continue
     conditional_drop[{built_in impl Destruct for I}::drop_glue<'43>] iter
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(f)
+        storage_dead(iter)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(f)
+    storage_dead(iter)
     return
 }
 
@@ -282,6 +376,7 @@ fn call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0>, tupled_args: (&'_1 i32,))
     let _4: i32; // anonymous local
     let _5: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(item)
     storage_live(_5)
     _0 = ()
@@ -292,6 +387,10 @@ fn call_mut<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0>, tupled_args: (&'_1 i32,))
     (*((*_1)).0) = move _5
     _0 = ()
     storage_dead(_4)
+    storage_dead(_5)
+    storage_dead(item)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -301,7 +400,9 @@ unsafe fn impl_Destruct_for_closure::drop_glue<'_0, '_1>(_1: &'_1 mut closure<'_
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -313,15 +414,28 @@ fn call_once<'_0, '_1>(_1: closure<'_0>, _2: (&'_1 i32,))
     let _2: (&'0 i32,); // arg #2
     let _3: &'2 mut closure<'_0>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'_0, '_1, '9>(move _3, move _2)
     ↳⚡ drop[impl_Destruct_for_closure::drop_glue<'_0, '12>] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[impl_Destruct_for_closure::drop_glue<'_0, '15>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -388,6 +502,7 @@ pub fn main()
     _29 = const 42i32
     _28 = &_29
     _26 = move _28
+    storage_live(_0)
     storage_live(_24)
     storage_live(_25)
     _0 = ()
@@ -410,7 +525,16 @@ pub fn main()
     _7 = closure { 0: move _8 }
     storage_dead(_8)
     _5 = for_each<Option<&'55 i32>[{built_in impl Sized for &'55 i32}], closure<'57>>[{built_in impl Sized for Option<&'55 i32>[{built_in impl Sized for &'55 i32}]}, {built_in impl Sized for closure<'57>}, impl_LendingIterator_for_Option<'55, i32>[{built_in impl Sized for i32}], impl_FnMut_tuple_for_closure<'57, '93>](move _6, move _7)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(kind)
+        unwind_continue
     storage_live(_27)
     storage_live(_30)
     storage_live(_31)
@@ -457,6 +581,21 @@ pub fn main()
         _21 = &(*_22)
         storage_live(_23)
         _23 = Option::None {  }
+        storage_dead(_25)
+        storage_dead(_24)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(kind)
+        storage_dead(_31)
+        storage_dead(_30)
+        storage_dead(_29)
+        storage_dead(_28)
+        storage_dead(_27)
+        storage_dead(_26)
         panic(core::panicking::assert_failed)
     }
     storage_dead(_16)
@@ -469,6 +608,21 @@ pub fn main()
     storage_dead(sum)
     storage_dead(iter)
     storage_dead(x)
+    storage_dead(_25)
+    storage_dead(_24)
+    storage_dead(_23)
+    storage_dead(_22)
+    storage_dead(_21)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(kind)
+    storage_dead(_31)
+    storage_dead(_30)
+    storage_dead(_29)
+    storage_dead(_28)
+    storage_dead(_27)
+    storage_dead(_26)
     return
 }
 

@@ -42,13 +42,16 @@ unsafe fn impl_Destruct_for_Thing::drop_glue<'_0>(_1: &'_0 mut Thing)
     let _0: (); // return
     let _1: &'1 mut Thing; // arg #1
 
+    storage_live(_0)
     _0 = ()
     match (*_1) {
         _ => {
         },
     }
     drop[impl_Destruct_for_Box::drop_glue<'2, (), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_1) as variant Thing::A).0
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -64,10 +67,13 @@ fn foo(_1: Thing)
     let _0: (); // return
     let _1: Thing; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[impl_Destruct_for_Thing::drop_glue<'0>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 

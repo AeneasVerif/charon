@@ -49,6 +49,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy FOO<T>[impl_Trait_for_T<T>[TraitClause0]]
     return
 }
@@ -61,6 +62,7 @@ where
     let _0: (); // return
     let _1: usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = foo<T>[TraitClause0]()

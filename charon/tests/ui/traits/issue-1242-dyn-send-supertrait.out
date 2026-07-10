@@ -37,6 +37,7 @@ fn foo<'_0>(x: &'_0 (dyn Trait + '_0)) -> &'_0 (dyn Send + '_0)
     let _3: &'12 (dyn Send + '13); // anonymous local
     let _4: &'14 (dyn Trait + '15); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -47,6 +48,7 @@ fn foo<'_0>(x: &'_0 (dyn Trait + '_0)) -> &'_0 (dyn Send + '_0)
     _0 = unsize_cast<&'10 (dyn Send + '11), &'20 (dyn Send + '21),  at []>(move _2)
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 

@@ -197,6 +197,7 @@ fn __rust_std_internal_init_fn() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 0u32
     return
 }
@@ -209,7 +210,9 @@ unsafe fn {impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'_0>(
     let _0: (); // return
     let _1: &'1 mut test_crate::FOO::{const}::closure; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -217,6 +220,7 @@ fn test_crate::FOO::{const}::closure::__RUST_STD_INTERNAL_VAL() -> Storage<u32, 
 {
     let _0: Storage<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}]; // return
 
+    storage_live(_0)
     _0 = std::sys::thread_local::native::lazy::{Storage<T, D>[TraitClause0, TraitClause1]}::new<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_DestroyedState_for_unit]()
     ↳⚡ unwind_continue
     return
@@ -235,6 +239,7 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
     let _5: &'7 Storage<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}]; // anonymous local
     let _6: Option<&'8 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'8 mut Option<u32>[{built_in impl Sized for u32}]}]; // anonymous local
 
+    storage_live(_0)
     storage_live(__rust_std_internal_init)
     __rust_std_internal_init = move tupled_args.0
     storage_live(_4)
@@ -244,10 +249,16 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
     storage_live(_6)
     _6 = move __rust_std_internal_init
     _0 = get_or_init<'13, '14, u32, (), __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_DestroyedState_for_unit, {built_in impl Sized for __rust_std_internal_init_fn}, {built_in impl FnOnce<()> for __rust_std_internal_init_fn where Output  = u32}](move _4, move _6, const __rust_std_internal_init_fn)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(__rust_std_internal_init)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
+    storage_dead(__rust_std_internal_init)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -259,10 +270,17 @@ fn {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{buil
     let args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
     let _3: &'1 test_crate::FOO::{const}::closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure}::call<'_0, '3>(move _3, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -274,14 +292,27 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
     let _2: (Option<&'0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
     let _3: &'4 mut test_crate::FOO::{const}::closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure}::call_mut<'_0, '18>(move _3, move _2)
     ↳⚡ drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'19>] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'20>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -329,12 +360,19 @@ fn test_crate::FOO::{const}::closure::as_fn<'_0>(arg1: Option<&'_0 mut Option<u3
     let args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // local
     let state: test_crate::FOO::{const}::closure; // local
 
+    storage_live(_0)
     storage_live(args)
     storage_live(state)
     args = (move arg1,)
     state = test_crate::FOO::{const}::closure {  }
     _0 = {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure}::call_once<'_0>(move state, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        storage_dead(arg1)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    storage_dead(arg1)
     return
 }
 
@@ -346,7 +384,9 @@ unsafe fn {impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'_0
     let _0: (); // return
     let _1: &'1 mut test_crate::FOO::{const}::closure#1; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -354,6 +394,7 @@ fn test_crate::FOO::{const}::closure#1::__RUST_STD_INTERNAL_VAL() -> Storage<u32
 {
     let _0: Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]; // return
 
+    storage_live(_0)
     _0 = std::sys::thread_local::native::lazy::{Storage<T, D>[TraitClause0, TraitClause1]}::new<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}]()
     ↳⚡ unwind_continue
     return
@@ -372,6 +413,7 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
     let _5: &'7 Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]; // anonymous local
     let _6: Option<&'8 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'8 mut Option<u32>[{built_in impl Sized for u32}]}]; // anonymous local
 
+    storage_live(_0)
     storage_live(__rust_std_internal_init)
     __rust_std_internal_init = move tupled_args.0
     storage_live(_4)
@@ -381,10 +423,16 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
     storage_live(_6)
     _6 = move __rust_std_internal_init
     _0 = get_or_init<'13, '14, u32, !, __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for __rust_std_internal_init_fn}, {built_in impl FnOnce<()> for __rust_std_internal_init_fn where Output  = u32}](move _4, move _6, const __rust_std_internal_init_fn)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(__rust_std_internal_init)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
+    storage_dead(__rust_std_internal_init)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -396,10 +444,17 @@ fn {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{buil
     let args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
     let _3: &'1 test_crate::FOO::{const}::closure#1; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure#1}::call<'_0, '3>(move _3, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -411,14 +466,27 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
     let _2: (Option<&'0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'0 mut Option<u32>[{built_in impl Sized for u32}]}],); // arg #2
     let _3: &'4 mut test_crate::FOO::{const}::closure#1; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure#1}::call_mut<'_0, '18>(move _3, move _2)
     ↳⚡ drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'19>] _1
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
         unwind_continue
     drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'20>] _1
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -466,12 +534,19 @@ fn test_crate::FOO::{const}::closure#1::as_fn<'_0>(arg1: Option<&'_0 mut Option<
     let args: (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],); // local
     let state: test_crate::FOO::{const}::closure#1; // local
 
+    storage_live(_0)
     storage_live(args)
     storage_live(state)
     args = (move arg1,)
     state = test_crate::FOO::{const}::closure#1 {  }
     _0 = {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure#1}::call_once<'_0>(move state, move args)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        storage_dead(arg1)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    storage_dead(arg1)
     return
 }
 
@@ -503,6 +578,7 @@ fn FOO() -> LocalKey<u32>[{built_in impl Sized for u32}]
     }
     storage_dead(_3)
     _1 = move _2
+    storage_live(_0)
     _0 = std::thread::local::{LocalKey<T>[TraitClause0]}::new<u32>[{built_in impl Sized for u32}](move _1)
     ↳⚡ unwind_continue
     return
@@ -516,6 +592,7 @@ fn main()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return

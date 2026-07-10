@@ -53,6 +53,7 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     let _13: isize; // anonymous local
     let _14: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     storage_live(_6)
     _6 = copy count
@@ -62,7 +63,10 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     _7 = cast<usize, isize>(move _8)
     storage_dead(_8)
     _5 = checked_mul(move _6, move _7)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(size)
+        storage_dead(count)
+        storage_dead(this)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     match _5 {
@@ -71,6 +75,9 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
         _ => {
             storage_dead(_5)
             _0 = const false
+            storage_dead(size)
+            storage_dead(count)
+            storage_dead(this)
             return
         },
     }
@@ -82,12 +89,18 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     storage_live(_12)
     _12 = copy this
     _11 = addr<()>(move _12)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(size)
+        storage_dead(count)
+        storage_dead(this)
+        unwind_continue
     storage_dead(_12)
     storage_live(_13)
     _13 = copy byte_offset
     _10 = overflowing_add_signed(move _11, move _13)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(size)
+        storage_dead(count)
+        storage_dead(this)
+        unwind_continue
     storage_dead(_13)
     storage_dead(_11)
     storage_live(overflow)
@@ -99,6 +112,9 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     storage_dead(_14)
     storage_dead(overflow)
     storage_dead(byte_offset)
+    storage_dead(size)
+    storage_dead(count)
+    storage_dead(this)
     return
 }
 
@@ -129,6 +145,7 @@ fn runtime_offset_nowrap(this: *const (), count: isize, size: usize) -> bool
     let _6: isize; // anonymous local
     let _7: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_4)
     storage_live(_5)
     _5 = copy this
@@ -141,8 +158,14 @@ fn runtime_offset_nowrap(this: *const (), count: isize, size: usize) -> bool
     storage_dead(_6)
     storage_dead(_5)
     _0 = runtime(move _4.0, move _4.1, move _4.2)
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(size)
+        storage_dead(count)
+        storage_dead(this)
+        unwind_continue
     storage_dead(_4)
+    storage_dead(size)
+    storage_dead(count)
+    storage_dead(this)
     return
 }
 
@@ -162,6 +185,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
     let _10: Arguments<'3>; // anonymous local
     let _11: &'4 str; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_4)
     storage_live(_5)
@@ -171,7 +195,13 @@ fn precondition_check(this: *const (), count: isize, size: usize)
     storage_live(_7)
     _7 = copy size
     _4 = runtime_offset_nowrap(move _5, move _6, move _7)
-    ↳⚡ unwind_terminate
+    ↳⚡ storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(msg)
+        storage_dead(size)
+        storage_dead(count)
+        storage_dead(this)
+        unwind_terminate
     if move _4 {
     } else {
         storage_dead(_7)
@@ -184,16 +214,41 @@ fn precondition_check(this: *const (), count: isize, size: usize)
         storage_live(_11)
         _11 = &(*msg) with_metadata(copy msg.metadata)
         _10 = from_str<'6>(move _11)
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_10)
+            storage_dead(_9)
+            storage_dead(msg)
+            storage_dead(size)
+            storage_dead(count)
+            storage_dead(this)
+            unwind_terminate
         storage_dead(_11)
         _9 = panic_nounwind_fmt<'8>(move _10, const false)
-        ↳⚡ undefined_behavior
+        ↳⚡ storage_dead(_10)
+            storage_dead(_9)
+            storage_dead(msg)
+            storage_dead(size)
+            storage_dead(count)
+            storage_dead(this)
+            undefined_behavior
+        storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(msg)
+        storage_dead(size)
+        storage_dead(count)
+        storage_dead(this)
+        undefined_behavior
     }
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
     _0 = ()
     storage_dead(_4)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(msg)
+    storage_dead(size)
+    storage_dead(count)
+    storage_dead(this)
     return
 }
 
@@ -214,9 +269,12 @@ where
     let _9: *const T; // anonymous local
     let _10: isize; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = check_language_ub()
-    ↳⚡ unwind_continue
+    ↳⚡ storage_dead(count)
+        storage_dead(self)
+        unwind_continue
     if move _3 {
         storage_live(_4)
         storage_live(_5)
@@ -228,9 +286,13 @@ where
         _7 = copy count
         storage_live(_8)
         _8 = size_of<T>[TraitClause0]()
-        ↳⚡ unwind_continue
+        ↳⚡ storage_dead(count)
+            storage_dead(self)
+            unwind_continue
         _4 = precondition_check(move _5, move _7, move _8)
-        ↳⚡ undefined_behavior
+        ↳⚡ storage_dead(count)
+            storage_dead(self)
+            undefined_behavior
         storage_dead(_8)
         storage_dead(_7)
         storage_dead(_5)
@@ -245,6 +307,8 @@ where
     _0 = move _9 offset move _10
     storage_dead(_10)
     storage_dead(_9)
+    storage_dead(count)
+    storage_dead(self)
     return
 }
 
@@ -267,6 +331,7 @@ fn main()
     let _7: *const i32; // anonymous local
     let _8: *const i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(s)
     s = [const 11i32, const 42i32]
@@ -290,12 +355,8 @@ fn main()
     storage_dead(_8)
     _6 = copy (*_7)
     _5 = move _6 == const 42i32
-    if move _5 {
-    } else {
-        storage_dead(_6)
-        storage_dead(_7)
-        panic(core::panicking::panic)
-    }
+    assert(move _5 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_7)
     storage_dead(_5)

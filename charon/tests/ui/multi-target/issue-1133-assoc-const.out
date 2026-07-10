@@ -10,6 +10,7 @@ fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86
 {
     let _0: [u32; 4usize]; // return
 
+    storage_live(_0)
     _0 = [const 10u32, const 20u32, const 30u32, const 40u32]
     return
 }
@@ -25,6 +26,7 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
     let _4: &'_ [u32; 4usize]; // anonymous local
     let _5: &'_ u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc
     storage_live(_3)
@@ -33,10 +35,15 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
     _4 = &_2
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, 4usize>(move _4, copy _3)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_5)
+        storage_dead(_4)
+        undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(self)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 
@@ -44,6 +51,7 @@ fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i68
 {
     let _0: [u32; 4usize]; // return
 
+    storage_live(_0)
     _0 = [const 10u32, const 20u32, const 30u32, const 40u32]
     return
 }
@@ -59,6 +67,7 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
     let _4: &'_ [u32; 4usize]; // anonymous local
     let _5: &'_ u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu
     storage_live(_3)
@@ -67,10 +76,15 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
     _4 = &_2
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, 4usize>(move _4, copy _3)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_5)
+        storage_dead(_4)
+        undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(self)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 

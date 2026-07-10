@@ -91,6 +91,7 @@ fn main()
     let _8: [u8; 5usize]; // anonymous local
     let _9: &'7 [u8; 5usize]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(buf)
     buf = new<u8>[{built_in impl Sized for u8}]()
@@ -109,19 +110,27 @@ fn main()
     _7 = move _9
     _6 = &(*_7)
     _5 = @ArrayToSliceShared<'_, u8, 5usize>(move _6)
-    ↳⚡ undefined_behavior
+    ↳⚡ storage_dead(_9)
+        storage_dead(_8)
+        undefined_behavior
     storage_dead(_6)
     _3 = impl_Write_for_Vec_u8::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'13, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            unwind_terminate
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _2 = unwrap<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}, impl_Debug_for_Error](move _3)
     ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'14, (), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]] _3
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            unwind_terminate
         conditional_drop[impl_Destruct_for_Vec::drop_glue<'13, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
-        ↳⚡ unwind_terminate
+        ↳⚡ storage_dead(_9)
+            storage_dead(_8)
+            unwind_terminate
         unwind_continue
     storage_dead(_3)
     storage_dead(_7)
@@ -130,6 +139,8 @@ fn main()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'15, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
     ↳⚡ unwind_continue
     storage_dead(buf)
+    storage_dead(_9)
+    storage_dead(_8)
     return
 }
 

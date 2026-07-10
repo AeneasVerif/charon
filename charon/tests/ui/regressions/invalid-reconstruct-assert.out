@@ -147,6 +147,7 @@ where
     let _46: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // anonymous local
 
     bb0: {
+        storage_live(_0);
         storage_live(base);
         storage_live(_15);
         storage_live(_21);
@@ -179,6 +180,22 @@ where
     }
 
     bb3: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         unwind_continue;
     }
 
@@ -265,6 +282,22 @@ where
     }
 
     bb11: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         undefined_behavior;
     }
 
@@ -290,6 +323,22 @@ where
     }
 
     bb15: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         undefined_behavior;
     }
 
@@ -306,10 +355,42 @@ where
     }
 
     bb18: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         unwind_continue;
     }
 
     bb19: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         unwind_terminate;
     }
 
@@ -376,6 +457,22 @@ where
     }
 
     bb27: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         undefined_behavior;
     }
 
@@ -386,18 +483,82 @@ where
     }
 
     bb29: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         undefined_behavior;
     }
 
     bb30: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         unwind_continue;
     }
 
     bb31: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         return;
     }
 
     bb32: {
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_38);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_46);
         return;
     }
 }
@@ -427,6 +588,7 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Orderin
         _10 = const 3u32;
         _9 = &_10;
         _8 = move _9;
+        storage_live(_0);
         storage_live(x);
         storage_live(_7);
         x = move tupled_args.0;
@@ -441,6 +603,13 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Orderin
     }
 
     bb1: {
+        storage_dead(_7);
+        storage_dead(x);
+        storage_dead(tupled_args);
+        storage_dead(_1);
+        storage_dead(_10);
+        storage_dead(_9);
+        storage_dead(_8);
         unwind_continue;
     }
 
@@ -448,6 +617,13 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Orderin
         storage_dead(_6);
         storage_dead(_5);
         storage_dead(_4);
+        storage_dead(_7);
+        storage_dead(x);
+        storage_dead(tupled_args);
+        storage_dead(_1);
+        storage_dead(_10);
+        storage_dead(_9);
+        storage_dead(_8);
         return;
     }
 }
@@ -459,7 +635,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     let _1: &'1 mut closure; // arg #1
 
     bb0: {
+        storage_live(_0);
         _0 = ();
+        storage_dead(_1);
         return;
     }
 }
@@ -473,6 +651,7 @@ fn call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
     let _3: &'2 mut closure; // anonymous local
 
     bb0: {
+        storage_live(_0);
         storage_live(_3);
         _3 = &mut _1;
         _0 = call_mut<'_0, '7>(move _3, move _2) -> bb2 (unwind: bb1);
@@ -487,18 +666,30 @@ fn call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
     }
 
     bb3: {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
         unwind_continue;
     }
 
     bb4: {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
         unwind_terminate;
     }
 
     bb5: {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
         unwind_continue;
     }
 
     bb6: {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
         return;
     }
 }
@@ -538,6 +729,7 @@ fn main()
     let _8: closure; // anonymous local
 
     bb0: {
+        storage_live(_0);
         _0 = ();
         storage_live(a);
         a = [const 1u32, const 2u32, const 3u32, const 4u32, const 5u32];

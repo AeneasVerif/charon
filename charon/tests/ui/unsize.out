@@ -97,6 +97,7 @@ fn foo()
     let _21: String; // anonymous local
     let _22: &'24 String; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(array)
     array = @ArrayRepeat<i32, 2usize>(const 0i32)
