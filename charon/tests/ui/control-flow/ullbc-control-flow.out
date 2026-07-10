@@ -414,14 +414,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_30);
         _30 = copy s;
         _29 = move _30 >= const 1usize;
-        if move _29 -> bb20 else -> bb21;
-    }
-
-    bb19: {
-        undefined_behavior;
-    }
-
-    bb20: {
+        assert(move _29 == true) else panic(core::panicking::panic);
         storage_dead(_30);
         storage_dead(_29);
         storage_dead(_26);
@@ -429,9 +422,8 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         goto bb15;
     }
 
-    bb21: {
-        storage_dead(_30);
-        panic(core::panicking::panic);
+    bb19: {
+        undefined_behavior;
     }
 }
 

@@ -1432,12 +1432,8 @@ fn main()
     ↳⚡ undefined_behavior
     _7 = copy (*_10)
     _6 = move _7 == const 3i32
-    if move _6 {
-    } else {
-        storage_dead(_7)
-        storage_dead(_8)
-        panic(core::panicking::panic)
-    }
+    assert(move _6 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_8)
     storage_dead(_6)

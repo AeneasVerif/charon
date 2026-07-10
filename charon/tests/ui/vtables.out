@@ -310,11 +310,8 @@ fn dummy<'_0>(self: &'_0 i32)
     storage_live(_3)
     _3 = copy (*self)
     _2 = move _3 > const 0i32
-    if move _2 {
-    } else {
-        storage_dead(_3)
-        panic(core::panicking::panic)
-    }
+    assert(move _2 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -602,12 +599,8 @@ fn impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i32)
     storage_live(_5)
     _5 = copy (*t)
     _3 = move _4 > move _5
-    if move _3 {
-    } else {
-        storage_dead(_5)
-        storage_dead(_4)
-        panic(core::panicking::panic)
-    }
+    assert(move _3 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -697,12 +690,8 @@ fn impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i64)
     storage_live(_6)
     _6 = copy (*t)
     _3 = move _4 > move _6
-    if move _3 {
-    } else {
-        storage_dead(_6)
-        storage_dead(_4)
-        panic(core::panicking::panic)
-    }
+    assert(move _3 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_3)
@@ -901,12 +890,8 @@ fn lifetime_method<'a, '_1>(self: &'_1 i32, arg: &'a i32) -> &'a i32
     storage_live(_5)
     _5 = copy (*arg)
     _3 = move _4 > move _5
-    if move _3 {
-    } else {
-        storage_dead(_5)
-        storage_dead(_4)
-        panic(core::panicking::panic)
-    }
+    assert(move _3 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -1206,11 +1191,8 @@ fn main()
     _5 = &(*x) with_metadata(copy x.metadata)
     _4 = (copy ((*_5.metadata)).method_check)(move _5)
     ↳⚡ unwind_continue
-    if move _4 {
-    } else {
-        storage_dead(_5)
-        panic(core::panicking::panic)
-    }
+    assert(move _4 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_live(y)

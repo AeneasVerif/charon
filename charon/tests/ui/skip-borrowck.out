@@ -94,11 +94,8 @@ pub fn choose_test()
     storage_live(_10)
     _10 = copy (*z)
     _9 = move _10 == const 1i32
-    if move _9 {
-    } else {
-        storage_dead(_10)
-        panic(core::panicking::panic)
-    }
+    assert(move _9 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_9)
     storage_live(_11)
@@ -106,33 +103,24 @@ pub fn choose_test()
     // drop(z)
     _12 = copy x
     _11 = move _12 == const 1i32
-    if move _11 {
-    } else {
-        storage_dead(_12)
-        panic(core::panicking::panic)
-    }
+    assert(move _11 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_live(_13)
     storage_live(_14)
     _14 = copy y
     _13 = move _14 == const 0i32
-    if move _13 {
-    } else {
-        storage_dead(_14)
-        panic(core::panicking::panic)
-    }
+    assert(move _13 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_14)
     storage_dead(_13)
     storage_live(_15)
     storage_live(_16)
     _16 = copy (*z)
     _15 = move _16 == const 1i32
-    if move _15 {
-    } else {
-        storage_dead(_16)
-        panic(core::panicking::panic)
-    }
+    assert(move _15 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()

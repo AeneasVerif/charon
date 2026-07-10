@@ -1779,12 +1779,8 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
     ↳⚡ unwind_continue
     storage_dead(_8)
     _4 = move _5 == move _7
-    if move _4 {
-    } else {
-        storage_dead(_7)
-        storage_dead(_5)
-        panic(core::panicking::panic)
-    }
+    assert(move _4 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_5)
     storage_dead(_4)

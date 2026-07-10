@@ -13,11 +13,8 @@ pub fn test_crate::mod_reduce(a: u32) -> u32
     storage_live(_3)
     _3 = copy a
     _2 = move _3 < const 100u32
-    if move _2 {
-    } else {
-        storage_dead(_3)
-        panic(core::panicking::panic)
-    }
+    assert(move _2 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)

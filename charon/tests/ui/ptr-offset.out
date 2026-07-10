@@ -290,12 +290,8 @@ fn main()
     storage_dead(_8)
     _6 = copy (*_7)
     _5 = move _6 == const 42i32
-    if move _5 {
-    } else {
-        storage_dead(_6)
-        storage_dead(_7)
-        panic(core::panicking::panic)
-    }
+    assert(move _5 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_7)
     storage_dead(_5)

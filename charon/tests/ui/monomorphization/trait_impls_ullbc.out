@@ -29,21 +29,12 @@ fn do_test::<bool>(init: bool, expected: bool)
     }
 
     bb2: {
-        if move _3 -> bb3 else -> bb4;
-    }
-
-    bb3: {
+        assert(move _3 == true) else panic(core::panicking::panic);
         storage_dead(_5);
         storage_dead(_4);
         storage_dead(_3);
         _0 = ();
         return;
-    }
-
-    bb4: {
-        storage_dead(_5);
-        storage_dead(_4);
-        panic(core::panicking::panic);
     }
 }
 

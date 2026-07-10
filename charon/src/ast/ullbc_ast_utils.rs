@@ -196,8 +196,12 @@ impl BlockData {
     }
 
     pub fn as_abort(&self) -> Option<AbortKind> {
-        if self.statements.iter().all(|st| st.kind.is_storage_live())
-            && let TerminatorKind::Abort(abort) = &self.terminator.kind
+        if self.statements.iter().all(|st| {
+            matches!(
+                st.kind,
+                StatementKind::Nop | StatementKind::StorageLive(_) | StatementKind::StorageDead(_)
+            )
+        }) && let TerminatorKind::Abort(abort) = &self.terminator.kind
         {
             Some(abort.clone())
         } else {
@@ -306,7 +310,8 @@ impl BlockData {
 
 impl ExprBody {
     /// Returns a map from blocks in this body to their abort kind, if they correspond to an
-    /// abort block (ie. a block with no statements and an [TerminatorKind::Abort] terminator).
+    /// abort block (ie. a block with only bookkeeping statements and a
+    /// [TerminatorKind::Abort] terminator).
     pub fn as_abort_map(&self) -> HashMap<BlockId, AbortKind> {
         self.body
             .iter_enumerated()

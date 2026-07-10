@@ -195,12 +195,8 @@ pub fn from(small: i32) -> i64
         storage_live(_5)
         _5 = cast<i32, i128>(copy core::num::{i32}::MIN)
         _3 = move _4 <= move _5
-        if move _3 {
-        } else {
-            storage_dead(_5)
-            storage_dead(_4)
-            panic(core::panicking::panic)
-        }
+        assert(move _3 == true) else panic(core::panicking::panic)
+        ↳⚡ unwind_continue
         storage_dead(_5)
         storage_dead(_4)
         storage_dead(_3)
@@ -216,12 +212,8 @@ pub fn from(small: i32) -> i64
         storage_live(_9)
         _9 = cast<i64, u128>(copy core::num::{i64}::MAX)
         _7 = move _8 <= move _9
-        if move _7 {
-        } else {
-            storage_dead(_9)
-            storage_dead(_8)
-            panic(core::panicking::panic)
-        }
+        assert(move _7 == true) else panic(core::panicking::panic)
+        ↳⚡ unwind_continue
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)

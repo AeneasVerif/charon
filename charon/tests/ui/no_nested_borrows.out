@@ -457,11 +457,8 @@ pub fn test_box1()
     storage_live(_7)
     _7 = copy (*x_4)
     _6 = move _7 == const 1i32
-    if move _6 {
-    } else {
-        storage_dead(_7)
-        panic(core::panicking::panic)
-    }
+    assert(move _6 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     _0 = ()
