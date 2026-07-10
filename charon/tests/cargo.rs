@@ -1,7 +1,8 @@
 //! Tests for running charon with cargo. Cases are set up by hand; this aims to test cargo-specific
 //! shenanigans such as dependencies.
-use anyhow::bail;
+use anyhow::{Context, bail, ensure};
 use assert_cmd::prelude::CommandCargoExt;
+use charon_lib::{ast::FileName, export::CrateData, options::SerializationFormat};
 use itertools::Itertools;
 use libtest_mimic::Trial;
 use regex::Regex;
@@ -125,6 +126,59 @@ fn main() -> Result<(), Box<dyn Error>> {
             perform_test(&case).map_err(|err| err.into())
         })
     };
+    let issue_1298 = {
+        let name = "issue-1298-absolute-path-for-generated-files";
+        let dir = root.join(name);
+        let output_file = root.join(format!("{name}.out"));
+        Trial::test(name, move || {
+            let result: anyhow::Result<()> = (|| {
+                let case = Case {
+                    dir,
+                    output_file: output_file.clone(),
+                    expect: Success,
+                    charon_args: vec![],
+                    cargo_args: vec![],
+                };
+                perform_test(&case)?;
+
+                // Issue #1298: a file generated under OUT_DIR currently keeps its
+                // build-specific path.
+                let crate_data = CrateData::deserialize_from_file(
+                    &output_file.with_extension("llbc"),
+                    SerializationFormat::Json,
+                )?;
+                let generated_file = crate_data
+                    .translated
+                    .files
+                    .iter()
+                    .find(|file| match &file.name {
+                        FileName::Local(path) => {
+                            path.file_name() == Some(OsStr::new("generated.rs"))
+                        }
+                        _ => false,
+                    })
+                    .with_context(|| {
+                        let paths = crate_data
+                            .translated
+                            .files
+                            .iter()
+                            .map(|file| file.name.to_string())
+                            .join(", ");
+                        format!("could not find generated.rs in translated files: {paths}")
+                    })?;
+                let FileName::Local(path) = &generated_file.name else {
+                    unreachable!();
+                };
+                ensure!(
+                    path.is_absolute(),
+                    "expected generated.rs to be recorded as an absolute path, got {}",
+                    path.display()
+                );
+                Ok(())
+            })();
+            result.map_err(|err| err.into())
+        })
+    };
     let tests = vec![
         mktest("build-script", root.join("build-script"), &[], &[], Success),
         mktest(
@@ -174,6 +228,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             &[],
             Success,
         ),
+        issue_1298,
     ];
 
     let args = libtest_mimic::Arguments::from_args();
