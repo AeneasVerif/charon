@@ -80,6 +80,7 @@ fn main()
     _6 = move _7
     _2 = &(*_6)
     _1 = method::<A><'8>(move _2)
+    ↳⚡ unwind_continue
     storage_live(_8)
     storage_live(_11)
     storage_live(_12)
@@ -93,6 +94,7 @@ fn main()
     _5 = move _8
     _4 = &(*_5)
     _3 = method::<B><'11>(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

@@ -9,6 +9,7 @@ fn SLICE() -> [(); 4usize]
     storage_live(_1)
     _1 = ()
     _0 = @ArrayRepeat<(), 4usize>(move _1)
+    ↳⚡ undefined_behavior
     storage_dead(_1)
     return
 }
@@ -37,6 +38,7 @@ fn BAR() -> [(); 42usize]
     storage_live(_1)
     _1 = ()
     _0 = @ArrayRepeat<(), 42usize>(move _1)
+    ↳⚡ undefined_behavior
     storage_dead(_1)
     return
 }

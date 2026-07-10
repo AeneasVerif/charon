@@ -246,9 +246,11 @@ where
     storage_live(_4)
     _4 = copy x
     _3 = TraitClause1::use_item_provided<Clause2_Item>[TraitClause2](move _4)
+    ↳⚡ unwind_continue
     _2 = &_3
     storage_dead(_4)
     _0 = TraitClause2::ImpliedClause1::ImpliedClause1::clone<'17>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_3)
     return
@@ -266,6 +268,7 @@ fn call_fn()
     storage_live(_2)
     _2 = Option::None {  }
     _1 = external_use_item<'19, &'19 bool, Option<&'19 bool>[{built_in impl Sized for &'19 bool}], &'19 bool>[{built_in impl Sized for &'19 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'19, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'19, &'19 bool>[{built_in impl Sized for &'19 bool}, {impl Copy for &'_0 T}<'19, bool>]](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
@@ -285,6 +288,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl Destruct for Clause2_Item}::drop_glue<'5>] x
+    ↳⚡ unwind_continue
     return
 }
 

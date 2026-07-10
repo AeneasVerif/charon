@@ -72,6 +72,7 @@ fn {vtable_method}::<'_><'_0>(_1: &'_0 (dyn Trait))
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait + '1), &'_0 Pattern::<'_>>(move _1)
     _0 = method::<'_><'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -86,6 +87,7 @@ unsafe fn {vtable_drop_shim}::<'_><'_0>(dyn_self: &'_0 mut (dyn Trait))
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Trait + '1), &'_0 mut Pattern::<'_>>(move dyn_self)
     drop[drop_glue::<'_><'3>] (*target_self)
+    ↳⚡ unwind_continue
     return
 }
 

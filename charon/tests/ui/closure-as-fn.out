@@ -106,6 +106,7 @@ fn call_mut<'_0>(state: &'_0 mut closure, args: ())
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2>(move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -121,7 +122,11 @@ fn call_once(_1: closure, _2: ())
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'3>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'4>] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -138,6 +143,7 @@ fn as_fn()
     args = ()
     state = closure {  }
     _0 = call_once(move state, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -160,6 +166,7 @@ fn main()
     storage_live(_4)
     _4 = copy f
     _3 = (move _4)()
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

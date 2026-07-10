@@ -115,6 +115,7 @@ fn main()
     _4 = move _7
     _3 = &(*_4)
     _1 = impl_PartialEq_Option_for_Option::eq<'9, '10, i32>[{built_in impl Sized for i32}, impl_PartialEq_i32_for_i32](move _2, move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
@@ -178,6 +179,7 @@ pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self: &'_0 Foo, other:
     _6 = &((*other)).0
     _5 = &(*_6)
     _0 = impl_PartialOrd_u32_for_u32::partial_cmp<'10, '11>(move _3, move _5)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)

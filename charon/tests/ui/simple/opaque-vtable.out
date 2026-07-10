@@ -74,6 +74,7 @@ fn main()
     _2 = unsize_cast<&'6 (), &'10 (dyn Trait + '11), &impl_Trait_for_unit::{vtable}>(move _3)
     storage_dead(_3)
     _1 = use_debug<'13>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_4)
     storage_dead(_1)

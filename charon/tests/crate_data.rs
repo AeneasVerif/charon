@@ -684,7 +684,7 @@ fn known_trait_method_call() -> anyhow::Result<()> {
     let [first_stmt, ..] = body.statements.as_slice() else {
         panic!()
     };
-    let StatementKind::Call(call) = &first_stmt.kind else {
+    let StatementKind::Call { call, .. } = &first_stmt.kind else {
         panic!()
     };
     let FnOperand::Regular(fn_ptr) = &call.func else {

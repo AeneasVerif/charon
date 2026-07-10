@@ -15,6 +15,7 @@ pub fn first<'_0>(s: &'_0 [u32]) -> u32
     _3 = &(*s) with_metadata(copy s.metadata)
     storage_live(_4)
     _4 = @SliceIndexShared<'_, u32>(move _3, copy _2)
+    ↳⚡ undefined_behavior
     _0 = copy (*_4)
     storage_dead(_2)
     return

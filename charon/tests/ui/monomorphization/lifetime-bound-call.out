@@ -19,6 +19,7 @@ fn caller::<'_>()
     _0 = ()
     storage_live(_1)
     _1 = callee::<'_>()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return
@@ -31,6 +32,7 @@ pub fn f()
 
     _0 = ()
     _0 = caller::<'_>()
+    ↳⚡ unwind_continue
     return
 }
 

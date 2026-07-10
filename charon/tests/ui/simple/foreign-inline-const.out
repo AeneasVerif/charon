@@ -40,6 +40,7 @@ where
     storage_live(_f)
     _f = closure {  }
     _2 = size_of<T>[TraitClause0]()
+    ↳⚡ undefined_behavior
     storage_dead(_f)
     _1 = move _2
     _0 = move _1
@@ -57,6 +58,7 @@ where
     _0 = ()
     storage_live(_1)
     _1 = foo<T>[TraitClause0]()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

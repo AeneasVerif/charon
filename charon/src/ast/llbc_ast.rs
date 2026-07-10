@@ -55,21 +55,35 @@ pub enum StatementKind {
     /// Depending on `DropKind`, this may be a real call to `drop_glue`, or a conditional call
     /// that should only happen if the place has not been moved out of. See the docs of `DropKind`
     /// for more details; to get precise drops use `--precise-drops`.
-    Drop(Place, FnPtr, #[drive(skip)] DropKind),
+    Drop {
+        place: Place,
+        /// Reference to the `drop_glue` code to call on drop.
+        fn_ptr: FnPtr,
+        #[drive(skip)]
+        kind: DropKind,
+        on_unwind: Block,
+    },
     Assert {
         assert: Assert,
         on_failure: AbortKind,
+        on_unwind: Block,
     },
     /// An inline assembly block. For now we only preserve the template string.
     InlineAsm {
         asm: String,
         targets: Vec<Block>,
+        on_unwind: Block,
     },
-    Call(Call),
+    Call {
+        call: Call,
+        on_unwind: Block,
+    },
     /// Panic also handles "unreachable". We keep the name of the panicking function that was
     /// called.
     Abort(AbortKind),
     Return,
+    /// Unwind out of the current function into its caller.
+    UnwindResume,
     /// Break to outer loops.
     /// The `usize` gives the index of the outer loop to break to:
     /// * 0: break to first outer loop (the current loop)

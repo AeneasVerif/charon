@@ -125,6 +125,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     _4 = &(*_5)
     _3 = (move _4,)
     _0 = {built_in impl Fn<(&'12 u32,)> for for<'a> foo::<u32><'a>}::call<'60>(move _2, move _3)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
@@ -185,6 +186,7 @@ fn main()
     _8 = &a
     _7 = &(*_8)
     _5 = (move _6)(move _7)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_8)
@@ -199,6 +201,7 @@ fn main()
     _13 = &a
     _12 = &(*_13)
     _10 = (move _11)(move _12)
+    ↳⚡ unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_13)
@@ -211,6 +214,7 @@ fn main()
     _17 = &b
     _16 = &(*_17)
     _14 = (move _15)(move _16)
+    ↳⚡ unwind_continue
     storage_dead(_16)
     storage_dead(_15)
     storage_dead(_17)
@@ -223,6 +227,7 @@ fn main()
     _21 = &b
     _20 = &(*_21)
     _18 = (move _19)(move _20)
+    ↳⚡ unwind_continue
     storage_live(_28)
     storage_live(_29)
     storage_live(_30)
@@ -242,12 +247,14 @@ fn main()
     _25 = &(*_27)
     _24 = &(*_25)
     _22 = (move _23)(move _24)
+    ↳⚡ unwind_continue
     storage_dead(_24)
     storage_dead(_23)
     storage_dead(_25)
     storage_dead(_22)
     storage_live(_26)
     _26 = takes_closure::<for<'a> foo::<u32><'a>>(const foo::<u32><'24>)
+    ↳⚡ unwind_continue
     storage_dead(_26)
     _0 = ()
     storage_dead(b)

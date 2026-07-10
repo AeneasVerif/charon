@@ -80,6 +80,7 @@ where
 
     _0 = move t
     conditional_drop[{built_in impl Destruct for Clause1_Item}::drop_glue<'0>] t
+    ↳⚡ unwind_continue
     return
 }
 
@@ -97,8 +98,14 @@ where
     storage_live(_2)
     _2 = move t
     _0 = callee<T, Clause1_Item>[TraitClause0, TraitClause1](move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for Clause1_Item}::drop_glue<'0>] _2
+        ↳⚡ unwind_terminate
+        conditional_drop[{built_in impl Destruct for Clause1_Item}::drop_glue<'2>] t
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for Clause1_Item}::drop_glue<'1>] t
+    ↳⚡ unwind_continue
     return
 }
 
@@ -140,8 +147,12 @@ where
     storage_live(_2)
     _2 = &x
     _0 = TraitClause1::ImpliedClause1::method<'2>(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -158,8 +169,12 @@ where
     storage_live(_2)
     _2 = &x
     _0 = TraitClause1::ImpliedClause1::method<'2>(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -182,16 +197,24 @@ where
     storage_live(_3)
     _3 = copy x
     _2 = a<T, Clause1_Clause1_Assoc>[TraitClause0, TraitClause1](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = copy x
     _4 = b<T, Clause2_Clause1_Assoc>[TraitClause0, TraitClause2](move _5)
+    ↳⚡ conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}::drop_glue<'0>] _2
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_5)
     _0 = (move _2, move _4)
     conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}::drop_glue<'1>] _4
+    ↳⚡ conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}::drop_glue<'0>] _2
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_4)
     conditional_drop[{built_in impl Destruct for Clause1_Clause1_Assoc}::drop_glue<'2>] _2
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }

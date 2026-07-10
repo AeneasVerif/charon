@@ -98,6 +98,7 @@ fn foo()
     storage_live(_6)
     _6 = ()
     _4 = call_mut<'11, '12>(move _5, move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -130,7 +131,11 @@ fn call_once<'_0>(_1: closure<'_0>, _2: ())
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'_0, '4>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'_0, '7>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'_0, '10>] _1
+    ↳⚡ unwind_continue
     return
 }
 

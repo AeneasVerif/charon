@@ -71,6 +71,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -83,6 +84,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -95,6 +97,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -116,6 +119,9 @@ where
     storage_live(_3)
     _3 = &mut x
     _2 = test_crate::identity::<&_ mut _><'16, A>[{built_in impl core::marker::Sized::<&_ mut _><'16> for A}](move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'21>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
@@ -125,10 +131,14 @@ where
     _5 = Option::Some { 0: move _6 }
     storage_dead(_6)
     _4 = test_crate::identity::<Option<&_ mut _>><'33, A>[{built_in impl core::marker::Sized::<Option<&_ mut _>><'33> for A}](move _5)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'21>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'54>] x
+    ↳⚡ unwind_continue
     return
 }
 

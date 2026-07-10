@@ -39,6 +39,7 @@ fn main()
     _0 = ()
     storage_live(_1)
     _1 = bar::<u8>()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

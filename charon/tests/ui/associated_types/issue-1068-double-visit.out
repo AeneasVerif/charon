@@ -96,6 +96,7 @@ fn main()
 
     _0 = ()
     _0 = check<Witness2, Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]>[{built_in impl Sized for Witness2}, impl_HasType3_for_T<Witness2, Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]>[{built_in impl Sized for Witness2}, impl_HasType2_for_Witness2]]()
+    ↳⚡ unwind_continue
     return
 }
 

@@ -73,6 +73,7 @@ unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
 
     _0 = ()
     drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1).0
+    ↳⚡ unwind_continue
     return
 }
 
@@ -113,6 +114,7 @@ where
     _3 = move tupled_args.0
     _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'2>] _3
+    ↳⚡ unwind_continue
     return
 }
 
@@ -147,11 +149,22 @@ where
     _4 = move i
     _3 = (move _4,)
     _0 = call<'4, Self>[TraitClause0](move _2, move _3)
+    ↳⚡ conditional_drop[impl_Destruct_for_tuple::drop_glue<'5, TraitClause0::Item>] _3
+        ↳⚡ unwind_terminate
+        conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'7>] _4
+        ↳⚡ unwind_terminate
+        conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'9>] i
+        ↳⚡ unwind_terminate
+        unwind_continue
     conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'6>] _4
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'9>] i
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for TraitClause0::Item}::drop_glue<'8>] i
+    ↳⚡ unwind_continue
     return
 }
 
@@ -181,6 +194,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2, Self>[TraitClause0](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -198,7 +212,11 @@ where
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'2, Self>[TraitClause0](move _3, move _2)
+    ↳⚡ drop[impl_Destruct_for_closure::drop_glue<'3, Self>[TraitClause0]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[impl_Destruct_for_closure::drop_glue<'4, Self>[TraitClause0]] _1
+    ↳⚡ unwind_continue
     return
 }
 

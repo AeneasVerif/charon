@@ -62,6 +62,7 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     _7 = cast<usize, isize>(move _8)
     storage_dead(_8)
     _5 = checked_mul(move _6, move _7)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     match _5 {
@@ -81,10 +82,12 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     storage_live(_12)
     _12 = copy this
     _11 = addr<()>(move _12)
+    ↳⚡ unwind_continue
     storage_dead(_12)
     storage_live(_13)
     _13 = copy byte_offset
     _10 = overflowing_add_signed(move _11, move _13)
+    ↳⚡ unwind_continue
     storage_dead(_13)
     storage_dead(_11)
     storage_live(overflow)
@@ -138,6 +141,7 @@ fn runtime_offset_nowrap(this: *const (), count: isize, size: usize) -> bool
     storage_dead(_6)
     storage_dead(_5)
     _0 = runtime(move _4.0, move _4.1, move _4.2)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     return
 }
@@ -167,6 +171,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
     storage_live(_7)
     _7 = copy size
     _4 = runtime_offset_nowrap(move _5, move _6, move _7)
+    ↳⚡ unwind_terminate
     if move _4 {
     } else {
         storage_dead(_7)
@@ -179,8 +184,10 @@ fn precondition_check(this: *const (), count: isize, size: usize)
         storage_live(_11)
         _11 = &(*msg) with_metadata(copy msg.metadata)
         _10 = from_str<'6>(move _11)
+        ↳⚡ unwind_terminate
         storage_dead(_11)
         _9 = panic_nounwind_fmt<'8>(move _10, const false)
+        ↳⚡ undefined_behavior
     }
     storage_dead(_7)
     storage_dead(_6)
@@ -209,6 +216,7 @@ where
 
     storage_live(_3)
     _3 = check_language_ub()
+    ↳⚡ unwind_continue
     if move _3 {
         storage_live(_4)
         storage_live(_5)
@@ -220,7 +228,9 @@ where
         _7 = copy count
         storage_live(_8)
         _8 = size_of<T>[TraitClause0]()
+        ↳⚡ unwind_continue
         _4 = precondition_check(move _5, move _7, move _8)
+        ↳⚡ undefined_behavior
         storage_dead(_8)
         storage_dead(_7)
         storage_dead(_5)
@@ -265,8 +275,10 @@ fn main()
     storage_live(_4)
     _4 = &s
     _3 = @ArrayToSliceShared<'_, i32, 2usize>(move _4)
+    ↳⚡ undefined_behavior
     storage_dead(_4)
     ptr = as_ptr<'6, i32>[{built_in impl Sized for i32}](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_live(_5)
     storage_live(_6)
@@ -274,6 +286,7 @@ fn main()
     storage_live(_8)
     _8 = copy ptr
     _7 = offset<i32>[{built_in impl Sized for i32}](move _8, const 1isize)
+    ↳⚡ unwind_continue
     storage_dead(_8)
     _6 = copy (*_7)
     _5 = move _6 == const 42i32

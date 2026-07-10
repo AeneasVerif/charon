@@ -41,6 +41,7 @@ fn {vtable_method}::<()><'_0>(_1: &'_0 (dyn Trait)) -> usize
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait + '1), &'_0 ()>(move _1)
     _0 = method::<()><'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 

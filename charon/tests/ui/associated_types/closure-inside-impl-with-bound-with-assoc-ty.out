@@ -150,6 +150,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2, F, Clause1_Repr>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -168,7 +169,11 @@ where
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'2, F, Clause1_Repr>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[drop_glue<'3, F, Clause1_Repr>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'4, F, Clause1_Repr>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 

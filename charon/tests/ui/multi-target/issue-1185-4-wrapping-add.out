@@ -23,6 +23,7 @@ pub fn test_crate::mod_reduce(a: u32) -> u32
     storage_live(_4)
     _4 = copy a
     _0 = core::num::{u32}::wrapping_add(move _4, const 1u32)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     return
 }

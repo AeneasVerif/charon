@@ -81,6 +81,7 @@ where
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Broken<Assoc = ()> + '1), &'_0 T>(move _1)
     _0 = broken<'_0, T>[TraitClause0, TraitClause1](move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -97,6 +98,7 @@ where
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Broken<Assoc = ()> + '1), &'_0 mut T>(move dyn_self)
     drop[{built_in impl Destruct for T}::drop_glue<'3>] (*target_self)
+    ↳⚡ unwind_continue
     return
 }
 

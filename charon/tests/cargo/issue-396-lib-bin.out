@@ -121,6 +121,7 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = hello()
+    ↳⚡ unwind_continue
     _4 = &_5
     args_3 = (move _4,)
     storage_dead(_4)
@@ -129,6 +130,7 @@ fn main()
     storage_live(_8)
     _8 = &(*args_3.0)
     _7 = new_display<'21, '23, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
+    ↳⚡ unwind_continue
     storage_dead(_8)
     args_6 = [move _7]
     storage_dead(_7)
@@ -145,11 +147,13 @@ fn main()
     _12 = &args_6
     _11 = &(*_12)
     _2 = new<'27, 4usize, 1usize>(move _9, move _11)
+    ↳⚡ unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
     _1 = _print<'29>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(args_6)
     storage_dead(_5)

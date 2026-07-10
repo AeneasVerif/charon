@@ -55,6 +55,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -124,6 +125,7 @@ pub fn test3(x: E2) -> u32
     }
     storage_live(z)
     z = id<u32>[{built_in impl Sized for u32}](const 3u32)
+    ↳⚡ unwind_continue
     storage_live(_5)
     _5 = copy y
     storage_live(_6)

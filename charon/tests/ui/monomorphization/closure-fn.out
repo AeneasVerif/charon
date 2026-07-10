@@ -113,6 +113,7 @@ fn apply_to::<closure<'_, '_>><'_0>(f: &'_0 closure<'_, '_>) -> u8
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_Fn_tuple_for_closure<'15, '16>::call<'17>(move _2, move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -131,6 +132,7 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(f: &'_0 mut closure<'_, '_>) -> u8
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_FnMut_tuple_for_closure<'15, '16>::call_mut<'17>(move _2, move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -159,9 +161,15 @@ fn apply_to_once::<closure<'_, '_>>(f: closure<'_, '_>) -> u8
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = impl_FnOnce_tuple_for_closure<'8, '9>::call_once(move _2, move _3)
+    ↳⚡ conditional_drop[drop_glue<'14, '15, '16>] _2
+        ↳⚡ unwind_terminate
+        conditional_drop[drop_glue<'28, '29, '30>] f
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[drop_glue<'21, '22, '23>] f
+    ↳⚡ unwind_continue
     return
 }
 
@@ -205,6 +213,7 @@ fn main()
     storage_live(_8)
     _8 = (const 10u8, const 20u8)
     _6 = impl_Fn_tuple_for_closure<'36, '37>::call<'38>(move _7, move _8)
+    ↳⚡ unwind_continue
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)
@@ -214,6 +223,7 @@ fn main()
     _11 = &f
     _10 = &(*_11)
     _9 = apply_to::<closure<'_, '_>><'42>(move _10)
+    ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_11)
     storage_dead(_9)
@@ -223,6 +233,7 @@ fn main()
     _14 = &mut f
     _13 = &two-phase-mut (*_14)
     _12 = apply_to_mut::<closure<'_, '_>><'46>(move _13)
+    ↳⚡ unwind_continue
     storage_dead(_13)
     storage_dead(_14)
     storage_dead(_12)
@@ -230,6 +241,7 @@ fn main()
     storage_live(_16)
     _16 = copy f
     _15 = apply_to_once::<closure<'_, '_>>(move _16)
+    ↳⚡ unwind_continue
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
@@ -256,7 +268,11 @@ fn call_once<'_0, '_1>(_1: closure<'_0, '_1>, _2: (u8, u8)) -> u8
     storage_live(_3)
     _3 = &mut _1
     _0 = impl_FnMut_tuple_for_closure<'_0, '_1>::call_mut<'6>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'_0, '_1, '11>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'_0, '_1, '16>] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -321,6 +337,7 @@ fn call_mut<'_0, '_1, '_2>(state: &'_2 mut closure<'_0, '_1>, args: (u8, u8)) ->
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'_0, '_1, '2>(move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 

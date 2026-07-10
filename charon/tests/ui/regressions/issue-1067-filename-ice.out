@@ -23,6 +23,13 @@ where
   Err(E),
 }
 
+// Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Result::drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+= <opaque>
+
 // Full name: core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap
 pub fn unwrap<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> T
 where
@@ -87,6 +94,7 @@ fn main()
     _0 = ()
     storage_live(buf)
     buf = new<u8>[{built_in impl Sized for u8}]()
+    ↳⚡ unwind_continue
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -101,16 +109,26 @@ fn main()
     _7 = move _9
     _6 = &(*_7)
     _5 = @ArrayToSliceShared<'_, u8, 5usize>(move _6)
+    ↳⚡ undefined_behavior
     storage_dead(_6)
     _3 = impl_Write_for_Vec_u8::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)
+    ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'13, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _2 = unwrap<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}, impl_Debug_for_Error](move _3)
+    ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'14, (), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]] _3
+        ↳⚡ unwind_terminate
+        conditional_drop[impl_Destruct_for_Vec::drop_glue<'13, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_dead(_7)
     storage_dead(_2)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'15, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf
+    ↳⚡ unwind_continue
     storage_dead(buf)
     return
 }

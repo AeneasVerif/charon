@@ -67,12 +67,21 @@ fn foo(f: Foo)
     storage_live(_3)
     _3 = move (f).x
     _2 = drop<alloc::boxed::Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]>[impl_Destruct_for_Box<u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global], impl_Destruct_for_Box<u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]](move _3)
+    ↳⚡ // Only `y` and `z` should be dropped here
+        drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]] (f).y
+        ↳⚡ unwind_terminate
+        drop[impl_Destruct_for_Box::drop_glue<'2, u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]] (f).z
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    // Only `y` and `z` should be dropped here
     drop[impl_Destruct_for_Box::drop_glue<'1, u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]] (f).y
+    ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'4, u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]] (f).z
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[impl_Destruct_for_Box::drop_glue<'3, u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]] (f).z
+    ↳⚡ unwind_continue
     return
 }
 

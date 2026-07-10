@@ -53,6 +53,7 @@ where
     storage_live(_2)
     _2 = &(*x)
     _0 = TraitClause1::method1<'3>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }
@@ -70,6 +71,7 @@ where
     storage_live(_2)
     _2 = &(*x)
     _0 = TraitClause1::method2<'3>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }

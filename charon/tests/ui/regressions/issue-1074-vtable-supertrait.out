@@ -81,6 +81,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn MyTrait))
     storage_live(_2)
     _2 = concretize<&'_0 (dyn MyTrait + '1), &'_0 MyStruct>(move _1)
     _0 = foo<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -95,6 +96,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn MyTrait))
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn MyTrait + '1), &'_0 mut MyStruct>(move dyn_self)
     drop[drop_glue<'3>] (*target_self)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -165,6 +167,7 @@ fn main()
     storage_live(_5)
     _5 = &(*x) with_metadata(copy x.metadata)
     _4 = (copy ((*_5.metadata)).method_foo)(move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

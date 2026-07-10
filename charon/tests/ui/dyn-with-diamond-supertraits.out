@@ -131,6 +131,7 @@ fn super_method<'_0>(self: &'_0 i32, arg: i32) -> i32
     storage_live(_4)
     _4 = copy arg
     _0 = add<'3>(move _3, move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -147,6 +148,7 @@ fn impl_Super_i32_for_i32::super_method::{vtable_method}<'_0>(_1: &'_0 (dyn Supe
     storage_live(_3)
     _3 = concretize<&'_0 (dyn Super<i32> + '1), &'_0 i32>(move _1)
     _0 = super_method<'_0>(move _3, move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -222,6 +224,7 @@ fn impl_Internal_for_i32::internal_method::{vtable_method}<'_0>(_1: &'_0 (dyn In
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Internal<Internal = i32> + '1), &'_0 i32>(move _1)
     _0 = internal_method<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -298,6 +301,7 @@ fn impl_Left_for_i32::left_method::{vtable_method}<'_0>(_1: &'_0 (dyn Left<Left 
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '1), &'_0 i32>(move _1)
     _0 = left_method<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -381,6 +385,7 @@ fn right_method<'_0>(self: &'_0 i32) -> i32
     storage_live(_7)
     _7 = &(*self)
     _6 = internal_method<'5>(move _7)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     _8 = copy _3 panic.+ copy _6
     _2 = move _8
@@ -390,6 +395,7 @@ fn right_method<'_0>(self: &'_0 i32) -> i32
     storage_live(_10)
     _10 = &(*self)
     _9 = super_method<'7>(move _10, const 10i32)
+    ↳⚡ unwind_continue
     storage_dead(_10)
     _11 = copy _2 panic.+ copy _9
     _0 = move _11
@@ -408,6 +414,7 @@ fn impl_Right_i32_for_i32::right_method::{vtable_method}<'_0>(_1: &'_0 (dyn Righ
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '1), &'_0 i32>(move _1)
     _0 = right_method<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -480,11 +487,13 @@ fn join_method<'_0>(self: &'_0 i32) -> (i32, i32)
     storage_live(_3)
     _3 = &(*self)
     _2 = left_method<'5>(move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self)
     _4 = right_method<'7>(move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     _0 = (move _2, move _4)
     storage_dead(_4)
@@ -502,6 +511,7 @@ fn impl_Join_i32_for_i32::join_method::{vtable_method}<'_0>(_1: &'_0 (dyn Join<i
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '1), &'_0 i32>(move _1)
     _0 = join_method<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -593,6 +603,7 @@ fn main()
     storage_live(_5)
     _5 = &(*v) with_metadata(copy v.metadata)
     _4 = (copy ((*_5.metadata)).method_join_method)(move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

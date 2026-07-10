@@ -39,6 +39,7 @@ fn main()
     _3 = move _4
     _2 = &(*_3)
     _1 = impl_Trait_for_unit::defaulted<'5>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

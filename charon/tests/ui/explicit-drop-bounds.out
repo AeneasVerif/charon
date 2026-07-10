@@ -60,6 +60,7 @@ where
     _0 = ()
     _0 = ()
     drop[TraitClause2::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -75,6 +76,7 @@ where
     _0 = ()
     _0 = ()
     drop[TraitClause1::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -107,7 +109,11 @@ where
     _0 = ()
     _0 = ()
     drop[TraitClause4::drop_glue<'0>] _y
+    ↳⚡ drop[TraitClause3::drop_glue<'2>] _x
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[TraitClause3::drop_glue<'1>] _x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -123,6 +129,7 @@ fn main()
     storage_live(_2)
     _2 = ()
     _1 = use_trait<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_Trait_u32_for_unit, {built_in impl Destruct for u32}, {built_in impl Destruct for ()}](const 42u32, move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

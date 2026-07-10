@@ -93,6 +93,7 @@ where
     storage_live(_f)
     _f = closure {  }
     _2 = size_of<T>[TraitClause0]()
+    ↳⚡ undefined_behavior
     storage_dead(_f)
     _1 = move _2
     _0 = move _1
@@ -137,6 +138,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2, T>[TraitClause0](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -153,7 +155,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2, T>[TraitClause0](move _3, move _2)
+    ↳⚡ drop[drop_glue<'3, T>[TraitClause0]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'4, T>[TraitClause0]] _1
+    ↳⚡ unwind_continue
     return
 }
 

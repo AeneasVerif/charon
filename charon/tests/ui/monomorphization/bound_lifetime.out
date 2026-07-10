@@ -48,6 +48,7 @@ fn main()
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = foo<'6>(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)

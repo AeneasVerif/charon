@@ -59,6 +59,7 @@ pub fn CYCLE_A() -> Node
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = new<&'11 Node>[{built_in impl Sized for &'11 Node}](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = Node { value: const 1u32, next: move _1 }
     storage_dead(_4)
@@ -90,6 +91,7 @@ pub fn CYCLE_B() -> Node
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = new<&'11 Node>[{built_in impl Sized for &'11 Node}](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = Node { value: const 2u32, next: move _1 }
     storage_dead(_4)

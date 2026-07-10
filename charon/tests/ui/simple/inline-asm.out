@@ -6,9 +6,13 @@ fn main()
     let _0: (); // return
 
     _0 = ()
-    asm!("nop")
-    _0 = ()
-    return
+    asm!("nop") {
+        target 0 => {
+            _0 = ()
+            return
+        }
+    }
+    ↳⚡ undefined_behavior
 }
 
 // Full name: test_crate::multiple_targets
@@ -28,6 +32,7 @@ fn multiple_targets(x: u32) -> u32
             return
         }
     }
+    ↳⚡ undefined_behavior
 }
 
 

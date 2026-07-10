@@ -82,6 +82,7 @@ where
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call<'3>(move _2, move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -104,6 +105,7 @@ where
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call_mut<'3>(move _2, move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -126,9 +128,15 @@ where
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
     _0 = TraitClause1::call_once(move _2, move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T0}::drop_glue<'0>] _2
+        ↳⚡ unwind_terminate
+        conditional_drop[{built_in impl Destruct for T0}::drop_glue<'2>] f
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T0}::drop_glue<'1>] f
+    ↳⚡ unwind_continue
     return
 }
 
@@ -199,6 +207,7 @@ fn call_mut<'_0, '_1, '_2>(state: &'_2 mut closure<'_0, '_1>, args: (u8, u8)) ->
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'_0, '_1, '2>(move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -223,7 +232,11 @@ fn call_once<'_0, '_1>(_1: closure<'_0, '_1>, _2: (u8, u8)) -> u8
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '_1, '6>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'_0, '_1, '11>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'_0, '_1, '16>] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -298,6 +311,7 @@ fn main()
     storage_live(_8)
     _8 = (const 10u8, const 20u8)
     _6 = call<'36, '37, '38>(move _7, move _8)
+    ↳⚡ unwind_continue
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)
@@ -307,6 +321,7 @@ fn main()
     _11 = &f
     _10 = &(*_11)
     _9 = apply_to<'60, closure<'43, '44>>[{built_in impl Sized for closure<'43, '44>}, impl_Fn_tuple_for_closure<'43, '44>](move _10)
+    ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_11)
     storage_dead(_9)
@@ -316,6 +331,7 @@ fn main()
     _14 = &mut f
     _13 = &two-phase-mut (*_14)
     _12 = apply_to_mut<'82, closure<'65, '66>>[{built_in impl Sized for closure<'65, '66>}, impl_FnMut_tuple_for_closure<'65, '66>](move _13)
+    ↳⚡ unwind_continue
     storage_dead(_13)
     storage_dead(_14)
     storage_dead(_12)
@@ -323,6 +339,7 @@ fn main()
     storage_live(_16)
     _16 = copy f
     _15 = apply_to_once<closure<'85, '86>>[{built_in impl Sized for closure<'85, '86>}, impl_FnOnce_tuple_for_closure<'85, '86>](move _16)
+    ↳⚡ unwind_continue
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()

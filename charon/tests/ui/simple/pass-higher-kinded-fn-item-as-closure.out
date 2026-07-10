@@ -86,6 +86,7 @@ where
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -98,6 +99,7 @@ pub fn flibidi()
     _0 = ()
     storage_live(_1)
     _1 = call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 (),), &'0 ()> for for<'a> flabada<'a>}](const flabada<'63>)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

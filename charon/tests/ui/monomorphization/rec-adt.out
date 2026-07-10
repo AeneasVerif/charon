@@ -38,6 +38,7 @@ fn main()
     _0 = ()
     storage_live(list)
     list = new::<u8>()
+    ↳⚡ unwind_continue
     _0 = ()
     storage_dead(list)
     return

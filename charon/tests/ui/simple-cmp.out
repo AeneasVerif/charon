@@ -36,6 +36,7 @@ fn main()
     _6 = &y
     _5 = &(*_6)
     _3 = cmp<'6, '7>(move _4, move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_6)

@@ -149,6 +149,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(), T> for test_crate::f::closure<'_0, T>}::call<'_0, '2, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -166,7 +167,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(), T> for test_crate::f::closure<'_0, T>}::call_mut<'_0, '4, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::f::closure<'_0, T>}::drop_glue<'_0, '7, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[{impl Destruct for test_crate::f::closure<'_0, T>}::drop_glue<'_0, '10, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -289,6 +294,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(), T> for test_crate::g::closure<'_0, T>}::call<'_0, '2, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -306,7 +312,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(), T> for test_crate::g::closure<'_0, T>}::call_mut<'_0, '4, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::g::closure<'_0, T>}::drop_glue<'_0, '7, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[{impl Destruct for test_crate::g::closure<'_0, T>}::drop_glue<'_0, '10, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 

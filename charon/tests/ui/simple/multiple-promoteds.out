@@ -58,6 +58,7 @@ fn six() -> u32
     storage_live(_6)
     _6 = copy y
     _0 = add<'9, '10>(move _5, move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(y)

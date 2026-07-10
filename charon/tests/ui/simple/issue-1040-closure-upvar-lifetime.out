@@ -121,6 +121,7 @@ fn call_mut<'_0, '_1, '_2>(state: &'_2 mut closure<'_0>, args: ()) -> &'_1 u8
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'_0, '_1, '2>(move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -135,7 +136,11 @@ fn call_once<'_0, '_1>(_1: closure<'_0>, _2: ()) -> &'_1 u8
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '_1, '6>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'_0, '9>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'_0, '12>] _1
+    ↳⚡ unwind_continue
     return
 }
 

@@ -67,6 +67,7 @@ fn foo()
     _11 = move _12
     _2 = &(*_11)
     _1 = is_some::<i32><'14>(move _2)
+    ↳⚡ unwind_continue
     storage_live(_13)
     storage_live(_16)
     storage_live(_17)
@@ -82,6 +83,7 @@ fn foo()
     _5 = &(*_10)
     _4 = &(*_5)
     slice = @ArrayToSliceShared<'_, bool, 1usize>(move _4)
+    ↳⚡ undefined_behavior
     storage_dead(_4)
     storage_dead(_5)
     storage_live(_6)
@@ -91,6 +93,7 @@ fn foo()
     storage_live(_9)
     _9 = RangeFrom::<usize> { start: const 1usize }
     _7 = index::<bool, RangeFrom::<usize>><'18>(move _8, move _9)
+    ↳⚡ unwind_continue
     storage_dead(_9)
     storage_dead(_8)
     _6 = &(*_7) with_metadata(copy _7.metadata)
@@ -128,8 +131,10 @@ fn funs_with_disambiguator(b: bool) -> u32
     _2 = copy b
     if move _2 {
         _0 = test_crate::funs_with_disambiguator::f()
+        ↳⚡ unwind_continue
     } else {
         _0 = test_crate::funs_with_disambiguator::f#1()
+        ↳⚡ unwind_continue
     }
     storage_dead(_2)
     return
@@ -181,8 +186,10 @@ fn mono_usage()
     _0 = ()
     storage_live(_container1)
     _container1 = test_crate::{MonoContainer::<i32>}::create::<i32>(const 42i32)
+    ↳⚡ unwind_continue
     storage_live(_container2)
     _container2 = test_crate::{MonoContainer::<&'_ str>}::create::<&'_ str>(const "test")
+    ↳⚡ unwind_continue
     _0 = ()
     storage_dead(_container2)
     storage_dead(_container1)

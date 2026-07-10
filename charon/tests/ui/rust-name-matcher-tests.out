@@ -146,8 +146,12 @@ where
     _2 = move value
     _0 = Generic { value: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] value
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value
+    ↳⚡ unwind_continue
     return
 }
 
@@ -179,12 +183,15 @@ fn use_generic()
     _0 = ()
     storage_live(_int_generic)
     _int_generic = new<i32>[{built_in impl Sized for i32}](const 42i32)
+    ↳⚡ unwind_continue
     storage_live(_str_generic)
     _str_generic = new<&'14 str>[{built_in impl Sized for &'14 str}](const "hello")
+    ↳⚡ unwind_continue
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic
     _3 = get<'21, i32>[{built_in impl Sized for i32}](move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

@@ -224,6 +224,7 @@ fn non_copy_static()
     _2 = move _3
     _1 = &(*_2)
     _0 = method<'5>(move _1)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     storage_dead(_2)
     return

@@ -43,6 +43,7 @@ fn {vtable_method}::<'_, u32><'_0>(_1: &'_0 (dyn Trait))
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait + '3), &'_0 &'4 u32>(move _1)
     _0 = method::<'_, u32><'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 

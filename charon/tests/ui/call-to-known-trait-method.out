@@ -101,8 +101,10 @@ where
 
     storage_live(_1)
     _1 = TraitClause1::default()
+    ↳⚡ unwind_continue
     _0 = Struct { 0: move _1 }
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'0>] _1
+    ↳⚡ unwind_continue
     storage_dead(_1)
     return
 }
@@ -172,8 +174,10 @@ fn main()
     _x = (const 0u8, const false)
     storage_live(_y)
     _y = impl_Default_for_Struct::default<bool>[{built_in impl Sized for bool}, impl_Default_for_bool]()
+    ↳⚡ unwind_continue
     storage_live(_3)
     _3 = method<u8, bool, String>[{built_in impl Sized for u8}, {built_in impl Sized for bool}, impl_Clone_for_u8, impl_PartialEq_bool_for_bool, {built_in impl Sized for String}]()
+    ↳⚡ unwind_continue
     storage_dead(_3)
     _0 = ()
     storage_dead(_y)

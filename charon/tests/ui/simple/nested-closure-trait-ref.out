@@ -101,6 +101,7 @@ where
 
     _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
+    ↳⚡ unwind_continue
     return
 }
 
@@ -116,6 +117,7 @@ where
 
     _0 = test_crate::foo::closure::closure { 0: move (_1).0 }
     conditional_drop[{impl Destruct for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'0, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -138,11 +140,22 @@ where
     storage_live(_4)
     _4 = ()
     _0 = {impl FnOnce<()> for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::call_once<T>[TraitClause0, TraitClause1](move _3, move _4)
+    ↳⚡ conditional_drop[{impl Destruct for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'0, T>[TraitClause0, TraitClause1]] _3
+        ↳⚡ unwind_terminate
+        conditional_drop[{impl Destruct for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'2, T>[TraitClause0, TraitClause1]] f
+        ↳⚡ unwind_terminate
+        conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     conditional_drop[{impl Destruct for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'1, T>[TraitClause0, TraitClause1]] f
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'4>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(f)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'3>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -182,6 +195,7 @@ where
 
     _0 = ()
     drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
+    ↳⚡ unwind_continue
     return
 }
 
@@ -199,6 +213,7 @@ where
     storage_live(_3)
     _3 = &((*_1)).0
     _0 = TraitClause1::clone<'4>(move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     return
 }
@@ -217,6 +232,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -234,7 +250,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'3, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[{impl Destruct for test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'4, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 

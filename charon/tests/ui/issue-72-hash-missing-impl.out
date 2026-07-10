@@ -91,6 +91,7 @@ fn main()
     _5 = &mut hasher
     _4 = &two-phase-mut (*_5)
     _2 = hash<'9, '10, DefaultHasher>[{built_in impl Sized for DefaultHasher}, impl_Hasher_for_DefaultHasher](move _3, move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_5)

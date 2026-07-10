@@ -60,6 +60,7 @@ unsafe fn impl_Destruct_for_PortableHash::drop_glue<'_0, const K : usize>(_1: &'
 
     _0 = ()
     drop[impl_Destruct_for_Box::drop_glue<'2, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] ((*_1)).make_non_trivial
+    ↳⚡ unwind_continue
     return
 }
 
@@ -78,6 +79,7 @@ fn foo(_1: PortableHash<42usize>)
     _0 = ()
     _0 = ()
     drop[impl_Destruct_for_PortableHash::drop_glue<'0, 42usize>] _1
+    ↳⚡ unwind_continue
     return
 }
 

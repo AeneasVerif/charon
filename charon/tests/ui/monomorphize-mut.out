@@ -344,6 +344,7 @@ where
     storage_dead(_12)
     storage_dead(_4)
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'125>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -357,6 +358,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -369,6 +371,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -382,6 +385,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -396,6 +400,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0>[TraitClause1, TraitClause2] for T0}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -411,6 +416,7 @@ where
 
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1] for T0}::drop_glue<'0>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -430,6 +436,7 @@ where
     storage_live(_4)
     _4 = &two-phase-mut (*x)
     _3 = test_crate::identity::<&_ mut _><'7, T>[{built_in impl core::marker::Sized::<&_ mut _><'7> for T}](move _4)
+    ↳⚡ unwind_continue
     _2 = &mut (*_3)
     storage_dead(_4)
     _0 = &mut (*_2)
@@ -485,6 +492,14 @@ where
     _19 = move _20
     _3 = &(*_19)
     _2 = identity<&'83 u32>[{built_in impl Sized for &'83 u32}](move _3)
+    ↳⚡ // Make sure we do generics right.
+        // Use a function pointer.
+        // These cause errors because of missing normalization :'(
+        // let _ = Some(&mut 0u32).map(identity);
+        // let _ = Some(&mut 0u32).map(mutable_identity);
+        conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
@@ -493,6 +508,9 @@ where
     _6 = const 0u32
     _5 = &mut _6
     _4 = test_crate::identity::<&_ mut _><'90, u32>[{built_in impl core::marker::Sized::<&_ mut _><'90> for u32}](move _5)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)
@@ -505,6 +523,9 @@ where
     _8 = core::option::Option::<&_ mut _>::Some { 0: move _9 }
     storage_dead(_9)
     _7 = test_crate::identity::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'106, u32>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'106>[{built_in impl core::marker::Sized::<&_ mut _><'106> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'106> for u32}](move _8)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_8)
     storage_dead(_10)
     storage_dead(_7)
@@ -512,17 +533,18 @@ where
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
-    // Make sure we do generics right.
     _14 = &mut x
     _13 = core::option::Option::<&_ mut _>::Some { 0: move _14 }
     storage_dead(_14)
     _12 = core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]>::Some { 0: move _13 }
     storage_dead(_13)
     _11 = test_crate::identity::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause1, TraitClause2]><'180, A>[{built_in impl core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'180>[{built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'180>[{built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'180>[{built_in impl core::marker::Sized::<&_ mut _><'180> for A}] for A}, {built_in impl core::marker::Sized::<&_ mut _><'180> for A}](move _12)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_live(_21)
     storage_live(_24)
     storage_live(_25)
-    // Use a function pointer.
     _25 = const 0u32
     _24 = &_25
     _21 = move _24
@@ -536,13 +558,14 @@ where
     _16 = Option::Some { 0: move _17 }
     storage_dead(_17)
     _15 = map<&'268 u32, &'269 u32, identity<&'276 u32>[{built_in impl Sized for &'276 u32}]>[{built_in impl Sized for &'268 u32}, {built_in impl Sized for &'269 u32}, {built_in impl Sized for identity<&'293 u32>[{built_in impl Sized for &'293 u32}]}, {built_in impl FnOnce<(&'268 u32,)> for identity<&'311 u32>[{built_in impl Sized for &'311 u32}] where Output  = &'338 u32}, {built_in impl Destruct for identity<&'349 u32>[{built_in impl Sized for &'349 u32}]}](move _16, const identity<&'362 u32>[{built_in impl Sized for &'362 u32}])
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
-    // These cause errors because of missing normalization :'(
-    // let _ = Some(&mut 0u32).map(identity);
-    // let _ = Some(&mut 0u32).map(mutable_identity);
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'367>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -786,6 +809,7 @@ where
     storage_live(_3)
     _3 = move x
     _2 = test_crate::identity::<IterMut<_, _>[TraitClause1]><'5, bool>[{built_in impl core::marker::Sized::<IterMut<_, _>[TraitClause0]><'5>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()

@@ -44,6 +44,7 @@ where
         },
         _ => {
             drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant Option::Some).0
+            ↳⚡ unwind_continue
             return
         },
     }
@@ -83,11 +84,15 @@ where
     _4 = &opt
     _3 = &(*_4)
     _2 = discriminant_value<'4, T>[TraitClause0](move _3)
+    ↳⚡ drop[drop_glue<'5, T>[TraitClause0]] opt
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     _0 = move _2 != const 0isize
     storage_dead(_2)
     storage_dead(_4)
     drop[drop_glue<'6, T>[TraitClause0]] opt
+    ↳⚡ unwind_continue
     return
 }
 
@@ -108,6 +113,7 @@ where
         },
     }
     drop[drop_glue<'0, T>[TraitClause0]] opt
+    ↳⚡ unwind_continue
     return
 }
 

@@ -112,7 +112,11 @@ fn call_once<'a>(_1: closure<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'a, '4>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'a, '7>] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[drop_glue<'a, '10>] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -146,6 +150,7 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for clos
     storage_live(_1)
     _1 = closure {  }
     _0 = from_fn<u8, closure<'12>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'12>}, impl_FnMut_unit_for_closure<'12>](move _1)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     return
 }

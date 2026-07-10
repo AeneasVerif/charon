@@ -96,6 +96,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = @ArrayToSliceShared<'_, u64, 1usize>(move _2)
+    ↳⚡ undefined_behavior
     storage_dead(_2)
     _0 = Option::<&'_ [u64]>::Some { 0: move _1 }
     storage_dead(_1)
@@ -141,6 +142,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{b
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = @ArrayToSliceShared<'_, u64, 1usize>(move _2)
+    ↳⚡ undefined_behavior
     storage_dead(_2)
     _0 = Option::Some { 0: move _1 }
     storage_dead(_1)
@@ -198,6 +200,7 @@ pub fn entry(x: u64) -> u64
     storage_live(_2)
     _2 = copy x
     _0 = {impl MyConfig for Concrete}::op(move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }

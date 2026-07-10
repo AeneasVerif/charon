@@ -61,11 +61,18 @@ where
     storage_live(_3)
     _3 = &x
     _2 = TraitClause1::LifetimeGat::ImpliedClause1::clone<'9>(move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'11>}::drop_glue<'12>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'14>}::drop_glue<'15>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'11>}::drop_glue<'12>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_2)
     _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'17>}::drop_glue<'18>] x
+    ↳⚡ unwind_continue
     return
 }
 
@@ -85,11 +92,18 @@ where
     storage_live(_3)
     _3 = &x
     _2 = TraitClause1::NonLifetimeGat::ImpliedClause1::clone<'2>(move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'3>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'4>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'3>] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_2)
     _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'5>] x
+    ↳⚡ unwind_continue
     return
 }
 

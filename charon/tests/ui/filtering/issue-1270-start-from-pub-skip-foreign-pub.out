@@ -116,6 +116,11 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
     storage_live(_4)
     _4 = move x
     _3 = branch<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}](move _4)
+    ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'0, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] _4
+        ↳⚡ unwind_terminate
+        conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_4)
     match _3 {
         ControlFlow::Continue => {
@@ -126,13 +131,31 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
             storage_live(_6)
             _6 = move residual
             _0 = from_residual<u32, String, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}, {built_in impl Sized for String}, impl_From_for_T<String>[{built_in impl Sized for String}]](move _6)
+            ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'4, Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]] _6
+                ↳⚡ unwind_terminate
+                conditional_drop[impl_Destruct_for_Result::drop_glue<'6, Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]] residual
+                ↳⚡ unwind_terminate
+                conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'8, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+                ↳⚡ unwind_terminate
+                conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
+                ↳⚡ unwind_terminate
+                unwind_continue
             storage_dead(_6)
             conditional_drop[impl_Destruct_for_Result::drop_glue<'5, Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]] residual
+            ↳⚡ conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'8, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+                ↳⚡ unwind_terminate
+                conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
+                ↳⚡ unwind_terminate
+                unwind_continue
             storage_dead(residual)
             storage_dead(_2)
             conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'7, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+            ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
+                ↳⚡ unwind_terminate
+                unwind_continue
             storage_dead(_3)
             conditional_drop[impl_Destruct_for_Result::drop_glue<'9, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
+            ↳⚡ unwind_continue
             return
         },
     }
@@ -143,8 +166,12 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
     _0 = Result::Ok { 0: move _2 }
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'2, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+    ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_3)
     conditional_drop[impl_Destruct_for_Result::drop_glue<'3, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
+    ↳⚡ unwind_continue
     return
 }
 

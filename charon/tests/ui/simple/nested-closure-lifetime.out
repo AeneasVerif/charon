@@ -123,6 +123,7 @@ where
     storage_live(_4)
     _4 = ()
     _0 = {impl Fn<()> for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::call<'13, '14, '15, '16, T>[TraitClause0, TraitClause1](move _3, move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(f)
@@ -156,6 +157,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<()> for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::call<'_0, '_1, '_2, '3, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -173,7 +175,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<()> for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::call_mut<'_0, '_1, '_2, '8, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '11, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[{impl Destruct for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '14, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -271,6 +277,7 @@ where
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<()> for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::call<'_0, '_1, '2, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -288,7 +295,11 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<()> for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::call_mut<'_0, '_1, '6, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '9, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ unwind_terminate
+        unwind_continue
     drop[{impl Destruct for test_crate::foo::closure::closure<'_0, T>[TraitClause0, TraitClause1]}::drop_glue<'_0, '12, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ unwind_continue
     return
 }
 

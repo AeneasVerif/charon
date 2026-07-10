@@ -43,6 +43,7 @@ fn impl_Trait_for_i32::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<Item = 
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait<Item = bool> + '1), &'_0 i32>(move _1)
     _0 = impl_Trait_for_i32::comsume<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -123,6 +124,7 @@ fn impl_Trait_for_usize::comsume::{vtable_method}<'_0>(_1: &'_0 (dyn Trait<Item 
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait<Item = u32> + '1), &'_0 usize>(move _1)
     _0 = impl_Trait_for_usize::comsume<'_0>(move _2)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -230,6 +232,7 @@ fn main()
     storage_live(_13)
     _13 = cast<*const (), unsafe fn(&'8 (dyn Trait<Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
     _4 = (copy _13)(move _5)
+    ↳⚡ unwind_continue
     storage_live(_16)
     storage_live(_19)
     storage_live(_20)
@@ -253,6 +256,7 @@ fn main()
     storage_live(_14)
     _14 = cast<*const (), unsafe fn(&'18 (dyn Trait<Item = u32> + '19))>(copy ((*_10.metadata)).method_comsume)
     _9 = (copy _14)(move _10)
+    ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_9)
     _0 = ()

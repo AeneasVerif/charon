@@ -33,6 +33,7 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
     _4 = &_2
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, 4usize>(move _4, copy _3)
+    ↳⚡ undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
     storage_dead(_2)
@@ -66,6 +67,7 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
     _4 = &_2
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, 4usize>(move _4, copy _3)
+    ↳⚡ undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
     storage_dead(_2)

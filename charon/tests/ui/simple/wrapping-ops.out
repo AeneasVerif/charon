@@ -80,12 +80,15 @@ fn main()
     storage_dead(_3)
     storage_live(_4)
     _4 = wrapping_add(const 255u8, const 1u8)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_live(_5)
     _5 = wrapping_sub(const 0u8, const 1u8)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_live(_6)
     _6 = wrapping_mul(const 255u8, const 2u8)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     _0 = ()
     return

@@ -90,6 +90,7 @@ pub fn X3() -> u32
     let _0: u32; // return
 
     _0 = incr(const 32u32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -150,6 +151,7 @@ pub fn P0() -> (u32, u32)
     let _0: (u32, u32); // return
 
     _0 = mk_pair0(const 0u32, const 1u32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -162,6 +164,7 @@ pub fn P1() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
     _0 = mk_pair1(const 0u32, const 1u32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -213,8 +216,12 @@ where
     _2 = move value
     _0 = Wrap { value: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] value
+        ↳⚡ unwind_terminate
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value
+    ↳⚡ unwind_continue
     return
 }
 
@@ -224,6 +231,7 @@ pub fn Y() -> Wrap<i32>[{built_in impl Sized for i32}]
     let _0: Wrap<i32>[{built_in impl Sized for i32}]; // return
 
     _0 = new<i32>[{built_in impl Sized for i32}](const 2i32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -249,6 +257,7 @@ pub fn YVAL() -> i32
     let _0: i32; // return
 
     _0 = unwrap_y()
+    ↳⚡ unwind_continue
     return
 }
 
@@ -328,6 +337,7 @@ pub fn Q3() -> i32
     let _0: i32; // return
 
     _0 = add(copy Q2, const 3i32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -344,9 +354,12 @@ pub fn get_z2() -> i32
     storage_live(_1)
     storage_live(_2)
     _2 = get_z1()
+    ↳⚡ unwind_continue
     _1 = add(move _2, copy Q3)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = add(copy Q1, move _1)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     return
 }
@@ -378,6 +391,7 @@ pub fn S2() -> u32
     _2 = move _3
     _1 = copy (*_2)
     _0 = incr(move _1)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -404,6 +418,7 @@ pub fn S4() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
     _0 = mk_pair1(const 7u32, const 8u32)
+    ↳⚡ unwind_continue
     return
 }
 

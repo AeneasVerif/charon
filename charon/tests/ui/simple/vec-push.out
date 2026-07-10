@@ -229,6 +229,9 @@ where
         storage_live(_7)
         _7 = &two-phase-mut ((*self_1)).buf
         _6 = grow_one<'11, T, A>[TraitClause0, TraitClause1, TraitClause2](move _7)
+        ↳⚡ drop[{built_in impl Destruct for T}::drop_glue<'12>] value
+            ↳⚡ unwind_terminate
+            unwind_continue
         storage_dead(_7)
     } else {
         storage_dead(_5)
@@ -266,6 +269,7 @@ where
     _0 = ()
     storage_live(_3)
     _3 = push_mut<'5, T, A>[TraitClause0, TraitClause1, TraitClause2](move self, move value)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     return
 }
@@ -281,6 +285,7 @@ fn vec<'_0>(x: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl S
     storage_live(_2)
     _2 = &two-phase-mut (*x)
     _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, const 42u32)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     return
 }

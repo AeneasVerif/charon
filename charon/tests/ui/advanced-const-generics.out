@@ -171,6 +171,7 @@ pub fn fmt<'_0, '_1, '_2>(self: &'_0 Foo, f: &'_1 mut Formatter<'_2>) -> Result<
         },
     }
     _0 = core::fmt::{Formatter<'a>}::write_str<'16, '19, '20>(move _3, move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -203,6 +204,7 @@ fn bar<const N : usize>()
     storage_live(_2)
     _2 = ()
     _1 = @ArrayRepeat<(), {const}<N>>(move _2)
+    ↳⚡ undefined_behavior
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

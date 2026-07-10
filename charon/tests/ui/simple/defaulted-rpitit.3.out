@@ -67,6 +67,7 @@ where
     let self: &'1 Self; // arg #1
 
     _0 = empty<T>[TraitClause0::ImpliedClause1]()
+    ↳⚡ unwind_continue
     return
 }
 
@@ -79,6 +80,7 @@ where
     let self: &'1 (); // arg #1
 
     _0 = empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]()
+    ↳⚡ unwind_continue
     return
 }
 

@@ -131,8 +131,10 @@ pub fn trait_error<'_0>(s: &'_0 [u8])
     storage_live(_4)
     _4 = &(*s) with_metadata(copy s.metadata)
     _3 = try_into<&'4 [u8], [u8; 4usize]>[{built_in impl Sized for &'4 [u8]}, {built_in impl Sized for [u8; 4usize]}, impl_TryFrom_for_array<'4, u8, 4usize>[{built_in impl Sized for u8}, impl_Copy_for_u8]](move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     _array = unwrap<[u8; 4usize], TryFromSliceError>[{built_in impl Sized for [u8; 4usize]}, {built_in impl Sized for TryFromSliceError}, impl_Debug_for_TryFromSliceError](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     _0 = ()
     storage_dead(_array)

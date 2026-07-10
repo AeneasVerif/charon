@@ -47,29 +47,41 @@ and statement_kind =
           valid though, so this statement is not a no-op: it can trigger UB if
           the place's projections are not valid (e.g. because they go out of
           bounds). *)
-  | Drop of place * fn_ptr * drop_kind
+  | Drop of place * fn_ptr * drop_kind * block
       (** Drop the value at the given place.
 
           Depending on [DropKind], this may be a real call to [drop_glue], or a
           conditional call that should only happen if the place has not been
           moved out of. See the docs of [DropKind] for more details; to get
-          precise drops use [--precise-drops]. *)
-  | Assert of assertion * abort_kind
+          precise drops use [--precise-drops].
+
+          Fields:
+          - [place]
+          - [fn_ptr]: Reference to the [drop_glue] code to call on drop.
+          - [kind]
+          - [on_unwind] *)
+  | Assert of assertion * abort_kind * block
       (** Fields:
           - [assert]
-          - [on_failure] *)
-  | InlineAsm of string * block list
+          - [on_failure]
+          - [on_unwind] *)
+  | InlineAsm of string * block list * block
       (** An inline assembly block. For now we only preserve the template
           string.
 
           Fields:
           - [asm]
-          - [targets] *)
-  | Call of call
+          - [targets]
+          - [on_unwind] *)
+  | Call of call * block
+      (** Fields:
+          - [call]
+          - [on_unwind] *)
   | Abort of abort_kind
       (** Panic also handles "unreachable". We keep the name of the panicking
           function that was called. *)
   | Return
+  | UnwindResume  (** Unwind out of the current function into its caller. *)
   | Break of int
       (** Break to outer loops. The [usize] gives the index of the outer loop to
           break to: * 0: break to first outer loop (the current loop) * 1: break

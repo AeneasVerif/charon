@@ -63,6 +63,7 @@ where
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f
+    ↳⚡ unwind_continue
     return
 }
 
@@ -89,6 +90,7 @@ where
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f
+    ↳⚡ unwind_continue
     return
 }
 
@@ -125,6 +127,7 @@ fn g()
     storage_live(_5)
     _5 = F {  }
     _1 = impl_Iter_for_Empty::map<'3, (), (), F>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {built_in impl Sized for F}, impl_Apply_unit_for_F](move _2, move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_2)
     storage_dead(_3)

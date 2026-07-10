@@ -82,6 +82,7 @@ fn foo(opt: Option<u32>[{built_in impl Sized for u32}])
                 storage_live(x_4)
                 x_4 = copy (opt as variant Option::Some).0
                 _2 = do_something()
+                ↳⚡ unwind_continue
                 storage_dead(x_4)
                 storage_dead(x_5)
             } else {
@@ -89,14 +90,17 @@ fn foo(opt: Option<u32>[{built_in impl Sized for u32}])
                 storage_dead(_6)
                 storage_dead(x_5)
                 _2 = do_something_else()
+                ↳⚡ unwind_continue
             }
         },
         _ => {
             _2 = do_something_else()
+            ↳⚡ unwind_continue
         },
     }
     storage_dead(_2)
     _0 = do_something_at_the_end()
+    ↳⚡ unwind_continue
     return
 }
 
