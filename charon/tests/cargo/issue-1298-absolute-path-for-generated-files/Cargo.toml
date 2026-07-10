@@ -1,0 +1,6 @@
+[workspace]
+
+[package]
+name = "issue-1298-absolute-path-for-generated-files"
+version = "0.1.0"
+edition = "2021"
