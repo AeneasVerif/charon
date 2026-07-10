@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use serde_state::WithState;
 use std::path::PathBuf;
 
 use charon_lib::ast::*;
@@ -234,7 +235,7 @@ fn type_layout() -> anyhow::Result<()> {
         }
     }
 
-    let layouts: SeqHashMap<String, Option<Layout>> = crate_data
+    let layouts: SeqHashMap<String, Option<_>> = crate_data
         .type_decls
         .iter()
         .filter_map(|tdecl| {
@@ -242,7 +243,9 @@ fn type_layout() -> anyhow::Result<()> {
                 return None;
             }
             let name = repr_name(&crate_data, &tdecl.item_meta.name);
-            Some((name, tdecl.layout.get(&the_target).cloned()))
+            let opt_layout = tdecl.layout.get(&the_target).cloned();
+            let serializable = opt_layout.map(|l| WithState::new(l, &()));
+            Some((name, serializable))
         })
         .collect();
     let layouts_str = serde_json::to_string_pretty(&layouts)?;
