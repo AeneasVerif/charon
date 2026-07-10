@@ -5,15 +5,6 @@ pub struct Generated {
   value: u32,
 }
 
-// Full name: issue_1298_absolute_path_for_generated_files::generated::make
-pub fn make() -> Generated
-{
-    let _0: Generated; // return
-
-    _0 = Generated { value: const 0u32 }
-    return
-}
-
 // Full name: issue_1298_absolute_path_for_generated_files::get_value
 pub fn get_value<'_0>(g: &'_0 Generated) -> u32
 {
@@ -21,6 +12,15 @@ pub fn get_value<'_0>(g: &'_0 Generated) -> u32
     let g: &'1 Generated; // arg #1
 
     _0 = copy ((*g)).value
+    return
+}
+
+// Full name: issue_1298_absolute_path_for_generated_files::generated::make
+pub fn make() -> Generated
+{
+    let _0: Generated; // return
+
+    _0 = Generated { value: const 0u32 }
     return
 }
 

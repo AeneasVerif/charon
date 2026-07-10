@@ -82,6 +82,10 @@ impl<'tcx> TranslateCtx<'tcx> {
                                 let mut rewritten_path: PathBuf = "/cargo".into();
                                 rewritten_path.extend(path);
                                 rewritten_path
+                            } else if let Ok(current_dir) = std::env::current_dir()
+                                && let Ok(path) = path.strip_prefix(current_dir)
+                            {
+                                path.to_path_buf()
                             } else {
                                 path
                             }

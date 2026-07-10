@@ -141,8 +141,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 };
                 perform_test(&case)?;
 
-                // Issue #1298: a file generated under OUT_DIR currently keeps its
-                // build-specific path.
+                // Issue #1298: a file generated under OUT_DIR should be recorded
+                // relative to the crate directory.
                 let crate_data = CrateData::deserialize_from_file(
                     &output_file.with_extension("llbc"),
                     SerializationFormat::Json,
@@ -170,8 +170,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                     unreachable!();
                 };
                 ensure!(
-                    path.is_absolute(),
-                    "expected generated.rs to be recorded as an absolute path, got {}",
+                    !path.is_absolute(),
+                    "expected generated.rs to be recorded as a relative path, got {}",
+                    path.display()
+                );
+                ensure!(
+                    path.starts_with("target"),
+                    "expected generated.rs to be recorded relative to the crate directory, got {}",
                     path.display()
                 );
                 Ok(())
