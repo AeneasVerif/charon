@@ -466,7 +466,6 @@ impl CliOpts {
                     self.remove_unused_self_clauses = true;
                     self.remove_adt_clauses = true;
                     self.unbind_item_vars = true;
-                    self.duplicate_defaulted_methods = true;
                 }
                 Preset::Eurydice => {
                     self.hide_allocator = true;
