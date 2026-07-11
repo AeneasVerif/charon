@@ -30,6 +30,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 0usize
     return
 }
@@ -45,6 +46,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 0usize
     return
 }
@@ -60,6 +62,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 0usize
     return
 }
@@ -75,6 +78,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -86,6 +90,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -96,6 +101,7 @@ fn impl_Trait_for_unit::method2()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -106,6 +112,7 @@ fn impl_Trait_for_unit::method1()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -116,6 +123,7 @@ fn impl_Trait_for_unit::CONST3() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 1usize
     return
 }
@@ -128,6 +136,7 @@ fn impl_Trait_for_unit::CONST2() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 1usize
     return
 }
@@ -140,6 +149,7 @@ fn impl_Trait_for_unit::CONST1() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 1usize
     return
 }
@@ -163,6 +173,7 @@ fn impl_Trait_for_u8::method2()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -173,6 +184,7 @@ fn impl_Trait_for_u8::CONST2() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 2usize
     return
 }
@@ -185,6 +197,7 @@ fn impl_Trait_for_u8::method1()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -211,9 +224,11 @@ where
     let _1: (); // anonymous local
     let _2: usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = TraitClause1::method1()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     storage_live(_2)
     _2 = const TraitClause1::CONST1

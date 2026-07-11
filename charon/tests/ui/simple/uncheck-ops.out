@@ -10,6 +10,7 @@ fn main()
     let _4: u8; // anonymous local
     let _5: u8; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const 255u8 ub.+ const 1u8

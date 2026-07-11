@@ -28,8 +28,10 @@ fn foo<'_0>(x: &'_0 (dyn Trait + '_0))
     let _0: (); // return
     let x: &'3 (dyn Trait + '4); // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(x)
     return
 }
 

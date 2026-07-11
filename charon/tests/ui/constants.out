@@ -32,6 +32,7 @@ pub fn X0() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 0u32
     return
 }
@@ -44,6 +45,7 @@ pub fn X1() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = copy MAX
     return
 }
@@ -57,6 +59,7 @@ pub fn X2() -> u32
     let _0: u32; // return
     let x: u32; // local
 
+    storage_live(_0)
     storage_live(x)
     x = const 3u32
     _0 = copy x
@@ -75,12 +78,15 @@ pub fn incr(n: u32) -> u32
     let _2: u32; // anonymous local
     let _3: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_2)
     _2 = copy n
     _3 = copy _2 panic.+ const 1u32
     _0 = move _3
     storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(n)
     return
 }
 
@@ -89,7 +95,9 @@ pub fn X3() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = incr(const 32u32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -105,6 +113,7 @@ pub fn mk_pair0(x: u32, y: u32) -> (u32, u32)
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy x
     storage_live(_4)
@@ -112,6 +121,8 @@ pub fn mk_pair0(x: u32, y: u32) -> (u32, u32)
     _0 = (move _3, move _4)
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -134,6 +145,7 @@ pub fn mk_pair1(x: u32, y: u32) -> Pair<u32, u32>[{built_in impl Sized for u32},
     let _3: u32; // anonymous local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy x
     storage_live(_4)
@@ -141,6 +153,8 @@ pub fn mk_pair1(x: u32, y: u32) -> Pair<u32, u32>[{built_in impl Sized for u32},
     _0 = Pair { x: move _3, y: move _4 }
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -149,7 +163,9 @@ pub fn P0() -> (u32, u32)
 {
     let _0: (u32, u32); // return
 
+    storage_live(_0)
     _0 = mk_pair0(const 0u32, const 1u32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -161,7 +177,9 @@ pub fn P1() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
 {
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
+    storage_live(_0)
     _0 = mk_pair1(const 0u32, const 1u32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -173,6 +191,7 @@ pub fn P2() -> (u32, u32)
 {
     let _0: (u32, u32); // return
 
+    storage_live(_0)
     _0 = (const 0u32, const 1u32)
     return
 }
@@ -185,6 +204,7 @@ pub fn P3() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
 {
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
+    storage_live(_0)
     _0 = Pair { x: const 0u32, y: const 1u32 }
     return
 }
@@ -209,12 +229,21 @@ where
     let value: T; // arg #1
     let _2: T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move value
     _0 = Wrap { value: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] value
+        ↳⚡ storage_dead(value)
+            unwind_terminate
+        storage_dead(value)
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(value)
     return
 }
 
@@ -223,7 +252,9 @@ pub fn Y() -> Wrap<i32>[{built_in impl Sized for i32}]
 {
     let _0: Wrap<i32>[{built_in impl Sized for i32}]; // return
 
+    storage_live(_0)
     _0 = new<i32>[{built_in impl Sized for i32}](const 2i32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -236,6 +267,7 @@ pub fn unwrap_y() -> i32
     let _0: i32; // return
     let _1: Wrap<i32>[{built_in impl Sized for i32}]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = copy Y
     _0 = copy (_1).value
@@ -248,7 +280,9 @@ pub fn YVAL() -> i32
 {
     let _0: i32; // return
 
+    storage_live(_0)
     _0 = unwrap_y()
+    ↳⚡ unwind_continue
     return
 }
 
@@ -260,6 +294,7 @@ fn Z1() -> i32
 {
     let _0: i32; // return
 
+    storage_live(_0)
     _0 = const 3i32
     return
 }
@@ -272,6 +307,7 @@ pub fn get_z1() -> i32
 {
     let _0: i32; // return
 
+    storage_live(_0)
     _0 = copy Z1
     return
 }
@@ -286,6 +322,7 @@ pub fn add(a: i32, b: i32) -> i32
     let _4: i32; // anonymous local
     let _5: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     storage_live(_3)
     _3 = copy a
@@ -295,6 +332,9 @@ pub fn add(a: i32, b: i32) -> i32
     _0 = move _5
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(_5)
+    storage_dead(b)
+    storage_dead(a)
     return
 }
 
@@ -303,6 +343,7 @@ pub fn Q1() -> i32
 {
     let _0: i32; // return
 
+    storage_live(_0)
     _0 = const 5i32
     return
 }
@@ -315,6 +356,7 @@ pub fn Q2() -> i32
 {
     let _0: i32; // return
 
+    storage_live(_0)
     _0 = copy Q1
     return
 }
@@ -327,7 +369,9 @@ pub fn Q3() -> i32
 {
     let _0: i32; // return
 
+    storage_live(_0)
     _0 = add(copy Q2, const 3i32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -341,12 +385,16 @@ pub fn get_z2() -> i32
     let _1: i32; // anonymous local
     let _2: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     storage_live(_2)
     _2 = get_z1()
+    ↳⚡ unwind_continue
     _1 = add(move _2, copy Q3)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = add(copy Q1, move _1)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     return
 }
@@ -356,6 +404,7 @@ pub fn S1() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 6u32
     return
 }
@@ -371,6 +420,7 @@ pub fn S2() -> u32
     let _2: &'1 u32; // anonymous local
     let _3: &'2 u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
@@ -378,6 +428,7 @@ pub fn S2() -> u32
     _2 = move _3
     _1 = copy (*_2)
     _0 = incr(move _1)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -391,6 +442,7 @@ pub fn S3() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
 {
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
+    storage_live(_0)
     _0 = copy P3
     return
 }
@@ -403,7 +455,9 @@ pub fn S4() -> Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Size
 {
     let _0: Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // return
 
+    storage_live(_0)
     _0 = mk_pair1(const 7u32, const 8u32)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -425,6 +479,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const N
     return
 }
@@ -442,6 +497,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy LEN<T, N>[TraitClause0]
     return
 }

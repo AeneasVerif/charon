@@ -56,9 +56,15 @@ where
     let self: (); // arg #1
     let _other: T; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _other
+    ↳⚡ storage_dead(_other)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_other)
+    storage_dead(self)
     return
 }
 
@@ -69,7 +75,10 @@ fn method1(self: (), _other: &'static u32) -> bool
     let self: (); // arg #1
     let _other: &'1 u32; // arg #2
 
+    storage_live(_0)
     _0 = const true
+    storage_dead(_other)
+    storage_dead(self)
     return
 }
 
@@ -97,7 +106,10 @@ fn compare<'a>(self: &'a (), _other: &'a ()) -> bool
     let self: &'1 (); // arg #1
     let _other: &'2 (); // arg #2
 
+    storage_live(_0)
     _0 = const true
+    storage_dead(_other)
+    storage_dead(self)
     return
 }
 
@@ -142,6 +154,7 @@ fn main()
     _18 = const 1u32
     _17 = &_18
     _14 = move _17
+    storage_live(_0)
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
@@ -155,6 +168,10 @@ fn main()
     _4 = &(*_13)
     _3 = &(*_4)
     _1 = method1(move _2, move _3)
+    ↳⚡ storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_4)
@@ -163,6 +180,10 @@ fn main()
     storage_live(_6)
     _6 = ()
     _5 = method2<bool>[{built_in impl Sized for bool}](move _6, const false)
+    ↳⚡ storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        unwind_continue
     storage_live(_16)
     storage_live(_21)
     storage_live(_22)
@@ -189,11 +210,27 @@ fn main()
     _10 = &(*_11)
     _9 = &(*_10)
     _7 = compare<'13>(move _8, move _9)
+    ↳⚡ storage_dead(_13)
+        storage_dead(_12)
+        storage_dead(_11)
+        unwind_continue
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_10)
     storage_dead(_7)
     _0 = ()
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_22)
+    storage_dead(_21)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
     return
 }
 
@@ -212,7 +249,10 @@ fn foo<'a, 'b>(x: &'a (), y: &'b ()) -> &'a ()
     let x: &'2 (); // arg #1
     let y: &'3 (); // arg #2
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -244,6 +284,7 @@ fn call_foo<'e>(x: &'e ()) -> &'e ()
     _9 = ()
     _8 = &_9
     _7 = move _8
+    storage_live(_0)
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
@@ -254,11 +295,19 @@ fn call_foo<'e>(x: &'e ()) -> &'e ()
     _5 = &(*_6)
     _4 = &(*_5)
     _2 = foo<'11, '12>(move _3, move _4)
+    ↳⚡ storage_dead(_6)
+        storage_dead(x)
+        unwind_continue
     _0 = &(*_2)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_5)
     storage_dead(_2)
+    storage_dead(_6)
+    storage_dead(x)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
     return
 }
 

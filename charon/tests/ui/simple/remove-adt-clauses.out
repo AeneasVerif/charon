@@ -38,8 +38,10 @@ fn foo(_x: Foo<u32, bool>)
     let _0: (); // return
     let _x: Foo<u32, bool>; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_x)
     return
 }
 

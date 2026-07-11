@@ -15,6 +15,7 @@ fn main()
     let _9: i32; // anonymous local
 
     bb0: {
+        storage_live(_0);
         storage_live(_4);
         _0 = ();
         storage_live(_1);
@@ -44,6 +45,7 @@ fn main()
         storage_dead(_9);
         _0 = ();
         storage_dead(x);
+        storage_dead(_4);
         return;
     }
 }

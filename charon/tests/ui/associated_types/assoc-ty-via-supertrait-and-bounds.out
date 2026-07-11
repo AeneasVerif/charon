@@ -80,6 +80,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -90,8 +91,10 @@ fn main()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = take<Wrapper<()>[{built_in impl Sized for ()}], ()>[{built_in impl Sized for Wrapper<()>[{built_in impl Sized for ()}]}, impl_HasOutput2_for_Wrapper<(), ()>[{built_in impl Sized for ()}, impl_HasOutput2_for_unit]]()
+    ↳⚡ unwind_continue
     return
 }
 

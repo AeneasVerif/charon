@@ -1,0 +1,31 @@
+# Final LLBC before serialization:
+
+// Full name: issue_1298_absolute_path_for_generated_files::generated::Generated
+pub struct Generated {
+  value: u32,
+}
+
+// Full name: issue_1298_absolute_path_for_generated_files::get_value
+pub fn get_value<'_0>(g: &'_0 Generated) -> u32
+{
+    let _0: u32; // return
+    let g: &'1 Generated; // arg #1
+
+    storage_live(_0)
+    _0 = copy ((*g)).value
+    storage_dead(g)
+    return
+}
+
+// Full name: issue_1298_absolute_path_for_generated_files::generated::make
+pub fn make() -> Generated
+{
+    let _0: Generated; // return
+
+    storage_live(_0)
+    _0 = Generated { value: const 0u32 }
+    return
+}
+
+
+

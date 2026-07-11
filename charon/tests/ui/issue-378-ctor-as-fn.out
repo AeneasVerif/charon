@@ -54,6 +54,7 @@ fn F() -> fn(u8) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: fn(u8) -> Option<u8>[{built_in impl Sized for u8}]; // return
 
+    storage_live(_0)
     _0 = cast<Some<u8>[{built_in impl Sized for u8}], fn(u8) -> Option<u8>[{built_in impl Sized for u8}]>(const Some<u8>[{built_in impl Sized for u8}])
     return
 }
@@ -73,8 +74,12 @@ unsafe fn impl_Destruct_for_Foo::drop_glue<'_0>(_1: &'_0 mut Foo)
     let _0: (); // return
     let _1: &'1 mut Foo; // arg #1
 
+    storage_live(_0)
     _0 = ()
     drop[impl_Destruct_for_String::drop_glue<'2>] ((*_1)).1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -91,7 +96,10 @@ fn Foo(_1: u32, _2: String) -> Foo
     let _1: u32; // arg #1
     let _2: String; // arg #2
 
+    storage_live(_0)
     _0 = Foo { 0: move _1, 1: move _2 }
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -113,7 +121,9 @@ where
     let _0: Bar<'a, T>[TraitClause0]; // return
     let _1: &'a T; // arg #1
 
+    storage_live(_0)
     _0 = Bar::Variant { 0: move _1 }
+    storage_dead(_1)
     return
 }
 
@@ -142,6 +152,7 @@ fn main()
     let _19: &'15 i32; // anonymous local
     let _20: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_17)
     _0 = ()
     storage_live(f_1)
@@ -150,6 +161,8 @@ fn main()
     storage_live(_3)
     _3 = copy f_1
     _2 = Some<u8>[{built_in impl Sized for u8}](const 42u8)
+    ↳⚡ storage_dead(_17)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(f_4)
@@ -161,6 +174,8 @@ fn main()
     storage_live(_7)
     _7 = copy f_4
     _6 = (move _7)(const 42u8)
+    ↳⚡ storage_dead(_17)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_live(f_8)
@@ -170,10 +185,22 @@ fn main()
     _10 = copy f_8
     storage_live(_11)
     _11 = new()
+    ↳⚡ storage_dead(_17)
+        unwind_continue
     _9 = Foo(const 42u32, move _11)
+    ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'9>] _11
+        ↳⚡ storage_dead(_17)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            unwind_terminate
+        storage_dead(_17)
+        unwind_continue
     storage_dead(_11)
     storage_dead(_10)
     conditional_drop[impl_Destruct_for_Foo::drop_glue<'10>] _9
+    ↳⚡ storage_dead(_17)
+        unwind_continue
     storage_live(_18)
     storage_live(_19)
     storage_live(_20)
@@ -192,6 +219,8 @@ fn main()
     _16 = &(*_17)
     _15 = &(*_16)
     _13 = Variant<'14, i32>[{built_in impl Sized for i32}](move _15)
+    ↳⚡ storage_dead(_17)
+        unwind_continue
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_16)
@@ -201,6 +230,10 @@ fn main()
     storage_dead(f_8)
     storage_dead(f_4)
     storage_dead(f_1)
+    storage_dead(_17)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
     return
 }
 

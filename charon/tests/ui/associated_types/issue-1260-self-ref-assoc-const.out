@@ -50,10 +50,12 @@ where
     let _0: (); // return
     let _1: TraitClause1::Sub; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const TraitClause1::ImpliedClause2::ImpliedClause1::ZERO
     conditional_drop[{built_in impl Destruct for TraitClause1::Sub}::drop_glue<'0>] _1
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

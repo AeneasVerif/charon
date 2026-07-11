@@ -1815,31 +1815,57 @@ module Llbc = struct
       | `Assoc [ ("PlaceMention", place_mention) ] ->
           let* place_mention = place_of_json ctx place_mention in
           Ok (PlaceMention place_mention)
-      | `Assoc [ ("Drop", `List [ x_0; x_1; x_2 ]) ] ->
-          let* x_0 = place_of_json ctx x_0 in
-          let* x_1 = fn_ptr_of_json ctx x_1 in
-          let* x_2 = drop_kind_of_json ctx x_2 in
-          Ok (Drop (x_0, x_1, x_2))
+      | `Assoc
+          [
+            ( "Drop",
+              `Assoc
+                [
+                  ("place", place);
+                  ("fn_ptr", fn_ptr);
+                  ("kind", kind);
+                  ("on_unwind", on_unwind);
+                ] );
+          ] ->
+          let* place = place_of_json ctx place in
+          let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
+          let* kind = drop_kind_of_json ctx kind in
+          let* on_unwind = block_of_json ctx on_unwind in
+          Ok (Drop (place, fn_ptr, kind, on_unwind))
       | `Assoc
           [
             ( "Assert",
-              `Assoc [ ("assert", assert_); ("on_failure", on_failure) ] );
+              `Assoc
+                [
+                  ("assert", assert_);
+                  ("on_failure", on_failure);
+                  ("on_unwind", on_unwind);
+                ] );
           ] ->
           let* assert_ = assertion_of_json ctx assert_ in
           let* on_failure = abort_kind_of_json ctx on_failure in
-          Ok (Assert (assert_, on_failure))
-      | `Assoc [ ("InlineAsm", `Assoc [ ("asm", asm); ("targets", targets) ]) ]
-        ->
+          let* on_unwind = block_of_json ctx on_unwind in
+          Ok (Assert (assert_, on_failure, on_unwind))
+      | `Assoc
+          [
+            ( "InlineAsm",
+              `Assoc
+                [ ("asm", asm); ("targets", targets); ("on_unwind", on_unwind) ]
+            );
+          ] ->
           let* asm = string_of_json ctx asm in
           let* targets = list_of_json block_of_json ctx targets in
-          Ok (InlineAsm (asm, targets))
-      | `Assoc [ ("Call", call) ] ->
+          let* on_unwind = block_of_json ctx on_unwind in
+          Ok (InlineAsm (asm, targets, on_unwind))
+      | `Assoc [ ("Call", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ]
+        ->
           let* call = call_of_json ctx call in
-          Ok (Call call)
+          let* on_unwind = block_of_json ctx on_unwind in
+          Ok (Call (call, on_unwind))
       | `Assoc [ ("Abort", abort) ] ->
           let* abort = abort_kind_of_json ctx abort in
           Ok (Abort abort)
       | `String "Return" -> Ok Return
+      | `String "UnwindResume" -> Ok UnwindResume
       | `Assoc [ ("Break", break) ] ->
           let* break = int_of_json ctx break in
           Ok (Break break)

@@ -681,12 +681,14 @@ fn known_trait_method_call() -> anyhow::Result<()> {
         "test_crate::use_default"
     );
     let body = &function.body.as_structured().unwrap().body;
-    let [first_stmt, ..] = body.statements.as_slice() else {
-        panic!()
-    };
-    let StatementKind::Call(call) = &first_stmt.kind else {
-        panic!()
-    };
+    let call = body
+        .statements
+        .iter()
+        .find_map(|stmt| match &stmt.kind {
+            StatementKind::Call { call, .. } => Some(call),
+            _ => None,
+        })
+        .unwrap();
     let FnOperand::Regular(fn_ptr) = &call.func else {
         panic!()
     };

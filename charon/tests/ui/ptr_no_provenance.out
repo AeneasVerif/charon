@@ -228,11 +228,14 @@ where
     let _1: *const (); // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = without_provenance<()>[{built_in impl Sized for ()}](const 0usize)
+    ↳⚡ unwind_continue
     storage_live(_2)
     _2 = ()
     _0 = from_raw_parts<T, ()>[{built_in impl Sized for ()}, impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]](move _1, move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -244,9 +247,11 @@ fn main()
     let _0: (); // return
     let ptr: *const (); // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(ptr)
     ptr = null<()>[impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
+    ↳⚡ unwind_continue
     _0 = ()
     storage_dead(ptr)
     return

@@ -6,9 +6,11 @@ fn SLICE() -> [(); 4usize]
     let _0: [(); 4usize]; // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = ()
     _0 = @ArrayRepeat<(), 4usize>(move _1)
+    ↳⚡ undefined_behavior
     storage_dead(_1)
     return
 }
@@ -22,9 +24,11 @@ fn four() -> usize
     let _0: usize; // return
     let _1: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = const 2usize panic.+ const 2usize
     _0 = move _1
+    storage_dead(_1)
     return
 }
 
@@ -34,9 +38,11 @@ fn BAR() -> [(); 42usize]
     let _0: [(); 42usize]; // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = ()
     _0 = @ArrayRepeat<(), 42usize>(move _1)
+    ↳⚡ undefined_behavior
     storage_dead(_1)
     return
 }
@@ -49,6 +55,7 @@ fn FOO() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 42usize
     return
 }

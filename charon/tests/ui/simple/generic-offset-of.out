@@ -54,11 +54,15 @@ where
     storage_dead(_5)
     storage_dead(_4)
     _2 = move _3
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = move _2
     storage_dead(_1)
     _0 = ()
+    storage_dead(_6)
+    storage_dead(_3)
+    storage_dead(_2)
     return
 }
 

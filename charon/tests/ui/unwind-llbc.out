@@ -1,0 +1,139 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
+where
+    TraitClause0: (Self: Drop),
+= <opaque>
+
+// Full name: test_crate::Foo
+struct Foo {}
+
+// Full name: test_crate::{impl Drop for Foo}::drop
+pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
+{
+    let _0: (); // return
+    let self: &'1 mut Foo; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::Foo::{impl Destruct for Foo}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
+{
+    let _0: (); // return
+    let _1: &'1 mut Foo; // arg #1
+    let _2: &'2 mut Foo; // anonymous local
+    let _3: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Foo::drop<'4>(move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::Foo::{impl Destruct for Foo}
+impl "impl_Destruct_for_Foo" Destruct for Foo {
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Drop for Foo}
+impl "impl_Drop_for_Foo" Drop for Foo {
+    proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
+    fn drop<'_0_1> = impl_Drop_for_Foo::drop<'_0_1>
+    vtable: impl_Drop_for_Foo::{vtable}
+}
+
+// Full name: test_crate::may_unwind
+fn may_unwind()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let f: Foo; // local
+    let _2: (); // anonymous local
+    let _3: u8; // anonymous local
+    let _4: (u8, bool); // anonymous local
+    let _5: &'1 Foo; // anonymous local
+
+    storage_live(_0)
+    storage_live(_4)
+    _0 = ()
+    storage_live(f)
+    f = Foo {  }
+    storage_live(_2)
+    _2 = may_unwind()
+    ↳⚡ conditional_drop[drop_glue<'2>] f
+        ↳⚡ storage_dead(_4)
+            unwind_terminate
+        storage_dead(_4)
+        unwind_continue
+    storage_dead(_2)
+    storage_live(_3)
+    _4 = const 255u8 checked.+ const 1u8
+    assert(move _4.1 == false) (overflow) else panic
+    ↳⚡ conditional_drop[drop_glue<'2>] f
+        ↳⚡ storage_dead(_4)
+            unwind_terminate
+        storage_dead(_4)
+        unwind_continue
+    _3 = move _4.0
+    storage_dead(_3)
+    storage_live(_5)
+    _5 = &f
+    storage_dead(_5)
+    _0 = ()
+    conditional_drop[drop_glue<'3>] f
+    ↳⚡ storage_dead(_4)
+        unwind_continue
+    storage_dead(f)
+    storage_dead(_4)
+    return
+}
+
+
+

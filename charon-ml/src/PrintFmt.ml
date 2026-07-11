@@ -1815,6 +1815,30 @@ module Llbc = struct
       st.comments_before;
     pp_statement_kind env indent indent_incr fmt st.kind
 
+  and pp_unwind_block (env : fmt_env) (indent : string) (indent_incr : string)
+      (fmt : Format.formatter) (on_unwind : block) : unit =
+    let block =
+      pp_to_string (fun fmt -> pp_block env "" indent_incr fmt on_unwind)
+    in
+    let lines =
+      match List.rev (String.split_on_char '\n' block) with
+      | "" :: lines -> List.rev lines
+      | lines -> List.rev lines
+    in
+    match lines with
+    | [] -> ()
+    | first :: rest ->
+        Format.fprintf fmt "\n%s↳⚡ %s" indent first;
+        let indent = indent ^ indent_incr in
+        List.iter (fun line -> Format.fprintf fmt "\n%s%s" indent line) rest
+
+  and pp_branch_block (env : fmt_env) (indent : string) (indent_incr : string)
+      (fmt : Format.formatter) (label : string) (block : block) : unit =
+    let indent1 = indent ^ indent_incr in
+    Format.fprintf fmt "\n%s%s => {\n%a%s}" indent label
+      (pp_block env indent1 indent_incr)
+      block indent
+
   and pp_statement_kind (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (st : statement_kind) : unit =
     match st with
@@ -1838,40 +1862,44 @@ module Llbc = struct
           (local_id_to_string env var_id)
     | PlaceMention place ->
         Format.fprintf fmt "%s_ = %s" indent (place_to_string env place)
-    | Drop (p, fn_ptr, kind) ->
+    | Drop (p, fn_ptr, kind, on_unwind) ->
         let kind =
           match kind with
           | Precise -> "drop"
           | Conditional -> "conditional_drop"
         in
-        Format.fprintf fmt "%s%s[%a] %s" indent kind (pp_print_fn_ptr env)
+        Format.fprintf fmt "%s%s[%a] %s%a" indent kind (pp_print_fn_ptr env)
           fn_ptr (place_to_string env p)
-    | Assert (asrt, abort_kind) ->
-        Format.fprintf fmt "%s%a else %a" indent (pp_print_assertion env) asrt
-          (pp_print_abort_kind env) abort_kind
-    | InlineAsm (asm, [ target ]) ->
+          (pp_unwind_block env indent indent_incr)
+          on_unwind
+    | Assert (asrt, on_failure, on_unwind) ->
+        Format.fprintf fmt "%s%a else %a%a" indent (pp_print_assertion env) asrt
+          (pp_print_abort_kind env) on_failure
+          (pp_unwind_block env indent indent_incr)
+          on_unwind
+    | InlineAsm (asm, targets, on_unwind) ->
         Format.fprintf fmt "%sasm!(%S)" indent asm;
-        List.iter
-          (fun st ->
-            Format.fprintf fmt "\n%a" (pp_statement env indent indent_incr) st)
-          target.statements
-    | InlineAsm (asm, targets) ->
-        Format.fprintf fmt "%sasm!(%S)" indent asm;
-        if targets <> [] then (
+        if targets = [] then
+          pp_unwind_block env indent indent_incr fmt on_unwind
+        else
           let indent1 = indent ^ indent_incr in
-          let indent2 = indent1 ^ indent_incr in
           Format.fprintf fmt " {";
           List.iteri
             (fun i target ->
-              Format.fprintf fmt "\n%starget %d => {\n%a%s}" indent1 i
-                (pp_block env indent2 indent_incr)
-                target indent1)
+              pp_branch_block env indent1 indent_incr fmt
+                ("target " ^ string_of_int i)
+                target)
             targets;
-          Format.fprintf fmt "\n%s}" indent)
-    | Call call -> pp_print_call env indent fmt call
+          Format.fprintf fmt "\n%s}" indent;
+          pp_unwind_block env indent indent_incr fmt on_unwind
+    | Call (call, on_unwind) ->
+        Format.fprintf fmt "%a%a" (pp_print_call env indent) call
+          (pp_unwind_block env indent indent_incr)
+          on_unwind
     | Abort kind ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env) kind
     | Return -> Format.fprintf fmt "%sreturn" indent
+    | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
     | Break i -> Format.fprintf fmt "%sbreak %d" indent i
     | Continue i -> Format.fprintf fmt "%scontinue %d" indent i
     | Nop -> Format.fprintf fmt "%snop" indent

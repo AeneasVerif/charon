@@ -254,6 +254,27 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
     }
 }
 
+const LLBC_UNWIND_PREFIX: &str = "↳⚡ ";
+
+fn fmt_llbc_unwind_block<C: AstFormatter>(
+    ctx: &C,
+    f: &mut fmt::Formatter<'_>,
+    on_unwind: &llbc::Block,
+) -> fmt::Result {
+    let tab = ctx.indent();
+    let block = on_unwind.to_string_with_ctx(&ctx.reset_indent());
+    let mut lines = block.lines();
+    if let Some(first) = lines.next() {
+        write!(f, "\n{tab}{LLBC_UNWIND_PREFIX}{first}")?;
+        let ctx = ctx.increase_indent();
+        let tab = ctx.indent();
+        for line in lines {
+            write!(f, "\n{tab}{line}")?;
+        }
+    }
+    Ok(())
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for statement in &self.statements {
@@ -1846,52 +1867,69 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::PlaceMention(place) => {
                 write!(f, "_ = {}", place.with_ctx(ctx))
             }
-            StatementKind::Drop(place, tref, kind) => {
+            StatementKind::Drop {
+                place,
+                fn_ptr,
+                kind,
+                on_unwind,
+            } => {
                 let kind = match kind {
                     DropKind::Precise => "drop",
                     DropKind::Conditional => "conditional_drop",
                 };
-                write!(f, "{kind}[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
+                write!(
+                    f,
+                    "{kind}[{}] {}",
+                    fn_ptr.with_ctx(ctx),
+                    place.with_ctx(ctx),
+                )?;
+                fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
-            StatementKind::Assert { assert, on_failure } => {
+            StatementKind::Assert {
+                assert,
+                on_failure,
+                on_unwind,
+            } => {
                 write!(
                     f,
                     "{} else {}",
                     assert.with_ctx(ctx),
                     on_failure.with_ctx(ctx)
-                )
+                )?;
+                fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
-            StatementKind::InlineAsm { asm, targets } => {
+            StatementKind::InlineAsm {
+                asm,
+                targets,
+                on_unwind,
+            } => {
                 write!(f, "asm!({asm:?})")?;
-                if let [target] = targets.as_slice() {
-                    for statement in &target.statements {
-                        write!(f, "\n{}", statement.with_ctx(ctx))?;
-                    }
-                    return Ok(());
-                }
                 if !targets.is_empty() {
                     write!(f, " {{")?;
                     let ctx1 = &ctx.increase_indent();
-                    let tab1 = ctx1.indent();
-                    let ctx2 = &ctx1.increase_indent();
                     for (i, target) in targets.iter().enumerate() {
+                        let tab = ctx1.indent();
+                        let ctx = &ctx1.increase_indent();
                         write!(
                             f,
-                            "\n{tab1}target {i} => {{\n{}{tab1}}}",
-                            target.with_ctx(ctx2)
+                            "\n{tab}target {i} => {{\n{}{tab}}}",
+                            target.with_ctx(ctx)
                         )?;
                     }
                     write!(f, "\n{tab}}}")?;
                 }
+                fmt_llbc_unwind_block(ctx, f, on_unwind)?;
                 Ok(())
             }
-            StatementKind::Call(call) => {
-                write!(f, "{}", call.with_ctx(ctx))
+            StatementKind::Call { call, on_unwind } => {
+                write!(f, "{}", call.with_ctx(ctx))?;
+                fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
             StatementKind::Abort(kind) => {
                 write!(f, "{}", kind.with_ctx(ctx))
             }
             StatementKind::Return => write!(f, "return"),
+            StatementKind::UnwindResume => write!(f, "unwind_continue"),
             StatementKind::Break(index) => write!(f, "break {index}"),
             StatementKind::Continue(index) => write!(f, "continue {index}"),
             StatementKind::Nop => write!(f, "nop"),

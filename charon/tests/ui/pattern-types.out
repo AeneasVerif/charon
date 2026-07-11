@@ -12,7 +12,9 @@ pub fn keep_positive(x: i32 is 1i32..=2147483647i32) -> i32 is 1i32..=2147483647
     let _0: i32 is 1i32..=2147483647i32; // return
     let x: i32 is 1i32..=2147483647i32; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 
@@ -22,7 +24,9 @@ pub fn keep_non_null_ptr(x: *const u8 is !null) -> *const u8 is !null
     let _0: *const u8 is !null; // return
     let x: *const u8 is !null; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 

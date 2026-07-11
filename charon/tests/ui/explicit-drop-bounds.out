@@ -57,9 +57,13 @@ where
     let _0: (); // return
     let x: U; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     drop[TraitClause2::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -72,9 +76,13 @@ where
     let _0: (); // return
     let x: U; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     drop[TraitClause1::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -104,10 +112,23 @@ where
     let _x: T; // arg #1
     let _y: X; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     drop[TraitClause4::drop_glue<'0>] _y
+    ↳⚡ drop[TraitClause3::drop_glue<'2>] _x
+        ↳⚡ storage_dead(_y)
+            storage_dead(_x)
+            unwind_terminate
+        storage_dead(_y)
+        storage_dead(_x)
+        unwind_continue
     drop[TraitClause3::drop_glue<'1>] _x
+    ↳⚡ storage_dead(_y)
+        storage_dead(_x)
+        unwind_continue
+    storage_dead(_y)
+    storage_dead(_x)
     return
 }
 
@@ -118,11 +139,13 @@ fn main()
     let _1: (); // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
     _1 = use_trait<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_Trait_u32_for_unit, {built_in impl Destruct for u32}, {built_in impl Destruct for ()}](const 42u32, move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

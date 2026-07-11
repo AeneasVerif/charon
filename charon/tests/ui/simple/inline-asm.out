@@ -5,10 +5,15 @@ fn main()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
-    asm!("nop")
-    _0 = ()
-    return
+    asm!("nop") {
+        target 0 => {
+            _0 = ()
+            return
+        }
+    }
+    ↳⚡ undefined_behavior
 }
 
 // Full name: test_crate::multiple_targets
@@ -17,17 +22,22 @@ fn multiple_targets(x: u32) -> u32
     let _0: u32; // return
     let x: u32; // arg #1
 
+    storage_live(_0)
     asm!("jmp {0}") {
         target 0 => {
             _0 = copy x
+            storage_dead(x)
             return
         }
         target 1 => {
             x = const 1u32
             _0 = copy x
+            storage_dead(x)
             return
         }
     }
+    ↳⚡ storage_dead(x)
+        undefined_behavior
 }
 
 

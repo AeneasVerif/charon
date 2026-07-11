@@ -91,6 +91,14 @@ impl Statement {
 }
 
 impl Block {
+    pub fn new_abort(span: Span, kind: AbortKind) -> Self {
+        Statement::new(span, StatementKind::Abort(kind)).into_block()
+    }
+
+    pub fn new_unreachable(span: Span) -> Self {
+        Self::new_abort(span, AbortKind::UndefinedBehavior)
+    }
+
     pub fn from_seq(seq: Vec<Statement>) -> Option<Self> {
         if seq.is_empty() {
             None

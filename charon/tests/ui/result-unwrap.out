@@ -12,6 +12,14 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
@@ -40,6 +48,7 @@ where
     let _4: &'3 (dyn Debug + '4); // anonymous local
     let _5: &'6 E; // anonymous local
 
+    storage_live(t)
     storage_live(_3)
     match self {
         Result::Ok => {
@@ -52,9 +61,33 @@ where
             _5 = &e
             _4 = unsize_cast<&'6 E, &'7 (dyn Debug + '8), &vtable_of(TraitClause2)>(copy _5)
             _3 = unwrap_failed<'11, '12>(const "called `Result::unwrap()` on an `Err` value", move _4)
+            ↳⚡ drop[{built_in impl Destruct for E}::drop_glue<'15>] e
+                ↳⚡ storage_dead(_5)
+                    storage_dead(_4)
+                    storage_dead(_3)
+                    storage_dead(e)
+                    storage_dead(self)
+                    unwind_terminate
+                storage_dead(_5)
+                storage_dead(_4)
+                storage_dead(_3)
+                storage_dead(e)
+                storage_dead(self)
+                unwind_continue
+            storage_dead(_5)
+            storage_dead(_4)
+            storage_dead(_3)
+            storage_dead(e)
+            storage_dead(self)
+            undefined_behavior
         },
     }
     t = move (self as variant Result::Ok).0
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(e)
+    storage_dead(self)
     return
 }
 
@@ -64,10 +97,14 @@ fn test_crate::unwrap(res: Result<u32, u32>[{built_in impl Sized for u32}, {buil
     let res: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // arg #1
     let _2: Result<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy res
     _0 = core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl#0}](move _2)
+    ↳⚡ storage_dead(res)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(res)
     return
 }
 

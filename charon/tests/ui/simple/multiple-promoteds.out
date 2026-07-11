@@ -25,6 +25,7 @@ fn six() -> u32
     let _15: u32; // anonymous local
     let _16: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_4)
     storage_live(_7)
@@ -58,10 +59,27 @@ fn six() -> u32
     storage_live(_6)
     _6 = copy y
     _0 = add<'9, '10>(move _5, move _6)
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_4)
+        storage_dead(_2)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(y)
     storage_dead(x)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
     return
 }
 

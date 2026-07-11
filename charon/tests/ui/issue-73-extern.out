@@ -20,8 +20,10 @@ fn use_type<'_0>(_x: &'_0 Type)
     let _0: (); // return
     let _x: &'1 Type; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_x)
     return
 }
 

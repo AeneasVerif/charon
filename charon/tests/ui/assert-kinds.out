@@ -25,6 +25,7 @@ fn main()
     let _19: bool; // anonymous local
 
     bb0: {
+        storage_live(_0);
         storage_live(_3);
         storage_live(_5);
         storage_live(_9);
@@ -46,6 +47,17 @@ fn main()
     }
 
     bb1: {
+        storage_dead(_19);
+        storage_dead(_18);
+        storage_dead(_17);
+        storage_dead(_16);
+        storage_dead(_14);
+        storage_dead(_13);
+        storage_dead(_12);
+        storage_dead(_11);
+        storage_dead(_9);
+        storage_dead(_5);
+        storage_dead(_3);
         unwind_continue;
     }
 
@@ -106,6 +118,17 @@ fn main()
         storage_dead(_15);
         _0 = ();
         storage_dead(x);
+        storage_dead(_19);
+        storage_dead(_18);
+        storage_dead(_17);
+        storage_dead(_16);
+        storage_dead(_14);
+        storage_dead(_13);
+        storage_dead(_12);
+        storage_dead(_11);
+        storage_dead(_9);
+        storage_dead(_5);
+        storage_dead(_3);
         return;
     }
 }

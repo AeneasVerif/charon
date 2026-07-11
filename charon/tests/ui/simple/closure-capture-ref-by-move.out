@@ -66,11 +66,15 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure<'_0>, tupled_args: ())
     let tupled_args: (); // arg #2
     let _3: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     _3 = copy (*((*_1)).0) panic.+ const 1i32
     (*((*_1)).0) = move _3
     _0 = ()
+    storage_dead(_3)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -85,6 +89,7 @@ fn foo()
     let _5: &'6 mut closure<'7>; // anonymous local
     let _6: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(x)
     x = const 0i32
@@ -98,6 +103,7 @@ fn foo()
     storage_live(_6)
     _6 = ()
     _4 = call_mut<'11, '12>(move _5, move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -114,7 +120,9 @@ unsafe fn drop_glue<'_0, '_1>(_1: &'_1 mut closure<'_0>)
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -126,11 +134,28 @@ fn call_once<'_0>(_1: closure<'_0>, _2: ())
     let _2: (); // arg #2
     let _3: &'1 mut closure<'_0>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'_0, '4>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'_0, '7>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[drop_glue<'_0, '10>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

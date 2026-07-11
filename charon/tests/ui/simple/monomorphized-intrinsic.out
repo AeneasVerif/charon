@@ -39,6 +39,7 @@ fn main()
     _12 = E1::A {  }
     _11 = &_12
     _9 = move _11
+    storage_live(_0)
     storage_live(_7)
     storage_live(_8)
     _0 = ()
@@ -69,6 +70,14 @@ fn main()
     storage_dead(_6)
     storage_dead(_4)
     _0 = ()
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
     return
 }
 

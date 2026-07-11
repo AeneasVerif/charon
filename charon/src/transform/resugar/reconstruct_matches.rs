@@ -142,7 +142,7 @@ impl Transform {
                 // appropriate MIR.
                 [
                     Statement {
-                        kind: StatementKind::Call(call),
+                        kind: StatementKind::Call { call, .. },
                         ..
                     },
                     ..,

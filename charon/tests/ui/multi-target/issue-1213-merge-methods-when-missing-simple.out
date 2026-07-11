@@ -23,8 +23,10 @@ where
     let _0: (); // return
     let self: &'1 Self; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -35,8 +37,10 @@ where
     let _0: (); // return
     let self: &'1 Self; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -49,11 +53,15 @@ where
     let x: &'1 T0; // arg #1
     let _2: &'2 T0; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = &(*x)
     _0 = TraitClause1::method1<'3>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -66,11 +74,15 @@ where
     let x: &'1 T0; // arg #1
     let _2: &'2 T0; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = &(*x)
     _0 = TraitClause1::method2<'3>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 

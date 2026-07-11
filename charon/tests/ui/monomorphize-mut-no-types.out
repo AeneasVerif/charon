@@ -86,8 +86,12 @@ where
     let _0: T; // return
     let x: T; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -98,8 +102,12 @@ where
     let _0: &'_0 mut T0; // return
     let x: &'_0 mut T0; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -110,8 +118,12 @@ where
     let _0: Option<&'_0 mut T0>; // return
     let x: Option<&'_0 mut T0>; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -122,8 +134,12 @@ where
     let _0: Option<Option<&'_0 mut T0>>; // return
     let x: Option<Option<&'_0 mut T0>>; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<Option<Option<&_ mut _>>><'_0> for T0}::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -159,6 +175,7 @@ where
     _18 = const 0u32
     _17 = &_18
     _16 = move _17
+    storage_live(_0)
     storage_live(_15)
     _0 = ()
     storage_live(_2)
@@ -166,6 +183,16 @@ where
     _15 = move _16
     _3 = &(*_15)
     _2 = identity<&'70 u32>[{built_in impl Sized for &'70 u32}](move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'75>] x
+        ↳⚡ storage_dead(_15)
+            storage_dead(x)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(_16)
+            unwind_terminate
+        storage_dead(_15)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
@@ -174,6 +201,16 @@ where
     _6 = const 0u32
     _5 = &mut _6
     _4 = test_crate::identity::<&_ mut _><'77, u32>[{built_in impl core::marker::Sized::<&_ mut _><'77> for u32}](move _5)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'75>] x
+        ↳⚡ storage_dead(_15)
+            storage_dead(x)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(_16)
+            unwind_terminate
+        storage_dead(_15)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)
@@ -186,6 +223,16 @@ where
     _8 = Option::Some { 0: move _9 }
     storage_dead(_9)
     _7 = test_crate::identity::<Option<&_ mut _>><'93, u32>[{built_in impl core::marker::Sized::<Option<&_ mut _>><'93> for u32}](move _8)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'75>] x
+        ↳⚡ storage_dead(_15)
+            storage_dead(x)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(_16)
+            unwind_terminate
+        storage_dead(_15)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_8)
     storage_dead(_10)
     storage_dead(_7)
@@ -199,10 +246,28 @@ where
     _12 = Option::Some { 0: move _13 }
     storage_dead(_13)
     _11 = test_crate::identity::<Option<Option<&_ mut _>>><'167, A>[{built_in impl core::marker::Sized::<Option<Option<&_ mut _>>><'167> for A}](move _12)
+    ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'75>] x
+        ↳⚡ storage_dead(_15)
+            storage_dead(x)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(_16)
+            unwind_terminate
+        storage_dead(_15)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     _0 = ()
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'248>] x
+    ↳⚡ storage_dead(_15)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_15)
+    storage_dead(x)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
     return
 }
 

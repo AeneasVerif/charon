@@ -33,43 +33,57 @@ and statement_kind =
           modelled as a function call as it cannot diverge *)
   | StorageLive of local_id
       (** Indicates that this local should be allocated; if it is already
-          allocated, this frees the local and re-allocates it. The return value
-          and arguments do not receive a [StorageLive]. We ensure in the
-          micro-pass [insert_storage_lives] that all other locals have a
-          [StorageLive] associated with them. *)
+          allocated, this frees the local and re-allocates it. The arguments do
+          not receive a [StorageLive]. We ensure in the micro-pass
+          [insert_storage_statements] that all other locals have a [StorageLive]
+          associated with them. *)
   | StorageDead of local_id
       (** Indicates that this local should be deallocated; if it is already
           deallocated, this is a no-op. A local may not have a [StorageDead] in
           the function's body, in which case it is implicitly deallocated at the
-          end of the function. *)
+          end of the function. The return local does not receive a
+          [StorageDead]. We ensure in the micro-pass [insert_storage_statements]
+          that all other locals have a [StorageDead] before function exits. *)
   | PlaceMention of place
       (** A place is mentioned, but not accessed. The place itself must still be
           valid though, so this statement is not a no-op: it can trigger UB if
           the place's projections are not valid (e.g. because they go out of
           bounds). *)
-  | Drop of place * fn_ptr * drop_kind
+  | Drop of place * fn_ptr * drop_kind * block
       (** Drop the value at the given place.
 
           Depending on [DropKind], this may be a real call to [drop_glue], or a
           conditional call that should only happen if the place has not been
           moved out of. See the docs of [DropKind] for more details; to get
-          precise drops use [--precise-drops]. *)
-  | Assert of assertion * abort_kind
+          precise drops use [--precise-drops].
+
+          Fields:
+          - [place]
+          - [fn_ptr]: Reference to the [drop_glue] code to call on drop.
+          - [kind]
+          - [on_unwind] *)
+  | Assert of assertion * abort_kind * block
       (** Fields:
           - [assert]
-          - [on_failure] *)
-  | InlineAsm of string * block list
+          - [on_failure]
+          - [on_unwind] *)
+  | InlineAsm of string * block list * block
       (** An inline assembly block. For now we only preserve the template
           string.
 
           Fields:
           - [asm]
-          - [targets] *)
-  | Call of call
+          - [targets]
+          - [on_unwind] *)
+  | Call of call * block
+      (** Fields:
+          - [call]
+          - [on_unwind] *)
   | Abort of abort_kind
       (** Panic also handles "unreachable". We keep the name of the panicking
           function that was called. *)
   | Return
+  | UnwindResume  (** Unwind out of the current function into its caller. *)
   | Break of int
       (** Break to outer loops. The [usize] gives the index of the outer loop to
           break to: * 0: break to first outer loop (the current loop) * 1: break

@@ -16,8 +16,10 @@ fn use_result(_1: MyResult::<Never, u8>)
     let _0: (); // return
     let _1: MyResult::<Never, u8>; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_1)
     return
 }
 

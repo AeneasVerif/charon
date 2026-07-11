@@ -27,6 +27,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 42usize
     return
 }
@@ -54,6 +55,7 @@ where
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = copy FOO<T>[impl_Trait_for_T<T>[TraitClause0]]
     return
 }

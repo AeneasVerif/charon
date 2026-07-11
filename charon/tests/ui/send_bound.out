@@ -33,9 +33,13 @@ where
     let _0: (); // return
     let _msg: M; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for M}::drop_glue<'0>] _msg
+    ↳⚡ storage_dead(_msg)
+        unwind_continue
+    storage_dead(_msg)
     return
 }
 
@@ -46,11 +50,13 @@ fn main()
     let _1: (); // anonymous local
     let _2: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
     _1 = foo<()>[{built_in impl Sized for ()}, {built_in impl Send for ()}](move _2)
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()

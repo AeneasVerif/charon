@@ -49,14 +49,18 @@ where
     let _2: (); // anonymous local
     let _3: &'2 Self; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self) with_metadata(copy self.metadata)
     _2 = TraitClause0::consume<'3, ()>[{built_in impl Sized for ()}, impl_Takes_bool_for_unit](move _3)
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -69,8 +73,10 @@ where
     let _0: (); // return
     let self: &'1 (); // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -85,14 +91,18 @@ where
     let _2: (); // anonymous local
     let _3: &'2 (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
     _2 = consume<'3, ()>[{built_in impl Sized for ()}, impl_Takes_bool_for_unit](move _3)
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
+    storage_dead(self)
     return
 }
 

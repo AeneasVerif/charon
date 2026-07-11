@@ -247,7 +247,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -265,9 +267,13 @@ fn call_mut<'_0>(_1: &'_0 mut closure, tupled_args: (i32,)) -> i32
     let tupled_args: (i32,); // arg #2
     let v: i32; // local
 
+    storage_live(_0)
     storage_live(v)
     v = move tupled_args.0
     _0 = copy v
+    storage_dead(v)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -279,10 +285,27 @@ fn call_once(_1: closure, _2: (i32,)) -> i32
     let _2: (i32,); // arg #2
     let _3: &'1 mut closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'3>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[drop_glue<'4>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -314,13 +337,17 @@ pub fn test_crate::map(x: [i32; 256usize]) -> [i32; 256usize]
     let _2: [i32; 256usize]; // anonymous local
     let _3: closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy x
     storage_live(_3)
     _3 = closure {  }
     _0 = core::array::{[T; N]}::map<i32, closure, i32, 256usize>[{built_in impl Sized for i32}, {built_in impl Sized for closure}, {built_in impl Sized for i32}, impl_FnMut_tuple_for_closure, impl_Destruct_for_closure, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -329,7 +356,9 @@ pub fn array<const LEN : usize>() -> [u8; LEN]
 {
     let _0: [u8; LEN]; // return
 
+    storage_live(_0)
     _0 = @ArrayRepeat<u8, LEN>(const 0u8)
+    ↳⚡ undefined_behavior
     return
 }
 
@@ -350,11 +379,14 @@ fn cbd(prf_input: [u8; 33usize])
     let _11: &'_ mut [u8; 33usize]; // anonymous local
     let _12: &'_ mut u8; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = Range { start: const 0u8, end: const 3u8 }
     _2 = into_iter<Range<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Range<u8>[{built_in impl Sized for u8}]}, impl_Iterator_for_Range<u8>[{built_in impl Sized for u8}, impl_Step_for_u8]](move _3)
+    ↳⚡ storage_dead(prf_input)
+        unwind_continue
     storage_dead(_3)
     storage_live(iter)
     iter = move _2
@@ -365,6 +397,8 @@ fn cbd(prf_input: [u8; 33usize])
         _7 = &mut iter
         _6 = &two-phase-mut (*_7)
         _5 = next<'4, u8>[{built_in impl Sized for u8}, impl_Step_for_u8](move _6)
+        ↳⚡ storage_dead(prf_input)
+            unwind_continue
         storage_dead(_6)
         match _5 {
             Option::None => {
@@ -383,6 +417,9 @@ fn cbd(prf_input: [u8; 33usize])
         _11 = &mut prf_input
         storage_live(_12)
         _12 = @ArrayIndexMut<'_, u8, 33usize>(move _11, copy _10)
+        ↳⚡ storage_dead(_12)
+            storage_dead(_11)
+            undefined_behavior
         (*_12) = move _9
         storage_dead(_9)
         storage_dead(_10)
@@ -396,6 +433,9 @@ fn cbd(prf_input: [u8; 33usize])
     storage_dead(_5)
     storage_dead(iter)
     storage_dead(_2)
+    storage_dead(prf_input)
+    storage_dead(_12)
+    storage_dead(_11)
     return
 }
 
@@ -426,6 +466,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
     let _21: &'17 usize; // anonymous local
     let _22: Option<Arguments<'24>>[{built_in impl Sized for Arguments<'24>}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = const true
@@ -436,6 +477,16 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_7)
         _7 = &(*lhs) with_metadata(copy lhs.metadata)
         _6 = core::slice::{[T]}::len<'28, u8>[{built_in impl Sized for u8}](move _7)
+        ↳⚡ storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(kind)
+            storage_dead(rhs)
+            storage_dead(lhs)
+            unwind_continue
         storage_dead(_7)
         _5 = &_6
         storage_live(_8)
@@ -443,6 +494,16 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_10)
         _10 = &(*rhs) with_metadata(copy rhs.metadata)
         _9 = core::slice::{[T]}::len<'30, u8>[{built_in impl Sized for u8}](move _10)
+        ↳⚡ storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(kind)
+            storage_dead(rhs)
+            storage_dead(lhs)
+            unwind_continue
         storage_dead(_10)
         _8 = &_9
         _4 = (move _5, move _8)
@@ -476,6 +537,15 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
             _20 = &(*_21)
             storage_live(_22)
             _22 = Option::None {  }
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(_17)
+            storage_dead(kind)
+            storage_dead(rhs)
+            storage_dead(lhs)
             panic(core::panicking::assert_failed)
         }
         storage_dead(_15)
@@ -490,6 +560,15 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
     }
     storage_dead(_3)
     _0 = ()
+    storage_dead(_22)
+    storage_dead(_21)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(kind)
+    storage_dead(rhs)
+    storage_dead(lhs)
     return
 }
 

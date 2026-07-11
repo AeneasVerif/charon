@@ -39,7 +39,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Bar)
     let _1: &'1 mut Bar; // arg #1
 
     bb0: {
+        storage_live(_0);
         _0 = ();
+        storage_dead(_1);
         return;
     }
 }
@@ -57,8 +59,10 @@ fn foo<'_0>(self: &'_0 Bar)
     let self: &'1 Bar; // arg #1
 
     bb0: {
+        storage_live(_0);
         _0 = ();
         _0 = ();
+        storage_dead(self);
         return;
     }
 }
@@ -71,6 +75,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
     let _2: &'_0 Bar; // anonymous local
 
     bb0: {
+        storage_live(_0);
         _0 = ();
         storage_live(_2);
         _2 = concretize<&'_0 (dyn Foo + '1), &'_0 Bar>(move _1);
@@ -78,10 +83,14 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
     }
 
     bb1: {
+        storage_dead(_2);
+        storage_dead(_1);
         unwind_continue;
     }
 
     bb2: {
+        storage_dead(_2);
+        storage_dead(_1);
         return;
     }
 }
@@ -94,6 +103,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Foo))
     let target_self: &'_0 mut Bar; // local
 
     bb0: {
+        storage_live(ret);
         ret = ();
         storage_live(target_self);
         target_self = concretize<&'_0 mut (dyn Foo + '1), &'_0 mut Bar>(move dyn_self);
@@ -101,10 +111,14 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Foo))
     }
 
     bb1: {
+        storage_dead(target_self);
+        storage_dead(dyn_self);
         unwind_continue;
     }
 
     bb2: {
+        storage_dead(target_self);
+        storage_dead(dyn_self);
         return;
     }
 }
@@ -123,6 +137,7 @@ fn impl_Foo_for_Bar::{vtable}() -> test_crate::Foo::{vtable}
     let _8: fn<'_0_1>(&'_0_1 (dyn Foo + '9)); // anonymous local
 
     bb0: {
+        storage_live(ret);
         storage_live(size);
         size = size_of<Bar>;
         storage_live(align);
@@ -166,6 +181,7 @@ fn main()
     let _7: unsafe fn(&'8 (dyn Foo + '9)); // anonymous local
 
     bb0: {
+        storage_live(_0);
         _0 = ();
         storage_live(bar);
         bar = Bar {  };
@@ -186,6 +202,7 @@ fn main()
     }
 
     bb1: {
+        storage_dead(_7);
         unwind_continue;
     }
 
@@ -195,6 +212,7 @@ fn main()
         _0 = ();
         storage_dead(some_foo);
         storage_dead(bar);
+        storage_dead(_7);
         return;
     }
 }

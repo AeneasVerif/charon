@@ -85,6 +85,7 @@ pub fn foo() -> &'static closure
     _6 = closure {  }
     _5 = &_6
     _4 = move _5
+    storage_live(_0)
     storage_live(_3)
     storage_live(_1)
     storage_live(_2)
@@ -94,6 +95,10 @@ pub fn foo() -> &'static closure
     _0 = &(*_1)
     storage_dead(_2)
     storage_dead(_1)
+    storage_dead(_3)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 
@@ -103,7 +108,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -115,9 +122,13 @@ fn call<'_0>(_1: &'_0 closure, tupled_args: (u32,)) -> u32
     let tupled_args: (u32,); // arg #2
     let x: u32; // local
 
+    storage_live(_0)
     storage_live(x)
     x = move tupled_args.0
     _0 = copy x
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -129,9 +140,17 @@ fn call_mut<'_0>(state: &'_0 mut closure, args: (u32,)) -> u32
     let args: (u32,); // arg #2
     let _3: &'0 closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -143,10 +162,27 @@ fn call_once(_1: closure, _2: (u32,)) -> u32
     let _2: (u32,); // arg #2
     let _3: &'1 mut closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'3>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[drop_glue<'4>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

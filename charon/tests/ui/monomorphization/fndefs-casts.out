@@ -66,8 +66,10 @@ fn foo::<u8><'a>(x: &'a u8)
     let _0: (); // return
     let x: &'1 u8; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(x)
     return
 }
 
@@ -77,8 +79,10 @@ fn foo::<u32><'a>(x: &'a u32)
     let _0: (); // return
     let x: &'1 u32; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(x)
     return
 }
 
@@ -88,8 +92,10 @@ fn foo::<char><'a>(x: &'a char)
     let _0: (); // return
     let x: &'1 char; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(x)
     return
 }
 
@@ -113,6 +119,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     _9 = const 13u32
     _8 = &_9
     _7 = move _8
+    storage_live(_0)
     storage_live(_6)
     _0 = ()
     storage_live(_2)
@@ -125,10 +132,18 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     _4 = &(*_5)
     _3 = (move _4,)
     _0 = {built_in impl Fn<(&'12 u32,)> for for<'a> foo::<u32><'a>}::call<'60>(move _2, move _3)
+    ↳⚡ storage_dead(_6)
+        storage_dead(c)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_5)
+    storage_dead(_6)
+    storage_dead(c)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
     return
 }
 
@@ -167,6 +182,7 @@ fn main()
     let _29: &'25 char; // anonymous local
     let _30: char; // anonymous local
 
+    storage_live(_0)
     storage_live(_27)
     _0 = ()
     storage_live(fooint1)
@@ -185,6 +201,8 @@ fn main()
     _8 = &a
     _7 = &(*_8)
     _5 = (move _6)(move _7)
+    ↳⚡ storage_dead(_27)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_8)
@@ -199,6 +217,8 @@ fn main()
     _13 = &a
     _12 = &(*_13)
     _10 = (move _11)(move _12)
+    ↳⚡ storage_dead(_27)
+        unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_13)
@@ -211,6 +231,8 @@ fn main()
     _17 = &b
     _16 = &(*_17)
     _14 = (move _15)(move _16)
+    ↳⚡ storage_dead(_27)
+        unwind_continue
     storage_dead(_16)
     storage_dead(_15)
     storage_dead(_17)
@@ -223,6 +245,8 @@ fn main()
     _21 = &b
     _20 = &(*_21)
     _18 = (move _19)(move _20)
+    ↳⚡ storage_dead(_27)
+        unwind_continue
     storage_live(_28)
     storage_live(_29)
     storage_live(_30)
@@ -242,12 +266,16 @@ fn main()
     _25 = &(*_27)
     _24 = &(*_25)
     _22 = (move _23)(move _24)
+    ↳⚡ storage_dead(_27)
+        unwind_continue
     storage_dead(_24)
     storage_dead(_23)
     storage_dead(_25)
     storage_dead(_22)
     storage_live(_26)
     _26 = takes_closure::<for<'a> foo::<u32><'a>>(const foo::<u32><'24>)
+    ↳⚡ storage_dead(_27)
+        unwind_continue
     storage_dead(_26)
     _0 = ()
     storage_dead(b)
@@ -255,6 +283,10 @@ fn main()
     storage_dead(foochar)
     storage_dead(fooint2)
     storage_dead(fooint1)
+    storage_dead(_27)
+    storage_dead(_30)
+    storage_dead(_29)
+    storage_dead(_28)
     return
 }
 

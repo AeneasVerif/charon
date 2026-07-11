@@ -28,7 +28,9 @@ where
     let _0: bool; // return
     let self: &'1 Self; // arg #1
 
+    storage_live(_0)
     _0 = const true
+    storage_dead(self)
     return
 }
 
@@ -38,7 +40,9 @@ pub fn get_bool<'_0>(self: &'_0 bool) -> bool
     let _0: bool; // return
     let self: &'1 bool; // arg #1
 
+    storage_live(_0)
     _0 = copy (*self)
+    storage_dead(self)
     return
 }
 
@@ -48,7 +52,9 @@ pub fn impl_BoolTrait_for_bool::ret_true<'_0>(self: &'_0 bool) -> bool
     let _0: bool; // return
     let self: &'1 bool; // arg #1
 
+    storage_live(_0)
     _0 = const true
+    storage_dead(self)
     return
 }
 
@@ -71,21 +77,30 @@ where
     let _3: &'1 bool; // anonymous local
     let _4: &'2 bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = &x
     _2 = get_bool<'4>(move _3)
+    ↳⚡ storage_dead(x)
+        unwind_continue
     if move _2 {
-        storage_dead(_3)
-        storage_live(_4)
-        _4 = &x
-        _0 = impl_BoolTrait_for_bool::ret_true<'6>(move _4)
-        storage_dead(_4)
     } else {
         storage_dead(_3)
         _0 = const false
+        storage_dead(_2)
+        storage_dead(x)
+        return
     }
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = &x
+    _0 = impl_BoolTrait_for_bool::ret_true<'6>(move _4)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -112,6 +127,7 @@ fn C() -> u32
     let _2: u32; // anonymous local
     let _3: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_1)

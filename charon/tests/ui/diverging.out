@@ -6,6 +6,8 @@ fn my_panic(_x: u32) -> !
     let _0: !; // return
     let _x: u32; // arg #1
 
+    storage_live(_0)
+    storage_dead(_x)
     panic(core::panicking::panic)
 }
 
@@ -14,6 +16,7 @@ fn do_something_else()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -25,9 +28,14 @@ fn call_my_panic()
     let _0: (); // return
     let _1: !; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = my_panic(const 0u32)
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    undefined_behavior
 }
 
 

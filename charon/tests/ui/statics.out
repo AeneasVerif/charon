@@ -5,6 +5,7 @@ fn CONST() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 0usize
     return
 }
@@ -31,6 +32,7 @@ fn constant()
     _8 = copy CONST
     _7 = &_8
     _6 = move _7
+    storage_live(_0)
     storage_live(_5)
     _0 = ()
     storage_live(_val)
@@ -47,6 +49,10 @@ fn constant()
     storage_dead(_ref_mut)
     storage_dead(_ref)
     storage_dead(_val)
+    storage_dead(_5)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
     return
 }
 
@@ -55,6 +61,7 @@ fn SHARED_STATIC() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 0usize
     return
 }
@@ -76,6 +83,7 @@ fn shared_static()
     let _8: &'6 usize; // anonymous local
     let _9: &'7 usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_val)
     storage_live(_2)
@@ -102,6 +110,9 @@ fn shared_static()
     storage_dead(_4)
     storage_dead(_ref)
     storage_dead(_val)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
     return
 }
 
@@ -110,6 +121,7 @@ fn MUT_STATIC() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const 0usize
     return
 }
@@ -137,6 +149,7 @@ fn mut_static()
     let _14: *mut usize; // anonymous local
     let _15: *mut usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_val)
     storage_live(_2)
@@ -179,6 +192,11 @@ fn mut_static()
     storage_dead(_4)
     storage_dead(_ref)
     storage_dead(_val)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
     return
 }
 
@@ -190,6 +208,7 @@ fn FOO() -> Foo
 {
     let _0: Foo; // return
 
+    storage_live(_0)
     _0 = Foo {  }
     return
 }
@@ -203,8 +222,10 @@ fn method<'_0>(self: &'_0 Foo)
     let _0: (); // return
     let self: &'1 Foo; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -216,6 +237,7 @@ fn non_copy_static()
     let _2: &'2 Foo; // anonymous local
     let _3: &'3 Foo; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
@@ -224,8 +246,10 @@ fn non_copy_static()
     _2 = move _3
     _1 = &(*_2)
     _0 = method<'5>(move _1)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     storage_dead(_2)
+    storage_dead(_3)
     return
 }
 

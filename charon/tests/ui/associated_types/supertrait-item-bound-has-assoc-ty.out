@@ -59,7 +59,9 @@ pub fn convert(x: u32) -> u32
     let _0: u32; // return
     let x: u32; // arg #1
 
+    storage_live(_0)
     _0 = copy x
+    storage_dead(x)
     return
 }
 

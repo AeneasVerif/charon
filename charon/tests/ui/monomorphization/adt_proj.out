@@ -14,6 +14,7 @@ fn main()
     let res: Result::<u32, u32>; // local
     let n: u32; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(res)
     res = Result::<u32, u32>::Ok { 0: const 0u32 }

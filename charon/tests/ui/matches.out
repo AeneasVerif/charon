@@ -33,15 +33,18 @@ pub fn test1(x: E1) -> bool
     let _0: bool; // return
     let x: E1; // arg #1
 
+    storage_live(_0)
     match x {
         E1::V1 | E1::V2 => {
         },
         E1::V3 => {
             _0 = const false
+            storage_dead(x)
             return
         },
     }
     _0 = const true
+    storage_dead(x)
     return
 }
 
@@ -53,8 +56,12 @@ where
     let _0: T; // return
     let x: T; // arg #1
 
+    storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -72,6 +79,7 @@ pub fn test2(x: E2) -> u32
     let x: E2; // arg #1
     let n: u32; // local
 
+    storage_live(_0)
     match x {
         E2::V1 => {
             storage_live(n)
@@ -83,11 +91,13 @@ pub fn test2(x: E2) -> u32
         },
         E2::V3 => {
             _0 = const 0u32
+            storage_dead(x)
             return
         },
     }
     _0 = copy n
     storage_dead(n)
+    storage_dead(x)
     return
 }
 
@@ -103,6 +113,7 @@ pub fn test3(x: E2) -> u32
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_7)
     storage_live(y)
     match x {
@@ -124,6 +135,9 @@ pub fn test3(x: E2) -> u32
     }
     storage_live(z)
     z = id<u32>[{built_in impl Sized for u32}](const 3u32)
+    ↳⚡ storage_dead(_7)
+        storage_dead(x)
+        unwind_continue
     storage_live(_5)
     _5 = copy y
     storage_live(_6)
@@ -134,6 +148,8 @@ pub fn test3(x: E2) -> u32
     storage_dead(_5)
     storage_dead(z)
     storage_dead(y)
+    storage_dead(_7)
+    storage_dead(x)
     return
 }
 

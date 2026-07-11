@@ -34,15 +34,23 @@ use std::collections::HashMap;
 use crate::transform::ctx::UllbcPass;
 
 pub struct Transform;
+fn is_return_block(block: &BlockData) -> bool {
+    block.terminator.kind.is_return()
+        && block
+            .statements
+            .iter()
+            .all(|st| matches!(st.kind, StatementKind::StorageDead(_)))
+}
+
 impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Find the return block id (there should be one).
-        let returns: HashMap<BlockId, Span> = b
+        let returns: HashMap<BlockId, BlockData> = b
             .body
             .iter_enumerated()
             .filter_map(|(bid, block)| {
-                if block.statements.is_empty() && block.terminator.kind.is_return() {
-                    Some((bid, block.terminator.span))
+                if is_return_block(block) {
+                    Some((bid, block.clone()))
                 } else {
                     None
                 }
@@ -54,20 +62,17 @@ impl UllbcPass for Transform {
         // We do this in two steps.
         // First, introduce fresh ids.
         let mut generator = Generator::new_with_init_value(b.body.next_idx());
-        let mut new_spans = Vec::new();
+        let mut new_blocks = Vec::new();
         b.body.dyn_visit_in_body_mut(|bid: &mut BlockId| {
-            if let Some(span) = returns.get(bid) {
+            if let Some(block) = returns.get(bid) {
                 *bid = generator.fresh_id();
-                new_spans.push(*span);
+                new_blocks.push(block.clone());
             }
         });
 
         // Then introduce the new blocks
-        for span in new_spans {
-            let _ = b.body.push(BlockData {
-                statements: Vec::new(),
-                terminator: Terminator::new(span, TerminatorKind::Return),
-            });
+        for block in new_blocks {
+            let _ = b.body.push(block);
         }
     }
 }

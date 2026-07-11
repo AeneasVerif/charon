@@ -84,10 +84,12 @@ fn wrap<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
     let x: &'9 u32; // arg #1
     let _2: &'10 u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
     _0 = Option::Some { 0: move _2 }
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -100,10 +102,12 @@ where
     let x: &'9 u32; // arg #1
     let _2: &'10 u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
     _0 = Option::Some { 0: move _2 }
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -115,16 +119,20 @@ fn foo()
     let _2: Result<Ref<'6, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'6, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]; // anonymous local
     let _3: &'10 RefCell<bool>[{built_in impl MetaSized for bool}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(ref_b)
     ref_b = new<bool>[{built_in impl Sized for bool}](const false)
+    ↳⚡ unwind_continue
     storage_live(_2)
     storage_live(_3)
     // `try_borrow` has a type that includes predicates on late bound regions.
     _3 = &ref_b
     _2 = try_borrow<'12, bool>[{built_in impl MetaSized for bool}](move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     conditional_drop[drop_glue<'27, Ref<'22, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'22, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] _2
+    ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = ()
     storage_dead(ref_b)
@@ -151,6 +159,7 @@ where
 {
     let _0: Option<TraitClause3::S>[TraitClause3::ImpliedClause1]; // return
 
+    storage_live(_0)
     panic(core::panicking::panic)
 }
 

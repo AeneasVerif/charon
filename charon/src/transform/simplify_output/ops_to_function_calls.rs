@@ -40,11 +40,14 @@ fn transform_st(s: &mut Statement) {
                     [*len.clone()].into(),
                     [].into(),
                 );
-                s.kind = StatementKind::Call(Call {
-                    func: FnOperand::Regular(FnPtr::new(func, generics)),
-                    args: vec![op.clone()],
-                    dest: p.clone(),
-                });
+                s.kind = StatementKind::Call {
+                    call: Call {
+                        func: FnOperand::Regular(FnPtr::new(func, generics)),
+                        args: vec![op.clone()],
+                        dest: p.clone(),
+                    },
+                    on_unwind: Block::new_unreachable(s.span),
+                };
             }
         }
         // Transform the array aggregates to function calls
@@ -59,11 +62,14 @@ fn transform_st(s: &mut Statement) {
                 [*cg.clone()].into(),
                 [].into(),
             );
-            s.kind = StatementKind::Call(Call {
-                func: FnOperand::Regular(FnPtr::new(func, generics)),
-                args: vec![op.clone()],
-                dest: p.clone(),
-            });
+            s.kind = StatementKind::Call {
+                call: Call {
+                    func: FnOperand::Regular(FnPtr::new(func, generics)),
+                    args: vec![op.clone()],
+                    dest: p.clone(),
+                },
+                on_unwind: Block::new_unreachable(s.span),
+            };
         }
         // Transform the raw pointer aggregate to a function call
         StatementKind::Assign(p, Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), ops)) => {
@@ -76,11 +82,14 @@ fn transform_st(s: &mut Statement) {
                 [].into(),
             );
 
-            s.kind = StatementKind::Call(Call {
-                func: FnOperand::Regular(FnPtr::new(func, generics)),
-                args: ops.clone(),
-                dest: p.clone(),
-            });
+            s.kind = StatementKind::Call {
+                call: Call {
+                    func: FnOperand::Regular(FnPtr::new(func, generics)),
+                    args: ops.clone(),
+                    dest: p.clone(),
+                },
+                on_unwind: Block::new_unreachable(s.span),
+            };
         }
         _ => {}
     }

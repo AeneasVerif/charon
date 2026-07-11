@@ -34,7 +34,10 @@ where
     storage_live(_2)
     _2 = const 42usize
     _1 = move _2
+    storage_live(_0)
     _0 = move _1
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

@@ -27,15 +27,17 @@ and statement_kind =
           modelled as a function call as it cannot diverge *)
   | StorageLive of local_id
       (** Indicates that this local should be allocated; if it is already
-          allocated, this frees the local and re-allocates it. The return value
-          and arguments do not receive a [StorageLive]. We ensure in the
-          micro-pass [insert_storage_lives] that all other locals have a
-          [StorageLive] associated with them. *)
+          allocated, this frees the local and re-allocates it. The arguments do
+          not receive a [StorageLive]. We ensure in the micro-pass
+          [insert_storage_statements] that all other locals have a [StorageLive]
+          associated with them. *)
   | StorageDead of local_id
       (** Indicates that this local should be deallocated; if it is already
           deallocated, this is a no-op. A local may not have a [StorageDead] in
           the function's body, in which case it is implicitly deallocated at the
-          end of the function. *)
+          end of the function. The return local does not receive a
+          [StorageDead]. We ensure in the micro-pass [insert_storage_statements]
+          that all other locals have a [StorageDead] before function exits. *)
   | PlaceMention of place
       (** A place is mentioned, but not accessed. The place itself must still be
           valid though, so this statement is not a no-op: it can trigger UB if
@@ -114,7 +116,7 @@ and terminator_kind =
           - [on_unwind] *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
-  | UnwindResume
+  | UnwindResume  (** Unwind out of the current function into its caller. *)
 [@@deriving
   show,
   eq,

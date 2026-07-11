@@ -6,8 +6,10 @@ pub fn method<'_0>(self: &'_0 bool)
     let _0: (); // return
     let self: &'1 bool; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -18,11 +20,15 @@ fn do_test::<bool>(x: bool)
     let x: bool; // arg #1
     let _2: &'1 bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = &x
     _0 = method<'3>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -32,9 +38,11 @@ fn main()
     let _0: (); // return
     let _1: (); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = do_test::<bool>(const true)
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

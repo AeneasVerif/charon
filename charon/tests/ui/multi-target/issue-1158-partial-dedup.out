@@ -2,6 +2,7 @@ fn test_crate::x86_common() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 42u32
     return
 }
@@ -10,6 +11,7 @@ fn test_crate::x86_different::x86_64-pc-windows-msvc() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 64u32
     return
 }
@@ -18,6 +20,7 @@ fn test_crate::x86_different::i686-unknown-linux-gnu() -> u32
 {
     let _0: u32; // return
 
+    storage_live(_0)
     _0 = const 32u32
     return
 }

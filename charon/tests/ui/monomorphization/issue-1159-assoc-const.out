@@ -63,6 +63,7 @@ fn ARR() -> [u64; 1usize]
 {
     let _0: [u64; 1usize]; // return
 
+    storage_live(_0)
     _0 = [const 7u64]
     return
 }
@@ -88,6 +89,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
     _7 = copy ARR
     _6 = &_7
     _5 = move _6
+    storage_live(_0)
     storage_live(_4)
     storage_live(_1)
     storage_live(_2)
@@ -96,6 +98,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = @ArrayToSliceShared<'_, u64, 1usize>(move _2)
+    ↳⚡ undefined_behavior
     storage_dead(_2)
     _0 = Option::<&'_ [u64]>::Some { 0: move _1 }
     storage_dead(_1)
@@ -108,6 +111,7 @@ fn ARR() -> [u64; 1usize]
 {
     let _0: [u64; 1usize]; // return
 
+    storage_live(_0)
     _0 = [const 7u64]
     return
 }
@@ -133,6 +137,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{b
     _7 = copy ARR
     _6 = &_7
     _5 = move _6
+    storage_live(_0)
     storage_live(_4)
     storage_live(_1)
     storage_live(_2)
@@ -141,6 +146,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{b
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = @ArrayToSliceShared<'_, u64, 1usize>(move _2)
+    ↳⚡ undefined_behavior
     storage_dead(_2)
     _0 = Option::Some { 0: move _1 }
     storage_dead(_1)
@@ -162,12 +168,15 @@ pub fn {impl MyConfig for Concrete}::op(x: u64) -> u64
     let _2: u64; // anonymous local
     let _3: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_2)
     _2 = copy x
     _3 = copy _2 panic.+ const 1u64
     _0 = move _3
     storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(x)
     return
 }
 
@@ -179,12 +188,15 @@ pub fn {impl MyConfig for Concrete}::op(x: u64) -> u64
     let _2: u64; // anonymous local
     let _3: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_2)
     _2 = copy x
     _3 = copy _2 panic.+ const 1u64
     _0 = move _3
     storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(x)
     return
 }
 
@@ -195,10 +207,14 @@ pub fn entry(x: u64) -> u64
     let x: u64; // arg #1
     let _2: u64; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy x
     _0 = {impl MyConfig for Concrete}::op(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(x)
     return
 }
 

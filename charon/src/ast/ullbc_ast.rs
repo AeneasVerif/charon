@@ -38,13 +38,15 @@ pub enum StatementKind {
     /// call as it cannot diverge
     CopyNonOverlapping(Box<CopyNonOverlapping>),
     /// Indicates that this local should be allocated; if it is already allocated, this frees
-    /// the local and re-allocates it. The return value and arguments do not receive a
-    /// `StorageLive`. We ensure in the micro-pass `insert_storage_lives` that all other locals
-    /// have a `StorageLive` associated with them.
+    /// the local and re-allocates it. The arguments do not receive a `StorageLive`. We ensure in
+    /// the micro-pass `insert_storage_statements` that all other locals have a `StorageLive`
+    /// associated with them.
     StorageLive(LocalId),
     /// Indicates that this local should be deallocated; if it is already deallocated, this is
     /// a no-op. A local may not have a `StorageDead` in the function's body, in which case it
-    /// is implicitly deallocated at the end of the function.
+    /// is implicitly deallocated at the end of the function. The return local does not receive a
+    /// `StorageDead`. We ensure in the micro-pass `insert_storage_statements` that all other locals
+    /// have a `StorageDead` before function exits.
     StorageDead(LocalId),
     /// A place is mentioned, but not accessed. The place itself must still be valid though, so
     /// this statement is not a no-op: it can trigger UB if the place's projections are not valid
@@ -155,6 +157,7 @@ pub enum TerminatorKind {
     /// Handles panics and impossible cases.
     Abort(AbortKind),
     Return,
+    /// Unwind out of the current function into its caller.
     UnwindResume,
 }
 

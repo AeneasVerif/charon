@@ -5,6 +5,7 @@ pub fn MAX() -> char
 {
     let _0: char; // return
 
+    storage_live(_0)
     _0 = const '\u{10ffff}'
     return
 }
@@ -18,6 +19,7 @@ fn main()
     let _0: (); // return
     let _max_char: char; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_max_char)
     _max_char = copy MAX

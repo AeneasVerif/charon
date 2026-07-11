@@ -95,6 +95,7 @@ where
     let _13: [u8; 4usize]; // anonymous local
     let _14: &'26 [u8; 4usize]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
@@ -102,6 +103,7 @@ where
     storage_live(_4)
     storage_live(_5)
     _5 = TraitClause4::default()
+    ↳⚡ unwind_continue
     _4 = &_5
     args_3 = (move _4,)
     storage_dead(_4)
@@ -110,6 +112,11 @@ where
     storage_live(_8)
     _8 = &(*args_3.0)
     _7 = new_debug<'21, '23, U>[TraitClause1, TraitClause5](move _8)
+    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'24>] _5
+        ↳⚡ storage_dead(_14)
+            storage_dead(_13)
+            unwind_terminate
+        unwind_continue
     storage_dead(_8)
     args_6 = [move _7]
     storage_dead(_7)
@@ -126,18 +133,31 @@ where
     _12 = &args_6
     _11 = &(*_12)
     _2 = new<'28, 4usize, 1usize>(move _9, move _11)
+    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'24>] _5
+        ↳⚡ storage_dead(_14)
+            storage_dead(_13)
+            unwind_terminate
+        unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
     _1 = _print<'30>(move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for U}::drop_glue<'24>] _5
+        ↳⚡ storage_dead(_14)
+            storage_dead(_13)
+            unwind_terminate
+        unwind_continue
     storage_dead(_2)
     storage_dead(args_6)
     conditional_drop[{built_in impl Destruct for U}::drop_glue<'31>] _5
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(args_3)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_14)
+    storage_dead(_13)
     return
 }
 
@@ -194,8 +214,10 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = test<T, bool>[TraitClause0, {built_in impl Sized for bool}, TraitClause3, impl_Right_for_T<T, bool>[TraitClause0, {built_in impl Sized for bool}, impl_Default_for_bool, {impl#4}], impl_Default_for_bool, {impl#4}]()
+    ↳⚡ unwind_continue
     return
 }
 

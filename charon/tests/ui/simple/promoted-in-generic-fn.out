@@ -36,8 +36,13 @@ where
     storage_live(_5)
     // This can't be evaluated generically.
     _5 = size_of<T>[TraitClause0]()
+    ↳⚡ storage_dead(_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        undefined_behavior
     _4 = &_5
     _3 = move _4
+    storage_live(_0)
     storage_live(_2)
     _0 = ()
     storage_live(_1)
@@ -45,6 +50,10 @@ where
     _1 = &(*_2)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_2)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
     return
 }
 

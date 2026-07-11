@@ -33,9 +33,13 @@ fn foo<T>(_x: T)
     let _0: (); // return
     let _x: T; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _x
+    ↳⚡ storage_dead(_x)
+        unwind_continue
+    storage_dead(_x)
     return
 }
 

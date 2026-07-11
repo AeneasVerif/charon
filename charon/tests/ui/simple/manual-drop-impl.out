@@ -68,8 +68,10 @@ where
     let _0: (); // return
     let self: &'1 mut Foo<T>[TraitClause0]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -83,12 +85,29 @@ where
     let _2: &'2 mut Foo<T>[TraitClause0]; // anonymous local
     let _3: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Foo::drop<'4, T>[TraitClause0](move _2)
+    ↳⚡ drop[impl_Destruct_for_Vec::drop_glue<'5, T, Global>[TraitClause0, {built_in impl Sized for Global}]] ((*_1)).vec
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[impl_Destruct_for_Vec::drop_glue<'6, T, Global>[TraitClause0, {built_in impl Sized for Global}]] ((*_1)).vec
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -117,9 +136,13 @@ fn drop_foo(_1: Foo<u32>[{built_in impl Sized for u32}])
     let _0: (); // return
     let _1: Foo<u32>[{built_in impl Sized for u32}]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[impl_Destruct_for_Foo::drop_glue<'0, u32>[{built_in impl Sized for u32}]] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 

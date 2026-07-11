@@ -75,11 +75,14 @@ where
     let _20: [u8; 7usize]; // anonymous local
     let _21: &'72 [u8; 7usize]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice
     _2 = into_iter<'47, T>[TraitClause0](move _3)
+    ↳⚡ storage_dead(slice)
+        unwind_continue
     storage_dead(_3)
     storage_live(iter)
     iter = move _2
@@ -90,6 +93,8 @@ where
         _7 = &mut iter
         _6 = &two-phase-mut (*_7)
         _5 = next<'49, '51, T>[TraitClause0](move _6)
+        ↳⚡ storage_dead(slice)
+            unwind_continue
         storage_dead(_6)
         match _5 {
             Option::None => {
@@ -112,6 +117,8 @@ where
         storage_live(_15)
         _15 = &(*args_11.0)
         _14 = new_debug<'59, '70, &'61 T>[{built_in impl Sized for &'63 T}, {impl#2}<'68, T>[TraitClause1]](move _15)
+        ↳⚡ storage_dead(slice)
+            unwind_continue
         storage_dead(_15)
         args_13 = [move _14]
         storage_dead(_14)
@@ -128,11 +135,15 @@ where
         _19 = &args_13
         _18 = &(*_19)
         _10 = new<'74, 7usize, 1usize>(move _16, move _18)
+        ↳⚡ storage_dead(slice)
+            unwind_continue
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_16)
         _9 = _eprint<'76>(move _10)
+        ↳⚡ storage_dead(slice)
+            unwind_continue
         storage_dead(_10)
         storage_dead(args_13)
         storage_dead(args_11)
@@ -147,6 +158,9 @@ where
     storage_dead(_5)
     storage_dead(iter)
     storage_dead(_2)
+    storage_dead(slice)
+    storage_dead(_21)
+    storage_dead(_20)
     return
 }
 
@@ -169,6 +183,7 @@ fn main()
     _8 = [const 0i32, const 1i32, const 2i32]
     _7 = &_8
     _6 = move _7
+    storage_live(_0)
     storage_live(_5)
     _0 = ()
     storage_live(_1)
@@ -179,12 +194,22 @@ fn main()
     _4 = &(*_5)
     _3 = &(*_4)
     _2 = @ArrayToSliceShared<'_, i32, 3usize>(move _3)
+    ↳⚡ storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(_6)
+        undefined_behavior
     storage_dead(_3)
     _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, {impl#3}](move _2)
+    ↳⚡ storage_dead(_5)
+        unwind_continue
     storage_dead(_2)
     storage_dead(_4)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_5)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
     return
 }
 

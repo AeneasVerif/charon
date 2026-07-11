@@ -5,6 +5,7 @@ fn other()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -16,8 +17,10 @@ fn sink_tuple(_x: (usize, bool))
     let _0: (); // return
     let _x: (usize, bool); // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_x)
     return
 }
 
@@ -27,8 +30,10 @@ fn sink_int(_x: usize)
     let _0: (); // return
     let _x: usize; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_x)
     return
 }
 
@@ -38,8 +43,10 @@ fn sink_bool(_x: bool)
     let _0: (); // return
     let _x: bool; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_x)
     return
 }
 
@@ -52,16 +59,19 @@ fn must_preserve_tuple()
     let _3: (); // anonymous local
     let _4: (usize, bool); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(z)
     z = const 0usize checked.+ const 0usize
     storage_live(_2)
     _2 = other()
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = copy z
     _3 = sink_tuple(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
@@ -78,16 +88,19 @@ fn can_erase_check()
     let _3: (); // anonymous local
     let _4: usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(z)
     z = const 0usize checked.+ const 0usize
     storage_live(_2)
     _2 = other()
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = copy z.0
     _3 = sink_int(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
@@ -104,16 +117,19 @@ fn must_preserve_overflow_flag()
     let _3: (); // anonymous local
     let _4: bool; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(z)
     z = const 0usize checked.+ const 0usize
     storage_live(_2)
     _2 = other()
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = copy z.1
     _3 = sink_bool(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
@@ -132,6 +148,7 @@ fn mixed_field0_and_cross_block_tuple()
     let _5: (); // anonymous local
     let _6: (usize, bool); // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(z)
     z = const 0usize checked.+ const 0usize
@@ -139,15 +156,18 @@ fn mixed_field0_and_cross_block_tuple()
     storage_live(_3)
     _3 = copy z.0
     _2 = sink_int(move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     _4 = other()
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_live(_5)
     storage_live(_6)
     _6 = copy z
     _5 = sink_tuple(move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     _0 = ()
@@ -167,25 +187,30 @@ fn can_erase_check_multi_block()
     let _6: (); // anonymous local
     let _7: usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(z)
     z = const 0usize checked.+ const 0usize
     storage_live(_2)
     _2 = other()
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = copy z.0
     _3 = sink_int(move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_live(_5)
     _5 = other()
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
     _7 = copy z.0
     _6 = sink_int(move _7)
+    ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     _0 = ()

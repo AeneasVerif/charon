@@ -86,11 +86,23 @@ where
     let value: T; // arg #1
     let _2: T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move value
     _0 = @BoxNew<T>[TraitClause0](move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
+        ↳⚡ storage_dead(value)
+            unwind_terminate
+        conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] value
+        ↳⚡ storage_dead(value)
+            unwind_terminate
+        storage_dead(value)
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(value)
     return
 }
 
@@ -117,11 +129,23 @@ where
     let x: T; // arg #1
     let _2: T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move x
     _0 = TraitClause2::new<T>[TraitClause1](move _2)
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
     return
 }
 
@@ -131,10 +155,13 @@ pub fn main()
     let _0: (); // return
     let _1: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = make_pointer<BoxFamily, i32>[{built_in impl Sized for BoxFamily}, {built_in impl Sized for i32}, impl_PointerFamily_for_BoxFamily](const 42i32)
+    ↳⚡ unwind_continue
     conditional_drop[drop_glue<'0, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] _1
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

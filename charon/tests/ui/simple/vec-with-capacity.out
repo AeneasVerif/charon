@@ -95,31 +95,94 @@ where
     let _3: usize; // anonymous local
     let _4: *mut T; // anonymous local
     let _5: bool; // anonymous local
-    let _6: &'_ mut [T]; // anonymous local
-    let _7: &'_ mut T; // anonymous local
+    let _6: *mut T; // anonymous local
+    let _7: bool; // anonymous local
+    let _8: &'_ mut [T]; // anonymous local
+    let _9: &'_ mut T; // anonymous local
+    let _10: &'_ mut [T]; // anonymous local
+    let _11: &'_ mut T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
     _0 = ()
     _2 = copy _1.metadata
     _3 = const 0usize
     loop {
-        _5 = copy _3 == copy _2
-        if move _5 {
+        _7 = copy _3 == copy _2
+        if move _7 {
             break 0
         } else {
-            storage_live(_6)
-            _6 = &mut (*_1) with_metadata(copy _1.metadata)
-            storage_live(_7)
-            _7 = @SliceIndexMut<'_, T>(move _6, copy _3)
-            _4 = &raw mut (*_7)
+            storage_live(_10)
+            _10 = &mut (*_1) with_metadata(copy _1.metadata)
+            storage_live(_11)
+            _11 = @SliceIndexMut<'_, T>(move _10, copy _3)
+            ↳⚡ storage_dead(_11)
+                storage_dead(_10)
+                storage_dead(_9)
+                storage_dead(_8)
+                undefined_behavior
+            _6 = &raw mut (*_11)
             _3 = move _3 wrap.+ const 1usize
-            drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_4)
+            drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_6)
+            ↳⚡ loop {
+                    _5 = copy _3 == copy _2
+                    if move _5 {
+                        break 0
+                    } else {
+                        storage_live(_8)
+                        _8 = &mut (*_1) with_metadata(copy _1.metadata)
+                        storage_live(_9)
+                        _9 = @SliceIndexMut<'_, T>(move _8, copy _3)
+                        ↳⚡ storage_dead(_11)
+                            storage_dead(_10)
+                            storage_dead(_9)
+                            storage_dead(_8)
+                            undefined_behavior
+                        _4 = &raw mut (*_9)
+                        _3 = move _3 wrap.+ const 1usize
+                        drop[{built_in impl Destruct for T}::drop_glue<'3>] (*_4)
+                        ↳⚡ storage_dead(_7)
+                            storage_dead(_6)
+                            storage_dead(_5)
+                            storage_dead(_4)
+                            storage_dead(_3)
+                            storage_dead(_2)
+                            storage_dead(_1)
+                            storage_dead(_11)
+                            storage_dead(_10)
+                            storage_dead(_9)
+                            storage_dead(_8)
+                            unwind_terminate
+                        continue 0
+                    }
+                }
+                storage_dead(_7)
+                storage_dead(_6)
+                storage_dead(_5)
+                storage_dead(_4)
+                storage_dead(_3)
+                storage_dead(_2)
+                storage_dead(_1)
+                unwind_continue
             continue 0
         }
     }
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
     return
 }
 
@@ -142,10 +205,14 @@ where
     let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
     let _2: &'3 RawVec<T, A>[TraitClause0, TraitClause1]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &((*self)).buf
     _0 = ptr<'5, T, A>[TraitClause0, TraitClause1](move _2)
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -162,20 +229,28 @@ where
     let _4: &'2 mut Vec<T>[TraitClause0, TraitClause1]; // anonymous local
     let _5: usize; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = &two-phase-mut (*self)
     _3 = as_mut_ptr<'4, T, A>[TraitClause0, TraitClause1](move _4)
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_4)
     storage_live(_5)
     _5 = copy ((*self)).len
     _2 = cast_slice<T>[TraitClause0](move _3, move _5)
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_3)
     _0 = drop_in_place<[T]>[impl_Destruct_for_slice<T>[TraitClause0]](move _2)
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -190,12 +265,29 @@ where
     let _2: &'2 mut Vec<T>[TraitClause0, TraitClause1]; // anonymous local
     let _3: (); // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Vec::drop<'4, T, A>[TraitClause0, TraitClause1](move _2)
+    ↳⚡ drop[impl_Destruct_for_RawVec::drop_glue<'5, T, A>[TraitClause0, TraitClause1]] ((*_1)).buf
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[impl_Destruct_for_RawVec::drop_glue<'6, T, A>[TraitClause0, TraitClause1]] ((*_1)).buf
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -212,16 +304,22 @@ where
     let _4: usize; // anonymous local
     let _5: A; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_4)
     _4 = copy capacity
     storage_live(_5)
     _5 = move alloc
     _3 = alloc::raw_vec::{RawVec<T, A>[TraitClause0, TraitClause1]}::with_capacity_in<T, A>[TraitClause0, TraitClause1, TraitClause2](move _4, move _5)
+    ↳⚡ storage_dead(alloc)
+        storage_dead(capacity)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = Vec { buf: move _3, len: const 0usize }
     storage_dead(_3)
+    storage_dead(alloc)
+    storage_dead(capacity)
     return
 }
 
@@ -236,13 +334,17 @@ where
     let _2: usize; // anonymous local
     let _3: Global; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy capacity
     storage_live(_3)
     _3 = Global {  }
     _0 = alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::with_capacity_in<T, Global>[TraitClause0, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, move _3)
+    ↳⚡ storage_dead(capacity)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(capacity)
     return
 }
 
@@ -252,10 +354,13 @@ fn vec()
     let _0: (); // return
     let _1: Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = with_capacity<u32>[{built_in impl Sized for u32}](const 42usize)
+    ↳⚡ unwind_continue
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _1
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

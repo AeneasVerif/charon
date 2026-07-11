@@ -27,8 +27,10 @@ fn comsume<'_0>(self: &'_0 i32)
     let _0: (); // return
     let self: &'1 i32; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -39,10 +41,16 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Trait<Item = bool>))
     let _1: &'_0 (dyn Trait<Item = bool> + '0); // arg #1
     let _2: &'_0 i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait<Item = bool> + '1), &'_0 i32>(move _1)
     _0 = comsume<'_0>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -53,9 +61,12 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait<Item = bool>))
     let dyn_self: &'_0 mut (dyn Trait<Item = bool> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Trait<Item = bool> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -72,6 +83,7 @@ fn impl_Trait_for_i32::{vtable}() -> test_crate::Trait::{vtable}
     let _7: unsafe fn(*mut (dyn Trait<Item = bool> + '4)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Trait<Item = bool> + '9)); // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -122,6 +134,7 @@ fn main()
     _10 = const 42i32
     _9 = &_10
     _8 = move _9
+    storage_live(_0)
     storage_live(_6)
     _0 = ()
     storage_live(a)
@@ -139,10 +152,17 @@ fn main()
     storage_live(_7)
     _7 = cast<*const (), unsafe fn(&'8 (dyn Trait<Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
     _4 = (copy _7)(move _5)
+    ↳⚡ storage_dead(_6)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
     storage_dead(a)
+    storage_dead(_6)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
     return
 }
 

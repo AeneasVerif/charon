@@ -46,8 +46,11 @@ where
     let self: &'1 u32; // arg #1
     let _state: &'3 mut H; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_state)
+    storage_dead(self)
     return
 }
 
@@ -78,6 +81,7 @@ fn main()
     _9 = const 0u32
     _8 = &_9
     _7 = move _8
+    storage_live(_0)
     storage_live(_6)
     _0 = ()
     storage_live(hasher)
@@ -91,12 +95,18 @@ fn main()
     _5 = &mut hasher
     _4 = &two-phase-mut (*_5)
     _2 = hash<'9, '10, DefaultHasher>[{built_in impl Sized for DefaultHasher}, impl_Hasher_for_DefaultHasher](move _3, move _4)
+    ↳⚡ storage_dead(_6)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_5)
     storage_dead(_2)
     _0 = ()
     storage_dead(hasher)
+    storage_dead(_6)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
     return
 }
 

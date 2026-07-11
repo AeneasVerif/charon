@@ -66,11 +66,17 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
     let drop_arg: &'_ mut Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global]; // local
     let drop_ret: (); // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut ((*_1)).vec
     storage_live(drop_ret)
     drop_ret = impl_Destruct_for_Vec::drop_glue<'2, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global](move drop_arg)
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    storage_dead(drop_ret)
+    storage_dead(drop_arg)
     return
 }
 
@@ -87,12 +93,18 @@ fn use_string(_1: String)
     let drop_arg: &'_ mut String; // local
     let drop_ret: (); // local
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut _1
     storage_live(drop_ret)
     drop_ret = impl_Destruct_for_String::drop_glue<'0>(move drop_arg)
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    storage_dead(drop_ret)
+    storage_dead(drop_arg)
     return
 }
 
@@ -104,15 +116,20 @@ fn main()
     let drop_arg: &'_ mut String; // local
     let drop_ret: (); // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_s)
     _s = new()
+    ↳⚡ unwind_continue
     _0 = ()
     storage_live(drop_arg)
     drop_arg = &mut _s
     storage_live(drop_ret)
     drop_ret = impl_Destruct_for_String::drop_glue<'0>(move drop_arg)
+    ↳⚡ unwind_continue
     storage_dead(_s)
+    storage_dead(drop_ret)
+    storage_dead(drop_arg)
     return
 }
 

@@ -5,6 +5,7 @@ fn CONST() -> u8
 {
     let _0: u8; // return
 
+    storage_live(_0)
     _0 = const 0u8
     return
 }
@@ -20,23 +21,26 @@ fn f0()
     let _2: bool; // anonymous local
     let x: u8; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = const 0i32 < const 1i32
     if move _1 {
-        storage_live(_2)
-        _2 = const 0i32 < const 1i32
-        if move _2 {
-        } else {
-        }
-        storage_dead(_2)
-        storage_live(x)
-        x = copy CONST
-        _0 = ()
-        storage_dead(x)
     } else {
         _0 = ()
+        storage_dead(_1)
+        return
     }
+    storage_live(_2)
+    _2 = const 0i32 < const 1i32
+    if move _2 {
+    } else {
+    }
+    storage_dead(_2)
+    storage_live(x)
+    x = copy CONST
+    _0 = ()
+    storage_dead(x)
     storage_dead(_1)
     return
 }
@@ -57,6 +61,7 @@ fn f1<'_0>(serialized: &'_0 [u8; 1usize])
     let _10: i32; // anonymous local
     let x: u8; // local
 
+    storage_live(_0)
     _0 = ()
     storage_live(previous_true_hints_seen)
     previous_true_hints_seen = const 0usize
@@ -113,6 +118,7 @@ fn f1<'_0>(serialized: &'_0 [u8; 1usize])
     storage_dead(_4)
     storage_dead(i)
     storage_dead(previous_true_hints_seen)
+    storage_dead(serialized)
     return
 }
 

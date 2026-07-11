@@ -10,14 +10,22 @@ pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
     let _4: &'_ [u32; N]; // anonymous local
     let _5: &'_ u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy i
     storage_live(_4)
     _4 = &s
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, N>(move _4, copy _3)
+    ↳⚡ storage_dead(_5)
+        storage_dead(_4)
+        undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
+    storage_dead(i)
+    storage_dead(s)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 
@@ -30,13 +38,19 @@ pub fn index_array_generic_call<const N : usize>(s: [u32; N], i: usize) -> u32
     let _3: [u32; N]; // anonymous local
     let _4: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy s
     storage_live(_4)
     _4 = copy i
     _0 = index_array_generic<N>(move _3, move _4)
+    ↳⚡ storage_dead(i)
+        storage_dead(s)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(i)
+    storage_dead(s)
     return
 }
 
@@ -45,6 +59,7 @@ pub fn const_gen_ret<const N : usize>() -> usize
 {
     let _0: usize; // return
 
+    storage_live(_0)
     _0 = const N
     return
 }
@@ -54,7 +69,9 @@ pub fn init_array_variable_len<const LEN : usize>() -> [u8; LEN]
 {
     let _0: [u8; LEN]; // return
 
+    storage_live(_0)
     _0 = @ArrayRepeat<u8, LEN>(const 0u8)
+    ↳⚡ undefined_behavior
     return
 }
 

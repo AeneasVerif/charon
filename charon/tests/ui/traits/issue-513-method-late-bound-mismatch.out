@@ -27,8 +27,11 @@ fn method(self: (), _other: &'static u32)
     let self: (); // arg #1
     let _other: &'1 u32; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(_other)
+    storage_dead(self)
     return
 }
 
@@ -58,6 +61,7 @@ fn main()
     _8 = const 1u32
     _7 = &_8
     _6 = move _7
+    storage_live(_0)
     storage_live(_5)
     _0 = ()
     storage_live(_1)
@@ -69,11 +73,17 @@ fn main()
     _4 = &(*_5)
     _3 = &(*_4)
     _1 = method(move _2, move _3)
+    ↳⚡ storage_dead(_5)
+        unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_4)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_5)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
     return
 }
 

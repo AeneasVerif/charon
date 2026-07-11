@@ -30,6 +30,7 @@ where
     let _6: bool; // anonymous local
     let _7: &'6 mut T; // anonymous local
 
+    storage_live(_0)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -47,6 +48,9 @@ where
     _0 = &mut (*_4)
     storage_dead(_5)
     storage_dead(_4)
+    storage_dead(y)
+    storage_dead(x)
+    storage_dead(b)
     return
 }
 
@@ -61,6 +65,7 @@ pub fn mul2_add1(x: u32) -> u32
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     storage_live(_6)
     storage_live(_2)
@@ -75,6 +80,9 @@ pub fn mul2_add1(x: u32) -> u32
     _6 = copy _2 panic.+ const 1u32
     _0 = move _6
     storage_dead(_2)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(x)
     return
 }
 
@@ -89,11 +97,16 @@ pub fn use_mul2_add1(x: u32, y: u32) -> u32
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_6)
     storage_live(_3)
     storage_live(_4)
     _4 = copy x
     _3 = mul2_add1(move _4)
+    ↳⚡ storage_dead(_6)
+        storage_dead(y)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_4)
     storage_live(_5)
     _5 = copy y
@@ -101,6 +114,9 @@ pub fn use_mul2_add1(x: u32, y: u32) -> u32
     _0 = move _6
     storage_dead(_5)
     storage_dead(_3)
+    storage_dead(_6)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -110,11 +126,14 @@ pub fn test_crate::incr<'a>(x: &'a mut u32)
     let x: &'1 mut u32; // arg #1
     let _2: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _0 = ()
     _2 = copy (*x) panic.+ const 1u32
     (*x) = move _2
     _0 = ()
+    storage_dead(_2)
+    storage_dead(x)
     return
 }
 
@@ -133,6 +152,7 @@ pub fn use_incr()
     let _9: &'5 mut u32; // anonymous local
     let _10: &'6 mut u32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(x)
     x = const 0u32
@@ -142,6 +162,7 @@ pub fn use_incr()
     _4 = &mut x
     _3 = &two-phase-mut (*_4)
     _2 = test_crate::incr<'8>(move _3)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -151,6 +172,7 @@ pub fn use_incr()
     _7 = &mut x
     _6 = &two-phase-mut (*_7)
     _5 = test_crate::incr<'10>(move _6)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_7)
     storage_dead(_5)
@@ -160,6 +182,7 @@ pub fn use_incr()
     _10 = &mut x
     _9 = &two-phase-mut (*_10)
     _8 = test_crate::incr<'12>(move _9)
+    ↳⚡ unwind_continue
     storage_dead(_9)
     storage_dead(_10)
     storage_dead(_8)
@@ -195,11 +218,15 @@ where
     let _10: u32; // anonymous local
     let _11: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_11)
     match (*l) {
         CList::CCons => {
         },
         CList::CNil => {
+            storage_dead(_11)
+            storage_dead(i)
+            storage_dead(l)
             panic(core::panicking::panic)
         },
     }
@@ -212,8 +239,6 @@ where
     _6 = copy i
     _5 = move _6 == const 0u32
     if move _5 {
-        storage_dead(_6)
-        _0 = &(*x)
     } else {
         storage_dead(_6)
         storage_live(_7)
@@ -226,14 +251,30 @@ where
         _9 = move _11
         storage_dead(_10)
         _7 = list_nth<'10, T>[TraitClause0](move _8, move _9)
+        ↳⚡ storage_dead(_11)
+            storage_dead(i)
+            storage_dead(l)
+            unwind_continue
         _0 = &(*_7)
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_7)
+        storage_dead(_5)
+        storage_dead(tl)
+        storage_dead(x)
+        storage_dead(_11)
+        storage_dead(i)
+        storage_dead(l)
+        return
     }
+    storage_dead(_6)
+    _0 = &(*x)
     storage_dead(_5)
     storage_dead(tl)
     storage_dead(x)
+    storage_dead(_11)
+    storage_dead(i)
+    storage_dead(l)
     return
 }
 
@@ -260,6 +301,7 @@ where
     let _15: u32; // anonymous local
     let _16: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_16)
     storage_live(_3)
     storage_live(_4)
@@ -267,6 +309,9 @@ where
         CList::CCons => {
         },
         CList::CNil => {
+            storage_dead(_16)
+            storage_dead(i)
+            storage_dead(l)
             panic(core::panicking::panic)
         },
     }
@@ -298,6 +343,10 @@ where
         _14 = move _16
         storage_dead(_15)
         _12 = list_nth_mut<'15, T>[TraitClause0](move _13, move _14)
+        ↳⚡ storage_dead(_16)
+            storage_dead(i)
+            storage_dead(l)
+            unwind_continue
         _8 = &mut (*_12)
         storage_dead(_14)
         storage_dead(_13)
@@ -314,6 +363,9 @@ where
     _0 = &mut (*_3)
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(_16)
+    storage_dead(i)
+    storage_dead(l)
     return
 }
 
@@ -332,6 +384,7 @@ where
     let _7: u32; // anonymous local
     let _8: &'7 mut CList<T>[TraitClause0]; // anonymous local
 
+    storage_live(_0)
     storage_live(_7)
     loop {
         match (*l) {
@@ -350,6 +403,9 @@ where
                     storage_dead(_5)
                     storage_dead(tl)
                     storage_dead(x)
+                    storage_dead(_7)
+                    storage_dead(i)
+                    storage_dead(l)
                     return
                 } else {
                 }
@@ -370,6 +426,9 @@ where
             },
         }
     }
+    storage_dead(_7)
+    storage_dead(i)
+    storage_dead(l)
     panic(core::panicking::panic)
 }
 
@@ -386,6 +445,7 @@ pub fn i32_id(i: i32) -> i32
     let _7: i32; // anonymous local
     let _8: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_7)
     storage_live(_8)
     storage_live(_2)
@@ -393,8 +453,6 @@ pub fn i32_id(i: i32) -> i32
     _3 = copy i
     _2 = move _3 == const 0i32
     if move _2 {
-        storage_dead(_3)
-        _0 = const 0i32
     } else {
         storage_dead(_3)
         storage_live(_4)
@@ -405,12 +463,26 @@ pub fn i32_id(i: i32) -> i32
         _5 = move _7
         storage_dead(_6)
         _4 = i32_id(move _5)
+        ↳⚡ storage_dead(_8)
+            storage_dead(_7)
+            storage_dead(i)
+            unwind_continue
         storage_dead(_5)
         _8 = copy _4 panic.+ const 1i32
         _0 = move _8
         storage_dead(_4)
+        storage_dead(_2)
+        storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(i)
+        return
     }
+    storage_dead(_3)
+    _0 = const 0i32
     storage_dead(_2)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(i)
     return
 }
 
@@ -427,6 +499,7 @@ where
     let _5: &'7 mut CList<T>[TraitClause0]; // anonymous local
     let _6: &'8 mut CList<T>[TraitClause0]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     match (*l) {
@@ -437,6 +510,8 @@ where
             storage_live(_6)
             _6 = &two-phase-mut (*(*tl))
             _5 = list_tail<'10, T>[TraitClause0](move _6)
+            ↳⚡ storage_dead(l)
+                unwind_continue
             _3 = &mut (*_5)
             storage_dead(_6)
             storage_dead(_5)
@@ -450,6 +525,7 @@ where
     _0 = &mut (*_2)
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(l)
     return
 }
 
@@ -469,6 +545,7 @@ pub fn impl_Counter_for_usize::incr<'_0>(self: &'_0 mut usize) -> usize
     let x: usize; // local
     let _3: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(x)
     x = copy (*self)
@@ -476,6 +553,8 @@ pub fn impl_Counter_for_usize::incr<'_0>(self: &'_0 mut usize) -> usize
     (*self) = move _3
     _0 = copy x
     storage_dead(x)
+    storage_dead(_3)
+    storage_dead(self)
     return
 }
 
@@ -496,10 +575,14 @@ where
     let cnt: &'1 mut T; // arg #1
     let _2: &'2 mut T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &two-phase-mut (*cnt)
     _0 = TraitClause1::incr<'3>(move _2)
+    ↳⚡ storage_dead(cnt)
+        unwind_continue
     storage_dead(_2)
+    storage_dead(cnt)
     return
 }
 

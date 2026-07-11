@@ -127,6 +127,7 @@ fn super_method<'_0>(self: &'_0 i32, arg: i32) -> i32
     let _4: i32; // anonymous local
     let _5: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     storage_live(_3)
     _3 = copy (*self)
@@ -136,6 +137,9 @@ fn super_method<'_0>(self: &'_0 i32, arg: i32) -> i32
     _0 = move _5
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(_5)
+    storage_dead(arg)
+    storage_dead(self)
     return
 }
 
@@ -147,9 +151,17 @@ fn impl_Super_i32_for_i32::super_method::{vtable_method}<'_0>(_1: &'_0 (dyn Supe
     let _2: i32; // arg #2
     let _3: &'_0 i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = concretize<&'_0 (dyn Super<i32> + '1), &'_0 i32>(move _1)
     _0 = super_method<'_0>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -160,9 +172,12 @@ unsafe fn impl_Super_i32_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dy
     let dyn_self: &'_0 mut (dyn Super<i32> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Super<i32> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -175,6 +190,7 @@ fn impl_Super_i32_for_i32::{vtable}() -> test_crate::Super::{vtable}<i32>
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Super<i32> + '1)); // anonymous local
     let _4: fn<'_0_1>(&'_0_1 (dyn Super<i32> + '3), i32) -> i32; // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -206,13 +222,17 @@ fn check<'_0>(self: &'_0 i32) -> bool
     let _2: i32; // anonymous local
     let _3: &'2 i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*self)
     _2 = super_method<'4>(move _3, const 10i32)
+    ↳⚡ storage_dead(self)
+        unwind_continue
     storage_dead(_3)
     _0 = move _2 > const 0i32
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -223,9 +243,15 @@ fn impl_Checkable_i32_for_i32::check::{vtable_method}<'_0>(_1: &'_0 (dyn Checkab
     let _1: &'_0 (dyn Checkable<i32> + '0); // arg #1
     let _2: &'_0 i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Checkable<i32> + '1), &'_0 i32>(move _1)
     _0 = check<'_0>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -236,9 +262,12 @@ unsafe fn impl_Checkable_i32_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut
     let dyn_self: &'_0 mut (dyn Checkable<i32> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Checkable<i32> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -252,6 +281,7 @@ fn impl_Checkable_i32_for_i32::{vtable}() -> test_crate::Checkable::{vtable}<i32
     let _4: fn<'_0_1>(&'_0_1 (dyn Checkable<i32> + '3)) -> bool; // anonymous local
     let _5: &'static test_crate::Super::{vtable}<i32>; // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -302,19 +332,18 @@ fn dummy<'_0>(self: &'_0 i32)
     let _2: bool; // anonymous local
     let _3: i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy (*self)
     _2 = move _3 > const 0i32
-    if move _2 {
-    } else {
-        storage_dead(_3)
-        panic(core::panicking::panic)
-    }
+    assert(move _2 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -337,6 +366,7 @@ where
     let _3: &'9 (dyn NoParam + '10); // anonymous local
     let _4: &'11 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -347,6 +377,7 @@ where
     _0 = unsize_cast<&'7 (dyn NoParam + '8), &'15 (dyn NoParam + '16),  at []>(move _2)
     storage_dead(_3)
     storage_dead(_2)
+    storage_dead(arg)
     return
 }
 
@@ -379,13 +410,21 @@ where
     let _3: i32; // anonymous local
     let _4: &'4 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy (*self) panic.+ const 1i32
     (*self) = move _3
     storage_live(_4)
     _4 = &(*arg)
     _0 = TraitClause1::clone<'5>(move _4)
+    ↳⚡ storage_dead(_3)
+        storage_dead(arg)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(arg)
+    storage_dead(self)
     return
 }
 
@@ -400,9 +439,17 @@ where
     let _2: &'_1 T; // arg #2
     let _3: &'_0 mut i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move _1)
     _0 = modify<'_0, '_1, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -416,9 +463,12 @@ where
     let dyn_self: &'_0 mut (dyn Modifiable<T> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -434,6 +484,7 @@ where
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Modifiable<T> + '1)); // anonymous local
     let _4: fn<'_0_1, '_1_1>(&'_0_1 mut (dyn Modifiable<T> + '4), &'_1_1 T) -> T; // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -480,6 +531,7 @@ where
     let _6: &'10 mut (dyn Modifiable<T> + '11); // anonymous local
     let _7: &'12 T; // anonymous local
 
+    storage_live(_0)
     storage_live(x)
     storage_live(_3)
     storage_live(_4)
@@ -495,10 +547,13 @@ where
     storage_live(_7)
     _7 = &(*arg)
     _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
+    ↳⚡ storage_dead(arg)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(x)
+    storage_dead(arg)
     return
 }
 
@@ -554,6 +609,7 @@ where
     let _8: &'8 Self; // anonymous local
     let _9: &'9 i64; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_4)
     storage_live(_5)
@@ -561,6 +617,10 @@ where
     storage_live(_6)
     _6 = &(*t32)
     _4 = TraitClause0::ImpliedClause1::operate_on<'10, '11>(move _5, move _6)
+    ↳⚡ storage_dead(t64)
+        storage_dead(t32)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -570,10 +630,17 @@ where
     storage_live(_9)
     _9 = &(*t64)
     _7 = TraitClause0::ImpliedClause2::operate_on<'12, '13>(move _8, move _9)
+    ↳⚡ storage_dead(t64)
+        storage_dead(t32)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
     _0 = ()
+    storage_dead(t64)
+    storage_dead(t32)
+    storage_dead(self)
     return
 }
 
@@ -587,6 +654,7 @@ fn impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i32)
     let _4: i32; // anonymous local
     let _5: i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
@@ -594,16 +662,14 @@ fn impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i32)
     storage_live(_5)
     _5 = copy (*t)
     _3 = move _4 > move _5
-    if move _3 {
-    } else {
-        storage_dead(_5)
-        storage_dead(_4)
-        panic(core::panicking::panic)
-    }
+    assert(move _3 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
+    storage_dead(t)
+    storage_dead(self)
     return
 }
 
@@ -615,10 +681,18 @@ fn impl_BaseOn_i32_for_i32::operate_on::{vtable_method}<'_0, '_1>(_1: &'_0 (dyn 
     let _2: &'_1 i32; // arg #2
     let _3: &'_0 i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = concretize<&'_0 (dyn BaseOn<i32> + '1), &'_0 i32>(move _1)
     _0 = impl_BaseOn_i32_for_i32::operate_on<'_0, '_1>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -629,9 +703,12 @@ unsafe fn impl_BaseOn_i32_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (d
     let dyn_self: &'_0 mut (dyn BaseOn<i32> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn BaseOn<i32> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -644,6 +721,7 @@ fn impl_BaseOn_i32_for_i32::{vtable}() -> test_crate::BaseOn::{vtable}<i32>
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn BaseOn<i32> + '1)); // anonymous local
     let _4: fn<'_0_1, '_1_1>(&'_0_1 (dyn BaseOn<i32> + '4), &'_1_1 i32); // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -678,6 +756,7 @@ fn impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i64)
     let _5: i32; // anonymous local
     let _6: i64; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     storage_live(_4)
@@ -688,16 +767,14 @@ fn impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(self: &'_0 i32, t: &'_1 i64)
     storage_live(_6)
     _6 = copy (*t)
     _3 = move _4 > move _6
-    if move _3 {
-    } else {
-        storage_dead(_6)
-        storage_dead(_4)
-        panic(core::panicking::panic)
-    }
+    assert(move _3 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()
+    storage_dead(t)
+    storage_dead(self)
     return
 }
 
@@ -709,10 +786,18 @@ fn impl_BaseOn_i64_for_i32::operate_on::{vtable_method}<'_0, '_1>(_1: &'_0 (dyn 
     let _2: &'_1 i64; // arg #2
     let _3: &'_0 i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_3)
     _3 = concretize<&'_0 (dyn BaseOn<i64> + '1), &'_0 i32>(move _1)
     _0 = impl_BaseOn_i64_for_i32::operate_on<'_0, '_1>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -723,9 +808,12 @@ unsafe fn impl_BaseOn_i64_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (d
     let dyn_self: &'_0 mut (dyn BaseOn<i64> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn BaseOn<i64> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -738,6 +826,7 @@ fn impl_BaseOn_i64_for_i32::{vtable}() -> test_crate::BaseOn::{vtable}<i64>
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn BaseOn<i64> + '1)); // anonymous local
     let _4: fn<'_0_1, '_1_1>(&'_0_1 (dyn BaseOn<i64> + '4), &'_1_1 i64); // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -768,9 +857,12 @@ unsafe fn impl_Both32And64_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (
     let dyn_self: &'_0 mut (dyn Both32And64 + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Both32And64 + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -784,6 +876,7 @@ fn impl_Both32And64_for_i32::{vtable}() -> test_crate::Both32And64::{vtable}
     let _4: &'static test_crate::BaseOn::{vtable}<i32>; // anonymous local
     let _5: &'static test_crate::BaseOn::{vtable}<i64>; // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -815,6 +908,7 @@ fn impl_Both32And64_for_i32::both_operate<'_0, '_1, '_2>(self: &'_0 i32, t32: &'
     let _8: &'8 i32; // anonymous local
     let _9: &'9 i64; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_4)
     storage_live(_5)
@@ -822,6 +916,10 @@ fn impl_Both32And64_for_i32::both_operate<'_0, '_1, '_2>(self: &'_0 i32, t32: &'
     storage_live(_6)
     _6 = &(*t32)
     _4 = impl_Both32And64_for_i32::ImpliedClause1::operate_on<'10, '11>(move _5, move _6)
+    ↳⚡ storage_dead(t64)
+        storage_dead(t32)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
@@ -831,10 +929,17 @@ fn impl_Both32And64_for_i32::both_operate<'_0, '_1, '_2>(self: &'_0 i32, t32: &'
     storage_live(_9)
     _9 = &(*t64)
     _7 = impl_Both32And64_for_i32::ImpliedClause2::operate_on<'12, '13>(move _8, move _9)
+    ↳⚡ storage_dead(t64)
+        storage_dead(t32)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
     _0 = ()
+    storage_dead(t64)
+    storage_dead(t32)
+    storage_dead(self)
     return
 }
 
@@ -883,22 +988,21 @@ fn lifetime_method<'a, '_1>(self: &'_1 i32, arg: &'a i32) -> &'a i32
     let _4: i32; // anonymous local
     let _5: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_4)
     _4 = copy (*self)
     storage_live(_5)
     _5 = copy (*arg)
     _3 = move _4 > move _5
-    if move _3 {
-    } else {
-        storage_dead(_5)
-        storage_dead(_4)
-        panic(core::panicking::panic)
-    }
+    assert(move _3 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     _0 = copy arg
+    storage_dead(arg)
+    storage_dead(self)
     return
 }
 
@@ -910,9 +1014,17 @@ fn impl_LifetimeTrait_for_i32::lifetime_method::{vtable_method}<'a, '_1>(_1: &'_
     let _2: &'a i32; // arg #2
     let _3: &'_1 i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = concretize<&'_1 (dyn LifetimeTrait<Ty = i32> + '1), &'_1 i32>(move _1)
     _0 = lifetime_method<'a, '_1>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -923,9 +1035,12 @@ unsafe fn impl_LifetimeTrait_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut
     let dyn_self: &'_0 mut (dyn LifetimeTrait<Ty = i32> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn LifetimeTrait<Ty = i32> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -938,6 +1053,7 @@ fn impl_LifetimeTrait_for_i32::{vtable}() -> test_crate::LifetimeTrait::{vtable}
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn LifetimeTrait<Ty = i32> + '1)); // anonymous local
     let _4: fn<'a, '_1_1>(&'_1_1 (dyn LifetimeTrait<Ty = i32> + '4), &'a i32) -> &'a i32; // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -972,16 +1088,22 @@ fn use_lifetime_trait<'a, '_1>(x: &'_1 (dyn LifetimeTrait<Ty = i32> + '_1), y: &
     let _4: &'9 (dyn LifetimeTrait<Ty = i32> + '10); // anonymous local
     let _5: &'11 i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     storage_live(_4)
     _4 = &(*x) with_metadata(copy x.metadata)
     storage_live(_5)
     _5 = &(*y)
     _3 = (copy ((*_4.metadata)).method_lifetime_method)(move _4, move _5)
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
     _0 = &(*_3)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
     return
 }
 
@@ -1017,6 +1139,7 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     _13 = const 100i32
     _12 = &_13
     _10 = move _12
+    storage_live(_0)
     storage_live(_8)
     storage_live(_9)
     _0 = ()
@@ -1034,6 +1157,10 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     _7 = &(*_8)
     _6 = &(*_7)
     _2 = (copy ((*_3.metadata)).method_both_operate)(move _3, move _4, move _6)
+    ↳⚡ storage_dead(_9)
+        storage_dead(_8)
+        storage_dead(x)
+        unwind_continue
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_3)
@@ -1041,6 +1168,15 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     storage_dead(_5)
     storage_dead(_2)
     _0 = ()
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(x)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
     return
 }
 
@@ -1167,6 +1303,7 @@ fn main()
     _96 = const 42i32
     _95 = &_96
     _86 = move _95
+    storage_live(_0)
     storage_live(_77)
     storage_live(_78)
     storage_live(_79)
@@ -1190,11 +1327,32 @@ fn main()
     storage_live(_5)
     _5 = &(*x) with_metadata(copy x.metadata)
     _4 = (copy ((*_5.metadata)).method_check)(move _5)
-    if move _4 {
-    } else {
-        storage_dead(_5)
-        panic(core::panicking::panic)
-    }
+    ↳⚡ storage_dead(_85)
+        storage_dead(_84)
+        storage_dead(_83)
+        storage_dead(_82)
+        storage_dead(_81)
+        storage_dead(_80)
+        storage_dead(_79)
+        storage_dead(_78)
+        storage_dead(_77)
+        storage_dead(_76)
+        storage_dead(_75)
+        storage_dead(_74)
+        storage_dead(_73)
+        storage_dead(_72)
+        storage_dead(_71)
+        storage_dead(kind_70)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        storage_dead(_32)
+        storage_dead(kind_31)
+        unwind_continue
+    assert(move _4 == true) else panic(core::panicking::panic)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     storage_live(y)
@@ -1218,18 +1376,346 @@ fn main()
     _17 = const "Hello"
     _16 = &(*_17) with_metadata(copy _17.metadata)
     _15 = to_string<'124, str>[{built_in impl MetaSized for str}, {impl#10}](move _16)
+    ↳⚡ storage_dead(_85)
+        storage_dead(_84)
+        storage_dead(_83)
+        storage_dead(_82)
+        storage_dead(_81)
+        storage_dead(_80)
+        storage_dead(_79)
+        storage_dead(_78)
+        storage_dead(_77)
+        storage_dead(_76)
+        storage_dead(_75)
+        storage_dead(_74)
+        storage_dead(_73)
+        storage_dead(_72)
+        storage_dead(_71)
+        storage_dead(kind_70)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        storage_dead(_32)
+        storage_dead(kind_31)
+        unwind_continue
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)
     _12 = modify_trait_object<'126, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
+    ↳⚡ conditional_drop[drop_glue<'127>] _15
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            storage_dead(_112)
+            storage_dead(_111)
+            storage_dead(_110)
+            storage_dead(_109)
+            storage_dead(_108)
+            storage_dead(_107)
+            storage_dead(_106)
+            storage_dead(_105)
+            storage_dead(_104)
+            storage_dead(_103)
+            storage_dead(_102)
+            storage_dead(_101)
+            storage_dead(_100)
+            storage_dead(_99)
+            storage_dead(_98)
+            storage_dead(_97)
+            storage_dead(_96)
+            storage_dead(_95)
+            storage_dead(_94)
+            storage_dead(_93)
+            storage_dead(_92)
+            storage_dead(_91)
+            storage_dead(_90)
+            storage_dead(_89)
+            storage_dead(_88)
+            storage_dead(_87)
+            storage_dead(_86)
+            unwind_terminate
+        storage_dead(_85)
+        storage_dead(_84)
+        storage_dead(_83)
+        storage_dead(_82)
+        storage_dead(_81)
+        storage_dead(_80)
+        storage_dead(_79)
+        storage_dead(_78)
+        storage_dead(_77)
+        storage_dead(_76)
+        storage_dead(_75)
+        storage_dead(_74)
+        storage_dead(_73)
+        storage_dead(_72)
+        storage_dead(_71)
+        storage_dead(kind_70)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        storage_dead(_32)
+        storage_dead(kind_31)
+        unwind_continue
     _11 = &_12
     storage_dead(_13)
     _10 = is_empty<'129>(move _11)
+    ↳⚡ conditional_drop[drop_glue<'130>] _12
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            storage_dead(_112)
+            storage_dead(_111)
+            storage_dead(_110)
+            storage_dead(_109)
+            storage_dead(_108)
+            storage_dead(_107)
+            storage_dead(_106)
+            storage_dead(_105)
+            storage_dead(_104)
+            storage_dead(_103)
+            storage_dead(_102)
+            storage_dead(_101)
+            storage_dead(_100)
+            storage_dead(_99)
+            storage_dead(_98)
+            storage_dead(_97)
+            storage_dead(_96)
+            storage_dead(_95)
+            storage_dead(_94)
+            storage_dead(_93)
+            storage_dead(_92)
+            storage_dead(_91)
+            storage_dead(_90)
+            storage_dead(_89)
+            storage_dead(_88)
+            storage_dead(_87)
+            storage_dead(_86)
+            unwind_terminate
+        conditional_drop[drop_glue<'127>] _15
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            storage_dead(_112)
+            storage_dead(_111)
+            storage_dead(_110)
+            storage_dead(_109)
+            storage_dead(_108)
+            storage_dead(_107)
+            storage_dead(_106)
+            storage_dead(_105)
+            storage_dead(_104)
+            storage_dead(_103)
+            storage_dead(_102)
+            storage_dead(_101)
+            storage_dead(_100)
+            storage_dead(_99)
+            storage_dead(_98)
+            storage_dead(_97)
+            storage_dead(_96)
+            storage_dead(_95)
+            storage_dead(_94)
+            storage_dead(_93)
+            storage_dead(_92)
+            storage_dead(_91)
+            storage_dead(_90)
+            storage_dead(_89)
+            storage_dead(_88)
+            storage_dead(_87)
+            storage_dead(_86)
+            unwind_terminate
+        storage_dead(_85)
+        storage_dead(_84)
+        storage_dead(_83)
+        storage_dead(_82)
+        storage_dead(_81)
+        storage_dead(_80)
+        storage_dead(_79)
+        storage_dead(_78)
+        storage_dead(_77)
+        storage_dead(_76)
+        storage_dead(_75)
+        storage_dead(_74)
+        storage_dead(_73)
+        storage_dead(_72)
+        storage_dead(_71)
+        storage_dead(kind_70)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        storage_dead(_32)
+        storage_dead(kind_31)
+        unwind_continue
     if move _10 {
     } else {
         storage_dead(_11)
         conditional_drop[drop_glue<'132>] _12
+        ↳⚡ conditional_drop[drop_glue<'127>] _15
+            ↳⚡ storage_dead(_85)
+                storage_dead(_84)
+                storage_dead(_83)
+                storage_dead(_82)
+                storage_dead(_81)
+                storage_dead(_80)
+                storage_dead(_79)
+                storage_dead(_78)
+                storage_dead(_77)
+                storage_dead(_76)
+                storage_dead(_75)
+                storage_dead(_74)
+                storage_dead(_73)
+                storage_dead(_72)
+                storage_dead(_71)
+                storage_dead(kind_70)
+                storage_dead(_37)
+                storage_dead(_36)
+                storage_dead(_35)
+                storage_dead(_34)
+                storage_dead(_33)
+                storage_dead(_32)
+                storage_dead(kind_31)
+                storage_dead(_112)
+                storage_dead(_111)
+                storage_dead(_110)
+                storage_dead(_109)
+                storage_dead(_108)
+                storage_dead(_107)
+                storage_dead(_106)
+                storage_dead(_105)
+                storage_dead(_104)
+                storage_dead(_103)
+                storage_dead(_102)
+                storage_dead(_101)
+                storage_dead(_100)
+                storage_dead(_99)
+                storage_dead(_98)
+                storage_dead(_97)
+                storage_dead(_96)
+                storage_dead(_95)
+                storage_dead(_94)
+                storage_dead(_93)
+                storage_dead(_92)
+                storage_dead(_91)
+                storage_dead(_90)
+                storage_dead(_89)
+                storage_dead(_88)
+                storage_dead(_87)
+                storage_dead(_86)
+                unwind_terminate
+            storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            unwind_continue
         conditional_drop[drop_glue<'134>] _15
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            unwind_continue
         storage_dead(_17)
         storage_dead(_15)
         storage_dead(_14)
@@ -1247,6 +1733,30 @@ fn main()
         _23 = &mut _24
         _22 = &(*_23)
         _20 = (copy ((*_21.metadata)).method_modify)(move _21, move _22)
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            unwind_continue
         storage_live(_87)
         storage_live(_97)
         storage_live(_98)
@@ -1290,6 +1800,56 @@ fn main()
             _35 = &(*_36)
             storage_live(_37)
             _37 = Option::None {  }
+            storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            storage_dead(_112)
+            storage_dead(_111)
+            storage_dead(_110)
+            storage_dead(_109)
+            storage_dead(_108)
+            storage_dead(_107)
+            storage_dead(_106)
+            storage_dead(_105)
+            storage_dead(_104)
+            storage_dead(_103)
+            storage_dead(_102)
+            storage_dead(_101)
+            storage_dead(_100)
+            storage_dead(_99)
+            storage_dead(_98)
+            storage_dead(_97)
+            storage_dead(_96)
+            storage_dead(_95)
+            storage_dead(_94)
+            storage_dead(_93)
+            storage_dead(_92)
+            storage_dead(_91)
+            storage_dead(_90)
+            storage_dead(_89)
+            storage_dead(_88)
+            storage_dead(_87)
+            storage_dead(_86)
             panic(core::panicking::assert_failed)
         }
         storage_live(_88)
@@ -1316,6 +1876,30 @@ fn main()
         _42 = &(*_83)
         _41 = &(*_42)
         _40 = to_dyn_obj<'145, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            unwind_continue
         _39 = &(*_40) with_metadata(copy _40.metadata)
         z = unsize_cast<&'55 (dyn NoParam + '56), &'152 (dyn NoParam + '153),  at []>(move _39)
         storage_dead(_41)
@@ -1326,6 +1910,30 @@ fn main()
         storage_live(_44)
         _44 = &(*z) with_metadata(copy z.metadata)
         _43 = (copy ((*_44.metadata)).method_dummy)(move _44)
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            unwind_continue
         storage_live(_91)
         storage_live(_105)
         storage_live(_106)
@@ -1369,6 +1977,30 @@ fn main()
         _53 = &(*_80)
         _52 = &(*_53)
         _48 = (copy ((*_49.metadata)).method_both_operate)(move _49, move _50, move _52)
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            unwind_continue
         storage_live(_93)
         storage_live(_109)
         storage_live(_110)
@@ -1410,6 +2042,30 @@ fn main()
         _63 = &(*_78)
         _62 = &(*_63)
         _59 = use_lifetime_trait<'178, '179>(move _60, move _62)
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            unwind_continue
         storage_live(_94)
         storage_live(_111)
         storage_live(_112)
@@ -1453,6 +2109,56 @@ fn main()
             _74 = &(*_75)
             storage_live(_76)
             _76 = Option::None {  }
+            storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            storage_dead(_112)
+            storage_dead(_111)
+            storage_dead(_110)
+            storage_dead(_109)
+            storage_dead(_108)
+            storage_dead(_107)
+            storage_dead(_106)
+            storage_dead(_105)
+            storage_dead(_104)
+            storage_dead(_103)
+            storage_dead(_102)
+            storage_dead(_101)
+            storage_dead(_100)
+            storage_dead(_99)
+            storage_dead(_98)
+            storage_dead(_97)
+            storage_dead(_96)
+            storage_dead(_95)
+            storage_dead(_94)
+            storage_dead(_93)
+            storage_dead(_92)
+            storage_dead(_91)
+            storage_dead(_90)
+            storage_dead(_89)
+            storage_dead(_88)
+            storage_dead(_87)
+            storage_dead(_86)
             panic(core::panicking::assert_failed)
         }
         storage_dead(_69)
@@ -1470,15 +2176,215 @@ fn main()
         storage_dead(_9)
         storage_dead(y)
         storage_dead(x)
+        storage_dead(_85)
+        storage_dead(_84)
+        storage_dead(_83)
+        storage_dead(_82)
+        storage_dead(_81)
+        storage_dead(_80)
+        storage_dead(_79)
+        storage_dead(_78)
+        storage_dead(_77)
+        storage_dead(_76)
+        storage_dead(_75)
+        storage_dead(_74)
+        storage_dead(_73)
+        storage_dead(_72)
+        storage_dead(_71)
+        storage_dead(kind_70)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        storage_dead(_32)
+        storage_dead(kind_31)
+        storage_dead(_112)
+        storage_dead(_111)
+        storage_dead(_110)
+        storage_dead(_109)
+        storage_dead(_108)
+        storage_dead(_107)
+        storage_dead(_106)
+        storage_dead(_105)
+        storage_dead(_104)
+        storage_dead(_103)
+        storage_dead(_102)
+        storage_dead(_101)
+        storage_dead(_100)
+        storage_dead(_99)
+        storage_dead(_98)
+        storage_dead(_97)
+        storage_dead(_96)
+        storage_dead(_95)
+        storage_dead(_94)
+        storage_dead(_93)
+        storage_dead(_92)
+        storage_dead(_91)
+        storage_dead(_90)
+        storage_dead(_89)
+        storage_dead(_88)
+        storage_dead(_87)
+        storage_dead(_86)
         return
     }
     storage_dead(_11)
     conditional_drop[drop_glue<'131>] _12
+    ↳⚡ conditional_drop[drop_glue<'127>] _15
+        ↳⚡ storage_dead(_85)
+            storage_dead(_84)
+            storage_dead(_83)
+            storage_dead(_82)
+            storage_dead(_81)
+            storage_dead(_80)
+            storage_dead(_79)
+            storage_dead(_78)
+            storage_dead(_77)
+            storage_dead(_76)
+            storage_dead(_75)
+            storage_dead(_74)
+            storage_dead(_73)
+            storage_dead(_72)
+            storage_dead(_71)
+            storage_dead(kind_70)
+            storage_dead(_37)
+            storage_dead(_36)
+            storage_dead(_35)
+            storage_dead(_34)
+            storage_dead(_33)
+            storage_dead(_32)
+            storage_dead(kind_31)
+            storage_dead(_112)
+            storage_dead(_111)
+            storage_dead(_110)
+            storage_dead(_109)
+            storage_dead(_108)
+            storage_dead(_107)
+            storage_dead(_106)
+            storage_dead(_105)
+            storage_dead(_104)
+            storage_dead(_103)
+            storage_dead(_102)
+            storage_dead(_101)
+            storage_dead(_100)
+            storage_dead(_99)
+            storage_dead(_98)
+            storage_dead(_97)
+            storage_dead(_96)
+            storage_dead(_95)
+            storage_dead(_94)
+            storage_dead(_93)
+            storage_dead(_92)
+            storage_dead(_91)
+            storage_dead(_90)
+            storage_dead(_89)
+            storage_dead(_88)
+            storage_dead(_87)
+            storage_dead(_86)
+            unwind_terminate
+        storage_dead(_85)
+        storage_dead(_84)
+        storage_dead(_83)
+        storage_dead(_82)
+        storage_dead(_81)
+        storage_dead(_80)
+        storage_dead(_79)
+        storage_dead(_78)
+        storage_dead(_77)
+        storage_dead(_76)
+        storage_dead(_75)
+        storage_dead(_74)
+        storage_dead(_73)
+        storage_dead(_72)
+        storage_dead(_71)
+        storage_dead(kind_70)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        storage_dead(_32)
+        storage_dead(kind_31)
+        unwind_continue
     conditional_drop[drop_glue<'133>] _15
+    ↳⚡ storage_dead(_85)
+        storage_dead(_84)
+        storage_dead(_83)
+        storage_dead(_82)
+        storage_dead(_81)
+        storage_dead(_80)
+        storage_dead(_79)
+        storage_dead(_78)
+        storage_dead(_77)
+        storage_dead(_76)
+        storage_dead(_75)
+        storage_dead(_74)
+        storage_dead(_73)
+        storage_dead(_72)
+        storage_dead(_71)
+        storage_dead(kind_70)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        storage_dead(_32)
+        storage_dead(kind_31)
+        unwind_continue
     storage_dead(_17)
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_12)
+    storage_dead(_85)
+    storage_dead(_84)
+    storage_dead(_83)
+    storage_dead(_82)
+    storage_dead(_81)
+    storage_dead(_80)
+    storage_dead(_79)
+    storage_dead(_78)
+    storage_dead(_77)
+    storage_dead(_76)
+    storage_dead(_75)
+    storage_dead(_74)
+    storage_dead(_73)
+    storage_dead(_72)
+    storage_dead(_71)
+    storage_dead(kind_70)
+    storage_dead(_37)
+    storage_dead(_36)
+    storage_dead(_35)
+    storage_dead(_34)
+    storage_dead(_33)
+    storage_dead(_32)
+    storage_dead(kind_31)
+    storage_dead(_112)
+    storage_dead(_111)
+    storage_dead(_110)
+    storage_dead(_109)
+    storage_dead(_108)
+    storage_dead(_107)
+    storage_dead(_106)
+    storage_dead(_105)
+    storage_dead(_104)
+    storage_dead(_103)
+    storage_dead(_102)
+    storage_dead(_101)
+    storage_dead(_100)
+    storage_dead(_99)
+    storage_dead(_98)
+    storage_dead(_97)
+    storage_dead(_96)
+    storage_dead(_95)
+    storage_dead(_94)
+    storage_dead(_93)
+    storage_dead(_92)
+    storage_dead(_91)
+    storage_dead(_90)
+    storage_dead(_89)
+    storage_dead(_88)
+    storage_dead(_87)
+    storage_dead(_86)
     panic(core::panicking::panic)
 }
 

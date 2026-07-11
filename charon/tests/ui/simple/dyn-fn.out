@@ -90,6 +90,7 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     let _6: &'16 mut u32; // anonymous local
     let _7: &'17 mut u32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(counter)
     counter = const 0u32
@@ -103,21 +104,28 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     _6 = &two-phase-mut (*_7)
     _5 = (move _6,)
     _3 = (copy ((*_4.metadata)).method_call)(move _4, move _5)
+    ↳⚡ storage_dead(f)
+        unwind_continue
     if move _3 {
-        storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(_4)
-        _0 = ()
     } else {
         storage_dead(_7)
         storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
         _0 = ()
+        storage_dead(_3)
+        storage_dead(counter)
+        storage_dead(f)
+        return
     }
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
     storage_dead(_3)
     storage_dead(counter)
+    storage_dead(f)
     return
 }
 
@@ -133,12 +141,17 @@ fn call<'_0, '_1>(_1: &'_1 closure, tupled_args: (&'_0 mut u32,)) -> bool
     let counter: &'2 mut u32; // local
     let _4: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(counter)
     storage_live(_4)
     counter = move tupled_args.0
     _4 = copy (*counter) panic.+ const 1u32
     (*counter) = move _4
     _0 = const true
+    storage_dead(_4)
+    storage_dead(counter)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -150,9 +163,17 @@ fn call_mut<'_0, '_1>(state: &'_1 mut closure, args: (&'_0 mut u32,)) -> bool
     let args: (&'_0 mut u32,); // arg #2
     let _3: &'0 closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'_0, '2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -162,7 +183,9 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     let _0: (); // return
     let _1: &'1 mut closure; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -174,10 +197,27 @@ fn call_once<'_0>(_1: closure, _2: (&'_0 mut u32,)) -> bool
     let _2: (&'0 mut u32,); // arg #2
     let _3: &'2 mut closure; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '7>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'8>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[drop_glue<'9>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -230,6 +270,7 @@ fn gives_fn()
     _7 = closure {  }
     _6 = &_7
     _5 = move _6
+    storage_live(_0)
     storage_live(_4)
     _0 = ()
     storage_live(_1)
@@ -241,8 +282,14 @@ fn gives_fn()
     _1 = unsize_cast<&'11 closure, &'15 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '16), &vtable_of(impl_Fn_tuple_for_closure<'21>)>(move _2)
     storage_dead(_2)
     _0 = takes_fn<'24>(move _1)
+    ↳⚡ storage_dead(_4)
+        unwind_continue
     storage_dead(_1)
     storage_dead(_3)
+    storage_dead(_4)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
     return
 }
 

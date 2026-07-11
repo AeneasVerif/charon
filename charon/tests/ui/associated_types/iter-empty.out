@@ -60,9 +60,15 @@ where
     let self: &'1 mut Self; // arg #1
     let _f: F; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f
+    ↳⚡ storage_dead(_f)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_f)
+    storage_dead(self)
     return
 }
 
@@ -86,9 +92,15 @@ where
     let self: &'1 mut Empty<T>[TraitClause0]; // arg #1
     let _f: F; // arg #2
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     conditional_drop[{built_in impl Destruct for F}::drop_glue<'2>] _f
+    ↳⚡ storage_dead(_f)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_f)
+    storage_dead(self)
     return
 }
 
@@ -113,6 +125,7 @@ fn g()
     let _4: [(); 0usize]; // anonymous local
     let _5: F; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
@@ -125,6 +138,7 @@ fn g()
     storage_live(_5)
     _5 = F {  }
     _1 = impl_Iter_for_Empty::map<'3, (), (), F>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, {built_in impl Sized for F}, impl_Apply_unit_for_F](move _2, move _5)
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_2)
     storage_dead(_3)

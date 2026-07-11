@@ -97,6 +97,7 @@ where
     let _c: test_crate::f::closure<'3, T>; // local
     let _3: &'4 T; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_c)
     storage_live(_3)
@@ -105,6 +106,7 @@ where
     storage_dead(_3)
     _0 = ()
     storage_dead(_c)
+    storage_dead(x)
     return
 }
 
@@ -117,7 +119,9 @@ where
     let _0: (); // return
     let _1: &'1 mut test_crate::f::closure<'_0, T>; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -131,7 +135,10 @@ where
     let _1: &'1 test_crate::f::closure<'_0, T>; // arg #1
     let tupled_args: (); // arg #2
 
+    storage_live(_0)
     _0 = copy (*((*_1)).0)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -146,9 +153,17 @@ where
     let args: (); // arg #2
     let _3: &'0 test_crate::f::closure<'_0, T>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(), T> for test_crate::f::closure<'_0, T>}::call<'_0, '2, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -163,10 +178,27 @@ where
     let _2: (); // arg #2
     let _3: &'1 mut test_crate::f::closure<'_0, T>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(), T> for test_crate::f::closure<'_0, T>}::call_mut<'_0, '4, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::f::closure<'_0, T>}::drop_glue<'_0, '7, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[{impl Destruct for test_crate::f::closure<'_0, T>}::drop_glue<'_0, '10, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -237,6 +269,7 @@ where
     let _c: test_crate::g::closure<'1, T>; // local
     let _3: &'3 T; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_c)
     storage_live(_3)
@@ -245,6 +278,7 @@ where
     storage_dead(_3)
     _0 = ()
     storage_dead(_c)
+    storage_dead(x)
     return
 }
 
@@ -257,7 +291,9 @@ where
     let _0: (); // return
     let _1: &'1 mut test_crate::g::closure<'_0, T>; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -271,7 +307,10 @@ where
     let _1: &'1 test_crate::g::closure<'_0, T>; // arg #1
     let tupled_args: (); // arg #2
 
+    storage_live(_0)
     _0 = copy (*((*_1)).0)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -286,9 +325,17 @@ where
     let args: (); // arg #2
     let _3: &'0 test_crate::g::closure<'_0, T>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
     _0 = {impl Fn<(), T> for test_crate::g::closure<'_0, T>}::call<'_0, '2, T>[TraitClause0, TraitClause1](move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -303,10 +350,27 @@ where
     let _2: (); // arg #2
     let _3: &'1 mut test_crate::g::closure<'_0, T>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(), T> for test_crate::g::closure<'_0, T>}::call_mut<'_0, '4, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::g::closure<'_0, T>}::drop_glue<'_0, '7, T>[TraitClause0, TraitClause1]] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[{impl Destruct for test_crate::g::closure<'_0, T>}::drop_glue<'_0, '10, T>[TraitClause0, TraitClause1]] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

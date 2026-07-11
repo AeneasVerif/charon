@@ -76,6 +76,7 @@ fn call_once(_1: closure, tupled_args: (u32,)) -> u32
     let _4: u32; // anonymous local
     let _5: (u32, bool); // anonymous local
 
+    storage_live(_0)
     storage_live(y)
     storage_live(_5)
     y = move tupled_args.0
@@ -83,8 +84,17 @@ fn call_once(_1: closure, tupled_args: (u32,)) -> u32
     _4 = copy y
     _5 = copy _4 checked.+ const 1u32
     assert(move _5.1 == false) (overflow) else panic
+    ↳⚡ storage_dead(_5)
+        storage_dead(y)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
     _0 = move _5.0
     storage_dead(_4)
+    storage_dead(_5)
+    storage_dead(y)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 
@@ -108,6 +118,7 @@ fn silly_incr<'_0>(x: &'_0 mut u32)
     let _3: &'2 mut u32; // anonymous local
     let _4: closure; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
@@ -115,10 +126,13 @@ fn silly_incr<'_0>(x: &'_0 mut u32)
     storage_live(_4)
     _4 = closure {  }
     _2 = take<'4, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnOnce_tuple_for_closure](move _3, move _4)
+    ↳⚡ storage_dead(x)
+        unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
+    storage_dead(x)
     return
 }
 
@@ -150,6 +164,7 @@ fn main()
     let _22: &'36 u32; // anonymous local
     let _23: u32; // anonymous local
 
+    storage_live(_0)
     storage_live(_20)
     _0 = ()
     storage_live(x)
@@ -160,6 +175,15 @@ fn main()
     _4 = &mut x
     _3 = &two-phase-mut (*_4)
     _2 = silly_incr<'27>(move _3)
+    ↳⚡ storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(kind)
+        unwind_continue
     storage_live(_21)
     storage_live(_22)
     storage_live(_23)
@@ -206,6 +230,17 @@ fn main()
         _17 = &(*_18)
         storage_live(_19)
         _19 = Option::None {  }
+        storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(kind)
+        storage_dead(_23)
+        storage_dead(_22)
+        storage_dead(_21)
         panic(core::panicking::assert_failed)
     }
     storage_dead(_12)
@@ -216,6 +251,17 @@ fn main()
     storage_dead(_5)
     _0 = ()
     storage_dead(x)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(kind)
+    storage_dead(_23)
+    storage_dead(_22)
+    storage_dead(_21)
     return
 }
 

@@ -40,31 +40,94 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
     let _3: usize; // anonymous local
     let _4: *mut String; // anonymous local
     let _5: bool; // anonymous local
-    let _6: &'_ mut [String]; // anonymous local
-    let _7: &'_ mut String; // anonymous local
+    let _6: *mut String; // anonymous local
+    let _7: bool; // anonymous local
+    let _8: &'_ mut [String]; // anonymous local
+    let _9: &'_ mut String; // anonymous local
+    let _10: &'_ mut [String]; // anonymous local
+    let _11: &'_ mut String; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
     _0 = ()
     _2 = copy _1.metadata
     _3 = const 0usize
     loop {
-        _5 = copy _3 == copy _2
-        if move _5 {
+        _7 = copy _3 == copy _2
+        if move _7 {
             break 0
         } else {
-            storage_live(_6)
-            _6 = &mut (*_1) with_metadata(copy _1.metadata)
-            storage_live(_7)
-            _7 = @SliceIndexMut<'_, String>(move _6, copy _3)
-            _4 = &raw mut (*_7)
+            storage_live(_10)
+            _10 = &mut (*_1) with_metadata(copy _1.metadata)
+            storage_live(_11)
+            _11 = @SliceIndexMut<'_, String>(move _10, copy _3)
+            ↳⚡ storage_dead(_11)
+                storage_dead(_10)
+                storage_dead(_9)
+                storage_dead(_8)
+                undefined_behavior
+            _6 = &raw mut (*_11)
             _3 = move _3 wrap.+ const 1usize
-            drop[impl_Destruct_for_String::drop_glue<'2>] (*_4)
+            drop[impl_Destruct_for_String::drop_glue<'2>] (*_6)
+            ↳⚡ loop {
+                    _5 = copy _3 == copy _2
+                    if move _5 {
+                        break 0
+                    } else {
+                        storage_live(_8)
+                        _8 = &mut (*_1) with_metadata(copy _1.metadata)
+                        storage_live(_9)
+                        _9 = @SliceIndexMut<'_, String>(move _8, copy _3)
+                        ↳⚡ storage_dead(_11)
+                            storage_dead(_10)
+                            storage_dead(_9)
+                            storage_dead(_8)
+                            undefined_behavior
+                        _4 = &raw mut (*_9)
+                        _3 = move _3 wrap.+ const 1usize
+                        drop[impl_Destruct_for_String::drop_glue<'3>] (*_4)
+                        ↳⚡ storage_dead(_7)
+                            storage_dead(_6)
+                            storage_dead(_5)
+                            storage_dead(_4)
+                            storage_dead(_3)
+                            storage_dead(_2)
+                            storage_dead(_1)
+                            storage_dead(_11)
+                            storage_dead(_10)
+                            storage_dead(_9)
+                            storage_dead(_8)
+                            unwind_terminate
+                        continue 0
+                    }
+                }
+                storage_dead(_7)
+                storage_dead(_6)
+                storage_dead(_5)
+                storage_dead(_4)
+                storage_dead(_3)
+                storage_dead(_2)
+                storage_dead(_1)
+                unwind_continue
             continue 0
         }
     }
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
     return
 }
 
@@ -74,8 +137,12 @@ unsafe fn core::ptr::drop_glue::<[String]><'_0>(_1: &'_0 mut [String])
     let ret: (); // return
     let _1: &'_0 mut [String]; // arg #1
 
+    storage_live(ret)
     ret = ()
     drop[impl_Destruct_for_slice::drop_glue::<String><'0>] (*_1)
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -110,10 +177,17 @@ unsafe fn impl_Destruct_for_array::drop_glue::<String, 4usize><'_0>(_1: &'_0 mut
     let _1: &'1 mut [String; 4usize]; // arg #1
     let _2: &'3 mut [String]; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _0 = ()
     _2 = @ArrayToSliceMut<'_, String, 4usize>(move _1)
+    ↳⚡ undefined_behavior
     _0 = core::ptr::drop_glue::<[String]><'6>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -129,9 +203,18 @@ unsafe fn impl_Destruct_for_tuple_String_String::drop_glue::<String, String><'_0
     let _0: (); // return
     let _1: &'1 mut (String, String); // arg #1
 
+    storage_live(_0)
     _0 = ()
     drop[impl_Destruct_for_String::drop_glue<'2>] (*_1).0
+    ↳⚡ drop[impl_Destruct_for_String::drop_glue<'4>] (*_1).1
+        ↳⚡ storage_dead(_1)
+            unwind_terminate
+        storage_dead(_1)
+        unwind_continue
     drop[impl_Destruct_for_String::drop_glue<'3>] (*_1).1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -147,9 +230,13 @@ fn drop_array(_1: [String; 4usize])
     let _0: (); // return
     let _1: [String; 4usize]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     drop[impl_Destruct_for_array::drop_glue::<String, 4usize><'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -159,9 +246,13 @@ fn drop_slice(_1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [Stri
     let _0: (); // return
     let _1: alloc::boxed::Box<[String]>[{built_in impl MetaSized for [String]}, {built_in impl Sized for Global}, impl_Destruct_for_slice, impl_Destruct_for_Global]; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     drop[impl_Destruct_for_Box_slice_Global::drop_glue::<[String], Global><'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 
@@ -171,9 +262,13 @@ fn drop_tuple(_1: (String, String))
     let _0: (); // return
     let _1: (String, String); // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     drop[impl_Destruct_for_tuple_String_String::drop_glue::<String, String><'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
     return
 }
 

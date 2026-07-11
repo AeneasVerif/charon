@@ -39,6 +39,7 @@ fn bar()
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -61,6 +62,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -85,6 +87,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -109,6 +112,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -142,12 +146,21 @@ where
     let value: T; // arg #1
     let _2: T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = move value
     _0 = Generic { value: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] value
+        ↳⚡ storage_dead(value)
+            unwind_terminate
+        storage_dead(value)
+        unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(value)
     return
 }
 
@@ -160,10 +173,12 @@ where
     let self: &'3 Generic<T>[TraitClause0]; // arg #1
     let _2: &'4 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = &((*self)).value
     _0 = &(*_2)
     storage_dead(_2)
+    storage_dead(self)
     return
 }
 
@@ -176,15 +191,19 @@ fn use_generic()
     let _3: &'10 i32; // anonymous local
     let _4: &'12 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_int_generic)
     _int_generic = new<i32>[{built_in impl Sized for i32}](const 42i32)
+    ↳⚡ unwind_continue
     storage_live(_str_generic)
     _str_generic = new<&'14 str>[{built_in impl Sized for &'14 str}](const "hello")
+    ↳⚡ unwind_continue
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic
     _3 = get<'21, i32>[{built_in impl Sized for i32}](move _4)
+    ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

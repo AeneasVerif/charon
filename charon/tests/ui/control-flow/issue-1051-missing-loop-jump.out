@@ -188,6 +188,7 @@ pub fn f()
     let _10: bool; // anonymous local
     let _11: i32; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_x)
     _x = const 0i32
@@ -202,6 +203,7 @@ pub fn f()
         storage_live(_4)
         _4 = Range { start: const 0i32, end: const 1i32 }
         _3 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32]](move _4)
+        ↳⚡ unwind_continue
         storage_dead(_4)
         storage_live(iter)
         iter = move _3
@@ -212,6 +214,7 @@ pub fn f()
             _8 = &mut iter
             _7 = &two-phase-mut (*_8)
             _6 = next<'4, i32>[{built_in impl Sized for i32}, impl_Step_for_i32](move _7)
+            ↳⚡ unwind_continue
             storage_dead(_7)
             match _6 {
                 Option::None => {

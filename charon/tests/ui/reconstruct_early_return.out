@@ -15,6 +15,7 @@ fn f() -> usize
     let _9: i32; // anonymous local
     let _10: i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_5)
     storage_live(_10)
     storage_live(i)
@@ -51,6 +52,8 @@ fn f() -> usize
                     storage_dead(_3)
                     storage_dead(j)
                     storage_dead(i)
+                    storage_dead(_10)
+                    storage_dead(_5)
                     return
                 } else {
                 }
@@ -71,6 +74,8 @@ fn f() -> usize
     _0 = const 0usize
     storage_dead(j)
     storage_dead(i)
+    storage_dead(_10)
+    storage_dead(_5)
     return
 }
 

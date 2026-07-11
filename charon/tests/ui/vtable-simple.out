@@ -63,13 +63,21 @@ where
     let _3: i32; // anonymous local
     let _4: &'4 T; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = copy (*self) panic.+ const 1i32
     (*self) = move _3
     storage_live(_4)
     _4 = &(*arg)
     _0 = TraitClause1::clone<'5>(move _4)
+    ↳⚡ storage_dead(_3)
+        storage_dead(arg)
+        storage_dead(self)
+        unwind_continue
     storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(arg)
+    storage_dead(self)
     return
 }
 
@@ -84,9 +92,17 @@ where
     let _2: &'_1 T; // arg #2
     let _3: &'_0 mut i32; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move _1)
     _0 = modify<'_0, '_1, T>[TraitClause0, TraitClause1](move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -100,9 +116,12 @@ where
     let dyn_self: &'_0 mut (dyn Modifiable<T> + '0); // arg #1
     let target_self: &'_0 mut i32; // local
 
+    storage_live(ret)
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
     return
 }
 
@@ -118,6 +137,7 @@ where
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Modifiable<T> + '1)); // anonymous local
     let _4: fn<'_0_1, '_1_1>(&'_0_1 mut (dyn Modifiable<T> + '4), &'_1_1 T) -> T; // anonymous local
 
+    storage_live(ret)
     storage_live(size)
     size = size_of<i32>
     storage_live(align)
@@ -164,6 +184,7 @@ where
     let _6: &'10 mut (dyn Modifiable<T> + '11); // anonymous local
     let _7: &'12 T; // anonymous local
 
+    storage_live(_0)
     storage_live(x)
     storage_live(_3)
     storage_live(_4)
@@ -179,10 +200,13 @@ where
     storage_live(_7)
     _7 = &(*arg)
     _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
+    ↳⚡ storage_dead(arg)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(x)
+    storage_dead(arg)
     return
 }
 
@@ -204,6 +228,7 @@ fn main()
     _7 = const 42i32
     _6 = &_7
     _5 = move _6
+    storage_live(_0)
     storage_live(_4)
     _0 = ()
     storage_live(_1)
@@ -213,10 +238,16 @@ fn main()
     _3 = &(*_4)
     _2 = &(*_3)
     _1 = modify_trait_object<'6, i32>[{built_in impl Sized for i32}, impl_Clone_for_i32](move _2)
+    ↳⚡ storage_dead(_4)
+        unwind_continue
     storage_dead(_2)
     storage_dead(_3)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_4)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
     return
 }
 

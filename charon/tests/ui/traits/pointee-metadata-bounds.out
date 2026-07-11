@@ -141,6 +141,7 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
     return
@@ -153,8 +154,10 @@ where
 {
     let _0: (); // return
 
+    storage_live(_0)
     _0 = ()
     _0 = assert_copy<{built_in impl Pointee for T}::Metadata>[{built_in impl Pointee for T}::ImpliedClause0, {built_in impl Pointee for T}::ImpliedClause2]()
+    ↳⚡ unwind_continue
     return
 }
 

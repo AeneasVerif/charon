@@ -217,9 +217,11 @@ fn main()
     let _0: (); // return
     let _1: *const u8; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = null<u8>[impl_Thin_for_T<u8>[{built_in impl Pointee for u8 where Metadata  = ()}]]()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

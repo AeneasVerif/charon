@@ -31,8 +31,10 @@ where
     let _0: Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]; // return
     let _1: RawVec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = alloc::raw_vec::{RawVec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]}::new<T>[TraitClause0]()
+    ↳⚡ unwind_continue
     _0 = Vec { buf: move _1, len: const 0usize }
     storage_dead(_1)
     return
@@ -44,8 +46,10 @@ pub fn alloc::string::{String}::new() -> String
     let _0: String; // return
     let _1: Vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {impl#1}]; // anonymous local
 
+    storage_live(_0)
     storage_live(_1)
     _1 = alloc::vec::{Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]}::new<u8>[{built_in impl Sized for u8}]()
+    ↳⚡ unwind_continue
     _0 = String { vec: move _1 }
     storage_dead(_1)
     return
@@ -70,25 +74,64 @@ where
     let _3: usize; // anonymous local
     let _4: *mut T; // anonymous local
     let _5: bool; // anonymous local
+    let _6: *mut T; // anonymous local
+    let _7: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
     _0 = ()
     _2 = copy _1.metadata
     _3 = const 0usize
     loop {
-        _5 = copy _3 == copy _2
-        if move _5 {
+        _7 = copy _3 == copy _2
+        if move _7 {
             break 0
         } else {
-            _4 = &raw mut (*_1)[copy _3]
+            _6 = &raw mut (*_1)[copy _3]
             _3 = move _3 wrap.+ const 1usize
-            drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_4)
+            drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_6)
+            ↳⚡ loop {
+                    _5 = copy _3 == copy _2
+                    if move _5 {
+                        break 0
+                    } else {
+                        _4 = &raw mut (*_1)[copy _3]
+                        _3 = move _3 wrap.+ const 1usize
+                        drop[{built_in impl Destruct for T}::drop_glue<'3>] (*_4)
+                        ↳⚡ storage_dead(_7)
+                            storage_dead(_6)
+                            storage_dead(_5)
+                            storage_dead(_4)
+                            storage_dead(_3)
+                            storage_dead(_2)
+                            storage_dead(_1)
+                            unwind_terminate
+                        continue 0
+                    }
+                }
+                storage_dead(_7)
+                storage_dead(_6)
+                storage_dead(_5)
+                storage_dead(_4)
+                storage_dead(_3)
+                storage_dead(_2)
+                storage_dead(_1)
+                unwind_continue
             continue 0
         }
     }
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 
@@ -98,10 +141,13 @@ pub fn mk_string()
     let _0: (); // return
     let _1: String; // anonymous local
 
+    storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = alloc::string::{String}::new()
+    ↳⚡ unwind_continue
     conditional_drop[impl_Destruct_for_String::drop_glue<'0>] _1
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = const ()
     return

@@ -12,6 +12,7 @@ fn foo() -> u8
 {
     let _0: u8; // return
 
+    storage_live(_0)
     _0 = copy CONSTANT
     return
 }

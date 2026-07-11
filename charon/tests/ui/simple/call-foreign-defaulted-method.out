@@ -10,8 +10,10 @@ pub fn impl_Trait_for_unit::defaulted<'_0>(self: &'_0 ())
     let _0: (); // return
     let self: &'1 (); // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 
@@ -32,6 +34,7 @@ fn main()
     _6 = ()
     _5 = &_6
     _4 = move _5
+    storage_live(_0)
     storage_live(_3)
     _0 = ()
     storage_live(_1)
@@ -39,9 +42,15 @@ fn main()
     _3 = move _4
     _2 = &(*_3)
     _1 = impl_Trait_for_unit::defaulted<'5>(move _2)
+    ↳⚡ storage_dead(_3)
+        unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_3)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
     return
 }
 
@@ -60,8 +69,10 @@ where
     let _0: (); // return
     let self: &'1 Self; // arg #1
 
+    storage_live(_0)
     _0 = ()
     _0 = ()
+    storage_dead(self)
     return
 }
 

@@ -82,6 +82,7 @@ fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args: (usize,)) -> u8
     let _6: &'_ [u8]; // anonymous local
     let _7: &'_ u8; // anonymous local
 
+    storage_live(_0)
     storage_live(i)
     i = move tupled_args.0
     storage_live(_4)
@@ -92,9 +93,17 @@ fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args: (usize,)) -> u8
     _6 = &(*(*_4)) with_metadata(copy (*_4).metadata)
     storage_live(_7)
     _7 = @SliceIndexShared<'_, u8>(move _6, copy _5)
+    ↳⚡ storage_dead(_7)
+        storage_dead(_6)
+        undefined_behavior
     _0 = copy (*_7)
     storage_dead(_5)
     storage_dead(_4)
+    storage_dead(i)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    storage_dead(_7)
+    storage_dead(_6)
     return
 }
 
@@ -110,6 +119,7 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     let _6: (usize,); // anonymous local
     let _7: usize; // anonymous local
 
+    storage_live(_0)
     storage_live(read)
     storage_live(_4)
     _4 = &a
@@ -122,10 +132,15 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     _7 = copy i
     _6 = (move _7,)
     _0 = call<'22, '23, '24>(move _5, move _6)
+    ↳⚡ storage_dead(i)
+        storage_dead(a)
+        unwind_continue
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
     storage_dead(read)
+    storage_dead(i)
+    storage_dead(a)
     return
 }
 
@@ -135,7 +150,9 @@ unsafe fn drop_glue<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0, '_1>)
     let _0: (); // return
     let _1: &'1 mut closure<'_0, '_1>; // arg #1
 
+    storage_live(_0)
     _0 = ()
+    storage_dead(_1)
     return
 }
 
@@ -147,9 +164,17 @@ fn call_mut<'_0, '_1, '_2>(state: &'_2 mut closure<'_0, '_1>, args: (usize,)) ->
     let args: (usize,); // arg #2
     let _3: &'0 closure<'_0, '_1>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
     _0 = call<'_0, '_1, '2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -161,10 +186,27 @@ fn call_once<'_0, '_1>(_1: closure<'_0, '_1>, _2: (usize,)) -> u8
     let _2: (usize,); // arg #2
     let _3: &'1 mut closure<'_0, '_1>; // anonymous local
 
+    storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '_1, '6>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'_0, '_1, '11>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
     drop[drop_glue<'_0, '_1, '16>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
     return
 }
 

@@ -65,6 +65,7 @@ fn main()
     _11 = [const 0i32]
     _10 = &_11
     _9 = move _10
+    storage_live(_0)
     storage_live(_8)
     _0 = ()
     storage_live(slice)
@@ -74,6 +75,10 @@ fn main()
     _3 = &(*_8)
     _2 = &(*_3)
     slice = @ArrayToSliceShared<'_, i32, 1usize>(move _2)
+    ↳⚡ storage_dead(_11)
+        storage_dead(_10)
+        storage_dead(_9)
+        undefined_behavior
     storage_dead(_2)
     storage_dead(_3)
     storage_live(_4)
@@ -82,14 +87,22 @@ fn main()
     storage_live(_7)
     _7 = &(*slice) with_metadata(copy slice.metadata)
     _6 = iter<'25, i32>[{built_in impl Sized for i32}](move _7)
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     _5 = &two-phase-mut _6
     storage_dead(_7)
     _4 = next<'26, '28, i32>[{built_in impl Sized for i32}](move _5)
+    ↳⚡ storage_dead(_8)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_6)
     storage_dead(_4)
     _0 = ()
     storage_dead(slice)
+    storage_dead(_8)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
     return
 }
 

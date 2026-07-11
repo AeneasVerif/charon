@@ -41,10 +41,12 @@ pub fn from<'_0>(v: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool
     let v: &'1 bool; // arg #1
     let _2: bool; // anonymous local
 
+    storage_live(_0)
     storage_live(_2)
     _2 = copy (*v)
     _0 = Result::Ok { 0: move _2 }
     storage_dead(_2)
+    storage_dead(v)
     return
 }
 
