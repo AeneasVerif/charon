@@ -1,0 +1,2875 @@
+{
+  "test_crate::SimpleStruct": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 12
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 4
+        }
+      }
+    }
+  ],
+  "test_crate::GenericStruct": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "TypeVar": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "TypeVar": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "Usize"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "TypeVar": {
+                    "Bound": [
+                      0,
+                      0
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "Concrete": 8
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "TypeVar": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "Concrete": 8
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "TypeVar": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "Concrete": 8
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "TypeVar": {
+                    "Bound": [
+                      0,
+                      0
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "test_crate::UnsizedStruct": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Slice": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "Usize"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Slice": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "Usize"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "Usize"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Slice": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "Concrete": 8
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Slice": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "Usize"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Atom": {
+              "Concrete": 8
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 8
+        }
+      }
+    }
+  ],
+  "test_crate::SimpleEnum": [
+    null,
+    null
+  ],
+  "test_crate::SimpleAdt": [
+    null,
+    null
+  ],
+  "test_crate::NicheAdt": [
+    null,
+    null
+  ],
+  "test_crate::IsAZST": [
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 0
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 1
+        }
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 0
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 1
+        }
+      }
+    }
+  ],
+  "test_crate::GenericWithKnownLayout": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 33
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "TypeVar": {
+                                  "Bound": [
+                                    0,
+                                    0
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 34
+                                  },
+                                  "generics": {
+                                    "regions": [],
+                                    "types": [],
+                                    "const_generics": [],
+                                    "trait_refs": []
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "ParentClause": [
+                                    {
+                                      "Untagged": {
+                                        "kind": {
+                                          "Clause": {
+                                            "Bound": [
+                                              0,
+                                              0
+                                            ]
+                                          }
+                                        },
+                                        "trait_decl_ref": {
+                                          "regions": [],
+                                          "skip_binder": {
+                                            "id": 0,
+                                            "generics": {
+                                              "regions": [],
+                                              "types": [
+                                                {
+                                                  "Untagged": {
+                                                    "TypeVar": {
+                                                      "Bound": [
+                                                        1,
+                                                        0
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              ],
+                                              "const_generics": [],
+                                              "trait_refs": []
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    0
+                                  ]
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "TypeVar": {
+                                              "Bound": [
+                                                1,
+                                                0
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
+                                      {
+                                        "Untagged": {
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 34
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "types": []
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 34
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "TraitImpl": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 3,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 34
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 33
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "TypeVar": {
+                                  "Bound": [
+                                    0,
+                                    0
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 34
+                                  },
+                                  "generics": {
+                                    "regions": [],
+                                    "types": [],
+                                    "const_generics": [],
+                                    "trait_refs": []
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "ParentClause": [
+                                    {
+                                      "Untagged": {
+                                        "kind": {
+                                          "Clause": {
+                                            "Bound": [
+                                              0,
+                                              0
+                                            ]
+                                          }
+                                        },
+                                        "trait_decl_ref": {
+                                          "regions": [],
+                                          "skip_binder": {
+                                            "id": 0,
+                                            "generics": {
+                                              "regions": [],
+                                              "types": [
+                                                {
+                                                  "Untagged": {
+                                                    "TypeVar": {
+                                                      "Bound": [
+                                                        1,
+                                                        0
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              ],
+                                              "const_generics": [],
+                                              "trait_refs": []
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    0
+                                  ]
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "TypeVar": {
+                                              "Bound": [
+                                                1,
+                                                0
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
+                                      {
+                                        "Untagged": {
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 34
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "types": []
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 34
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "TraitImpl": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 3,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 34
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "Usize"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Adt": {
+                    "id": {
+                      "Adt": 33
+                    },
+                    "generics": {
+                      "regions": [],
+                      "types": [
+                        {
+                          "Untagged": {
+                            "TypeVar": {
+                              "Bound": [
+                                0,
+                                0
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "Untagged": {
+                            "Adt": {
+                              "id": {
+                                "Adt": 34
+                              },
+                              "generics": {
+                                "regions": [],
+                                "types": [],
+                                "const_generics": [],
+                                "trait_refs": []
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "const_generics": [],
+                      "trait_refs": [
+                        {
+                          "Untagged": {
+                            "kind": {
+                              "ParentClause": [
+                                {
+                                  "Untagged": {
+                                    "kind": {
+                                      "Clause": {
+                                        "Bound": [
+                                          0,
+                                          0
+                                        ]
+                                      }
+                                    },
+                                    "trait_decl_ref": {
+                                      "regions": [],
+                                      "skip_binder": {
+                                        "id": 0,
+                                        "generics": {
+                                          "regions": [],
+                                          "types": [
+                                            {
+                                              "Untagged": {
+                                                "TypeVar": {
+                                                  "Bound": [
+                                                    1,
+                                                    0
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "const_generics": [],
+                                          "trait_refs": []
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                0
+                              ]
+                            },
+                            "trait_decl_ref": {
+                              "regions": [],
+                              "skip_binder": {
+                                "id": 1,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "TypeVar": {
+                                          "Bound": [
+                                            1,
+                                            0
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "Untagged": {
+                            "kind": {
+                              "BuiltinOrAuto": {
+                                "builtin_data": "Sized",
+                                "parent_trait_refs": [
+                                  {
+                                    "Untagged": {
+                                      "kind": {
+                                        "BuiltinOrAuto": {
+                                          "builtin_data": "MetaSized",
+                                          "parent_trait_refs": [],
+                                          "types": []
+                                        }
+                                      },
+                                      "trait_decl_ref": {
+                                        "regions": [],
+                                        "skip_binder": {
+                                          "id": 1,
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [
+                                              {
+                                                "Untagged": {
+                                                  "Adt": {
+                                                    "id": {
+                                                      "Adt": 34
+                                                    },
+                                                    "generics": {
+                                                      "regions": [],
+                                                      "types": [],
+                                                      "const_generics": [],
+                                                      "trait_refs": []
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            ],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ],
+                                "types": []
+                              }
+                            },
+                            "trait_decl_ref": {
+                              "regions": [],
+                              "skip_binder": {
+                                "id": 0,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "Adt": {
+                                          "id": {
+                                            "Adt": 34
+                                          },
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "Untagged": {
+                            "kind": {
+                              "TraitImpl": {
+                                "id": 1,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            },
+                            "trait_decl_ref": {
+                              "regions": [],
+                              "skip_binder": {
+                                "id": 3,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "Adt": {
+                                          "id": {
+                                            "Adt": 34
+                                          },
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 8
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 8
+        }
+      }
+    }
+  ],
+  "test_crate::Reordered": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U8"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U8"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 8
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 4
+        }
+      }
+    }
+  ],
+  "test_crate::NotReordered": [
+    null,
+    null
+  ],
+  "test_crate::Packed": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Packed": {
+              "max_align": {
+                "Concrete": 1
+              },
+              "to_pack": {
+                "Max": [
+                  {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U8"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U32"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U8"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Packed": {
+          "max_align": {
+            "Concrete": 1
+          },
+          "to_pack": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 6
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 1
+        }
+      }
+    }
+  ],
+  "test_crate::UninhabitedVariant": [
+    null,
+    null
+  ],
+  "test_crate::UninhabitedVariant2": [
+    null,
+    null
+  ],
+  "test_crate::UninhabitedVariantWithFields": [
+    null,
+    null
+  ],
+  "test_crate::Uninhabited": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": "Never"
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": "Never"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": "Never"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": "Never"
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": "Never"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": "Never"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "test_crate::DiscriminantInNicheOfField": [
+    null,
+    null
+  ],
+  "test_crate::MaybeUninitInt": [
+    null,
+    null
+  ],
+  "test_crate::PackIntsUnion": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Adt": {
+                                "id": "Tuple",
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "Literal": {
+                                          "UInt": "U32"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "Untagged": {
+                                        "Literal": {
+                                          "UInt": "U32"
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U64"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Adt": {
+                                "id": "Tuple",
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "Literal": {
+                                          "UInt": "U32"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "Untagged": {
+                                        "Literal": {
+                                          "UInt": "U32"
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U64"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Max": [
+                  {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Adt": {
+                            "id": "Tuple",
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "Literal": {
+                                      "UInt": "U32"
+                                    }
+                                  }
+                                },
+                                {
+                                  "Untagged": {
+                                    "Literal": {
+                                      "UInt": "U32"
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U64"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": "Tuple",
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "Literal": {
+                                  "UInt": "U32"
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "Literal": {
+                                  "UInt": "U32"
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": []
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U64"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 16
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 8
+        }
+      }
+    }
+  ],
+  "test_crate::NonZeroNiche": [
+    null,
+    null
+  ],
+  "test_crate::ArbitraryDiscriminants": [
+    null,
+    null
+  ],
+  "test_crate::MyOrder": [
+    null,
+    null
+  ],
+  "test_crate::WithNicheAndUninhabited": [
+    null,
+    null
+  ],
+  "test_crate::GenericUnsized": [
+    null,
+    null
+  ],
+  "test_crate::GenericButFixedSize": [
+    null,
+    null
+  ],
+  "test_crate::MaxBitsDiscr": [
+    null,
+    null
+  ],
+  "test_crate::SingleVariantButNonZero": [
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 36
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": "Never"
+                    },
+                    {
+                      "Untagged": {
+                        "Adt": {
+                          "id": "Tuple",
+                          "generics": {
+                            "regions": [],
+                            "types": [],
+                            "const_generics": [],
+                            "trait_refs": []
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": "Never"
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": "Never"
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": {
+                                              "Adt": {
+                                                "id": "Tuple",
+                                                "generics": {
+                                                  "regions": [],
+                                                  "types": [],
+                                                  "const_generics": [],
+                                                  "trait_refs": []
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "Adt": {
+                                      "id": "Tuple",
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 36
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": "Never"
+                    },
+                    {
+                      "Untagged": {
+                        "Adt": {
+                          "id": "Tuple",
+                          "generics": {
+                            "regions": [],
+                            "types": [],
+                            "const_generics": [],
+                            "trait_refs": []
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": "Never"
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": "Never"
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": {
+                                              "Adt": {
+                                                "id": "Tuple",
+                                                "generics": {
+                                                  "regions": [],
+                                                  "types": [],
+                                                  "const_generics": [],
+                                                  "trait_refs": []
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "Adt": {
+                                      "id": "Tuple",
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 36
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": "Never"
+                    },
+                    {
+                      "Untagged": {
+                        "Adt": {
+                          "id": "Tuple",
+                          "generics": {
+                            "regions": [],
+                            "types": [],
+                            "const_generics": [],
+                            "trait_refs": []
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": "Never"
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": "Never"
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": {
+                                              "Adt": {
+                                                "id": "Tuple",
+                                                "generics": {
+                                                  "regions": [],
+                                                  "types": [],
+                                                  "const_generics": [],
+                                                  "trait_refs": []
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "Adt": {
+                                      "id": "Tuple",
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 36
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": "Never"
+                    },
+                    {
+                      "Untagged": {
+                        "Adt": {
+                          "id": "Tuple",
+                          "generics": {
+                            "regions": [],
+                            "types": [],
+                            "const_generics": [],
+                            "trait_refs": []
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": "Never"
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": "Never"
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": {
+                                              "Adt": {
+                                                "id": "Tuple",
+                                                "generics": {
+                                                  "regions": [],
+                                                  "types": [],
+                                                  "const_generics": [],
+                                                  "trait_refs": []
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "Adt": {
+                                      "id": "Tuple",
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "test_crate::NonAdtAlias": [
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "TypeVar": {
+                "Bound": [
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "TypeVar": {
+                "Bound": [
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "TypeVar": {
+                "Bound": [
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "TypeVar": {
+                "Bound": [
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "test_crate::Tuple": [
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": "Tuple",
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": "Tuple",
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 8
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 4
+        }
+      }
+    }
+  ],
+  "test_crate::Usize": [
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "Literal": {
+                "UInt": "Usize"
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "Literal": {
+                "UInt": "Usize"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 8
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 8
+        }
+      }
+    }
+  ],
+  "test_crate::Str": [
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Builtin": "Str"
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Builtin": "Str"
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Builtin": "Str"
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 1
+        }
+      }
+    }
+  ],
+  "test_crate::Ref": [
+    {
+      "size": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "Ref": [
+                {
+                  "Var": {
+                    "Bound": [
+                      0,
+                      0
+                    ]
+                  }
+                },
+                {
+                  "Untagged": {
+                    "Literal": {
+                      "UInt": "U32"
+                    }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          }
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "Ref": [
+                {
+                  "Var": {
+                    "Bound": [
+                      0,
+                      0
+                    ]
+                  }
+                },
+                {
+                  "Untagged": {
+                    "Literal": {
+                      "UInt": "U32"
+                    }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 8
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 8
+        }
+      }
+    }
+  ],
+  "test_crate::HasInvalidDiscr": [
+    null,
+    null
+  ]
+}

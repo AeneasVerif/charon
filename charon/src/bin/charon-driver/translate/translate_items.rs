@@ -454,6 +454,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .into_iter()
             .map(|l| (self.get_target_triple(), l))
             .collect();
+        let guarantees = if item_meta.opacity.is_opaque() {
+            None
+        } else {
+            self.translate_layout_guarantees(def)
+        };
         let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
         let type_def = TypeDecl {
             def_id: trans_id,
@@ -462,6 +467,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             kind,
             src,
             layout,
+            guarantees,
             ptr_metadata,
         };
 

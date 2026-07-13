@@ -1,2057 +1,1575 @@
-[
-  {
-    "key": "test_crate::SimpleStruct",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 12
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            4,
-            8
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+{
+  "test_crate::SimpleStruct": {
+    "size": 12,
+    "align": 4,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          4,
+          8
+        ],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::GenericStruct",
-    "value": null
-  },
-  {
-    "key": "test_crate::UnsizedStruct",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "SymSize": {
-              "Untagged": {
-                "Adt": {
-                  "id": {
-                    "Adt": 2
-                  },
-                  "generics": {
-                    "regions": [],
-                    "types": [],
-                    "const_generics": [],
-                    "trait_refs": []
-                  }
-                }
-              }
-            }
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "SymAlign": {
-              "Untagged": {
-                "Adt": {
-                  "id": {
-                    "Adt": 2
-                  },
-                  "generics": {
-                    "regions": [],
-                    "types": [],
-                    "const_generics": [],
-                    "trait_refs": []
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            8
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+  "test_crate::GenericStruct": null,
+  "test_crate::UnsizedStruct": {
+    "size": null,
+    "align": null,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          8
+        ],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::SimpleEnum",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 1
-          }
+  "test_crate::SimpleEnum": {
+    "size": 1,
+    "align": 1,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U8"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 1
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U8"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U8",
-                    "0"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U8",
-                    "0"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "0"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U8",
-                    "1"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U8",
-                    "1"
-                  ]
-                }
-              },
-              {
-                "Known": 1
-              }
-            ]
-          ],
-          "fallback": "Invalid"
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Unsigned": [
                   "U8",
                   "0"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "1"
+                ]
+              },
+              "end": {
                 "Unsigned": [
                   "U8",
                   "1"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 1
+            }
           ]
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+        ],
+        "fallback": "Invalid"
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U8",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U8",
+                "1"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::SimpleAdt",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 24
-          }
+  "test_crate::SimpleAdt": {
+    "size": 24,
+    "align": 8,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 8
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U32"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "0"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "0"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "1"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "1"
-                  ]
-                }
-              },
-              {
-                "Known": 1
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "2"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "2"
-                  ]
-                }
-              },
-              {
-                "Known": 2
-              }
-            ]
-          ],
-          "fallback": "Invalid"
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Unsigned": [
                   "U32",
                   "0"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [
-            8,
-            16
+            },
+            {
+              "Known": 0
+            }
           ],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
+              },
+              "end": {
                 "Unsigned": [
                   "U32",
                   "1"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [
-            4,
-            8
+            },
+            {
+              "Known": 1
+            }
           ],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "2"
+                ]
+              },
+              "end": {
                 "Unsigned": [
                   "U32",
                   "2"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 2
+            }
           ]
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+        ],
+        "fallback": "Invalid"
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          8,
+          16
+        ],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          4,
+          8
+        ],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "2"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::NicheAdt",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 4
-          }
+  "test_crate::NicheAdt": {
+    "size": 4,
+    "align": 4,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U32"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "0"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "0"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ]
-          ],
-          "fallback": {
-            "Known": 1
-          }
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Unsigned": [
                   "U32",
                   "0"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 0
+            }
           ]
-        },
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
+        ],
+        "fallback": {
+          "Known": 1
         }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
       }
-    }
-  },
-  {
-    "key": "test_crate::IsAZST",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 0
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 1
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
-      }
-    }
-  },
-  {
-    "key": "test_crate::GenericWithKnownLayout",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 16
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 8
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            8,
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
-      }
-    }
-  },
-  {
-    "key": "test_crate::Reordered",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 8
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            4,
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
             0,
-            5
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::NotReordered",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 12
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            4,
-            8
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "C",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+  "test_crate::IsAZST": {
+    "size": 0,
+    "align": 1,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::Packed",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 6
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 1
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            1,
-            5
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": {
-          "Pack": 1
-        },
-        "transparent": false,
-        "explicit_discr_type": false
+  "test_crate::GenericWithKnownLayout": {
+    "size": 16,
+    "align": 8,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          8,
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::UninhabitedVariant",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 4
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 1
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        null,
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+  "test_crate::Reordered": {
+    "size": 8,
+    "align": 4,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          4,
+          0,
+          5
+        ],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::UninhabitedVariant2",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 8
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
+  "test_crate::NotReordered": {
+    "size": 12,
+    "align": 4,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          4,
+          8
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "C",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::Packed": {
+    "size": 6,
+    "align": 1,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          1,
+          5
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": {
+        "Pack": 1
       },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U32"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "1"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "1"
-                  ]
-                }
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::UninhabitedVariant": {
+    "size": 4,
+    "align": 4,
+    "discriminator": {
+      "Known": 1
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      null,
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::UninhabitedVariant2": {
+    "size": 8,
+    "align": 4,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
               },
-              {
-                "Known": 1
-              }
-            ]
-          ],
-          "fallback": "Invalid"
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            4,
-            4
-          ],
-          "uninhabited": true,
-          "tagger": []
-        },
-        {
-          "field_offsets": [
-            4
-          ],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Unsigned": [
                   "U32",
                   "1"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 1
+            }
           ]
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+        ],
+        "fallback": "Invalid"
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          4,
+          4
+        ],
+        "uninhabited": true,
+        "tagger": []
+      },
+      {
+        "field_offsets": [
+          4
+        ],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::UninhabitedVariantWithFields",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 12
-          }
+  "test_crate::UninhabitedVariantWithFields": {
+    "size": 12,
+    "align": 4,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U32"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "0"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "0"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ]
-          ],
-          "fallback": "Invalid"
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Unsigned": [
                   "U32",
                   "0"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 0
+            }
           ]
-        },
-        {
-          "field_offsets": [
-            4,
-            4,
-            8
-          ],
-          "uninhabited": true,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+        ],
+        "fallback": "Invalid"
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          4,
+          4,
+          8
+        ],
+        "uninhabited": true,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::Uninhabited",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 0
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 1
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": true,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": true,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+  "test_crate::Uninhabited": {
+    "size": 0,
+    "align": 1,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": true,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": true,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::DiscriminantInNicheOfField",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 16
-          }
+  "test_crate::DiscriminantInNicheOfField": {
+    "size": 16,
+    "align": 8,
+    "discriminator": {
+      "Branch": {
+        "offset": 8,
+        "int_ty": {
+          "Signed": "Isize"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 8
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 8,
-          "int_ty": {
-            "Signed": "Isize"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Signed": [
-                    "Isize",
-                    "0"
-                  ]
-                },
-                "end": {
-                  "Signed": [
-                    "Isize",
-                    "0"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "Isize",
+                  "0"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ]
-          ],
-          "fallback": {
-            "Known": 1
-          }
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              8,
-              {
+              "end": {
                 "Signed": [
                   "Isize",
                   "0"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 0
+            }
           ]
-        },
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
+        ],
+        "fallback": {
+          "Known": 1
         }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            8,
+            {
+              "Signed": [
+                "Isize",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::MaybeUninitInt",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 4
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+  "test_crate::MaybeUninitInt": {
+    "size": 4,
+    "align": 4,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::PackIntsUnion",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 8
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 8
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0,
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+  "test_crate::PackIntsUnion": {
+    "size": 8,
+    "align": 8,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "C",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::NonZeroNiche",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 4
-          }
+  "test_crate::NonZeroNiche": {
+    "size": 4,
+    "align": 4,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U32"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "1114112"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "1114112"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114112"
+                ]
               },
-              {
-                "Known": 1
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "1114113"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "1114113"
-                  ]
-                }
-              },
-              {
-                "Known": 2
-              }
-            ]
-          ],
-          "fallback": {
-            "Known": 0
-          }
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
-        },
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Unsigned": [
                   "U32",
                   "1114112"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114113"
+                ]
+              },
+              "end": {
                 "Unsigned": [
                   "U32",
                   "1114113"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 2
+            }
           ]
+        ],
+        "fallback": {
+          "Known": 0
         }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1114112"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1114113"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::ArbitraryDiscriminants",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 32
-          }
+  "test_crate::ArbitraryDiscriminants": {
+    "size": 32,
+    "align": 8,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Signed": "I32"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 8
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Signed": "I32"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Signed": [
-                    "I32",
-                    "12"
-                  ]
-                },
-                "end": {
-                  "Signed": [
-                    "I32",
-                    "12"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I32",
+                  "12"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Signed": [
-                    "I32",
-                    "43"
-                  ]
-                },
-                "end": {
-                  "Signed": [
-                    "I32",
-                    "43"
-                  ]
-                }
-              },
-              {
-                "Known": 1
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Signed": [
-                    "I32",
-                    "123456"
-                  ]
-                },
-                "end": {
-                  "Signed": [
-                    "I32",
-                    "123456"
-                  ]
-                }
-              },
-              {
-                "Known": 2
-              }
-            ]
-          ],
-          "fallback": "Invalid"
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
-            8
-          ],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Signed": [
                   "I32",
                   "12"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [
-            4
+            },
+            {
+              "Known": 0
+            }
           ],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I32",
+                  "43"
+                ]
+              },
+              "end": {
                 "Signed": [
                   "I32",
                   "43"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I32",
+                  "123456"
+                ]
+              },
+              "end": {
                 "Signed": [
                   "I32",
                   "123456"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 2
+            }
           ]
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": true
+        ],
+        "fallback": "Invalid"
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          8
+        ],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I32",
+                "12"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          4
+        ],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I32",
+                "43"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I32",
+                "123456"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": true
     }
   },
-  {
-    "key": "test_crate::MyOrder",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 1
-          }
+  "test_crate::MyOrder": {
+    "size": 1,
+    "align": 1,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Signed": "I8"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 1
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Signed": "I8"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Signed": [
-                    "I8",
-                    "-1"
-                  ]
-                },
-                "end": {
-                  "Signed": [
-                    "I8",
-                    "-1"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "-1"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Signed": [
-                    "I8",
-                    "0"
-                  ]
-                },
-                "end": {
-                  "Signed": [
-                    "I8",
-                    "0"
-                  ]
-                }
-              },
-              {
-                "Known": 1
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Signed": [
-                    "I8",
-                    "1"
-                  ]
-                },
-                "end": {
-                  "Signed": [
-                    "I8",
-                    "1"
-                  ]
-                }
-              },
-              {
-                "Known": 2
-              }
-            ]
-          ],
-          "fallback": "Invalid"
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Signed": [
                   "I8",
                   "-1"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "0"
+                ]
+              },
+              "end": {
                 "Signed": [
                   "I8",
                   "0"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "1"
+                ]
+              },
+              "end": {
                 "Signed": [
                   "I8",
                   "1"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 2
+            }
           ]
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": true
+        ],
+        "fallback": "Invalid"
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "-1"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "1"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": true
     }
   },
-  {
-    "key": "test_crate::WithNicheAndUninhabited",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 4
-          }
+  "test_crate::WithNicheAndUninhabited": {
+    "size": 4,
+    "align": 4,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U32"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U32",
-                    "0"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U32",
-                    "0"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ]
-          ],
-          "fallback": {
-            "Known": 2
-          }
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Unsigned": [
                   "U32",
                   "0"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 0
+            }
           ]
-        },
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": true,
-          "tagger": []
-        },
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
+        ],
+        "fallback": {
+          "Known": 2
         }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": true,
+        "tagger": []
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::GenericUnsized",
-    "value": null
-  },
-  {
-    "key": "test_crate::GenericButFixedSize",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 8
-          }
+  "test_crate::GenericUnsized": null,
+  "test_crate::GenericButFixedSize": {
+    "size": 8,
+    "align": 8,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Signed": "Isize"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 8
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Signed": "Isize"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Signed": [
-                    "Isize",
-                    "0"
-                  ]
-                },
-                "end": {
-                  "Signed": [
-                    "Isize",
-                    "0"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "Isize",
+                  "0"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ]
-          ],
-          "fallback": {
-            "Known": 1
-          }
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Signed": [
                   "Isize",
                   "0"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 0
+            }
           ]
-        },
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
+        ],
+        "fallback": {
+          "Known": 1
         }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "Isize",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::MaxBitsDiscr",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 16
-          }
+  "test_crate::MaxBitsDiscr": {
+    "size": 16,
+    "align": 16,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U128"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 16
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U128"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U128",
-                    "42"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U128",
-                    "42"
-                  ]
-                }
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U128",
+                  "42"
+                ]
               },
-              {
-                "Known": 0
-              }
-            ],
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U128",
-                    "18446744073709551615"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U128",
-                    "18446744073709551615"
-                  ]
-                }
-              },
-              {
-                "Known": 1
-              }
-            ]
-          ],
-          "fallback": "Invalid"
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              "end": {
                 "Unsigned": [
                   "U128",
                   "42"
                 ]
               }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U128",
+                  "18446744073709551615"
+                ]
+              },
+              "end": {
                 "Unsigned": [
                   "U128",
                   "18446744073709551615"
                 ]
               }
-            ]
+            },
+            {
+              "Known": 1
+            }
           ]
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": true
+        ],
+        "fallback": "Invalid"
       }
-    }
-  },
-  {
-    "key": "test_crate::SingleVariantButNonZero",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 0
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 1
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 1
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        null,
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
-      }
-    }
-  },
-  {
-    "key": "test_crate::NonAdtAlias",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "SymSize": {
-              "Untagged": {
-                "TypeVar": {
-                  "Bound": [
-                    0,
-                    0
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "SymAlign": {
-              "Untagged": {
-                "TypeVar": {
-                  "Bound": [
-                    0,
-                    0
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "discriminator": null,
-      "uninhabited": false,
-      "variant_layouts": [],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
-      }
-    }
-  },
-  {
-    "key": "test_crate::Tuple",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 8
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 4
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
             0,
-            4
-          ],
-          "uninhabited": false,
-          "tagger": []
-        }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
-      }
-    }
-  },
-  {
-    "key": "test_crate::Usize",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 8
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 8
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
-      }
-    }
-  },
-  {
-    "key": "test_crate::Str",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "SymSize": {
-              "Untagged": {
-                "Adt": {
-                  "id": {
-                    "Builtin": "Str"
-                  },
-                  "generics": {
-                    "regions": [],
-                    "types": [],
-                    "const_generics": [],
-                    "trait_refs": []
-                  }
-                }
-              }
+            {
+              "Unsigned": [
+                "U128",
+                "42"
+              ]
             }
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "SymAlign": {
-              "Untagged": {
-                "Adt": {
-                  "id": {
-                    "Builtin": "Str"
-                  },
-                  "generics": {
-                    "regions": [],
-                    "types": [],
-                    "const_generics": [],
-                    "trait_refs": []
-                  }
-                }
-              }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U128",
+                "18446744073709551615"
+              ]
             }
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+          ]
+        ]
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": true
     }
   },
-  {
-    "key": "test_crate::Ref",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 8
-          }
-        },
-        "alignment": {
-          "Atom": {
-            "Concrete": 8
-          }
-        }
-      },
-      "discriminator": {
-        "Known": 0
-      },
-      "uninhabited": false,
-      "variant_layouts": [],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
+  "test_crate::SingleVariantButNonZero": {
+    "size": 0,
+    "align": 1,
+    "discriminator": {
+      "Known": 1
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      null,
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
       }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   },
-  {
-    "key": "test_crate::HasInvalidDiscr",
-    "value": {
-      "size_align": {
-        "size": {
-          "Atom": {
-            "Concrete": 1
-          }
+  "test_crate::NonAdtAlias": null,
+  "test_crate::Tuple": {
+    "size": 8,
+    "align": 4,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          4
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::Usize": {
+    "size": 8,
+    "align": 8,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::Str": {
+    "size": null,
+    "align": null,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::Ref": {
+    "size": 8,
+    "align": 8,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::HasInvalidDiscr": {
+    "size": 1,
+    "align": 1,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U8"
         },
-        "alignment": {
-          "Atom": {
-            "Concrete": 1
-          }
-        }
-      },
-      "discriminator": {
-        "Branch": {
-          "offset": 0,
-          "int_ty": {
-            "Unsigned": "U8"
-          },
-          "children": [
-            [
-              {
-                "start": {
-                  "Unsigned": [
-                    "U8",
-                    "2"
-                  ]
-                },
-                "end": {
-                  "Unsigned": [
-                    "U8",
-                    "4"
-                  ]
-                }
-              },
-              {
-                "Branch": {
-                  "offset": 0,
-                  "int_ty": {
-                    "Unsigned": "U8"
-                  },
-                  "children": [
-                    [
-                      {
-                        "start": {
-                          "Unsigned": [
-                            "U8",
-                            "2"
-                          ]
-                        },
-                        "end": {
-                          "Unsigned": [
-                            "U8",
-                            "2"
-                          ]
-                        }
-                      },
-                      {
-                        "Known": 0
-                      }
-                    ],
-                    [
-                      {
-                        "start": {
-                          "Unsigned": [
-                            "U8",
-                            "4"
-                          ]
-                        },
-                        "end": {
-                          "Unsigned": [
-                            "U8",
-                            "4"
-                          ]
-                        }
-                      },
-                      {
-                        "Known": 2
-                      }
-                    ]
-                  ],
-                  "fallback": "Invalid"
-                }
-              }
-            ]
-          ],
-          "fallback": {
-            "Known": 1
-          }
-        }
-      },
-      "uninhabited": false,
-      "variant_layouts": [
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+        "children": [
+          [
+            {
+              "start": {
                 "Unsigned": [
                   "U8",
                   "2"
                 ]
-              }
-            ]
-          ]
-        },
-        {
-          "field_offsets": [
-            0
-          ],
-          "uninhabited": false,
-          "tagger": []
-        },
-        {
-          "field_offsets": [],
-          "uninhabited": false,
-          "tagger": [
-            [
-              0,
-              {
+              },
+              "end": {
                 "Unsigned": [
                   "U8",
                   "4"
                 ]
               }
-            ]
+            },
+            {
+              "Branch": {
+                "offset": 0,
+                "int_ty": {
+                  "Unsigned": "U8"
+                },
+                "children": [
+                  [
+                    {
+                      "start": {
+                        "Unsigned": [
+                          "U8",
+                          "2"
+                        ]
+                      },
+                      "end": {
+                        "Unsigned": [
+                          "U8",
+                          "2"
+                        ]
+                      }
+                    },
+                    {
+                      "Known": 0
+                    }
+                  ],
+                  [
+                    {
+                      "start": {
+                        "Unsigned": [
+                          "U8",
+                          "4"
+                        ]
+                      },
+                      "end": {
+                        "Unsigned": [
+                          "U8",
+                          "4"
+                        ]
+                      }
+                    },
+                    {
+                      "Known": 2
+                    }
+                  ]
+                ],
+                "fallback": "Invalid"
+              }
+            }
           ]
+        ],
+        "fallback": {
+          "Known": 1
         }
-      ],
-      "repr": {
-        "repr_algo": "Rust",
-        "align_modif": null,
-        "transparent": false,
-        "explicit_discr_type": false
       }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U8",
+                "2"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U8",
+                "4"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
     }
   }
-]
+}

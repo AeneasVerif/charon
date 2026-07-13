@@ -2,7 +2,7 @@ use itertools::Itertools;
 use serde_state::WithState;
 use std::path::PathBuf;
 
-use charon_lib::{ast::*, common::serialize_map_to_array::SeqHashMapToArray};
+use charon_lib::ast::*;
 
 mod util;
 use util::*;
@@ -108,6 +108,7 @@ fn type_layout() -> anyhow::Result<()> {
             y: (),
         }
 
+        #[repr(C)]
         union PackIntsUnion {
             x: (u32, u32),
             y: u64,
@@ -235,7 +236,7 @@ fn type_layout() -> anyhow::Result<()> {
         }
     }
 
-    let layouts: SeqHashMap<String, Option<_>> = crate_data
+    let layouts: SeqHashMap<String, _> = crate_data
         .type_decls
         .iter()
         .filter_map(|tdecl| {
@@ -248,11 +249,32 @@ fn type_layout() -> anyhow::Result<()> {
             Some((name, serializable))
         })
         .collect();
-    let mut buffer: Vec<u8> = Vec::new();
-    let mut serializer = serde_json::Serializer::pretty(&mut buffer);
-    SeqHashMapToArray::serialize_state(&layouts, &(), &mut serializer)?;
-    let layouts_str = str::from_utf8(&buffer)?;
+    let layouts_str = serde_json::to_string_pretty(&layouts)?;
 
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
+
+    let mut concretizer = Concretizer::default();
+    let layouts: SeqHashMap<String, _> = crate_data
+        .type_decls
+        .iter()
+        .filter_map(|tdecl| {
+            if tdecl.item_meta.name.name[0].as_ident().unwrap().0 != "test_crate" {
+                return None;
+            }
+            let name = repr_name(&crate_data, &tdecl.item_meta.name);
+            let opt_guarantee = tdecl.guarantees.clone();
+            let fake_ty = Ty::new(TyKind::Adt(TypeDeclRef {
+                id: TypeId::Adt(tdecl.def_id),
+                generics: Box::new(tdecl.generics.identity_args()),
+            }));
+            let opt_concretized = concretizer.concretized_layout_for(&fake_ty, &crate_data);
+            let guarantee_serializable = opt_guarantee.map(|l| WithState::new(l, &()));
+            let concretized_serializable = opt_concretized.map(|l| WithState::new(l, &()));
+            Some((name, (guarantee_serializable, concretized_serializable)))
+        })
+        .collect();
+    let layouts_str = serde_json::to_string_pretty(&layouts)?;
+
+    compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout_guarantees.json"))?;
     Ok(())
 }

@@ -3,9 +3,8 @@ use rustc_middle::ty;
 use rustc_span::sym;
 
 use super::translate_ctx::*;
-use crate::hax::{self, GenericArg, SInto, UnderOwnerState};
+use crate::hax::{self, GenericArg, UnderOwnerState};
 use crate::hax::{HasOwner, Visibility};
-use charon_lib::ast::symbolic_layout::SymbolicLayout;
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
 
@@ -496,17 +495,215 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(ret)
     }
 
+    /// There must be at most one non-1-ZST field in the single variant.
+    /// Based on https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.transparent
+    fn translate_transparent_layout_guarantees(
+        &mut self,
+        span: Span,
+        fields: &hax::IndexVec<rustc_abi::FieldIdx, hax::FieldDef>,
+    ) -> Option<LayoutGuarantees> {
+        let mut non_one_zst_ty = None;
+        for field in fields.iter() {
+            let ty = self.translate_ty(span, &field.ty).unwrap();
+            if let Some(layout) = LayoutGuarantees::for_ty(&ty, &self.t_ctx.translated) {
+                if layout != LayoutGuarantees::ONE_ZST {
+                    non_one_zst_ty = Some(ty.clone());
+                }
+                if !self
+                    .t_ctx
+                    .translated
+                    .memoized_layout_guarantees
+                    .contains_key(&ty)
+                {
+                    self.t_ctx
+                        .translated
+                        .memoized_layout_guarantees
+                        .insert(ty.clone(), layout);
+                }
+            }
+        }
+
+        if let Some(non_one_zst_ty) = non_one_zst_ty {
+            Some(LayoutGuarantees::mk_symbolic(non_one_zst_ty))
+        } else {
+            // If there is no non-1-ZST field, the type is equivalent to unit.
+            Some(LayoutGuarantees::ONE_ZST)
+        }
+    }
+
     #[tracing::instrument(skip(self))]
-    /// Translates a layout symbolically, once we failed to obtain a concrete layout for the type.
-    pub fn translate_symbolic_layout(
+    /// Constructs the layout guarantees, even if we failed to obtain a concrete layout for the type.
+    /// Also memoizes all guarantees of types that were required to build the guarantees for the given def.
+    pub fn translate_layout_guarantees(
         &mut self,
         def: &hax::FullDef<'tcx>,
-    ) -> Option<SymbolicLayout> {
+    ) -> Option<LayoutGuarantees> {
+        fn memoize_ty_layout(ty: &Ty, translated: &mut TranslatedCrate) {
+            if !translated.memoized_layout_guarantees.contains_key(ty)
+                && let Some(layout) = LayoutGuarantees::for_ty(ty, translated)
+            {
+                translated
+                    .memoized_layout_guarantees
+                    .insert(ty.clone(), layout);
+            }
+        }
+
+        let span = self.translate_span(&def.span);
+
         match def.kind() {
-            hax::FullDefKind::Adt { adt_kind, .. } => match adt_kind {
-                hax::AdtKind::Struct => None, // TODO: implement
-                hax::AdtKind::Union => None,  // TODO: implement
-                hax::AdtKind::Enum => None,   // TODO: implement
+            hax::FullDefKind::Adt {
+                adt_kind,
+                variants,
+                repr,
+                ..
+            } => match adt_kind {
+                hax::AdtKind::Struct => {
+                    debug_assert_eq!(variants.len(), 1);
+                    let fields = &variants.iter().next()?.fields;
+
+                    if repr.flags.is_transparent {
+                        return self.translate_transparent_layout_guarantees(span, fields);
+                    }
+
+                    // Ignore `repr(C)` for now, since that requires a much more complex algorithm.
+                    if repr.flags.is_c {
+                        // TODO: implement the algorithm sketched here, but symbolic:
+                        // https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct.size-field-offset
+                        return None;
+                    }
+
+                    let fields = fields.iter().map(|field| {
+                        let ty = self.translate_ty(span, &field.ty).unwrap();
+                        memoize_ty_layout(&ty, &mut self.t_ctx.translated);
+                        ty
+                    });
+                    let LayoutGuarantees {
+                        mut size,
+                        alignment,
+                    } = LayoutGuarantees::mk_unordered_sequence(fields);
+                    // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.align-packed
+                    let alignment = if let Some(n) = &repr.pack {
+                        LayoutGuaranteeComp::Packed {
+                            max_align: LayoutGuaranteeAtom::Concrete(n.bytes),
+                            to_pack: Box::new(alignment),
+                        }
+                    } else {
+                        alignment
+                    };
+                    size.realign(alignment.clone());
+                    Some(LayoutGuarantees { size, alignment })
+                }
+                hax::AdtKind::Union => {
+                    // We get no guarantees for non-`repr(C)` unions.
+                    // See https://doc.rust-lang.org/reference/types/union.html#r-type.union.layout
+                    if !repr.flags.is_c {
+                        return None;
+                    }
+
+                    // The layout of a union is the max size and alignment among all its variants.
+                    // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.union.size-align
+                    let mut max_size = Vec::new();
+                    let mut max_align = Vec::new();
+                    if let Some(forced_align) = &repr.align {
+                        max_align.push(LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(
+                            forced_align.bytes,
+                        )));
+                    }
+                    for variant in variants.iter() {
+                        let fields = variant.fields.iter().map(|field| {
+                            let ty = self.translate_ty(span, &field.ty).unwrap();
+                            memoize_ty_layout(&ty, &mut self.t_ctx.translated);
+                            ty
+                        });
+                        let LayoutGuarantees { size, alignment } =
+                            LayoutGuarantees::mk_unordered_sequence(fields);
+                        max_size.push(size);
+                        max_align.push(alignment);
+                    }
+                    // TODO: Can other representations influence this?
+                    // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.align-packed
+                    let alignment = if let Some(n) = &repr.pack {
+                        LayoutGuaranteeComp::Packed {
+                            max_align: LayoutGuaranteeAtom::Concrete(n.bytes),
+                            to_pack: Box::new(LayoutGuaranteeComp::Max(max_align)),
+                        }
+                    } else {
+                        LayoutGuaranteeComp::Max(max_align)
+                    };
+                    let size = LayoutGuaranteeComp::AlignedTo {
+                        base: Box::new(LayoutGuaranteeComp::Max(max_size)),
+                        target_align: Box::new(alignment.clone()),
+                    };
+                    Some(LayoutGuarantees { size, alignment })
+                }
+                hax::AdtKind::Enum => {
+                    if repr.flags.is_transparent {
+                        debug_assert_eq!(variants.len(), 1);
+                        let fields = &variants.iter().next()?.fields;
+                        return self.translate_transparent_layout_guarantees(span, fields);
+                    }
+
+                    // In this case, the enum is guaranteed to be a tagged union.
+                    // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.adt
+                    if repr.flags.is_c {
+                        let tag_ty = self.translate_ty(span, &repr.typ).ok()?;
+                        let LayoutGuarantees {
+                            size: tag_size,
+                            alignment: tag_align,
+                        } = LayoutGuarantees::for_ty(&tag_ty, &self.t_ctx.translated)?;
+
+                        let mut field_less = true;
+                        let mut max_size = Vec::new();
+                        let mut max_align = vec![tag_align.clone()];
+                        if let Some(forced_align) = &repr.align {
+                            max_align.push(LayoutGuaranteeComp::Atom(
+                                LayoutGuaranteeAtom::Concrete(forced_align.bytes),
+                            ));
+                        }
+                        for variant in variants.iter() {
+                            let fields = variant.fields.iter().map(|field| {
+                                field_less = false;
+                                let ty = self.translate_ty(span, &field.ty).unwrap();
+                                memoize_ty_layout(&ty, &mut self.t_ctx.translated);
+                                ty
+                            });
+                            let LayoutGuarantees {
+                                mut size,
+                                alignment,
+                            } = LayoutGuarantees::mk_unordered_sequence(fields);
+                            size += tag_size.clone();
+                            max_size.push(size);
+                            max_align.push(alignment);
+                        }
+
+                        // Based on https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.enum
+                        if field_less {
+                            return Some(LayoutGuarantees {
+                                size: tag_size,
+                                alignment: tag_align,
+                            });
+                        }
+
+                        // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.align-packed
+                        let alignment = if let Some(n) = &repr.pack {
+                            LayoutGuaranteeComp::Packed {
+                                max_align: LayoutGuaranteeAtom::Concrete(n.bytes),
+                                to_pack: Box::new(LayoutGuaranteeComp::Max(max_align)),
+                            }
+                        } else {
+                            LayoutGuaranteeComp::Max(max_align)
+                        };
+                        let size = LayoutGuaranteeComp::AlignedTo {
+                            base: Box::new(LayoutGuaranteeComp::Max(max_size)),
+                            target_align: Box::new(alignment.clone()),
+                        };
+                        Some(LayoutGuarantees { size, alignment })
+                    } else {
+                        // Not sure what to do here about the discriminant, tbh.
+                        // Some types might support
+                        None
+                    }
+                }
                 hax::AdtKind::Array => {
                     let elem_ty = def
                         .this()
@@ -520,7 +717,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             }
                         })
                         .unwrap();
-                    let elem_ty = self.translate_ty(Span::dummy(), elem_ty).ok()?;
+                    let elem_ty = self.translate_ty(span, elem_ty).ok()?;
+                    memoize_ty_layout(&elem_ty, &mut self.t_ctx.translated);
+
                     let elem_num = def
                         .this()
                         .generic_args
@@ -533,17 +732,30 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             }
                         })
                         .unwrap();
-                    let elem_num = self.translate_constant_expr(Span::dummy(), elem_num).ok()?;
+                    let elem_num = self.translate_constant_expr(span, elem_num).ok()?;
 
-                    Some(SymbolicLayout::mk_array(&elem_ty, &elem_num))
+                    Some(LayoutGuarantees::mk_array(&elem_ty, &elem_num))
                 }
                 hax::AdtKind::Slice => None, // TODO: support DSTs?
-                hax::AdtKind::Tuple => None, // TODO: implement
+                hax::AdtKind::Tuple => Some(LayoutGuarantees::mk_unordered_sequence(
+                    def.this().generic_args.iter().map(|generic_arg| {
+                        let GenericArg::Type(ty) = generic_arg else {
+                            panic!("Non-type argument to tuple!")
+                        };
+                        let ty = self.translate_ty(span, ty).unwrap();
+                        memoize_ty_layout(&ty, &mut self.t_ctx.translated);
+                        ty
+                    }),
+                )),
             },
             hax::FullDefKind::TyAlias { ty, .. } => {
-                let ty = self.translate_ty(Span::dummy(), ty).ok()?;
-                Some(SymbolicLayout::mk_symbolic(ty))
+                let ty = self.translate_ty(span, ty).ok()?;
+                memoize_ty_layout(&ty, &mut self.t_ctx.translated);
+
+                Some(LayoutGuarantees::mk_symbolic(ty))
             }
+            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.closure
+            hax::FullDefKind::Closure { .. } => None,
             _ => None,
         }
     }
@@ -625,32 +837,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
         // If layout computation returns an error, we return `None`.
-        let layout = match tcx.layout_of(pseudo_input) {
-            Ok(ty_and_layout) => ty_and_layout.layout,
-            Err(_) => {
-                let size_align = self.translate_symbolic_layout(def)?;
-                let repr = match &def.kind {
-                    hax::FullDefKind::Adt { repr: hax_repr, .. } => {
-                        self.translate_repr_options(hax_repr)
-                    }
-                    _ => ReprOptions::default(),
-                };
-                // TODO: can we get the real information somewhere else?
-                return Some(Layout {
-                    size_align,
-                    discriminator: None,
-                    uninhabited: false,
-                    variant_layouts: IndexVec::new(),
-                    repr,
-                });
-            }
-        };
-        let size_align = if layout.is_sized() {
-            SymbolicLayout::mk_concrete(layout.size().bytes(), layout.align.bytes())
+        let layout = tcx.layout_of(pseudo_input).ok()?.layout;
+        let (size, align) = if layout.is_sized() {
+            (
+                Some(layout.size().bytes()),
+                Some(layout.align().abi.bytes()),
+            )
         } else {
-            let ty = ty.sinto(hax_state);
-            let ty = self.translate_ty(Span::dummy(), &ty).ok()?;
-            SymbolicLayout::mk_symbolic(ty)
+            (None, None)
         };
 
         // Build the discriminator tree and variant layouts.
@@ -780,7 +974,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         };
 
         Some(Layout {
-            size_align,
+            size,
+            align,
             discriminator,
             uninhabited: layout.is_uninhabited(),
             variant_layouts,
@@ -808,10 +1003,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     align = std::cmp::max(align, size);
                     offset
                 });
-                let size_align = SymbolicLayout::mk_concrete(size, align);
 
                 Ok(Layout {
-                    size_align,
+                    size: Some(size),
+                    align: Some(align),
                     discriminator: None,
                     uninhabited: false,
                     variant_layouts: IndexVec::from([Some(VariantLayout {

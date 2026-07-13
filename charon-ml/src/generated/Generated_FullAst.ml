@@ -380,5 +380,9 @@ and translated_crate = {
           method implementations apart.
 
           [Some] after translation unless [--no-reorder-decls] is passed. *)
+  memoized_layout_guarantees : (ty * layout_guarantees) list;
+      (** A map from types to the corresponding symbolic layouts as computed at
+          translation time. Can be used for efficient lookups after translation.
+      *)
 }
 [@@deriving show]

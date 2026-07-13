@@ -159,7 +159,8 @@ impl CrateMerger {
             global_decls,
             trait_decls,
             trait_impls,
-            ordered_decls: _, // Recomputed on the merged crate
+            ordered_decls: _,              // Recomputed on the merged crate
+            memoized_layout_guarantees: _, // TODO: can we merge them? should we merge them?
         } = krate;
         if self.merged.translated.crate_name.is_empty() {
             self.merged.translated.crate_name = crate_name;

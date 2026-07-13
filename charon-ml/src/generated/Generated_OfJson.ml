@@ -2672,13 +2672,15 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
     (match js with
     | `Assoc
         [
-          ("size_align", size_align);
+          ("size", size);
+          ("align", align);
           ("discriminator", discriminator);
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
           ("repr", repr);
         ] ->
-        let* size_align = symbolic_layout_of_json ctx size_align in
+        let* size = option_of_json int_of_json ctx size in
+        let* align = option_of_json int_of_json ctx align in
         let* discriminator =
           option_of_json discriminator_of_json ctx discriminator
         in
@@ -2690,8 +2692,71 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
         in
         let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ size_align; discriminator; uninhabited; variant_layouts; repr }
+          ({ size; align; discriminator; uninhabited; variant_layouts; repr }
             : layout)
+    | _ -> Error "")
+
+and layout_guarantee_atom_of_json (ctx : of_json_ctx) (js : json) :
+    (layout_guarantee_atom, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("SymSize", sym_size) ] ->
+        let* sym_size = ty_of_json ctx sym_size in
+        Ok (SymSize sym_size)
+    | `Assoc [ ("SymAlign", sym_align) ] ->
+        let* sym_align = ty_of_json ctx sym_align in
+        Ok (SymAlign sym_align)
+    | `Assoc [ ("Concrete", concrete) ] ->
+        let* concrete = int_of_json ctx concrete in
+        Ok (Concrete concrete)
+    | _ -> Error "")
+
+and layout_guarantee_comp_of_json (ctx : of_json_ctx) (js : json) :
+    (layout_guarantee_comp, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Atom", atom) ] ->
+        let* atom = layout_guarantee_atom_of_json ctx atom in
+        Ok (Atom atom)
+    | `Assoc [ ("Sum", sum) ] ->
+        let* sum = list_of_json layout_guarantee_comp_of_json ctx sum in
+        Ok (Sum sum)
+    | `Assoc
+        [ ("Product", `Assoc [ ("atom", atom); ("multiplier", multiplier) ]) ]
+      ->
+        let* atom = box_of_json layout_guarantee_comp_of_json ctx atom in
+        let* multiplier = constant_expr_of_json ctx multiplier in
+        Ok (Product (atom, multiplier))
+    | `Assoc
+        [
+          ( "AlignedTo",
+            `Assoc [ ("base", base); ("target_align", target_align) ] );
+        ] ->
+        let* base = box_of_json layout_guarantee_comp_of_json ctx base in
+        let* target_align =
+          box_of_json layout_guarantee_comp_of_json ctx target_align
+        in
+        Ok (AlignedTo (base, target_align))
+    | `Assoc [ ("Max", max) ] ->
+        let* max = list_of_json layout_guarantee_comp_of_json ctx max in
+        Ok (Max max)
+    | `Assoc
+        [
+          ("Packed", `Assoc [ ("max_align", max_align); ("to_pack", to_pack) ]);
+        ] ->
+        let* max_align = layout_guarantee_atom_of_json ctx max_align in
+        let* to_pack = box_of_json layout_guarantee_comp_of_json ctx to_pack in
+        Ok (Packed (max_align, to_pack))
+    | _ -> Error "")
+
+and layout_guarantees_of_json (ctx : of_json_ctx) (js : json) :
+    (layout_guarantees, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("size", size); ("alignment", alignment) ] ->
+        let* size = layout_guarantee_comp_of_json ctx size in
+        let* alignment = layout_guarantee_comp_of_json ctx alignment in
+        Ok ({ size; alignment } : layout_guarantees)
     | _ -> Error "")
 
 and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
@@ -2807,60 +2872,6 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Json" -> Ok Json
     | `String "Postcard" -> Ok Postcard
     | `String "All" -> Ok AllFormats
-    | _ -> Error "")
-
-and sym_layout_atom_of_json (ctx : of_json_ctx) (js : json) :
-    (sym_layout_atom, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("SymSize", sym_size) ] ->
-        let* sym_size = ty_of_json ctx sym_size in
-        Ok (SymSize sym_size)
-    | `Assoc [ ("SymAlign", sym_align) ] ->
-        let* sym_align = ty_of_json ctx sym_align in
-        Ok (SymAlign sym_align)
-    | `Assoc [ ("Concrete", concrete) ] ->
-        let* concrete = int_of_json ctx concrete in
-        Ok (Concrete concrete)
-    | _ -> Error "")
-
-and sym_layout_comp_of_json (ctx : of_json_ctx) (js : json) :
-    (sym_layout_comp, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Atom", atom) ] ->
-        let* atom = sym_layout_atom_of_json ctx atom in
-        Ok (Atom atom)
-    | `Assoc [ ("Sum", sum) ] ->
-        let* sum = list_of_json sym_layout_atom_of_json ctx sum in
-        Ok (Sum sum)
-    | `Assoc
-        [ ("Product", `Assoc [ ("atom", atom); ("multiplier", multiplier) ]) ]
-      ->
-        let* atom = sym_layout_atom_of_json ctx atom in
-        let* multiplier = constant_expr_of_json ctx multiplier in
-        Ok (Product (atom, multiplier))
-    | `Assoc
-        [
-          ( "AlignedTo",
-            `Assoc [ ("base", base); ("target_align", target_align) ] );
-        ] ->
-        let* base = box_of_json sym_layout_comp_of_json ctx base in
-        let* target_align = sym_layout_atom_of_json ctx target_align in
-        Ok (AlignedTo (base, target_align))
-    | `Assoc [ ("Max", max) ] ->
-        let* max = list_of_json sym_layout_comp_of_json ctx max in
-        Ok (Max max)
-    | _ -> Error "")
-
-and symbolic_layout_of_json (ctx : of_json_ctx) (js : json) :
-    (symbolic_layout, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("size", size); ("alignment", alignment) ] ->
-        let* size = sym_layout_comp_of_json ctx size in
-        let* alignment = sym_layout_comp_of_json ctx alignment in
-        Ok ({ size; alignment } : symbolic_layout)
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -3083,6 +3094,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_decls", trait_decls);
           ("trait_impls", trait_impls);
           ("ordered_decls", ordered_decls);
+          ("memoized_layout_guarantees", memoized_layout_guarantees);
         ] ->
         let* crate_name = string_of_json ctx crate_name in
         let* options = cli_options_of_json ctx options in
@@ -3146,6 +3158,10 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
             (list_of_json declaration_group_of_json)
             ctx ordered_decls
         in
+        let* memoized_layout_guarantees =
+          index_map_of_json ty_of_json layout_guarantees_of_json int_of_json ctx
+            memoized_layout_guarantees
+        in
         Ok
           ({
              crate_name;
@@ -3161,6 +3177,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
              trait_decls;
              trait_impls;
              ordered_decls;
+             memoized_layout_guarantees;
            }
             : translated_crate)
     | _ -> Error "")
@@ -3177,6 +3194,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("src", src);
           ("kind", kind);
           ("layout", layout);
+          ("guarantees", guarantees);
           ("ptr_metadata", ptr_metadata);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
@@ -3187,9 +3205,21 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* layout =
           index_map_of_json string_of_json layout_of_json int_of_json ctx layout
         in
+        let* guarantees =
+          option_of_json layout_guarantees_of_json ctx guarantees
+        in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
         Ok
-          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
+          ({
+             def_id;
+             item_meta;
+             generics;
+             src;
+             kind;
+             layout;
+             guarantees;
+             ptr_metadata;
+           }
             : type_decl)
     | _ -> Error "")
 

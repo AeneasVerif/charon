@@ -1,4 +1,4 @@
-use crate::ast::{symbolic_layout::SymbolicLayout, *};
+use crate::ast::*;
 use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::ids::IndexVec;
 use derive_generic_visitor::*;
@@ -583,9 +583,12 @@ pub enum Discriminator {
 /// some of the layout parts are not available.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Layout {
-    /// The (potentially) symbolic size and alignment of the type.
+    /// The size of the type in bytes.
     #[drive(skip)]
-    pub size_align: SymbolicLayout,
+    pub size: Option<ByteCount>,
+    /// The alignment, in bytes.
+    #[drive(skip)]
+    pub align: Option<ByteCount>,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     #[drive(skip)]
     #[serde_state(stateless)]
@@ -702,6 +705,9 @@ pub struct TypeDecl {
     /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
     #[serde(with = "SeqHashMapToArray::<TargetTriple, Layout>")]
     pub layout: SeqHashMap<TargetTriple, Layout>,
+    /// Additionally to the target-specific layout stored in [Self::layout],
+    /// this stores the target-agnostic guarantees that Rust makes about the type's layout.
+    pub guarantees: Option<LayoutGuarantees>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
 }

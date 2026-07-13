@@ -1094,8 +1094,8 @@ and item_source =
     known layout (e.g. it is ?Sized) some of the layout parts are not available.
 *)
 and layout = {
-  size_align : symbolic_layout;
-      (** The (potentially) symbolic size and alignment of the type. *)
+  size : int option;  (** The size of the type in bytes. *)
+  align : int option;  (** The alignment, in bytes. *)
   discriminator : discriminator option;
       (** Decision tree that determines the active variant by reading memory.
           Only [Some] for enums. *)
@@ -1112,6 +1112,53 @@ and layout = {
   repr : repr_options;
       (** The representation options of this type declaration as annotated by
           the user. *)
+}
+
+(** The basic building blocks of symbolic layout information. *)
+and layout_guarantee_atom =
+  | SymSize of ty  (** Symbolic size of type T, cf. [size_of<T>()]. *)
+  | SymAlign of ty  (** Symbolic alignment of type T, cf. [align_of<T>()] *)
+  | Concrete of int
+      (** Concrete layout information as a scalar value. TODO: maybe just a
+          usize etc.? *)
+
+(** Composite symbolic layout expressions.
+
+    [non_exhaustive] since we might need many more composite layouts. TODO:
+    remove once we have all composite descriptions we need. *)
+and layout_guarantee_comp =
+  | Atom of layout_guarantee_atom  (** A single symbolic layout atom. *)
+  | Sum of layout_guarantee_comp list  (** The sum of its atoms. *)
+  | Product of layout_guarantee_comp * constant_expr
+      (** An atom multiplied by a fixed scalar (e.g. [N] in [T;N]).
+
+          Fields:
+          - [atom]
+          - [multiplier] *)
+  | AlignedTo of layout_guarantee_comp * layout_guarantee_comp
+      (** The next multiple of [target_align] from [base].
+
+          Fields:
+          - [base]
+          - [target_align] *)
+  | Max of layout_guarantee_comp list
+      (** The maximum of these composite layout expressions. *)
+  | Packed of layout_guarantee_atom * layout_guarantee_comp
+      (** For the packed representation, the overall and field alignments are
+          each at most [max_align]. Thus, in contrast to the [[Self::Max]], we
+          only need to compare a composition with a fixed constant atomic.
+
+          Fields:
+          - [max_align]
+          - [to_pack] *)
+
+(** Symbolic layout information about a type's size and alignment.
+
+    TODO: would it make sense to also have enum-specific information here? E.g.
+    whether the enum could have/has a guaranteed niche? *)
+and layout_guarantees = {
+  size : layout_guarantee_comp;
+  alignment : layout_guarantee_comp;
 }
 
 (** An item name/path
@@ -1205,42 +1252,6 @@ and repr_options = {
   explicit_discr_type : bool;
 }
 
-(** The basic building blocks of symbolic layout information. *)
-and sym_layout_atom =
-  | SymSize of ty  (** Symbolic size of type T, cf. [size_of<T>()]. *)
-  | SymAlign of ty  (** Symbolic alignment of type T, cf. [align_of<T>()] *)
-  | Concrete of int
-      (** Concrete layout information as a scalar value. TODO: maybe just a
-          usize etc.? *)
-
-(** Composite symbolic layout expressions.
-
-    [non_exhaustive] since we might need many more composite layouts. TODO:
-    remove once we have all composite descriptions we need. *)
-and sym_layout_comp =
-  | Atom of sym_layout_atom  (** A single symbolic layout atom. *)
-  | Sum of sym_layout_atom list  (** The sum of its atoms. *)
-  | Product of sym_layout_atom * constant_expr
-      (** An atom multiplied by a fixed scalar (e.g. [N] in [T;N]).
-
-          Fields:
-          - [atom]
-          - [multiplier] *)
-  | AlignedTo of sym_layout_comp * sym_layout_atom
-      (** The next multiple of [target_align] from [base].
-
-          Fields:
-          - [base]
-          - [target_align] *)
-  | Max of sym_layout_comp list
-      (** The maximum of these composite layout expressions. *)
-
-(** Symbolic layout information about a type's size and alignment.
-
-    TODO: would it make sense to also have enum-specific information here? E.g.
-    whether the enum could have/has a guaranteed niche? *)
-and symbolic_layout = { size : sym_layout_comp; alignment : sym_layout_comp }
-
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -1266,6 +1277,10 @@ and type_decl = {
       (** The layout of the type for each target. Information may be partial
           because of generics or dynamically-sized types. If we cannot compute a
           layout, the target has no entry. *)
+  guarantees : layout_guarantees option;
+      (** Additionally to the target-specific layout stored in [Self::layout],
+          this stores the target-agnostic guarantees that Rust makes about the
+          type's layout. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
 }
