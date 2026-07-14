@@ -492,9 +492,24 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
         let triple = self.get_target_triple();
+        let primitive_alignments = TargetAlignments {
+            i1_align: target_data.i1_align.bytes(),
+            i8_align: target_data.i8_align.bytes(),
+            i16_align: target_data.i16_align.bytes(),
+            i32_align: target_data.i32_align.bytes(),
+            i64_align: target_data.i64_align.bytes(),
+            i128_align: target_data.i128_align.bytes(),
+            f16_align: target_data.f16_align.bytes(),
+            f32_align: target_data.f32_align.bytes(),
+            f64_align: target_data.f32_align.bytes(),
+            f128_align: target_data.f128_align.bytes(),
+            ptr_align: target_data.pointer_align().bytes(),
+        };
         let info = krate::TargetInfo {
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
+            c_enum_min_size: target_data.c_enum_min_size.size().bytes(),
+            primitive_alignments,
         };
         self.translated.target_information.insert(triple, info);
     }

@@ -192,6 +192,22 @@ pub type DeclarationsGroups = Vec<DeclarationGroup>;
 /// A target triple, e.g. `x86_64-unknown-linux-gnu`.
 pub type TargetTriple = String;
 
+/// Stores the exact alignments for most primitive types.
+#[derive(Clone, Drive, DriveMut, Serialize, Deserialize)]
+pub struct TargetAlignments {
+    pub i1_align: types::ByteCount,
+    pub i8_align: types::ByteCount,
+    pub i16_align: types::ByteCount,
+    pub i32_align: types::ByteCount,
+    pub i64_align: types::ByteCount,
+    pub i128_align: types::ByteCount,
+    pub f16_align: types::ByteCount,
+    pub f32_align: types::ByteCount,
+    pub f64_align: types::ByteCount,
+    pub f128_align: types::ByteCount,
+    pub ptr_align: types::ByteCount,
+}
+
 #[derive(Clone, Drive, DriveMut, SerializeState, DeserializeState)]
 #[serde_state(stateless)]
 pub struct TargetInfo {
@@ -199,6 +215,10 @@ pub struct TargetInfo {
     pub target_pointer_size: types::ByteCount,
     /// Whether the target platform uses little endian byte order.
     pub is_little_endian: bool,
+    /// The minimum size of a [`repr(C)`] enum.
+    pub c_enum_min_size: types::ByteCount,
+    /// Alignments for primitive types.
+    pub primitive_alignments: TargetAlignments,
 }
 
 #[derive(Default, Clone, Drive, DriveMut, SerializeState, DeserializeState)]
