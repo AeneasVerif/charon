@@ -300,6 +300,383 @@
       }
     }
   ],
+  "test_crate::MonoStruct": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 1
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 0
+                                  },
+                                  "generics": {
+                                    "regions": [],
+                                    "types": [],
+                                    "const_generics": [],
+                                    "trait_refs": []
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
+                                      {
+                                        "Untagged": {
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 0
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "types": []
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 0
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 1
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 0
+                                  },
+                                  "generics": {
+                                    "regions": [],
+                                    "types": [],
+                                    "const_generics": [],
+                                    "trait_refs": []
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
+                                      {
+                                        "Untagged": {
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 0
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "types": []
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 0
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Adt": {
+                    "id": {
+                      "Adt": 1
+                    },
+                    "generics": {
+                      "regions": [],
+                      "types": [
+                        {
+                          "Untagged": {
+                            "Adt": {
+                              "id": {
+                                "Adt": 0
+                              },
+                              "generics": {
+                                "regions": [],
+                                "types": [],
+                                "const_generics": [],
+                                "trait_refs": []
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "const_generics": [],
+                      "trait_refs": [
+                        {
+                          "Untagged": {
+                            "kind": {
+                              "BuiltinOrAuto": {
+                                "builtin_data": "Sized",
+                                "parent_trait_refs": [
+                                  {
+                                    "Untagged": {
+                                      "kind": {
+                                        "BuiltinOrAuto": {
+                                          "builtin_data": "MetaSized",
+                                          "parent_trait_refs": [],
+                                          "types": []
+                                        }
+                                      },
+                                      "trait_decl_ref": {
+                                        "regions": [],
+                                        "skip_binder": {
+                                          "id": 1,
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [
+                                              {
+                                                "Untagged": {
+                                                  "Adt": {
+                                                    "id": {
+                                                      "Adt": 0
+                                                    },
+                                                    "generics": {
+                                                      "regions": [],
+                                                      "types": [],
+                                                      "const_generics": [],
+                                                      "trait_refs": []
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            ],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ],
+                                "types": []
+                              }
+                            },
+                            "trait_decl_ref": {
+                              "regions": [],
+                              "skip_binder": {
+                                "id": 0,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "Adt": {
+                                          "id": {
+                                            "Adt": 0
+                                          },
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 24
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 8
+        }
+      }
+    }
+  ],
   "test_crate::UnsizedStruct": [
     {
       "size": {
@@ -499,7 +876,7 @@
                     "Untagged": {
                       "Adt": {
                         "id": {
-                          "Adt": 36
+                          "Adt": 37
                         },
                         "generics": {
                           "regions": [],
@@ -518,7 +895,7 @@
                               "Untagged": {
                                 "Adt": {
                                   "id": {
-                                    "Adt": 37
+                                    "Adt": 38
                                   },
                                   "generics": {
                                     "regions": [],
@@ -625,7 +1002,7 @@
                                                     "Untagged": {
                                                       "Adt": {
                                                         "id": {
-                                                          "Adt": 37
+                                                          "Adt": 38
                                                         },
                                                         "generics": {
                                                           "regions": [],
@@ -659,7 +1036,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 37
+                                                "Adt": 38
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -702,7 +1079,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 37
+                                                "Adt": 38
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -749,7 +1126,7 @@
                     "Untagged": {
                       "Adt": {
                         "id": {
-                          "Adt": 36
+                          "Adt": 37
                         },
                         "generics": {
                           "regions": [],
@@ -768,7 +1145,7 @@
                               "Untagged": {
                                 "Adt": {
                                   "id": {
-                                    "Adt": 37
+                                    "Adt": 38
                                   },
                                   "generics": {
                                     "regions": [],
@@ -875,7 +1252,7 @@
                                                     "Untagged": {
                                                       "Adt": {
                                                         "id": {
-                                                          "Adt": 37
+                                                          "Adt": 38
                                                         },
                                                         "generics": {
                                                           "regions": [],
@@ -909,7 +1286,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 37
+                                                "Adt": 38
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -952,7 +1329,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 37
+                                                "Adt": 38
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1001,7 +1378,7 @@
                 "Untagged": {
                   "Adt": {
                     "id": {
-                      "Adt": 36
+                      "Adt": 37
                     },
                     "generics": {
                       "regions": [],
@@ -1020,7 +1397,7 @@
                           "Untagged": {
                             "Adt": {
                               "id": {
-                                "Adt": 37
+                                "Adt": 38
                               },
                               "generics": {
                                 "regions": [],
@@ -1127,7 +1504,7 @@
                                                 "Untagged": {
                                                   "Adt": {
                                                     "id": {
-                                                      "Adt": 37
+                                                      "Adt": 38
                                                     },
                                                     "generics": {
                                                       "regions": [],
@@ -1161,7 +1538,7 @@
                                       "Untagged": {
                                         "Adt": {
                                           "id": {
-                                            "Adt": 37
+                                            "Adt": 38
                                           },
                                           "generics": {
                                             "regions": [],
@@ -1204,7 +1581,7 @@
                                       "Untagged": {
                                         "Adt": {
                                           "id": {
-                                            "Adt": 37
+                                            "Adt": 38
                                           },
                                           "generics": {
                                             "regions": [],
@@ -1249,7 +1626,7 @@
                     "Untagged": {
                       "Adt": {
                         "id": {
-                          "Adt": 36
+                          "Adt": 37
                         },
                         "generics": {
                           "regions": [],
@@ -1268,7 +1645,7 @@
                               "Untagged": {
                                 "Adt": {
                                   "id": {
-                                    "Adt": 37
+                                    "Adt": 38
                                   },
                                   "generics": {
                                     "regions": [],
@@ -1375,7 +1752,7 @@
                                                     "Untagged": {
                                                       "Adt": {
                                                         "id": {
-                                                          "Adt": 37
+                                                          "Adt": 38
                                                         },
                                                         "generics": {
                                                           "regions": [],
@@ -1409,7 +1786,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 37
+                                                "Adt": 38
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1452,7 +1829,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 37
+                                                "Adt": 38
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1493,7 +1870,7 @@
                     "Untagged": {
                       "Adt": {
                         "id": {
-                          "Adt": 36
+                          "Adt": 37
                         },
                         "generics": {
                           "regions": [],
@@ -1512,7 +1889,7 @@
                               "Untagged": {
                                 "Adt": {
                                   "id": {
-                                    "Adt": 37
+                                    "Adt": 38
                                   },
                                   "generics": {
                                     "regions": [],
@@ -1619,7 +1996,7 @@
                                                     "Untagged": {
                                                       "Adt": {
                                                         "id": {
-                                                          "Adt": 37
+                                                          "Adt": 38
                                                         },
                                                         "generics": {
                                                           "regions": [],
@@ -1653,7 +2030,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 37
+                                                "Adt": 38
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1696,7 +2073,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 37
+                                                "Adt": 38
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1739,7 +2116,7 @@
                 "Untagged": {
                   "Adt": {
                     "id": {
-                      "Adt": 36
+                      "Adt": 37
                     },
                     "generics": {
                       "regions": [],
@@ -1758,7 +2135,7 @@
                           "Untagged": {
                             "Adt": {
                               "id": {
-                                "Adt": 37
+                                "Adt": 38
                               },
                               "generics": {
                                 "regions": [],
@@ -1865,7 +2242,7 @@
                                                 "Untagged": {
                                                   "Adt": {
                                                     "id": {
-                                                      "Adt": 37
+                                                      "Adt": 38
                                                     },
                                                     "generics": {
                                                       "regions": [],
@@ -1899,7 +2276,7 @@
                                       "Untagged": {
                                         "Adt": {
                                           "id": {
-                                            "Adt": 37
+                                            "Adt": 38
                                           },
                                           "generics": {
                                             "regions": [],
@@ -1942,7 +2319,7 @@
                                       "Untagged": {
                                         "Adt": {
                                           "id": {
-                                            "Adt": 37
+                                            "Adt": 38
                                           },
                                           "generics": {
                                             "regions": [],
@@ -2617,7 +2994,7 @@
             "Untagged": {
               "Adt": {
                 "id": {
-                  "Adt": 39
+                  "Adt": 40
                 },
                 "generics": {
                   "regions": [],
@@ -2784,7 +3161,7 @@
             "Untagged": {
               "Adt": {
                 "id": {
-                  "Adt": 39
+                  "Adt": 40
                 },
                 "generics": {
                   "regions": [],
@@ -2953,7 +3330,7 @@
             "Untagged": {
               "Adt": {
                 "id": {
-                  "Adt": 39
+                  "Adt": 40
                 },
                 "generics": {
                   "regions": [],
@@ -3120,7 +3497,7 @@
             "Untagged": {
               "Adt": {
                 "id": {
-                  "Adt": 39
+                  "Adt": 40
                 },
                 "generics": {
                   "regions": [],

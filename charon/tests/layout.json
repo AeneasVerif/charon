@@ -25,6 +25,29 @@
     }
   },
   "test_crate::GenericStruct": null,
+  "test_crate::MonoStruct": {
+    "size": 24,
+    "align": 8,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
   "test_crate::UnsizedStruct": {
     "size": null,
     "align": null,

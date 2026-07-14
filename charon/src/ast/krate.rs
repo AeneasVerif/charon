@@ -312,10 +312,6 @@ pub struct TranslatedCrate {
     #[drive(skip)]
     #[serde_state(stateless)]
     pub ordered_decls: Option<DeclarationsGroups>,
-    /// A map from types to the corresponding symbolic layouts as computed at translation time.
-    /// Can be used for efficient lookups after translation.
-    #[serde(with = "SeqHashMapToArray::<Ty, LayoutGuarantees>")]
-    pub memoized_layout_guarantees: SeqHashMap<Ty, LayoutGuarantees>,
 }
 
 impl TranslatedCrate {

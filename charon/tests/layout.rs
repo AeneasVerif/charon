@@ -25,6 +25,10 @@ fn type_layout() -> anyhow::Result<()> {
             b: T
         }
 
+        struct MonoStruct {
+            inner: GenericStruct<SimpleStruct>
+        }
+
         struct UnsizedStruct {
             x: usize,
             y: [usize]

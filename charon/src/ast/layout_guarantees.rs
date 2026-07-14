@@ -221,7 +221,7 @@ impl LayoutGuarantees {
         Self {
             size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(size as ByteCount)),
             alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(Ty::from(
-                primitive.clone(),
+                *primitive,
             ))),
         }
     }
@@ -289,12 +289,8 @@ impl LayoutGuarantees {
     }
 
     pub fn for_ty(ty: &Ty, translated: &TranslatedCrate) -> Option<Self> {
-        if let Some(sym_layout) = translated.memoized_layout_guarantees.get(ty) {
-            return Some(sym_layout.clone());
-        }
-
         match ty.kind() {
-            // True Adt's (i.e. structs and enums) should have a memoized layout or one stored in
+            // True Adt's (i.e. structs and enums) should have layout guarantees stored in
             // the corresponding type declaration.
             TyKind::Adt(TypeDeclRef {
                 id: TypeId::Adt(type_decl_id),

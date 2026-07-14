@@ -497,27 +497,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// There must be at most one non-1-ZST field in the single variant.
     /// Based on https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.transparent
     fn construct_transparent_layout_guarantees(
-        &mut self,
+        &self,
         fields: &IndexVec<FieldId, Field>,
     ) -> Option<LayoutGuarantees> {
         let mut non_one_zst_ty = None;
         for field in fields.iter() {
             let ty = &field.ty;
-            if let Some(layout) = LayoutGuarantees::for_ty(ty, &self.t_ctx.translated) {
-                if layout != LayoutGuarantees::ONE_ZST {
-                    non_one_zst_ty = Some(ty.clone());
-                }
-                if !self
-                    .t_ctx
-                    .translated
-                    .memoized_layout_guarantees
-                    .contains_key(ty)
-                {
-                    self.t_ctx
-                        .translated
-                        .memoized_layout_guarantees
-                        .insert(ty.clone(), layout);
-                }
+            if let Some(layout) = LayoutGuarantees::for_ty(ty, &self.t_ctx.translated)
+                && layout != LayoutGuarantees::ONE_ZST
+            {
+                non_one_zst_ty = Some(ty.clone());
             }
         }
 
@@ -533,21 +522,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Constructs the layout guarantees, even if we failed to obtain a concrete layout for the type.
     /// Also memoizes all guarantees of types that were required to build the guarantees for the given def.
     pub fn construct_layout_guarantees(
-        &mut self,
+        &self,
         td_kind: &TypeDeclKind,
         repr: ReprOptions,
         discr_ty: Option<Ty>,
     ) -> Option<LayoutGuarantees> {
-        fn memoize_ty_layout(ty: &Ty, translated: &mut TranslatedCrate) {
-            if !translated.memoized_layout_guarantees.contains_key(ty)
-                && let Some(layout) = LayoutGuarantees::for_ty(ty, translated)
-            {
-                translated
-                    .memoized_layout_guarantees
-                    .insert(ty.clone(), layout);
-            }
-        }
-
         match td_kind {
             TypeDeclKind::Struct(fields) => {
                 if repr.transparent {
@@ -560,10 +539,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     return None; // TODO: needs repr(C) struct layout computation.
                 }
 
-                let fields = fields.iter().map(|field| {
-                    memoize_ty_layout(&field.ty, &mut self.t_ctx.translated);
-                    field.ty.clone()
-                });
+                let fields = fields.iter().map(|field| field.ty.clone());
                 let LayoutGuarantees {
                     mut size,
                     mut alignment,
@@ -599,12 +575,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             let discr_ty = discr_ty.unwrap();
                             // For field-less enums with an explicit discriminant type, the whole layout is exactly that type.
                             // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.enum
-                            return LayoutGuarantees::for_ty(&discr_ty, &self.t_ctx.translated);
+                            LayoutGuarantees::for_ty(&discr_ty, &self.t_ctx.translated)
                         } else {
                             // For enums with fields and an explicit discriminant type, the whole layout is a tagged union with the
                             // specified discriminant and a union of each variant as a #[repr(C)] struct.
                             // See https://doc.rust-lang.org/reference/type-layout.html#primitive-representation-of-enums-with-fields
-                            return None; // TODO: needs repr(C) struct layout computation.
+                            None // TODO: needs repr(C) struct layout computation.
                         }
                     } else if repr.repr_algo == ReprAlgorithm::C {
                         // In this case, the enum is guaranteed to be a tagged union.
@@ -638,10 +614,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 // The layout of a union is the max size and alignment among all its variants.
                 // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.union.size-align
-                let fields = fields.iter().map(|field| {
-                    memoize_ty_layout(&field.ty, &mut self.t_ctx.translated);
-                    field.ty.clone()
-                });
+                let fields = fields.iter().map(|field| field.ty.clone());
                 let LayoutGuarantees {
                     mut size,
                     mut alignment,
@@ -666,10 +639,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 size.realign(alignment.clone());
                 Some(LayoutGuarantees { size, alignment })
             }
-            TypeDeclKind::Alias(ty) => {
-                memoize_ty_layout(ty, &mut self.t_ctx.translated);
-                Some(LayoutGuarantees::mk_symbolic(ty.clone()))
-            }
+            TypeDeclKind::Alias(ty) => Some(LayoutGuarantees::mk_symbolic(ty.clone())),
             _ => None,
         }
     }
