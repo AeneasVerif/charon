@@ -2377,7 +2377,19 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
-     Ok ({ target_pointer_size; is_little_endian } : target_info))
+     let* c_enum_min_size = u64_of_postcard ctx st in
+     let* primitive_alignments =
+       index_map_of_postcard literal_type_of_postcard u64_of_postcard
+         int_of_postcard ctx st
+     in
+     Ok
+       ({
+          target_pointer_size;
+          is_little_endian;
+          c_enum_min_size;
+          primitive_alignments;
+        }
+         : target_info))
 
 and trait_assoc_const_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (trait_assoc_const, string) result =
