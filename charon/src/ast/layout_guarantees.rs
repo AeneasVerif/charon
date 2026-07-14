@@ -4,8 +4,8 @@ use derive_generic_visitor::{Drive, DriveMut};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::{
-    BuiltinTy, ByteCount, ConstantExpr, ConstantExprKind, HashConsSerializerState, IntTy, Literal,
-    LiteralTy, RefKind, ScalarValue, SeqHashMap, TargetTriple, TranslatedCrate, Ty, TyKind,
+    BuiltinTy, ByteCount, ConstantExpr, ConstantExprKind, FloatTy, HashConsSerializerState, IntTy,
+    Literal, LiteralTy, ScalarValue, SeqHashMap, TargetTriple, TranslatedCrate, Ty, TyKind,
     TyVisitable, TypeDeclRef, TypeId, UIntTy,
 };
 
@@ -17,26 +17,61 @@ pub enum LayoutGuaranteeAtom {
     SymSize(Ty),
     /// Symbolic alignment of type T, cf. `align_of<T>()`
     SymAlign(Ty),
-    /// Concrete layout information as a scalar value. TODO: maybe just a usize etc.?
+    /// Concrete layout information as number of bytes.
     Concrete(#[drive(skip)] ByteCount),
+    /// Target-specific default enum discriminant type for `#[repr(C)]`.
+    /// See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.enum
+    TargetDiscr,
 }
 
 impl LayoutGuaranteeAtom {
-    /// For single-target translation, return the concrete pointer size,
-    /// else the symbolic size of `*const ()`.
-    pub fn mk_ptr(translated: &TranslatedCrate) -> Self {
-        if translated.target_information.len() == 1 {
-            Self::Concrete(translated.the_target_information().target_pointer_size)
-        } else {
-            Self::SymSize(Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared)))
-        }
+    pub fn mk_address_size() -> Self {
+        Self::SymSize(Ty::mk_usize())
     }
 
-    pub fn mk_ptr_for(translated: &TranslatedCrate, target: &TargetTriple) -> Option<Self> {
+    pub fn mk_address_size_for(
+        translated: &TranslatedCrate,
+        target: &TargetTriple,
+    ) -> Option<Self> {
         translated
             .target_information
             .get(target)
             .map(|target_info| Self::Concrete(target_info.target_pointer_size))
+    }
+
+    pub fn make_primitive_align_for_target(
+        ty: &LiteralTy,
+        translated: &TranslatedCrate,
+        target: &TargetTriple,
+    ) -> Option<Self> {
+        let target_info = translated.target_information.get(target)?;
+        let align = match ty {
+            LiteralTy::Int(int_ty) => match int_ty {
+                IntTy::Isize => target_info.primitive_alignments.ptr_align,
+                IntTy::I8 => target_info.primitive_alignments.i8_align,
+                IntTy::I16 => target_info.primitive_alignments.i16_align,
+                IntTy::I32 => target_info.primitive_alignments.i32_align,
+                IntTy::I64 => target_info.primitive_alignments.i64_align,
+                IntTy::I128 => target_info.primitive_alignments.i128_align,
+            },
+            LiteralTy::UInt(uint_ty) => match uint_ty {
+                UIntTy::Usize => target_info.primitive_alignments.ptr_align,
+                UIntTy::U8 => target_info.primitive_alignments.i8_align,
+                UIntTy::U16 => target_info.primitive_alignments.i16_align,
+                UIntTy::U32 => target_info.primitive_alignments.i32_align,
+                UIntTy::U64 => target_info.primitive_alignments.i64_align,
+                UIntTy::U128 => target_info.primitive_alignments.i128_align,
+            },
+            LiteralTy::Float(float_ty) => match float_ty {
+                FloatTy::F16 => target_info.primitive_alignments.f16_align,
+                FloatTy::F32 => target_info.primitive_alignments.f32_align,
+                FloatTy::F64 => target_info.primitive_alignments.f64_align,
+                FloatTy::F128 => target_info.primitive_alignments.f128_align,
+            },
+            LiteralTy::Bool => target_info.primitive_alignments.i8_align,
+            LiteralTy::Char => target_info.primitive_alignments.i32_align, // FIXME: the target information in rustc doesn't mention chars?
+        };
+        Some(Self::Concrete(align))
     }
 }
 
@@ -101,9 +136,17 @@ impl LayoutGuaranteeComp {
             }
         }
     }
+
+    pub fn max(&mut self, rhs: Self) {
+        if let Self::Max(elems) = self {
+            elems.push(rhs);
+        } else {
+            *self = Self::Max(vec![self.clone(), rhs]);
+        }
+    }
 }
 
-impl AddAssign<LayoutGuaranteeComp> for LayoutGuaranteeComp {
+impl AddAssign for LayoutGuaranteeComp {
     fn add_assign(&mut self, rhs: LayoutGuaranteeComp) {
         if let Self::Sum(summands) = self {
             summands.push(rhs);
@@ -161,12 +204,12 @@ impl LayoutGuarantees {
     ///
     /// However, currently it ignores potential inconsistencies with regard to
     /// [https://doc.rust-lang.org/reference/type-layout.html#r-layout.primitive.size].
-    pub fn mk_primitive(primitive: &LiteralTy, ptr_size: LayoutGuaranteeAtom) -> Self {
+    pub fn mk_primitive(primitive: &LiteralTy) -> Self {
         let size = match primitive {
             LiteralTy::Int(IntTy::Isize) | LiteralTy::UInt(UIntTy::Usize) => {
                 return Self {
-                    size: LayoutGuaranteeComp::Atom(ptr_size.clone()),
-                    alignment: LayoutGuaranteeComp::Atom(ptr_size),
+                    size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::mk_address_size()),
+                    alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::mk_address_size()),
                 };
             }
             LiteralTy::Int(int_ty) => int_ty.target_size(0),
@@ -175,7 +218,12 @@ impl LayoutGuarantees {
             LiteralTy::Bool => 1,
             LiteralTy::Char => 4,
         };
-        Self::mk_concrete(size as ByteCount, size as ByteCount)
+        Self {
+            size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(size as ByteCount)),
+            alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(Ty::from(
+                primitive.clone(),
+            ))),
+        }
     }
 
     pub fn mk_symbolic(ty: Ty) -> Self {
@@ -225,7 +273,7 @@ impl LayoutGuarantees {
     /// Based on [https://doc.rust-lang.org/reference/type-layout.html#r-layout.pointer.unsized].
     fn mk_ptr(pointee: &Ty, translated: &TranslatedCrate) -> Self {
         let meta = pointee.get_ptr_metadata(translated).into_type();
-        let ptr_size = LayoutGuaranteeAtom::mk_ptr(translated);
+        let ptr_size = LayoutGuaranteeAtom::mk_address_size();
         let alignment = LayoutGuaranteeComp::Max(vec![
             LayoutGuaranteeComp::Atom(ptr_size.clone()),
             LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(meta.clone())),
@@ -264,17 +312,14 @@ impl LayoutGuarantees {
                 generics,
             }) => Some(Self::mk_unordered_sequence(generics.types.iter().cloned())),
             TyKind::TypeVar(_) => Some(Self::mk_symbolic(ty.clone())),
-            TyKind::Literal(literal_ty) => Some(Self::mk_primitive(
-                literal_ty,
-                LayoutGuaranteeAtom::mk_ptr(translated),
-            )),
+            TyKind::Literal(literal_ty) => Some(Self::mk_primitive(literal_ty)),
             TyKind::Adt(TypeDeclRef {
                 id: TypeId::Builtin(BuiltinTy::Box),
                 generics,
             }) => Some(Self::mk_ptr(generics.types.first()?, translated)),
             TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(Self::mk_ptr(ty, translated)),
             TyKind::FnPtr(_) => {
-                let ptr_size = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::mk_ptr(translated));
+                let ptr_size = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::mk_address_size());
                 Some(Self {
                     size: ptr_size.clone(),
                     alignment: ptr_size.clone(),
@@ -322,17 +367,32 @@ impl Concretizer {
         &mut self,
         atom: &LayoutGuaranteeAtom,
         translated: &TranslatedCrate,
+        target: Option<&TargetTriple>,
     ) -> LayoutGuaranteeComp {
         match atom {
             LayoutGuaranteeAtom::SymSize(ty) => {
-                if let Some(layout) = self.concretized_layout_for(ty, translated) {
+                if ty == &Ty::mk_usize()
+                    && let Some(target) = target
+                    && let Some(target_specific_atom) =
+                        LayoutGuaranteeAtom::mk_address_size_for(translated, target)
+                {
+                    LayoutGuaranteeComp::Atom(target_specific_atom)
+                } else if let Some(layout) = self.concretized_layout_for(ty, translated, target) {
                     layout.size
                 } else {
                     LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(ty.clone()))
                 }
             }
             LayoutGuaranteeAtom::SymAlign(ty) => {
-                if let Some(layout) = self.concretized_layout_for(ty, translated) {
+                if let Some(literal_ty) = ty.as_literal()
+                    && let Some(target) = target
+                    && let Some(target_specific_atom) =
+                        LayoutGuaranteeAtom::make_primitive_align_for_target(
+                            literal_ty, translated, target,
+                        )
+                {
+                    LayoutGuaranteeComp::Atom(target_specific_atom)
+                } else if let Some(layout) = self.concretized_layout_for(ty, translated, target) {
                     layout.alignment
                 } else {
                     LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(ty.clone()))
@@ -341,18 +401,32 @@ impl Concretizer {
             LayoutGuaranteeAtom::Concrete(c) => {
                 LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(*c))
             }
+            LayoutGuaranteeAtom::TargetDiscr => {
+                if let Some(target) = target
+                    && let Some(info) = translated.target_information.get(target)
+                {
+                    LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(info.c_enum_min_size))
+                } else {
+                    LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::TargetDiscr)
+                }
+            }
         }
     }
 
-    fn concretize_comp(&mut self, comp: &mut LayoutGuaranteeComp, translated: &TranslatedCrate) {
+    fn concretize_comp(
+        &mut self,
+        comp: &mut LayoutGuaranteeComp,
+        translated: &TranslatedCrate,
+        target: Option<&TargetTriple>,
+    ) {
         match comp {
             LayoutGuaranteeComp::Atom(atom) => {
-                *comp = self.concretize_atom(atom, translated);
+                *comp = self.concretize_atom(atom, translated, target);
             }
             LayoutGuaranteeComp::Sum(summands) => {
                 let mut sum = Some(0);
                 for summand in summands.iter_mut() {
-                    self.concretize_comp(summand, translated);
+                    self.concretize_comp(summand, translated, target);
 
                     if let Some(sum) = &mut sum
                         && let Some(c) = summand.is_concrete()
@@ -367,7 +441,7 @@ impl Concretizer {
                 }
             }
             LayoutGuaranteeComp::Product { atom, multiplier } => {
-                self.concretize_comp(atom, translated);
+                self.concretize_comp(atom, translated, target);
                 if let Some(c) = atom.is_concrete()
                     && let ConstantExprKind::Literal(Literal::Scalar(s)) = multiplier.kind
                 {
@@ -380,8 +454,8 @@ impl Concretizer {
                 }
             }
             LayoutGuaranteeComp::AlignedTo { base, target_align } => {
-                self.concretize_comp(base, translated);
-                self.concretize_comp(target_align, translated);
+                self.concretize_comp(base, translated, target);
+                self.concretize_comp(target_align, translated, target);
                 if let Some(c1) = base.is_concrete()
                     && let Some(c2) = target_align.is_concrete()
                 {
@@ -396,7 +470,7 @@ impl Concretizer {
             LayoutGuaranteeComp::Max(max_contenders) => {
                 let mut max = Some(0);
                 for contender in max_contenders.iter_mut() {
-                    self.concretize_comp(contender, translated);
+                    self.concretize_comp(contender, translated, target);
 
                     if let Some(max) = &mut max
                         && let Some(c) = contender.is_concrete()
@@ -411,8 +485,8 @@ impl Concretizer {
                 }
             }
             LayoutGuaranteeComp::Packed { max_align, to_pack } => {
-                self.concretize_atom(max_align, translated);
-                self.concretize_comp(to_pack, translated);
+                self.concretize_atom(max_align, translated, target);
+                self.concretize_comp(to_pack, translated, target);
                 if let LayoutGuaranteeAtom::Concrete(c1) = max_align
                     && let Some(c2) = to_pack.is_concrete()
                 {
@@ -434,6 +508,7 @@ impl Concretizer {
         &mut self,
         ty: &Ty,
         translated: &TranslatedCrate,
+        target: Option<&TargetTriple>,
     ) -> Option<LayoutGuarantees> {
         if let Some(layout) = self.computed_layouts.get(ty) {
             Some(layout.clone())
@@ -445,8 +520,8 @@ impl Concretizer {
             let mut symbolic_layout = LayoutGuarantees::for_ty(ty, translated)?;
             self.curr_requested.insert(ty.clone());
 
-            self.concretize_comp(&mut symbolic_layout.size, translated);
-            self.concretize_comp(&mut symbolic_layout.alignment, translated);
+            self.concretize_comp(&mut symbolic_layout.size, translated, target);
+            self.concretize_comp(&mut symbolic_layout.alignment, translated, target);
 
             self.curr_requested.remove(ty);
             Some(symbolic_layout)

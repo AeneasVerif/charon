@@ -566,6 +566,13 @@ impl IntegerTy {
             IntegerTy::Unsigned(ty) => ty.target_size(ptr_size),
         }
     }
+
+    pub fn to_literal_ty(&self) -> LiteralTy {
+        match self {
+            IntegerTy::Signed(int_ty) => LiteralTy::Int(*int_ty),
+            IntegerTy::Unsigned(uint_ty) => LiteralTy::UInt(*uint_ty),
+        }
+    }
 }
 
 impl LiteralTy {

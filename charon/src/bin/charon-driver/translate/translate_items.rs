@@ -457,7 +457,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let guarantees = if item_meta.opacity.is_opaque() {
             None
         } else {
-            self.translate_layout_guarantees(def)
+            let (repr, tag_ty) = match &def.kind {
+                hax::FullDefKind::Adt { repr: hax_repr, .. } => {
+                    let discr_ty = self.translate_ty(span, &hax_repr.typ)?;
+                    (self.translate_repr_options(hax_repr), Some(discr_ty))
+                }
+                _ => (ReprOptions::default(), None),
+            };
+            self.construct_layout_guarantees(&kind, repr, tag_ty)
         };
         let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
         let type_def = TypeDecl {

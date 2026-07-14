@@ -108,8 +108,13 @@ fn type_layout() -> anyhow::Result<()> {
             y: (),
         }
 
-        #[repr(C)]
         union PackIntsUnion {
+            x: (u32, u32),
+            y: u64,
+        }
+
+        #[repr(C)]
+        union PackIntsUnionC {
             x: (u32, u32),
             y: u64,
         }
@@ -118,6 +123,18 @@ fn type_layout() -> anyhow::Result<()> {
             A(char),
             B,
             C,
+        }
+
+        #[repr(C)]
+        enum ReprC {
+            A(char),
+            B,
+            C,
+        }
+
+        #[repr(C)]
+        enum ReprCSingle {
+            A(char),
         }
 
         #[repr(i32)]
@@ -254,6 +271,7 @@ fn type_layout() -> anyhow::Result<()> {
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
 
     let mut concretizer = Concretizer::default();
+    let target = crate_data.target_information.iter().next().unwrap().0;
     let layouts: SeqHashMap<String, _> = crate_data
         .type_decls
         .iter()
@@ -267,7 +285,8 @@ fn type_layout() -> anyhow::Result<()> {
                 id: TypeId::Adt(tdecl.def_id),
                 generics: Box::new(tdecl.generics.identity_args()),
             }));
-            let opt_concretized = concretizer.concretized_layout_for(&fake_ty, &crate_data);
+            let opt_concretized =
+                concretizer.concretized_layout_for(&fake_ty, &crate_data, Some(target));
             let guarantee_serializable = opt_guarantee.map(|l| WithState::new(l, &()));
             let concretized_serializable = opt_concretized.map(|l| WithState::new(l, &()));
             Some((name, (guarantee_serializable, concretized_serializable)))
@@ -275,6 +294,9 @@ fn type_layout() -> anyhow::Result<()> {
         .collect();
     let layouts_str = serde_json::to_string_pretty(&layouts)?;
 
-    compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout_guarantees.json"))?;
+    compare_or_overwrite(
+        layouts_str,
+        &PathBuf::from("./tests/layout_guarantees.json"),
+    )?;
     Ok(())
 }

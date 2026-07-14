@@ -753,6 +753,30 @@
       }
     ],
     "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::PackIntsUnionC": {
+    "size": 8,
+    "align": 8,
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          0
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
       "repr_algo": "C",
       "align_modif": null,
       "transparent": false,
@@ -855,6 +879,194 @@
     ],
     "repr": {
       "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::ReprC": {
+    "size": 8,
+    "align": 4,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "1"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "2"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "2"
+                ]
+              }
+            },
+            {
+              "Known": 2
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          4
+        ],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "1"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "2"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "C",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": false
+    }
+  },
+  "test_crate::ReprCSingle": {
+    "size": 8,
+    "align": 4,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "0"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          4
+        ],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "0"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "C",
       "align_modif": null,
       "transparent": false,
       "explicit_discr_type": false
