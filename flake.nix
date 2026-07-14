@@ -27,6 +27,11 @@
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         ocamlformat = pkgs.ocamlPackages.ocamlformat_0_27_0;
 
+        # Glibc version that the Linux release binaries are lowered to after building
+        # to ensure compatibility with older Linux systems
+        releaseGlibcVersion = "2.35";
+        polyfill-glibc = pkgs.callPackage ./nix/polyfill-glibc.nix { };
+
         fullMirSysroots = pkgs.callPackage ./nix/full-mir-sysroots.nix { inherit rustToolchain; };
         charon-unwrapped = pkgs.callPackage ./nix/charon.nix {
           inherit craneLib;
@@ -74,12 +79,40 @@
             ${pkgs.patchelf}/bin/patchelf --remove-rpath $f || true
           done
         ''));
-        charon-release = pkgs.runCommand "charon-release" { } ''
+        charon-release = pkgs.runCommand "charon-release" { } (''
           mkdir $out
           cd $out
           cp ${charon-portable}/bin/charon ${charon-portable}/bin/charon-driver .
           cp ${./charon/rust-toolchain} rust-toolchain
-        '';
+        ''
+        # Lower the glibc version the binaries require, so the release runs on
+        # any host with glibc >= ${releaseGlibcVersion} regardless of the
+        # (newer) glibc it was built against.
+        + lib.optionalString stdenv.isLinux ''
+          chmod +w charon charon-driver
+          for f in charon charon-driver; do
+            ${polyfill-glibc}/bin/polyfill-glibc \
+              --clear-symbol-version=pidfd_getpid,pidfd_spawnp \
+              --target-glibc=${releaseGlibcVersion} "$f"
+          done
+        '');
+        # Sanity-check that the release binaries don't require a glibc newer
+        # than `releaseGlibcVersion`. No-op on non-Linux.
+        charon-release-glibc-check = pkgs.runCommand "charon-release-glibc-check"
+          {
+            nativeBuildInputs = lib.optionals stdenv.isLinux [ pkgs.binutils ];
+          }
+          ((lib.optionalString stdenv.isLinux ''
+            max="$(objdump -T ${charon-release}/charon ${charon-release}/charon-driver \
+              | grep -oE 'GLIBC_[0-9]+(\.[0-9]+)+' | sed 's/GLIBC_//' | sort -V | tail -1)"
+            echo "Highest required glibc symbol version: ''${max:-none}"
+            if [ -n "$max" ] && [ "$(printf '%s\n${releaseGlibcVersion}\n' "$max" | sort -V | tail -1)" != "${releaseGlibcVersion}" ]; then
+              echo "ERROR: charon-release-glibc-check failed. Release binaries require glibc $max > ${releaseGlibcVersion}." >&2
+              exit 1
+            fi
+          '') + ''
+            touch $out
+          '');
         charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
 
         # Check rust files are correctly formatted.
@@ -142,7 +175,7 @@
       in
       {
         packages = {
-          inherit charon charon-unwrapped charon-portable charon-release charon-ml rustToolchain;
+          inherit charon charon-unwrapped charon-portable charon-release charon-release-glibc-check charon-ml polyfill-glibc rustToolchain;
           charon-full-mir-sysroots = fullMirSysroots;
           inherit (rustc-tests) rustc-tests;
           default = charon;
