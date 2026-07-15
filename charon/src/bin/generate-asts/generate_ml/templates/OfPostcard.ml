@@ -1,11 +1,11 @@
 (** WARNING: this file is partially auto-generated. Do not edit `OfPostcard.ml`
-    by hand. Edit `templates/OfPostcard.ml` instead, or improve the code
+    by hand. Edit `generate_ml/templates/OfPostcard.ml` instead, or improve the code
     generation tool so avoid the need for hand-writing things.
 
-    `templates/OfPostcard.ml` contains the manual definitions and some `(*
+    `generate_ml/templates/OfPostcard.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
-    definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`.
+    definitions by running `make generate-asts` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-asts`.
  *)
 
 open OfPostcardBasic

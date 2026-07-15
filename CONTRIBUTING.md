@@ -75,9 +75,9 @@ Charon is structured into two projects:
 - `charon-ml/` contains an OCaml library that deserializes the `.llbc` files. It mostly follows the structure of the corresponding rust types.
 
 Most of `charon-ml` is generated automatically from the Rust definitions. This is done by the
-`generate-ml` binary, which runs `charon` on its own source, then emits OCaml type definitions and
-json deserialization functions. To update the generated code, run `make generate-ml`. In some rare
-cases you will need to update `generate-ml/main.rs` yourself.
+`generate-asts` binary, which runs `charon` on its own source, then emits OCaml type definitions and
+json deserialization functions. To update the generated code, run `make generate-asts`. In some rare
+cases you will need to update `generate-asts/main.rs` yourself.
 
 Any change to the json serialization must also increment the version in `charon/Cargo.toml`. Both
 Rust and OCaml deserializers check the versions before attempting to deserialize, which greatly

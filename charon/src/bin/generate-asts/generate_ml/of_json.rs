@@ -4,8 +4,8 @@ use charon_lib::ast::*;
 use indoc::indoc;
 use itertools::Itertools;
 
-use crate::GenerateCtx;
-use crate::util::*;
+use super::GenerateCtx;
+use super::util::*;
 
 const MANUAL_IMPLS: &[(&str, &str)] = &[
     // Hand-written because we interpret it as a list.

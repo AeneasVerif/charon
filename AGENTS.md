@@ -13,7 +13,8 @@ Guidance for AI agents working on Charon.
 
 - I will carefully review all your changes. I am in charge of commits and PRs etc.
 - Treat the git state as my domain: I will stage the bits I have reviewed. I may sometimes ask you
-  to make commits but otherwise don't touch the git state.
+  to make commits but otherwise don't touch the git state. If you see surprising git state, assume
+  I made that change and leave it as it is.
 - Always try to keep git diffs small to make my job easier. I particularly dislike small helpers
   used only once; I prefer a well-placed comment to make the code easy to follow.
 
@@ -85,7 +86,7 @@ Guidance for AI agents working on Charon.
 ## OCaml vs Rust
 
 Charon is a hybrid codebase. A typical feature is mostly on the Rust side. However when the AST
-changes, this must be propagated. Use `make generate-ml` to regenerate the generated OCaml files.
+changes, this must be propagated. Use `make generate-asts` to regenerate the generated OCaml files.
 `make test` at the root of the repo tests both the OCaml and Rust sides.
 
 ## Versioning

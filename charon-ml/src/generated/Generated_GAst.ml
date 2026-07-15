@@ -4,8 +4,8 @@
 
     `GAst.template.ml` contains the manual definitions and some `(* __REPLACEn__
     *)` comments. These comments are replaced by auto-generated definitions by
-    running `make generate-ml` in the crate root. The code-generation code is in
-    `charon/src/bin/generate-ml`. *)
+    running `make generate-asts` in the crate root. The code-generation code is
+    in `charon/src/bin/generate-asts`. *)
 
 open Generated_Types
 open Generated_Meta

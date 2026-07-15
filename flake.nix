@@ -139,9 +139,9 @@
         };
 
         # Check that the generated ocaml files match what is committed to the repo.
-        check-generated-ml = pkgs.runCommand "check-generated-ml" { } ''
+        check-generated-asts = pkgs.runCommand "check-generated-asts" { } ''
           mkdir generated
-          cp ${charon}/generated-ml/* generated
+          cp ${charon}/generated-asts/* generated
           chmod u+w generated/*
           cp ${./charon-ml/.ocamlformat} .ocamlformat
           ${ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
@@ -253,7 +253,7 @@
         checks = {
           default = charon-ml-tests;
           inherit charon-ml-tests charon-check-fmt charon-check-no-rustc
-            charon-ml-check-fmt check-generated-ml test-charon-via-nix
+            charon-ml-check-fmt check-generated-asts test-charon-via-nix
             charon-check-clippy;
         };
 
