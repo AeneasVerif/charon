@@ -88,6 +88,12 @@
         # Lower the glibc version the binaries require, so the release runs on
         # any host with glibc >= ${releaseGlibcVersion} regardless of the
         # (newer) glibc it was built against.
+        #
+        # We need to use `--clear-symbol-version` for `pidfd_getpid` and `pidfd_spawnp` because
+        # `polyfill-glibc` has no polyfill for them and refuses to process the binary when they
+        # carry a symbol version above ${releaseGlibcVersion}. Glibc versions before 2.39 did not
+        # have these symbols at all, but Rust only imports them weakly and will fall back to a
+        # different mechanism when these symbols are not available.
         + lib.optionalString stdenv.isLinux ''
           chmod +w charon charon-driver
           for f in charon charon-driver; do
