@@ -1,4 +1,5 @@
 use crate::GenerateCtx;
+use crate::util::make_ocaml_ident;
 use charon_lib::ast::*;
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -194,7 +195,7 @@ impl<'a> GenerateCtx<'a> {
                     .iter()
                     .filter(|f| !f.is_opaque())
                     .map(|f| {
-                        let name = f.renamed_name().unwrap();
+                        let name = make_ocaml_ident(f.renamed_name().unwrap());
                         let ty = self.type_to_ocaml_name(&f.ty);
                         let comment = self.extract_doc_comments(&f.attr_info);
                         let comment = self.build_doc_comment(comment, 2);
