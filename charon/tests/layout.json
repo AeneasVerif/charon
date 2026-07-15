@@ -1351,6 +1351,100 @@
       "explicit_discr_type": true
     }
   },
+  "test_crate::E": {
+    "size": 16,
+    "align": 8,
+    "discriminator": {
+      "Branch": {
+        "offset": 0,
+        "int_ty": {
+          "Signed": "I8"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "0"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I8",
+                  "0"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "12"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I8",
+                  "12"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          8
+        ],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "12"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "C",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": true
+    }
+  },
   "test_crate::WithNicheAndUninhabited": {
     "size": 4,
     "align": 4,

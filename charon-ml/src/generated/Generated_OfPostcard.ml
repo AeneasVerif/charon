@@ -2280,6 +2280,7 @@ and layout_guarantee_atom_of_postcard (ctx : of_postcard_ctx)
      | 2 ->
          let* x_0 = u64_of_postcard ctx st in
          Ok (Concrete x_0)
+     | 3 -> Ok TargetDiscr
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and layout_guarantee_comp_of_postcard (ctx : of_postcard_ctx)
@@ -2427,12 +2428,51 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      | 2 -> Ok AllFormats
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and target_alignments_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (target_alignments, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* i_1_align = u64_of_postcard ctx st in
+     let* i_8_align = u64_of_postcard ctx st in
+     let* i_16_align = u64_of_postcard ctx st in
+     let* i_32_align = u64_of_postcard ctx st in
+     let* i_64_align = u64_of_postcard ctx st in
+     let* i_128_align = u64_of_postcard ctx st in
+     let* f_16_align = u64_of_postcard ctx st in
+     let* f_32_align = u64_of_postcard ctx st in
+     let* f_64_align = u64_of_postcard ctx st in
+     let* f_128_align = u64_of_postcard ctx st in
+     let* ptr_align = u64_of_postcard ctx st in
+     Ok
+       ({
+          i_1_align;
+          i_8_align;
+          i_16_align;
+          i_32_align;
+          i_64_align;
+          i_128_align;
+          f_16_align;
+          f_32_align;
+          f_64_align;
+          f_128_align;
+          ptr_align;
+        }
+         : target_alignments))
+
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (target_info, string) result =
   combine_error_msgs st __FUNCTION__
     (let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
-     Ok ({ target_pointer_size; is_little_endian } : target_info))
+     let* c_enum_min_size = u64_of_postcard ctx st in
+     let* primitive_alignments = target_alignments_of_postcard ctx st in
+     Ok
+       ({
+          target_pointer_size;
+          is_little_endian;
+          c_enum_min_size;
+          primitive_alignments;
+        }
+         : target_info))
 
 and trait_assoc_const_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (trait_assoc_const, string) result =
@@ -2631,10 +2671,6 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          (list_of_postcard declaration_group_of_postcard)
          ctx st
      in
-     let* memoized_layout_guarantees =
-       index_map_of_postcard ty_of_postcard layout_guarantees_of_postcard
-         int_of_postcard ctx st
-     in
      Ok
        ({
           crate_name;
@@ -2650,7 +2686,6 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           trait_decls;
           trait_impls;
           ordered_decls;
-          memoized_layout_guarantees;
         }
          : translated_crate))
 

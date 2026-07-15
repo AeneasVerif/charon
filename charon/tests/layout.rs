@@ -155,6 +155,12 @@ fn type_layout() -> anyhow::Result<()> {
             Greater = 1,
         }
 
+        #[repr(C, i8)]
+        enum E {
+            A = 0,
+            B(usize) = 12
+        }
+
         enum WithNicheAndUninhabited {
             First,
             Second(!),
@@ -275,7 +281,6 @@ fn type_layout() -> anyhow::Result<()> {
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
 
     let mut concretizer = Concretizer::default();
-    let target = crate_data.target_information.iter().next().unwrap().0;
     let layouts: SeqHashMap<String, _> = crate_data
         .type_decls
         .iter()
@@ -290,7 +295,19 @@ fn type_layout() -> anyhow::Result<()> {
                 generics: Box::new(tdecl.generics.identity_args()),
             }));
             let opt_concretized =
-                concretizer.concretized_layout_for(&fake_ty, &crate_data, Some(target));
+                concretizer.concretized_layout_for(&fake_ty, &crate_data, Some(&the_target));
+
+            // Check whether concretized layout guarantees always match known layouts.
+            if let Some(layout) = tdecl.layout.get(&the_target)
+                && let Some(guarantees) = &opt_concretized
+                && let Some(size) = layout.size
+                && let Some(align) = layout.align
+                && let Some((size_guarantee, align_guarantee)) = guarantees.is_concrete()
+            {
+                assert_eq!(size, size_guarantee);
+                assert_eq!(align, align_guarantee);
+            }
+
             let guarantee_serializable = opt_guarantee.map(|l| WithState::new(l, &()));
             let concretized_serializable = opt_concretized.map(|l| WithState::new(l, &()));
             Some((name, (guarantee_serializable, concretized_serializable)))

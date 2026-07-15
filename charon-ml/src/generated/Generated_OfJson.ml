@@ -2709,6 +2709,7 @@ and layout_guarantee_atom_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Concrete", concrete) ] ->
         let* concrete = int_of_json ctx concrete in
         Ok (Concrete concrete)
+    | `String "TargetDiscr" -> Ok TargetDiscr
     | _ -> Error "")
 
 and layout_guarantee_comp_of_json (ctx : of_json_ctx) (js : json) :
@@ -2874,6 +2875,52 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "All" -> Ok AllFormats
     | _ -> Error "")
 
+and target_alignments_of_json (ctx : of_json_ctx) (js : json) :
+    (target_alignments, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("i1_align", i_1_align);
+          ("i8_align", i_8_align);
+          ("i16_align", i_16_align);
+          ("i32_align", i_32_align);
+          ("i64_align", i_64_align);
+          ("i128_align", i_128_align);
+          ("f16_align", f_16_align);
+          ("f32_align", f_32_align);
+          ("f64_align", f_64_align);
+          ("f128_align", f_128_align);
+          ("ptr_align", ptr_align);
+        ] ->
+        let* i_1_align = int_of_json ctx i_1_align in
+        let* i_8_align = int_of_json ctx i_8_align in
+        let* i_16_align = int_of_json ctx i_16_align in
+        let* i_32_align = int_of_json ctx i_32_align in
+        let* i_64_align = int_of_json ctx i_64_align in
+        let* i_128_align = int_of_json ctx i_128_align in
+        let* f_16_align = int_of_json ctx f_16_align in
+        let* f_32_align = int_of_json ctx f_32_align in
+        let* f_64_align = int_of_json ctx f_64_align in
+        let* f_128_align = int_of_json ctx f_128_align in
+        let* ptr_align = int_of_json ctx ptr_align in
+        Ok
+          ({
+             i_1_align;
+             i_8_align;
+             i_16_align;
+             i_32_align;
+             i_64_align;
+             i_128_align;
+             f_16_align;
+             f_32_align;
+             f_64_align;
+             f_128_align;
+             ptr_align;
+           }
+            : target_alignments)
+    | _ -> Error "")
+
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
     (target_info, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2882,10 +2929,23 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
+          ("c_enum_min_size", c_enum_min_size);
+          ("primitive_alignments", primitive_alignments);
         ] ->
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
-        Ok ({ target_pointer_size; is_little_endian } : target_info)
+        let* c_enum_min_size = int_of_json ctx c_enum_min_size in
+        let* primitive_alignments =
+          target_alignments_of_json ctx primitive_alignments
+        in
+        Ok
+          ({
+             target_pointer_size;
+             is_little_endian;
+             c_enum_min_size;
+             primitive_alignments;
+           }
+            : target_info)
     | _ -> Error "")
 
 and trait_assoc_const_of_json (ctx : of_json_ctx) (js : json) :
@@ -3094,7 +3154,6 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_decls", trait_decls);
           ("trait_impls", trait_impls);
           ("ordered_decls", ordered_decls);
-          ("memoized_layout_guarantees", memoized_layout_guarantees);
         ] ->
         let* crate_name = string_of_json ctx crate_name in
         let* options = cli_options_of_json ctx options in
@@ -3158,10 +3217,6 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
             (list_of_json declaration_group_of_json)
             ctx ordered_decls
         in
-        let* memoized_layout_guarantees =
-          index_map_of_json ty_of_json layout_guarantees_of_json int_of_json ctx
-            memoized_layout_guarantees
-        in
         Ok
           ({
              crate_name;
@@ -3177,7 +3232,6 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
              trait_decls;
              trait_impls;
              ordered_decls;
-             memoized_layout_guarantees;
            }
             : translated_crate)
     | _ -> Error "")

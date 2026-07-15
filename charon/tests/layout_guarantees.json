@@ -876,7 +876,7 @@
                     "Untagged": {
                       "Adt": {
                         "id": {
-                          "Adt": 37
+                          "Adt": 38
                         },
                         "generics": {
                           "regions": [],
@@ -895,7 +895,7 @@
                               "Untagged": {
                                 "Adt": {
                                   "id": {
-                                    "Adt": 38
+                                    "Adt": 39
                                   },
                                   "generics": {
                                     "regions": [],
@@ -1002,7 +1002,7 @@
                                                     "Untagged": {
                                                       "Adt": {
                                                         "id": {
-                                                          "Adt": 38
+                                                          "Adt": 39
                                                         },
                                                         "generics": {
                                                           "regions": [],
@@ -1036,7 +1036,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 38
+                                                "Adt": 39
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1079,7 +1079,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 38
+                                                "Adt": 39
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1126,7 +1126,7 @@
                     "Untagged": {
                       "Adt": {
                         "id": {
-                          "Adt": 37
+                          "Adt": 38
                         },
                         "generics": {
                           "regions": [],
@@ -1145,7 +1145,7 @@
                               "Untagged": {
                                 "Adt": {
                                   "id": {
-                                    "Adt": 38
+                                    "Adt": 39
                                   },
                                   "generics": {
                                     "regions": [],
@@ -1252,7 +1252,7 @@
                                                     "Untagged": {
                                                       "Adt": {
                                                         "id": {
-                                                          "Adt": 38
+                                                          "Adt": 39
                                                         },
                                                         "generics": {
                                                           "regions": [],
@@ -1286,7 +1286,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 38
+                                                "Adt": 39
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1329,7 +1329,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 38
+                                                "Adt": 39
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1378,7 +1378,7 @@
                 "Untagged": {
                   "Adt": {
                     "id": {
-                      "Adt": 37
+                      "Adt": 38
                     },
                     "generics": {
                       "regions": [],
@@ -1397,7 +1397,7 @@
                           "Untagged": {
                             "Adt": {
                               "id": {
-                                "Adt": 38
+                                "Adt": 39
                               },
                               "generics": {
                                 "regions": [],
@@ -1504,7 +1504,7 @@
                                                 "Untagged": {
                                                   "Adt": {
                                                     "id": {
-                                                      "Adt": 38
+                                                      "Adt": 39
                                                     },
                                                     "generics": {
                                                       "regions": [],
@@ -1538,7 +1538,7 @@
                                       "Untagged": {
                                         "Adt": {
                                           "id": {
-                                            "Adt": 38
+                                            "Adt": 39
                                           },
                                           "generics": {
                                             "regions": [],
@@ -1581,7 +1581,7 @@
                                       "Untagged": {
                                         "Adt": {
                                           "id": {
-                                            "Adt": 38
+                                            "Adt": 39
                                           },
                                           "generics": {
                                             "regions": [],
@@ -1626,7 +1626,7 @@
                     "Untagged": {
                       "Adt": {
                         "id": {
-                          "Adt": 37
+                          "Adt": 38
                         },
                         "generics": {
                           "regions": [],
@@ -1645,7 +1645,7 @@
                               "Untagged": {
                                 "Adt": {
                                   "id": {
-                                    "Adt": 38
+                                    "Adt": 39
                                   },
                                   "generics": {
                                     "regions": [],
@@ -1752,7 +1752,7 @@
                                                     "Untagged": {
                                                       "Adt": {
                                                         "id": {
-                                                          "Adt": 38
+                                                          "Adt": 39
                                                         },
                                                         "generics": {
                                                           "regions": [],
@@ -1786,7 +1786,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 38
+                                                "Adt": 39
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1829,7 +1829,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 38
+                                                "Adt": 39
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -1870,7 +1870,7 @@
                     "Untagged": {
                       "Adt": {
                         "id": {
-                          "Adt": 37
+                          "Adt": 38
                         },
                         "generics": {
                           "regions": [],
@@ -1889,7 +1889,7 @@
                               "Untagged": {
                                 "Adt": {
                                   "id": {
-                                    "Adt": 38
+                                    "Adt": 39
                                   },
                                   "generics": {
                                     "regions": [],
@@ -1996,7 +1996,7 @@
                                                     "Untagged": {
                                                       "Adt": {
                                                         "id": {
-                                                          "Adt": 38
+                                                          "Adt": 39
                                                         },
                                                         "generics": {
                                                           "regions": [],
@@ -2030,7 +2030,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 38
+                                                "Adt": 39
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -2073,7 +2073,7 @@
                                           "Untagged": {
                                             "Adt": {
                                               "id": {
-                                                "Adt": 38
+                                                "Adt": 39
                                               },
                                               "generics": {
                                                 "regions": [],
@@ -2116,7 +2116,7 @@
                 "Untagged": {
                   "Adt": {
                     "id": {
-                      "Adt": 37
+                      "Adt": 38
                     },
                     "generics": {
                       "regions": [],
@@ -2135,7 +2135,7 @@
                           "Untagged": {
                             "Adt": {
                               "id": {
-                                "Adt": 38
+                                "Adt": 39
                               },
                               "generics": {
                                 "regions": [],
@@ -2242,7 +2242,7 @@
                                                 "Untagged": {
                                                   "Adt": {
                                                     "id": {
-                                                      "Adt": 38
+                                                      "Adt": 39
                                                     },
                                                     "generics": {
                                                       "regions": [],
@@ -2276,7 +2276,7 @@
                                       "Untagged": {
                                         "Adt": {
                                           "id": {
-                                            "Adt": 38
+                                            "Adt": 39
                                           },
                                           "generics": {
                                             "regions": [],
@@ -2319,7 +2319,7 @@
                                       "Untagged": {
                                         "Adt": {
                                           "id": {
-                                            "Adt": 38
+                                            "Adt": 39
                                           },
                                           "generics": {
                                             "regions": [],
@@ -2481,8 +2481,193 @@
     }
   ],
   "test_crate::NotReordered": [
-    null,
-    null
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Sum": [
+                              {
+                                "AlignedTo": {
+                                  "base": {
+                                    "Atom": {
+                                      "Concrete": 0
+                                    }
+                                  },
+                                  "target_align": {
+                                    "Atom": {
+                                      "SymAlign": {
+                                        "Untagged": {
+                                          "Literal": {
+                                            "UInt": "U8"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "Atom": {
+                                  "SymSize": {
+                                    "Untagged": {
+                                      "Literal": {
+                                        "UInt": "U8"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": {
+                                    "UInt": "U32"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U8"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U8"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U8"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 12
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 4
+        }
+      }
+    }
   ],
   "test_crate::Packed": [
     {
@@ -2738,48 +2923,105 @@
       "size": {
         "AlignedTo": {
           "base": {
-            "Sum": [
+            "Max": [
               {
-                "Atom": {
-                  "SymSize": {
-                    "Untagged": {
-                      "Adt": {
-                        "id": "Tuple",
-                        "generics": {
-                          "regions": [],
-                          "types": [
-                            {
-                              "Untagged": {
-                                "Literal": {
-                                  "UInt": "U32"
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Sum": [
+                              {
+                                "AlignedTo": {
+                                  "base": {
+                                    "Atom": {
+                                      "Concrete": 0
+                                    }
+                                  },
+                                  "target_align": {
+                                    "Atom": {
+                                      "SymAlign": {
+                                        "Untagged": {
+                                          "Literal": {
+                                            "UInt": "U32"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "Atom": {
+                                  "SymSize": {
+                                    "Untagged": {
+                                      "Literal": {
+                                        "UInt": "U32"
+                                      }
+                                    }
+                                  }
                                 }
                               }
-                            },
-                            {
-                              "Untagged": {
-                                "Literal": {
-                                  "UInt": "U32"
+                            ]
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": {
+                                    "UInt": "U32"
+                                  }
                                 }
                               }
                             }
-                          ],
-                          "const_generics": [],
-                          "trait_refs": []
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
                         }
                       }
-                    }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               },
               {
                 "Atom": {
-                  "SymSize": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "U64"
-                      }
-                    }
-                  }
+                  "Concrete": 8
                 }
               }
             ]
@@ -2790,29 +3032,19 @@
                 "Atom": {
                   "SymAlign": {
                     "Untagged": {
-                      "Adt": {
-                        "id": "Tuple",
-                        "generics": {
-                          "regions": [],
-                          "types": [
-                            {
-                              "Untagged": {
-                                "Literal": {
-                                  "UInt": "U32"
-                                }
-                              }
-                            },
-                            {
-                              "Untagged": {
-                                "Literal": {
-                                  "UInt": "U32"
-                                }
-                              }
-                            }
-                          ],
-                          "const_generics": [],
-                          "trait_refs": []
-                        }
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
                       }
                     }
                   }
@@ -2839,29 +3071,19 @@
             "Atom": {
               "SymAlign": {
                 "Untagged": {
-                  "Adt": {
-                    "id": "Tuple",
-                    "generics": {
-                      "regions": [],
-                      "types": [
-                        {
-                          "Untagged": {
-                            "Literal": {
-                              "UInt": "U32"
-                            }
-                          }
-                        },
-                        {
-                          "Untagged": {
-                            "Literal": {
-                              "UInt": "U32"
-                            }
-                          }
-                        }
-                      ],
-                      "const_generics": [],
-                      "trait_refs": []
-                    }
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
                   }
                 }
               }
@@ -2884,7 +3106,7 @@
     {
       "size": {
         "Atom": {
-          "Concrete": 16
+          "Concrete": 8
         }
       },
       "alignment": {
@@ -2899,16 +3121,767 @@
     null
   ],
   "test_crate::ReprC": [
-    null,
-    null
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": "TargetDiscr"
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": "Char"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": "Char"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": "TargetDiscr"
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": "Char"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Atom": "TargetDiscr"
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": "TargetDiscr"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Atom": "TargetDiscr"
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": "TargetDiscr"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": "TargetDiscr"
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": "Char"
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": "TargetDiscr"
+              },
+              {
+                "Atom": "TargetDiscr"
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": "TargetDiscr"
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": "Char"
+                }
+              }
+            }
+          },
+          {
+            "Atom": "TargetDiscr"
+          },
+          {
+            "Atom": "TargetDiscr"
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 8
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 4
+        }
+      }
+    }
   ],
   "test_crate::ReprCSingle": [
-    null,
-    null
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": "TargetDiscr"
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": "Char"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": "Char"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": "TargetDiscr"
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": "Char"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": "TargetDiscr"
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": "Char"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": "TargetDiscr"
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": "Char"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 8
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 4
+        }
+      }
+    }
   ],
   "test_crate::ArbitraryDiscriminants": [
-    null,
-    null
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": {
+                              "Concrete": 4
+                            }
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Adt": {
+                                    "id": {
+                                      "Adt": 40
+                                    },
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Adt": {
+                                "id": {
+                                  "Adt": 40
+                                },
+                                "generics": {
+                                  "regions": [],
+                                  "types": [],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Adt": {
+                                "id": {
+                                  "Adt": 40
+                                },
+                                "generics": {
+                                  "regions": [],
+                                  "types": [],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": {
+                              "Concrete": 4
+                            }
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": {
+                                    "UInt": "U32"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Atom": {
+                      "Concrete": 4
+                    }
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 40
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [],
+                          "const_generics": [],
+                          "trait_refs": []
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I32"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Adt": {
+                    "id": {
+                      "Adt": 40
+                    },
+                    "generics": {
+                      "regions": [],
+                      "types": [],
+                      "const_generics": [],
+                      "trait_refs": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I32"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": {
+                              "Concrete": 4
+                            }
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Adt": {
+                                    "id": {
+                                      "Adt": 40
+                                    },
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Adt": {
+                                "id": {
+                                  "Adt": 40
+                                },
+                                "generics": {
+                                  "regions": [],
+                                  "types": [],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "Concrete": 4
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Adt": {
+                                "id": {
+                                  "Adt": 40
+                                },
+                                "generics": {
+                                  "regions": [],
+                                  "types": [],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "Concrete": 8
+                }
+              },
+              {
+                "Atom": {
+                  "Concrete": 4
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "Concrete": 4
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 40
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [],
+                          "const_generics": [],
+                          "trait_refs": []
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "Concrete": 4
+                }
+              },
+              {
+                "Atom": {
+                  "Concrete": 4
+                }
+              },
+              {
+                "Atom": {
+                  "Concrete": 4
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "Concrete": 4
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Adt": {
+                    "id": {
+                      "Adt": 40
+                    },
+                    "generics": {
+                      "regions": [],
+                      "types": [],
+                      "const_generics": [],
+                      "trait_refs": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "Concrete": 4
+            }
+          },
+          {
+            "Atom": {
+              "Concrete": 4
+            }
+          },
+          {
+            "Atom": {
+              "Concrete": 4
+            }
+          }
+        ]
+      }
+    }
   ],
   "test_crate::MyOrder": [
     {
@@ -2938,6 +3911,193 @@
       "alignment": {
         "Atom": {
           "Concrete": 1
+        }
+      }
+    }
+  ],
+  "test_crate::E": [
+    {
+      "size": {
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Atom": {
+                      "Concrete": 1
+                    }
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I8"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": {
+                              "Concrete": 1
+                            }
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": {
+                                    "UInt": "Usize"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "Usize"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I8"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "Usize"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alignment": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I8"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I8"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "Usize"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": {
+        "Atom": {
+          "Concrete": 16
+        }
+      },
+      "alignment": {
+        "Atom": {
+          "Concrete": 8
         }
       }
     }
@@ -2994,7 +4154,7 @@
             "Untagged": {
               "Adt": {
                 "id": {
-                  "Adt": 40
+                  "Adt": 41
                 },
                 "generics": {
                   "regions": [],
@@ -3161,7 +4321,7 @@
             "Untagged": {
               "Adt": {
                 "id": {
-                  "Adt": 40
+                  "Adt": 41
                 },
                 "generics": {
                   "regions": [],
@@ -3330,7 +4490,7 @@
             "Untagged": {
               "Adt": {
                 "id": {
-                  "Adt": 40
+                  "Adt": 41
                 },
                 "generics": {
                   "regions": [],
@@ -3497,7 +4657,7 @@
             "Untagged": {
               "Adt": {
                 "id": {
-                  "Adt": 40
+                  "Adt": 41
                 },
                 "generics": {
                   "regions": [],

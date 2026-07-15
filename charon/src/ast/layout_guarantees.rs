@@ -78,9 +78,7 @@ impl LayoutGuaranteeAtom {
 /// Composite symbolic layout expressions.
 ///
 /// `non_exhaustive` since we might need many more composite layouts.
-/// TODO: remove once we have all composite descriptions we need.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
-#[non_exhaustive]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub enum LayoutGuaranteeComp {
     /// A single symbolic layout atom.
@@ -139,7 +137,11 @@ impl LayoutGuaranteeComp {
 
     pub fn max(&mut self, rhs: Self) {
         if let Self::Max(elems) = self {
-            elems.push(rhs);
+            if let Self::Max(rhs_max) = rhs {
+                elems.extend(rhs_max);
+            } else {
+                elems.push(rhs);
+            }
         } else {
             *self = Self::Max(vec![self.clone(), rhs]);
         }
@@ -268,6 +270,77 @@ impl LayoutGuarantees {
         }
     }
 
+    /// Computes the layout of a fixed sequence of elements of the given types as guaranteed by [`repr(C)`].
+    /// Based on https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct.size-field-offset
+    pub fn mk_ordered_sequence_repr_c<I>(fields: I, prefix_tag_layout: Option<Self>) -> Self
+    where
+        I: Iterator<Item = Ty>,
+    {
+        let mut align_max = Vec::new();
+        let mut curr_offset = if let Some(tag_guarantees) = prefix_tag_layout {
+            align_max.push(tag_guarantees.alignment);
+            tag_guarantees.size
+        } else {
+            LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(0))
+        };
+
+        for ty in fields {
+            let field_size = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(ty.clone()));
+            let field_align = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(ty));
+
+            let field_offset = LayoutGuaranteeComp::AlignedTo {
+                base: Box::new(curr_offset.clone()),
+                target_align: Box::new(field_align.clone()),
+            };
+            align_max.push(field_align);
+            curr_offset = field_offset;
+            curr_offset += field_size;
+        }
+
+        Self {
+            size: LayoutGuaranteeComp::AlignedTo {
+                base: Box::new(curr_offset),
+                target_align: Box::new(LayoutGuaranteeComp::Max(align_max.clone())),
+            },
+            alignment: LayoutGuaranteeComp::Max(align_max),
+        }
+    }
+
+    pub fn mk_tagged_union<V, F>(
+        variants: V,
+        discr_layout_guarantee: Option<Self>,
+        translated: &TranslatedCrate,
+        is_union: bool,
+    ) -> Self
+    where
+        V: Iterator<Item = F>,
+        F: Iterator<Item = Ty>,
+    {
+        let mut max_size = LayoutGuaranteeComp::Max(Vec::new());
+        let mut max_align = LayoutGuaranteeComp::Max(Vec::new());
+
+        for mut fields in variants {
+            // Unions don't have an actual structure, but a single field, which needs to be
+            // handled as if it has the same repr annotation as the whole union.
+            let variant_guarantees = if is_union {
+                Self::for_ty_inner(&fields.next().unwrap(), translated, true).unwrap()
+            } else {
+                LayoutGuarantees::mk_ordered_sequence_repr_c(fields, discr_layout_guarantee.clone())
+            };
+            max_size.max(variant_guarantees.size);
+            max_align.max(variant_guarantees.alignment);
+        }
+
+        let size = LayoutGuaranteeComp::AlignedTo {
+            base: Box::new(max_size),
+            target_align: Box::new(max_align.clone()),
+        };
+        LayoutGuarantees {
+            size,
+            alignment: max_align,
+        }
+    }
+
     /// The layout of a pointer to `pointee`. Uses the symbolic size of meta-data.
     ///
     /// Based on [https://doc.rust-lang.org/reference/type-layout.html#r-layout.pointer.unsized].
@@ -288,7 +361,7 @@ impl LayoutGuarantees {
         Self { size, alignment }
     }
 
-    pub fn for_ty(ty: &Ty, translated: &TranslatedCrate) -> Option<Self> {
+    fn for_ty_inner(ty: &Ty, translated: &TranslatedCrate, force_repr_c: bool) -> Option<Self> {
         match ty.kind() {
             // True Adt's (i.e. structs and enums) should have layout guarantees stored in
             // the corresponding type declaration.
@@ -306,7 +379,16 @@ impl LayoutGuarantees {
             TyKind::Adt(TypeDeclRef {
                 id: TypeId::Tuple,
                 generics,
-            }) => Some(Self::mk_unordered_sequence(generics.types.iter().cloned())),
+            }) => {
+                if force_repr_c {
+                    Some(Self::mk_ordered_sequence_repr_c(
+                        generics.types.iter().cloned(),
+                        None,
+                    ))
+                } else {
+                    Some(Self::mk_unordered_sequence(generics.types.iter().cloned()))
+                }
+            }
             TyKind::TypeVar(_) => Some(Self::mk_symbolic(ty.clone())),
             TyKind::Literal(literal_ty) => Some(Self::mk_primitive(literal_ty)),
             TyKind::Adt(TypeDeclRef {
@@ -347,6 +429,16 @@ impl LayoutGuarantees {
             TyKind::DynTrait(_) => None,
             _ => None,
         }
+    }
+
+    pub fn for_ty(ty: &Ty, translated: &TranslatedCrate) -> Option<Self> {
+        Self::for_ty_inner(ty, translated, false)
+    }
+
+    pub fn is_concrete(&self) -> Option<(ByteCount, ByteCount)> {
+        self.size
+            .is_concrete()
+            .and_then(|size| self.alignment.is_concrete().map(|align| (size, align)))
     }
 }
 

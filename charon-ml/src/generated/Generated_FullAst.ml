@@ -307,10 +307,28 @@ and preset =
 
 and serialization_format_arg = Json | Postcard | AllFormats
 
+(** Stores the exact alignments for most primitive types. *)
+and target_alignments = {
+  i_1_align : int;
+  i_8_align : int;
+  i_16_align : int;
+  i_32_align : int;
+  i_64_align : int;
+  i_128_align : int;
+  f_16_align : int;
+  f_32_align : int;
+  f_64_align : int;
+  f_128_align : int;
+  ptr_align : int;
+}
+
 and target_info = {
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)
   is_little_endian : bool;
       (** Whether the target platform uses little endian byte order. *)
+  c_enum_min_size : int;  (** The minimum size of a [[repr(C)]] enum. *)
+  primitive_alignments : target_alignments;
+      (** Alignments for primitive types. *)
 }
 
 (** The complete data of a Rust crate.
@@ -380,9 +398,5 @@ and translated_crate = {
           method implementations apart.
 
           [Some] after translation unless [--no-reorder-decls] is passed. *)
-  memoized_layout_guarantees : (ty * layout_guarantees) list;
-      (** A map from types to the corresponding symbolic layouts as computed at
-          translation time. Can be used for efficient lookups after translation.
-      *)
 }
 [@@deriving show]

@@ -533,13 +533,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     return self.construct_transparent_layout_guarantees(fields);
                 }
 
-                // Ignore `repr(C)` for now, since that requires a much more complex algorithm.
+                let fields = fields.iter().map(|field| field.ty.clone());
+
                 if repr.repr_algo == ReprAlgorithm::C {
-                    // https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct.size-field-offset
-                    return None; // TODO: needs repr(C) struct layout computation.
+                    return Some(LayoutGuarantees::mk_ordered_sequence_repr_c(fields, None));
                 }
 
-                let fields = fields.iter().map(|field| field.ty.clone());
                 let LayoutGuarantees {
                     mut size,
                     mut alignment,
@@ -568,39 +567,46 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let fields = &variants.iter().next()?.fields;
                     self.construct_transparent_layout_guarantees(fields)
                 } else {
-                    let field_less = variants.iter().all(|variant| variant.fields.is_empty());
+                    // An explicit discriminant type implies that the enum has also C representation.
+                    // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt
+                    // Also, both cases imply that the discriminant type is guaranteed to be either the specified
+                    // type, or the default discriminant type for a target.
+                    if repr.repr_algo == ReprAlgorithm::C || repr.explicit_discr_type {
+                        let field_less = variants.iter().all(|variant| variant.fields.is_empty());
 
-                    if repr.explicit_discr_type {
-                        if field_less {
+                        let discr_layout_guarantee = if repr.explicit_discr_type {
                             let discr_ty = discr_ty.unwrap();
-                            // For field-less enums with an explicit discriminant type, the whole layout is exactly that type.
-                            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.enum
-                            LayoutGuarantees::for_ty(&discr_ty, &self.t_ctx.translated)
+                            LayoutGuarantees::for_ty(&discr_ty, &self.t_ctx.translated).unwrap()
                         } else {
-                            // For enums with fields and an explicit discriminant type, the whole layout is a tagged union with the
+                            LayoutGuarantees {
+                                size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::TargetDiscr),
+                                alignment: LayoutGuaranteeComp::Atom(
+                                    LayoutGuaranteeAtom::TargetDiscr,
+                                ),
+                            }
+                        };
+
+                        if field_less {
+                            // For field-less enums with a guaranteed discriminant type, the whole layout is exactly the type.
+                            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.enum
+                            Some(discr_layout_guarantee)
+                        } else {
+                            // For enums with fields and #[repr(C)], the whole layout is a tagged union with the
                             // specified discriminant and a union of each variant as a #[repr(C)] struct.
                             // See https://doc.rust-lang.org/reference/type-layout.html#primitive-representation-of-enums-with-fields
-                            None // TODO: needs repr(C) struct layout computation.
-                        }
-                    } else if repr.repr_algo == ReprAlgorithm::C {
-                        // In this case, the enum is guaranteed to be a tagged union.
-                        // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.adt
-                        let discr_size =
-                            LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::TargetDiscr);
-                        let discr_align =
-                            LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::TargetDiscr);
-
-                        if field_less {
-                            // Based on https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.enum
-                            Some(LayoutGuarantees {
-                                size: discr_size,
-                                alignment: discr_align,
-                            })
-                        } else {
-                            None // TODO: needs repr(C) struct layout computation.
+                            // and https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.adt
+                            let variants = variants
+                                .iter()
+                                .map(|variant| variant.fields.iter().map(|field| field.ty.clone()));
+                            Some(LayoutGuarantees::mk_tagged_union(
+                                variants,
+                                Some(discr_layout_guarantee),
+                                &self.t_ctx.translated,
+                                false,
+                            ))
                         }
                     } else {
-                        // Not sure what to do here about the discriminant, tbh.
+                        // Not sure what to do here about the discriminant wrt niches etc.
                         None
                     }
                 }
@@ -614,30 +620,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 // The layout of a union is the max size and alignment among all its variants.
                 // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.union.size-align
-                let fields = fields.iter().map(|field| field.ty.clone());
-                let LayoutGuarantees {
-                    mut size,
-                    mut alignment,
-                } = LayoutGuarantees::mk_unordered_sequence(fields);
-
-                // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.align-packed
-                match repr.align_modif {
-                    Some(AlignmentModifier::Align(forced_align)) => {
-                        alignment.max(LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(
-                            forced_align,
-                        )));
-                    }
-                    Some(AlignmentModifier::Pack(n)) => {
-                        alignment = LayoutGuaranteeComp::Packed {
-                            max_align: LayoutGuaranteeAtom::Concrete(n),
-                            to_pack: Box::new(alignment),
-                        };
-                    }
-                    _ => (),
-                }
-
-                size.realign(alignment.clone());
-                Some(LayoutGuarantees { size, alignment })
+                let variants = fields
+                    .iter()
+                    .map(|field| Some(field.ty.clone()).into_iter());
+                Some(LayoutGuarantees::mk_tagged_union(
+                    variants,
+                    None,
+                    &self.t_ctx.translated,
+                    true,
+                ))
             }
             TypeDeclKind::Alias(ty) => Some(LayoutGuarantees::mk_symbolic(ty.clone())),
             _ => None,

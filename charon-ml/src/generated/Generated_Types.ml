@@ -1118,14 +1118,15 @@ and layout = {
 and layout_guarantee_atom =
   | SymSize of ty  (** Symbolic size of type T, cf. [size_of<T>()]. *)
   | SymAlign of ty  (** Symbolic alignment of type T, cf. [align_of<T>()] *)
-  | Concrete of int
-      (** Concrete layout information as a scalar value. TODO: maybe just a
-          usize etc.? *)
+  | Concrete of int  (** Concrete layout information as number of bytes. *)
+  | TargetDiscr
+      (** Target-specific default enum discriminant type for [#[repr(C)]]. See
+          https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.enum
+      *)
 
 (** Composite symbolic layout expressions.
 
-    [non_exhaustive] since we might need many more composite layouts. TODO:
-    remove once we have all composite descriptions we need. *)
+    [non_exhaustive] since we might need many more composite layouts. *)
 and layout_guarantee_comp =
   | Atom of layout_guarantee_atom  (** A single symbolic layout atom. *)
   | Sum of layout_guarantee_comp list  (** The sum of its atoms. *)
