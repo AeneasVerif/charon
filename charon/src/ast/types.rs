@@ -520,37 +520,50 @@ pub enum PredicateOrigin {
 }
 
 // rustc counts bytes in layouts as u64
-pub type ByteCount = u64;
+pub type ConcreteByteCount = u64;
+
+/// The size, offset, or alignement of an element of layout, in bytes.
+#[derive(
+    Debug, Default, Clone, PartialEq, Eq, Drive, DriveMut, SerializeState, DeserializeState,
+)]
+pub struct ByteCount {
+    /// The guarantees given by the language about this value.
+    pub guarantee: SymbolicByteCount,
+    /// The value chosen by rustc, if any. That value may change across compilation sessions and compiler versions.
+    #[drive(skip)]
+    #[serde_state(stateless)]
+    pub concrete: Option<ConcreteByteCount>,
+}
+
+impl From<ConcreteByteCount> for ByteCount {
+    fn from(value: ConcreteByteCount) -> Self {
+        Self {
+            guarantee: Default::default(),
+            concrete: Some(value),
+        }
+    }
+}
 
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.
 #[derive(
-    Debug,
-    Default,
-    Clone,
-    PartialEq,
-    Eq,
-    Serialize,
-    Deserialize,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
+    Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut,
 )]
-#[serde_state(stateless)]
 pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
     pub field_offsets: IndexVec<FieldId, ByteCount>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
+    #[serde_state(stateless)]
     #[drive(skip)]
     pub uninhabited: bool,
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
     #[drive(skip)]
-    pub tagger: Vec<(ByteCount, ScalarValue)>,
+    #[serde_state(stateless)]
+    pub tagger: Vec<(ConcreteByteCount, ScalarValue)>,
 }
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
@@ -565,7 +578,7 @@ pub enum Discriminator {
     /// Branch on an integer value read from memory at `offset`.
     Branch {
         /// Byte offset to read from.
-        offset: ByteCount,
+        offset: ConcreteByteCount,
         /// Integer type to read.
         int_ty: IntegerTy,
         /// If the integer is in one of these ranges, continue with the given `Discriminator`. The
@@ -585,10 +598,10 @@ pub enum Discriminator {
 pub struct Layout {
     /// The size of the type in bytes.
     #[drive(skip)]
-    pub size: Option<ByteCount>,
+    pub size: ByteCount,
     /// The alignment, in bytes.
     #[drive(skip)]
-    pub align: Option<ByteCount>,
+    pub align: ByteCount,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     #[drive(skip)]
     #[serde_state(stateless)]
@@ -601,7 +614,6 @@ pub struct Layout {
     /// Map from `VariantId` to the corresponding field layouts. Some variants don't have a
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
     /// layout). Structs and unions are modeled as having exactly one variant.
-    #[serde_state(stateless)]
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
     /// The representation options of this type declaration as annotated by the user.
     #[drive(skip)]
@@ -659,8 +671,8 @@ pub enum ReprAlgorithm {
 /// Represents `repr(align(n))` and `repr(packed(n))`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AlignmentModifier {
-    Align(ByteCount),
-    Pack(ByteCount),
+    Align(ConcreteByteCount),
+    Pack(ConcreteByteCount),
 }
 
 /// The representation options as annotated by the user.

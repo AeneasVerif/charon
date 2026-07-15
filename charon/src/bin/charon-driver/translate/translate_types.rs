@@ -546,13 +546,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.align-packed
                 match repr.align_modif {
                     Some(AlignmentModifier::Align(forced_align)) => {
-                        alignment.max(LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(
+                        alignment.max(SymbolicByteCount::Atom(BasicByteCount::Concrete(
                             forced_align,
                         )));
                     }
                     Some(AlignmentModifier::Pack(n)) => {
-                        alignment = LayoutGuaranteeComp::Packed {
-                            max_align: LayoutGuaranteeAtom::Concrete(n),
+                        alignment = SymbolicByteCount::Packed {
+                            max_align: BasicByteCount::Concrete(n),
                             to_pack: Box::new(alignment),
                         };
                     }
@@ -579,10 +579,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             LayoutGuarantees::for_ty(&discr_ty, &self.t_ctx.translated).unwrap()
                         } else {
                             LayoutGuarantees {
-                                size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::TargetDiscr),
-                                alignment: LayoutGuaranteeComp::Atom(
-                                    LayoutGuaranteeAtom::TargetDiscr,
-                                ),
+                                size: SymbolicByteCount::Atom(BasicByteCount::TargetDiscr),
+                                alignment: SymbolicByteCount::Atom(BasicByteCount::TargetDiscr),
                             }
                         };
 
@@ -646,12 +644,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_variant_layout(
             variant_layout: &r_abi::VariantLayout<r_abi::FieldIdx>,
-            tagger: Vec<(ByteCount, ScalarValue)>,
+            tagger: Vec<(ConcreteByteCount, ScalarValue)>,
         ) -> Option<VariantLayout> {
             let field_offsets = variant_layout
                 .field_offsets
                 .iter()
-                .map(|o| o.bytes())
+                .map(|o| o.bytes().into())
                 .collect();
             Some(VariantLayout {
                 field_offsets,
@@ -662,13 +660,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_layout_data(
             layout_data: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
-            tagger: Vec<(ByteCount, ScalarValue)>,
+            tagger: Vec<(ConcreteByteCount, ScalarValue)>,
         ) -> Option<VariantLayout> {
-            let field_offsets = match &layout_data.fields {
+            let field_offsets: IndexVec<FieldId, ByteCount> = match &layout_data.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
-                    offsets.iter().map(|o| o.bytes()).collect()
+                    offsets.iter().map(|o| o.bytes().into()).collect()
                 }
-                r_abi::FieldsShape::Union(n) => vec![0; n.get()].into(),
+                r_abi::FieldsShape::Union(n) => vec![0.into(); n.get()].into(),
                 r_abi::FieldsShape::Primitive => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
@@ -715,11 +713,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let layout = tcx.layout_of(pseudo_input).ok()?.layout;
         let (size, align) = if layout.is_sized() {
             (
-                Some(layout.size().bytes()),
-                Some(layout.align().abi.bytes()),
+                layout.size().bytes().into(),
+                layout.align().abi.bytes().into(),
             )
         } else {
-            (None, None)
+            (ByteCount::default(), ByteCount::default())
         };
 
         // Build the discriminator tree and variant layouts.
@@ -876,12 +874,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     size += size_of_ty;
                     // For these types, align == size is good enough.
                     align = std::cmp::max(align, size);
-                    offset
+                    offset.into()
                 });
 
                 Ok(Layout {
-                    size: Some(size),
-                    align: Some(align),
+                    size: size.into(),
+                    align: align.into(),
                     discriminator: None,
                     uninhabited: false,
                     variant_layouts: IndexVec::from([Some(VariantLayout {

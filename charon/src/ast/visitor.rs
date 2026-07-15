@@ -54,7 +54,7 @@ use derive_generic_visitor::*;
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping,  Layout, VariantLayout, PtrMetadata,
-        LayoutGuarantees, LayoutGuaranteeAtom, LayoutGuaranteeComp,
+        LayoutGuarantees, BasicByteCount, SymbolicByteCount, ByteCount,
         SpanData, TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
         ItemByVal, VTableField, AssocItemNames,
         for<Id: AstVisitable> DeclRef<Id>, ItemId,

@@ -507,7 +507,7 @@ impl GenericArgs {
 impl IntTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: ConcreteByteCount) -> usize {
         match self {
             IntTy::Isize => ptr_size as usize,
             IntTy::I8 => size_of::<i8>(),
@@ -521,7 +521,7 @@ impl IntTy {
 impl UIntTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: ConcreteByteCount) -> usize {
         match self {
             UIntTy::Usize => ptr_size as usize,
             UIntTy::U8 => size_of::<u8>(),
@@ -560,7 +560,7 @@ impl IntegerTy {
 
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: ConcreteByteCount) -> usize {
         match self {
             IntegerTy::Signed(ty) => ty.target_size(ptr_size),
             IntegerTy::Unsigned(ty) => ty.target_size(ptr_size),
@@ -586,7 +586,7 @@ impl LiteralTy {
 
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: ConcreteByteCount) -> usize {
         match self {
             LiteralTy::Int(int_ty) => int_ty.target_size(ptr_size),
             LiteralTy::UInt(uint_ty) => uint_ty.target_size(ptr_size),
@@ -1503,7 +1503,7 @@ impl Discriminator {
     /// could not be read.
     pub fn read_discriminant(
         &self,
-        read: impl Fn(ByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
+        read: impl Fn(ConcreteByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
     ) -> Result<VariantId, DiscriminantReadError> {
         match self {
             Discriminator::Known(id) => Ok(*id),

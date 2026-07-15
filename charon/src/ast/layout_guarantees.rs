@@ -1,30 +1,33 @@
-use std::{collections::HashSet, ops::AddAssign};
+use std::{
+    collections::{HashMap, HashSet},
+    ops::AddAssign,
+};
 
 use derive_generic_visitor::{Drive, DriveMut};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::{
-    BuiltinTy, ByteCount, ConstantExpr, ConstantExprKind, FloatTy, HashConsSerializerState, IntTy,
-    Literal, LiteralTy, ScalarValue, SeqHashMap, TargetTriple, TranslatedCrate, Ty, TyKind,
-    TyVisitable, TypeDeclRef, TypeId, UIntTy,
+    BuiltinTy, ConcreteByteCount, ConstantExpr, ConstantExprKind, FloatTy, HashConsSerializerState,
+    IntTy, Literal, LiteralTy, ScalarValue, TargetTriple, TranslatedCrate, Ty, TyKind, TyVisitable,
+    TypeDeclRef, TypeId, UIntTy,
 };
 
 /// The basic building blocks of symbolic layout information.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(state_implements = HashConsSerializerState)]
-pub enum LayoutGuaranteeAtom {
+pub enum BasicByteCount {
     /// Symbolic size of type T, cf. `size_of<T>()`.
     SymSize(Ty),
     /// Symbolic alignment of type T, cf. `align_of<T>()`
     SymAlign(Ty),
     /// Concrete layout information as number of bytes.
-    Concrete(#[drive(skip)] ByteCount),
+    Concrete(#[drive(skip)] ConcreteByteCount),
     /// Target-specific default enum discriminant type for `#[repr(C)]`.
     /// See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.enum
     TargetDiscr,
 }
 
-impl LayoutGuaranteeAtom {
+impl BasicByteCount {
     pub fn mk_address_size() -> Self {
         Self::SymSize(Ty::mk_usize())
     }
@@ -80,36 +83,42 @@ impl LayoutGuaranteeAtom {
 /// `non_exhaustive` since we might need many more composite layouts.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(state_implements = HashConsSerializerState)]
-pub enum LayoutGuaranteeComp {
+pub enum SymbolicByteCount {
     /// A single symbolic layout atom.
-    Atom(LayoutGuaranteeAtom),
+    Atom(BasicByteCount),
     /// The sum of its atoms.
-    Sum(Vec<LayoutGuaranteeComp>),
+    Sum(Vec<SymbolicByteCount>),
     /// An atom multiplied by a fixed scalar (e.g. `N` in [T;N]).
     Product {
-        atom: Box<LayoutGuaranteeComp>,
+        atom: Box<SymbolicByteCount>,
         multiplier: ConstantExpr,
     },
     /// The next multiple of `target_align` from `base`.
     AlignedTo {
-        base: Box<LayoutGuaranteeComp>,
-        target_align: Box<LayoutGuaranteeComp>,
+        base: Box<SymbolicByteCount>,
+        target_align: Box<SymbolicByteCount>,
     },
     /// The maximum of these composite layout expressions.
-    Max(Vec<LayoutGuaranteeComp>),
+    Max(Vec<SymbolicByteCount>),
     /// For the packed representation, the overall and field alignments are each at most `max_align`.
     /// Thus, in contrast to the [`Self::Max`], we only need to compare a composition with a fixed
     /// constant atomic.
     Packed {
-        max_align: LayoutGuaranteeAtom,
-        to_pack: Box<LayoutGuaranteeComp>,
+        max_align: BasicByteCount,
+        to_pack: Box<SymbolicByteCount>,
     },
 }
 
-impl LayoutGuaranteeComp {
-    pub fn is_concrete(&self) -> Option<ByteCount> {
+impl Default for SymbolicByteCount {
+    fn default() -> Self {
+        Self::Atom(BasicByteCount::Concrete(0))
+    }
+}
+
+impl SymbolicByteCount {
+    pub fn is_concrete(&self) -> Option<ConcreteByteCount> {
         match self {
-            Self::Atom(LayoutGuaranteeAtom::Concrete(c)) => Some(*c),
+            Self::Atom(BasicByteCount::Concrete(c)) => Some(*c),
             _ => None,
         }
     }
@@ -117,7 +126,7 @@ impl LayoutGuaranteeComp {
     pub fn realign(&mut self, align_to: Self) {
         match self {
             Self::AlignedTo { target_align, .. } => **target_align = align_to,
-            Self::Atom(LayoutGuaranteeAtom::Concrete(c)) if align_to.is_concrete().is_some() => {
+            Self::Atom(BasicByteCount::Concrete(c)) if align_to.is_concrete().is_some() => {
                 let Some(align_to) = align_to.is_concrete() else {
                     unreachable!()
                 };
@@ -148,8 +157,8 @@ impl LayoutGuaranteeComp {
     }
 }
 
-impl AddAssign for LayoutGuaranteeComp {
-    fn add_assign(&mut self, rhs: LayoutGuaranteeComp) {
+impl AddAssign for SymbolicByteCount {
+    fn add_assign(&mut self, rhs: SymbolicByteCount) {
         if let Self::Sum(summands) = self {
             summands.push(rhs);
         } else {
@@ -165,21 +174,21 @@ impl AddAssign for LayoutGuaranteeComp {
 #[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub struct LayoutGuarantees {
-    pub size: LayoutGuaranteeComp,
-    pub alignment: LayoutGuaranteeComp,
+    pub size: SymbolicByteCount,
+    pub alignment: SymbolicByteCount,
 }
 
 impl LayoutGuarantees {
     pub const ONE_ZST: Self = Self {
-        size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(0)),
-        alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(1)),
+        size: SymbolicByteCount::Atom(BasicByteCount::Concrete(0)),
+        alignment: SymbolicByteCount::Atom(BasicByteCount::Concrete(1)),
     };
 
-    pub fn mk_concrete(size: ByteCount, alignment: ByteCount) -> Self {
+    pub fn mk_concrete(size: ConcreteByteCount, alignment: ConcreteByteCount) -> Self {
         if size.is_multiple_of(alignment) {
             Self {
-                size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(size)),
-                alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(alignment)),
+                size: SymbolicByteCount::Atom(BasicByteCount::Concrete(size)),
+                alignment: SymbolicByteCount::Atom(BasicByteCount::Concrete(alignment)),
             }
         } else {
             panic!(
@@ -192,13 +201,13 @@ impl LayoutGuarantees {
     /// Based on [https://doc.rust-lang.org/reference/type-layout.html#r-layout.array].
     pub fn mk_array(elem_ty: &Ty, elem_num: &ConstantExpr) -> Self {
         Self {
-            size: LayoutGuaranteeComp::Product {
-                atom: Box::new(LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(
+            size: SymbolicByteCount::Product {
+                atom: Box::new(SymbolicByteCount::Atom(BasicByteCount::SymSize(
                     elem_ty.clone(),
                 ))),
                 multiplier: elem_num.clone(),
             },
-            alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(elem_ty.clone())),
+            alignment: SymbolicByteCount::Atom(BasicByteCount::SymAlign(elem_ty.clone())),
         }
     }
 
@@ -210,8 +219,8 @@ impl LayoutGuarantees {
         let size = match primitive {
             LiteralTy::Int(IntTy::Isize) | LiteralTy::UInt(UIntTy::Usize) => {
                 return Self {
-                    size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::mk_address_size()),
-                    alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::mk_address_size()),
+                    size: SymbolicByteCount::Atom(BasicByteCount::mk_address_size()),
+                    alignment: SymbolicByteCount::Atom(BasicByteCount::mk_address_size()),
                 };
             }
             LiteralTy::Int(int_ty) => int_ty.target_size(0),
@@ -221,17 +230,15 @@ impl LayoutGuarantees {
             LiteralTy::Char => 4,
         };
         Self {
-            size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(size as ByteCount)),
-            alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(Ty::from(
-                *primitive,
-            ))),
+            size: SymbolicByteCount::Atom(BasicByteCount::Concrete(size as ConcreteByteCount)),
+            alignment: SymbolicByteCount::Atom(BasicByteCount::SymAlign(Ty::from(*primitive))),
         }
     }
 
     pub fn mk_symbolic(ty: Ty) -> Self {
         Self {
-            size: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(ty.clone())),
-            alignment: LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(ty)),
+            size: SymbolicByteCount::Atom(BasicByteCount::SymSize(ty.clone())),
+            alignment: SymbolicByteCount::Atom(BasicByteCount::SymAlign(ty)),
         }
     }
 
@@ -245,10 +252,8 @@ impl LayoutGuarantees {
         let mut align_max = Vec::new();
         // Traverse the types in the tuple and add their information to the memoization database.
         for ty in tuple_elems {
-            size_sum.push(LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(
-                ty.clone(),
-            )));
-            align_max.push(LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(ty)));
+            size_sum.push(SymbolicByteCount::Atom(BasicByteCount::SymSize(ty.clone())));
+            align_max.push(SymbolicByteCount::Atom(BasicByteCount::SymAlign(ty)));
         }
 
         // An empty tuple is the unit type.
@@ -260,13 +265,13 @@ impl LayoutGuarantees {
         Self {
             // This implicitly follows from
             // https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.rust.layout.struct
-            size: LayoutGuaranteeComp::AlignedTo {
-                base: Box::new(LayoutGuaranteeComp::Sum(size_sum)),
-                target_align: Box::new(LayoutGuaranteeComp::Max(align_max.clone())),
+            size: SymbolicByteCount::AlignedTo {
+                base: Box::new(SymbolicByteCount::Sum(size_sum)),
+                target_align: Box::new(SymbolicByteCount::Max(align_max.clone())),
             },
             // Technically, this is only the lower bound on the actual alignment.
             // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.rust.layout, point 2.
-            alignment: LayoutGuaranteeComp::Max(align_max),
+            alignment: SymbolicByteCount::Max(align_max),
         }
     }
 
@@ -281,14 +286,14 @@ impl LayoutGuarantees {
             align_max.push(tag_guarantees.alignment);
             tag_guarantees.size
         } else {
-            LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(0))
+            SymbolicByteCount::Atom(BasicByteCount::Concrete(0))
         };
 
         for ty in fields {
-            let field_size = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(ty.clone()));
-            let field_align = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(ty));
+            let field_size = SymbolicByteCount::Atom(BasicByteCount::SymSize(ty.clone()));
+            let field_align = SymbolicByteCount::Atom(BasicByteCount::SymAlign(ty));
 
-            let field_offset = LayoutGuaranteeComp::AlignedTo {
+            let field_offset = SymbolicByteCount::AlignedTo {
                 base: Box::new(curr_offset.clone()),
                 target_align: Box::new(field_align.clone()),
             };
@@ -298,11 +303,11 @@ impl LayoutGuarantees {
         }
 
         Self {
-            size: LayoutGuaranteeComp::AlignedTo {
+            size: SymbolicByteCount::AlignedTo {
                 base: Box::new(curr_offset),
-                target_align: Box::new(LayoutGuaranteeComp::Max(align_max.clone())),
+                target_align: Box::new(SymbolicByteCount::Max(align_max.clone())),
             },
-            alignment: LayoutGuaranteeComp::Max(align_max),
+            alignment: SymbolicByteCount::Max(align_max),
         }
     }
 
@@ -316,8 +321,8 @@ impl LayoutGuarantees {
         V: Iterator<Item = F>,
         F: Iterator<Item = Ty>,
     {
-        let mut max_size = LayoutGuaranteeComp::Max(Vec::new());
-        let mut max_align = LayoutGuaranteeComp::Max(Vec::new());
+        let mut max_size = SymbolicByteCount::Max(Vec::new());
+        let mut max_align = SymbolicByteCount::Max(Vec::new());
 
         for mut fields in variants {
             // Unions don't have an actual structure, but a single field, which needs to be
@@ -331,7 +336,7 @@ impl LayoutGuarantees {
             max_align.max(variant_guarantees.alignment);
         }
 
-        let size = LayoutGuaranteeComp::AlignedTo {
+        let size = SymbolicByteCount::AlignedTo {
             base: Box::new(max_size),
             target_align: Box::new(max_align.clone()),
         };
@@ -346,15 +351,15 @@ impl LayoutGuarantees {
     /// Based on [https://doc.rust-lang.org/reference/type-layout.html#r-layout.pointer.unsized].
     fn mk_ptr(pointee: &Ty, translated: &TranslatedCrate) -> Self {
         let meta = pointee.get_ptr_metadata(translated).into_type();
-        let ptr_size = LayoutGuaranteeAtom::mk_address_size();
-        let alignment = LayoutGuaranteeComp::Max(vec![
-            LayoutGuaranteeComp::Atom(ptr_size.clone()),
-            LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(meta.clone())),
+        let ptr_size = BasicByteCount::mk_address_size();
+        let alignment = SymbolicByteCount::Max(vec![
+            SymbolicByteCount::Atom(ptr_size.clone()),
+            SymbolicByteCount::Atom(BasicByteCount::SymSize(meta.clone())),
         ]);
-        let size = LayoutGuaranteeComp::AlignedTo {
-            base: Box::new(LayoutGuaranteeComp::Sum(vec![
-                LayoutGuaranteeComp::Atom(ptr_size),
-                LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(meta)),
+        let size = SymbolicByteCount::AlignedTo {
+            base: Box::new(SymbolicByteCount::Sum(vec![
+                SymbolicByteCount::Atom(ptr_size),
+                SymbolicByteCount::Atom(BasicByteCount::SymSize(meta)),
             ])),
             target_align: Box::new(alignment.clone()),
         };
@@ -397,7 +402,7 @@ impl LayoutGuarantees {
             }) => Some(Self::mk_ptr(generics.types.first()?, translated)),
             TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(Self::mk_ptr(ty, translated)),
             TyKind::FnPtr(_) => {
-                let ptr_size = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::mk_address_size());
+                let ptr_size = SymbolicByteCount::Atom(BasicByteCount::mk_address_size());
                 Some(Self {
                     size: ptr_size.clone(),
                     alignment: ptr_size.clone(),
@@ -415,7 +420,7 @@ impl LayoutGuarantees {
             }) => {
                 let mut base = Self::mk_symbolic(ty.clone());
                 // Aligned to `u8`.
-                base.alignment = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(1));
+                base.alignment = SymbolicByteCount::Atom(BasicByteCount::Concrete(1));
                 Some(base)
             }
             // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.slice
@@ -435,86 +440,82 @@ impl LayoutGuarantees {
         Self::for_ty_inner(ty, translated, false)
     }
 
-    pub fn is_concrete(&self) -> Option<(ByteCount, ByteCount)> {
-        self.size
-            .is_concrete()
-            .and_then(|size| self.alignment.is_concrete().map(|align| (size, align)))
+    pub fn is_concrete(&self) -> Option<(ConcreteByteCount, ConcreteByteCount)> {
+        self.size.is_concrete().zip(self.alignment.is_concrete())
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
 /// A structure that computes and stores originally symbolic layouts, which have been
-/// concretized as much as possible. Will not be used during translation.
-pub struct Concretizer {
-    computed_layouts: SeqHashMap<Ty, LayoutGuarantees>,
-    curr_requested: HashSet<Ty>,
+/// normalized for a given target as much as possible. Will not be used during translation.
+pub struct LayoutComputer<'a> {
+    krate: &'a TranslatedCrate,
+    target: Option<&'a TargetTriple>,
+    cache: HashMap<Ty, LayoutGuarantees>,
+    /// Set to bail on cycles in the computation.
+    stack: HashSet<Ty>,
 }
+impl<'a> LayoutComputer<'a> {
+    pub fn new(krate: &'a TranslatedCrate, target: Option<&'a TargetTriple>) -> Self {
+        Self {
+            krate,
+            target,
+            cache: HashMap::new(),
+            stack: HashSet::new(),
+        }
+    }
 
-impl Concretizer {
-    fn concretize_atom(
-        &mut self,
-        atom: &LayoutGuaranteeAtom,
-        translated: &TranslatedCrate,
-        target: Option<&TargetTriple>,
-    ) -> LayoutGuaranteeComp {
+    fn normalize_atom(&mut self, atom: &BasicByteCount) -> SymbolicByteCount {
         match atom {
-            LayoutGuaranteeAtom::SymSize(ty) => {
+            BasicByteCount::SymSize(ty) => {
                 if ty == &Ty::mk_usize()
-                    && let Some(target) = target
+                    && let Some(target) = self.target
                     && let Some(target_specific_atom) =
-                        LayoutGuaranteeAtom::mk_address_size_for(translated, target)
+                        BasicByteCount::mk_address_size_for(self.krate, target)
                 {
-                    LayoutGuaranteeComp::Atom(target_specific_atom)
-                } else if let Some(layout) = self.concretized_layout_for(ty, translated, target) {
+                    SymbolicByteCount::Atom(target_specific_atom)
+                } else if let Some(layout) = self.compute_layout(ty.clone()) {
                     layout.size
                 } else {
-                    LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymSize(ty.clone()))
+                    SymbolicByteCount::Atom(BasicByteCount::SymSize(ty.clone()))
                 }
             }
-            LayoutGuaranteeAtom::SymAlign(ty) => {
+            BasicByteCount::SymAlign(ty) => {
                 if let Some(literal_ty) = ty.as_literal()
-                    && let Some(target) = target
+                    && let Some(target) = self.target
                     && let Some(target_specific_atom) =
-                        LayoutGuaranteeAtom::make_primitive_align_for_target(
-                            literal_ty, translated, target,
+                        BasicByteCount::make_primitive_align_for_target(
+                            literal_ty, self.krate, target,
                         )
                 {
-                    LayoutGuaranteeComp::Atom(target_specific_atom)
-                } else if let Some(layout) = self.concretized_layout_for(ty, translated, target) {
+                    SymbolicByteCount::Atom(target_specific_atom)
+                } else if let Some(layout) = self.compute_layout(ty.clone()) {
                     layout.alignment
                 } else {
-                    LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::SymAlign(ty.clone()))
+                    SymbolicByteCount::Atom(BasicByteCount::SymAlign(ty.clone()))
                 }
             }
-            LayoutGuaranteeAtom::Concrete(c) => {
-                LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(*c))
-            }
-            LayoutGuaranteeAtom::TargetDiscr => {
-                if let Some(target) = target
-                    && let Some(info) = translated.target_information.get(target)
+            BasicByteCount::Concrete(c) => SymbolicByteCount::Atom(BasicByteCount::Concrete(*c)),
+            BasicByteCount::TargetDiscr => {
+                if let Some(target) = self.target
+                    && let Some(info) = self.krate.target_information.get(target)
                 {
-                    LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(info.c_enum_min_size))
+                    SymbolicByteCount::Atom(BasicByteCount::Concrete(info.c_enum_min_size))
                 } else {
-                    LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::TargetDiscr)
+                    SymbolicByteCount::Atom(BasicByteCount::TargetDiscr)
                 }
             }
         }
     }
 
-    fn concretize_comp(
-        &mut self,
-        comp: &mut LayoutGuaranteeComp,
-        translated: &TranslatedCrate,
-        target: Option<&TargetTriple>,
-    ) {
-        match comp {
-            LayoutGuaranteeComp::Atom(atom) => {
-                *comp = self.concretize_atom(atom, translated, target);
+    fn normalize_symbolic_byte_count(&mut self, sym_byte_count: &mut SymbolicByteCount) {
+        match sym_byte_count {
+            SymbolicByteCount::Atom(atom) => {
+                *sym_byte_count = self.normalize_atom(atom);
             }
-            LayoutGuaranteeComp::Sum(summands) => {
+            SymbolicByteCount::Sum(summands) => {
                 let mut sum = Some(0);
                 for summand in summands.iter_mut() {
-                    self.concretize_comp(summand, translated, target);
+                    self.normalize_symbolic_byte_count(summand);
 
                     if let Some(sum) = &mut sum
                         && let Some(c) = summand.is_concrete()
@@ -525,11 +526,11 @@ impl Concretizer {
                     }
                 }
                 if let Some(sum) = sum {
-                    *comp = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(sum));
+                    *sym_byte_count = SymbolicByteCount::Atom(BasicByteCount::Concrete(sum));
                 }
             }
-            LayoutGuaranteeComp::Product { atom, multiplier } => {
-                self.concretize_comp(atom, translated, target);
+            SymbolicByteCount::Product { atom, multiplier } => {
+                self.normalize_symbolic_byte_count(atom);
                 if let Some(c) = atom.is_concrete()
                     && let ConstantExprKind::Literal(Literal::Scalar(s)) = multiplier.kind
                 {
@@ -538,27 +539,28 @@ impl Concretizer {
                         ScalarValue::Unsigned(_, val) => val as u64 * c,
                         ScalarValue::Signed(_, val) => val as u128 as u64 * c,
                     };
-                    *comp = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(result));
+                    *sym_byte_count = SymbolicByteCount::Atom(BasicByteCount::Concrete(result));
                 }
             }
-            LayoutGuaranteeComp::AlignedTo { base, target_align } => {
-                self.concretize_comp(base, translated, target);
-                self.concretize_comp(target_align, translated, target);
+            SymbolicByteCount::AlignedTo { base, target_align } => {
+                self.normalize_symbolic_byte_count(base);
+                self.normalize_symbolic_byte_count(target_align);
                 if let Some(c1) = base.is_concrete()
                     && let Some(c2) = target_align.is_concrete()
                 {
                     if c1.is_multiple_of(c2) {
-                        *comp = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(c1));
+                        *sym_byte_count = SymbolicByteCount::Atom(BasicByteCount::Concrete(c1));
                     } else {
                         let aligned = c1 + c2 - (c1 % c2);
-                        *comp = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(aligned));
+                        *sym_byte_count =
+                            SymbolicByteCount::Atom(BasicByteCount::Concrete(aligned));
                     }
                 }
             }
-            LayoutGuaranteeComp::Max(max_contenders) => {
+            SymbolicByteCount::Max(max_contenders) => {
                 let mut max = Some(0);
                 for contender in max_contenders.iter_mut() {
-                    self.concretize_comp(contender, translated, target);
+                    self.normalize_symbolic_byte_count(contender);
 
                     if let Some(max) = &mut max
                         && let Some(c) = contender.is_concrete()
@@ -569,49 +571,42 @@ impl Concretizer {
                     }
                 }
                 if let Some(max) = max {
-                    *comp = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(max));
+                    *sym_byte_count = SymbolicByteCount::Atom(BasicByteCount::Concrete(max));
                 }
             }
-            LayoutGuaranteeComp::Packed { max_align, to_pack } => {
-                self.concretize_atom(max_align, translated, target);
-                self.concretize_comp(to_pack, translated, target);
-                if let LayoutGuaranteeAtom::Concrete(c1) = max_align
+            SymbolicByteCount::Packed { max_align, to_pack } => {
+                self.normalize_atom(max_align);
+                self.normalize_symbolic_byte_count(to_pack);
+                if let BasicByteCount::Concrete(c1) = max_align
                     && let Some(c2) = to_pack.is_concrete()
                 {
                     if *c1 < c2 {
-                        *comp = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(*c1));
+                        *sym_byte_count = SymbolicByteCount::Atom(BasicByteCount::Concrete(*c1));
                     } else {
-                        *comp = LayoutGuaranteeComp::Atom(LayoutGuaranteeAtom::Concrete(c2));
+                        *sym_byte_count = SymbolicByteCount::Atom(BasicByteCount::Concrete(c2));
                     }
                 }
             }
         }
     }
 
-    /// Computes or looks up a concretized layout for the given type.
-    ///
-    /// This will concretize the layout as much as possible, but might still
-    /// return a (partially) symbolic layout.
-    pub fn concretized_layout_for(
-        &mut self,
-        ty: &Ty,
-        translated: &TranslatedCrate,
-        target: Option<&TargetTriple>,
-    ) -> Option<LayoutGuarantees> {
-        if let Some(layout) = self.computed_layouts.get(ty) {
+    /// Computes the most precise layout guarantees we can deduce for this type.
+    pub fn compute_layout(&mut self, ty: Ty) -> Option<LayoutGuarantees> {
+        if let Some(layout) = self.cache.get(&ty) {
             Some(layout.clone())
-        } else if self.curr_requested.contains(ty) {
+        } else if self.stack.contains(&ty) {
             // In case of recursive/inductive layout constraints,
             // stop computation for that branch.
             None
         } else {
-            let mut symbolic_layout = LayoutGuarantees::for_ty(ty, translated)?;
-            self.curr_requested.insert(ty.clone());
+            let mut symbolic_layout = LayoutGuarantees::for_ty(&ty, self.krate)?;
+            self.stack.insert(ty.clone());
 
-            self.concretize_comp(&mut symbolic_layout.size, translated, target);
-            self.concretize_comp(&mut symbolic_layout.alignment, translated, target);
+            self.normalize_symbolic_byte_count(&mut symbolic_layout.size);
+            self.normalize_symbolic_byte_count(&mut symbolic_layout.alignment);
 
-            self.curr_requested.remove(ty);
+            self.stack.remove(&ty);
+            self.cache.insert(ty, symbolic_layout.clone());
             Some(symbolic_layout)
         }
     }
