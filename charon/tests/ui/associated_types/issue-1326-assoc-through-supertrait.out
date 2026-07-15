@@ -1,0 +1,9 @@
+error: Could not compute the value of TraitClauseBound(1, 2)::ImpliedClause1::ImpliedClause1::Assoc (on TraitClauseBound(1, 2)::ImpliedClause1::ImpliedClause1) needed to update item reference test_crate::HasAssoc<@TypeBound(1, 1)>.
+       Constraints in scope:
+       
+  --> tests/ui/associated_types/issue-1326-assoc-through-supertrait.rs:13:5
+   |
+13 |     f.method()
+   |     ^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
