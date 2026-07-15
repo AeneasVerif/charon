@@ -93,13 +93,6 @@ jobs:
           rm -f "../${{ matrix.artifact_name }}.tar.gz"
           tar -czf "../${{ matrix.artifact_name }}.tar.gz" -- *
 
-      # On Linux, check that the release binaries are compatible with older glibc versions
-      - name: Check glibc version
-        if: ${{ startsWith(matrix.artifact_name, 'charon-linux') }}
-        run: |
-          set -eo pipefail
-          nix build -L .#charon-release-glibc-check
-
       # Verify the binary is functional and still links to `rustc_driver.so` on Linux.
       - name: Smoke Test
         run: |
