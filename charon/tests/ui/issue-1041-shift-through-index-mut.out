@@ -1,0 +1,209 @@
+# Final ULLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::ops::index::Index
+#[lang_item("index")]
+pub trait Index<Self, Idx>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Idx: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
+    type Output
+    fn index<'_0_1>;
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
+}
+
+// Full name: core::ops::index::IndexMut
+#[lang_item("index_mut")]
+pub trait IndexMut<Self, Idx>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Index<Idx>)
+    proof ImpliedClause2: (Idx: MetaSized)
+    fn index_mut<'_0_1>;
+    vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::ImpliedClause1::Output>
+}
+
+// Full name: test_crate::Wrap
+pub struct Wrap {
+  [u64; 2usize],
+}
+
+// Full name: test_crate::{impl Index<usize> for Wrap}::index
+pub fn index<'_0>(self: &'_0 Wrap, i: usize) -> &'_0 u64
+{
+    let _0: &'1 u64; // return
+    let self: &'3 Wrap; // arg #1
+    let i: usize; // arg #2
+    let _3: &'4 u64; // anonymous local
+    let _4: usize; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_3);
+        storage_live(_4);
+        _4 = copy i;
+        _3 = &((*self)).0[copy _4];
+        _0 = &(*_3);
+        storage_dead(_4);
+        storage_dead(_3);
+        storage_dead(i);
+        storage_dead(self);
+        return;
+    }
+}
+
+// Full name: test_crate::{impl Index<usize> for Wrap}
+impl "impl_Index_usize_for_Wrap" Index<usize> for Wrap {
+    proof ImpliedClause0: (Wrap: MetaSized) = {built_in impl MetaSized for Wrap}
+    proof ImpliedClause1: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause2: (u64: MetaSized) = {built_in impl MetaSized for u64}
+    type Output = u64
+    fn index<'_0_1> = index<'_0_1>
+    vtable: impl_Index_usize_for_Wrap::{vtable}
+}
+
+// Full name: test_crate::{impl IndexMut<usize> for Wrap}::index_mut
+pub fn index_mut<'_0>(self: &'_0 mut Wrap, i: usize) -> &'_0 mut u64
+{
+    let _0: &'1 mut u64; // return
+    let self: &'3 mut Wrap; // arg #1
+    let i: usize; // arg #2
+    let _3: &'4 mut u64; // anonymous local
+    let _4: &'5 mut u64; // anonymous local
+    let _5: usize; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_3);
+        storage_live(_4);
+        storage_live(_5);
+        _5 = copy i;
+        _4 = &mut ((*self)).0[copy _5];
+        _3 = &mut (*_4);
+        _0 = &mut (*_3);
+        storage_dead(_5);
+        storage_dead(_4);
+        storage_dead(_3);
+        storage_dead(i);
+        storage_dead(self);
+        return;
+    }
+}
+
+// Full name: test_crate::{impl IndexMut<usize> for Wrap}
+impl "impl_IndexMut_usize_for_Wrap" IndexMut<usize> for Wrap {
+    proof ImpliedClause0: (Wrap: MetaSized) = {built_in impl MetaSized for Wrap}
+    proof ImpliedClause1: (Wrap: Index<usize>) = impl_Index_usize_for_Wrap
+    proof ImpliedClause2: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    fn index_mut<'_0_1> = index_mut<'_0_1>
+    vtable: impl_IndexMut_usize_for_Wrap::{vtable}
+}
+
+// Full name: test_crate::shr_into_index
+pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
+{
+    let _0: (); // return
+    let x: u64; // arg #1
+    let out: &'1 mut Wrap; // arg #2
+    let _3: u64; // anonymous local
+    let _4: u32; // anonymous local
+    let _5: bool; // anonymous local
+    let _6: &'3 mut u64; // anonymous local
+    let _7: &'4 mut Wrap; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_4);
+        storage_live(_5);
+        _0 = ();
+        storage_live(_3);
+        _3 = copy x;
+        _4 = cast<i32, u32>(const 20i32);
+        _5 = move _4 < const 64u32;
+        assert(move _5 == true) (overflow) else panic;
+        storage_live(_6);
+        storage_live(_7);
+        _7 = &mut (*out);
+        _6 = index_mut<'6>(move _7, const 0usize) -> bb2 (unwind: bb1);
+    }
+
+    bb1: {
+        storage_dead(_5);
+        storage_dead(_4);
+        storage_dead(out);
+        storage_dead(x);
+        unwind_continue;
+    }
+
+    bb2: {
+        storage_dead(_7);
+        (*_6) = move _3 wrap.>> const 20i32;
+        storage_dead(_3);
+        storage_dead(_6);
+        _0 = ();
+        storage_dead(_5);
+        storage_dead(_4);
+        storage_dead(out);
+        storage_dead(x);
+        return;
+    }
+}
+
+// Full name: test_crate::shl_into_index_by_var
+pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
+{
+    let _0: (); // return
+    let x: u64; // arg #1
+    let n: u32; // arg #2
+    let out: &'1 mut Wrap; // arg #3
+    let _4: u64; // anonymous local
+    let _5: u32; // anonymous local
+    let _6: bool; // anonymous local
+    let _7: &'3 mut u64; // anonymous local
+    let _8: &'4 mut Wrap; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_6);
+        _0 = ();
+        storage_live(_4);
+        _4 = copy x;
+        storage_live(_5);
+        _5 = copy n;
+        _6 = copy _5 < const 64u32;
+        assert(move _6 == true) (overflow) else panic;
+        storage_live(_7);
+        storage_live(_8);
+        _8 = &mut (*out);
+        _7 = index_mut<'6>(move _8, const 1usize) -> bb2 (unwind: bb1);
+    }
+
+    bb1: {
+        storage_dead(_6);
+        storage_dead(out);
+        storage_dead(n);
+        storage_dead(x);
+        unwind_continue;
+    }
+
+    bb2: {
+        storage_dead(_8);
+        (*_7) = move _4 wrap.<< move _5;
+        storage_dead(_5);
+        storage_dead(_4);
+        storage_dead(_7);
+        _0 = ();
+        storage_dead(_6);
+        storage_dead(out);
+        storage_dead(n);
+        storage_dead(x);
+        return;
+    }
+}
+
+
+
