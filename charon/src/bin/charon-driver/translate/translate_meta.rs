@@ -634,7 +634,10 @@ impl<'tcx> TranslateCtx<'tcx> {
             hir::Attribute::Parsed(hir_attrs::AttributeKind::DocComment { comment, .. }) => {
                 Some(Attribute::DocComment(comment.to_string()))
             }
-            hir::Attribute::Parsed(_) => None,
+            hir::Attribute::Parsed(attr) => self
+                .translate_rustc_attribute_kind(attr)
+                .ok()
+                .map(Attribute::Builtin),
             hir::Attribute::Unparsed(attr) => {
                 let raw_attr = RawAttribute {
                     path: attr.path.to_string(),

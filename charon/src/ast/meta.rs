@@ -1,5 +1,6 @@
 //! Meta-information about programs (spans, etc.).
 
+use super::from_rustc;
 pub use super::meta_utils::*;
 use crate::ast::{FunDeclId, ItemId};
 use crate::names::Name;
@@ -150,7 +151,9 @@ pub enum Attribute {
     HasPostcondition(FunDeclId),
     /// A doc-comment such as `/// ...`.
     DocComment(String),
-    /// A non-charon-specific attribute.
+    /// A built-in attribute.
+    Builtin(#[drive(skip)] from_rustc::AttributeKind),
+    /// None of the above.
     Unknown(RawAttribute),
 }
 

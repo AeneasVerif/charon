@@ -1,6 +1,7 @@
 pub mod builtins;
 pub mod expressions;
 pub mod expressions_utils;
+pub mod from_rustc;
 pub mod gast;
 pub mod gast_utils;
 pub mod hash_cons;

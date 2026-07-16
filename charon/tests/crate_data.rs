@@ -1,3 +1,4 @@
+use charon_lib::ast::from_rustc;
 use charon_lib::llbc_ast::*;
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -405,15 +406,15 @@ fn attributes() -> anyhow::Result<()> {
         crate_data.fun_decls[0].item_meta.attr_info.inline,
         Some(InlineAttr::Never)
     );
-    assert_eq!(
-        crate_data.fun_decls[0]
-            .item_meta
-            .attr_info
-            .attributes
-            .last()
-            .unwrap(),
-        &Attribute::DocComment(" This is a doc comment.".to_owned())
-    );
+    let attrs = &crate_data.fun_decls[0].item_meta.attr_info.attributes;
+    assert!(attrs.contains(&Attribute::DocComment(" This is a doc comment.".to_owned())));
+    assert!(attrs.iter().any(|attr| matches!(
+        attr,
+        Attribute::Builtin(from_rustc::AttributeKind::Inline(
+            from_rustc::InlineAttr::Never,
+            _
+        ))
+    )));
     // Check that the `inline` attribute on closures gets picked up.
     let any_inline_always = crate_data
         .fun_decls

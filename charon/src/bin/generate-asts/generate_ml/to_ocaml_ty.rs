@@ -85,12 +85,22 @@ impl<'a> GenerateCtx<'a> {
             }
         }
 
+        fn sanitize_ocaml_comment(mut comment: String) -> String {
+            comment = comment.replace("(*", "( *").replace("*)", "* )");
+            // OCAml lexes strings inside comments, so quotes must be matched.
+            if comment.chars().filter(|c| *c == '"').count() % 2 == 1 {
+                comment.push('"');
+            }
+            comment
+        }
+
         if comment.is_empty() {
             return comment;
         }
         let is_multiline = comment.contains("\n");
         if !is_multiline {
             let fixed_comment = Exchanger::default().exchange_escape_delimiters(&comment);
+            let fixed_comment = sanitize_ocaml_comment(fixed_comment);
             format!("(**{fixed_comment} *)")
         } else {
             let indent = "  ".repeat(indent_level);
@@ -113,6 +123,7 @@ impl<'a> GenerateCtx<'a> {
                     }
                 })
                 .join("\n");
+            let comment = sanitize_ocaml_comment(comment);
             format!("(** {comment}\n{indent} *)")
         }
     }

@@ -11,6 +11,7 @@
 //!
 //! Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
 use std::mem;
+use std::path::PathBuf;
 use std::{any::Any, hash::Hash};
 
 use crate::ast::*;
@@ -41,7 +42,7 @@ use derive_generic_visitor::*;
     visitor(drive_mut(&mut VisitAstMut)),
     visitor(drive_two(&two ZipAst)),
     // Types that we ignore.
-    skip((), String, bool),
+    skip((), String, PathBuf, bool),
     // Types that we unconditionally explore.
     drive(
         Assert, Attribute, AttrInfo, BinderKind, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
@@ -174,7 +175,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
-        TraitRef, LiteralTy, Literal, RegionId, (), String, bool,
+        TraitRef, LiteralTy, Literal, RegionId, (), String, PathBuf, bool,
     ),
     // Types that we unconditionally explore.
     drive(

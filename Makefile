@@ -78,8 +78,12 @@ debug-ml-tests: build-charon-ml charon-tests
 # Generate some of the AST code automatically from the rust definitions.
 .PHONY: generate-asts
 generate-asts:
-	cd charon && cargo build --release && cargo run --release --bin generate-asts
-	cd charon-ml && $(MAKE) format 2> /dev/null
+	cd charon && $(MAKE) generate-asts
+
+.PHONY: generate-ml
+generate-ml:
+	@printf '%s\n' 'warning: `make generate-ml` is deprecated; use `make generate-asts` instead' >&2
+	@$(MAKE) generate-asts
 
 # Same as `generate-asts` but don't re-run charon on itself. Useful when developing.
 .PHONY: generate-asts-keep-llbc
