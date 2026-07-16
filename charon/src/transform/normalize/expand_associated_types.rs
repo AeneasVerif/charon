@@ -752,16 +752,20 @@ impl<'a> ComputeItemModifications<'a> {
         // Clauses may provide more type constraints.
         for clause in &params.trait_clauses {
             let tref = clause.identity_tref();
-            if let Some(trait_mods) = self
-                .compute_trait_modifications(tref.trait_id())
-                .as_processed()
-            {
-                for (path, ty) in trait_mods.iter_self_constraints_for_tref(&tref) {
-                    type_constraints.insert_path(&path, ty);
-                }
-            }
+            self.add_constraints_for_tref(&mut type_constraints, &tref);
         }
         type_constraints
+    }
+
+    fn add_constraints_for_tref(&mut self, set: &mut TypeConstraintSet, tref: &TraitRef) {
+        if let Some(trait_mods) = self
+            .compute_trait_modifications(tref.trait_id())
+            .as_processed()
+        {
+            for (path, ty) in trait_mods.iter_self_constraints_for_tref(tref) {
+                set.insert_path(&path, ty);
+            }
+        }
     }
 
     fn compute_non_trait_modifications(&mut self, params: &GenericParams) -> ItemModifications {
@@ -827,7 +831,27 @@ impl<'a> ComputeItemModifications<'a> {
                     .iter()
                     .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
             let remove_assoc_types = !is_self_referential && remove_assoc_type;
-            let type_constraints = self.compute_constraint_set(&tr.generics);
+
+            let type_constraints = {
+                let mut type_constraints = self.compute_constraint_set(&tr.generics);
+                let self_tref = TraitRef::new(
+                    TraitRefKind::SelfId,
+                    RegionBinder::empty(TraitDeclRef {
+                        id: tr.def_id,
+                        generics: Box::new(tr.generics.identity_args()),
+                    }),
+                );
+                // Inherit known constraints from implied clauses.
+                for (clause_id, clause) in tr.implied_clauses.iter_enumerated() {
+                    let tref = TraitRef::new(
+                        TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id),
+                        clause.trait_.clone(),
+                    );
+                    self.add_constraints_for_tref(&mut type_constraints, &tref);
+                }
+                type_constraints
+            };
+
             let mut modifications =
                 ItemModifications::from_constraint_set(type_constraints, remove_assoc_types);
             modifications.next_assoc_type_id = Some(tr.types.next_id());
