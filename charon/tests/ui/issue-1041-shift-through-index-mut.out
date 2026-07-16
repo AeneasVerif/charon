@@ -110,45 +110,39 @@ pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
     let x: u64; // arg #1
     let out: &'1 mut Wrap; // arg #2
     let _3: u64; // anonymous local
-    let _4: u32; // anonymous local
-    let _5: bool; // anonymous local
-    let _6: &'3 mut u64; // anonymous local
-    let _7: &'4 mut Wrap; // anonymous local
+    let _4: &'3 mut u64; // anonymous local
+    let _5: &'4 mut Wrap; // anonymous local
+    let _6: u64; // anonymous local
 
     bb0: {
+        storage_live(_6);
         storage_live(_0);
-        storage_live(_4);
-        storage_live(_5);
         _0 = ();
         storage_live(_3);
         _3 = copy x;
-        _4 = cast<i32, u32>(const 20i32);
-        _5 = move _4 < const 64u32;
-        assert(move _5 == true) (overflow) else panic;
-        storage_live(_6);
-        storage_live(_7);
-        _7 = &mut (*out);
-        _6 = index_mut<'6>(move _7, const 0usize) -> bb2 (unwind: bb1);
+        _6 = move _3 panic.>> const 20i32;
+        storage_live(_4);
+        storage_live(_5);
+        _5 = &mut (*out);
+        _4 = index_mut<'6>(move _5, const 0usize) -> bb2 (unwind: bb1);
     }
 
     bb1: {
-        storage_dead(_5);
-        storage_dead(_4);
         storage_dead(out);
         storage_dead(x);
+        storage_dead(_6);
         unwind_continue;
     }
 
     bb2: {
-        storage_dead(_7);
-        (*_6) = move _3 wrap.>> const 20i32;
-        storage_dead(_3);
-        storage_dead(_6);
-        _0 = ();
         storage_dead(_5);
+        (*_4) = move _6;
+        storage_dead(_3);
         storage_dead(_4);
+        _0 = ();
         storage_dead(out);
         storage_dead(x);
+        storage_dead(_6);
         return;
     }
 }
@@ -162,45 +156,44 @@ pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
     let out: &'1 mut Wrap; // arg #3
     let _4: u64; // anonymous local
     let _5: u32; // anonymous local
-    let _6: bool; // anonymous local
-    let _7: &'3 mut u64; // anonymous local
-    let _8: &'4 mut Wrap; // anonymous local
+    let _6: &'3 mut u64; // anonymous local
+    let _7: &'4 mut Wrap; // anonymous local
+    let _8: u64; // anonymous local
 
     bb0: {
+        storage_live(_8);
         storage_live(_0);
-        storage_live(_6);
         _0 = ();
         storage_live(_4);
         _4 = copy x;
         storage_live(_5);
         _5 = copy n;
-        _6 = copy _5 < const 64u32;
-        assert(move _6 == true) (overflow) else panic;
+        _8 = move _4 panic.<< move _5;
+        storage_live(_6);
         storage_live(_7);
-        storage_live(_8);
-        _8 = &mut (*out);
-        _7 = index_mut<'6>(move _8, const 1usize) -> bb2 (unwind: bb1);
+        _7 = &mut (*out);
+        _6 = index_mut<'6>(move _7, const 1usize) -> bb2 (unwind: bb1);
     }
 
     bb1: {
-        storage_dead(_6);
         storage_dead(out);
         storage_dead(n);
         storage_dead(x);
+        storage_dead(_8);
         unwind_continue;
     }
 
     bb2: {
-        storage_dead(_8);
-        (*_7) = move _4 wrap.<< move _5;
+        storage_dead(_7);
+        (*_6) = move _8;
         storage_dead(_5);
         storage_dead(_4);
-        storage_dead(_7);
-        _0 = ();
         storage_dead(_6);
+        _0 = ();
         storage_dead(out);
         storage_dead(n);
         storage_dead(x);
+        storage_dead(_8);
         return;
     }
 }
