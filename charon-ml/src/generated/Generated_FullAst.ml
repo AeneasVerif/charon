@@ -112,6 +112,11 @@ and cli_options = {
           modules). *)
   included : string list;
       (** Whitelist of items to translate. These use the name-matcher syntax. *)
+  include_referenced : string list;
+      (** Item paths to translate fully when they are referenced. Unlike
+          [--include], this does not explore matching modules or inherent impl
+          blocks, which makes it useful for extracting the call graph of a
+          dependency without translating every item in that dependency. *)
   opaque : string list;
       (** Blacklist of items to keep opaque. Works just like [--include], see
           the doc there. *)

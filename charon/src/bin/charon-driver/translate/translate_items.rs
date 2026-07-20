@@ -65,7 +65,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         if let Some(trans_id) = trans_id {
             self.translated.item_names.insert(trans_id, name.clone());
         }
-        let opacity = self.opacity_for_name(&name);
+        let opacity = self.opacity_for_item(&name, &item_src.kind);
         if opacity.is_invisible() {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
             return Ok(());
@@ -798,7 +798,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 } => {
                     let trait_method_id = *assoc_item_id.as_method().unwrap();
                     let method_name = self.translate_name(&item_src)?;
-                    let method_opacity = self.opacity_for_name(&method_name);
+                    let method_opacity = self.opacity_for_item(&method_name, &item_src.kind);
                     let method_item_meta =
                         self.translate_item_meta(&item_def, &item_src, method_name, method_opacity);
                     // By default we only enqueue required methods (those that don't have a default

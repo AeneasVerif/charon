@@ -143,6 +143,12 @@ pub struct CliOpts {
     #[serde(default)]
     #[cfg_attr(feature = "charon_on_charon", charon::rename("included"))]
     pub include: Vec<String>,
+    /// Item paths to translate fully when they are referenced. Unlike `--include`, this does not
+    /// explore matching modules or inherent impl blocks, which makes it useful for extracting the
+    /// call graph of a dependency without translating every item in that dependency.
+    #[clap(long, value_delimiter = ',')]
+    #[serde(default)]
+    pub include_referenced: Vec<String>,
     /// Blacklist of items to keep opaque. Works just like `--include`, see the doc there.
     #[clap(long)]
     #[serde(default)]
@@ -664,6 +670,9 @@ pub struct TranslateOptions {
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
     /// field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
+    /// Items to make transparent only when they are referenced. Matching modules and inherent impl
+    /// blocks remain non-transparent so that their contents aren't enumerated.
+    pub include_referenced: Vec<NamePattern>,
     /// List of traits for which we transform associated types to type parameters.
     pub lift_associated_types: Vec<NamePattern>,
     /// Skip the typecheck passes.
@@ -794,6 +803,12 @@ impl TranslateOptions {
             .filter_map(|s| parse_pattern(s).ok())
             .collect();
 
+        let include_referenced = options
+            .include_referenced
+            .iter()
+            .filter_map(|s| parse_pattern(s).ok())
+            .collect();
+
         TranslateOptions {
             start_from,
             mir_level,
@@ -809,6 +824,7 @@ impl TranslateOptions {
             index_to_function_calls: options.index_to_function_calls,
             print_built_llbc: options.print_built_llbc,
             item_opacities,
+            include_referenced,
             treat_box_as_builtin: options.treat_box_as_builtin,
             raw_consts: options.raw_consts,
             consts: options.consts.unwrap_or_default(),
@@ -841,5 +857,25 @@ impl TranslateOptions {
             .max()
             .unwrap();
         *opacity
+    }
+
+    /// Find the opacity requested for an item encountered through a reference. Patterns from
+    /// `--include-referenced` participate in the usual specificity ordering and make matching
+    /// items transparent. Callers must not use this for modules or inherent impl blocks, whose
+    /// contents should not be explored by this option.
+    #[tracing::instrument(skip(self, krate), ret)]
+    pub fn opacity_for_referenced_name(&self, krate: &TranslatedCrate, name: &Name) -> ItemOpacity {
+        self.item_opacities
+            .iter()
+            .map(|(pat, opacity)| (pat, *opacity))
+            .chain(
+                self.include_referenced
+                    .iter()
+                    .map(|pat| (pat, ItemOpacity::Transparent)),
+            )
+            .filter(|(pat, _)| pat.matches(krate, name))
+            .max()
+            .unwrap()
+            .1
     }
 }

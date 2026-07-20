@@ -1,0 +1,10 @@
+[package]
+name = "private-dependency"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dependency = { path = "dependency" }
+
+[workspace]
+members = ["dependency"]

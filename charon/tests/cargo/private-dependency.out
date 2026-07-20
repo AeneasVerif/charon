@@ -1,0 +1,82 @@
+# Final LLBC before serialization:
+
+// Full name: dependency::Record
+pub struct Record {
+  visible: u32,
+  hidden: u32,
+}
+
+// Full name: dependency::increment
+fn increment(value: u32) -> u32
+{
+    let _0: u32; // return
+    let value: u32; // arg #1
+    let _2: u32; // anonymous local
+    let _3: (u32, bool); // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_2)
+    _2 = copy value
+    _3 = copy _2 checked.+ const 1u32
+    assert(move _3.1 == false) (overflow) else panic
+    ↳⚡ storage_dead(_3)
+        storage_dead(value)
+        unwind_continue
+    _0 = move _3.0
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(value)
+    return
+}
+
+// Full name: dependency::{Record}::new
+pub fn new(value: u32) -> Record
+{
+    let _0: Record; // return
+    let value: u32; // arg #1
+    let _2: u32; // anonymous local
+    let _3: u32; // anonymous local
+    let _4: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy value
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy value
+    _3 = increment(move _4)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_4)
+    _0 = Record { visible: move _2, hidden: move _3 }
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(value)
+    return
+}
+
+// Full name: private_dependency::read_visible
+pub fn read_visible(value: u32) -> u32
+{
+    let _0: u32; // return
+    let value: u32; // arg #1
+    let _2: Record; // anonymous local
+    let _3: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy value
+    _2 = new(move _3)
+    ↳⚡ storage_dead(value)
+        unwind_continue
+    storage_dead(_3)
+    _0 = copy (_2).visible
+    storage_dead(_2)
+    storage_dead(value)
+    return
+}
+
+
+

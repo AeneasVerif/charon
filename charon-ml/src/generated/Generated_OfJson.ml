@@ -2065,6 +2065,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("start_from_attribute", start_from_attribute);
           ("start_from_pub", start_from_pub);
           ("include", include_);
+          ("include_referenced", include_referenced);
           ("opaque", opaque);
           ("exclude", exclude);
           ("extract_opaque_bodies", extract_opaque_bodies);
@@ -2122,6 +2123,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* start_from_pub = bool_of_json ctx start_from_pub in
         let* included = list_of_json string_of_json ctx include_ in
+        let* include_referenced =
+          list_of_json string_of_json ctx include_referenced
+        in
         let* opaque = list_of_json string_of_json ctx opaque in
         let* exclude = list_of_json string_of_json ctx exclude in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
@@ -2188,6 +2192,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              start_from_attribute;
              start_from_pub;
              included;
+             include_referenced;
              opaque;
              exclude;
              extract_opaque_bodies;

@@ -48,6 +48,9 @@ Concretely: if a module is annotated `#[charon::opaque]`, a function inside it t
 - **`--start-from-attribute[=<ATTR>]`** — Use items annotated with a given attribute as entry points. Default attribute if none specified: `verify::start_from`.
 - **`--start-from-pub`** — Use all `pub` items from the current crate as entry points
 - **`--include <PATTERN>`** — Set matched items to **transparent**.
+- **`--include-referenced <PATTERN>`** — Set matched non-module items to **transparent** when they
+  are encountered through a reference. Matching modules and inherent impl blocks remain
+  non-transparent, so this follows the selected call graph without enumerating whole modules.
 - **`--opaque <PATTERN>`** — Set matched items to **opaque**.
 - **`--exclude <PATTERN>`** — Set matched items to **invisible**.
 - **`--extract-opaque-bodies`** — Makes all items transparent. Internally changes the base pattern from `_ → Foreign` to `_ → Transparent` (see Pattern list below), so it affects all items including external ones.
@@ -61,6 +64,7 @@ Charon builds an ordered list of `(pattern, opacity)` pairs from the CLI flags[^
 _              → Foreign      (default: everything starts as foreign)
 crate          → Transparent  (current crate is always transparent)
 <--include>    → Transparent  (user whitelist)
+<--include-referenced> → Transparent for referenced non-module items
 <--opaque>     → Opaque       (user blacklist)
 <--exclude>    → Invisible    (user exclusion)
 ```

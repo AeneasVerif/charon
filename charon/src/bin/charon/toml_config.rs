@@ -21,6 +21,8 @@ pub struct TomlConfig {
     #[serde(default)]
     pub include: Vec<String>,
     #[serde(default)]
+    pub include_referenced: Vec<String>,
+    #[serde(default)]
     pub opaque: Vec<String>,
     #[serde(default)]
     pub exclude: Vec<String>,
@@ -49,6 +51,7 @@ impl TomlConfig {
         config.start_from_pub |= self.start_from_pub;
         config.hide_marker_traits |= self.hide_marker_traits;
         config.include.extend(self.include);
+        config.include_referenced.extend(self.include_referenced);
         config.opaque.extend(self.opaque);
         config.exclude.extend(self.exclude);
         config.rustc_args.extend(self.rustc.flags);

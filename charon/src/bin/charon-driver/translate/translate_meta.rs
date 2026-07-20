@@ -457,6 +457,18 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
         self.options.opacity_for_name(&self.translated, name)
     }
+
+    pub(crate) fn opacity_for_item(&self, name: &Name, kind: &TransItemSourceKind) -> ItemOpacity {
+        if matches!(
+            kind,
+            TransItemSourceKind::InherentImpl | TransItemSourceKind::Module
+        ) {
+            self.opacity_for_name(name)
+        } else {
+            self.options
+                .opacity_for_referenced_name(&self.translated, name)
+        }
+    }
 }
 
 // Attributes

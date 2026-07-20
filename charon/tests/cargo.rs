@@ -194,6 +194,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             Success,
         ),
         mktest(
+            "private-dependency",
+            root.join("private-dependency"),
+            &["--include-referenced=dependency".to_owned()],
+            &[],
+            Success,
+        ),
+        mktest(
             "error-dependencies",
             root.join("error-dependencies"),
             &[],

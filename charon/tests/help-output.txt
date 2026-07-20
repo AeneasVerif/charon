@@ -81,6 +81,9 @@ Options:
           items in it transparent (we will translate them if we encounter them.)
           
 
+      --include-referenced <INCLUDE_REFERENCED>
+          Item paths to translate fully when they are referenced. Unlike `--include`, this does not explore matching modules or inherent impl blocks, which makes it useful for extracting the call graph of a dependency without translating every item in that dependency
+
       --opaque <OPAQUE>
           Blacklist of items to keep opaque. Works just like `--include`, see the doc there
 
