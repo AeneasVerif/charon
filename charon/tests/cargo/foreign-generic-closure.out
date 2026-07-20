@@ -1,0 +1,1529 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item("meta_sized")]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u8}::clone
+pub fn clone<'_0>(_1: &'_0 u8) -> u8
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u8}
+impl "impl_Clone_for_u8" Clone for u8 {
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::convert::From
+#[lang_item("From")]
+pub trait From<Self, T>
+{
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (T: Sized)
+    fn from;
+    non-dyn-compatible
+}
+
+// Full name: core::convert::{impl From<T> for T}::from
+pub fn from<T>(_1: T) -> T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::convert::{impl From<T> for T}
+impl<T> "impl_From_for_T" From<T> for T
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (T: Sized) = TraitClause0
+    proof ImpliedClause1: (T: Sized) = TraitClause0
+    fn from = from<T>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: core::convert::Infallible
+pub enum Infallible {
+}
+
+// Full name: core::marker::Copy
+#[lang_item("copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u8}
+impl "impl_Copy_for_u8" Copy for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item("destruct")]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::control_flow::ControlFlow
+#[lang_item("ControlFlow")]
+pub enum ControlFlow<B, C>
+where
+    TraitClause0: (B: Sized),
+    TraitClause1: (C: Sized),
+{
+  Continue(C),
+  Break(B),
+}
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args, Self_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self_Output: Sized)
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args, Self_Clause1_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args, Self_Clause1_Output>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call_mut<'_0_1>;
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
+}
+
+// Full name: core::ops::function::Fn
+#[lang_item("fn")]
+pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args, Self_Clause1_Clause1_Output>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call<'_0_1>;
+    vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
+}
+
+// Full name: core::ops::range::Range
+#[lang_item("Range")]
+pub struct Range<Idx>
+where
+    TraitClause0: (Idx: Sized),
+{
+  start: Idx,
+  end: Idx,
+}
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::result::{Result<T, E>[TraitClause0, TraitClause1]}::map_err
+pub fn map_err<T, E, F, O>(_1: Result<T, E>[TraitClause0, TraitClause1], _2: O) -> Result<T, F>[TraitClause0, TraitClause2]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (F: Sized),
+    TraitClause3: (O: Sized),
+    TraitClause4: (O: FnOnce<(E,), F>),
+    TraitClause5: (O: Destruct),
+= <opaque>
+
+// Full name: core::result::{impl Try for Result<T, E>[TraitClause0, TraitClause1]}::branch
+pub fn branch<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> ControlFlow<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1], T>[{built_in impl Sized for Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]}, TraitClause0]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+= <opaque>
+
+// Full name: core::result::{impl FromResidual<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]> for Result<T, F>[TraitClause0, TraitClause2]}::from_residual
+pub fn from_residual<T, E, F>(_1: Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]) -> Result<T, F>[TraitClause0, TraitClause2]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+    TraitClause2: (F: Sized),
+    TraitClause3: (F: From<E>),
+= <opaque>
+
+// Full name: core::slice::index::private_slice_index::Sealed
+pub trait Sealed<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
+}
+
+// Full name: core::slice::index::SliceIndex
+#[lang_item("SliceIndex")]
+pub trait SliceIndex<Self, T, Self_Output>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Sealed)
+    proof ImpliedClause2: (T: MetaSized)
+    proof ImpliedClause3: (Self_Output: MetaSized)
+    fn get<'_0_1>;
+    fn get_mut<'_0_1>;
+    fn get_unchecked;
+    fn get_unchecked_mut;
+    fn index<'_0_1>;
+    fn index_mut<'_0_1>;
+    vtable: core::slice::index::SliceIndex::{vtable}<T, Self_Output>
+}
+
+// Full name: core::slice::index::{impl IndexMut<I, Clause2_Output> for [T]}::index_mut
+pub fn impl_IndexMut_for_slice::index_mut<'_0, T, I, Clause2_Output>(_1: &'_0 mut [T], _2: I) -> &'_0 mut Clause2_Output
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: (I: SliceIndex<[T], Clause2_Output>),
+= <opaque>
+
+// Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[{built_in impl Sized for usize}]}
+impl "impl_Sealed_for_Range_usize" Sealed for Range<usize>[{built_in impl Sized for usize}] {
+    proof ImpliedClause0: (Range<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
+    vtable: impl_Sealed_for_Range_usize::{vtable}
+}
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
+pub fn impl_SliceIndex_slice_for_Range_usize::index_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index
+pub fn impl_SliceIndex_slice_for_Range_usize::index<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
+pub unsafe fn get_unchecked_mut<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *mut [T]) -> *mut [T]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
+pub unsafe fn get_unchecked<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *const [T]) -> *const [T]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
+pub fn get_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get
+pub fn get<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}
+impl<T> "impl_SliceIndex_slice_for_Range_usize" SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (Range<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
+    proof ImpliedClause1: (Range<usize>[{built_in impl Sized for usize}]: Sealed) = impl_Sealed_for_Range_usize
+    proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause3: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    fn get<'_0_1> = get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = get_unchecked_mut<T>[TraitClause0]
+    fn index<'_0_1> = impl_SliceIndex_slice_for_Range_usize::index<'_0_1, T>[TraitClause0]
+    fn index_mut<'_0_1> = impl_SliceIndex_slice_for_Range_usize::index_mut<'_0_1, T>[TraitClause0]
+    vtable: impl_SliceIndex_slice_for_Range_usize::{vtable}<T>[TraitClause0]
+}
+
+// Full name: core::slice::{[T]}::len
+#[lang_item("slice_len_fn")]
+pub fn len<'_0, T>(_1: &'_0 [T]) -> usize
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::{[T]}::split_at_mut
+pub fn split_at_mut<'_0, T>(_1: &'_0 mut [T], _2: usize) -> (&'_0 mut [T], &'_0 mut [T])
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: dependency::Error
+pub enum Error {
+  Invalid,
+}
+
+// Full name: dependency::Kind
+enum Kind {
+  Data,
+}
+
+// Full name: dependency::TryFromPrimitive
+trait TryFromPrimitive<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (Self::Primitive: Sized)
+    proof ImpliedClause2: (Self::Primitive: Copy)
+    proof ImpliedClause3: (Self::Error: Sized)
+    type Primitive
+    type Error
+    non-dyn-compatible
+}
+
+// Full name: dependency::ParseError
+struct ParseError<T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: TryFromPrimitive),
+{
+  number: TraitClause1::Primitive,
+}
+
+// Full name: dependency::{impl TryFromPrimitive for Kind}
+impl "impl_TryFromPrimitive_for_Kind" TryFromPrimitive for Kind {
+    proof ImpliedClause0: (Kind: Sized) = {built_in impl Sized for Kind}
+    proof ImpliedClause1: (u8: Sized) = {built_in impl Sized for u8}
+    proof ImpliedClause2: (u8: Copy) = impl_Copy_for_u8
+    proof ImpliedClause3: (ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]: Sized) = {built_in impl Sized for ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]}
+    type Primitive = u8
+    type Error = ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]
+    non-dyn-compatible
+}
+
+// Full name: dependency::{impl TryFrom<u8, ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]> for Kind}::try_from
+pub fn try_from(value: u8) -> Result<Kind, ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]>[{built_in impl Sized for Kind}, {built_in impl Sized for ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]}]
+{
+    let _0: Result<Kind, ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]>[{built_in impl Sized for Kind}, {built_in impl Sized for ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]}]; // return
+    let value: u8; // arg #1
+    let _2: bool; // anonymous local
+    let _3: u8; // anonymous local
+    let _4: Kind; // anonymous local
+    let _5: ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]; // anonymous local
+    let _6: u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy value
+    _2 = move _3 == const 0u8
+    if move _2 {
+    } else {
+        storage_dead(_3)
+        storage_live(_5)
+        storage_live(_6)
+        _6 = copy value
+        _5 = ParseError { number: move _6 }
+        storage_dead(_6)
+        _0 = Result::Err { 0: move _5 }
+        storage_dead(_5)
+        storage_dead(_2)
+        storage_dead(value)
+        return
+    }
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = Kind::Data {  }
+    _0 = Result::Ok { 0: move _4 }
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(value)
+    return
+}
+
+// Full name: dependency::HasSize
+trait HasSize<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    const SIZE : usize
+    non-dyn-compatible
+}
+
+// Full name: dependency::IsReady
+trait IsReady<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn is_ready<'_0_1>;
+    vtable: dependency::IsReady::{vtable}
+}
+
+// Full name: dependency::BaseState
+trait BaseState<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: HasSize)
+    proof ImpliedClause2: (Self: IsReady)
+    non-dyn-compatible
+}
+
+// Full name: dependency::State
+struct State {}
+
+// Full name: dependency::{impl HasSize for State}::SIZE
+fn SIZE() -> usize
+{
+    let _0: usize; // return
+
+    storage_live(_0)
+    _0 = const 1usize
+    return
+}
+
+// Full name: dependency::{impl HasSize for State}::SIZE
+const SIZE: usize = SIZE()
+
+// Full name: dependency::{impl HasSize for State}
+impl "impl_HasSize_for_State" HasSize for State {
+    proof ImpliedClause0: (State: MetaSized) = {built_in impl MetaSized for State}
+    const SIZE = SIZE
+    non-dyn-compatible
+}
+
+// Full name: dependency::{impl IsReady for State}::is_ready
+fn is_ready<'_0>(self: &'_0 State) -> bool
+{
+    let _0: bool; // return
+    let self: &'1 State; // arg #1
+
+    storage_live(_0)
+    _0 = const true
+    storage_dead(self)
+    return
+}
+
+// Full name: dependency::{impl IsReady for State}
+impl "impl_IsReady_for_State" IsReady for State {
+    proof ImpliedClause0: (State: MetaSized) = {built_in impl MetaSized for State}
+    fn is_ready<'_0_1> = is_ready<'_0_1>
+    vtable: impl_IsReady_for_State::{vtable}
+}
+
+// Full name: dependency::{impl BaseState for State}
+impl "impl_BaseState_for_State" BaseState for State {
+    proof ImpliedClause0: (State: MetaSized) = {built_in impl MetaSized for State}
+    proof ImpliedClause1: (State: HasSize) = impl_HasSize_for_State
+    proof ImpliedClause2: (State: IsReady) = impl_IsReady_for_State
+    non-dyn-compatible
+}
+
+// Full name: dependency::indices
+fn indices<'_0, S>(input: &'_0 [u8]) -> Result<Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}], Error>[{built_in impl Sized for Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]}, {built_in impl Sized for Error}]
+where
+    TraitClause0: (S: Sized),
+    TraitClause1: (S: BaseState),
+{
+    let _0: Result<Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}], Error>[{built_in impl Sized for Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]}, {built_in impl Sized for Error}]; // return
+    let input: &'1 [u8]; // arg #1
+    let _2: bool; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: &'2 [u8]; // anonymous local
+    let _5: Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]; // anonymous local
+    let _6: (usize, usize); // anonymous local
+    let _7: Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*input) with_metadata(copy input.metadata)
+    _3 = len<'4, u8>[{built_in impl Sized for u8}](move _4)
+    ↳⚡ storage_dead(input)
+        unwind_continue
+    storage_dead(_4)
+    _2 = move _3 > const TraitClause1::ImpliedClause1::SIZE
+    if move _2 {
+    } else {
+        storage_dead(_3)
+        storage_live(_7)
+        _7 = Option::None {  }
+        _0 = Result::Ok { 0: move _7 }
+        storage_dead(_7)
+        storage_dead(_2)
+        storage_dead(input)
+        return
+    }
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = (const 0usize, const TraitClause1::ImpliedClause1::SIZE)
+    _5 = Option::Some { 0: move _6 }
+    storage_dead(_6)
+    _0 = Result::Ok { 0: move _5 }
+    storage_dead(_5)
+    storage_dead(_2)
+    storage_dead(input)
+    return
+}
+
+struct dependency::split_with_check::closure<S, F>
+where
+    TraitClause0: (S: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (S: BaseState),
+    TraitClause3: (F: Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>),
+{}
+
+// Full name: dependency::split_with_check::closure::{impl Destruct for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_glue
+unsafe fn {impl Destruct for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_glue<'_0, S, F>(_1: &'_0 mut dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3])
+where
+    TraitClause0: (S: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (S: BaseState),
+    TraitClause3: (F: Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>),
+{
+    let _0: (); // return
+    let _1: &'1 mut dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: dependency::split_with_check::closure::{impl Destruct for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}
+impl<S, F> Destruct for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+where
+    TraitClause0: (S: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (S: BaseState),
+    TraitClause3: (F: Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>),
+{
+    fn drop_glue<'_0_1> = {impl Destruct for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_glue<'_0_1, S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    non-dyn-compatible
+}
+
+// Full name: dependency::split_with_check::{impl FnOnce<(ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],), Error> for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::call_once
+fn {impl FnOnce<(ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],), Error> for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::call_once<S, F>(_1: dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3], tupled_args: (ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],)) -> Error
+where
+    TraitClause0: (S: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (S: BaseState),
+    TraitClause3: (F: Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>),
+{
+    let _0: Error; // return
+    let _1: dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]; // arg #1
+    let tupled_args: (ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],); // arg #2
+    let error: ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]; // local
+
+    storage_live(_0)
+    storage_live(error)
+    error = move tupled_args.0
+    _ = (error).number
+    _0 = Error::Invalid {  }
+    storage_dead(error)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: dependency::split_with_check::{impl FnOnce<(ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],), Error> for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}
+impl<S, F> FnOnce<(ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],), Error> for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+where
+    TraitClause0: (S: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (S: BaseState),
+    TraitClause3: (F: Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>),
+{
+    proof ImpliedClause0: (dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]: MetaSized) = {built_in impl MetaSized for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}
+    proof ImpliedClause1: ((ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],): Sized) = {built_in impl Sized for (ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],)}
+    proof ImpliedClause2: ((ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],): Tuple) = {built_in impl Tuple for (ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],)}
+    proof ImpliedClause3: (Error: Sized) = {built_in impl Sized for Error}
+    fn call_once = {impl FnOnce<(ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],), Error> for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::call_once<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    non-dyn-compatible
+}
+
+// Full name: dependency::split_with_check
+fn split_with_check<'_0, S, F>(input: &'_0 mut [u8], check: F) -> Result<(&'_0 mut [u8], &'_0 mut [u8]), Error>[{built_in impl Sized for (&'_0 mut [u8], &'_0 mut [u8])}, {built_in impl Sized for Error}]
+where
+    TraitClause0: (S: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (S: BaseState),
+    TraitClause3: (F: Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>),
+{
+    let _0: Result<(&'15 mut [u8], &'16 mut [u8]), Error>[{built_in impl Sized for (&'15 mut [u8], &'16 mut [u8])}, {built_in impl Sized for Error}]; // return
+    let input: &'21 mut [u8]; // arg #1
+    let check: F; // arg #2
+    let _3: Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]; // anonymous local
+    let _4: ControlFlow<Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}], Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]>[{built_in impl Sized for Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]}, {built_in impl Sized for Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]}]; // anonymous local
+    let _5: Result<Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}], Error>[{built_in impl Sized for Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]}, {built_in impl Sized for Error}]; // anonymous local
+    let _6: &'23 [u8]; // anonymous local
+    let residual_7: Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]; // local
+    let _8: Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]; // anonymous local
+    let val_9: Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]; // local
+    let kind_index: usize; // local
+    let data_index: usize; // local
+    let kind_12: Kind; // local
+    let _13: ControlFlow<Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}], Kind>[{built_in impl Sized for Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]}, {built_in impl Sized for Kind}]; // anonymous local
+    let _14: Result<Kind, Error>[{built_in impl Sized for Kind}, {built_in impl Sized for Error}]; // anonymous local
+    let _15: Result<Kind, ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]>[{built_in impl Sized for Kind}, {built_in impl Sized for ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]}]; // anonymous local
+    let _16: u8; // anonymous local
+    let _17: usize; // anonymous local
+    let _18: *const [u8]; // anonymous local
+    let _19: usize; // anonymous local
+    let _20: bool; // anonymous local
+    let _21: dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]; // anonymous local
+    let residual_22: Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]; // local
+    let _23: Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]; // anonymous local
+    let val_24: Kind; // local
+    let _25: ControlFlow<Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}], ()>[{built_in impl Sized for Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]}, {built_in impl Sized for ()}]; // anonymous local
+    let _26: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // anonymous local
+    let _27: &'25 F; // anonymous local
+    let _28: (Kind,); // anonymous local
+    let _29: Kind; // anonymous local
+    let residual_30: Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]; // local
+    let _31: Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]; // anonymous local
+    let val_32: (); // local
+    let kind_33: &'26 mut [u8]; // local
+    let data: &'27 mut [u8]; // local
+    let _35: (&'28 mut [u8], &'29 mut [u8]); // anonymous local
+    let _36: &'30 mut [u8]; // anonymous local
+    let _37: usize; // anonymous local
+    let _38: (&'31 mut [u8], &'32 mut [u8]); // anonymous local
+    let _39: &'33 mut [u8]; // anonymous local
+    let _40: &'34 mut [u8]; // anonymous local
+    let _41: &'35 mut [u8]; // anonymous local
+    let _42: &'36 mut [u8]; // anonymous local
+    let _43: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _44: usize; // anonymous local
+    let _45: usize; // anonymous local
+    let _46: &'37 mut [u8]; // anonymous local
+    let _47: (&'38 mut [u8], &'39 mut [u8]); // anonymous local
+    let _48: &'40 mut [u8]; // anonymous local
+    let _49: &'42 mut [u8; 0usize]; // anonymous local
+    let _50: &'43 mut [u8; 0usize]; // anonymous local
+    let _51: &'44 mut [u8]; // anonymous local
+    let _52: &'45 mut [u8; 0usize]; // anonymous local
+    let _53: &'46 mut [u8; 0usize]; // anonymous local
+    let _54: &'47 mut [u8; 0usize]; // anonymous local
+    let _55: &'48 mut [u8; 0usize]; // anonymous local
+    let _56: &'67 mut [u8; 0usize]; // anonymous local
+    let _57: &'69 mut [u8; 0usize]; // anonymous local
+    let _58: &'134 mut [u8; 0usize]; // anonymous local
+    let _59: [u8; 0usize]; // anonymous local
+    let _60: &'135 mut [u8; 0usize]; // anonymous local
+    let _61: [u8; 0usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_18)
+    storage_live(_19)
+    storage_live(_20)
+    storage_live(_54)
+    storage_live(_55)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &(*input) with_metadata(copy input.metadata)
+    _5 = indices<'50, S>[TraitClause0, TraitClause2](move _6)
+    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+        ↳⚡ storage_dead(_55)
+            storage_dead(_54)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(check)
+            storage_dead(input)
+            storage_dead(_61)
+            storage_dead(_60)
+            storage_dead(_59)
+            storage_dead(_58)
+            storage_dead(_57)
+            storage_dead(_56)
+            unwind_terminate
+        storage_dead(_55)
+        storage_dead(_54)
+        storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(check)
+        storage_dead(input)
+        unwind_continue
+    storage_dead(_6)
+    _4 = branch<Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}], Error>[{built_in impl Sized for Option<(usize, usize)>[{built_in impl Sized for (usize, usize)}]}, {built_in impl Sized for Error}](move _5)
+    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+        ↳⚡ storage_dead(_55)
+            storage_dead(_54)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(check)
+            storage_dead(input)
+            storage_dead(_61)
+            storage_dead(_60)
+            storage_dead(_59)
+            storage_dead(_58)
+            storage_dead(_57)
+            storage_dead(_56)
+            unwind_terminate
+        storage_dead(_55)
+        storage_dead(_54)
+        storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(check)
+        storage_dead(input)
+        unwind_continue
+    storage_dead(_5)
+    match _4 {
+        ControlFlow::Continue => {
+            storage_live(val_9)
+            val_9 = copy (_4 as variant ControlFlow::Continue).0
+            _3 = copy val_9
+            storage_dead(val_9)
+            match _3 {
+                Option::Some => {
+                    storage_live(kind_index)
+                    kind_index = copy (_3 as variant Option::Some).0.0
+                    storage_live(data_index)
+                    data_index = copy (_3 as variant Option::Some).0.1
+                    storage_live(kind_12)
+                    storage_live(_13)
+                    storage_live(_14)
+                    storage_live(_15)
+                    storage_live(_16)
+                    storage_live(_17)
+                    _17 = copy kind_index
+                    _18 = &raw const (*input) with_metadata(copy input.metadata)
+                    _19 = copy _18.metadata
+                    _20 = copy _17 < copy _19
+                    assert(move _20 == true) (bounds_check) else panic
+                    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                        ↳⚡ storage_dead(_55)
+                            storage_dead(_54)
+                            storage_dead(_20)
+                            storage_dead(_19)
+                            storage_dead(_18)
+                            storage_dead(check)
+                            storage_dead(input)
+                            storage_dead(_61)
+                            storage_dead(_60)
+                            storage_dead(_59)
+                            storage_dead(_58)
+                            storage_dead(_57)
+                            storage_dead(_56)
+                            unwind_terminate
+                        storage_dead(_55)
+                        storage_dead(_54)
+                        storage_dead(_20)
+                        storage_dead(_19)
+                        storage_dead(_18)
+                        storage_dead(check)
+                        storage_dead(input)
+                        unwind_continue
+                    _16 = copy (*input)[copy _17]
+                    _15 = try_from(move _16)
+                    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                        ↳⚡ storage_dead(_55)
+                            storage_dead(_54)
+                            storage_dead(_20)
+                            storage_dead(_19)
+                            storage_dead(_18)
+                            storage_dead(check)
+                            storage_dead(input)
+                            storage_dead(_61)
+                            storage_dead(_60)
+                            storage_dead(_59)
+                            storage_dead(_58)
+                            storage_dead(_57)
+                            storage_dead(_56)
+                            unwind_terminate
+                        storage_dead(_55)
+                        storage_dead(_54)
+                        storage_dead(_20)
+                        storage_dead(_19)
+                        storage_dead(_18)
+                        storage_dead(check)
+                        storage_dead(input)
+                        unwind_continue
+                    storage_dead(_16)
+                    storage_live(_21)
+                    _21 = dependency::split_with_check::closure {  }
+                    _14 = map_err<Kind, ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind], Error, dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]>[{built_in impl Sized for Kind}, {built_in impl Sized for ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind]}, {built_in impl Sized for Error}, {built_in impl Sized for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}, {impl FnOnce<(ParseError<Kind>[{built_in impl Sized for Kind}, impl_TryFromPrimitive_for_Kind],), Error> for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3], {impl Destruct for dependency::split_with_check::closure<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}<S, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]](move _15, move _21)
+                    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                        ↳⚡ storage_dead(_55)
+                            storage_dead(_54)
+                            storage_dead(_20)
+                            storage_dead(_19)
+                            storage_dead(_18)
+                            storage_dead(check)
+                            storage_dead(input)
+                            storage_dead(_61)
+                            storage_dead(_60)
+                            storage_dead(_59)
+                            storage_dead(_58)
+                            storage_dead(_57)
+                            storage_dead(_56)
+                            unwind_terminate
+                        storage_dead(_55)
+                        storage_dead(_54)
+                        storage_dead(_20)
+                        storage_dead(_19)
+                        storage_dead(_18)
+                        storage_dead(check)
+                        storage_dead(input)
+                        unwind_continue
+                    storage_dead(_21)
+                    storage_dead(_15)
+                    _13 = branch<Kind, Error>[{built_in impl Sized for Kind}, {built_in impl Sized for Error}](move _14)
+                    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                        ↳⚡ storage_dead(_55)
+                            storage_dead(_54)
+                            storage_dead(_20)
+                            storage_dead(_19)
+                            storage_dead(_18)
+                            storage_dead(check)
+                            storage_dead(input)
+                            storage_dead(_61)
+                            storage_dead(_60)
+                            storage_dead(_59)
+                            storage_dead(_58)
+                            storage_dead(_57)
+                            storage_dead(_56)
+                            unwind_terminate
+                        storage_dead(_55)
+                        storage_dead(_54)
+                        storage_dead(_20)
+                        storage_dead(_19)
+                        storage_dead(_18)
+                        storage_dead(check)
+                        storage_dead(input)
+                        unwind_continue
+                    storage_dead(_14)
+                    match _13 {
+                        ControlFlow::Continue => {
+                            storage_live(val_24)
+                            val_24 = copy (_13 as variant ControlFlow::Continue).0
+                            kind_12 = copy val_24
+                            storage_dead(val_24)
+                            storage_dead(_17)
+                            storage_dead(_13)
+                            storage_live(_25)
+                            storage_live(_26)
+                            storage_live(_27)
+                            _27 = &check
+                            storage_live(_28)
+                            storage_live(_29)
+                            _29 = copy kind_12
+                            _28 = (move _29,)
+                            _26 = TraitClause3::call<'85>(move _27, move _28)
+                            ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                                ↳⚡ storage_dead(_55)
+                                    storage_dead(_54)
+                                    storage_dead(_20)
+                                    storage_dead(_19)
+                                    storage_dead(_18)
+                                    storage_dead(check)
+                                    storage_dead(input)
+                                    storage_dead(_61)
+                                    storage_dead(_60)
+                                    storage_dead(_59)
+                                    storage_dead(_58)
+                                    storage_dead(_57)
+                                    storage_dead(_56)
+                                    unwind_terminate
+                                storage_dead(_55)
+                                storage_dead(_54)
+                                storage_dead(_20)
+                                storage_dead(_19)
+                                storage_dead(_18)
+                                storage_dead(check)
+                                storage_dead(input)
+                                unwind_continue
+                            storage_dead(_29)
+                            storage_dead(_28)
+                            storage_dead(_27)
+                            _25 = branch<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}](move _26)
+                            ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                                ↳⚡ storage_dead(_55)
+                                    storage_dead(_54)
+                                    storage_dead(_20)
+                                    storage_dead(_19)
+                                    storage_dead(_18)
+                                    storage_dead(check)
+                                    storage_dead(input)
+                                    storage_dead(_61)
+                                    storage_dead(_60)
+                                    storage_dead(_59)
+                                    storage_dead(_58)
+                                    storage_dead(_57)
+                                    storage_dead(_56)
+                                    unwind_terminate
+                                storage_dead(_55)
+                                storage_dead(_54)
+                                storage_dead(_20)
+                                storage_dead(_19)
+                                storage_dead(_18)
+                                storage_dead(check)
+                                storage_dead(input)
+                                unwind_continue
+                            storage_dead(_26)
+                            match _25 {
+                                ControlFlow::Continue => {
+                                    storage_live(val_32)
+                                    val_32 = copy (_25 as variant ControlFlow::Continue).0
+                                    storage_dead(val_32)
+                                    storage_dead(_25)
+                                    storage_live(_35)
+                                    storage_live(_36)
+                                    _36 = &two-phase-mut (*input) with_metadata(copy input.metadata)
+                                    storage_live(_37)
+                                    _37 = copy data_index
+                                    _35 = split_at_mut<'102, u8>[{built_in impl Sized for u8}](move _36, move _37)
+                                    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                                        ↳⚡ storage_dead(_55)
+                                            storage_dead(_54)
+                                            storage_dead(_20)
+                                            storage_dead(_19)
+                                            storage_dead(_18)
+                                            storage_dead(check)
+                                            storage_dead(input)
+                                            storage_dead(_61)
+                                            storage_dead(_60)
+                                            storage_dead(_59)
+                                            storage_dead(_58)
+                                            storage_dead(_57)
+                                            storage_dead(_56)
+                                            unwind_terminate
+                                        storage_dead(_55)
+                                        storage_dead(_54)
+                                        storage_dead(_20)
+                                        storage_dead(_19)
+                                        storage_dead(_18)
+                                        storage_dead(check)
+                                        storage_dead(input)
+                                        unwind_continue
+                                    storage_dead(_37)
+                                    storage_dead(_36)
+                                    storage_live(kind_33)
+                                    kind_33 = move _35.0
+                                    storage_live(data)
+                                    data = move _35.1
+                                    storage_dead(_35)
+                                    storage_live(_38)
+                                    storage_live(_39)
+                                    storage_live(_40)
+                                    storage_live(_41)
+                                    storage_live(_42)
+                                    _42 = &mut (*kind_33) with_metadata(copy kind_33.metadata)
+                                    storage_live(_43)
+                                    storage_live(_44)
+                                    _44 = copy kind_index
+                                    storage_live(_45)
+                                    _45 = copy data_index
+                                    _43 = Range { start: move _44, end: move _45 }
+                                    storage_dead(_45)
+                                    storage_dead(_44)
+                                    _41 = impl_IndexMut_for_slice::index_mut<'121, u8, Range<usize>[{built_in impl Sized for usize}], [u8]>[{built_in impl Sized for u8}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_Range_usize<u8>[{built_in impl Sized for u8}]](move _42, move _43)
+                                    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                                        ↳⚡ storage_dead(_55)
+                                            storage_dead(_54)
+                                            storage_dead(_20)
+                                            storage_dead(_19)
+                                            storage_dead(_18)
+                                            storage_dead(check)
+                                            storage_dead(input)
+                                            storage_dead(_61)
+                                            storage_dead(_60)
+                                            storage_dead(_59)
+                                            storage_dead(_58)
+                                            storage_dead(_57)
+                                            storage_dead(_56)
+                                            unwind_terminate
+                                        storage_dead(_55)
+                                        storage_dead(_54)
+                                        storage_dead(_20)
+                                        storage_dead(_19)
+                                        storage_dead(_18)
+                                        storage_dead(check)
+                                        storage_dead(input)
+                                        unwind_continue
+                                    storage_dead(_43)
+                                    storage_dead(_42)
+                                    _40 = &mut (*_41) with_metadata(copy _41.metadata)
+                                    _39 = &mut (*_40) with_metadata(copy _40.metadata)
+                                    storage_live(_46)
+                                    _46 = &mut (*data) with_metadata(copy data.metadata)
+                                    _38 = (move _39, move _46)
+                                    storage_dead(_46)
+                                    storage_dead(_39)
+                                    _0 = Result::Ok { 0: move _38 }
+                                    storage_dead(_41)
+                                    storage_dead(_40)
+                                    storage_dead(_38)
+                                    storage_dead(data)
+                                    storage_dead(kind_33)
+                                    storage_dead(kind_12)
+                                    storage_dead(data_index)
+                                    storage_dead(kind_index)
+                                    storage_dead(_4)
+                                    storage_dead(_3)
+                                    drop[{built_in impl Destruct for F}::drop_glue<'83>] check
+                                    ↳⚡ storage_dead(_55)
+                                        storage_dead(_54)
+                                        storage_dead(_20)
+                                        storage_dead(_19)
+                                        storage_dead(_18)
+                                        storage_dead(check)
+                                        storage_dead(input)
+                                        unwind_continue
+                                    storage_dead(_55)
+                                    storage_dead(_54)
+                                    storage_dead(_20)
+                                    storage_dead(_19)
+                                    storage_dead(_18)
+                                    storage_dead(check)
+                                    storage_dead(input)
+                                    storage_dead(_61)
+                                    storage_dead(_60)
+                                    storage_dead(_59)
+                                    storage_dead(_58)
+                                    storage_dead(_57)
+                                    storage_dead(_56)
+                                    return
+                                },
+                                ControlFlow::Break => {
+                                    storage_live(residual_30)
+                                    residual_30 = copy (_25 as variant ControlFlow::Break).0
+                                    storage_live(_31)
+                                    _31 = copy residual_30
+                                    _0 = from_residual<(&'106 mut [u8], &'107 mut [u8]), Error, Error>[{built_in impl Sized for (&'106 mut [u8], &'107 mut [u8])}, {built_in impl Sized for Error}, {built_in impl Sized for Error}, impl_From_for_T<Error>[{built_in impl Sized for Error}]](move _31)
+                                    ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                                        ↳⚡ storage_dead(_55)
+                                            storage_dead(_54)
+                                            storage_dead(_20)
+                                            storage_dead(_19)
+                                            storage_dead(_18)
+                                            storage_dead(check)
+                                            storage_dead(input)
+                                            storage_dead(_61)
+                                            storage_dead(_60)
+                                            storage_dead(_59)
+                                            storage_dead(_58)
+                                            storage_dead(_57)
+                                            storage_dead(_56)
+                                            unwind_terminate
+                                        storage_dead(_55)
+                                        storage_dead(_54)
+                                        storage_dead(_20)
+                                        storage_dead(_19)
+                                        storage_dead(_18)
+                                        storage_dead(check)
+                                        storage_dead(input)
+                                        unwind_continue
+                                    storage_dead(_31)
+                                    storage_dead(residual_30)
+                                    storage_dead(_25)
+                                },
+                            }
+                        },
+                        ControlFlow::Break => {
+                            storage_live(residual_22)
+                            residual_22 = copy (_13 as variant ControlFlow::Break).0
+                            storage_live(_23)
+                            _23 = copy residual_22
+                            _0 = from_residual<(&'89 mut [u8], &'90 mut [u8]), Error, Error>[{built_in impl Sized for (&'89 mut [u8], &'90 mut [u8])}, {built_in impl Sized for Error}, {built_in impl Sized for Error}, impl_From_for_T<Error>[{built_in impl Sized for Error}]](move _23)
+                            ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                                ↳⚡ storage_dead(_55)
+                                    storage_dead(_54)
+                                    storage_dead(_20)
+                                    storage_dead(_19)
+                                    storage_dead(_18)
+                                    storage_dead(check)
+                                    storage_dead(input)
+                                    storage_dead(_61)
+                                    storage_dead(_60)
+                                    storage_dead(_59)
+                                    storage_dead(_58)
+                                    storage_dead(_57)
+                                    storage_dead(_56)
+                                    unwind_terminate
+                                storage_dead(_55)
+                                storage_dead(_54)
+                                storage_dead(_20)
+                                storage_dead(_19)
+                                storage_dead(_18)
+                                storage_dead(check)
+                                storage_dead(input)
+                                unwind_continue
+                            storage_dead(_23)
+                            storage_dead(residual_22)
+                            storage_dead(_17)
+                            storage_dead(_13)
+                        },
+                    }
+                    storage_dead(kind_12)
+                    storage_dead(data_index)
+                    storage_dead(kind_index)
+                },
+                _ => {
+                    storage_live(_57)
+                    storage_live(_60)
+                    storage_live(_61)
+                    _61 = []
+                    _60 = &mut _61
+                    _57 = move _60
+                    storage_live(_56)
+                    storage_live(_58)
+                    storage_live(_59)
+                    _59 = []
+                    _58 = &mut _59
+                    _56 = move _58
+                    storage_dead(_4)
+                    storage_dead(_3)
+                    storage_live(_47)
+                    storage_live(_48)
+                    storage_live(_49)
+                    storage_live(_50)
+                    _55 = move _56
+                    _50 = &mut (*_55)
+                    _49 = &mut (*_50)
+                    _48 = unsize_cast<&'42 mut [u8; 0usize], &'68 mut [u8], 0usize>(move _49)
+                    storage_dead(_49)
+                    storage_live(_51)
+                    storage_live(_52)
+                    storage_live(_53)
+                    _54 = move _57
+                    _53 = &mut (*_54)
+                    _52 = &mut (*_53)
+                    _51 = unsize_cast<&'45 mut [u8; 0usize], &'70 mut [u8], 0usize>(move _52)
+                    storage_dead(_52)
+                    _47 = (move _48, move _51)
+                    storage_dead(_51)
+                    storage_dead(_48)
+                    _0 = Result::Ok { 0: move _47 }
+                    storage_dead(_53)
+                    storage_dead(_50)
+                    storage_dead(_47)
+                    drop[{built_in impl Destruct for F}::drop_glue<'83>] check
+                    ↳⚡ storage_dead(_55)
+                        storage_dead(_54)
+                        storage_dead(_20)
+                        storage_dead(_19)
+                        storage_dead(_18)
+                        storage_dead(check)
+                        storage_dead(input)
+                        unwind_continue
+                    storage_dead(_55)
+                    storage_dead(_54)
+                    storage_dead(_20)
+                    storage_dead(_19)
+                    storage_dead(_18)
+                    storage_dead(check)
+                    storage_dead(input)
+                    storage_dead(_61)
+                    storage_dead(_60)
+                    storage_dead(_59)
+                    storage_dead(_58)
+                    storage_dead(_57)
+                    storage_dead(_56)
+                    return
+                },
+            }
+        },
+        ControlFlow::Break => {
+            storage_live(residual_7)
+            residual_7 = copy (_4 as variant ControlFlow::Break).0
+            storage_live(_8)
+            _8 = copy residual_7
+            _0 = from_residual<(&'55 mut [u8], &'56 mut [u8]), Error, Error>[{built_in impl Sized for (&'55 mut [u8], &'56 mut [u8])}, {built_in impl Sized for Error}, {built_in impl Sized for Error}, impl_From_for_T<Error>[{built_in impl Sized for Error}]](move _8)
+            ↳⚡ drop[{built_in impl Destruct for F}::drop_glue<'51>] check
+                ↳⚡ storage_dead(_55)
+                    storage_dead(_54)
+                    storage_dead(_20)
+                    storage_dead(_19)
+                    storage_dead(_18)
+                    storage_dead(check)
+                    storage_dead(input)
+                    storage_dead(_61)
+                    storage_dead(_60)
+                    storage_dead(_59)
+                    storage_dead(_58)
+                    storage_dead(_57)
+                    storage_dead(_56)
+                    unwind_terminate
+                storage_dead(_55)
+                storage_dead(_54)
+                storage_dead(_20)
+                storage_dead(_19)
+                storage_dead(_18)
+                storage_dead(check)
+                storage_dead(input)
+                unwind_continue
+            storage_dead(_8)
+            storage_dead(residual_7)
+        },
+    }
+    storage_dead(_4)
+    storage_dead(_3)
+    drop[{built_in impl Destruct for F}::drop_glue<'84>] check
+    ↳⚡ storage_dead(_55)
+        storage_dead(_54)
+        storage_dead(_20)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(check)
+        storage_dead(input)
+        unwind_continue
+    storage_dead(_55)
+    storage_dead(_54)
+    storage_dead(_20)
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(check)
+    storage_dead(input)
+    storage_dead(_61)
+    storage_dead(_60)
+    storage_dead(_59)
+    storage_dead(_58)
+    storage_dead(_57)
+    storage_dead(_56)
+    return
+}
+
+struct dependency::split::closure {}
+
+// Full name: dependency::split::{impl Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}::call
+fn call<'_0>(_1: &'_0 dependency::split::closure, tupled_args: (Kind,)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+{
+    let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
+    let _1: &'1 dependency::split::closure; // arg #1
+    let tupled_args: (Kind,); // arg #2
+    let _3: Kind; // anonymous local
+    let _4: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = move tupled_args.0
+    storage_live(_4)
+    _4 = ()
+    _0 = Result::Ok { 0: move _4 }
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: dependency::split::{impl FnMut<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}::call_mut
+fn call_mut<'_0>(state: &'_0 mut dependency::split::closure, args: (Kind,)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+{
+    let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
+    let state: &'_0 mut dependency::split::closure; // arg #1
+    let args: (Kind,); // arg #2
+    let _3: &'0 dependency::split::closure; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = call<'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: dependency::split::closure::{impl Destruct for dependency::split::closure}::drop_glue
+unsafe fn {impl Destruct for dependency::split::closure}::drop_glue<'_0>(_1: &'_0 mut dependency::split::closure)
+{
+    let _0: (); // return
+    let _1: &'1 mut dependency::split::closure; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: dependency::split::{impl FnOnce<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}::call_once
+fn {impl FnOnce<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}::call_once(_1: dependency::split::closure, _2: (Kind,)) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+{
+    let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
+    let _1: dependency::split::closure; // arg #1
+    let _2: (Kind,); // arg #2
+    let _3: &'1 mut dependency::split::closure; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for dependency::split::closure}::drop_glue<'3>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    drop[{impl Destruct for dependency::split::closure}::drop_glue<'4>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: dependency::split::{impl FnOnce<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}
+impl FnOnce<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure {
+    proof ImpliedClause0: (dependency::split::closure: MetaSized) = {built_in impl MetaSized for dependency::split::closure}
+    proof ImpliedClause1: ((Kind,): Sized) = {built_in impl Sized for (Kind,)}
+    proof ImpliedClause2: ((Kind,): Tuple) = {built_in impl Tuple for (Kind,)}
+    proof ImpliedClause3: (Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]: Sized) = {built_in impl Sized for Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]}
+    fn call_once = {impl FnOnce<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}::call_once
+    non-dyn-compatible
+}
+
+// Full name: dependency::split::{impl FnMut<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}
+impl "impl_FnMut_tuple_for_closure" FnMut<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure {
+    proof ImpliedClause0: (dependency::split::closure: MetaSized) = {built_in impl MetaSized for dependency::split::closure}
+    proof ImpliedClause1: (dependency::split::closure: FnOnce<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>) = {impl FnOnce<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}
+    proof ImpliedClause2: ((Kind,): Sized) = {built_in impl Sized for (Kind,)}
+    proof ImpliedClause3: ((Kind,): Tuple) = {built_in impl Tuple for (Kind,)}
+    fn call_mut<'_0_1> = call_mut<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: dependency::split::{impl Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure}
+impl "impl_Fn_tuple_for_closure" Fn<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]> for dependency::split::closure {
+    proof ImpliedClause0: (dependency::split::closure: MetaSized) = {built_in impl MetaSized for dependency::split::closure}
+    proof ImpliedClause1: (dependency::split::closure: FnMut<(Kind,), Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]>) = impl_FnMut_tuple_for_closure
+    proof ImpliedClause2: ((Kind,): Sized) = {built_in impl Sized for (Kind,)}
+    proof ImpliedClause3: ((Kind,): Tuple) = {built_in impl Tuple for (Kind,)}
+    fn call<'_0_1> = call<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: dependency::split
+pub fn split<'_0>(input: &'_0 mut [u8]) -> Result<(&'_0 mut [u8], &'_0 mut [u8]), Error>[{built_in impl Sized for (&'_0 mut [u8], &'_0 mut [u8])}, {built_in impl Sized for Error}]
+{
+    let _0: Result<(&'15 mut [u8], &'16 mut [u8]), Error>[{built_in impl Sized for (&'15 mut [u8], &'16 mut [u8])}, {built_in impl Sized for Error}]; // return
+    let input: &'21 mut [u8]; // arg #1
+    let _2: bool; // anonymous local
+    let _3: &'23 State; // anonymous local
+    let _4: Error; // anonymous local
+    let _5: &'24 mut [u8]; // anonymous local
+    let _6: dependency::split::closure; // anonymous local
+    let _7: &'25 State; // anonymous local
+    let _8: &'26 State; // anonymous local
+    let _9: &'43 State; // anonymous local
+    let _10: State; // anonymous local
+
+    storage_live(_8)
+    storage_live(_9)
+    storage_live(_10)
+    _10 = State {  }
+    _9 = &_10
+    _8 = move _9
+    storage_live(_0)
+    storage_live(_7)
+    storage_live(_2)
+    storage_live(_3)
+    _7 = move _8
+    _3 = &(*_7)
+    _2 = is_ready<'28>(move _3)
+    ↳⚡ storage_dead(_7)
+        storage_dead(input)
+        unwind_continue
+    if move _2 {
+    } else {
+        storage_dead(_3)
+        storage_live(_4)
+        _4 = Error::Invalid {  }
+        _0 = Result::Err { 0: move _4 }
+        storage_dead(_4)
+        storage_dead(_2)
+        storage_dead(_7)
+        storage_dead(input)
+        storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(_8)
+        return
+    }
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_live(_5)
+    _5 = &two-phase-mut (*input) with_metadata(copy input.metadata)
+    storage_live(_6)
+    _6 = dependency::split::closure {  }
+    _0 = split_with_check<'30, State, dependency::split::closure>[{built_in impl Sized for State}, {built_in impl Sized for dependency::split::closure}, impl_BaseState_for_State, impl_Fn_tuple_for_closure](move _5, move _6)
+    ↳⚡ storage_dead(_7)
+        storage_dead(input)
+        unwind_continue
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_7)
+    storage_dead(input)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    return
+}
+
+// Full name: foreign_generic_closure::run
+pub fn run<'_0>(input: &'_0 mut [u8]) -> Result<usize, Error>[{built_in impl Sized for usize}, {built_in impl Sized for Error}]
+{
+    let _0: Result<usize, Error>[{built_in impl Sized for usize}, {built_in impl Sized for Error}]; // return
+    let input: &'1 mut [u8]; // arg #1
+    let kind: &'2 mut [u8]; // local
+    let data: &'3 mut [u8]; // local
+    let _4: (&'6 mut [u8], &'7 mut [u8]); // anonymous local
+    let _5: ControlFlow<Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}], (&'20 mut [u8], &'21 mut [u8])>[{built_in impl Sized for Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]}, {built_in impl Sized for (&'20 mut [u8], &'21 mut [u8])}]; // anonymous local
+    let _6: Result<(&'38 mut [u8], &'39 mut [u8]), Error>[{built_in impl Sized for (&'38 mut [u8], &'39 mut [u8])}, {built_in impl Sized for Error}]; // anonymous local
+    let _7: &'44 mut [u8]; // anonymous local
+    let residual: Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]; // local
+    let _9: Result<Infallible, Error>[{built_in impl Sized for Infallible}, {built_in impl Sized for Error}]; // anonymous local
+    let val: (&'45 mut [u8], &'46 mut [u8]); // local
+    let _11: usize; // anonymous local
+    let _12: usize; // anonymous local
+    let _13: &'48 [u8]; // anonymous local
+    let _14: usize; // anonymous local
+    let _15: &'49 [u8]; // anonymous local
+    let _16: (usize, bool); // anonymous local
+
+    storage_live(_0)
+    storage_live(_16)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = &two-phase-mut (*input) with_metadata(copy input.metadata)
+    _6 = split<'51>(move _7)
+    ↳⚡ storage_dead(_16)
+        storage_dead(input)
+        unwind_continue
+    storage_dead(_7)
+    _5 = branch<(&'55 mut [u8], &'56 mut [u8]), Error>[{built_in impl Sized for (&'55 mut [u8], &'56 mut [u8])}, {built_in impl Sized for Error}](move _6)
+    ↳⚡ storage_dead(_16)
+        storage_dead(input)
+        unwind_continue
+    storage_dead(_6)
+    match _5 {
+        ControlFlow::Continue => {
+        },
+        ControlFlow::Break => {
+            storage_live(residual)
+            residual = copy (_5 as variant ControlFlow::Break).0
+            storage_live(_9)
+            _9 = copy residual
+            _0 = from_residual<usize, Error, Error>[{built_in impl Sized for usize}, {built_in impl Sized for Error}, {built_in impl Sized for Error}, impl_From_for_T<Error>[{built_in impl Sized for Error}]](move _9)
+            ↳⚡ storage_dead(_16)
+                storage_dead(input)
+                unwind_continue
+            storage_dead(_9)
+            storage_dead(residual)
+            storage_dead(_5)
+            storage_dead(_4)
+            storage_dead(_16)
+            storage_dead(input)
+            return
+        },
+    }
+    storage_live(val)
+    val = move (_5 as variant ControlFlow::Continue).0
+    _4 = move val
+    storage_dead(val)
+    storage_live(kind)
+    kind = move _4.0
+    storage_live(data)
+    data = move _4.1
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_live(_11)
+    storage_live(_12)
+    storage_live(_13)
+    _13 = &(*kind) with_metadata(copy kind.metadata)
+    _12 = len<'78, u8>[{built_in impl Sized for u8}](move _13)
+    ↳⚡ storage_dead(_16)
+        storage_dead(input)
+        unwind_continue
+    storage_dead(_13)
+    storage_live(_14)
+    storage_live(_15)
+    _15 = &(*data) with_metadata(copy data.metadata)
+    _14 = len<'80, u8>[{built_in impl Sized for u8}](move _15)
+    ↳⚡ storage_dead(_16)
+        storage_dead(input)
+        unwind_continue
+    storage_dead(_15)
+    _16 = copy _12 checked.+ copy _14
+    assert(move _16.1 == false) (overflow) else panic
+    ↳⚡ storage_dead(_16)
+        storage_dead(input)
+        unwind_continue
+    _11 = move _16.0
+    storage_dead(_14)
+    storage_dead(_12)
+    _0 = Result::Ok { 0: move _11 }
+    storage_dead(_11)
+    storage_dead(data)
+    storage_dead(kind)
+    storage_dead(_16)
+    storage_dead(input)
+    return
+}
+
+
+

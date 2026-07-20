@@ -194,6 +194,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             Success,
         ),
         mktest(
+            "foreign-generic-closure",
+            root.join("foreign-generic-closure"),
+            &[
+                "--include=dependency".to_owned(),
+                "--lift-associated-types=*".to_owned(),
+            ],
+            &[],
+            Success,
+        ),
+        mktest(
             "error-dependencies",
             root.join("error-dependencies"),
             &[],

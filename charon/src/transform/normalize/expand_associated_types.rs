@@ -701,10 +701,44 @@ struct ComputeItemModifications<'a> {
     /// Records the set of known associated types for this trait impl, including parent impls and
     /// associated type constraints.
     impl_assoc_tys: IndexMap<TraitImplId, CycleDetector<TypeConstraintSet>>,
+    /// Traits with an implementation whose associated type refers back to the implementation.
+    traits_with_recursive_impls: HashSet<TraitDeclId>,
+}
+
+#[derive(Visitor)]
+struct FindTraitImplArg {
+    target: TraitImplId,
+    found: bool,
+}
+
+impl VisitAst for FindTraitImplArg {
+    fn enter_generic_args(&mut self, args: &GenericArgs) {
+        if args
+            .trait_refs
+            .iter()
+            .any(|tref| matches!(&tref.kind, TraitRefKind::TraitImpl(r) if r.id == self.target))
+        {
+            self.found = true;
+        }
+    }
 }
 
 impl<'a> ComputeItemModifications<'a> {
     fn new(ctx: &'a TransformCtx) -> Self {
+        let mut traits_with_recursive_impls = HashSet::new();
+        for timpl in ctx.translated.trait_impls.iter() {
+            let has_recursive_assoc_type = timpl.types.iter().any(|assoc_ty| {
+                let mut visitor = FindTraitImplArg {
+                    target: timpl.def_id,
+                    found: false,
+                };
+                let _ = visitor.visit(&assoc_ty.skip_binder.value);
+                visitor.found
+            });
+            if has_recursive_assoc_type {
+                traits_with_recursive_impls.insert(timpl.impl_trait.id);
+            }
+        }
         ComputeItemModifications {
             ctx,
             trait_modifications: ctx
@@ -715,6 +749,7 @@ impl<'a> ComputeItemModifications<'a> {
                 .translated
                 .trait_impls
                 .map_ref_opt(|_| Some(CycleDetector::Unprocessed)),
+            traits_with_recursive_impls,
         }
     }
 
@@ -813,6 +848,7 @@ impl<'a> ComputeItemModifications<'a> {
                 CycleDetector::Processing => false,
                 CycleDetector::Cyclic => true,
             };
+            let has_recursive_impl = self.traits_with_recursive_impls.contains(&id);
             // These traits carry a built-in associated type that we can't replace with
             // anything else than itself, so we keep it as an associated type.
             let has_builtin_assoc_ty = matches!(
@@ -826,7 +862,8 @@ impl<'a> ComputeItemModifications<'a> {
                     .lift_associated_types
                     .iter()
                     .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
-            let remove_assoc_types = !is_self_referential && remove_assoc_type;
+            let remove_assoc_types =
+                !is_self_referential && !has_recursive_impl && remove_assoc_type;
             let type_constraints = self.compute_constraint_set(&tr.generics);
             let mut modifications =
                 ItemModifications::from_constraint_set(type_constraints, remove_assoc_types);
