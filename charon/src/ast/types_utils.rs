@@ -1507,7 +1507,9 @@ impl Discriminator {
     ) -> Result<VariantId, DiscriminantReadError> {
         match self {
             Discriminator::Known(id) => Ok(*id),
-            Discriminator::Invalid => Err(DiscriminantReadError::InvalidDiscriminant),
+            Discriminator::Unknown | Discriminator::Invalid => {
+                Err(DiscriminantReadError::InvalidDiscriminant)
+            }
             Discriminator::Branch {
                 offset,
                 int_ty,
@@ -1532,10 +1534,6 @@ impl Layout {
             .as_ref()
             .is_none_or(|v| v.uninhabited)
     }
-
-    pub fn is_c_repr(&self) -> bool {
-        self.repr.repr_algo == ReprAlgorithm::C
-    }
 }
 
 impl ReprOptions {
@@ -1549,7 +1547,7 @@ impl ReprOptions {
     /// Cf. <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct>
     /// and <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt>.
     pub fn guarantees_fixed_field_order(&self) -> bool {
-        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type
+        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type.is_some()
     }
 }
 

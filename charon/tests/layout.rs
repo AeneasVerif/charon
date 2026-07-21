@@ -289,13 +289,14 @@ fn type_layout() -> anyhow::Result<()> {
                 return None;
             }
             let name = repr_name(&crate_data, &tdecl.item_meta.name);
-            let opt_guarantee = tdecl.guarantees.clone();
+            let opt_guarantee =
+                LayoutGuarantees::for_type_decl(&tdecl.kind, &tdecl.repr, &crate_data);
             let fake_ty = Ty::new(TyKind::Adt(TypeDeclRef {
                 id: TypeId::Adt(tdecl.def_id),
                 generics: Box::new(tdecl.generics.identity_args()),
             }));
-            let opt_concretized = layout_computer.compute_layout(fake_ty);
 
+            let opt_concretized = layout_computer.compute_layout_guarantees(fake_ty.clone());
             // Check whether concretized layout guarantees always match known layouts.
             if let Some(layout) = tdecl.layout.get(&the_target)
                 && let Some(guarantees) = &opt_concretized
@@ -305,6 +306,33 @@ fn type_layout() -> anyhow::Result<()> {
             {
                 assert_eq!(size, size_guarantee);
                 assert_eq!(align, align_guarantee);
+            }
+
+            // Check whether concretized layout guarantees always match known layouts.
+            if let Some(mut layout) = tdecl.layout.get(&the_target).cloned() {
+                layout_computer.normalize_symbolic_byte_count(&mut layout.size.guarantee);
+                layout_computer.normalize_symbolic_byte_count(&mut layout.align.guarantee);
+
+                if let Some(size) = layout.size.concrete
+                    && let Some(align) = layout.align.concrete
+                    && let Some(size_guarantee) = layout.size.guarantee.is_concrete()
+                    && let Some(align_guarantee) = layout.align.guarantee.is_concrete()
+                {
+                    assert_eq!(size, size_guarantee);
+                    assert_eq!(align, align_guarantee);
+                }
+            }
+
+            // Check whether concretized offset guarantees always match known offsets.
+            if let Some(layout) = layout_computer.compute_layout(&fake_ty) {
+                let mut visitor = DynVisitor::new_shared::<ByteCount>(|b| {
+                    if let Some(g) = b.guarantee.is_concrete()
+                        && let Some(c) = b.concrete
+                    {
+                        assert_eq!(g, c);
+                    }
+                });
+                VisitAst::visit(&mut visitor, &layout);
             }
 
             let guarantee_serializable = opt_guarantee.map(|l| WithState::new(l, &()));

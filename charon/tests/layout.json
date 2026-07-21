@@ -2,17 +2,122 @@
   "test_crate::SimpleStruct": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 12
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 4
     },
@@ -26,7 +131,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  0,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -34,7 +143,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  0,
+                  0,
+                  1
+                ]
               }
             },
             "concrete": 4
@@ -42,7 +155,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  0,
+                  0,
+                  2
+                ]
               }
             },
             "concrete": 8
@@ -51,29 +168,506 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
-  "test_crate::GenericStruct": null,
+  "test_crate::GenericStruct": {
+    "size": {
+      "guarantee": {
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "TypeVar": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "TypeVar": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "concrete": null
+    },
+    "align": {
+      "guarantee": {
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "Usize"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "TypeVar": {
+                    "Bound": [
+                      0,
+                      0
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "concrete": null
+    },
+    "discriminator": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": {
+              "Atom": {
+                "SymOffset": [
+                  1,
+                  0,
+                  0
+                ]
+              }
+            },
+            "concrete": null
+          },
+          {
+            "guarantee": {
+              "Atom": {
+                "SymOffset": [
+                  1,
+                  0,
+                  1
+                ]
+              }
+            },
+            "concrete": null
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ]
+  },
   "test_crate::MonoStruct": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 1
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 0
+                                  },
+                                  "generics": {
+                                    "regions": [],
+                                    "types": [],
+                                    "const_generics": [],
+                                    "trait_refs": []
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
+                                      {
+                                        "Untagged": {
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 0
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "types": []
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 0
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 1
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 0
+                                  },
+                                  "generics": {
+                                    "regions": [],
+                                    "types": [],
+                                    "const_generics": [],
+                                    "trait_refs": []
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
+                                      {
+                                        "Untagged": {
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 0
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "types": []
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 0
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 24
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Adt": {
+                    "id": {
+                      "Adt": 1
+                    },
+                    "generics": {
+                      "regions": [],
+                      "types": [
+                        {
+                          "Untagged": {
+                            "Adt": {
+                              "id": {
+                                "Adt": 0
+                              },
+                              "generics": {
+                                "regions": [],
+                                "types": [],
+                                "const_generics": [],
+                                "trait_refs": []
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "const_generics": [],
+                      "trait_refs": [
+                        {
+                          "Untagged": {
+                            "kind": {
+                              "BuiltinOrAuto": {
+                                "builtin_data": "Sized",
+                                "parent_trait_refs": [
+                                  {
+                                    "Untagged": {
+                                      "kind": {
+                                        "BuiltinOrAuto": {
+                                          "builtin_data": "MetaSized",
+                                          "parent_trait_refs": [],
+                                          "types": []
+                                        }
+                                      },
+                                      "trait_decl_ref": {
+                                        "regions": [],
+                                        "skip_binder": {
+                                          "id": 1,
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [
+                                              {
+                                                "Untagged": {
+                                                  "Adt": {
+                                                    "id": {
+                                                      "Adt": 0
+                                                    },
+                                                    "generics": {
+                                                      "regions": [],
+                                                      "types": [],
+                                                      "const_generics": [],
+                                                      "trait_refs": []
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            ],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ],
+                                "types": []
+                              }
+                            },
+                            "trait_decl_ref": {
+                              "regions": [],
+                              "skip_binder": {
+                                "id": 0,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "Adt": {
+                                          "id": {
+                                            "Adt": 0
+                                          },
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 8
     },
@@ -87,7 +681,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  2,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -96,28 +694,106 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::UnsizedStruct": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Slice": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "Usize"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Slice": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "Usize"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": null
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "Usize"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Slice": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": null
     },
@@ -131,7 +807,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  3,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -139,7 +819,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  3,
+                  0,
+                  1
+                ]
               }
             },
             "concrete": 8
@@ -148,19 +832,27 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::SimpleEnum": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 4
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 1
@@ -168,7 +860,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 4
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 1
@@ -254,19 +960,27 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::SimpleAdt": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 5
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 24
@@ -274,7 +988,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 5
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -369,7 +1097,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  5,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 8
@@ -377,7 +1109,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  5,
+                  1,
+                  1
+                ]
               }
             },
             "concrete": 16
@@ -401,7 +1137,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  5,
+                  2,
+                  0
+                ]
               }
             },
             "concrete": 4
@@ -409,7 +1149,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  5,
+                  2,
+                  1
+                ]
               }
             },
             "concrete": 8
@@ -428,19 +1172,27 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::NicheAdt": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 6
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -448,7 +1200,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 6
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -507,7 +1273,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  6,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -516,13 +1286,7 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::IsAZST": {
     "size": {
@@ -536,7 +1300,7 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "Concrete": 1
         }
       },
       "concrete": 1
@@ -551,28 +1315,766 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::GenericWithKnownLayout": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 38
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "TypeVar": {
+                                  "Bound": [
+                                    0,
+                                    0
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 39
+                                  },
+                                  "generics": {
+                                    "regions": [],
+                                    "types": [],
+                                    "const_generics": [],
+                                    "trait_refs": []
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "ParentClause": [
+                                    {
+                                      "Untagged": {
+                                        "kind": {
+                                          "Clause": {
+                                            "Bound": [
+                                              0,
+                                              0
+                                            ]
+                                          }
+                                        },
+                                        "trait_decl_ref": {
+                                          "regions": [],
+                                          "skip_binder": {
+                                            "id": 0,
+                                            "generics": {
+                                              "regions": [],
+                                              "types": [
+                                                {
+                                                  "Untagged": {
+                                                    "TypeVar": {
+                                                      "Bound": [
+                                                        1,
+                                                        0
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              ],
+                                              "const_generics": [],
+                                              "trait_refs": []
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    0
+                                  ]
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "TypeVar": {
+                                              "Bound": [
+                                                1,
+                                                0
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
+                                      {
+                                        "Untagged": {
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 39
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "types": []
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 39
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "TraitImpl": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 3,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 39
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 38
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "TypeVar": {
+                                  "Bound": [
+                                    0,
+                                    0
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 39
+                                  },
+                                  "generics": {
+                                    "regions": [],
+                                    "types": [],
+                                    "const_generics": [],
+                                    "trait_refs": []
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "ParentClause": [
+                                    {
+                                      "Untagged": {
+                                        "kind": {
+                                          "Clause": {
+                                            "Bound": [
+                                              0,
+                                              0
+                                            ]
+                                          }
+                                        },
+                                        "trait_decl_ref": {
+                                          "regions": [],
+                                          "skip_binder": {
+                                            "id": 0,
+                                            "generics": {
+                                              "regions": [],
+                                              "types": [
+                                                {
+                                                  "Untagged": {
+                                                    "TypeVar": {
+                                                      "Bound": [
+                                                        1,
+                                                        0
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              ],
+                                              "const_generics": [],
+                                              "trait_refs": []
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    0
+                                  ]
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "TypeVar": {
+                                              "Bound": [
+                                                1,
+                                                0
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
+                                      {
+                                        "Untagged": {
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 39
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "types": []
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 39
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "TraitImpl": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 3,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 39
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 16
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "Usize"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Adt": {
+                    "id": {
+                      "Adt": 38
+                    },
+                    "generics": {
+                      "regions": [],
+                      "types": [
+                        {
+                          "Untagged": {
+                            "TypeVar": {
+                              "Bound": [
+                                0,
+                                0
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "Untagged": {
+                            "Adt": {
+                              "id": {
+                                "Adt": 39
+                              },
+                              "generics": {
+                                "regions": [],
+                                "types": [],
+                                "const_generics": [],
+                                "trait_refs": []
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "const_generics": [],
+                      "trait_refs": [
+                        {
+                          "Untagged": {
+                            "kind": {
+                              "ParentClause": [
+                                {
+                                  "Untagged": {
+                                    "kind": {
+                                      "Clause": {
+                                        "Bound": [
+                                          0,
+                                          0
+                                        ]
+                                      }
+                                    },
+                                    "trait_decl_ref": {
+                                      "regions": [],
+                                      "skip_binder": {
+                                        "id": 0,
+                                        "generics": {
+                                          "regions": [],
+                                          "types": [
+                                            {
+                                              "Untagged": {
+                                                "TypeVar": {
+                                                  "Bound": [
+                                                    1,
+                                                    0
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "const_generics": [],
+                                          "trait_refs": []
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                0
+                              ]
+                            },
+                            "trait_decl_ref": {
+                              "regions": [],
+                              "skip_binder": {
+                                "id": 1,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "TypeVar": {
+                                          "Bound": [
+                                            1,
+                                            0
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "Untagged": {
+                            "kind": {
+                              "BuiltinOrAuto": {
+                                "builtin_data": "Sized",
+                                "parent_trait_refs": [
+                                  {
+                                    "Untagged": {
+                                      "kind": {
+                                        "BuiltinOrAuto": {
+                                          "builtin_data": "MetaSized",
+                                          "parent_trait_refs": [],
+                                          "types": []
+                                        }
+                                      },
+                                      "trait_decl_ref": {
+                                        "regions": [],
+                                        "skip_binder": {
+                                          "id": 1,
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [
+                                              {
+                                                "Untagged": {
+                                                  "Adt": {
+                                                    "id": {
+                                                      "Adt": 39
+                                                    },
+                                                    "generics": {
+                                                      "regions": [],
+                                                      "types": [],
+                                                      "const_generics": [],
+                                                      "trait_refs": []
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            ],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ],
+                                "types": []
+                              }
+                            },
+                            "trait_decl_ref": {
+                              "regions": [],
+                              "skip_binder": {
+                                "id": 0,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "Adt": {
+                                          "id": {
+                                            "Adt": 39
+                                          },
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "Untagged": {
+                            "kind": {
+                              "TraitImpl": {
+                                "id": 1,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            },
+                            "trait_decl_ref": {
+                              "regions": [],
+                              "skip_binder": {
+                                "id": 3,
+                                "generics": {
+                                  "regions": [],
+                                  "types": [
+                                    {
+                                      "Untagged": {
+                                        "Adt": {
+                                          "id": {
+                                            "Adt": 39
+                                          },
+                                          "generics": {
+                                            "regions": [],
+                                            "types": [],
+                                            "const_generics": [],
+                                            "trait_refs": []
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 8
     },
@@ -586,7 +2088,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  8,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 8
@@ -594,7 +2100,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  8,
+                  0,
+                  1
+                ]
               }
             },
             "concrete": 0
@@ -603,28 +2113,127 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::Reordered": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 8
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U8"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U8"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 4
     },
@@ -638,7 +2247,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  9,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 4
@@ -646,7 +2259,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  9,
+                  0,
+                  1
+                ]
               }
             },
             "concrete": 0
@@ -654,7 +2271,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  9,
+                  0,
+                  2
+                ]
               }
             },
             "concrete": 5
@@ -663,28 +2284,185 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::NotReordered": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Sum": [
+                              {
+                                "AlignedTo": {
+                                  "base": {
+                                    "Atom": {
+                                      "Concrete": 0
+                                    }
+                                  },
+                                  "target_align": {
+                                    "Atom": {
+                                      "SymAlign": {
+                                        "Untagged": {
+                                          "Literal": {
+                                            "UInt": "U8"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "Atom": {
+                                  "SymSize": {
+                                    "Untagged": {
+                                      "Literal": {
+                                        "UInt": "U8"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": {
+                                    "UInt": "U32"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U8"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 12
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U8"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U8"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 4
     },
@@ -705,16 +2483,76 @@
           },
           {
             "guarantee": {
-              "Atom": {
-                "Concrete": 0
+              "AlignedTo": {
+                "base": {
+                  "Atom": {
+                    "Concrete": 0
+                  }
+                },
+                "target_align": {
+                  "Atom": {
+                    "SymAlign": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U8"
+                        }
+                      }
+                    }
+                  }
+                }
               }
             },
             "concrete": 4
           },
           {
             "guarantee": {
-              "Atom": {
-                "Concrete": 0
+              "AlignedTo": {
+                "base": {
+                  "Sum": [
+                    {
+                      "AlignedTo": {
+                        "base": {
+                          "Atom": {
+                            "Concrete": 0
+                          }
+                        },
+                        "target_align": {
+                          "Atom": {
+                            "SymAlign": {
+                              "Untagged": {
+                                "Literal": {
+                                  "UInt": "U8"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Atom": {
+                        "SymSize": {
+                          "Untagged": {
+                            "Literal": {
+                              "UInt": "U8"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "target_align": {
+                  "Atom": {
+                    "SymAlign": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    }
+                  }
+                }
               }
             },
             "concrete": 8
@@ -723,27 +2561,140 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "C",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::Packed": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Packed": {
+              "max_align": {
+                "Concrete": 1
+              },
+              "to_pack": {
+                "Max": [
+                  {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U8"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U32"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Atom": {
+                      "SymAlign": {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U8"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
         }
       },
       "concrete": 6
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "Packed": {
+          "max_align": {
+            "Concrete": 1
+          },
+          "to_pack": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 1
@@ -758,7 +2709,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  11,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -766,7 +2721,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  11,
+                  0,
+                  1
+                ]
               }
             },
             "concrete": 1
@@ -774,7 +2733,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  11,
+                  0,
+                  2
+                ]
               }
             },
             "concrete": 5
@@ -783,21 +2746,27 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": {
-        "Pack": 1
-      },
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::UninhabitedVariant": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 12
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -805,7 +2774,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 12
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -821,7 +2804,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  12,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -830,19 +2817,27 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::UninhabitedVariant2": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 13
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -850,7 +2845,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 13
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -892,7 +2901,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  13,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 4
@@ -900,7 +2913,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  13,
+                  0,
+                  1
+                ]
               }
             },
             "concrete": 4
@@ -914,7 +2931,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  13,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 4
@@ -933,19 +2954,27 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::UninhabitedVariantWithFields": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 14
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 12
@@ -953,7 +2982,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 14
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -1010,7 +3053,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  14,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 4
@@ -1018,7 +3065,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  14,
+                  1,
+                  1
+                ]
               }
             },
             "concrete": 4
@@ -1026,7 +3077,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  14,
+                  1,
+                  2
+                ]
               }
             },
             "concrete": 8
@@ -1035,28 +3090,49 @@
         "uninhabited": true,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::Uninhabited": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Sum": [
+              {
+                "Atom": {
+                  "SymSize": {
+                    "Untagged": "Never"
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": "Never"
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 0
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": "Never"
+              }
+            }
+          }
+        ]
       },
       "concrete": 1
     },
@@ -1070,7 +3146,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  15,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -1079,19 +3159,83 @@
         "uninhabited": true,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::DiscriminantInNicheOfField": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 16
+                },
+                "generics": {
+                  "regions": [
+                    {
+                      "Var": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  ],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "TypeVar": {
+                          "Bound": [
+                            0,
+                            0
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "Clause": {
+                            "Bound": [
+                              0,
+                              0
+                            ]
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "TypeVar": {
+                                      "Bound": [
+                                        1,
+                                        0
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 16
@@ -1099,7 +3243,77 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 16
+                },
+                "generics": {
+                  "regions": [
+                    {
+                      "Var": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  ],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "TypeVar": {
+                          "Bound": [
+                            0,
+                            0
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "Clause": {
+                            "Bound": [
+                              0,
+                              0
+                            ]
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "TypeVar": {
+                                      "Bound": [
+                                        1,
+                                        0
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -1158,7 +3372,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  16,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -1167,19 +3385,27 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::MaybeUninitInt": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 17
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -1187,7 +3413,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 17
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -1202,7 +3442,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  17,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -1219,19 +3463,27 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::PackIntsUnion": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 18
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -1239,7 +3491,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 18
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -1254,7 +3520,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  18,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -1271,28 +3541,194 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::PackIntsUnionC": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Sum": [
+                              {
+                                "AlignedTo": {
+                                  "base": {
+                                    "Atom": {
+                                      "Concrete": 0
+                                    }
+                                  },
+                                  "target_align": {
+                                    "Atom": {
+                                      "SymAlign": {
+                                        "Untagged": {
+                                          "Literal": {
+                                            "UInt": "U32"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "Atom": {
+                                  "SymSize": {
+                                    "Untagged": {
+                                      "Literal": {
+                                        "UInt": "U32"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": {
+                                    "UInt": "U32"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "Concrete": 8
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U64"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 8
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U64"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 8
     },
@@ -1313,8 +3749,23 @@
           },
           {
             "guarantee": {
-              "Atom": {
-                "Concrete": 0
+              "AlignedTo": {
+                "base": {
+                  "Atom": {
+                    "Concrete": 0
+                  }
+                },
+                "target_align": {
+                  "Atom": {
+                    "SymAlign": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    }
+                  }
+                }
               }
             },
             "concrete": 0
@@ -1323,19 +3774,27 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "C",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::NonZeroNiche": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 20
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -1343,7 +3802,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 20
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -1406,7 +3879,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  20,
+                  0,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -1445,28 +3922,141 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::ReprC": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": "TargetDiscr"
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": "Char"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": "Char"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": "TargetDiscr"
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": "Char"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Atom": "TargetDiscr"
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": "TargetDiscr"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Atom": "TargetDiscr"
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": "TargetDiscr"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": "TargetDiscr"
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": "Char"
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": "TargetDiscr"
+              },
+              {
+                "Atom": "TargetDiscr"
+              }
+            ]
+          }
         }
       },
       "concrete": 8
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": "TargetDiscr"
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": "Char"
+                }
+              }
+            }
+          },
+          {
+            "Atom": "TargetDiscr"
+          },
+          {
+            "Atom": "TargetDiscr"
+          }
+        ]
       },
       "concrete": 4
     },
@@ -1594,28 +4184,101 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "C",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::ReprCSingle": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": "TargetDiscr"
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": "Char"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": "Char"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": "TargetDiscr"
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": "Char"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": "TargetDiscr"
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": "Char"
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 8
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": "TargetDiscr"
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": "Char"
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 4
     },
@@ -1675,28 +4338,332 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "C",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::ArbitraryDiscriminants": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": {
+                              "Concrete": 4
+                            }
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Adt": {
+                                    "id": {
+                                      "Adt": 40
+                                    },
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Adt": {
+                                "id": {
+                                  "Adt": 40
+                                },
+                                "generics": {
+                                  "regions": [],
+                                  "types": [],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Adt": {
+                                "id": {
+                                  "Adt": 40
+                                },
+                                "generics": {
+                                  "regions": [],
+                                  "types": [],
+                                  "const_generics": [],
+                                  "trait_refs": []
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": {
+                              "Concrete": 4
+                            }
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": {
+                                    "UInt": "U32"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "U32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Atom": {
+                      "Concrete": 4
+                    }
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 40
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [],
+                          "const_generics": [],
+                          "trait_refs": []
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I32"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 32
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Adt": {
+                    "id": {
+                      "Adt": 40
+                    },
+                    "generics": {
+                      "regions": [],
+                      "types": [],
+                      "const_generics": [],
+                      "trait_refs": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "U32"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I32"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 8
     },
@@ -1833,19 +4800,13 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": true
-    }
+    ]
   },
   "test_crate::MyOrder": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "Concrete": 1
         }
       },
       "concrete": 1
@@ -1853,7 +4814,13 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Literal": {
+                "Int": "I8"
+              }
+            }
+          }
         }
       },
       "concrete": 1
@@ -1973,28 +4940,183 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": true
-    }
+    ]
   },
   "test_crate::E": {
     "size": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
+        "AlignedTo": {
+          "base": {
+            "Max": [
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Atom": {
+                      "Concrete": 1
+                    }
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I8"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "AlignedTo": {
+                  "base": {
+                    "Sum": [
+                      {
+                        "AlignedTo": {
+                          "base": {
+                            "Atom": {
+                              "Concrete": 1
+                            }
+                          },
+                          "target_align": {
+                            "Atom": {
+                              "SymAlign": {
+                                "Untagged": {
+                                  "Literal": {
+                                    "UInt": "Usize"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymSize": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "Usize"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "target_align": {
+                    "Max": [
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "Int": "I8"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "Atom": {
+                          "SymAlign": {
+                            "Untagged": {
+                              "Literal": {
+                                "UInt": "Usize"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "target_align": {
+            "Max": [
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "Int": "I8"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "Atom": {
+                  "SymAlign": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
         }
       },
       "concrete": 16
     },
     "align": {
       "guarantee": {
-        "Atom": {
-          "Concrete": 0
-        }
+        "Max": [
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I8"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "Int": "I8"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "Atom": {
+              "SymAlign": {
+                "Untagged": {
+                  "Literal": {
+                    "UInt": "Usize"
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "concrete": 8
     },
@@ -2088,19 +5210,27 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "C",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": true
-    }
+    ]
   },
   "test_crate::WithNicheAndUninhabited": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 26
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -2108,7 +5238,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 26
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -2167,7 +5311,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  26,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -2181,7 +5329,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  26,
+                  2,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -2190,20 +5342,268 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
-  "test_crate::GenericUnsized": null,
+  "test_crate::GenericUnsized": {
+    "size": {
+      "guarantee": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 27
+                },
+                "generics": {
+                  "regions": [
+                    {
+                      "Var": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  ],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "TypeVar": {
+                          "Bound": [
+                            0,
+                            0
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "Clause": {
+                            "Bound": [
+                              0,
+                              0
+                            ]
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 1,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "TypeVar": {
+                                      "Bound": [
+                                        1,
+                                        0
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "concrete": null
+    },
+    "align": {
+      "guarantee": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 27
+                },
+                "generics": {
+                  "regions": [
+                    {
+                      "Var": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  ],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "TypeVar": {
+                          "Bound": [
+                            0,
+                            0
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "Clause": {
+                            "Bound": [
+                              0,
+                              0
+                            ]
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 1,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "TypeVar": {
+                                      "Bound": [
+                                        1,
+                                        0
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "concrete": null
+    },
+    "discriminator": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": []
+      },
+      {
+        "field_offsets": [
+          {
+            "guarantee": {
+              "Atom": {
+                "SymOffset": [
+                  27,
+                  1,
+                  0
+                ]
+              }
+            },
+            "concrete": null
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ]
+  },
   "test_crate::GenericButFixedSize": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 28
+                },
+                "generics": {
+                  "regions": [
+                    {
+                      "Var": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  ],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "TypeVar": {
+                          "Bound": [
+                            0,
+                            0
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "Clause": {
+                            "Bound": [
+                              0,
+                              0
+                            ]
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "TypeVar": {
+                                      "Bound": [
+                                        1,
+                                        0
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -2211,7 +5611,77 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 28
+                },
+                "generics": {
+                  "regions": [
+                    {
+                      "Var": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
+                    }
+                  ],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "TypeVar": {
+                          "Bound": [
+                            0,
+                            0
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "Clause": {
+                            "Bound": [
+                              0,
+                              0
+                            ]
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "TypeVar": {
+                                      "Bound": [
+                                        1,
+                                        0
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -2270,7 +5740,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  28,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -2279,19 +5753,13 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::MaxBitsDiscr": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "Concrete": 16
         }
       },
       "concrete": 16
@@ -2299,7 +5767,13 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Literal": {
+                "UInt": "U128"
+              }
+            }
+          }
         }
       },
       "concrete": 16
@@ -2385,19 +5859,175 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": true
-    }
+    ]
   },
   "test_crate::SingleVariantButNonZero": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 41
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": "Never"
+                    },
+                    {
+                      "Untagged": {
+                        "Adt": {
+                          "id": "Tuple",
+                          "generics": {
+                            "regions": [],
+                            "types": [],
+                            "const_generics": [],
+                            "trait_refs": []
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": "Never"
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": "Never"
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": {
+                                              "Adt": {
+                                                "id": "Tuple",
+                                                "generics": {
+                                                  "regions": [],
+                                                  "types": [],
+                                                  "const_generics": [],
+                                                  "trait_refs": []
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "Adt": {
+                                      "id": "Tuple",
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 0
@@ -2405,7 +6035,169 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 41
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": "Never"
+                    },
+                    {
+                      "Untagged": {
+                        "Adt": {
+                          "id": "Tuple",
+                          "generics": {
+                            "regions": [],
+                            "types": [],
+                            "const_generics": [],
+                            "trait_refs": []
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": [
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": "Never"
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": "Never"
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "kind": {
+                          "BuiltinOrAuto": {
+                            "builtin_data": "Sized",
+                            "parent_trait_refs": [
+                              {
+                                "Untagged": {
+                                  "kind": {
+                                    "BuiltinOrAuto": {
+                                      "builtin_data": "MetaSized",
+                                      "parent_trait_refs": [],
+                                      "types": []
+                                    }
+                                  },
+                                  "trait_decl_ref": {
+                                    "regions": [],
+                                    "skip_binder": {
+                                      "id": 1,
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [
+                                          {
+                                            "Untagged": {
+                                              "Adt": {
+                                                "id": "Tuple",
+                                                "generics": {
+                                                  "regions": [],
+                                                  "types": [],
+                                                  "const_generics": [],
+                                                  "trait_refs": []
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "types": []
+                          }
+                        },
+                        "trait_decl_ref": {
+                          "regions": [],
+                          "skip_binder": {
+                            "id": 0,
+                            "generics": {
+                              "regions": [],
+                              "types": [
+                                {
+                                  "Untagged": {
+                                    "Adt": {
+                                      "id": "Tuple",
+                                      "generics": {
+                                        "regions": [],
+                                        "types": [],
+                                        "const_generics": [],
+                                        "trait_refs": []
+                                      }
+                                    }
+                                  }
+                                }
+                              ],
+                              "const_generics": [],
+                              "trait_refs": []
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 1
@@ -2430,20 +6222,94 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
-  "test_crate::NonAdtAlias": null,
+  "test_crate::NonAdtAlias": {
+    "size": {
+      "guarantee": {
+        "Atom": {
+          "SymSize": {
+            "Untagged": {
+              "TypeVar": {
+                "Bound": [
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        }
+      },
+      "concrete": null
+    },
+    "align": {
+      "guarantee": {
+        "Atom": {
+          "SymAlign": {
+            "Untagged": {
+              "TypeVar": {
+                "Bound": [
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        }
+      },
+      "concrete": null
+    },
+    "discriminator": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": {
+              "Atom": {
+                "Concrete": 0
+              }
+            },
+            "concrete": null
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ]
+  },
   "test_crate::Tuple": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": "Tuple",
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -2451,7 +6317,34 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": "Tuple",
+                "generics": {
+                  "regions": [],
+                  "types": [
+                    {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    },
+                    {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    }
+                  ],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 4
@@ -2473,8 +6366,23 @@
           },
           {
             "guarantee": {
-              "Atom": {
-                "Concrete": 0
+              "AlignedTo": {
+                "base": {
+                  "Atom": {
+                    "Concrete": 0
+                  }
+                },
+                "target_align": {
+                  "Atom": {
+                    "SymAlign": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U32"
+                        }
+                      }
+                    }
+                  }
+                }
               }
             },
             "concrete": 4
@@ -2483,19 +6391,19 @@
         "uninhabited": false,
         "tagger": []
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   },
   "test_crate::Usize": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Literal": {
+                "UInt": "Usize"
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -2503,7 +6411,13 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Literal": {
+                "UInt": "Usize"
+              }
+            }
+          }
         }
       },
       "concrete": 8
@@ -2512,19 +6426,42 @@
       "Known": 0
     },
     "uninhabited": false,
-    "variant_layouts": [],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": {
+              "Atom": {
+                "Concrete": 0
+              }
+            },
+            "concrete": null
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ]
   },
   "test_crate::Str": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Builtin": "Str"
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": null
@@ -2532,7 +6469,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Builtin": "Str"
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": null
@@ -2541,19 +6492,49 @@
       "Known": 0
     },
     "uninhabited": false,
-    "variant_layouts": [],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": {
+              "Atom": {
+                "Concrete": 0
+              }
+            },
+            "concrete": null
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ]
   },
   "test_crate::Ref": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Ref": [
+                {
+                  "Var": {
+                    "Bound": [
+                      0,
+                      0
+                    ]
+                  }
+                },
+                {
+                  "Untagged": {
+                    "Literal": {
+                      "UInt": "U32"
+                    }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          }
         }
       },
       "concrete": 8
@@ -2561,7 +6542,28 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Ref": [
+                {
+                  "Var": {
+                    "Bound": [
+                      0,
+                      0
+                    ]
+                  }
+                },
+                {
+                  "Untagged": {
+                    "Literal": {
+                      "UInt": "U32"
+                    }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          }
         }
       },
       "concrete": 8
@@ -2570,19 +6572,42 @@
       "Known": 0
     },
     "uninhabited": false,
-    "variant_layouts": [],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": {
+              "Atom": {
+                "Concrete": 0
+              }
+            },
+            "concrete": null
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ]
   },
   "test_crate::HasInvalidDiscr": {
     "size": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymSize": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 36
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 1
@@ -2590,7 +6615,21 @@
     "align": {
       "guarantee": {
         "Atom": {
-          "Concrete": 0
+          "SymAlign": {
+            "Untagged": {
+              "Adt": {
+                "id": {
+                  "Adt": 36
+                },
+                "generics": {
+                  "regions": [],
+                  "types": [],
+                  "const_generics": [],
+                  "trait_refs": []
+                }
+              }
+            }
+          }
         }
       },
       "concrete": 1
@@ -2695,7 +6734,11 @@
           {
             "guarantee": {
               "Atom": {
-                "Concrete": 0
+                "SymOffset": [
+                  36,
+                  1,
+                  0
+                ]
               }
             },
             "concrete": 0
@@ -2719,12 +6762,6 @@
           ]
         ]
       }
-    ],
-    "repr": {
-      "repr_algo": "Rust",
-      "align_modif": null,
-      "transparent": false,
-      "explicit_discr_type": false
-    }
+    ]
   }
 }

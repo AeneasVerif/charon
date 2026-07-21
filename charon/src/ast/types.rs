@@ -573,6 +573,8 @@ pub struct VariantLayout {
 pub enum Discriminator {
     /// The variant is known.
     Known(VariantId),
+    /// Due to missing layout information, we simply don't know.
+    Unknown,
     /// No valid variant (e.g., invalid tag value).
     Invalid,
     /// Branch on an integer value read from memory at `offset`.
@@ -615,10 +617,6 @@ pub struct Layout {
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
     /// layout). Structs and unions are modeled as having exactly one variant.
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
-    /// The representation options of this type declaration as annotated by the user.
-    #[drive(skip)]
-    #[serde_state(stateless)]
-    pub repr: ReprOptions,
 }
 
 /// The metadata stored in a pointer. That's the information stored in pointers alongside
@@ -678,15 +676,17 @@ pub enum AlignmentModifier {
 /// The representation options as annotated by the user.
 ///
 /// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
-/// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
-/// are encoded in [`Variant::discriminant`] and [`Discriminator`] instead.
-/// This only stores whether the discriminant type was derived from an explicit annotation.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// or the compiler internal `#[repr(linear)]`.
+#[derive(Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState)]
+#[serde_state(state_implements = HashConsSerializerState)]
 pub struct ReprOptions {
+    #[serde_state(stateless)]
     pub repr_algo: ReprAlgorithm,
+    #[serde_state(stateless)]
     pub align_modif: Option<AlignmentModifier>,
+    #[serde_state(stateless)]
     pub transparent: bool,
-    pub explicit_discr_type: bool,
+    pub explicit_discr_type: Option<Ty>,
 }
 
 /// A type declaration.
@@ -717,11 +717,11 @@ pub struct TypeDecl {
     /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
     #[serde(with = "SeqHashMapToArray::<TargetTriple, Layout>")]
     pub layout: SeqHashMap<TargetTriple, Layout>,
-    /// Additionally to the target-specific layout stored in [Self::layout],
-    /// this stores the target-agnostic guarantees that Rust makes about the type's layout.
-    pub guarantees: Option<LayoutGuarantees>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
+    /// The representation options of this type declaration as annotated by the user.
+    #[drive(skip)]
+    pub repr: ReprOptions,
 }
 
 generate_index_type!(VariantId, "Variant");

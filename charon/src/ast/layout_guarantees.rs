@@ -6,10 +6,14 @@ use std::{
 use derive_generic_visitor::{Drive, DriveMut};
 use serde_state::{DeserializeState, SerializeState};
 
-use crate::ast::{
-    BuiltinTy, ConcreteByteCount, ConstantExpr, ConstantExprKind, FloatTy, HashConsSerializerState,
-    IntTy, Literal, LiteralTy, ScalarValue, TargetTriple, TranslatedCrate, Ty, TyKind, TyVisitable,
-    TypeDeclRef, TypeId, UIntTy,
+use crate::{
+    ast::{
+        AlignmentModifier, BuiltinTy, ConcreteByteCount, ConstantExpr, ConstantExprKind, Field,
+        FieldId, FloatTy, HashConsSerializerState, IntTy, Layout, Literal, LiteralTy,
+        ReprAlgorithm, ReprOptions, ScalarValue, TargetTriple, TranslatedCrate, Ty, TyKind,
+        TyVisitable, TypeDeclId, TypeDeclKind, TypeDeclRef, TypeId, UIntTy, VariantId,
+    },
+    ids::IndexVec,
 };
 
 /// The basic building blocks of symbolic layout information.
@@ -25,6 +29,9 @@ pub enum BasicByteCount {
     /// Target-specific default enum discriminant type for `#[repr(C)]`.
     /// See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.enum
     TargetDiscr,
+    /// Symbolic offset of the corresponding field.
+    /// Can only ever make sense in a context where that field exists.
+    SymOffset(TypeDeclId, VariantId, FieldId),
 }
 
 impl BasicByteCount {
@@ -153,6 +160,156 @@ impl SymbolicByteCount {
             }
         } else {
             *self = Self::Max(vec![self.clone(), rhs]);
+        }
+    }
+
+    /// Constructs offsets of fields according to repr(C) layout.
+    /// Corresponds to the information summed up in [LayoutGuarantees::mk_ordered_sequence_repr_c].
+    pub fn mk_offsets<I>(fields: I, prefix_tag_layout: Option<LayoutGuarantees>) -> Vec<Self>
+    where
+        I: Iterator<Item = Ty>,
+    {
+        let mut offsets = Vec::new();
+        offsets.push(Self::default());
+        let mut curr_offset = if let Some(tag_guarantees) = prefix_tag_layout {
+            offsets.push(tag_guarantees.size.clone());
+            tag_guarantees.size
+        } else {
+            Self::default()
+        };
+
+        for ty in fields {
+            let field_size = Self::Atom(BasicByteCount::SymSize(ty.clone()));
+            let field_align = Self::Atom(BasicByteCount::SymAlign(ty));
+
+            let field_offset = Self::AlignedTo {
+                base: Box::new(curr_offset.clone()),
+                target_align: Box::new(field_align.clone()),
+            };
+            curr_offset = field_offset;
+            offsets.push(curr_offset.clone());
+            curr_offset += field_size;
+        }
+
+        offsets
+    }
+
+    /// Returns the offsets of fields of all variants of the type.
+    /// Uses a single variant/a single field with index and offset 0 if neither makes sense otherwise.
+    pub fn field_offset_for_ty(
+        ty: &Ty,
+        translated: &TranslatedCrate,
+    ) -> IndexVec<VariantId, IndexVec<FieldId, Self>> {
+        match ty.kind() {
+            TyKind::Adt(type_decl_ref) => match &type_decl_ref.id {
+                TypeId::Adt(type_decl_id) => {
+                    if let Some(td) = translated.type_decls.get(*type_decl_id) {
+                        let res = Self::field_offsets_for_type_decl(
+                            &td.kind,
+                            *type_decl_id,
+                            &td.repr,
+                            translated,
+                        );
+                        res.substitute(&type_decl_ref.generics)
+                    } else {
+                        vec![vec![Self::default()].into()].into()
+                    }
+                }
+                TypeId::Tuple => vec![
+                    Self::mk_offsets(type_decl_ref.generics.types.iter().cloned(), None).into(),
+                ]
+                .into(),
+                TypeId::Builtin(_) => vec![vec![Self::default()].into()].into(),
+            },
+            _ => vec![vec![Self::default()].into()].into(),
+        }
+    }
+
+    pub fn field_offsets_for_type_decl(
+        td_kind: &TypeDeclKind,
+        td_id: TypeDeclId,
+        repr: &ReprOptions,
+        translated: &TranslatedCrate,
+    ) -> IndexVec<VariantId, IndexVec<FieldId, Self>> {
+        match td_kind {
+            TypeDeclKind::Struct(fields) => {
+                if repr.repr_algo == ReprAlgorithm::C {
+                    let fields = fields.iter().map(|field| field.ty.clone());
+                    vec![Self::mk_offsets(fields, None).into()].into()
+                } else {
+                    vec![
+                        fields
+                            .iter_enumerated()
+                            .map(|(i, _)| {
+                                Self::Atom(BasicByteCount::SymOffset(td_id, VariantId::ZERO, i))
+                            })
+                            .collect(),
+                    ]
+                    .into()
+                }
+            }
+            TypeDeclKind::Enum(variants) => {
+                // An explicit discriminant type implies that the enum has also C representation.
+                // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt
+                // Also, both cases imply that the discriminant type is guaranteed to be either the specified
+                // type, or the default discriminant type for a target.
+                if repr.guarantees_fixed_field_order() {
+                    let discr_layout_guarantee = if let Some(discr_ty) = &repr.explicit_discr_type {
+                        LayoutGuarantees::for_ty(discr_ty, translated).unwrap()
+                    } else {
+                        LayoutGuarantees {
+                            size: Self::Atom(BasicByteCount::TargetDiscr),
+                            alignment: Self::Atom(BasicByteCount::TargetDiscr),
+                        }
+                    };
+
+                    variants
+                        .iter()
+                        .map(|variant| {
+                            let fields = variant.fields.iter().map(|field| field.ty.clone());
+                            Self::mk_offsets(fields, Some(discr_layout_guarantee.clone())).into()
+                        })
+                        .collect()
+                } else {
+                    variants
+                        .iter_enumerated()
+                        .map(|(id, variant)| {
+                            variant
+                                .fields
+                                .iter_enumerated()
+                                .map(|(i, _)| Self::Atom(BasicByteCount::SymOffset(td_id, id, i)))
+                                .collect()
+                        })
+                        .collect()
+                }
+            }
+            TypeDeclKind::Union(fields) => {
+                if repr.repr_algo == ReprAlgorithm::C {
+                    fields
+                        .iter()
+                        .map(|field| {
+                            // This cannot have multiple variants itself?
+                            Self::field_offset_for_ty(&field.ty, translated)
+                                .pop()
+                                .unwrap()
+                        })
+                        .collect()
+                } else {
+                    fields
+                        .iter_enumerated()
+                        .map(|(id, _)| {
+                            vec![Self::Atom(BasicByteCount::SymOffset(
+                                td_id,
+                                id.raw().into(),
+                                FieldId::ZERO,
+                            ))]
+                            .into()
+                        })
+                        .collect()
+                }
+            }
+            TypeDeclKind::Alias(ty) => Self::field_offset_for_ty(ty, translated),
+            _ => vec![vec![Self::default()].into()].into(),
         }
     }
 }
@@ -366,6 +523,138 @@ impl LayoutGuarantees {
         Self { size, alignment }
     }
 
+    /// There must be at most one non-1-ZST field in the single variant.
+    /// Based on https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.transparent
+    fn mk_transparent_layout_guarantees(
+        fields: &IndexVec<FieldId, Field>,
+        translated: &TranslatedCrate,
+    ) -> Option<LayoutGuarantees> {
+        let mut non_one_zst_ty = None;
+        for field in fields.iter() {
+            let ty = &field.ty;
+            if let Some(layout) = LayoutGuarantees::for_ty(ty, translated)
+                && layout != LayoutGuarantees::ONE_ZST
+            {
+                non_one_zst_ty = Some(ty.clone());
+            }
+        }
+
+        if let Some(non_one_zst_ty) = non_one_zst_ty {
+            Some(LayoutGuarantees::mk_symbolic(non_one_zst_ty))
+        } else {
+            // If there is no non-1-ZST field, the type is equivalent to unit.
+            Some(LayoutGuarantees::ONE_ZST)
+        }
+    }
+
+    /// Constructs the layout guarantees, even if we failed to obtain a concrete layout for the type.
+    /// Also memoizes all guarantees of types that were required to build the guarantees for the given def.
+    pub fn for_type_decl(
+        td_kind: &TypeDeclKind,
+        repr: &ReprOptions,
+        translated: &TranslatedCrate,
+    ) -> Option<Self> {
+        match td_kind {
+            TypeDeclKind::Struct(fields) => {
+                if repr.transparent {
+                    return Self::mk_transparent_layout_guarantees(fields, translated);
+                }
+
+                let fields = fields.iter().map(|field| field.ty.clone());
+
+                if repr.repr_algo == ReprAlgorithm::C {
+                    return Some(Self::mk_ordered_sequence_repr_c(fields, None));
+                }
+
+                let Self {
+                    mut size,
+                    mut alignment,
+                } = Self::mk_unordered_sequence(fields);
+                // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.align-packed
+                match repr.align_modif {
+                    Some(AlignmentModifier::Align(forced_align)) => {
+                        alignment.max(SymbolicByteCount::Atom(BasicByteCount::Concrete(
+                            forced_align,
+                        )));
+                    }
+                    Some(AlignmentModifier::Pack(n)) => {
+                        alignment = SymbolicByteCount::Packed {
+                            max_align: BasicByteCount::Concrete(n),
+                            to_pack: Box::new(alignment),
+                        };
+                    }
+                    _ => (),
+                }
+                size.realign(alignment.clone());
+                Some(Self { size, alignment })
+            }
+            TypeDeclKind::Enum(variants) => {
+                if repr.transparent {
+                    debug_assert_eq!(variants.len(), 1);
+                    let fields = &variants.iter().next()?.fields;
+                    Self::mk_transparent_layout_guarantees(fields, translated)
+                } else {
+                    // An explicit discriminant type implies that the enum has also C representation.
+                    // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt
+                    // Also, both cases imply that the discriminant type is guaranteed to be either the specified
+                    // type, or the default discriminant type for a target.
+                    if repr.guarantees_fixed_field_order() {
+                        let field_less = variants.iter().all(|variant| variant.fields.is_empty());
+
+                        let discr_layout_guarantee =
+                            if let Some(discr_ty) = &repr.explicit_discr_type {
+                                Self::for_ty(discr_ty, translated).unwrap()
+                            } else {
+                                Self {
+                                    size: SymbolicByteCount::Atom(BasicByteCount::TargetDiscr),
+                                    alignment: SymbolicByteCount::Atom(BasicByteCount::TargetDiscr),
+                                }
+                            };
+
+                        if field_less {
+                            // For field-less enums with a guaranteed discriminant type, the whole layout is exactly the type.
+                            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.enum
+                            Some(discr_layout_guarantee)
+                        } else {
+                            // For enums with fields and #[repr(C)], the whole layout is a tagged union with the
+                            // specified discriminant and a union of each variant as a #[repr(C)] struct.
+                            // See https://doc.rust-lang.org/reference/type-layout.html#primitive-representation-of-enums-with-fields
+                            // and https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.adt
+                            let variants = variants
+                                .iter()
+                                .map(|variant| variant.fields.iter().map(|field| field.ty.clone()));
+                            Some(Self::mk_tagged_union(
+                                variants,
+                                Some(discr_layout_guarantee),
+                                translated,
+                                false,
+                            ))
+                        }
+                    } else {
+                        // Not sure what to do here about the discriminant wrt niches etc.
+                        None
+                    }
+                }
+            }
+            TypeDeclKind::Union(fields) => {
+                // We get no guarantees for non-`repr(C)` unions.
+                // See https://doc.rust-lang.org/reference/types/union.html#r-type.union.layout
+                if repr.repr_algo != ReprAlgorithm::C {
+                    return None;
+                }
+
+                // The layout of a union is the max size and alignment among all its variants.
+                // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.union.size-align
+                let variants = fields
+                    .iter()
+                    .map(|field| Some(field.ty.clone()).into_iter());
+                Some(Self::mk_tagged_union(variants, None, translated, true))
+            }
+            TypeDeclKind::Alias(ty) => Some(Self::mk_symbolic(ty.clone())),
+            _ => None,
+        }
+    }
+
     fn for_ty_inner(ty: &Ty, translated: &TranslatedCrate, force_repr_c: bool) -> Option<Self> {
         match ty.kind() {
             // True Adt's (i.e. structs and enums) should have layout guarantees stored in
@@ -374,7 +663,8 @@ impl LayoutGuarantees {
                 id: TypeId::Adt(type_decl_id),
                 generics,
             }) => {
-                let op_poly = translated.type_decls.get(*type_decl_id)?.guarantees.clone();
+                let td = translated.type_decls.get(*type_decl_id)?;
+                let op_poly = Self::for_type_decl(&td.kind, &td.repr, translated);
                 if let Some(poly_guarantees) = op_poly {
                     Some(poly_guarantees.substitute(generics))
                 } else {
@@ -451,6 +741,7 @@ pub struct LayoutComputer<'a> {
     krate: &'a TranslatedCrate,
     target: Option<&'a TargetTriple>,
     cache: HashMap<Ty, LayoutGuarantees>,
+    offset_cache: HashMap<TypeDeclId, IndexVec<VariantId, IndexVec<FieldId, SymbolicByteCount>>>,
     /// Set to bail on cycles in the computation.
     stack: HashSet<Ty>,
 }
@@ -460,6 +751,7 @@ impl<'a> LayoutComputer<'a> {
             krate,
             target,
             cache: HashMap::new(),
+            offset_cache: HashMap::new(),
             stack: HashSet::new(),
         }
     }
@@ -473,7 +765,7 @@ impl<'a> LayoutComputer<'a> {
                         BasicByteCount::mk_address_size_for(self.krate, target)
                 {
                     SymbolicByteCount::Atom(target_specific_atom)
-                } else if let Some(layout) = self.compute_layout(ty.clone()) {
+                } else if let Some(layout) = self.compute_layout_guarantees(ty.clone()) {
                     layout.size
                 } else {
                     SymbolicByteCount::Atom(BasicByteCount::SymSize(ty.clone()))
@@ -488,7 +780,7 @@ impl<'a> LayoutComputer<'a> {
                         )
                 {
                     SymbolicByteCount::Atom(target_specific_atom)
-                } else if let Some(layout) = self.compute_layout(ty.clone()) {
+                } else if let Some(layout) = self.compute_layout_guarantees(ty.clone()) {
                     layout.alignment
                 } else {
                     SymbolicByteCount::Atom(BasicByteCount::SymAlign(ty.clone()))
@@ -504,10 +796,37 @@ impl<'a> LayoutComputer<'a> {
                     SymbolicByteCount::Atom(BasicByteCount::TargetDiscr)
                 }
             }
+            BasicByteCount::SymOffset(td_id, variant_id, field_id) => {
+                let variant_offsets = if let Some(variant_offsets) = self.offset_cache.get(td_id) {
+                    variant_offsets
+                } else {
+                    let td = self.krate.type_decls.get(*td_id).unwrap();
+                    let offsets = SymbolicByteCount::field_offsets_for_type_decl(
+                        &td.kind, *td_id, &td.repr, self.krate,
+                    );
+                    self.offset_cache.insert(*td_id, offsets);
+                    self.offset_cache.get(td_id).unwrap()
+                };
+                if let Some(field_offsets) = variant_offsets.get(*variant_id)
+                    && let Some(field_offset) = field_offsets.get(*field_id)
+                {
+                    let mut offset = field_offset.clone();
+                    // If we don't have purely symbolic information (which could lead to an endless loop), try to further normalize it.
+                    if !matches!(
+                        offset,
+                        SymbolicByteCount::Atom(BasicByteCount::SymOffset(_, _, _))
+                    ) {
+                        self.normalize_symbolic_byte_count(&mut offset);
+                    }
+                    offset
+                } else {
+                    SymbolicByteCount::Atom(atom.clone())
+                }
+            }
         }
     }
 
-    fn normalize_symbolic_byte_count(&mut self, sym_byte_count: &mut SymbolicByteCount) {
+    pub fn normalize_symbolic_byte_count(&mut self, sym_byte_count: &mut SymbolicByteCount) {
         match sym_byte_count {
             SymbolicByteCount::Atom(atom) => {
                 *sym_byte_count = self.normalize_atom(atom);
@@ -591,7 +910,7 @@ impl<'a> LayoutComputer<'a> {
     }
 
     /// Computes the most precise layout guarantees we can deduce for this type.
-    pub fn compute_layout(&mut self, ty: Ty) -> Option<LayoutGuarantees> {
+    pub fn compute_layout_guarantees(&mut self, ty: Ty) -> Option<LayoutGuarantees> {
         if let Some(layout) = self.cache.get(&ty) {
             Some(layout.clone())
         } else if self.stack.contains(&ty) {
@@ -609,5 +928,26 @@ impl<'a> LayoutComputer<'a> {
             self.cache.insert(ty, symbolic_layout.clone());
             Some(symbolic_layout)
         }
+    }
+
+    /// Computes and fills in the most precise layout we can deduce for this type.
+    pub fn compute_layout(&mut self, ty: &Ty) -> Option<Layout> {
+        let tdecl_ref = ty.as_adt()?;
+        let tdecl_id = tdecl_ref.id.as_adt()?;
+        let tdecl = self.krate.type_decls.get(*tdecl_id)?;
+        let mut layout = tdecl.layout.get(self.target.as_ref()?.as_str())?.clone();
+
+        if let Some(top_level_guarantees) = self.compute_layout_guarantees(ty.clone()) {
+            layout.size.guarantee = top_level_guarantees.size;
+            layout.align.guarantee = top_level_guarantees.alignment;
+        }
+
+        for variant in layout.variant_layouts.iter_mut().flatten() {
+            for field in variant.field_offsets.iter_mut() {
+                self.normalize_symbolic_byte_count(&mut field.guarantee);
+            }
+        }
+
+        Some(layout)
     }
 }

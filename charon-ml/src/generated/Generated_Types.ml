@@ -905,6 +905,28 @@ and assoc_item_id =
   | AssocIdMethod of trait_method_id
   | AssocIdConst of assoc_const_id
 
+(** The basic building blocks of symbolic layout information. *)
+and basic_byte_count =
+  | SymSize of ty  (** Symbolic size of type T, cf. [size_of<T>()]. *)
+  | SymAlign of ty  (** Symbolic alignment of type T, cf. [align_of<T>()] *)
+  | Concrete of int  (** Concrete layout information as number of bytes. *)
+  | TargetDiscr
+      (** Target-specific default enum discriminant type for [#[repr(C)]]. See
+          https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.enum
+      *)
+  | SymOffset of type_decl_id * variant_id * field_id
+      (** Symbolic offset of the corresponding field. Can only ever make sense
+          in a context where that field exists. *)
+
+(** The size, offset, or alignement of an element of layout, in bytes. *)
+and byte_count = {
+  guarantee : symbolic_byte_count;
+      (** The guarantees given by the language about this value. *)
+  concrete : int option;
+      (** The value chosen by rustc, if any. That value may change across
+          compilation sessions and compiler versions. *)
+}
+
 (** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
@@ -925,6 +947,7 @@ and disambiguator = (Disambiguator.id[@visitors.opaque])
     Mirrors MiniRust's [Discriminator]. *)
 and discriminator =
   | Known of variant_id  (** The variant is known. *)
+  | Unknown  (** Due to missing layout information, we simply don't know. *)
   | Invalid  (** No valid variant (e.g., invalid tag value). *)
   | Branch of
       int
@@ -1094,8 +1117,8 @@ and item_source =
     known layout (e.g. it is ?Sized) some of the layout parts are not available.
 *)
 and layout = {
-  size : int option;  (** The size of the type in bytes. *)
-  align : int option;  (** The alignment, in bytes. *)
+  size : byte_count;  (** The size of the type in bytes. *)
+  align : byte_count;  (** The alignment, in bytes. *)
   discriminator : discriminator option;
       (** Decision tree that determines the active variant by reading memory.
           Only [Some] for enums. *)
@@ -1109,57 +1132,6 @@ and layout = {
           don't have a meaningful layout due to being uninhabited (though an
           uninhabited variant may have a layout). Structs and unions are modeled
           as having exactly one variant. *)
-  repr : repr_options;
-      (** The representation options of this type declaration as annotated by
-          the user. *)
-}
-
-(** The basic building blocks of symbolic layout information. *)
-and layout_guarantee_atom =
-  | SymSize of ty  (** Symbolic size of type T, cf. [size_of<T>()]. *)
-  | SymAlign of ty  (** Symbolic alignment of type T, cf. [align_of<T>()] *)
-  | Concrete of int  (** Concrete layout information as number of bytes. *)
-  | TargetDiscr
-      (** Target-specific default enum discriminant type for [#[repr(C)]]. See
-          https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.enum
-      *)
-
-(** Composite symbolic layout expressions.
-
-    [non_exhaustive] since we might need many more composite layouts. *)
-and layout_guarantee_comp =
-  | Atom of layout_guarantee_atom  (** A single symbolic layout atom. *)
-  | Sum of layout_guarantee_comp list  (** The sum of its atoms. *)
-  | Product of layout_guarantee_comp * constant_expr
-      (** An atom multiplied by a fixed scalar (e.g. [N] in [T;N]).
-
-          Fields:
-          - [atom]
-          - [multiplier] *)
-  | AlignedTo of layout_guarantee_comp * layout_guarantee_comp
-      (** The next multiple of [target_align] from [base].
-
-          Fields:
-          - [base]
-          - [target_align] *)
-  | Max of layout_guarantee_comp list
-      (** The maximum of these composite layout expressions. *)
-  | Packed of layout_guarantee_atom * layout_guarantee_comp
-      (** For the packed representation, the overall and field alignments are
-          each at most [max_align]. Thus, in contrast to the [[Self::Max]], we
-          only need to compare a composition with a fixed constant atomic.
-
-          Fields:
-          - [max_align]
-          - [to_pack] *)
-
-(** Symbolic layout information about a type's size and alignment.
-
-    TODO: would it make sense to also have enum-specific information here? E.g.
-    whether the enum could have/has a guaranteed niche? *)
-and layout_guarantees = {
-  size : layout_guarantee_comp;
-  alignment : layout_guarantee_comp;
 }
 
 (** An item name/path
@@ -1242,16 +1214,42 @@ and repr_algorithm =
 (** The representation options as annotated by the user.
 
     NOTE: This does not include less common/unstable representations such as
-    [#[repr(simd)]] or the compiler internal [#[repr(linear)]]. Similarly, enum
-    discriminant representations are encoded in [[Variant::discriminant]] and
-    [[Discriminator]] instead. This only stores whether the discriminant type
-    was derived from an explicit annotation. *)
+    [#[repr(simd)]] or the compiler internal [#[repr(linear)]]. *)
 and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;
   transparent : bool;
-  explicit_discr_type : bool;
+  explicit_discr_type : ty option;
 }
+
+(** Composite symbolic layout expressions.
+
+    [non_exhaustive] since we might need many more composite layouts. *)
+and symbolic_byte_count =
+  | Atom of basic_byte_count  (** A single symbolic layout atom. *)
+  | Sum of symbolic_byte_count list  (** The sum of its atoms. *)
+  | Product of symbolic_byte_count * constant_expr
+      (** An atom multiplied by a fixed scalar (e.g. [N] in [T;N]).
+
+          Fields:
+          - [atom]
+          - [multiplier] *)
+  | AlignedTo of symbolic_byte_count * symbolic_byte_count
+      (** The next multiple of [target_align] from [base].
+
+          Fields:
+          - [base]
+          - [target_align] *)
+  | Max of symbolic_byte_count list
+      (** The maximum of these composite layout expressions. *)
+  | Packed of basic_byte_count * symbolic_byte_count
+      (** For the packed representation, the overall and field alignments are
+          each at most [max_align]. Thus, in contrast to the [[Self::Max]], we
+          only need to compare a composition with a fixed constant atomic.
+
+          Fields:
+          - [max_align]
+          - [to_pack] *)
 
 (** A type declaration.
 
@@ -1278,12 +1276,11 @@ and type_decl = {
       (** The layout of the type for each target. Information may be partial
           because of generics or dynamically-sized types. If we cannot compute a
           layout, the target has no entry. *)
-  guarantees : layout_guarantees option;
-      (** Additionally to the target-specific layout stored in [Self::layout],
-          this stores the target-agnostic guarantees that Rust makes about the
-          type's layout. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
+  repr : repr_options;
+      (** The representation options of this type declaration as annotated by
+          the user. *)
 }
 
 and type_decl_kind =
@@ -1325,7 +1322,7 @@ and variant = {
 
     Maps fields to their offset within the layout. *)
 and variant_layout = {
-  field_offsets : int list;  (** The offset of each field. *)
+  field_offsets : byte_count list;  (** The offset of each field. *)
   uninhabited : bool;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)

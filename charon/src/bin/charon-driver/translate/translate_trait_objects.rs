@@ -602,8 +602,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             },
             kind,
             layout,
-            // There are no layout guarantees for vtables.
-            guarantees: None,
+            repr: ReprOptions::default(),
             // A vtable struct is always sized
             ptr_metadata: PtrMetadata::None,
         })

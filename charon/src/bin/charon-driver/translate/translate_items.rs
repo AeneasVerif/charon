@@ -449,24 +449,25 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-        let layout = self
-            .translate_layout(def)
-            .into_iter()
-            .map(|l| (self.get_target_triple(), l))
-            .collect();
-        let guarantees = if item_meta.opacity.is_opaque() {
-            None
-        } else {
-            let (repr, tag_ty) = match &def.kind {
-                hax::FullDefKind::Adt { repr: hax_repr, .. } => {
-                    let discr_ty = self.translate_ty(span, &hax_repr.typ)?;
-                    (self.translate_repr_options(hax_repr), Some(discr_ty))
-                }
-                _ => (ReprOptions::default(), None),
-            };
-            self.construct_layout_guarantees(&kind, repr, tag_ty)
+
+        let repr = match &def.kind {
+            hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
+            _ => ReprOptions::default(),
         };
+        let mut layout = self.translate_layout(def);
         let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
+
+        let generic_args = Box::new(
+            self.binding_levels
+                .iter()
+                .next()
+                .unwrap()
+                .params
+                .identity_args(),
+        );
+        self.fill_in_guarantees(&mut layout, &kind, trans_id, &repr, generic_args);
+        let layout = [(self.get_target_triple(), layout)].into();
+
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
@@ -474,7 +475,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             kind,
             src,
             layout,
-            guarantees,
+            repr,
             ptr_metadata,
         };
 
