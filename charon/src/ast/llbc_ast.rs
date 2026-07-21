@@ -108,6 +108,7 @@ pub enum StatementKind {
 
 #[derive(Debug, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Statement {
+    #[serde_state(stateless)]
     pub span: Span,
     /// Integer uniquely identifying this statement among the statmeents in the current body. To
     /// simplify things we generate globally-fresh ids when creating a new `Statement`.
@@ -132,6 +133,7 @@ impl PartialEq for Statement {
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Block {
+    #[serde_state(stateless)]
     pub span: Span,
     pub statements: Vec<Statement>,
 }

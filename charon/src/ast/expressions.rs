@@ -648,7 +648,6 @@ pub enum Byte {
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("C"))]
 pub enum ConstantExprKind {
-    #[serde_state(stateless)]
     Literal(Literal),
     /// In most situations:
     /// Enumeration with one variant with no fields, structure with
@@ -698,7 +697,11 @@ pub enum ConstantExprKind {
     /// A pointer to a mutable static.
     ///
     /// We eliminate this case in a micro-pass.
-    Ptr(RefKind, Box<ConstantExpr>, Option<UnsizingMetadata>),
+    Ptr(
+        #[serde_state(stateless)] RefKind,
+        Box<ConstantExpr>,
+        Option<UnsizingMetadata>,
+    ),
     /// A const generic var
     Var(ConstGenericDbVar),
     /// A call to a `const fn` or a constant's initializer.
@@ -787,6 +790,7 @@ pub enum Rvalue {
     /// Like `Ref`, the `Operand` refers to the init value of the metadata, it is `()` if no metadata.
     RawPtr {
         place: Place,
+        #[serde_state(stateless)]
         kind: RefKind,
         ptr_metadata: Operand,
     },
@@ -881,5 +885,5 @@ pub enum AggregateKind {
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
     /// We lower this to a builtin function call for LLBC in [crate::transform::simplify_output::ops_to_function_calls].
-    RawPtr(Ty, RefKind),
+    RawPtr(Ty, #[serde_state(stateless)] RefKind),
 }

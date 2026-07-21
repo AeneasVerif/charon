@@ -772,6 +772,7 @@ pub struct Variant {
     /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
     /// different than the value stored in memory (called `tag`); that one is described by
     /// [`Discriminator`] and [`VariantLayout::tagger`].
+    #[serde_state(stateful)]
     pub discriminant: Literal,
 }
 
@@ -896,15 +897,12 @@ pub enum FloatTy {
     EnumIsA,
     Serialize,
     Deserialize,
-    SerializeState,
-    DeserializeState,
     Drive,
     DriveMut,
     Ord,
     PartialOrd,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("R"))]
-#[serde_state(stateless)]
 pub enum RefKind {
     Mut,
     Shared,
@@ -1088,9 +1086,9 @@ pub enum TyKind {
     Never,
     // We don't support floating point numbers on purpose (for now)
     /// A borrow
-    Ref(Region, Ty, RefKind),
+    Ref(Region, Ty, #[serde_state(stateless)] RefKind),
     /// A raw pointer.
-    RawPtr(Ty, RefKind),
+    RawPtr(Ty, #[serde_state(stateless)] RefKind),
     /// A trait associated type
     ///
     /// Ex.:

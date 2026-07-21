@@ -20,6 +20,7 @@ pub struct Local {
     #[drive(skip)]
     pub name: Option<String>,
     /// Span of the variable declaration.
+    #[serde_state(stateless)]
     pub span: Span,
     /// The variable type
     #[cfg_attr(feature = "charon_on_charon", charon::rename("local_ty"))]
@@ -52,6 +53,7 @@ pub struct Locals {
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("GexprBody"))]
 pub struct GExprBody<T> {
+    #[serde_state(stateless)]
     pub span: Span,
     /// The number of regions existentially bound in this body. We introduce fresh such regions
     /// during translation instead of the erased regions that rustc gives us.

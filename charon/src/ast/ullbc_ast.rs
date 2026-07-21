@@ -66,6 +66,7 @@ pub enum StatementKind {
 
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Statement {
+    #[serde_state(stateless)]
     pub span: Span,
     pub kind: StatementKind,
     /// Comments that precede this statement.
@@ -161,6 +162,7 @@ pub enum TerminatorKind {
 
 #[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
 pub struct Terminator {
+    #[serde_state(stateless)]
     pub span: Span,
     pub kind: TerminatorKind,
     /// Comments that precede this terminator.
