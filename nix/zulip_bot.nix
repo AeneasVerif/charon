@@ -154,15 +154,16 @@
           if result.get("result") != "success":
               logging.error("failed to send Zulip reply: %s", result.get("msg", result))
 
-      def handle_message(message):
+      def handle_event(event):
           nonlocal handling_message
           if shutdown_requested:
               raise ShutdownRequested
           handling_message = True
           try:
+              message = event["message"]
               if message["sender_id"] == bot_user_id:
                   return
-              if message["type"] == "stream" and "mentioned" not in message.get("flags", []):
+              if message["type"] == "stream" and "mentioned" not in event.get("flags", []):
                   return
 
               try:
@@ -201,9 +202,11 @@
                   raise ShutdownRequested
 
       try:
+          # When receiving SIGTERM, finish processing the current message then
+          # stop processing any new ones and shut down.
           signal.signal(signal.SIGTERM, request_shutdown)
           logging.info("waiting for Zulip messages as %s", profile["full_name"])
-          client.call_on_each_message(handle_message)
+          client.call_on_each_event(handle_event, event_types=["message"])
       except ShutdownRequested:
           logging.info("shutdown requested; all active work is complete")
 
